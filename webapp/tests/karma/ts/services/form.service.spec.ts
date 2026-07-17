@@ -806,10 +806,10 @@ describe('Form service', () => {
           { timestamp: LATER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: true },
         ],
       })).to.not.throw();
-      expect(captureInput.dataset.geoHasLocation).to.equal('true');
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
     });
 
-    it('sets data-geo-has-location when geolocation_log is non-empty', () => {
+    it('does not set data-geo-has-location when geolocation_log is non-empty but geolocation field is absent', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
         _id: 'contact1',
@@ -817,7 +817,7 @@ describe('Form service', () => {
           { timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: true }
         ],
       });
-      expect(captureInput.dataset.geoHasLocation).to.equal('true');
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
     });
 
     it('sets data-geo-has-location when geolocation exists but log is empty (defensive)', () => {
@@ -853,18 +853,17 @@ describe('Form service', () => {
       expect(lastCapture.timestamp).to.equal(EARLIER_CAPTURE_TS);
     });
 
-    it('sets data-geo-last-capture with isHome:false from most recent entry when no geolocation', () => {
+    it('does not set data-geo-has-location or data-geo-last-capture when only non-home log entries exist and geolocation field is absent', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
         _id: 'contact1',
         geolocation_log: [
-          { timestamp: EARLIER_CAPTURE_TS,  recording: { latitude: 1.23, longitude: 36.8 }, is_home: false },
+          { timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: false },
           { timestamp: LATER_CAPTURE_TS, recording: { latitude: 1.30, longitude: 36.9 }, is_home: false },
         ],
       });
-      const lastCapture = JSON.parse(captureInput.dataset.geoLastCapture!);
-      expect(lastCapture.isHome).to.be.false;
-      expect(lastCapture.timestamp).to.equal(LATER_CAPTURE_TS);
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+      expect(captureInput.dataset.geoLastCapture).to.be.undefined;
     });
 
     it('does not set data-geo-last-capture when geolocation exists but log is empty (degraded)', () => {
@@ -907,7 +906,7 @@ describe('Form service', () => {
       expect(lastCapture.timestamp).to.equal(EARLIER_CAPTURE_TS);
     });
 
-    it('does nothing when last log entry is a failure even if earlier entries succeeded', () => {
+    it('does nothing when geolocation field is absent even if log entries contain past successes', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
         _id: 'contact1',

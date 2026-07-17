@@ -293,16 +293,13 @@ export class FormService {
 
     captureInput.dataset.geoIsEdit = 'true';
 
-    const log: any[] = contact.geolocation_log || [];
-    const hasHomeLocation = !!contact.geolocation?.latitude;
-    const lastEntry = log[log.length - 1];
-    const lastEntryWasSuccess = !!lastEntry?.recording && !('code' in lastEntry.recording);
-    if (!hasHomeLocation && !lastEntryWasSuccess) {
+    if (!contact.geolocation?.latitude) {
       return;
     }
 
+    const log: any[] = contact.geolocation_log || [];
     captureInput.dataset.geoHasLocation = 'true';
-    this.setLastCapture(log, captureInput, hasHomeLocation);
+    this.setLastCapture(log, captureInput, true);
   }
 
   private getGeoContext(formHtml?: Element): string | undefined {
