@@ -17,5 +17,7 @@
   "include": [
     "tests/karma/**/*.spec.ts",
     "tests/karma/**/*.d.ts"
-  ]
+  ],
+  // Override the temporary "tests/**" exclusion in tsconfig.json so karma still compiles the specs.
+  "exclude": []
 }
