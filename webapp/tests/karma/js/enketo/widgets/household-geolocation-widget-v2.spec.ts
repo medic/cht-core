@@ -466,6 +466,239 @@ describe('Enketo: Household Geolocation Widget v2', () => {
       });
     });
 
+    describe('edit flow (with prior location)', () => {
+      const buildEditWithLocationHtml = () => {
+        document.body.insertAdjacentHTML('afterbegin', `
+          <div id="geolocation-widget-test">
+            <label class="question non-select or-appearance-geolocation-capture">
+              <input type="hidden" name="/geolocation/capture" data-type-xml="string"
+                data-geo-is-edit="true" data-geo-has-location="true" />
+            </label>
+          </div>`);
+      };
+
+      const initEditWithLocationWidget = () => {
+        buildEditWithLocationHtml();
+        const widget = Object.create(HouseholdGeolocationWidget.prototype);
+        widget.element = document.querySelector(
+          '#geolocation-widget-test ' + HouseholdGeolocationWidget.selector
+        );
+        widget.question = widget.element.closest('.question');
+        widget._init();
+        const container = document.querySelector(
+          '#geolocation-widget-test ' + SELECTORS.GEO_CAPTURE_LABEL
+        )!;
+        return { widget, container };
+      };
+
+      it('should show edit badge', () => {
+        const { container } = initEditWithLocationWidget();
+        expect(container.querySelector(SELECTORS.EDIT_BADGE)).to.not.be.null;
+      });
+
+      it('should show Keep, Record New, and Remove choices', () => {
+        const { container } = initEditWithLocationWidget();
+        const choices = container.querySelector(SELECTORS.EDIT_CHOICES);
+        expect(choices).to.not.be.null;
+        expect(choices!.querySelector(SELECTORS.KEEP_RADIO)).to.not.be.null;
+        expect(choices!.querySelector(SELECTORS.RECORD_NEW_RADIO)).to.not.be.null;
+        expect(choices!.querySelector(SELECTORS.REMOVE_RADIO)).to.not.be.null;
+      });
+
+      it('should show progress bar immediately', () => {
+        const { container } = initEditWithLocationWidget();
+        expect(container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
+      });
+
+      it('should add success class to progress bar on GPS success without selecting Record New', async () => {
+        const promise = Promise.resolve(GPS_SUCCESS);
+        (window as any).CHTCore.Geolocation.currentPromise = promise;
+        const { container } = initEditWithLocationWidget();
+        await promise;
+        expect(
+          container.querySelector(SELECTORS.PROGRESS_BAR)!.classList.contains('geolocation-progress-success')
+        ).to.be.true;
+      });
+
+      it('should add failure class to progress bar on GPS failure without selecting Record New', async () => {
+        const promise = Promise.resolve(GPS_FAILURE);
+        (window as any).CHTCore.Geolocation.currentPromise = promise;
+        const { container } = initEditWithLocationWidget();
+        await promise;
+        expect(
+          container.querySelector(SELECTORS.PROGRESS_BAR)!.classList.contains('geolocation-progress-failure')
+        ).to.be.true;
+      });
+
+      it('should show failure message on GPS failure without selecting Record New', async () => {
+        const promise = Promise.resolve(GPS_FAILURE);
+        (window as any).CHTCore.Geolocation.currentPromise = promise;
+        const { container } = initEditWithLocationWidget();
+        await promise;
+        expect(container.querySelector(SELECTORS.FAILURE_MSG)).to.not.be.null;
+      });
+
+      it('should show retry button on GPS failure without selecting Record New', async () => {
+        const promise = Promise.resolve(GPS_FAILURE);
+        (window as any).CHTCore.Geolocation.currentPromise = promise;
+        const { container } = initEditWithLocationWidget();
+        await promise;
+        expect(container.querySelector(SELECTORS.RETRY_BTN)).to.not.be.null;
+      });
+
+      it('should show retry button above the edit choices', async () => {
+        const promise = Promise.resolve(GPS_FAILURE);
+        (window as any).CHTCore.Geolocation.currentPromise = promise;
+        const { container } = initEditWithLocationWidget();
+        await promise;
+        const children = Array.from(container.children);
+        const retryIndex = children.findIndex(el => el.classList.contains('geolocation-retry-btn'));
+        const choicesIndex = children.findIndex(el => el.classList.contains('geolocation-edit-choices'));
+        expect(retryIndex).to.be.lessThan(choicesIndex);
+      });
+
+      it('should not show "can\'t record" button on GPS failure without selecting Record New', async () => {
+        const promise = Promise.resolve(GPS_FAILURE);
+        (window as any).CHTCore.Geolocation.currentPromise = promise;
+        const { container } = initEditWithLocationWidget();
+        await promise;
+        expect(container.querySelector(SELECTORS.CANT_RECORD_BTN)).to.be.null;
+      });
+
+      it('should not show context choices on GPS success without selecting Record New', async () => {
+        const promise = Promise.resolve(GPS_SUCCESS);
+        (window as any).CHTCore.Geolocation.currentPromise = promise;
+        const { container } = initEditWithLocationWidget();
+        await promise;
+        expect(container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.be.null;
+      });
+
+      it('should not show "can\'t record" button initially', () => {
+        const { container } = initEditWithLocationWidget();
+        expect(container.querySelector(SELECTORS.CANT_RECORD_BTN)).to.be.null;
+      });
+
+      it('should not show no-location message', () => {
+        const { container } = initEditWithLocationWidget();
+        expect(container.querySelector(SELECTORS.NO_LOCATION_MSG)).to.be.null;
+      });
+
+      it('should have "Keep saved location" selected by default', () => {
+        const { container } = initEditWithLocationWidget();
+        const keepRadio = container.querySelector(SELECTORS.KEEP_RADIO) as HTMLInputElement;
+        expect(keepRadio.checked).to.be.true;
+      });
+
+      it('should set value to "kept" on initialization', async () => {
+        const { widget } = initEditWithLocationWidget();
+        await new Promise(resolve => setTimeout(resolve, 0));
+        expect((widget.element as HTMLInputElement).value).to.equal('kept');
+      });
+
+      describe('when "Keep saved location" is selected', () => {
+        it('should set value to "kept"', () => {
+          const { widget, container } = initEditWithLocationWidget();
+          const radio = container.querySelector(SELECTORS.KEEP_RADIO) as HTMLInputElement;
+          radio.checked = true;
+          $(radio).trigger('change');
+          expect((widget.element as HTMLInputElement).value).to.equal('kept');
+        });
+
+        it('should fire a change event on the element', () => {
+          const { widget, container } = initEditWithLocationWidget();
+          const changeHandler = sinon.stub();
+          $((widget.element as HTMLInputElement)).on('change', changeHandler);
+          const radio = container.querySelector(SELECTORS.KEEP_RADIO) as HTMLInputElement;
+          radio.checked = true;
+          $(radio).trigger('change');
+          expect(changeHandler.callCount).to.equal(1);
+        });
+      });
+
+      describe('when "Remove saved location" is selected', () => {
+        it('should set value to "skipped"', () => {
+          const { widget, container } = initEditWithLocationWidget();
+          const radio = container.querySelector(SELECTORS.REMOVE_RADIO) as HTMLInputElement;
+          radio.checked = true;
+          $(radio).trigger('change');
+          expect((widget.element as HTMLInputElement).value).to.equal('skipped');
+        });
+
+        it('should fire a change event on the element', () => {
+          const { widget, container } = initEditWithLocationWidget();
+          const changeHandler = sinon.stub();
+          $((widget.element as HTMLInputElement)).on('change', changeHandler);
+          const radio = container.querySelector(SELECTORS.REMOVE_RADIO) as HTMLInputElement;
+          radio.checked = true;
+          $(radio).trigger('change');
+          expect(changeHandler.callCount).to.equal(1);
+        });
+      });
+
+      describe('when "Record new location" is selected', () => {
+        const selectRecordNew = ({ container }: { container: Element }) => {
+          const radio = container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
+          radio.checked = true;
+          $(radio).trigger('change');
+        };
+
+        it('should keep the edit choices visible', () => {
+          const result = initEditWithLocationWidget();
+          selectRecordNew(result);
+          expect(result.container.querySelector(SELECTORS.EDIT_CHOICES)).to.not.be.null;
+        });
+
+        it('should show progress bar', () => {
+          const result = initEditWithLocationWidget();
+          selectRecordNew(result);
+          expect(result.container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
+        });
+
+        it('should show success UI after GPS succeeds', async () => {
+          const promise = Promise.resolve(GPS_SUCCESS);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const result = initEditWithLocationWidget();
+          selectRecordNew(result);
+          await promise;
+          expect(result.container.querySelector(SELECTORS.SUCCESS_MSG)).to.not.be.null;
+          expect(result.container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.not.be.null;
+        });
+
+        it('should show failure UI after GPS fails', async () => {
+          const promise = Promise.resolve(GPS_FAILURE);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const result = initEditWithLocationWidget();
+          selectRecordNew(result);
+          await promise;
+          expect(result.container.querySelector(SELECTORS.FAILURE_MSG)).to.not.be.null;
+          expect(result.container.querySelector(SELECTORS.RETRY_BTN)).to.not.be.null;
+          expect(result.container.querySelector(SELECTORS.CANT_RECORD_BTN)).to.not.be.null;
+          expect(result.container.querySelector(SELECTORS.EDIT_CHOICES)).to.not.be.null;
+        });
+
+        it('should not add duplicate UI when toggling between Keep and Record New', async () => {
+          const promise = Promise.resolve(GPS_FAILURE);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          (window as any).CHTCore.Geolocation.retry = sinon.stub();
+          const result = initEditWithLocationWidget();
+
+          selectRecordNew(result);
+          await promise;
+
+          const keepRadio = result.container.querySelector(SELECTORS.KEEP_RADIO) as HTMLInputElement;
+          keepRadio.checked = true;
+          $(keepRadio).trigger('change');
+
+          selectRecordNew(result);
+          await promise; // flush microtask queue so any re-triggered callbacks fire
+
+          expect(result.container.querySelectorAll(SELECTORS.FAILURE_MSG).length).to.equal(1);
+          expect(result.container.querySelectorAll(SELECTORS.RETRY_BTN).length).to.equal(1);
+          expect(result.container.querySelectorAll(SELECTORS.CANT_RECORD_BTN).length).to.equal(1);
+        });
+      });
+    });
+
     describe('create mode', () => {
       it('should not show no-location message', () => {
         const buildHtml = () => {

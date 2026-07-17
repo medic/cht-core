@@ -80,7 +80,7 @@ class HouseholdGeolocationWidget extends Widget {
     }
 
     globalThis.CHTCore.Geolocation.currentPromise.then(result => {
-      if ($(this.element).val() !== '') {
+      if (!this._isEditWithLocation && $(this.element).val() !== '') {
         return;
       }
 
@@ -101,7 +101,9 @@ class HouseholdGeolocationWidget extends Widget {
     $('<p class="geolocation-success-msg">').text(this._translate(TRANSLATION_KEYS.SUCCESS)).appendTo($resultRow);
     $status.append($resultRow);
 
-    $(this.question).append(this._buildContextChoices());
+    if (!this._isEditWithLocation || this._isRecordNewSelected()) {
+      $(this.question).append(this._buildContextChoices());
+    }
   }
 
   _buildContextChoices() {
@@ -148,22 +150,25 @@ class HouseholdGeolocationWidget extends Widget {
         $('<span class="geolocation-btn-label">').text(this._translate(TRANSLATION_KEYS.RETRY))
       );
 
-    const $cantRecordBtn = this._buildCantRecordButton();
-
     $retryBtn.on('click', () => {
       globalThis.CHTCore.Geolocation.retry();
       $status.find('.geolocation-result-row, .geolocation-weak-signal-msg').remove();
       $bar.removeClass('geolocation-progress-failure');
       $retryBtn.remove();
-      $cantRecordBtn.remove();
+      $(this.question).find('.geolocation-cant-record-btn').remove();
       this._waitForCapture($status, $bar);
     });
 
-    $cantRecordBtn.on('click', () => {
-      $(this.element).val('skipped').trigger('change');
-    });
+    const $editChoices = $(this.question).find('.geolocation-edit-choices');
+    if ($editChoices.length) {
+      $retryBtn.insertBefore($editChoices);
+    } else {
+      $(this.question).append($retryBtn);
+    }
 
-    $(this.question).append($retryBtn, $cantRecordBtn);
+    if (!this._isEditWithLocation || this._isRecordNewSelected()) {
+      this._appendCantRecordButton();
+    }
   }
 
   _buildProgressRow() {
@@ -182,8 +187,69 @@ class HouseholdGeolocationWidget extends Widget {
       .text(this._translate(TRANSLATION_KEYS.CANT_RECORD));
   }
 
-  _initEditMode($question) { // eslint-disable-line no-unused-vars
-    // Implemented in Phase 4
+  _appendCantRecordButton() {
+    const $cantRecordBtn = this._buildCantRecordButton();
+    $cantRecordBtn.on('click', () => {
+      $(this.element).val('skipped').trigger('change');
+    });
+    $(this.question).append($cantRecordBtn);
+  }
+
+  _isRecordNewSelected() {
+    return !!(this.question.querySelector('input[type="radio"][value="capture-new"]:checked'));
+  }
+
+  _initEditMode($question) {
+    this._isEditWithLocation = true;
+
+    const $badge = $('<div class="geolocation-edit-badge">')
+      .text(this._translate(TRANSLATION_KEYS.EDIT_BADGE));
+    $question.append($badge);
+
+    const { $status, $bar } = this._buildProgressRow();
+    $question.append($status);
+
+    this._waitForCapture($status, $bar);
+
+    const radioName = 'geo-edit-' + (this.element.getAttribute('name') || '').replace(/\W/g, '-');
+
+    const $keepRadio = $('<input type="radio">').attr('name', radioName).val('kept').prop('checked', true);
+    const $keepLabel = $('<label class="geolocation-edit-option">')
+      .append($keepRadio, $('<span>').text(this._translate(TRANSLATION_KEYS.EDIT_KEEP)));
+    setTimeout(() => $(this.element).val('kept').trigger('change'), 0);
+
+    const $recordNewRadio = $('<input type="radio">').attr('name', radioName).val('capture-new');
+    const $recordNewLabel = $('<label class="geolocation-edit-option">')
+      .append($recordNewRadio, $('<span>').text(this._translate(TRANSLATION_KEYS.EDIT_RECORD_NEW)));
+
+    const $removeRadio = $('<input type="radio">').attr('name', radioName).val('removed');
+    const $removeLabel = $('<label class="geolocation-edit-option">')
+      .append($removeRadio, $('<span>').text(this._translate(TRANSLATION_KEYS.EDIT_REMOVE)));
+
+    const $choices = $('<div class="geolocation-edit-choices">')
+      .append($keepLabel, $recordNewLabel, $removeLabel);
+
+    $choices.on('change', 'input[type="radio"]', event => {
+      event.stopPropagation();
+      const value = event.target.value;
+      if (value === 'kept') {
+        $(this.element).val('kept').trigger('change');
+      } else if (value === 'removed') {
+        $(this.element).val('skipped').trigger('change');
+      } else if (value === 'capture-new') {
+        $(this.element).val('');
+        if ($bar.hasClass('geolocation-progress-failure') &&
+            !$(this.question).find('.geolocation-cant-record-btn').length) {
+          this._appendCantRecordButton();
+        }
+        if ($bar.hasClass('geolocation-progress-success') &&
+            !$(this.question).find('.geolocation-context-options').length) {
+          $(this.question).append(this._buildContextChoices());
+        }
+      }
+    });
+
+    $question.append($choices);
   }
 
   _translate(key) {
