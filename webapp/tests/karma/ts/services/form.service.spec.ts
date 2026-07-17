@@ -853,7 +853,8 @@ describe('Form service', () => {
       expect(lastCapture.timestamp).to.equal(EARLIER_CAPTURE_TS);
     });
 
-    it('does not set data-geo-has-location or data-geo-last-capture when only non-home log entries exist and geolocation field is absent', () => {
+    it('does not set data-geo-has-location or data-geo-last-capture ' +
+      'when only non-home log entries exist and geolocation field is absent', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
         _id: 'contact1',

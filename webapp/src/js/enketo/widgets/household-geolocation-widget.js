@@ -200,21 +200,24 @@ class HouseholdGeolocationWidget extends Widget {
   _initEditMode($question) {
     this._isEditWithLocation = true;
 
-    const $badge = $('<div class="geolocation-edit-badge">')
-      .text(this._translate(TRANSLATION_KEYS.EDIT_BADGE));
-    $question.append($badge);
+    $question.append(
+      $('<div class="geolocation-edit-badge">').text(this._translate(TRANSLATION_KEYS.EDIT_BADGE))
+    );
 
     const { $status, $bar } = this._buildProgressRow();
     $question.append($status);
-
     this._waitForCapture($status, $bar);
 
+    setTimeout(() => $(this.element).val('kept').trigger('change'), 0);
+    $question.append(this._buildEditChoices($bar));
+  }
+
+  _buildEditChoices($bar) {
     const radioName = 'geo-edit-' + (this.element.getAttribute('name') || '').replace(/\W/g, '-');
 
     const $keepRadio = $('<input type="radio">').attr('name', radioName).val('kept').prop('checked', true);
     const $keepLabel = $('<label class="geolocation-edit-option">')
       .append($keepRadio, $('<span>').text(this._translate(TRANSLATION_KEYS.EDIT_KEEP)));
-    setTimeout(() => $(this.element).val('kept').trigger('change'), 0);
 
     const $recordNewRadio = $('<input type="radio">').attr('name', radioName).val('capture-new');
     const $recordNewLabel = $('<label class="geolocation-edit-option">')
@@ -237,23 +240,27 @@ class HouseholdGeolocationWidget extends Widget {
         $(this.element).val('skipped').trigger('change');
         $(this.question).find('.geolocation-context-options, .geolocation-cant-record-btn').remove();
       } else if (value === 'capture-new') {
-        $(this.element).val('').trigger('change');
-        // Enketo validates async (Promise), so defer the removal to a macrotask
-        // that runs after the validation completes and adds the class.
-        // This one-shot timeout means the error still appears on submit.
-        setTimeout(() => $(this.question).removeClass('invalid-required'), 0);
-        if ($bar.hasClass('geolocation-progress-failure') &&
-            !$(this.question).find('.geolocation-cant-record-btn').length) {
-          this._appendCantRecordButton();
-        }
-        if ($bar.hasClass('geolocation-progress-success') &&
-            !$(this.question).find('.geolocation-context-options').length) {
-          $(this.question).append(this._buildContextChoices());
-        }
+        this._onCaptureNewSelected($bar);
       }
     });
 
-    $question.append($choices);
+    return $choices;
+  }
+
+  _onCaptureNewSelected($bar) {
+    $(this.element).val('').trigger('change');
+    // Enketo validates async (Promise), so defer the removal to a macrotask
+    // that runs after the validation completes and adds the class.
+    // This one-shot timeout means the error still appears on submit.
+    setTimeout(() => $(this.question).removeClass('invalid-required'), 0);
+    if ($bar.hasClass('geolocation-progress-failure') &&
+        !$(this.question).find('.geolocation-cant-record-btn').length) {
+      this._appendCantRecordButton();
+    }
+    if ($bar.hasClass('geolocation-progress-success') &&
+        !$(this.question).find('.geolocation-context-options').length) {
+      $(this.question).append(this._buildContextChoices());
+    }
   }
 
   _translate(key) {

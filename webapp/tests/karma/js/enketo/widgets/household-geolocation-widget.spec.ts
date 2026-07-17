@@ -786,9 +786,9 @@ describe('Enketo: Household Geolocation Widget', () => {
           selectRecordNew(result);
           await promise; // flush microtask queue so any re-triggered callbacks fire
 
-          expect(result.container.querySelectorAll(SELECTORS.FAILURE_MSG).length).to.equal(1);
-          expect(result.container.querySelectorAll(SELECTORS.RETRY_BTN).length).to.equal(1);
-          expect(result.container.querySelectorAll(SELECTORS.CANT_RECORD_BTN).length).to.equal(1);
+          expect(result.container.querySelectorAll(SELECTORS.FAILURE_MSG)).to.have.lengthOf(1);
+          expect(result.container.querySelectorAll(SELECTORS.RETRY_BTN)).to.have.lengthOf(1);
+          expect(result.container.querySelectorAll(SELECTORS.CANT_RECORD_BTN)).to.have.lengthOf(1);
         });
       });
     });
