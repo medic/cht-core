@@ -52,7 +52,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
   subscription = new Subscription();
   translationsLoadedSubscription;
-  private globalActions;
+  private readonly globalActions;
   private xmlVersion;
   private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
