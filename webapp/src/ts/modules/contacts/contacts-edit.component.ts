@@ -50,7 +50,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
   }
 
-  subscription = new Subscription();
+  readonly subscription = new Subscription();
   translationsLoadedSubscription;
   private readonly globalActions;
   private xmlVersion;

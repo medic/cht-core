@@ -67,8 +67,8 @@ export class FormService {
     private readonly deduplicateService: DeduplicateService,
     private readonly contactsService: ContactsService,
     private readonly performanceService: PerformanceService,
-    private userContactSummaryService: UserContactSummaryService,
-    private geolocationService: GeolocationService,
+    private readonly userContactSummaryService: UserContactSummaryService,
+    private readonly geolocationService: GeolocationService,
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
