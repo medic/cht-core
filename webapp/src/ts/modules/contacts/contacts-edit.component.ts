@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { DuplicatesFoundError, FormService, WebappEnketoFormContext } from '@mm-services/form.service';
+import { FormValidationError } from '@mm-services/NewEnketoService';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
 import { Selectors } from '@mm-selectors/index';
@@ -441,15 +442,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         form,
         this.duplicatesAcknowledged
       )
-      .catch(() => {
-        // validation messages will be displayed for individual fields.
-        // That's all we want, really.
-        this.globalActions.setEnketoSavingStatus(false);
-      })
       .then((result) => {
-        if (!result) {
-          return;
-        }
         console.debug('saved contact', result);
 
         this.globalActions.setEnketoSavingStatus(false);
@@ -467,6 +460,14 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         this.router.navigate(['/contacts', result.docId]);
       })
       .catch((err) => {
+        this.globalActions.setEnketoSavingStatus(false);
+
+        if (err instanceof FormValidationError) {
+          // validation messages will be displayed for individual fields.
+          // That's all we want, really.
+          return;
+        }
+
         if (err instanceof DuplicatesFoundError) {
           this.duplicates = err.duplicates;
         } else {
@@ -475,7 +476,6 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
         console.error('Error submitting form data', err);
 
-        this.globalActions.setEnketoSavingStatus(false);
         return this.translateService
           .get('Error updating contact')
           .then(error => this.globalActions.setEnketoError(error));

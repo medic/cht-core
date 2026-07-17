@@ -105,7 +105,7 @@ export class NewEnketoService {
   private async validate(form: Record<string, any>) {
     const valid = await form.validate();
     if (!valid) {
-      throw new Error('Form is invalid');
+      throw new FormValidationError();
     }
     form.view.html.dispatchEvent(events.BeforeSave());
   }
@@ -250,6 +250,15 @@ export class NewEnketoService {
 export interface EnketoForm {
   form: Record<string, any>
   config: FormConfig
+}
+
+// Thrown when the form fails Enketo validation. Enketo displays the per-field validation messages itself,
+// so callers should handle this silently (unlike other save errors).
+export class FormValidationError extends Error {
+  constructor(message = 'Form is invalid') {
+    super(message);
+    this.name = 'FormValidationError';
+  }
 }
 
 class EnketoDoc {
