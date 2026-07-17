@@ -295,14 +295,37 @@
 
     .geolocation-context-options {
       display: flex;
-      gap: 16px;
+      flex-direction: column;
+      gap: 8px;
       margin: 8px 0;
 
       .geolocation-context-option {
         display: flex;
         align-items: center;
         gap: 6px;
+        padding-left: 0;
         cursor: pointer;
+        font-weight: normal;
+      }
+    }
+
+    .geolocation-edit-choices {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 8px 0;
+
+      & + .geolocation-context-options {
+        margin-top: 20px;
+      }
+
+      .geolocation-edit-option {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding-left: 0;
+        cursor: pointer;
+        font-weight: normal;
       }
     }
 
@@ -341,7 +364,9 @@
         align-items: center;
         gap: 6px;
         margin: 4px 0;
+        padding-left: 0;
         cursor: pointer;
+        font-weight: normal;
       }
 
       .geolocation-edit-warning-group {
