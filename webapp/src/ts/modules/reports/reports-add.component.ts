@@ -159,7 +159,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
 
         return Promise
           .all([
-            this.getReportContentService.getReportContent(model?.doc),
+            this.getReportContentService.getReportContent(model.doc),
             this.xmlFormsService.getFormConfig('report', model.formInternalId)
           ])
           .then(([ reportContent, formConfig ]) => {

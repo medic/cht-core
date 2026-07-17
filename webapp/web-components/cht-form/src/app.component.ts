@@ -287,7 +287,7 @@ class ChtFormEnketoFormContext implements EnketoFormContext {
   }
 
   get selector() {
-    return `#${this.formConfig.doc._id}`;
+    return `#${this.formId}`;
   }
 
   get type() {

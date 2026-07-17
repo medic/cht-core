@@ -21,7 +21,6 @@ import { DuplicateContactsComponent } from '@mm-components/duplicate-contacts/du
 import { Contact, Qualifier } from '@medic/cht-datasource';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
-import events from 'enketo-core/src/js/event';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 
 @Component({
