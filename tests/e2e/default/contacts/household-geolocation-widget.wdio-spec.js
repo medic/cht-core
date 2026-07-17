@@ -16,22 +16,17 @@ const { CONTACT_TYPES } = require('@medic/constants');
 const GEO_SUCCESS = {
   latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 0, speed: 0
 };
-const GEO_FAILURE = { code: -2, message: 'Geolocation timeout exceeded' };
-
 const SELECTORS = {
-  ACKNOWLEDGE_CHECKBOX: '.geolocation-acknowledge-checkbox',
   CAPTURE_NEW_RADIO: 'input[value="capture-new"]',
   CONTEXT_OPTIONS: '.geolocation-context-options',
-  EDIT_ACKNOWLEDGE_CHECKBOX: '.geolocation-edit-acknowledge-checkbox',
   EDIT_BADGE: '.geolocation-edit-badge',
-  EDIT_BADGE_CONTEXT: '.geolocation-edit-badge-context',
-  EDIT_OPTIONS: '.geolocation-edit-options',
+  EDIT_CHOICES: '.geolocation-edit-choices',
   GEO_CAPTURE_CONTAINER: '.or-appearance-geolocation-capture',
   HOME_RADIO: '.geolocation-context-options input[value="home"]',
   KEPT_RADIO: 'input[value="kept"]',
   OTHER_RADIO: '.geolocation-context-options input[value="other"]',
+  REMOVE_RADIO: 'input[value="removed"]',
   RETRY_BTN: '.geolocation-retry-btn',
-  SKIP_BTN: '.geolocation-skip-btn',
   SUCCESS_MSG: '.geolocation-success-msg',
 };
 
@@ -123,10 +118,10 @@ describe('HouseholdGeolocation widget - contact save pipeline', () => {
 
   it('should store geolocation data on the contact doc when home context is captured', async () => {
     await commonPage.goToPeople(healthCenter._id);
+    await mockGeoResolved(GEO_SUCCESS);
     await commonPage.clickFastActionFAB({ actionId: personWithGeoType.id });
 
     await $(SELECTORS.GEO_CAPTURE_CONTAINER).waitForDisplayed();
-    await mockGeoResolved(GEO_SUCCESS);
     await selectHomeContext();
     await $(SELECTORS.SUCCESS_MSG).waitForExist({ timeout: 10000 });
 
@@ -148,10 +143,10 @@ describe('HouseholdGeolocation widget - contact save pipeline', () => {
   it('should store geolocation_log with is_home false and omit geolocation field when other context is captured',
     async () => {
       await commonPage.goToPeople(healthCenter._id);
+      await mockGeoResolved(GEO_SUCCESS);
       await commonPage.clickFastActionFAB({ actionId: personWithGeoType.id });
 
       await $(SELECTORS.GEO_CAPTURE_CONTAINER).waitForDisplayed();
-      await mockGeoResolved(GEO_SUCCESS);
       await selectOtherContext();
       await $(SELECTORS.SUCCESS_MSG).waitForExist({ timeout: 10000 });
 
@@ -205,15 +200,17 @@ describe('HouseholdGeolocation widget - contact save pipeline', () => {
       await $(SELECTORS.EDIT_BADGE).waitForExist();
     };
 
-    it('should show edit-mode badge and radios when editing a contact with existing geolocation', async () => {
-      await openEditForm();
+    it('should show edit-mode badge and all three edit choices when editing a contact with existing geolocation',
+      async () => {
+        await openEditForm();
 
-      expect(await $(SELECTORS.EDIT_BADGE).isExisting()).to.be.true;
-      expect(await $(SELECTORS.EDIT_BADGE_CONTEXT).isExisting()).to.be.true;
-      expect(await $(SELECTORS.KEPT_RADIO).isExisting()).to.be.true;
-      expect(await $(SELECTORS.CAPTURE_NEW_RADIO).isExisting()).to.be.true;
-      expect(await $(SELECTORS.CONTEXT_OPTIONS).isExisting()).to.be.false;
-    });
+        expect(await $(SELECTORS.EDIT_BADGE).isExisting()).to.be.true;
+        expect(await $(SELECTORS.EDIT_CHOICES).isExisting()).to.be.true;
+        expect(await $(SELECTORS.KEPT_RADIO).isExisting()).to.be.true;
+        expect(await $(SELECTORS.CAPTURE_NEW_RADIO).isExisting()).to.be.true;
+        expect(await $(SELECTORS.REMOVE_RADIO).isExisting()).to.be.true;
+        expect(await $(SELECTORS.CONTEXT_OPTIONS).isExisting()).to.be.false;
+      });
 
     it('should preserve geolocation data when keeping existing location and submitting', async () => {
       await openEditForm();
@@ -229,36 +226,20 @@ describe('HouseholdGeolocation widget - contact save pipeline', () => {
       expect(savedDoc.geolocation.latitude).to.equal(seedGeoData.latitude);
     });
 
-    it('should show success message when GPS succeeds after capture-new is acknowledged', async () => {
+    it('should show GPS context options when capture-new is selected after GPS success', async () => {
+      await mockGeoResolved(GEO_SUCCESS);
       await openEditForm();
 
-      await mockGeoResolved(GEO_SUCCESS);
       await $(SELECTORS.CAPTURE_NEW_RADIO).click();
-      await $(SELECTORS.EDIT_ACKNOWLEDGE_CHECKBOX).waitForExist();
-      await $(SELECTORS.EDIT_ACKNOWLEDGE_CHECKBOX).click();
 
-      await $(SELECTORS.SUCCESS_MSG).waitForExist({ timeout: 10000 });
+      await $(SELECTORS.CONTEXT_OPTIONS).waitForExist({ timeout: 10000 });
+      expect(await $(SELECTORS.HOME_RADIO).isExisting()).to.be.true;
+      expect(await $(SELECTORS.OTHER_RADIO).isExisting()).to.be.true;
       expect(await $(SELECTORS.RETRY_BTN).isExisting()).to.be.false;
 
       await genericForm.cancelForm();
       await modalPage.submit();
     });
 
-    it('should revert to edit options with keep pre-selected when GPS fails after capture-new is acknowledged',
-      async () => {
-        await openEditForm();
-
-        await mockGeoResolved(GEO_FAILURE);
-        await $(SELECTORS.CAPTURE_NEW_RADIO).click();
-        await $(SELECTORS.EDIT_ACKNOWLEDGE_CHECKBOX).waitForExist();
-        await $(SELECTORS.EDIT_ACKNOWLEDGE_CHECKBOX).click();
-
-        await $(SELECTORS.RETRY_BTN).waitForExist({ timeout: 10000 });
-        await $(SELECTORS.ACKNOWLEDGE_CHECKBOX).click();
-        await $(SELECTORS.SKIP_BTN).click();
-
-        await $(SELECTORS.EDIT_OPTIONS).waitForDisplayed();
-        expect(await $(SELECTORS.KEPT_RADIO).isSelected()).to.be.true;
-      });
   });
 });
