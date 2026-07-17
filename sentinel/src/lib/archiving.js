@@ -75,8 +75,8 @@ const archiveBatch = async (batch) => {
 
   const archivedIds = [];
   // fetch and write chunk by chunk — attachments are inlined, so both payloads need bounding
-  for (let i = 0; i < ids.length; i += FETCH_BATCH_SIZE) {
-    const chunk = ids.slice(i, i + FETCH_BATCH_SIZE);
+  while (ids.length) {
+    const chunk = ids.splice(0, FETCH_BATCH_SIZE);
     const medicDocs = await db.medic.allDocs({ attachments: true, keys: chunk, include_docs: true });
     const docsToArchive = medicDocs.rows
       .filter(row => canArchive(row.doc))

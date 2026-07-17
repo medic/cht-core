@@ -55,8 +55,6 @@ describe('Sentinel archiving lib', () => {
   let clock;
 
   beforeEach(() => {
-    // Fake timers before rewire(): rewire binds `Date` at load time and useFakeTimers swaps the
-    // global Date object, so rewiring first would leave the module on the real Date.
     clock = sinon.useFakeTimers({ toFake: ['Date'] });
     lib = rewire('../../../src/lib/archiving');
     // Disable archiveBatch and indexViews by default — the queue stubs don't model the

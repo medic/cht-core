@@ -1,11 +1,7 @@
 const config = require('../config');
-const logger = require('@medic/logger');
-const later = require('later');
 const archiveLib = require('../lib/archiving');
 const scheduling = require('../lib/scheduling');
 
-// set later to use local time
-later.date.localTime();
 let archiveTimeout;
 
 module.exports = {
@@ -25,11 +21,6 @@ module.exports = {
     }
 
     const duration = scheduling.parseDuration(archiveConfig?.duration)?.asMilliseconds() ?? null;
-    if ((archiveConfig?.duration ?? null) !== null && duration === null) {
-      logger.warn(
-        `Archiving: could not parse configured duration "${archiveConfig.duration}", the run will be unbounded`
-      );
-    }
 
     if (archiveTimeout) {
       clearTimeout(archiveTimeout);

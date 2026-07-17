@@ -371,7 +371,7 @@ describe('sentinel processes archive jobs', () => {
       path: `/${constants.DB_NAME}/${id}`,
       qs: { conflicts: true, deleted_conflicts: true },
     });
-    expect(beforeArchive._conflicts).to.equal(undefined);
+    expect(beforeArchive._conflicts).to.be.undefined;
     expect(beforeArchive._deleted_conflicts).to.have.lengthOf(1);
 
     await postCsv(id);

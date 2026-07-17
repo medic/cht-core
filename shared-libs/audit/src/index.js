@@ -159,7 +159,7 @@ const expressCallback = async (req, responseBody, requestMetadata) => {
  * @returns {Promise<void>} - A promise that resolves when the archiving process has been completed.
  */
 const recordArchiving = async (ids, date) => {
-  const existingAuditDocs = (await db.allDocs({ keys: ids, include_docs: true }));
+  const existingAuditDocs = await db.allDocs({ keys: ids, include_docs: true });
 
   const newAuditDocs = [];
   ids.forEach((id, idx) => {
