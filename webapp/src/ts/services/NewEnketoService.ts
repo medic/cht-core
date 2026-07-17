@@ -7,6 +7,7 @@ import * as FileManager from '../../js/enketo/file-manager';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { FormConfig } from '@mm-services/xml-forms.service';
 
 @Injectable({
   providedIn: 'root'
@@ -24,8 +25,7 @@ export class NewEnketoService {
   }
 
   public async saveContact(
-    config: FormConfig,
-    form: Record<string, any>,
+    { config, form }: EnketoForm,
     defaultData: Record<string, any>
   ) {
     return this.ngZone.runOutsideAngular(async () => {
@@ -74,10 +74,9 @@ export class NewEnketoService {
   }
 
   public async saveReport(
-    config: FormConfig,
-    form: Record<string, any>,
+    { config, form }: EnketoForm,
     defaultData: Record<string, any>
-  ): Promise<Record<string, any>> {
+  ) {
     return this.ngZone.runOutsideAngular(async () => {
       await this.validate(form);
       const { internalId, xmlVersion } = config.doc;
@@ -248,20 +247,9 @@ export class NewEnketoService {
   }
 }
 
-// TODO Should return direct from xml-forms.service...
-export class FormConfig {
-  public readonly repeatPaths: string[];
-
-  constructor(
-    public readonly doc: Record<string, any>,
-    xml: string,
-  ){
-    const xmlDoc = new DOMParser().parseFromString(xml, 'text/xml');
-    this.repeatPaths = Array
-      .from(xmlDoc.querySelectorAll('repeat[nodeset]'))
-      .map(el => el.getAttribute('nodeset')!)
-      .filter(Boolean);
-  }
+export interface EnketoForm {
+  form: Record<string, any>
+  config: FormConfig
 }
 
 class EnketoDoc {

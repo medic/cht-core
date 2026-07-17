@@ -17,6 +17,8 @@ import { TranslateService } from '@mm-services/translate.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Qualifier, Report } from '@medic/cht-datasource';
 import { DOC_TYPES } from '@medic/constants';
+import { FormConfig } from '@mm-services/xml-forms.service';
+import { EnketoForm } from '@mm-services/NewEnketoService';
 
 /**
  * Service for interacting with Enketo forms. This code is intended for displaying forms in the CHT as well as being
@@ -173,11 +175,11 @@ export class EnketoService {
   private async getEnketoForm(xmlFormContext:XmlFormContext, userSettings) {
     const instanceStr = this.enketoPrepopulationDataService.get(
       userSettings,
-      xmlFormContext.doc.model,
+      xmlFormContext.formConfig.model,
       xmlFormContext.instanceData
     );
     const options: EnketoOptions = {
-      modelStr: xmlFormContext.doc.model,
+      modelStr: xmlFormContext.formConfig.model,
       instanceStr: instanceStr,
       external: this.convertContactSummaryToXML([xmlFormContext.contactSummary, xmlFormContext.userContactSummary]),
     };
@@ -186,10 +188,10 @@ export class EnketoService {
   }
 
   private renderFromXmls(xmlFormContext: XmlFormContext, userSettings) {
-    const { doc, titleKey, wrapper, isFormInModal } = xmlFormContext;
+    const { formConfig, titleKey, wrapper, isFormInModal } = xmlFormContext;
 
     const formContainer = wrapper.find('.container').first();
-    formContainer.html(doc.html.get(0)!);
+    formContainer.html($(formConfig.html).get(0)!);
 
     return this
       .getEnketoForm(xmlFormContext, userSettings)
@@ -200,7 +202,7 @@ export class EnketoService {
           return Promise.reject(new Error(JSON.stringify(loadErrors)));
         }
       })
-      .then(() => this.getFormTitle(titleKey, doc))
+      .then(() => this.getFormTitle(titleKey, formConfig.doc))
       .then((title) => {
         this.setFormTitle(wrapper, title);
         wrapper.show();
@@ -327,26 +329,27 @@ export class EnketoService {
   }
 
   private registerEnketoListeners($selector, form, formContext: EnketoFormContext) {
-    this.registerAddrepeatListener($selector, formContext.formDoc);
+    this.registerAddrepeatListener($selector, formContext.formConfig.doc);
     this.registerEditedListener($selector, formContext.editedListener);
     this.registerValuechangeListener($selector, formContext.valuechangeListener);
     this.registerValuechangeListener($selector,
       () => this.setupNavButtons($selector, form.pages._getCurrentIndex()));
   }
 
-  public async renderForm(formContext: EnketoFormContext, doc, userSettings) {
+  public async renderForm(formContext: EnketoFormContext, userSettings): Promise<EnketoForm> {
     const {
-      formDoc,
+      formConfig,
       instanceData,
       selector,
       titleKey,
       isFormInModal,
     } = formContext;
 
-    this.replaceDataI18nTranslations(doc.html);
-    this.replaceJavarosaMediaWithLoaders(doc.html);
+    const $html = $(formConfig.html);
+    this.replaceDataI18nTranslations($html);
+    this.replaceJavarosaMediaWithLoaders($html);
     const xmlFormContext: XmlFormContext = {
-      doc,
+      formConfig,
       wrapper: $(selector),
       instanceData,
       titleKey,
@@ -356,10 +359,10 @@ export class EnketoService {
     };
     const form = await this.renderFromXmls(xmlFormContext, userSettings);
     const formContainer = xmlFormContext.wrapper.find('.container').first();
-    this.replaceMediaLoaders(formContainer, formDoc);
+    this.replaceMediaLoaders(formContainer, formConfig.doc);
     this.registerEnketoListeners(xmlFormContext.wrapper, form, formContext);
     window.CHTCore.debugFormModel = () => form.model.getStr();
-    return form;
+    return { form, config: formConfig };
   }
 
   private xmlToDocs(doc, formXml, xmlVersion, record) {
@@ -593,7 +596,8 @@ export class EnketoService {
     return this.xmlToDocs(doc, formDoc.xml, formDoc.doc.xmlVersion, dataString);
   }
 
-  unload(form) {
+  unload(enketoForm?: EnketoForm) {
+    const form = enketoForm?.form;
     if (form !== this.currentForm) {
       return;
     }
@@ -627,11 +631,7 @@ interface EnketoOptions {
 }
 
 interface XmlFormContext {
-  doc: {
-    html: JQuery;
-    model: string;
-    title: string;
-  };
+  formConfig: FormConfig;
   wrapper: JQuery;
   instanceData?: string | Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey?: string;
@@ -640,12 +640,9 @@ interface XmlFormContext {
   userContactSummary?: ContactSummary;
 }
 
-export type FormType = 'contact' | 'report' | 'task' | 'training-card';
-
 export interface EnketoFormContext {
   readonly selector: string;
-  readonly formDoc: Record<string, any>;
-  readonly type: FormType;
+  readonly formConfig: FormConfig;
   readonly instanceData?: string | Record<string, any>;
   readonly editedListener?: () => void;
   readonly valuechangeListener?: () => void;

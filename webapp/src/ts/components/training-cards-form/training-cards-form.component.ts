@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } fro
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
-import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { FormConfig, XmlFormsService } from '@mm-services/xml-forms.service';
 import { FormService, WebappEnketoFormContext } from '@mm-services/form.service';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
@@ -112,23 +112,23 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
       this.loadingContent = true;
       this.geoHandle?.cancel();
       this.geoHandle = this.geolocationService.init();
-      const form = await this.xmlFormsService.get(this.trainingCardFormId);
-      await this.ngZone.run(() => this.renderForm(form));
+      const formConfig = await this.xmlFormsService.getFormConfig('training-card', this.trainingCardFormId!);
+      await this.ngZone.run(() => this.renderForm(formConfig));
     } catch (error) {
       this.setError(error);
       console.error('TrainingCardsFormComponent :: Error fetching form.', error);
     }
   }
 
-  private async renderForm(formDoc) {
+  private async renderForm(formConfig: FormConfig) {
     try {
-      const formContext = new WebappEnketoFormContext(`#${this.FORM_WRAPPER_ID}`, 'training-card', formDoc);
+      const formContext = new WebappEnketoFormContext(`#${this.FORM_WRAPPER_ID}`, formConfig);
       formContext.isFormInModal = !this.isEmbedded;
       formContext.valuechangeListener = this.resetFormError.bind(this);
 
       this.form = await this.formService.render(formContext);
-      this.formNoTitle = !formDoc?.title;
-      this.setNavigationTitle(formDoc);
+      this.formNoTitle = !formConfig.doc.title;
+      this.setNavigationTitle(formConfig.doc);
       this.showContent();
       this.recordPerformancePostRender();
     } catch (error) {
@@ -195,7 +195,7 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
     this.resetFormError();
 
     try {
-      const docs = await this.formService.save(this.trainingCardFormId, this.form, this.geoHandle);
+      const docs = await this.formService.save(this.form, this.geoHandle);
       console.debug('Saved form and associated docs', docs);
       const snackText = await this.translateService.get('training_cards.form.saved');
       this.globalActions.setSnackbarContent(snackText);

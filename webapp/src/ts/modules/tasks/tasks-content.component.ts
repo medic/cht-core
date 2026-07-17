@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormService, WebappEnketoFormContext } from '@mm-services/form.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
-import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { FormConfig, XmlFormsService } from '@mm-services/xml-forms.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
@@ -21,6 +21,7 @@ import { SimpleDatePipe } from '@mm-pipes/date.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
+import { EnketoForm } from '@mm-services/NewEnketoService';
 
 @Component({
   templateUrl: './tasks-content.component.html',
@@ -55,10 +56,9 @@ export class TasksContentComponent implements OnInit, OnDestroy {
   private enketoEdited;
   loadingContent;
   selectedTask: any = null;
-  form;
+  form?: EnketoForm;
   loadingForm;
   contentError;
-  formId;
   private cancelCallback;
   errorTranslationKey;
   private tasksList;
@@ -76,8 +76,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
     this.subscribeToStore();
     this.subscribeToRouteParams();
 
-    this.form = null;
-    this.formId = null;
+    this.form = undefined;
     this.resetFormError();
 
     this.tasksActions.setLastSubmittedTask(null);
@@ -223,10 +222,10 @@ export class TasksContentComponent implements OnInit, OnDestroy {
     }
   }
 
-  private renderForm(action, formDoc) {
+  private renderForm(action, formConfig: FormConfig) {
     this.globalActions.setEnketoEditedStatus(false);
 
-    const formContext = new WebappEnketoFormContext('#task-report', 'task', formDoc, action.content);
+    const formContext = new WebappEnketoFormContext('#task-report', formConfig, action.content);
     formContext.editedListener = this.markFormEdited.bind(this);
     formContext.valuechangeListener = this.resetFormError.bind(this);
 
@@ -235,10 +234,10 @@ export class TasksContentComponent implements OnInit, OnDestroy {
       .then((formInstance) => {
         this.form = formInstance;
         this.loadingForm = false;
-        if (formDoc?.translation_key) {
-          this.globalActions.setTitle(this.translateService.instant(formDoc.translation_key));
+        if (formConfig.doc.translation_key) {
+          this.globalActions.setTitle(this.translateService.instant(formConfig.doc.translation_key));
         } else {
-          this.globalActions.setTitle(this.translateFromService.get(formDoc?.title));
+          this.globalActions.setTitle(this.translateFromService.get(formConfig.doc.title));
         }
       });
   }
@@ -272,7 +271,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
         this.interactionTrackingService.record('task:back');
         this.tasksActions.setSelectedTask(null);
         this.formService.unload(this.form);
-        this.form = null;
+        this.form = undefined;
         this.loadingForm = false;
         this.contentError = false;
         this.globalActions.clearNavigation();
@@ -286,14 +285,13 @@ export class TasksContentComponent implements OnInit, OnDestroy {
     if (action.type === 'report') {
       this.interactionTrackingService.record('task:form_open', action.form);
       this.loadingForm = true;
-      this.formId = action.form;
       return this.xmlFormsService
-        .get(action.form)
-        .then((formDoc) => this.renderForm(action, formDoc))
+        .getFormConfig('task', action.form)
+        .then((formConfig) => this.renderForm(action, formConfig))
         .then(() => {
           this.trackMetadata.action = action.content.doc ? 'edit' : 'add';
           this.trackRender?.stop({
-            name: [ 'enketo', 'tasks', this.formId, this.trackMetadata.action, 'render' ].join(':'),
+            name: [ 'enketo', 'tasks', action.form, this.trackMetadata.action, 'render' ].join(':'),
             recordApdex: true,
           });
           this.trackEditDuration = this.performanceService.track();
@@ -326,10 +324,11 @@ export class TasksContentComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.interactionTrackingService.record('task:form_save', this.formId);
+    const formId = this.form?.config.doc.internalId;
+    this.interactionTrackingService.record('task:form_save', formId);
 
     this.trackEditDuration?.stop({
-      name: [ 'enketo', 'tasks', this.formId, this.trackMetadata.action, 'user_edit_time' ].join(':'),
+      name: [ 'enketo', 'tasks', formId, this.trackMetadata.action, 'user_edit_time' ].join(':'),
     });
     this.trackSave = this.performanceService.track();
 
@@ -337,7 +336,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
     this.resetFormError();
 
     return this.formService
-      .save(this.formId, this.form, this.geoHandle)
+      .save(this.form!, this.geoHandle)
       .then((docs) => {
         console.debug('saved report and associated docs', docs);
         this.globalActions.setSnackbarContent(this.translateService.instant('report.created'));
@@ -349,12 +348,12 @@ export class TasksContentComponent implements OnInit, OnDestroy {
         this.globalActions.unsetSelected();
         this.globalActions.clearNavigation();
 
-        this.interactionTrackingService.record('task:complete', this.formId);
+        this.interactionTrackingService.record('task:complete', formId);
         this.router.navigate(['/tasks', 'group']);
       })
       .then(() => {
         this.trackSave?.stop({
-          name: [ 'enketo', 'tasks', this.formId, this.trackMetadata.action, 'save' ].join(':'),
+          name: [ 'enketo', 'tasks', formId, this.trackMetadata.action, 'save' ].join(':'),
           recordApdex: true,
         });
       })
@@ -366,7 +365,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
   }
 
   navigationCancel() {
-    this.interactionTrackingService.record('task:cancel', this.formId);
+    this.interactionTrackingService.record('task:cancel', this.form?.config.doc.internalId);
     this.globalActions.navigationCancel();
   }
 

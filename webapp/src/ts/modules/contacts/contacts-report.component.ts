@@ -16,6 +16,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { NgIf } from '@angular/common';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
+import { EnketoForm } from '@mm-services/NewEnketoService';
 
 @Component({
   templateUrl: './contacts-report.component.html',
@@ -35,7 +36,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
   enketoStatus;
   enketoSaving;
   enketoError;
-  form;
+  form?: EnketoForm;
   loadingForm;
   errorTranslationKey;
   contentError;
@@ -64,7 +65,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
 
     this.geoHandle = this.geolocationService.init();
     this.resetFormError();
-    this.form = null;
+    this.form = undefined;
     this.loadingForm = true;
     this.globalActions.setShowContent(true);
     this.setCancelCallback();
@@ -115,7 +116,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
     return Promise
       .all([
         this.getContact(),
-        this.xmlFormsService.get(this.routeSnapshot.params?.formId),
+        this.xmlFormsService.getFormConfig('report', this.routeSnapshot.params?.formId),
       ]);
   }
 
@@ -129,15 +130,14 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
 
     return this
       .getContactAndForm()
-      .then(([ contact, formDoc ]) => {
+      .then(([ contact, formConfig ]) => {
         this.globalActions.setEnketoEditedStatus(false);
-        this.globalActions.setTitle(this.translateFromService.get(formDoc.title));
+        this.globalActions.setTitle(this.translateFromService.get(formConfig.doc.title));
         this.setCancelCallback();
 
         const formContext = new WebappEnketoFormContext(
           '#contact-report',
-          'report',
-          formDoc,
+          formConfig,
           { source: 'contact', contact }
         );
         formContext.editedListener = this.markFormEdited.bind(this);
@@ -228,7 +228,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
     this.formService
-      .save(this.routeSnapshot.params.formId, this.form, this.geoHandle)
+      .save(this.form!, this.geoHandle)
       .then((docs) => {
         console.debug('saved report and associated docs', docs);
         this.globalActions.setEnketoSavingStatus(false);

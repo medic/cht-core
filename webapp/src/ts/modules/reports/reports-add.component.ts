@@ -8,7 +8,7 @@ import { DbService } from '@mm-services/db.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
 import { GetReportContentService } from '@mm-services/get-report-content.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { FormConfig, XmlFormsService } from '@mm-services/xml-forms.service';
 import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -160,12 +160,12 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
         return Promise
           .all([
             this.getReportContentService.getReportContent(model?.doc),
-            this.xmlFormsService.get(model?.formInternalId)
+            this.xmlFormsService.getFormConfig('report', model.formInternalId)
           ])
-          .then(([ reportContent, form ]) => {
+          .then(([ reportContent, formConfig ]) => {
             this.globalActions.setEnketoEditedStatus(false);
 
-            return this.ngZone.run(() => this.renderForm(form, reportContent, model));
+            return this.ngZone.run(() => this.renderForm(formConfig, reportContent, model));
           });
       })
       .catch((err) => {
@@ -235,8 +235,8 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
           })));
   }
 
-  private async renderForm(formDoc, reportContent, model) {
-    const formContext = new WebappEnketoFormContext('#report-form', 'report', formDoc, reportContent);
+  private async renderForm(formConfig: FormConfig, reportContent, model) {
+    const formContext = new WebappEnketoFormContext('#report-form', formConfig, reportContent);
     formContext.editing = !!reportContent;
     formContext.editedListener = this.markFormEdited.bind(this);
     formContext.valuechangeListener = this.resetFormError.bind(this);
@@ -332,10 +332,9 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
     const reportId = this.selectedReport?.doc?._id;
-    const formInternalId = this.selectedReport?.formInternalId;
 
     return this.formService
-      .save(formInternalId, this.form, this.geoHandle, reportId)
+      .save(this.form, this.geoHandle, reportId)
       .then((docs) => {
         console.debug('saved report and associated docs', docs);
         this.globalActions.setEnketoSavingStatus(false);
