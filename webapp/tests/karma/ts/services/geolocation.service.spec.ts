@@ -388,6 +388,16 @@ describe('Geolocation service', () => {
         });
       });
 
+      it('should dispatch geolocationPermissionGranted event when permissionRequestResolved is called', () => {
+        window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
+        service.init();
+        const listener = sinon.stub();
+        document.addEventListener('geolocationPermissionGranted', listener);
+        service.permissionRequestResolved();
+        document.removeEventListener('geolocationPermissionGranted', listener);
+        expect(listener.callCount).to.equal(1);
+      });
+
       it('should defer starting watcher until response from Android is received', () => {
         window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
         // @ts-ignore

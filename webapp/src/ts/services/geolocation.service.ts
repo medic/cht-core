@@ -22,7 +22,7 @@ export class GeolocationService {
   currentPromise;
 
   constructor(
-    private telemetryService:TelemetryService,
+    private readonly telemetryService:TelemetryService,
   ) {}
 
   private getAndroidPermission () {
@@ -152,6 +152,7 @@ export class GeolocationService {
 
   permissionRequestResolved () {
     this.startWatching();
+    document.dispatchEvent(new CustomEvent('geolocationPermissionGranted'));
   }
 
   isAvailable(): boolean {

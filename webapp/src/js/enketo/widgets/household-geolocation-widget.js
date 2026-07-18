@@ -39,6 +39,19 @@ class HouseholdGeolocationWidget extends Widget {
         .text(this._translate(TRANSLATION_KEYS.PERMISSION_DENIED))
         .appendTo($question);
       this._appendContinueWithoutButton($question);
+      document.addEventListener('geolocationPermissionGranted', () => {
+        $question.find('.geolocation-permission-denied, .geolocation-continue-without-btn').remove();
+        if (this.element.dataset.geoHasLocation === 'true') {
+          this._initEditMode($question);
+        } else {
+          if (this.element.dataset.geoIsEdit === 'true') {
+            $('<p class="geolocation-no-location-msg">')
+              .text(this._translate(TRANSLATION_KEYS.NO_LOCATION_RECORDED))
+              .appendTo($question);
+          }
+          this._initCreateFlow($question);
+        }
+      }, { once: true });
       return;
     }
 
@@ -128,6 +141,15 @@ class HouseholdGeolocationWidget extends Widget {
   }
 
   _onCaptureFailure(errorCode, $status, $bar) {
+    if (this._isPermissionDenied()) {
+      $bar.addClass('geolocation-progress-failure');
+      $('<p class="geolocation-permission-denied">')
+        .text(this._translate(TRANSLATION_KEYS.PERMISSION_DENIED))
+        .appendTo($status);
+      this._appendContinueWithoutButton();
+      return;
+    }
+
     $bar.addClass('geolocation-progress-failure');
 
     const $resultRow = $('<div class="geolocation-result-row">');

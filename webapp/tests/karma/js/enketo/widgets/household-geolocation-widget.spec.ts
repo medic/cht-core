@@ -129,6 +129,81 @@ describe('Enketo: Household Geolocation Widget', () => {
       expect(changeHandler.callCount).to.equal(1);
     });
 
+    it('should remove permission-denied message when geolocationPermissionGranted event fires', () => {
+      (window as any).CHTCore.Geolocation.isPermissionDenied = sinon.stub().returns(true);
+      const { container } = initWidget();
+      document.dispatchEvent(new CustomEvent('geolocationPermissionGranted'));
+      expect(container.querySelector(SELECTORS.PERMISSION_DENIED)).to.be.null;
+    });
+
+    it('should remove continue-without button when geolocationPermissionGranted event fires', () => {
+      (window as any).CHTCore.Geolocation.isPermissionDenied = sinon.stub().returns(true);
+      const { container } = initWidget();
+      document.dispatchEvent(new CustomEvent('geolocationPermissionGranted'));
+      expect(container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.be.null;
+    });
+
+    it('should show progress bar when geolocationPermissionGranted event fires', () => {
+      (window as any).CHTCore.Geolocation.isPermissionDenied = sinon.stub().returns(true);
+      const { container } = initWidget();
+      document.dispatchEvent(new CustomEvent('geolocationPermissionGranted'));
+      expect(container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
+    });
+
+    it('should only respond to geolocationPermissionGranted once', () => {
+      (window as any).CHTCore.Geolocation.isPermissionDenied = sinon.stub().returns(true);
+      const { container } = initWidget();
+      document.dispatchEvent(new CustomEvent('geolocationPermissionGranted'));
+      document.dispatchEvent(new CustomEvent('geolocationPermissionGranted'));
+      expect(container.querySelectorAll(SELECTORS.PROGRESS_BAR)).to.have.lengthOf(1);
+    });
+
+    it('should transition to edit mode when geolocationPermissionGranted fires ' +
+      'on an edit form with prior location', () => {
+      (window as any).CHTCore.Geolocation.isPermissionDenied = sinon.stub().returns(true);
+      document.body.insertAdjacentHTML('afterbegin', `
+        <div id="geolocation-widget-test">
+          <label class="question non-select or-appearance-geolocation-capture">
+            <input type="hidden" name="/geolocation/capture" data-type-xml="string"
+              data-geo-is-edit="true" data-geo-has-location="true" />
+          </label>
+        </div>`);
+      const widget = Object.create(HouseholdGeolocationWidget.prototype);
+      widget.element = document.querySelector('#geolocation-widget-test ' + HouseholdGeolocationWidget.selector);
+      widget.question = widget.element.closest('.question');
+      widget._init();
+      const container = document.querySelector('#geolocation-widget-test ' + SELECTORS.GEO_CAPTURE_LABEL)!;
+
+      document.dispatchEvent(new CustomEvent('geolocationPermissionGranted'));
+
+      expect(container.querySelector(SELECTORS.EDIT_BADGE)).to.not.be.null;
+      expect(container.querySelector(SELECTORS.EDIT_CHOICES)).to.not.be.null;
+      expect(container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
+    });
+
+    it('should show no-location message and progress bar when geolocationPermissionGranted fires ' +
+      'on an edit form without prior location', () => {
+      (window as any).CHTCore.Geolocation.isPermissionDenied = sinon.stub().returns(true);
+      document.body.insertAdjacentHTML('afterbegin', `
+        <div id="geolocation-widget-test">
+          <label class="question non-select or-appearance-geolocation-capture">
+            <input type="hidden" name="/geolocation/capture" data-type-xml="string"
+              data-geo-is-edit="true" />
+          </label>
+        </div>`);
+      const widget = Object.create(HouseholdGeolocationWidget.prototype);
+      widget.element = document.querySelector('#geolocation-widget-test ' + HouseholdGeolocationWidget.selector);
+      widget.question = widget.element.closest('.question');
+      widget._init();
+      const container = document.querySelector('#geolocation-widget-test ' + SELECTORS.GEO_CAPTURE_LABEL)!;
+
+      document.dispatchEvent(new CustomEvent('geolocationPermissionGranted'));
+
+      expect(container.querySelector(SELECTORS.NO_LOCATION_MSG)).to.not.be.null;
+      expect(container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
+      expect(container.querySelector(SELECTORS.EDIT_BADGE)).to.be.null;
+    });
+
     it('should show unavailable message when Geolocation API is absent', () => {
       (window as any).CHTCore.Geolocation.isAvailable = sinon.stub().returns(false);
       const { container } = initWidget();
@@ -426,6 +501,44 @@ describe('Enketo: Household Geolocation Widget', () => {
           $((widget.element as HTMLInputElement)).on('change', changeHandler);
           (container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN) as HTMLElement).click();
           expect(changeHandler.callCount).to.equal(1);
+        });
+      });
+
+      describe('when permission is denied at GPS failure time', () => {
+        const initWidgetAfterPermissionDeniedFailure = async () => {
+          const promise = Promise.resolve(GPS_FAILURE);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const result = initWidget();
+          (window as any).CHTCore.Geolocation.isPermissionDenied = sinon.stub().returns(true);
+          await promise;
+          return result;
+        };
+
+        it('should show permission-denied message instead of generic failure message', async () => {
+          const { container } = await initWidgetAfterPermissionDeniedFailure();
+          expect(container.querySelector(SELECTORS.PERMISSION_DENIED)).to.not.be.null;
+          expect(container.querySelector(SELECTORS.FAILURE_MSG)).to.be.null;
+        });
+
+        it('should show continue-without button', async () => {
+          const { container } = await initWidgetAfterPermissionDeniedFailure();
+          expect(container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.not.be.null;
+        });
+
+        it('should not show retry button', async () => {
+          const { container } = await initWidgetAfterPermissionDeniedFailure();
+          expect(container.querySelector(SELECTORS.RETRY_BTN)).to.be.null;
+        });
+
+        it('should not show weak signal message', async () => {
+          const { container } = await initWidgetAfterPermissionDeniedFailure();
+          expect(container.querySelector(SELECTORS.SIGNAL_WEAK_MSG)).to.be.null;
+        });
+
+        it('should mark the progress bar as failed', async () => {
+          const { container } = await initWidgetAfterPermissionDeniedFailure();
+          expect(container.querySelector('.geolocation-progress-bar.geolocation-progress-failure'))
+            .to.not.be.null;
         });
       });
     });
