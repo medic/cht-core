@@ -13,7 +13,7 @@ const TRANSLATION_KEYS = {
   SUCCESS: 'geolocation.success',
   PERMISSION_DENIED: 'geolocation.permission.denied',
   UNAVAILABLE: 'geolocation.unavailable',
-  CANT_RECORD: 'geolocation.cant.record',
+  CONTINUE_WITHOUT: 'geolocation.continue.without.location',
   AT_HOUSEHOLD: 'geolocation.at.household',
   SOMEWHERE_ELSE: 'geolocation.somewhere.else',
   NO_LOCATION_RECORDED: 'geolocation.no.location.recorded',
@@ -35,18 +35,18 @@ class HouseholdGeolocationWidget extends Widget {
     const $question = $(this.question);
 
     if (this._isPermissionDenied()) {
-      $(this.element).val('denied').trigger('change');
       $('<p class="geolocation-permission-denied">')
         .text(this._translate(TRANSLATION_KEYS.PERMISSION_DENIED))
         .appendTo($question);
+      this._appendContinueWithoutButton($question);
       return;
     }
 
     if (!this._isGeolocationAvailable()) {
-      $(this.element).val('unavailable').trigger('change');
       $('<p class="geolocation-unavailable">')
         .text(this._translate(TRANSLATION_KEYS.UNAVAILABLE))
         .appendTo($question);
+      this._appendContinueWithoutButton($question);
       return;
     }
 
@@ -153,7 +153,7 @@ class HouseholdGeolocationWidget extends Widget {
       $status.find('.geolocation-result-row, .geolocation-weak-signal-msg').remove();
       $bar.removeClass('geolocation-progress-failure');
       $retryBtn.remove();
-      $(this.question).find('.geolocation-cant-record-btn').remove();
+      $(this.question).find('.geolocation-continue-without-btn').remove();
       this._waitForCapture($status, $bar);
     });
 
@@ -165,7 +165,7 @@ class HouseholdGeolocationWidget extends Widget {
     }
 
     if (!this._isEditWithLocation || this._isRecordNewSelected()) {
-      this._appendCantRecordButton();
+      this._appendContinueWithoutButton();
     }
   }
 
@@ -180,17 +180,17 @@ class HouseholdGeolocationWidget extends Widget {
     return { $status, $bar };
   }
 
-  _buildCantRecordButton() {
-    return $('<button type="button" class="btn btn-default geolocation-cant-record-btn">')
-      .text(this._translate(TRANSLATION_KEYS.CANT_RECORD));
+  _buildContinueWithoutButton() {
+    return $('<button type="button" class="btn btn-default geolocation-continue-without-btn">')
+      .text(this._translate(TRANSLATION_KEYS.CONTINUE_WITHOUT));
   }
 
-  _appendCantRecordButton() {
-    const $cantRecordBtn = this._buildCantRecordButton();
-    $cantRecordBtn.on('click', () => {
+  _appendContinueWithoutButton($target = $(this.question)) {
+    const $btn = this._buildContinueWithoutButton();
+    $btn.on('click', () => {
       $(this.element).val('skipped').trigger('change');
     });
-    $(this.question).append($cantRecordBtn);
+    $target.append($btn);
   }
 
   _isRecordNewSelected() {
@@ -235,10 +235,10 @@ class HouseholdGeolocationWidget extends Widget {
       const value = event.target.value;
       if (value === 'kept') {
         $(this.element).val('kept').trigger('change');
-        $(this.question).find('.geolocation-context-options, .geolocation-cant-record-btn').remove();
+        $(this.question).find('.geolocation-context-options, .geolocation-continue-without-btn').remove();
       } else if (value === 'removed') {
         $(this.element).val('skipped').trigger('change');
-        $(this.question).find('.geolocation-context-options, .geolocation-cant-record-btn').remove();
+        $(this.question).find('.geolocation-context-options, .geolocation-continue-without-btn').remove();
       } else if (value === 'capture-new') {
         this._onCaptureNewSelected($bar);
       }
@@ -254,8 +254,8 @@ class HouseholdGeolocationWidget extends Widget {
     // This one-shot timeout means the error still appears on submit.
     setTimeout(() => $(this.question).removeClass('invalid-required'), 0);
     if ($bar.hasClass('geolocation-progress-failure') &&
-        !$(this.question).find('.geolocation-cant-record-btn').length) {
-      this._appendCantRecordButton();
+        !$(this.question).find('.geolocation-continue-without-btn').length) {
+      this._appendContinueWithoutButton();
     }
     if ($bar.hasClass('geolocation-progress-success') &&
         !$(this.question).find('.geolocation-context-options').length) {

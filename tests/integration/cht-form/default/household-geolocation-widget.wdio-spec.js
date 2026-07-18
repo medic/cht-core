@@ -7,7 +7,7 @@ const GEO_SUCCESS = {
 const GEO_FAILURE = { code: -2, message: 'Geolocation timeout exceeded' };
 
 const SELECTORS = {
-  CANT_RECORD_BTN: '.geolocation-cant-record-btn',
+  CONTINUE_WITHOUT_BTN: '.geolocation-continue-without-btn',
   CAPTURE_NEW_RADIO: 'input[value="capture-new"]',
   CONTEXT_OPTIONS: '.geolocation-context-options',
   EDIT_BADGE: '.geolocation-edit-badge',
@@ -55,22 +55,22 @@ describe('cht-form web component - HouseholdGeolocation Widget', () => {
     expect(await $(SELECTORS.RETRY_BTN).isExisting()).to.be.false;
   });
 
-  it('should show retry and cant-record buttons when GPS fails', async () => {
+  it('should show retry and continue-without buttons when GPS fails', async () => {
     await mockGeoResolved(GEO_FAILURE);
     await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
 
     await $(SELECTORS.RETRY_BTN).waitForExist();
-    expect(await $(SELECTORS.CANT_RECORD_BTN).isExisting()).to.be.true;
+    expect(await $(SELECTORS.CONTINUE_WITHOUT_BTN).isExisting()).to.be.true;
     expect(await $(SELECTORS.SUCCESS_MSG).isExisting()).to.be.false;
     expect(await $(SELECTORS.CONTEXT_OPTIONS).isExisting()).to.be.false;
   });
 
-  it('should set form value to skipped when cant-record is clicked', async () => {
+  it('should set form value to skipped when continue-without is clicked', async () => {
     await mockGeoResolved(GEO_FAILURE);
     await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
 
-    await $(SELECTORS.CANT_RECORD_BTN).waitForExist();
-    await $(SELECTORS.CANT_RECORD_BTN).click();
+    await $(SELECTORS.CONTINUE_WITHOUT_BTN).waitForExist();
+    await $(SELECTORS.CONTINUE_WITHOUT_BTN).click();
 
     const captureValue = await browser.execute(() => {
       return document.querySelector('.or-appearance-geolocation-capture input[name="/data/geo_capture"]').value;
@@ -156,15 +156,15 @@ describe('cht-form web component - Geolocation Widget (edit mode)', () => {
     expect(await $(SELECTORS.OTHER_RADIO).isExisting()).to.be.true;
   });
 
-  it('should show cant-record button when GPS fails and capture-new is selected', async () => {
+  it('should show continue-without button when GPS fails and capture-new is selected', async () => {
     await mockGeoResolved(GEO_FAILURE);
     await loadEditForm();
 
     await $(SELECTORS.RETRY_BTN).waitForExist();
-    expect(await $(SELECTORS.CANT_RECORD_BTN).isExisting()).to.be.false;
+    expect(await $(SELECTORS.CONTINUE_WITHOUT_BTN).isExisting()).to.be.false;
 
     await $(SELECTORS.CAPTURE_NEW_RADIO).click();
-    expect(await $(SELECTORS.CANT_RECORD_BTN).isExisting()).to.be.true;
+    expect(await $(SELECTORS.CONTINUE_WITHOUT_BTN).isExisting()).to.be.true;
   });
 
   it('should remove context options when switching from capture-new to keep after GPS success', async () => {
