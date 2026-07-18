@@ -427,6 +427,40 @@ describe('Geolocation service', () => {
       });
 
     });
+
+    describe('permission result caching', () => {
+      it('should not call getLocationPermissions() again after init() already checked it', () => {
+        window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
+        service.init();
+        expect(window.medicmobile_android.getLocationPermissions.callCount).to.equal(1);
+        service.isPermissionDenied();
+        expect(window.medicmobile_android.getLocationPermissions.callCount).to.equal(1);
+      });
+
+      it('should return the cached denied=true result without calling the Android API again', () => {
+        window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
+        service.init();
+        expect(service.isPermissionDenied()).to.be.true;
+        expect(window.medicmobile_android.getLocationPermissions.callCount).to.equal(1);
+      });
+
+      it('should return the cached denied=false result without calling the Android API again', () => {
+        window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(true) };
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsFake(() => {});
+        service.init();
+        expect(service.isPermissionDenied()).to.be.false;
+        expect(window.medicmobile_android.getLocationPermissions.callCount).to.equal(1);
+      });
+
+      it('should refresh the permission check on each init() call', () => {
+        window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
+        service.init();
+        expect(window.medicmobile_android.getLocationPermissions.callCount).to.equal(1);
+        service.init();
+        expect(window.medicmobile_android.getLocationPermissions.callCount).to.equal(2);
+      });
+    });
   });
 
   describe('isAvailable', () => {
