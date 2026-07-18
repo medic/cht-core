@@ -22,7 +22,7 @@ export class GeolocationService {
   currentPromise;
 
   constructor(
-    private readonly telemetryService:TelemetryService,
+    private telemetryService:TelemetryService,
   ) {}
 
   private getAndroidPermission () {
