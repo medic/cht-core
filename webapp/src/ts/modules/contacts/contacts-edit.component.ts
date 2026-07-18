@@ -29,7 +29,7 @@ import events from 'enketo-core/src/js/event';
   templateUrl: './contacts-edit.component.html',
   imports: [NgIf, NgFor, MatAccordion, EnketoComponent, TranslatePipe, DuplicateContactsComponent, NgClass]
 })
-export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
+export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit { // NOSONAR
   constructor(
     private readonly store: Store,
     private readonly route: ActivatedRoute,

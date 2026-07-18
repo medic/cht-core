@@ -42,7 +42,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 @Injectable({
   providedIn: 'root'
 })
-export class FormService {
+export class FormService { // NOSONAR
   constructor(
     private store: Store,
     private contactSaveService: ContactSaveService,
@@ -68,7 +68,7 @@ export class FormService {
     private readonly contactsService: ContactsService,
     private readonly performanceService: PerformanceService,
     private userContactSummaryService: UserContactSummaryService,
-    private geolocationService: GeolocationService,
+    private readonly geolocationService: GeolocationService,
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
