@@ -374,6 +374,25 @@ describe('form-data', () => {
         expect(reportData.getNodeByXpath(doc.documentElement, null)).to.be.null;
         expect(reportData.getNodeByXpath(doc.documentElement, '   ')).to.be.null;
       });
+
+      it('resolves an absolute xpath to a node in the same repeat entry as the context node', () => {
+        const repeatXml = `
+        <data>
+          <repeat_section><name>first</name><value>first-value</value></repeat_section>
+          <repeat_section><name>second</name><value>second-value</value></repeat_section>
+          <repeat_section><name>third</name><value>third-value</value></repeat_section>
+        </data>`;
+        const doc = parseXml(repeatXml);
+        const reportData = new EnketoReportFormData(doc, 'the-id');
+        // Context node is the <name> nested inside the SECOND repeat entry.
+        const contextNode = doc.getElementsByTagName('repeat_section')[1].getElementsByTagName('name')[0];
+
+        const node = reportData.getNodeByXpath(contextNode, '/data/repeat_section/value');
+        expect(node!.textContent).to.equal('second-value');
+
+        const relativeNode = reportData.getNodeByXpath(contextNode, '../value');
+        expect(relativeNode!.textContent).to.equal('second-value');
+      });
     });
 
     describe('findNodeWithTextContent', () => {
