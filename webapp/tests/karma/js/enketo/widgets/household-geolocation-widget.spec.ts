@@ -62,6 +62,7 @@ describe('Enketo: Household Geolocation Widget', () => {
         Geolocation: {
           isAvailable: sinon.stub().returns(true),
           isPermissionDenied: sinon.stub().returns(false),
+          isCodePermissionRelated: sinon.stub().returns(false),
           currentPromise: new Promise(() => {}),
         },
       };
@@ -539,6 +540,45 @@ describe('Enketo: Household Geolocation Widget', () => {
           const { container } = await initWidgetAfterPermissionDeniedFailure();
           expect(container.querySelector('.geolocation-progress-bar.geolocation-progress-failure'))
             .to.not.be.null;
+        });
+      });
+
+      describe('when GPS fails with code 2 (POSITION_UNAVAILABLE) and permission is related', () => {
+        const GPS_CODE2_FAILURE = { code: 2, message: 'application does not have sufficient geolocation permissions.' };
+
+        const initWidgetAfterCode2Failure = async () => {
+          const promise = Promise.resolve(GPS_CODE2_FAILURE);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const result = initWidget();
+          (window as any).CHTCore.Geolocation.isCodePermissionRelated = sinon.stub().returns(true);
+          await promise;
+          return result;
+        };
+
+        it('should show permission-denied message instead of GPS failure message', async () => {
+          const { container } = await initWidgetAfterCode2Failure();
+          expect(container.querySelector(SELECTORS.PERMISSION_DENIED)).to.not.be.null;
+          expect(container.querySelector(SELECTORS.FAILURE_MSG)).to.be.null;
+        });
+
+        it('should not show GPS signal weak message', async () => {
+          const { container } = await initWidgetAfterCode2Failure();
+          expect(container.querySelector(SELECTORS.SIGNAL_WEAK_MSG)).to.be.null;
+        });
+
+        it('should not show retry button', async () => {
+          const { container } = await initWidgetAfterCode2Failure();
+          expect(container.querySelector(SELECTORS.RETRY_BTN)).to.be.null;
+        });
+
+        it('should show continue-without button', async () => {
+          const { container } = await initWidgetAfterCode2Failure();
+          expect(container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.not.be.null;
+        });
+
+        it('should mark the progress bar as failed', async () => {
+          const { container } = await initWidgetAfterCode2Failure();
+          expect(container.querySelector('.geolocation-progress-bar.geolocation-progress-failure')).to.not.be.null;
         });
       });
     });

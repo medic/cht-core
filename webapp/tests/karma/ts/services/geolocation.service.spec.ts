@@ -460,6 +460,79 @@ describe('Geolocation service', () => {
         service.init();
         expect(window.medicmobile_android.getLocationPermissions.callCount).to.equal(2);
       });
+
+      it('should return false from isPermissionDenied() while GPS result is pending' +
+         ' after permissionRequestResolved()', () => {
+        window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsFake(() => {}); // GPS never fires
+        service.init();
+        service.permissionRequestResolved();
+        expect(service.isPermissionDenied()).to.be.false;
+        expect(window.medicmobile_android.getLocationPermissions.callCount).to.equal(1);
+      });
+
+      it('should return false from isPermissionDenied() after GPS fails' +
+         ' following permissionRequestResolved()', async () => {
+        window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsArgWith(1, { code: 2, message: 'POSITION_UNAVAILABLE' });
+        service.init();
+        service.permissionRequestResolved();
+        await service.currentPromise;
+        // GPS failed, but we still don't know if permission was granted or denied
+        // (failure could be due to Location Services off, not necessarily permission denied)
+        expect(service.isPermissionDenied()).to.be.false;
+        expect(window.medicmobile_android.getLocationPermissions.callCount).to.equal(1);
+      });
+
+      it('should update cache to not-denied when GPS successfully acquires a position', async () => {
+        window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsFake(success => success({
+          coords: { latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7 }
+        }));
+        service.init();
+        service.permissionRequestResolved();
+        await service.currentPromise;
+        expect(service.isPermissionDenied()).to.be.false;
+        expect(window.medicmobile_android.getLocationPermissions.callCount).to.equal(1);
+      });
+    });
+  });
+
+  describe('isCodePermissionRelated', () => {
+    it('should return true for code 2 when permission was denied at init', () => {
+      window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
+      service.init();
+      expect(service.isCodePermissionRelated(2)).to.be.true;
+    });
+
+    it('should return false for code 2 when permission was granted at init', () => {
+      window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(true) };
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsFake(() => {});
+      service.init();
+      expect(service.isCodePermissionRelated(2)).to.be.false;
+    });
+
+    it('should return false for timeout codes even when permission was denied', () => {
+      window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
+      service.init();
+      expect(service.isCodePermissionRelated(3)).to.be.false;
+      expect(service.isCodePermissionRelated(-2)).to.be.false;
+    });
+
+    it('should return false for code 2 after GPS success clears the denied cache', async () => {
+      window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsFake(success => success({
+        coords: { latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7 }
+      }));
+      service.init();
+      service.permissionRequestResolved();
+      await service.currentPromise;
+      expect(service.isCodePermissionRelated(2)).to.be.false;
     });
   });
 
