@@ -17,7 +17,6 @@ export class GeolocationService {
   private geoError;
   private watcher;
   private timeout;
-  private cachedPermissionDenied: boolean | null = null;
 
   currentHandle;
   currentPromise;
@@ -118,13 +117,10 @@ export class GeolocationService {
     this.geo = null;
     this.geoError = null;
     this.watcher = null;
-    this.cachedPermissionDenied = null;
     this.defer();
     this.currentPromise = this.deferred.promise;
 
-    const hasPermission = this.getAndroidPermission();
-    this.cachedPermissionDenied = !hasPermission;
-    if (hasPermission) {
+    if (this.getAndroidPermission()) {
       this.startWatching();
     }
 
@@ -164,11 +160,6 @@ export class GeolocationService {
   }
 
   isPermissionDenied(): boolean {
-    if (this.cachedPermissionDenied !== null) {
-      return this.cachedPermissionDenied;
-    }
-    const denied = !this.getAndroidPermission();
-    this.cachedPermissionDenied = denied;
-    return denied;
+    return !this.getAndroidPermission();
   }
 }
