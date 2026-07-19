@@ -141,33 +141,11 @@ class HouseholdGeolocationWidget extends Widget {
   }
 
   _onCaptureFailure(errorCode, $status, $bar) {
-    if (this._isPermissionDenied() || this._isCodePermissionRelated(errorCode)) {
+    if (this._isPermissionDenied()) {
       $bar.addClass('geolocation-progress-failure');
       $('<p class="geolocation-permission-denied">')
         .text(this._translate(TRANSLATION_KEYS.PERMISSION_DENIED))
         .appendTo($status);
-
-      const $permRetryBtn = $('<button type="button" class="btn btn-default geolocation-retry-btn">')
-        .append(
-          $('<i class="fa fa-map-marker" aria-hidden="true">'),
-          $('<span class="geolocation-btn-label">').text(this._translate(TRANSLATION_KEYS.RETRY))
-        );
-      $permRetryBtn.on('click', () => {
-        globalThis.CHTCore.Geolocation.retry();
-        $status.find('.geolocation-permission-denied').remove();
-        $bar.removeClass('geolocation-progress-failure');
-        $permRetryBtn.remove();
-        $(this.question).find('.geolocation-continue-without-btn').remove();
-        this._waitForCapture($status, $bar);
-      });
-
-      const $editChoicesForPerm = $(this.question).find('.geolocation-edit-choices');
-      if ($editChoicesForPerm.length) {
-        $permRetryBtn.insertBefore($editChoicesForPerm);
-      } else {
-        $(this.question).append($permRetryBtn);
-      }
-
       this._appendContinueWithoutButton();
       return;
     }
@@ -317,10 +295,6 @@ class HouseholdGeolocationWidget extends Widget {
 
   _isPermissionDenied() {
     return globalThis.CHTCore.Geolocation.isPermissionDenied();
-  }
-
-  _isCodePermissionRelated(errorCode) {
-    return globalThis.CHTCore.Geolocation.isCodePermissionRelated(errorCode);
   }
 }
 

@@ -18,7 +18,6 @@ export class GeolocationService {
   private watcher;
   private timeout;
   private cachedPermissionDenied: boolean | null = null;
-  private permissionResponsePending = false;
 
   currentHandle;
   currentPromise;
@@ -68,8 +67,6 @@ export class GeolocationService {
 
   private success(position) {
     console.debug('Geolocation success', position);
-    this.permissionResponsePending = false;
-    this.cachedPermissionDenied = false;
     this.geo = position;
     if (this.deferred) {
       this.finalise();
@@ -122,7 +119,6 @@ export class GeolocationService {
     this.geoError = null;
     this.watcher = null;
     this.cachedPermissionDenied = null;
-    this.permissionResponsePending = false;
     this.defer();
     this.currentPromise = this.deferred.promise;
 
@@ -159,7 +155,6 @@ export class GeolocationService {
   }
 
   permissionRequestResolved () {
-    this.permissionResponsePending = true;
     this.startWatching();
     document.dispatchEvent(new CustomEvent('geolocationPermissionGranted'));
   }
@@ -168,14 +163,7 @@ export class GeolocationService {
     return !!window.navigator.geolocation;
   }
 
-  isCodePermissionRelated(gpsErrorCode: number): boolean {
-    return gpsErrorCode === 2 && this.cachedPermissionDenied === true;
-  }
-
   isPermissionDenied(): boolean {
-    if (this.permissionResponsePending) {
-      return false;
-    }
     if (this.cachedPermissionDenied !== null) {
       return this.cachedPermissionDenied;
     }
