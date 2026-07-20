@@ -1,9 +1,10 @@
 const chai = require('chai');
 chai.use(require('chai-exclude'));
 const sinon = require('sinon');
-const rewire = require('rewire');
 const { Readable } = require('stream');
+const constants = require('@medic/constants');
 
+const controller = require('../../../src/controllers/archive');
 const db = require('../../../src/db');
 const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
@@ -41,11 +42,9 @@ const expectedJob = (ids) => ({
 });
 
 describe('Archive controller', () => {
-  let controller;
-
   beforeEach(() => {
+    // fake only Date — faking timers/setImmediate stalls the request streams
     sinon.useFakeTimers({ now: NOW, toFake: ['Date'] });
-    controller = rewire('../../../src/controllers/archive');
   });
 
   afterEach(() => sinon.restore());
@@ -101,20 +100,43 @@ describe('Archive controller', () => {
     it('splits ids into multiple job docs at MAX_IDS_PER_JOB', async () => {
       sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put').resolves({ id: 'x', rev: '1-a' });
-      controller.__set__('MAX_IDS_PER_JOB', 3);
 
-      const req = newReq(['a', 'b', 'c', 'd', 'e', 'f', 'g']);
+      const MAX_IDS_PER_JOB = 100 * 1000; // mirrors the controller's per-job cap
+      const allIds = Array.from({ length: MAX_IDS_PER_JOB * 2 + 1 }, (_, i) => `doc-${i}`);
+      const lines = function* () {
+        for (let i = 0; i < allIds.length; i += 10000) {
+          yield allIds.slice(i, i + 10000).join('\n') + '\n';
+        }
+      };
+      const req = Readable.from(lines());
+      req.headers = { 'content-type': 'text/csv' };
+      req.is = () => 'text/csv';
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(db.sentinel.put.args).excludingEvery('_id').to.deep.equal([
-        [expectedJob(['a', 'b', 'c'])],
-        [expectedJob(['d', 'e', 'f'])],
-        [expectedJob(['g'])],
-      ]);
-      const ids = db.sentinel.put.args.map(([doc]) => doc._id);
+      chai.expect(db.sentinel.put.callCount).to.equal(3);
+      const docs = db.sentinel.put.args.map(([doc]) => doc);
+      const expectedSlices = [
+        allIds.slice(0, MAX_IDS_PER_JOB),
+        allIds.slice(MAX_IDS_PER_JOB, MAX_IDS_PER_JOB * 2),
+        allIds.slice(MAX_IDS_PER_JOB * 2),
+      ];
+      docs.forEach((doc, i) => {
+        chai.expect(doc).excluding(['_id', '_attachments']).to.deep.equal({
+          date: NOW,
+          total: expectedSlices[i].length,
+          cursor: 0,
+        });
+        chai.expect(doc._attachments.ids.content_type).to.equal('text/plain');
+        chai.expect(doc._attachments.ids.data.toString('utf8')).to.equal(expectedSlices[i].join('\n'));
+      });
+      const ids = docs.map(doc => doc._id);
       chai.expect(res.json.args).to.deep.equal([[{
-        jobs: [{ id: ids[0], count: 3 }, { id: ids[1], count: 3 }, { id: ids[2], count: 1 }],
+        jobs: [
+          { id: ids[0], count: MAX_IDS_PER_JOB },
+          { id: ids[1], count: MAX_IDS_PER_JOB },
+          { id: ids[2], count: 1 },
+        ],
       }]]);
     });
 
@@ -183,9 +205,14 @@ describe('Archive controller', () => {
       sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put');
       sinon.stub(serverUtils, 'error').returns();
-      controller.__set__('MAX_BODY_SIZE', 10);
 
-      const req = Readable.from(['a'.repeat(50)]);
+      const megabyte = 'a'.repeat(1024 * 1024);
+      const chunks = function* () {
+        for (let sent = 0; sent <= constants.MAX_REQUEST_SIZE; sent += megabyte.length) {
+          yield megabyte;
+        }
+      };
+      const req = Readable.from(chunks());
       req.headers = { 'content-type': 'text/csv' };
       req.is = () => 'text/csv';
       const res = newRes();
@@ -203,10 +230,9 @@ describe('Archive controller', () => {
       sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put');
       sinon.stub(serverUtils, 'error').returns();
-      controller.__set__('MAX_BODY_SIZE', 10);
 
       const req = newReq(['doc-1']);
-      req.headers['content-length'] = '50';
+      req.headers['content-length'] = String(constants.MAX_REQUEST_SIZE + 1);
       const res = newRes();
       await controller.create(req, res);
 

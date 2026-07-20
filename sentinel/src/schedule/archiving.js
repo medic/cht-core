@@ -26,7 +26,7 @@ module.exports = {
       clearTimeout(archiveTimeout);
     }
     archiveTimeout = setTimeout(
-      () => archiveLib.archive({ duration }),
+      () => archiveLib.archive(duration),
       scheduling.nextScheduleMillis(schedule)
     );
     return Promise.resolve();

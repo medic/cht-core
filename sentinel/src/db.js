@@ -119,7 +119,6 @@ if (UNIT_TEST_ENV) {
 
   /**
    * Permanently removes docs from a database via CouchDB's `_purge` endpoint.
-   * Unlike deletion, purging leaves no tombstones and is not replicated.
    * @param {PouchDB.Database} db - the database to purge from
    * @param {Array<{ _id: string, _revs: string[] }>} docs - every doc must carry `_revs`:
    *   the list of leaf revisions to purge

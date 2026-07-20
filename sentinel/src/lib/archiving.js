@@ -21,7 +21,8 @@ let currentlyArchiving = false;
  * @param {string} [startkey]
  * @returns {Promise<Object|undefined>}
  */
-const fetchNextJob = async (startkey = constants.PREFIXES.ARCHIVE_JOB) => {
+const fetchNextJob = async (startkey) => {
+  startkey = startkey ? `${startkey}\ufff0` : constants.PREFIXES.ARCHIVE_JOB;
   const result = await db.sentinel.allDocs({
     startkey,
     endkey: `${constants.PREFIXES.ARCHIVE_JOB}\ufff0`,
@@ -219,14 +220,13 @@ const processJob = async (job, deadline) => {
  * @returns {Promise<void>}
  */
 const processQueue = async (deadline) => {
-  let startkey = constants.PREFIXES.ARCHIVE_JOB;
+  let startkey;
   do {
     const job = await fetchNextJob(startkey);
-    logger.warn(JSON.stringify(job, null, 2));
     if (!job) {
       break;
     }
-    startkey = `${job._id}\ufff0`;
+    startkey = job._id;
     if (job.status === FAILED_STATUS) {
       continue;
     }
@@ -237,11 +237,10 @@ const processQueue = async (deadline) => {
 /**
  * Runs archiving: processes queued archive jobs, optionally bounded to a maximum duration.
  * A no-op when a run is already in flight. Never throws.
- * @param {Object} [options]
- * @param {number} [options.duration] - maximum run time in ms; unbounded when omitted
+ * @param {number} [duration] - maximum run time in ms; unbounded when omitted
  * @returns {Promise<void>}
  */
-const archive = async ({ duration } = {}) => {
+const archive = async (duration) => {
   if (currentlyArchiving) {
     return;
   }
