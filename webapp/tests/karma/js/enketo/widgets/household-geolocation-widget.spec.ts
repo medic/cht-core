@@ -737,6 +737,51 @@ describe('Enketo: Household Geolocation Widget', () => {
         expect(container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
       });
 
+      it('should have "Record new location" radio disabled initially', () => {
+        const { container } = initEditWithLocationWidget();
+        const recordNew = container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
+        expect(recordNew.disabled).to.be.true;
+      });
+
+      it('should enable "Record new location" radio on GPS success', async () => {
+        const promise = Promise.resolve(GPS_SUCCESS);
+        (window as any).CHTCore.Geolocation.currentPromise = promise;
+        const { container } = initEditWithLocationWidget();
+        await promise;
+        const recordNew = container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
+        expect(recordNew.disabled).to.be.false;
+      });
+
+      it('should disable "Record new location" radio on GPS failure', async () => {
+        const promise = Promise.resolve(GPS_FAILURE);
+        (window as any).CHTCore.Geolocation.currentPromise = promise;
+        const { container } = initEditWithLocationWidget();
+        await promise;
+        const recordNew = container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
+        expect(recordNew.disabled).to.be.true;
+      });
+
+      it('should not show "save without location" checkbox on GPS failure', async () => {
+        const promise = Promise.resolve(GPS_FAILURE);
+        (window as any).CHTCore.Geolocation.currentPromise = promise;
+        const { container } = initEditWithLocationWidget();
+        await promise;
+        expect(container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
+      });
+
+      it('should revert to "Keep saved location" if "Record new location" was selected when GPS fails', async () => {
+        const promise = Promise.resolve(GPS_FAILURE);
+        (window as any).CHTCore.Geolocation.currentPromise = promise;
+        const { widget, container } = initEditWithLocationWidget();
+        const recordNewRadio = container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
+        recordNewRadio.checked = true;
+        $(recordNewRadio).trigger('change');
+        await promise;
+        const keepRadio = container.querySelector(SELECTORS.KEEP_RADIO) as HTMLInputElement;
+        expect(keepRadio.checked).to.be.true;
+        expect((widget.element as HTMLInputElement).value).to.equal('kept');
+      });
+
       it('should not show context choices on GPS success without selecting Record New', async () => {
         const promise = Promise.resolve(GPS_SUCCESS);
         (window as any).CHTCore.Geolocation.currentPromise = promise;
@@ -801,20 +846,6 @@ describe('Enketo: Household Geolocation Widget', () => {
           expect(result.container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.be.null;
         });
 
-        it('should remove the save-without checkbox when switching from Record New after GPS failure', async () => {
-          const promise = Promise.resolve(GPS_FAILURE);
-          (window as any).CHTCore.Geolocation.currentPromise = promise;
-          const result = initEditWithLocationWidget();
-          const recordNewRadio = result.container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
-          recordNewRadio.checked = true;
-          $(recordNewRadio).trigger('change');
-          await promise;
-          expect(result.container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.not.be.null;
-          const keepRadio = result.container.querySelector(SELECTORS.KEEP_RADIO) as HTMLInputElement;
-          keepRadio.checked = true;
-          $(keepRadio).trigger('change');
-          expect(result.container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
-        });
       });
 
       describe('when "Remove saved location" is selected', () => {
@@ -851,20 +882,6 @@ describe('Enketo: Household Geolocation Widget', () => {
           expect(result.container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.be.null;
         });
 
-        it('should remove the save-without checkbox when switching from Record New after GPS failure', async () => {
-          const promise = Promise.resolve(GPS_FAILURE);
-          (window as any).CHTCore.Geolocation.currentPromise = promise;
-          const result = initEditWithLocationWidget();
-          const recordNewRadio = result.container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
-          recordNewRadio.checked = true;
-          $(recordNewRadio).trigger('change');
-          await promise;
-          expect(result.container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.not.be.null;
-          const removeRadio = result.container.querySelector(SELECTORS.REMOVE_RADIO) as HTMLInputElement;
-          removeRadio.checked = true;
-          $(removeRadio).trigger('change');
-          expect(result.container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
-        });
       });
 
       describe('when "Record new location" is selected', () => {
@@ -938,7 +955,7 @@ describe('Enketo: Household Geolocation Widget', () => {
           await promise;
           expect(result.container.querySelector(SELECTORS.FAILURE_MSG)).to.not.be.null;
           expect(result.container.querySelector(SELECTORS.RETRY_BTN)).to.not.be.null;
-          expect(result.container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.not.be.null;
+          expect(result.container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
           expect(result.container.querySelector(SELECTORS.EDIT_CHOICES)).to.not.be.null;
         });
 
@@ -960,7 +977,6 @@ describe('Enketo: Household Geolocation Widget', () => {
 
           expect(result.container.querySelectorAll(SELECTORS.FAILURE_MSG)).to.have.lengthOf(1);
           expect(result.container.querySelectorAll(SELECTORS.RETRY_BTN)).to.have.lengthOf(1);
-          expect(result.container.querySelectorAll(SELECTORS.SAVE_WITHOUT_LABEL)).to.have.lengthOf(1);
         });
       });
     });

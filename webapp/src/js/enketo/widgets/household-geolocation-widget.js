@@ -107,6 +107,10 @@ class HouseholdGeolocationWidget extends Widget {
   _onCaptureSuccess($status, $bar) {
     $bar.addClass('geolocation-progress-success');
 
+    if (this._isEditWithLocation) {
+      $(this.question).find('input[type="radio"][value="capture-new"]').prop('disabled', false);
+    }
+
     const $resultRow = $('<div class="geolocation-result-row">');
     $('<span class="geolocation-result-label">')
       .text(this._translate(TRANSLATION_KEYS.RESULT_LABEL)).appendTo($resultRow);
@@ -142,16 +146,27 @@ class HouseholdGeolocationWidget extends Widget {
   }
 
   _onCaptureFailure(errorCode, $status, $bar) {
+    $bar.addClass('geolocation-progress-failure');
+
+    if (this._isEditWithLocation) {
+      const $recordNew = $(this.question).find('input[type="radio"][value="capture-new"]');
+      $recordNew.prop('disabled', true);
+      if (this._isRecordNewSelected()) {
+        const $keepRadio = $(this.question).find('input[type="radio"][value="kept"]');
+        $keepRadio.prop('checked', true);
+        $keepRadio.trigger('change');
+      }
+    }
+
     if (this._isPermissionDenied()) {
-      $bar.addClass('geolocation-progress-failure');
       $('<p class="geolocation-permission-denied">')
         .text(this._translate(TRANSLATION_KEYS.PERMISSION_DENIED))
         .appendTo($status);
-      this._appendSaveWithoutCheckbox();
+      if (!this._isEditWithLocation) {
+        this._appendSaveWithoutCheckbox();
+      }
       return;
     }
-
-    $bar.addClass('geolocation-progress-failure');
 
     const $resultRow = $('<div class="geolocation-result-row">');
     $('<span class="geolocation-result-label">')
@@ -187,7 +202,7 @@ class HouseholdGeolocationWidget extends Widget {
       $(this.question).append($retryBtn);
     }
 
-    if (!this._isEditWithLocation || this._isRecordNewSelected()) {
+    if (!this._isEditWithLocation) {
       this._appendSaveWithoutCheckbox();
     }
   }
@@ -246,7 +261,7 @@ class HouseholdGeolocationWidget extends Widget {
     const $keepLabel = $('<label class="geolocation-edit-option">')
       .append($keepRadio, $('<span>').text(this._translate(TRANSLATION_KEYS.EDIT_KEEP)));
 
-    const $recordNewRadio = $('<input type="radio">').attr('name', radioName).val('capture-new');
+    const $recordNewRadio = $('<input type="radio">').attr('name', radioName).val('capture-new').prop('disabled', true);
     const $recordNewLabel = $('<label class="geolocation-edit-option">')
       .append($recordNewRadio, $('<span>').text(this._translate(TRANSLATION_KEYS.EDIT_RECORD_NEW)));
 
@@ -284,10 +299,6 @@ class HouseholdGeolocationWidget extends Widget {
     // that runs after the validation completes and adds the class.
     // This one-shot timeout means the error still appears on submit.
     setTimeout(() => $(this.question).removeClass('invalid-required'), 0);
-    if ($bar.hasClass('geolocation-progress-failure') &&
-        !$(this.question).find('.geolocation-save-without-label').length) {
-      this._appendSaveWithoutCheckbox();
-    }
     if ($bar.hasClass('geolocation-progress-success') &&
         !$(this.question).find('.geolocation-context-options').length) {
       $('<p class="geolocation-context-label">')

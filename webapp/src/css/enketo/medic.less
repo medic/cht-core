@@ -326,6 +326,12 @@
         padding-left: 0;
         cursor: pointer;
         font-weight: normal;
+
+        &:has(input:disabled) {
+          opacity: 0.4;
+          cursor: not-allowed;
+          pointer-events: none;
+        }
       }
     }
 
