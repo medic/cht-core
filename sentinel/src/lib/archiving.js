@@ -222,10 +222,11 @@ const processQueue = async (deadline) => {
   let startkey = constants.PREFIXES.ARCHIVE_JOB;
   do {
     const job = await fetchNextJob(startkey);
+    logger.warn(JSON.stringify(job, null, 2));
     if (!job) {
       break;
     }
-    startkey = `${job._id}￰`;
+    startkey = `${job._id}\ufff0`;
     if (job.status === FAILED_STATUS) {
       continue;
     }

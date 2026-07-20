@@ -49,7 +49,6 @@ const persistJob = async (jobs, ids) => {
 
   const doc = {
     _id: buildJobId(),
-    type: constants.PREFIXES.ARCHIVE_JOB,
     date: Date.now(),
     total: ids.length,
     cursor: 0,

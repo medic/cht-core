@@ -42,7 +42,7 @@ describe('POST /api/v1/archive', () => {
     expect(response.jobs[0].id).to.match(/^archive:/);
 
     const doc = await utils.sentinelDb.get(response.jobs[0].id);
-    expect(doc).to.include({ type: 'archive:', total: 3, cursor: 0 });
+    expect(doc).to.include({ total: 3, cursor: 0 });
     expect(doc).to.not.have.property('status');
     expect(doc).to.have.property('date');
     expect(doc._attachments.ids.content_type).to.equal('text/plain');

@@ -1,4 +1,5 @@
 const chai = require('chai');
+chai.use(require('chai-exclude'));
 const sinon = require('sinon');
 const rewire = require('rewire');
 const { Readable } = require('stream');
@@ -25,10 +26,25 @@ const newRes = () => ({
   status: sinon.stub().returnsThis(),
 });
 
+const NOW = new Date('2026-05-18T00:00:00.000Z').getTime();
+
+const expectedJob = (ids) => ({
+  date: NOW,
+  total: ids.length,
+  cursor: 0,
+  _attachments: {
+    ids: {
+      content_type: 'text/plain',
+      data: Buffer.from(ids.join('\n'), 'utf8'),
+    },
+  },
+});
+
 describe('Archive controller', () => {
   let controller;
 
   beforeEach(() => {
+    sinon.useFakeTimers({ now: NOW, toFake: ['Date'] });
     controller = rewire('../../../src/controllers/archive');
   });
 
@@ -64,15 +80,10 @@ describe('Archive controller', () => {
 
       chai.expect(db.sentinel.put.callCount).to.equal(1);
       const doc = db.sentinel.put.args[0][0];
-      chai.expect(doc).to.include({ type: 'archive:', total: 3, cursor: 0 });
-      chai.expect(doc).to.not.have.property('status');
       chai.expect(doc._id).to.match(/^archive:/);
-      chai.expect(doc._attachments.ids.content_type).to.equal('text/plain');
-      chai.expect(doc._attachments.ids.data.toString('utf8')).to.equal('doc-1\ndoc-2\ndoc-3');
+      chai.expect(doc).excluding('_id').to.deep.equal(expectedJob(['doc-1', 'doc-2', 'doc-3']));
       chai.expect(res.status.calledWith(201)).to.equal(true);
-      chai.expect(res.json.callCount).to.equal(1);
-      chai.expect(res.json.args[0][0].jobs).to.have.length(1);
-      chai.expect(res.json.args[0][0].jobs[0]).to.deep.equal({ id: doc._id, count: 3 });
+      chai.expect(res.json.args).to.deep.equal([[{ jobs: [{ id: doc._id, count: 3 }] }]]);
     });
 
     it('strips surrounding quotes and skips blank lines', async () => {
@@ -84,8 +95,7 @@ describe('Archive controller', () => {
       await controller.create(req, res);
 
       const doc = db.sentinel.put.args[0][0];
-      chai.expect(doc.total).to.equal(2);
-      chai.expect(doc._attachments.ids.data.toString('utf8')).to.equal('doc-1\ndoc-2');
+      chai.expect(doc).excluding('_id').to.deep.equal(expectedJob(['doc-1', 'doc-2']));
     });
 
     it('splits ids into multiple job docs at MAX_IDS_PER_JOB', async () => {
@@ -97,13 +107,15 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(db.sentinel.put.callCount).to.equal(3);
-      chai.expect(db.sentinel.put.args[0][0].total).to.equal(3);
-      chai.expect(db.sentinel.put.args[1][0].total).to.equal(3);
-      chai.expect(db.sentinel.put.args[2][0].total).to.equal(1);
-      chai.expect(db.sentinel.put.args[0][0]._attachments.ids.data.toString('utf8')).to.equal('a\nb\nc');
-      chai.expect(db.sentinel.put.args[2][0]._attachments.ids.data.toString('utf8')).to.equal('g');
-      chai.expect(res.json.args[0][0].jobs.map(j => j.count)).to.deep.equal([3, 3, 1]);
+      chai.expect(db.sentinel.put.args).excludingEvery('_id').to.deep.equal([
+        [expectedJob(['a', 'b', 'c'])],
+        [expectedJob(['d', 'e', 'f'])],
+        [expectedJob(['g'])],
+      ]);
+      const ids = db.sentinel.put.args.map(([doc]) => doc._id);
+      chai.expect(res.json.args).to.deep.equal([[{
+        jobs: [{ id: ids[0], count: 3 }, { id: ids[1], count: 3 }, { id: ids[2], count: 1 }],
+      }]]);
     });
 
     it('rejects requests with a non-text/csv content-type with 415', async () => {

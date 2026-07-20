@@ -404,7 +404,6 @@ describe('sentinel processes archive jobs', () => {
     const poisonId = `${PREFIXES.ARCHIVE_JOB}0000-poison`;
     await utils.sentinelDb.put({
       _id: poisonId,
-      type: PREFIXES.ARCHIVE_JOB,
       date: Date.now(),
       total: 1,
       cursor: 0,
@@ -430,6 +429,7 @@ describe('sentinel processes archive jobs', () => {
 
     // The healthy job behind the poison job was not blocked — it ran to completion and was deleted.
     const healthyJobRow = (await utils.sentinelDb.allDocs({ keys: [healthyJobId] })).rows[0];
+    console.warn(JSON.stringify(healthyJobRow, null, 2));
     expect(healthyJobRow.error || healthyJobRow.value.deleted).to.be.ok;
 
     const archived = await liveRows(archiveDb, { keys: [healthyId] });
