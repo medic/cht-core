@@ -1,7 +1,6 @@
 const utils = require('@utils');
 const moment = require('moment');
 const { CONTACT_TYPES } = require('@medic/constants');
-const constants = require('@constants');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
@@ -81,22 +80,6 @@ describe('replication failure logging @docker', () => {
     return response.data.find(log => log._id === currentPeriodId) || response.data[0] || null;
   };
 
-  const clearLogs = async () => {
-    const result = await utils.logsDb.allDocs({
-      include_docs: true,
-      startkey: 'replication-fail-',
-      endkey: 'replication-fail-\ufff0'
-    });
-
-    const purgeDocs = {};
-    result.rows.forEach(row => purgeDocs[row.id] = [row.value.rev]);
-    await utils.request({
-      path: `/${constants.DB_NAME}-logs/_purge`,
-      method: 'POST',
-      body: purgeDocs
-    });
-  };
-
   const requestDocsExpectingError = async (username) => {
     await expect(replicationGetIds(username)).to.be.rejectedWith();
     await utils.delayPromise(SETTLE_DELAY_MS);
@@ -105,15 +88,16 @@ describe('replication failure logging @docker', () => {
   before(async () => {
     await utils.saveDocs([facility, mathilPlace, janicePlace, mathilContact, janiceContact]);
     await utils.createUsers(users, true);
+    await utils.clearReplicationFailureLogs();
+  });
+
+  afterEach(async () => {
+    await utils.clearReplicationFailureLogs();
   });
 
   after(async () => {
     await utils.deleteUsers(users);
     await utils.revertDb();
-  });
-
-  afterEach(async () => {
-    await clearLogs();
   });
 
   describe('on successful replication', () => {
@@ -148,9 +132,9 @@ describe('replication failure logging @docker', () => {
       expect(log.failures[0].roles).to.be.an('array').that.is.not.empty;
       expect(log.failures[0].subjects_count).to.equal(6);
       // The abort fires while getDocsByReplicationKey is still waiting on the (stopped) nouveau,
-      // so docs_count and unpurged_docs_count have not been set yet → 'unknown'.
-      expect(log.failures[0].docs_count).to.equal('unknown');
-      expect(log.failures[0].unpurged_docs_count).to.equal('unknown');
+      // so docs_count and unpurged_docs_count have not been set yet → null.
+      expect(log.failures[0].docs_count).to.be.null;
+      expect(log.failures[0].unpurged_docs_count).to.be.null;
       expect(log.total_failures).to.equal(1);
     });
 
@@ -174,8 +158,48 @@ describe('replication failure logging @docker', () => {
           'unpurged_docs_count'
         );
         expect(failure.subjects_count).to.equal(6);
-        expect(failure.docs_count).to.equal('unknown');
-        expect(failure.unpurged_docs_count).to.equal('unknown');
+        expect(failure.docs_count).to.be.null;
+        expect(failure.unpurged_docs_count).to.be.null;
+      });
+    });
+
+    it('should initialise daily_failures with today\'s bucket on a fresh failure', async () => {
+      await requestDocsExpectingError('mathil');
+
+      const log = await getUserFailureLog('mathil');
+      const today = moment().format('YYYY-MM-DD');
+      expect(log.daily_failures).to.deep.equal({ [today]: 1 });
+    });
+
+    it('should increment the same-day bucket across multiple failures', async () => {
+      await requestDocsExpectingError('mathil');
+      await requestDocsExpectingError('mathil');
+      await requestDocsExpectingError('mathil');
+
+      const log = await getUserFailureLog('mathil');
+      const today = moment().format('YYYY-MM-DD');
+      expect(log.daily_failures).to.deep.equal({ [today]: 3 });
+      expect(log.total_failures).to.equal(3);
+    });
+
+    it('should preserve buckets from previous days when capturing a new failure', async () => {
+      // Seed a real log doc with historical buckets so we can verify the merge, not just the create.
+      await requestDocsExpectingError('mathil');
+      const logId = getFailureLogId('mathil');
+      const seeded = await utils.logsDb.get(logId);
+      const yesterday = moment().subtract(1, 'day').format('YYYY-MM-DD');
+      const twoDaysAgo = moment().subtract(2, 'days').format('YYYY-MM-DD');
+      seeded.daily_failures = { [twoDaysAgo]: 4, [yesterday]: 2 };
+      await utils.logsDb.put(seeded);
+
+      await requestDocsExpectingError('mathil');
+
+      const log = await getUserFailureLog('mathil');
+      const today = moment().format('YYYY-MM-DD');
+      expect(log.daily_failures).to.deep.equal({
+        [twoDaysAgo]: 4,
+        [yesterday]: 2,
+        [today]: 1,
       });
     });
 

@@ -9,6 +9,7 @@ describe('Replication Failure Log Service', () => {
     sinon.stub(db.medicLogs, 'allDocs');
     sinon.stub(db.medicLogs, 'get');
     sinon.stub(db.medicLogs, 'put');
+    sinon.stub(db.medicLogs, 'query');
   });
 
   afterEach(() => {
@@ -18,7 +19,13 @@ describe('Replication Failure Log Service', () => {
   describe('get', () => {
     describe('with user and reportingPeriod', () => {
       it('should fetch the specific doc with cursor=null', async () => {
-        const doc = { _id: 'replication-fail-2026-04-bob', user: 'bob', failures: [{}] };
+        const doc = {
+          _id: 'replication-fail-2026-04-bob',
+          user: 'bob',
+          total_failures: 1,
+          failures: [{ date: 1, status_code: 500, duration: 10, request_id: 'r-1' }],
+          daily_failures: { '2026-04-15': 1 },
+        };
         db.medicLogs.get.resolves(doc);
 
         const result = await replicationFailureLog.get({ user: 'bob', reportingPeriod: '2026-04' });
@@ -111,7 +118,13 @@ describe('Replication Failure Log Service', () => {
       ));
 
       it('should bulk-fetch the user\'s candidate keys and return the matched docs', async () => {
-        const bobApril = { _id: 'replication-fail-2026-04-bob', user: 'bob', failures: [{}] };
+        const bobApril = {
+          _id: 'replication-fail-2026-04-bob',
+          user: 'bob',
+          total_failures: 1,
+          failures: [{ date: 1, status_code: 500, duration: 10, request_id: 'r-1' }],
+          daily_failures: { '2026-04-15': 1 },
+        };
         db.medicLogs.allDocs.resolves({ rows: rowsFor('bob', new Map([[bobApril._id, bobApril]])) });
 
         const result = await replicationFailureLog.get({ user: 'bob' });
@@ -265,6 +278,119 @@ describe('Replication Failure Log Service', () => {
     });
   });
 
+  describe('getUsersWithFailuresCount', () => {
+    const row = (day, user, count) => ({ key: [day, user], value: count });
+
+    it('should query the view with a windowed startkey and return distinct users', async () => {
+      // Today: 2026-04-15. Interval: 7 days. Since: 2026-04-08.
+      sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+      db.medicLogs.query.resolves({
+        rows: [
+          row('2026-04-10', 'alice', 1),
+          row('2026-04-12', 'alice', 3),
+          row('2026-04-14', 'bob', 2),
+          row('2026-04-09', 'clare', 1),
+        ],
+      });
+
+      const result = await replicationFailureLog.getUsersWithFailuresCount(7);
+
+      expect(db.medicLogs.query.callCount).to.equal(1);
+      expect(db.medicLogs.query.args[0]).to.deep.equal([
+        'logs/replication_failures',
+        { startkey: ['2026-04-08'] },
+      ]);
+      // alice appears twice but is counted once.
+      expect(result).to.equal(3);
+    });
+
+    it('should honour the interval argument', async () => {
+      sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+      db.medicLogs.query.resolves({ rows: [] });
+
+      await replicationFailureLog.getUsersWithFailuresCount(30);
+
+      expect(db.medicLogs.query.args[0][1]).to.deep.equal({ startkey: ['2026-03-16'] });
+    });
+
+    it('should return 0 when the view returns no rows', async () => {
+      sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+      db.medicLogs.query.resolves({ rows: [] });
+
+      const result = await replicationFailureLog.getUsersWithFailuresCount(7);
+
+      expect(result).to.equal(0);
+    });
+
+    it('should span across a year boundary', async () => {
+      sinon.useFakeTimers(new Date('2026-01-05T12:00:00Z').valueOf());
+      db.medicLogs.query.resolves({ rows: [] });
+
+      await replicationFailureLog.getUsersWithFailuresCount(30);
+
+      expect(db.medicLogs.query.args[0][1]).to.deep.equal({ startkey: ['2025-12-06'] });
+    });
+
+    it('should propagate db errors', async () => {
+      sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+      db.medicLogs.query.rejects({ status: 500, message: 'db error' });
+
+      try {
+        await replicationFailureLog.getUsersWithFailuresCount(7);
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ status: 500, message: 'db error' });
+      }
+    });
+  });
+
+  describe('getDailyFailuresByUserSince', () => {
+    const row = (day, user, count) => ({ key: [day, user], value: count });
+
+    it('should query the view from the given day and nest counts by user then day', async () => {
+      db.medicLogs.query.resolves({
+        rows: [
+          row('2026-04-10', 'alice', 1),
+          row('2026-04-12', 'alice', 3),
+          row('2026-04-14', 'bob', 2),
+        ],
+      });
+
+      const result = await replicationFailureLog.getDailyFailuresByUserSince('2026-04-01');
+
+      expect(db.medicLogs.query.callCount).to.equal(1);
+      expect(db.medicLogs.query.args[0]).to.deep.equal([
+        'logs/replication_failures',
+        { startkey: ['2026-04-01'] },
+      ]);
+      expect(result).to.deep.equal({
+        alice: { '2026-04-10': 1, '2026-04-12': 3 },
+        bob: { '2026-04-14': 2 },
+      });
+    });
+
+    it('should sum counts for a user that repeats on the same day', async () => {
+      db.medicLogs.query.resolves({
+        rows: [
+          row('2026-04-10', 'alice', 1),
+          row('2026-04-10', 'alice', 4),
+        ],
+      });
+
+      const result = await replicationFailureLog.getDailyFailuresByUserSince('2026-04-01');
+
+      expect(result).to.deep.equal({ alice: { '2026-04-10': 5 } });
+    });
+
+    it('should return an empty object when the view returns no rows', async () => {
+      db.medicLogs.query.resolves({ rows: [] });
+
+      const result = await replicationFailureLog.getDailyFailuresByUserSince('2026-04-01');
+
+      expect(result).to.deep.equal({});
+    });
+  });
+
   describe('capture', () => {
     it('should create a new log when none exists', async () => {
       const now = new Date('2026-04-15T12:00:00Z').valueOf();
@@ -298,10 +424,11 @@ describe('Replication Failure Log Service', () => {
           unpurged_docs_count: 1200,
           roles: ['chw'],
         }],
+        daily_failures: { '2026-04-15': 1 },
       });
     });
 
-    it('should record `unknown` for counts not set on userCtx', async () => {
+    it('should record null for counts not set on userCtx', async () => {
       db.medicLogs.get.rejects({ status: 404 });
       db.medicLogs.put.resolves();
 
@@ -310,12 +437,12 @@ describe('Replication Failure Log Service', () => {
       await replicationFailureLog.capture(userCtx, 'req-early', 500, 50);
 
       const saved = db.medicLogs.put.args[0][0];
-      expect(saved.failures[0].subjects_count).to.equal('unknown');
-      expect(saved.failures[0].docs_count).to.equal('unknown');
-      expect(saved.failures[0].unpurged_docs_count).to.equal('unknown');
+      expect(saved.failures[0].subjects_count).to.be.null;
+      expect(saved.failures[0].docs_count).to.be.null;
+      expect(saved.failures[0].unpurged_docs_count).to.be.null;
     });
 
-    it('should mix numeric counters with `unknown` based on how far the request progressed', async () => {
+    it('should mix numeric counters with null based on how far the request progressed', async () => {
       db.medicLogs.get.rejects({ status: 404 });
       db.medicLogs.put.resolves();
 
@@ -331,7 +458,7 @@ describe('Replication Failure Log Service', () => {
       const saved = db.medicLogs.put.args[0][0];
       expect(saved.failures[0].subjects_count).to.equal(6);
       expect(saved.failures[0].docs_count).to.equal(1234);
-      expect(saved.failures[0].unpurged_docs_count).to.equal('unknown');
+      expect(saved.failures[0].unpurged_docs_count).to.be.null;
     });
 
     it('should append to an existing log', async () => {
@@ -344,6 +471,7 @@ describe('Replication Failure Log Service', () => {
           { date: 1000, status_code: 500, duration: 100, request_id: 'old-1' },
           { date: 2000, status_code: 500, duration: 200, request_id: 'old-2' },
         ],
+        daily_failures: { '1970-01-01': 2 },
       };
       db.medicLogs.get.resolves(existingLog);
       db.medicLogs.put.resolves();
@@ -376,6 +504,7 @@ describe('Replication Failure Log Service', () => {
         user: 'bob',
         total_failures: 50,
         failures: oldFailures.map(f => ({ ...f })),
+        daily_failures: { '1970-01-01': 50 },
       };
       db.medicLogs.get.resolves(existingLog);
       db.medicLogs.put.resolves();
@@ -408,6 +537,7 @@ describe('Replication Failure Log Service', () => {
         user: 'bob',
         total_failures: 10,
         failures: oldFailures.map(f => ({ ...f })),
+        daily_failures: { '1970-01-01': 10 },
       };
       db.medicLogs.get.resolves(existingLog);
       db.medicLogs.put.resolves();
@@ -465,11 +595,106 @@ describe('Replication Failure Log Service', () => {
           status_code: 402,
           duration: 200,
           request_id: 'req-123',
-          subjects_count: 'unknown',
-          docs_count: 'unknown',
-          unpurged_docs_count: 'unknown',
+          subjects_count: null,
+          docs_count: null,
+          unpurged_docs_count: null,
           roles: ['chw'],
         }],
+        daily_failures: { '2026-04-15': 1 },
+      });
+    });
+
+    describe('defensive lazy-init of mutable fields', () => {
+      it('should lazily initialise daily_failures if it has been stripped', async () => {
+        sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+        const priorFailures = Array.from({ length: 5 }, (_, i) => ({
+          date: i * 1000, status_code: 500, duration: 100, request_id: `old-${i}`,
+        }));
+        db.medicLogs.get.resolves({
+          _id: 'replication-fail-2026-04-bob',
+          _rev: '1-abc',
+          user: 'bob',
+          total_failures: 5,
+          failures: priorFailures,
+        });
+        db.medicLogs.put.resolves();
+
+        await replicationFailureLog.capture({ name: 'bob', roles: ['chw'] }, 'req', 500, 100);
+
+        expect(db.medicLogs.put.args[0][0].daily_failures).to.deep.equal({ '2026-04-15': 1 });
+      });
+
+      it('should lazily initialise failures if it has been stripped', async () => {
+        sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+        db.medicLogs.get.resolves({
+          _id: 'replication-fail-2026-04-bob',
+          _rev: '1-abc',
+          user: 'bob',
+          total_failures: 5,
+          daily_failures: { '2026-04-10': 2, '2026-04-12': 3 },
+        });
+        db.medicLogs.put.resolves();
+
+        await replicationFailureLog.capture({ name: 'bob', roles: ['chw'] }, 'req', 500, 100);
+
+        const saved = db.medicLogs.put.args[0][0];
+        expect(saved.failures).to.have.lengthOf(1);
+        expect(saved.failures[0]).to.deep.include({ status_code: 500, duration: 100, request_id: 'req' });
+        expect(saved.total_failures).to.equal(6);
+      });
+
+      it('should lazily initialise total_failures if it has been stripped', async () => {
+        sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+        db.medicLogs.get.resolves({
+          _id: 'replication-fail-2026-04-bob',
+          _rev: '1-abc',
+          user: 'bob',
+          failures: [],
+          daily_failures: {},
+        });
+        db.medicLogs.put.resolves();
+
+        await replicationFailureLog.capture({ name: 'bob', roles: ['chw'] }, 'req', 500, 100);
+
+        expect(db.medicLogs.put.args[0][0].total_failures).to.equal(1);
+      });
+
+      it('should increment an existing same-day bucket', async () => {
+        sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+        db.medicLogs.get.resolves({
+          _id: 'replication-fail-2026-04-bob',
+          _rev: '1-abc',
+          user: 'bob',
+          total_failures: 7,
+          failures: [],
+          daily_failures: { '2026-04-15': 7 },
+        });
+        db.medicLogs.put.resolves();
+
+        await replicationFailureLog.capture({ name: 'bob', roles: ['chw'] }, 'req', 500, 100);
+
+        expect(db.medicLogs.put.args[0][0].daily_failures).to.deep.equal({ '2026-04-15': 8 });
+      });
+
+      it('should add a new bucket on a new day while preserving prior days', async () => {
+        sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+        db.medicLogs.get.resolves({
+          _id: 'replication-fail-2026-04-bob',
+          _rev: '1-abc',
+          user: 'bob',
+          total_failures: 4,
+          failures: [],
+          daily_failures: { '2026-04-13': 2, '2026-04-14': 2 },
+        });
+        db.medicLogs.put.resolves();
+
+        await replicationFailureLog.capture({ name: 'bob', roles: ['chw'] }, 'req', 500, 100);
+
+        expect(db.medicLogs.put.args[0][0].daily_failures).to.deep.equal({
+          '2026-04-13': 2,
+          '2026-04-14': 2,
+          '2026-04-15': 1,
+        });
       });
     });
   });

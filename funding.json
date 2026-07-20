@@ -17,7 +17,7 @@
             "name": "Community Health Toolkit (CHT)",
             "description": "The Community Health Toolkit (CHT) is a project led by a group of organizations that have come together to support the development of digital health initiatives in the hardest-to-reach areas. It provides a collection of open-source technologies and open-access design, technical, and implementation resources that help anyone build and adapt to local contexts and deploy digital tools for community health. The Toolkit has been adopted by 8 governments and currently supports over 182,500 frontline health workers across 24 countries across Asia and Africa who deliver life-saving care to an estimated 90 million people. Together, we envision a world where healthcare is of the highest attainable quality, equitable, accessible, and delivered by people who are trusted in their communities. The CHT is a Digital Public Good.",
             "webpageUrl": {
-                "url": "https://communityhealthtoolkit.org/"
+                "url": "https://github.com/medic"
             },
             "repositoryUrl": {
                 "url": "https://github.com/medic/cht-core"
