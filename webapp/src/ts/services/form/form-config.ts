@@ -1,6 +1,7 @@
 export type FormType = 'contact' | 'report' | 'task' | 'training-card';
 
-// FYI, putting this in the xml-forms.service file causes that service (and dependencies) to leak into cht-form.
+// Putting this in the xml-forms.service file causes that service (and dependencies) to leak into cht-form.
+// This breaks the cht-form build.
 export class FormConfig {
   public readonly repeatPaths: string[];
 

@@ -371,7 +371,6 @@ export class FormService {
       ? { type }
       : { type: 'contact', contact_type: type };
 
-    // const docs = await this.contactSaveService.save(form, docId, typeFields, xmlVersion);
     const defaultData = docId ? await this.getContact(Qualifier.byUuid(docId)) : typeFields;
     const docs = await this.enketoService.saveContact(enketoForm, defaultData!);
 
