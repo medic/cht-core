@@ -531,6 +531,41 @@ describe('AppComponent', () => {
     expect(actualSubmittedDocs).to.deep.equal(expectedDocs);
   }));
 
+  it('strips properties set to undefined and preserves attachments when emitting docs', fakeAsync(async () => {
+    const attachments = { 'user-file': { content_type: 'text/xml', data: 'not-json-serializable' } };
+    const savedDocs = [
+      { _id: 'doc1', keep: 'value', drop: undefined, nested: { keep: 'value', drop: undefined } },
+      { _id: 'doc2', _attachments: attachments, drop: undefined },
+    ];
+    enketoService.saveReport.resolves(savedDocs);
+    const contact = { phone: '12345' };
+    const content = { my: 'content', contact };
+
+    const component = getComponent();
+    component.content = content;
+    component.formXml = FORM_XML;
+    component.formModel = FORM_MODEL;
+    component.formHtml = FORM_HTML;
+    tick();
+
+    let actualSubmittedDocs;
+    component.onSubmit.subscribe((submittedDocs) => {
+      actualSubmittedDocs = submittedDocs;
+    });
+
+    await component.submitForm();
+    tick();
+
+    expect(enketoService.saveReport.callCount).to.equal(1);
+    // undefined properties removed (including nested), other values retained
+    expect(actualSubmittedDocs).to.deep.equal([
+      { _id: 'doc1', keep: 'value', nested: { keep: 'value' } },
+      { _id: 'doc2', _attachments: attachments },
+    ]);
+    // attachments are preserved by reference (not run through the JSON round-trip)
+    expect(actualSubmittedDocs[1]._attachments).to.equal(attachments);
+  }));
+
   it('submits contact form with default type', fakeAsync(async () => {
     const expectedDocs = [
       { _id: 'doc1' },
