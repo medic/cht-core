@@ -13,7 +13,7 @@ const TRANSLATION_KEYS = {
   SUCCESS: 'geolocation.success',
   PERMISSION_DENIED: 'geolocation.permission.denied',
   UNAVAILABLE: 'geolocation.unavailable',
-  CONTINUE_WITHOUT: 'geolocation.continue.without.location',
+  SAVE_WITHOUT: 'geolocation.save.without.location',
   AT_HOUSEHOLD: 'geolocation.at.household',
   SOMEWHERE_ELSE: 'geolocation.somewhere.else',
   NO_LOCATION_RECORDED: 'geolocation.no.location.recorded',
@@ -39,9 +39,9 @@ class HouseholdGeolocationWidget extends Widget {
       $('<p class="geolocation-permission-denied">')
         .text(this._translate(TRANSLATION_KEYS.PERMISSION_DENIED))
         .appendTo($question);
-      this._appendContinueWithoutButton($question);
+      this._appendSaveWithoutCheckbox($question);
       document.addEventListener('geolocationPermissionGranted', () => {
-        $question.find('.geolocation-permission-denied, .geolocation-continue-without-btn').remove();
+        $question.find('.geolocation-permission-denied, .geolocation-save-without-label').remove();
         if (this.element.dataset.geoHasLocation === 'true') {
           this._initEditMode($question);
         } else {
@@ -60,7 +60,7 @@ class HouseholdGeolocationWidget extends Widget {
       $('<p class="geolocation-unavailable">')
         .text(this._translate(TRANSLATION_KEYS.UNAVAILABLE))
         .appendTo($question);
-      this._appendContinueWithoutButton($question);
+      this._appendSaveWithoutCheckbox($question);
       return;
     }
 
@@ -147,7 +147,7 @@ class HouseholdGeolocationWidget extends Widget {
       $('<p class="geolocation-permission-denied">')
         .text(this._translate(TRANSLATION_KEYS.PERMISSION_DENIED))
         .appendTo($status);
-      this._appendContinueWithoutButton();
+      this._appendSaveWithoutCheckbox();
       return;
     }
 
@@ -176,7 +176,7 @@ class HouseholdGeolocationWidget extends Widget {
       $status.find('.geolocation-result-row, .geolocation-weak-signal-msg').remove();
       $bar.removeClass('geolocation-progress-failure');
       $retryBtn.remove();
-      $(this.question).find('.geolocation-continue-without-btn').remove();
+      $(this.question).find('.geolocation-save-without-label').remove();
       this._waitForCapture($status, $bar);
     });
 
@@ -188,7 +188,7 @@ class HouseholdGeolocationWidget extends Widget {
     }
 
     if (!this._isEditWithLocation || this._isRecordNewSelected()) {
-      this._appendContinueWithoutButton();
+      this._appendSaveWithoutCheckbox();
     }
   }
 
@@ -203,17 +203,18 @@ class HouseholdGeolocationWidget extends Widget {
     return { $status, $bar };
   }
 
-  _buildContinueWithoutButton() {
-    return $('<button type="button" class="btn btn-default geolocation-continue-without-btn">')
-      .text(this._translate(TRANSLATION_KEYS.CONTINUE_WITHOUT));
-  }
+  _appendSaveWithoutCheckbox($target = $(this.question)) {
+    const $checkbox = $('<input type="checkbox" class="geolocation-save-without-checkbox">');
+    const $label = $('<label class="geolocation-save-without-label">')
+      .append($checkbox, $('<span>').text(this._translate(TRANSLATION_KEYS.SAVE_WITHOUT)));
 
-  _appendContinueWithoutButton($target = $(this.question)) {
-    const $btn = this._buildContinueWithoutButton();
-    $btn.on('click', () => {
-      $(this.element).val('skipped').trigger('change');
+    $checkbox.on('change', () => {
+      const checked = $checkbox.prop('checked');
+      $label.attr('data-checked', checked ? 'true' : null);
+      $(this.element).val(checked ? 'skipped' : '').trigger('change');
     });
-    $target.append($btn);
+
+    $target.append($label);
   }
 
   _isRecordNewSelected() {
@@ -259,12 +260,12 @@ class HouseholdGeolocationWidget extends Widget {
       if (value === 'kept') {
         $(this.element).val('kept').trigger('change');
         $(this.question).find(
-          '.geolocation-context-options, .geolocation-continue-without-btn, .geolocation-context-label'
+          '.geolocation-context-options, .geolocation-save-without-label, .geolocation-context-label'
         ).remove();
       } else if (value === 'removed') {
         $(this.element).val('skipped').trigger('change');
         $(this.question).find(
-          '.geolocation-context-options, .geolocation-continue-without-btn, .geolocation-context-label'
+          '.geolocation-context-options, .geolocation-save-without-label, .geolocation-context-label'
         ).remove();
       } else if (value === 'capture-new') {
         this._onCaptureNewSelected($bar);
@@ -281,8 +282,8 @@ class HouseholdGeolocationWidget extends Widget {
     // This one-shot timeout means the error still appears on submit.
     setTimeout(() => $(this.question).removeClass('invalid-required'), 0);
     if ($bar.hasClass('geolocation-progress-failure') &&
-        !$(this.question).find('.geolocation-continue-without-btn').length) {
-      this._appendContinueWithoutButton();
+        !$(this.question).find('.geolocation-save-without-label').length) {
+      this._appendSaveWithoutCheckbox();
     }
     if ($bar.hasClass('geolocation-progress-success') &&
         !$(this.question).find('.geolocation-context-options').length) {

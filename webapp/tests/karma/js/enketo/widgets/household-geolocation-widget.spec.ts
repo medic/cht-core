@@ -15,7 +15,8 @@ const SELECTORS = {
   FAILURE_MSG: '.geolocation-failure-msg',
   SIGNAL_WEAK_MSG: '.geolocation-weak-signal-msg',
   RETRY_BTN: '.geolocation-retry-btn',
-  CONTINUE_WITHOUT_BTN: '.geolocation-continue-without-btn',
+  SAVE_WITHOUT_LABEL: '.geolocation-save-without-label',
+  SAVE_WITHOUT_CHECKBOX: '.geolocation-save-without-checkbox',
   AT_HOUSEHOLD_RADIO: 'input[type="radio"][value="home"]',
   SOMEWHERE_ELSE_RADIO: 'input[type="radio"][value="other"]',
   CONTEXT_OPTIONS: '.geolocation-context-options',
@@ -107,25 +108,29 @@ describe('Enketo: Household Geolocation Widget', () => {
       expect((widget.element as HTMLInputElement).value).to.equal('');
     });
 
-    it('should show continue-without button when permission is denied', () => {
+    it('should show save-without checkbox when permission is denied', () => {
       (window as any).CHTCore.Geolocation.isPermissionDenied = sinon.stub().returns(true);
       const { container } = initWidget();
-      expect(container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.not.be.null;
+      expect(container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.not.be.null;
     });
 
-    it('should set value to "skipped" when continue-without button is clicked (permission denied)', () => {
+    it('should set value to "skipped" when save-without checkbox is checked (permission denied)', () => {
       (window as any).CHTCore.Geolocation.isPermissionDenied = sinon.stub().returns(true);
       const { widget, container } = initWidget();
-      (container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN) as HTMLElement).click();
+      const checkbox = container.querySelector(SELECTORS.SAVE_WITHOUT_CHECKBOX) as HTMLInputElement;
+      checkbox.checked = true;
+      $(checkbox).trigger('change');
       expect((widget.element as HTMLInputElement).value).to.equal('skipped');
     });
 
-    it('should fire a change event when continue-without button is clicked (permission denied)', () => {
+    it('should fire a change event when save-without checkbox is checked (permission denied)', () => {
       (window as any).CHTCore.Geolocation.isPermissionDenied = sinon.stub().returns(true);
       const { widget, container } = initWidget();
       const changeHandler = sinon.stub();
       $((widget.element as HTMLInputElement)).on('change', changeHandler);
-      (container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN) as HTMLElement).click();
+      const checkbox = container.querySelector(SELECTORS.SAVE_WITHOUT_CHECKBOX) as HTMLInputElement;
+      checkbox.checked = true;
+      $(checkbox).trigger('change');
       expect(changeHandler.callCount).to.equal(1);
     });
 
@@ -136,11 +141,11 @@ describe('Enketo: Household Geolocation Widget', () => {
       expect(container.querySelector(SELECTORS.PERMISSION_DENIED)).to.be.null;
     });
 
-    it('should remove continue-without button when geolocationPermissionGranted event fires', () => {
+    it('should remove save-without checkbox when geolocationPermissionGranted event fires', () => {
       (window as any).CHTCore.Geolocation.isPermissionDenied = sinon.stub().returns(true);
       const { container } = initWidget();
       document.dispatchEvent(new CustomEvent('geolocationPermissionGranted'));
-      expect(container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.be.null;
+      expect(container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
     });
 
     it('should show progress bar when geolocationPermissionGranted event fires', () => {
@@ -216,25 +221,29 @@ describe('Enketo: Household Geolocation Widget', () => {
       expect((widget.element as HTMLInputElement).value).to.equal('');
     });
 
-    it('should show continue-without button when Geolocation API is absent', () => {
+    it('should show save-without checkbox when Geolocation API is absent', () => {
       (window as any).CHTCore.Geolocation.isAvailable = sinon.stub().returns(false);
       const { container } = initWidget();
-      expect(container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.not.be.null;
+      expect(container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.not.be.null;
     });
 
-    it('should set value to "skipped" when continue-without button is clicked (unavailable)', () => {
+    it('should set value to "skipped" when save-without checkbox is checked (unavailable)', () => {
       (window as any).CHTCore.Geolocation.isAvailable = sinon.stub().returns(false);
       const { widget, container } = initWidget();
-      (container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN) as HTMLElement).click();
+      const checkbox = container.querySelector(SELECTORS.SAVE_WITHOUT_CHECKBOX) as HTMLInputElement;
+      checkbox.checked = true;
+      $(checkbox).trigger('change');
       expect((widget.element as HTMLInputElement).value).to.equal('skipped');
     });
 
-    it('should fire a change event when continue-without button is clicked (unavailable)', () => {
+    it('should fire a change event when save-without checkbox is checked (unavailable)', () => {
       (window as any).CHTCore.Geolocation.isAvailable = sinon.stub().returns(false);
       const { widget, container } = initWidget();
       const changeHandler = sinon.stub();
       $((widget.element as HTMLInputElement)).on('change', changeHandler);
-      (container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN) as HTMLElement).click();
+      const checkbox = container.querySelector(SELECTORS.SAVE_WITHOUT_CHECKBOX) as HTMLInputElement;
+      checkbox.checked = true;
+      $(checkbox).trigger('change');
       expect(changeHandler.callCount).to.equal(1);
     });
 
@@ -244,9 +253,9 @@ describe('Enketo: Household Geolocation Widget', () => {
         expect(container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
       });
 
-      it('should not show "continue without location" button before GPS resolves', () => {
+      it('should not show "save without location" checkbox before GPS resolves', () => {
         const { container } = initWidget();
-        expect(container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.be.null;
+        expect(container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
       });
 
       it('should not show context choices before GPS resolves', () => {
@@ -308,12 +317,12 @@ describe('Enketo: Household Geolocation Widget', () => {
           expect(container.querySelector(SELECTORS.SOMEWHERE_ELSE_RADIO)).to.not.be.null;
         });
 
-        it('should not show "continue without location" button on GPS success', async () => {
+        it('should not show "save without location" checkbox on GPS success', async () => {
           const promise = Promise.resolve(GPS_SUCCESS);
           (window as any).CHTCore.Geolocation.currentPromise = promise;
           const { container } = initWidget();
           await promise;
-          expect(container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.be.null;
+          expect(container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
         });
 
         it('should set value to "captured" and geo-context to "home" when "at household" is selected', async () => {
@@ -382,22 +391,12 @@ describe('Enketo: Household Geolocation Widget', () => {
           expect(container.querySelector(SELECTORS.RETRY_BTN)).to.not.be.null;
         });
 
-        it('should show "continue without location" button after GPS failure', async () => {
+        it('should show "save without location" checkbox after GPS failure', async () => {
           const promise = Promise.resolve(GPS_FAILURE);
           (window as any).CHTCore.Geolocation.currentPromise = promise;
           const { container } = initWidget();
           await promise;
-          expect(container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.not.be.null;
-        });
-
-        it('should style "continue without location" button the same as retry button', async () => {
-          const promise = Promise.resolve(GPS_FAILURE);
-          (window as any).CHTCore.Geolocation.currentPromise = promise;
-          const { container } = initWidget();
-          await promise;
-          const cantRecordBtn = container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)!;
-          expect(cantRecordBtn.classList.contains('btn-default')).to.be.true;
-          expect(cantRecordBtn.classList.contains('btn-link')).to.be.false;
+          expect(container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.not.be.null;
         });
 
         it('should not show context choices', async () => {
@@ -465,7 +464,7 @@ describe('Enketo: Household Geolocation Widget', () => {
           expect(container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
         });
 
-        it('should remove "continue without location" button when retry is clicked', async () => {
+        it('should remove "save without location" checkbox when retry is clicked', async () => {
           const failurePromise = Promise.resolve(GPS_FAILURE);
           (window as any).CHTCore.Geolocation.currentPromise = failurePromise;
           const { container } = initWidget();
@@ -476,11 +475,11 @@ describe('Enketo: Household Geolocation Widget', () => {
           });
           (container.querySelector(SELECTORS.RETRY_BTN) as HTMLElement).click();
 
-          expect(container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.be.null;
+          expect(container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
         });
       });
 
-      describe('continue-without button', () => {
+      describe('save-without checkbox', () => {
         const initWidgetAfterFailure = async () => {
           const promise = Promise.resolve(GPS_FAILURE);
           (window as any).CHTCore.Geolocation.currentPromise = promise;
@@ -489,18 +488,32 @@ describe('Enketo: Household Geolocation Widget', () => {
           return result;
         };
 
-        it('should set value to "skipped" when clicked', async () => {
+        it('should set value to "skipped" when checked', async () => {
           const { widget, container } = await initWidgetAfterFailure();
-          (container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN) as HTMLElement).click();
+          const checkbox = container.querySelector(SELECTORS.SAVE_WITHOUT_CHECKBOX) as HTMLInputElement;
+          checkbox.checked = true;
+          $(checkbox).trigger('change');
           expect((widget.element as HTMLInputElement).value).to.equal('skipped');
         });
 
-        it('should fire a change event when clicked', async () => {
+        it('should fire a change event when checked', async () => {
           const { widget, container } = await initWidgetAfterFailure();
           const changeHandler = sinon.stub();
           $((widget.element as HTMLInputElement)).on('change', changeHandler);
-          (container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN) as HTMLElement).click();
+          const checkbox = container.querySelector(SELECTORS.SAVE_WITHOUT_CHECKBOX) as HTMLInputElement;
+          checkbox.checked = true;
+          $(checkbox).trigger('change');
           expect(changeHandler.callCount).to.equal(1);
+        });
+
+        it('should clear value when unchecked', async () => {
+          const { widget, container } = await initWidgetAfterFailure();
+          const checkbox = container.querySelector(SELECTORS.SAVE_WITHOUT_CHECKBOX) as HTMLInputElement;
+          checkbox.checked = true;
+          $(checkbox).trigger('change');
+          checkbox.checked = false;
+          $(checkbox).trigger('change');
+          expect((widget.element as HTMLInputElement).value).to.equal('');
         });
       });
 
@@ -520,9 +533,9 @@ describe('Enketo: Household Geolocation Widget', () => {
           expect(container.querySelector(SELECTORS.FAILURE_MSG)).to.be.null;
         });
 
-        it('should show continue-without button', async () => {
+        it('should show save-without checkbox', async () => {
           const { container } = await initWidgetAfterPermissionDeniedFailure();
-          expect(container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.not.be.null;
+          expect(container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.not.be.null;
         });
 
         it('should not show retry button', async () => {
@@ -583,9 +596,9 @@ describe('Enketo: Household Geolocation Widget', () => {
         expect(container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
       });
 
-      it('should not show "continue without location" button before GPS resolves', () => {
+      it('should not show "save without location" checkbox before GPS resolves', () => {
         const { container } = initEditWidget();
-        expect(container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.be.null;
+        expect(container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
       });
 
       it('should not show context choices before GPS resolves', () => {
@@ -603,22 +616,24 @@ describe('Enketo: Household Geolocation Widget', () => {
         expect(container.querySelector(SELECTORS.SOMEWHERE_ELSE_RADIO)).to.not.be.null;
       });
 
-      it('should show failure UI and keep "continue without location" after GPS fails', async () => {
+      it('should show failure UI and "save without location" checkbox after GPS fails', async () => {
         const promise = Promise.resolve(GPS_FAILURE);
         (window as any).CHTCore.Geolocation.currentPromise = promise;
         const { container } = initEditWidget();
         await promise;
         expect(container.querySelector(SELECTORS.FAILURE_MSG)).to.not.be.null;
         expect(container.querySelector(SELECTORS.RETRY_BTN)).to.not.be.null;
-        expect(container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.not.be.null;
+        expect(container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.not.be.null;
       });
 
-      it('should set value to "skipped" when "continue without location" is clicked after GPS fails', async () => {
+      it('should set value to "skipped" when "save without location" checkbox is checked after GPS fails', async () => {
         const promise = Promise.resolve(GPS_FAILURE);
         (window as any).CHTCore.Geolocation.currentPromise = promise;
         const { widget, container } = initEditWidget();
         await promise;
-        (container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN) as HTMLElement).click();
+        const checkbox = container.querySelector(SELECTORS.SAVE_WITHOUT_CHECKBOX) as HTMLInputElement;
+        checkbox.checked = true;
+        $(checkbox).trigger('change');
         expect((widget.element as HTMLInputElement).value).to.equal('skipped');
       });
     });
@@ -714,12 +729,12 @@ describe('Enketo: Household Geolocation Widget', () => {
         expect(retryIndex).to.be.lessThan(choicesIndex);
       });
 
-      it('should not show "continue without location" button on GPS failure without selecting Record New', async () => {
+      it('should not show "save without location" checkbox on GPS failure without selecting Record New', async () => {
         const promise = Promise.resolve(GPS_FAILURE);
         (window as any).CHTCore.Geolocation.currentPromise = promise;
         const { container } = initEditWithLocationWidget();
         await promise;
-        expect(container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.be.null;
+        expect(container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
       });
 
       it('should not show context choices on GPS success without selecting Record New', async () => {
@@ -730,9 +745,9 @@ describe('Enketo: Household Geolocation Widget', () => {
         expect(container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.be.null;
       });
 
-      it('should not show "continue without location" button initially', () => {
+      it('should not show "save without location" checkbox initially', () => {
         const { container } = initEditWithLocationWidget();
-        expect(container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.be.null;
+        expect(container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
       });
 
       it('should not show no-location message', () => {
@@ -786,7 +801,7 @@ describe('Enketo: Household Geolocation Widget', () => {
           expect(result.container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.be.null;
         });
 
-        it('should remove the cant-record button when switching from Record New after GPS failure', async () => {
+        it('should remove the save-without checkbox when switching from Record New after GPS failure', async () => {
           const promise = Promise.resolve(GPS_FAILURE);
           (window as any).CHTCore.Geolocation.currentPromise = promise;
           const result = initEditWithLocationWidget();
@@ -794,11 +809,11 @@ describe('Enketo: Household Geolocation Widget', () => {
           recordNewRadio.checked = true;
           $(recordNewRadio).trigger('change');
           await promise;
-          expect(result.container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.not.be.null;
+          expect(result.container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.not.be.null;
           const keepRadio = result.container.querySelector(SELECTORS.KEEP_RADIO) as HTMLInputElement;
           keepRadio.checked = true;
           $(keepRadio).trigger('change');
-          expect(result.container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.be.null;
+          expect(result.container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
         });
       });
 
@@ -836,7 +851,7 @@ describe('Enketo: Household Geolocation Widget', () => {
           expect(result.container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.be.null;
         });
 
-        it('should remove the cant-record button when switching from Record New after GPS failure', async () => {
+        it('should remove the save-without checkbox when switching from Record New after GPS failure', async () => {
           const promise = Promise.resolve(GPS_FAILURE);
           (window as any).CHTCore.Geolocation.currentPromise = promise;
           const result = initEditWithLocationWidget();
@@ -844,11 +859,11 @@ describe('Enketo: Household Geolocation Widget', () => {
           recordNewRadio.checked = true;
           $(recordNewRadio).trigger('change');
           await promise;
-          expect(result.container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.not.be.null;
+          expect(result.container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.not.be.null;
           const removeRadio = result.container.querySelector(SELECTORS.REMOVE_RADIO) as HTMLInputElement;
           removeRadio.checked = true;
           $(removeRadio).trigger('change');
-          expect(result.container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.be.null;
+          expect(result.container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
         });
       });
 
@@ -923,7 +938,7 @@ describe('Enketo: Household Geolocation Widget', () => {
           await promise;
           expect(result.container.querySelector(SELECTORS.FAILURE_MSG)).to.not.be.null;
           expect(result.container.querySelector(SELECTORS.RETRY_BTN)).to.not.be.null;
-          expect(result.container.querySelector(SELECTORS.CONTINUE_WITHOUT_BTN)).to.not.be.null;
+          expect(result.container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.not.be.null;
           expect(result.container.querySelector(SELECTORS.EDIT_CHOICES)).to.not.be.null;
         });
 
@@ -945,7 +960,7 @@ describe('Enketo: Household Geolocation Widget', () => {
 
           expect(result.container.querySelectorAll(SELECTORS.FAILURE_MSG)).to.have.lengthOf(1);
           expect(result.container.querySelectorAll(SELECTORS.RETRY_BTN)).to.have.lengthOf(1);
-          expect(result.container.querySelectorAll(SELECTORS.CONTINUE_WITHOUT_BTN)).to.have.lengthOf(1);
+          expect(result.container.querySelectorAll(SELECTORS.SAVE_WITHOUT_LABEL)).to.have.lengthOf(1);
         });
       });
     });

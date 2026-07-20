@@ -539,8 +539,23 @@
       }
     }
 
-    .geolocation-cant-record-btn {
-      margin-top: 8px;
+    .geolocation-save-without-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 12px 0 0 0;
+      padding: 8px 4px;
+      border-radius: @radius-size-small;
+      cursor: pointer;
+      font-weight: normal;
+
+      &[data-checked=true] {
+        background-color: @blue-highlight;
+      }
+    }
+
+    .geolocation-save-without-checkbox {
+      flex-shrink: 0;
     }
 
     .geolocation-retry-btn {
