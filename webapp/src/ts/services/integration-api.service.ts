@@ -16,18 +16,17 @@ import { GeolocationService } from '@mm-services/geolocation.service';
   providedIn: 'root'
 })
 export class IntegrationApiService {
-  AndroidAppLauncher;
-  Language;
-  Select2Search;
-  Enketo;
-  Translate;
-  MRDT;
-  Markdown;
-  Settings;
-  AndroidApi;
-  DB;
-  InteractionTracking;
-  Geolocation;
+  readonly AndroidAppLauncher;
+  readonly Language;
+  readonly Select2Search;
+  readonly Enketo;
+  readonly Translate;
+  readonly MRDT;
+  readonly Settings;
+  readonly AndroidApi;
+  readonly DB;
+  readonly InteractionTracking;
+  readonly Geolocation;
 
   constructor(
     private dbService:DbService,
