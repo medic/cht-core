@@ -45,12 +45,12 @@ class HouseholdGeolocationWidget extends Widget {
         if (this.element.dataset.geoHasLocation === 'true') {
           this._initEditMode($question);
         } else {
+          this._initCreateFlow($question);
           if (this.element.dataset.geoIsEdit === 'true') {
             $('<p class="geolocation-no-location-msg">')
               .text(this._translate(TRANSLATION_KEYS.NO_LOCATION_RECORDED))
               .appendTo($question);
           }
-          this._initCreateFlow($question);
         }
       }, { once: true });
       return;
@@ -69,13 +69,13 @@ class HouseholdGeolocationWidget extends Widget {
       return;
     }
 
+    this._initCreateFlow($question);
+
     if (this.element.dataset.geoIsEdit === 'true') {
       $('<p class="geolocation-no-location-msg">')
         .text(this._translate(TRANSLATION_KEYS.NO_LOCATION_RECORDED))
         .appendTo($question);
     }
-
-    this._initCreateFlow($question);
   }
 
   _initCreateFlow($question) {
@@ -203,18 +203,21 @@ class HouseholdGeolocationWidget extends Widget {
     return { $status, $bar };
   }
 
-  _appendSaveWithoutCheckbox($target = $(this.question)) {
+  _buildSaveWithoutCheckbox() {
     const $checkbox = $('<input type="checkbox" class="geolocation-save-without-checkbox">');
     const $label = $('<label class="geolocation-save-without-label">')
       .append($checkbox, $('<span>').text(this._translate(TRANSLATION_KEYS.SAVE_WITHOUT)));
-
-    $checkbox.on('change', () => {
+    $checkbox.on('change', (event) => {
+      event.stopPropagation();
       const checked = $checkbox.prop('checked');
       $label.attr('data-checked', checked ? 'true' : null);
       $(this.element).val(checked ? 'skipped' : '').trigger('change');
     });
+    return $label;
+  }
 
-    $target.append($label);
+  _appendSaveWithoutCheckbox($target = $(this.question)) {
+    $target.append(this._buildSaveWithoutCheckbox());
   }
 
   _isRecordNewSelected() {
