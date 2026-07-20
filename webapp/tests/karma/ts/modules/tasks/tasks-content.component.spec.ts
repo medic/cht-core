@@ -312,8 +312,8 @@ describe('TasksContentComponent', () => {
 
     await compileComponent();
 
-    expect(component.form).to.equal(undefined);
-    expect(component.loadingForm).to.equal(undefined);
+    expect(component.form).to.be.undefined;
+    expect(component.loadingForm).to.be.undefined;
     expect(render.callCount).to.equal(0);
   });
 
@@ -337,8 +337,8 @@ describe('TasksContentComponent', () => {
 
     await compileComponent();
 
-    expect(component.form).to.equal(undefined);
-    expect(component.loadingForm).to.equal(undefined);
+    expect(component.form).to.be.undefined;
+    expect(component.loadingForm).to.be.undefined;
     expect(render.callCount).to.equal(0);
   });
 
