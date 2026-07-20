@@ -18,6 +18,7 @@ const TRANSLATION_KEYS = {
   SOMEWHERE_ELSE: 'geolocation.somewhere.else',
   NO_LOCATION_RECORDED: 'geolocation.no.location.recorded',
   EDIT_BADGE: 'geolocation.edit.badge',
+  EDIT_CONTEXT_LABEL: 'geolocation.edit.context.label',
   EDIT_KEEP: 'geolocation.edit.keep.saved',
   EDIT_RECORD_NEW: 'geolocation.edit.record.new',
   EDIT_REMOVE: 'geolocation.edit.remove',
@@ -222,13 +223,13 @@ class HouseholdGeolocationWidget extends Widget {
   _initEditMode($question) {
     this._isEditWithLocation = true;
 
-    $question.append(
-      $('<div class="geolocation-edit-badge">').text(this._translate(TRANSLATION_KEYS.EDIT_BADGE))
-    );
-
     const { $status, $bar } = this._buildProgressRow();
     $question.append($status);
     this._waitForCapture($status, $bar);
+
+    $question.append(
+      $('<div class="geolocation-edit-badge">').text(this._translate(TRANSLATION_KEYS.EDIT_BADGE))
+    );
 
     setTimeout(() => $(this.element).val('kept').trigger('change'), 0);
     $question.append(this._buildEditChoices($bar));
@@ -257,10 +258,14 @@ class HouseholdGeolocationWidget extends Widget {
       const value = event.target.value;
       if (value === 'kept') {
         $(this.element).val('kept').trigger('change');
-        $(this.question).find('.geolocation-context-options, .geolocation-continue-without-btn').remove();
+        $(this.question).find(
+          '.geolocation-context-options, .geolocation-continue-without-btn, .geolocation-context-label'
+        ).remove();
       } else if (value === 'removed') {
         $(this.element).val('skipped').trigger('change');
-        $(this.question).find('.geolocation-context-options, .geolocation-continue-without-btn').remove();
+        $(this.question).find(
+          '.geolocation-context-options, .geolocation-continue-without-btn, .geolocation-context-label'
+        ).remove();
       } else if (value === 'capture-new') {
         this._onCaptureNewSelected($bar);
       }
@@ -281,6 +286,9 @@ class HouseholdGeolocationWidget extends Widget {
     }
     if ($bar.hasClass('geolocation-progress-success') &&
         !$(this.question).find('.geolocation-context-options').length) {
+      $('<p class="geolocation-context-label">')
+        .text(this._translate(TRANSLATION_KEYS.EDIT_CONTEXT_LABEL))
+        .appendTo($(this.question));
       $(this.question).append(this._buildContextChoices());
     }
   }
