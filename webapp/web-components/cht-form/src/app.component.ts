@@ -137,7 +137,7 @@ export class AppComponent {
     this.formContext.status.saving = true;
 
     try {
-      const submittedDocs = await this.getDocsFromForm();
+      const submittedDocs = (await this.getDocsFromForm()).map(doc => this.cleanDoc(doc));
       this.onSubmit.emit(submittedDocs);
     } catch (e) {
       console.error('Error submitting form data: ', e);
@@ -145,6 +145,16 @@ export class AppComponent {
     } finally {
       this.formContext.status.saving = false;
     }
+  }
+
+  private cleanDoc(doc: Record<string, any>) {
+    const attachments = doc._attachments;
+    // Pass through JSON to remove any dangling properties set to `undefined`.
+    const cleanDoc = JSON.parse(JSON.stringify(doc));
+    if (attachments) {
+      cleanDoc._attachments = attachments;
+    }
+    return cleanDoc;
   }
 
   private async getDocsFromForm() {

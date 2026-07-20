@@ -436,7 +436,7 @@ describe('TasksContentComponent', () => {
       expect((<any>TasksActions.prototype.setSelectedTask).args[0]).to.deep.equal([null]);
       expect(formService.unload.callCount).to.equal(1);
 
-      expect(component.form).to.equal(undefined);
+      expect(component.form).to.be.undefined;
       expect(component.loadingForm).to.equal(false);
       expect(component.contentError).to.equal(false);
       expect((<any>GlobalActions.prototype.clearNavigation).callCount).to.equal(1);

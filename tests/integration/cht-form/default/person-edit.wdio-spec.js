@@ -9,14 +9,6 @@ const excludeProps = [
   'dob_approx',
   'reported_date',
 ];
-// These properties are set by default in the enketo service to undefined
-const undefinedProps = {
-  _attachments: undefined,
-  contact: undefined,
-  contact_type: undefined,
-  form_version: undefined,
-  parent: undefined,
-};
 
 describe('cht-form web component - Edit Person Form', () => {
 
@@ -66,7 +58,7 @@ describe('cht-form web component - Edit Person Form', () => {
     const [doc, ...additionalDocs] = await mockConfig.submitForm();
 
     expect(additionalDocs).to.be.empty;
-    expect(doc).excludingEvery(excludeProps).to.deep.equal({ ...undefinedProps, ...initialPerson });
+    expect(doc).excludingEvery(excludeProps).to.deep.equal(initialPerson);
 
     await mockConfig.cancelForm();
 
@@ -134,6 +126,6 @@ describe('cht-form web component - Edit Person Form', () => {
     const [updatedDoc, ...updatedAdditionalDocs] = await mockConfig.submitForm();
 
     expect(updatedAdditionalDocs).to.be.empty;
-    expect(updatedDoc).excludingEvery(excludeProps).to.deep.equal({ ...undefinedProps, ...updatedPerson });
+    expect(updatedDoc).excludingEvery(excludeProps).to.deep.equal(updatedPerson);
   });
 });
