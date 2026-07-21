@@ -42,6 +42,10 @@ describe('cht-form web component - Bikram Sambat Widget', () => {
     const dayInput = await populatedWidget.$('[name="day"]');
     await dayInput.setValue('');
 
+    // Trigger blur/change events by focusing/clicking the year field
+    const yearInput = await populatedWidget.$('[name="year"]');
+    await yearInput.click();
+
     // Trigger blur/change events to run the guard
     const parentLabel = await populatedWidget.parentElement();
     const realInput = await parentLabel.$('input[type="date"]');
