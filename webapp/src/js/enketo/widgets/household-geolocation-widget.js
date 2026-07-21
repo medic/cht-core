@@ -104,17 +104,17 @@ class HouseholdGeolocationWidget extends Widget {
     });
   }
 
-  _onCaptureSuccess($status, $bar) {
-    $bar.addClass('geolocation-progress-success');
+  _onCaptureSuccess($status) {
+    $('.geolocation-progress-row').hide();
 
     if (this._isEditWithLocation) {
       $(this.question).find('input[type="radio"][value="capture-new"]').prop('disabled', false);
     }
 
     const $resultRow = $('<div class="geolocation-result-row">');
-    $('<span class="geolocation-result-label">')
-      .text(this._translate(TRANSLATION_KEYS.RESULT_LABEL)).appendTo($resultRow);
-    $('<p class="geolocation-success-msg">').text(this._translate(TRANSLATION_KEYS.SUCCESS)).appendTo($resultRow);
+    $('<span class="alert alert-success">')
+      .html('<i class="fa fa-check"></i> ' + this._translate(TRANSLATION_KEYS.SUCCESS))
+      .appendTo($resultRow);
     $status.append($resultRow);
 
     if (!this._isEditWithLocation || this._isRecordNewSelected()) {
@@ -146,7 +146,7 @@ class HouseholdGeolocationWidget extends Widget {
   }
 
   _onCaptureFailure(errorCode, $status, $bar) {
-    $bar.addClass('geolocation-progress-failure');
+    $('.geolocation-progress-row').hide();
 
     if (this._isEditWithLocation) {
       const $recordNew = $(this.question).find('input[type="radio"][value="capture-new"]');
@@ -169,27 +169,24 @@ class HouseholdGeolocationWidget extends Widget {
     }
 
     const $resultRow = $('<div class="geolocation-result-row">');
-    $('<span class="geolocation-result-label">')
-      .text(this._translate(TRANSLATION_KEYS.RESULT_LABEL)).appendTo($resultRow);
-    $('<span class="geolocation-failure-msg">').text(this._translate(TRANSLATION_KEYS.FAILURE)).appendTo($resultRow);
+    $('<span class="alert alert-error">')
+      .html('<i class="fa fa-exclamation-triangle"></i> ' + this._translate(TRANSLATION_KEYS.FAILURE))
+      .appendTo($resultRow);
     $status.append($resultRow);
 
     if (WEAK_SIGNAL_CODES.has(errorCode)) {
       $('<p class="geolocation-weak-signal-msg">')
-        .text(this._translate(TRANSLATION_KEYS.SIGNAL_WEAK))
+        .html('<i class="fa fa-info-circle"></i> ' + this._translate(TRANSLATION_KEYS.SIGNAL_WEAK))
         .appendTo($status);
     }
 
-    const $retryBtn = $('<button type="button" class="btn btn-default geolocation-retry-btn">')
-      .append(
-        $('<i class="fa fa-map-marker" aria-hidden="true">'),
-        $('<span class="geolocation-btn-label">').text(this._translate(TRANSLATION_KEYS.RETRY))
-      );
+    const $retryBtn = $('<button type="button" class="btn btn-primary geolocation-retry-btn">')
+      .html('<i class="fa fa-refresh" aria-hidden="true"></i>&nbsp;' + this._translate(TRANSLATION_KEYS.RETRY));
 
     $retryBtn.on('click', () => {
+      $('.geolocation-progress-row').show();
       globalThis.CHTCore.Geolocation.retry();
       $status.find('.geolocation-result-row, .geolocation-weak-signal-msg').remove();
-      $bar.removeClass('geolocation-progress-failure');
       $retryBtn.remove();
       $(this.question).find('.geolocation-save-without-label').remove();
       this._waitForCapture($status, $bar);
@@ -236,6 +233,7 @@ class HouseholdGeolocationWidget extends Widget {
   }
 
   _isRecordNewSelected() {
+    console.warn('is record new?');
     return !!(this.question.querySelector('input[type="radio"][value="capture-new"]:checked'));
   }
 
@@ -293,14 +291,13 @@ class HouseholdGeolocationWidget extends Widget {
     return $choices;
   }
 
-  _onCaptureNewSelected($bar) {
+  _onCaptureNewSelected() {
     $(this.element).val('').trigger('change');
     // Enketo validates async (Promise), so defer the removal to a macrotask
     // that runs after the validation completes and adds the class.
     // This one-shot timeout means the error still appears on submit.
     setTimeout(() => $(this.question).removeClass('invalid-required'), 0);
-    if ($bar.hasClass('geolocation-progress-success') &&
-        !$(this.question).find('.geolocation-context-options').length) {
+    if (!$(this.question).find('.geolocation-context-options').length) {
       $('<p class="geolocation-context-label">')
         .text(this._translate(TRANSLATION_KEYS.EDIT_CONTEXT_LABEL))
         .appendTo($(this.question));
