@@ -105,6 +105,18 @@ export class GeolocationService {
     clearTimeout(this.timeout);
   }
 
+  private cancel() {
+    console.debug('Cancelling geolocation handle');
+    if (this.deferred && !this.geo && !this.geoError) {
+      // finalise() clears the watcher/timeout itself as part of settling the pending promise
+      this.geoError = { code: -4, message: 'Geolocation cancelled' };
+      this.finalise();
+    } else {
+      this.stopWatching();
+    }
+    this.deferred = null;
+  }
+
   private defer() {
     this.deferred = {};
     this.deferred.promise = new Promise((resolve) => {
@@ -140,7 +152,7 @@ export class GeolocationService {
       return promise;
     };
 
-    complete.cancel = this.stopWatching.bind(this);
+    complete.cancel = this.cancel.bind(this);
     this.currentHandle = complete;
 
     return complete;

@@ -330,6 +330,83 @@ describe('Geolocation service', () => {
       expect(service.currentPromise).to.be.instanceOf(Promise);
     });
 
+    describe('cancel()', () => {
+      it('stops the underlying watcher and timeout', () => {
+        const complete = service.init();
+        (<any>window.navigator.geolocation.clearWatch).resetHistory();
+
+        complete.cancel();
+
+        expect((<any>window.navigator.geolocation.clearWatch).callCount).to.equal(1);
+      });
+
+      it('resolves currentPromise with a cancellation result when GPS has not yet resolved', async () => {
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsFake(() => {
+          // GPS never fires
+        });
+
+        const complete = service.init();
+        complete.cancel();
+
+        const result = await service.currentPromise;
+        expect(result).to.deep.equal({ code: -4, message: 'Geolocation cancelled' });
+      });
+
+      it('does not overwrite an already-resolved successful result, nor record duplicate telemetry', async () => {
+        const position = {
+          latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7,
+        };
+        let successFn;
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsFake(success => {
+          successFn = success;
+        });
+
+        const complete = service.init();
+        successFn({ coords: position });
+        expect(await service.currentPromise).to.deep.equal(position);
+
+        Telemetry.record.resetHistory();
+        complete.cancel();
+
+        expect(Telemetry.record.callCount).to.equal(0);
+        expect(await service.currentPromise).to.deep.equal(position);
+      });
+
+      it('does not overwrite an already-recorded failure, nor record duplicate telemetry', async () => {
+        let failureFn;
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsFake((_, failure) => {
+          failureFn = failure;
+        });
+
+        const complete = service.init();
+        failureFn({ code: 2, message: 'Position unavailable' });
+        expect(await service.currentPromise).to.deep.equal({ code: 2, message: 'Position unavailable' });
+
+        Telemetry.record.resetHistory();
+        complete.cancel();
+
+        expect(Telemetry.record.callCount).to.equal(0);
+        expect(await service.currentPromise).to.deep.equal({ code: 2, message: 'Position unavailable' });
+      });
+
+      it('is safe to call more than once', async () => {
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsFake(() => {
+          // GPS never fires
+        });
+
+        const complete = service.init();
+        complete.cancel();
+        expect(() => complete.cancel()).to.not.throw();
+
+        const result = await service.currentPromise;
+        expect(result).to.deep.equal({ code: -4, message: 'Geolocation cancelled' });
+      });
+    });
+
     describe('android api', () => {
       const position = {
         latitude: 1,
