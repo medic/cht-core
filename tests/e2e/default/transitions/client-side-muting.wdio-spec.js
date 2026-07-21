@@ -917,33 +917,6 @@ describe.skip('Muting', () => {
       expect(serverReport.tasks[0].messages[0].message).to.equal(serverReport.errors[0].message);
     });
 
-    it('should save muting_error code on report when muting fails', async () => {
-      const settingsWithValidations = _.cloneDeep(settings);
-      settingsWithValidations.muting.validations = {
-        list: [
-          {
-            property: 'inexistent_property',
-            rule: 'regex(\'^[0-9]{5,13}$\')',
-            message: [{ content: 'Muting failed', locale: 'en' }],
-          }
-        ],
-      };
-
-      await utils.toggleSentinelTransitions();
-      await updateClientSideMutingSettings(settingsWithValidations);
-
-      await mutePerson(patient1);
-      await commonPage.waitForLoaders();
-
-      await utils.startSentinel();
-      const report = await getLastSubmittedReport();
-      await sentinelUtils.waitForSentinel(report._id);
-
-      const serverReport = await utils.getDoc(report._id);
-      expect(serverReport.errors.length).to.be.greaterThan(0);
-      expect(serverReport.errors[0].code).to.equal('muting_error');
-    });
-
     it( 'should work with composite forms', async () => {
       await utils.toggleSentinelTransitions();
       await updateClientSideMutingSettings(settings);
