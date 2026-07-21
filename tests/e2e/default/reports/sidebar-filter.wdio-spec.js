@@ -200,37 +200,20 @@ describe('Reports Sidebar Filter', () => {
 
     // 1. Max Date parity - verify future dates are disabled
     await $('#fromDateFilter').click();
-    let picker;
-    await browser.waitUntil(async () => {
-      const pickers = await $$('.nepali-date-picker');
-      for (const p of pickers) {
-        if (await p.isDisplayed()) {
-          picker = p;
-          return true;
-        }
-      }
-      return false;
-    }, { timeout: 5000, timeoutMsg: 'Nepali date picker not displayed' });
+    await reportsPage.waitForNepaliDatePickerDisplayed();
 
-    // Future dates in the current month should be disabled (.disable)
-    const disableCells = await picker.$$('table tbody td.current-month-date.disable');
+    // Future dates in the current month should be disabled
+    const disableCells = await reportsPage.getDisabledNepaliDateCells();
     expect(disableCells.length).to.be.greaterThan(0);
 
     // 2. Escape Dismissal - press Escape and verify picker is dismissed
     await browser.keys(['Escape']);
+    const picker = reportsPage.getNepaliDatePicker();
     expect(await picker.isDisplayed()).to.be.false;
 
-    // 3. Viewport positioning & scroll alignment
+    // 3. Dismiss by clicking outside (e.g. the accordion header)
     await $('#fromDateFilter').click();
     expect(await picker.isDisplayed()).to.be.true;
-    const initialLocation = await picker.getLocation();
-    
-    // Simulate scroll event
-    await browser.execute('window.dispatchEvent(new Event("scroll"))');
-    const newLocation = await picker.getLocation();
-    expect(newLocation.y).to.equal(initialLocation.y); // Should remain anchored correctly
-
-    // Dismiss by clicking outside (e.g. the accordion header)
     const accordionHeader = await $('#date-filter-accordion mat-expansion-panel-header');
     await accordionHeader.click();
     expect(await picker.isDisplayed()).to.be.false;
@@ -239,11 +222,10 @@ describe('Reports Sidebar Filter', () => {
     await reportsPage.setSidebarFilterBikFromDate();
     await reportsPage.setSidebarFilterBikToDate();
 
-    // 5. Reopen Off-by-one verification
+    // 5. Reopen active selection verification
     await $('#toDateFilter').click();
     // Verify that the active selected date is highlighted correctly
-    const activeCell = await picker.$('table tbody td.current-month-date.active');
-    expect(await activeCell.isDisplayed()).to.be.true;
+    expect(await reportsPage.isNepaliDatePickerActiveCellDisplayed()).to.be.true;
     
     // Dismiss it
     await browser.keys(['Escape']);

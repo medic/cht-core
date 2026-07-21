@@ -237,6 +237,24 @@ const filterByDate = async (startDate, endDate) => {
   await $('#freetext').click(); // blur the datepicker
 };
 
+const clickSidebarFilterFromDate = async () => {
+  const el = sidebarFilterSelectors.fromDate();
+  await el.waitForClickable();
+  await el.click();
+};
+
+const clickSidebarFilterToDate = async () => {
+  const el = sidebarFilterSelectors.toDate();
+  await el.waitForClickable();
+  await el.click();
+};
+
+const clickSidebarFilterDateAccordionHeader = async () => {
+  const el = sidebarFilterSelectors.dateAccordionHeader();
+  await el.waitForClickable();
+  await el.click();
+};
+
 const openSidebarFilter = async () => {
   if (!await sidebarFilterSelectors.resetBtn().isDisplayed()) {
     await sidebarFilterSelectors.openBtn().click();
@@ -488,7 +506,34 @@ const waitForReportsLoaded = async (timeout) => {
   );
 };
 
+const getNepaliDatePicker = () => $('.nepali-date-picker');
+const getNepaliDatePickerOverlay = () => $('.nepali-date-picker-overlay');
+
+const waitForNepaliDatePickerDisplayed = async () => {
+  const picker = getNepaliDatePicker();
+  await browser.waitUntil(async () => {
+    return await picker.isDisplayed();
+  }, { timeout: 5000, timeoutMsg: 'Nepali date picker not displayed' });
+  return picker;
+};
+
+const getDisabledNepaliDateCells = async () => {
+  const picker = getNepaliDatePicker();
+  return await picker.$$('table tbody td.current-month-date.disable');
+};
+
+const isNepaliDatePickerActiveCellDisplayed = async () => {
+  const picker = getNepaliDatePicker();
+  const activeCell = picker.$('table tbody td.current-month-date.active');
+  return await activeCell.isDisplayed();
+};
+
 module.exports = {
+  getNepaliDatePicker,
+  getNepaliDatePickerOverlay,
+  waitForNepaliDatePickerDisplayed,
+  getDisabledNepaliDateCells,
+  isNepaliDatePickerActiveCellDisplayed,
   leftPanelSelectors,
   rightPanelSelectors,
   deleteDialogSelectors,
@@ -503,6 +548,9 @@ module.exports = {
   setSidebarFilterToDate,
   setSidebarFilterBikFromDate,
   setSidebarFilterBikToDate,
+  clickSidebarFilterFromDate,
+  clickSidebarFilterToDate,
+  clickSidebarFilterDateAccordionHeader,
   filterByForm,
   filterByFacility,
   filterByStatus,

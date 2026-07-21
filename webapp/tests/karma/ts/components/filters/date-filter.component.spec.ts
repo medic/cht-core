@@ -302,7 +302,7 @@ describe('Date Filter Component', () => {
       expect($('.nepali-date-picker-overlay')).to.have.lengthOf(0);
     });
 
-    it('should maintain independent picker elements for From and To components', () => {
+    it('should maintain independent picker elements for From and To components and leave each other unchanged', () => {
       // Create From component
       const fixtureFrom = TestBed.createComponent(DateFilterComponent);
       const compFrom = fixtureFrom.componentInstance;
@@ -324,8 +324,36 @@ describe('Date Filter Component', () => {
       fixtureTo.detectChanges();
 
       // Verify each appended its own hidden input
-      expect($('#from-test-wrapper .nepali-datepicker-input')).to.have.lengthOf(1);
-      expect($('#to-test-wrapper .nepali-datepicker-input')).to.have.lengthOf(1);
+      const fromHiddenInput = $('#from-test-wrapper .nepali-datepicker-input');
+      const toHiddenInput = $('#to-test-wrapper .nepali-datepicker-input');
+      expect(fromHiddenInput).to.have.lengthOf(1);
+      expect(toHiddenInput).to.have.lengthOf(1);
+
+      // Simulate date selection on From component
+      const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
+      const eventFrom = $.Event('dateSelect');
+      (eventFrom as any).datePickerData = { bsYear: 2081, bsMonth: 4, bsDate: 9 };
+      fromHiddenInput.trigger(eventFrom);
+
+      // Verify From component's selection was registered
+      expect(setFilter.callCount).to.equal(1);
+      expect(setFilter.firstCall.args[0].date.from).to.not.be.undefined;
+      expect(setFilter.firstCall.args[0].date.to).to.be.undefined;
+
+      // Clear call history
+      setFilter.resetHistory();
+
+      // Simulate date selection on To component
+      const eventTo = $.Event('dateSelect');
+      (eventTo as any).datePickerData = { bsYear: 2081, bsMonth: 4, bsDate: 20 };
+      toHiddenInput.trigger(eventTo);
+
+      // Verify To component's selection was registered independently
+      expect(setFilter.callCount).to.equal(1);
+      expect(setFilter.firstCall.args[0].date.to).to.not.be.undefined;
+      expect(setFilter.firstCall.args[0].date.from).to.be.undefined;
+
+      setFilter.restore();
 
       // Clean up DOM
       compFrom.ngOnDestroy();
@@ -347,38 +375,59 @@ describe('Date Filter Component', () => {
     });
 
     it('ngOnDestroy should clean up multiple pickers and overlays completely', () => {
-      // Simulate two components having been initialized
-      const html1 = `<div id="test-wrapper-1"><input id="field-1" />` +
-        `<input type="text" class="nepali-datepicker-input" /></div>`;
-      const html2 = `<div id="test-wrapper-2"><input id="field-2" />` +
-        `<input type="text" class="nepali-datepicker-input" /></div>`;
+      // Create two DOM wrappers
+      const html1 = `<div id="test-wrapper-1"><input id="field-1" /></div>`;
+      const html2 = `<div id="test-wrapper-2"><input id="field-2" /></div>`;
       document.body.insertAdjacentHTML('afterbegin', html1);
       document.body.insertAdjacentHTML('afterbegin', html2);
 
-      // Create pickers and overlays
-      $('<div class="nepali-date-picker"></div>').appendTo('body');
-      $('<div class="nepali-date-picker"></div>').appendTo('body');
+      // Instantiate and setup Component B
+      const fixtureB = TestBed.createComponent(DateFilterComponent);
+      const compB = fixtureB.componentInstance;
+      compB.fieldId = 'field-2';
+      compB.ngOnInit();
+
+      // Setup Component A
+      component.fieldId = 'field-1';
+
+      // Initialize both components (which creates hidden inputs)
+      component.ngAfterViewInit();
+      compB.ngAfterViewInit();
+
+      // Create the pickers and overlay in the DOM
+      const pickerA = $('<div class="nepali-date-picker" id="picker-a"></div>').appendTo('body');
+      const pickerB = $('<div class="nepali-date-picker" id="picker-b"></div>').appendTo('body');
       $('<div class="nepali-date-picker-overlay"></div>').appendTo('body');
 
-      // Bind picker data to the hidden inputs
-      const hiddenInput1 = $('#test-wrapper-1 .nepali-datepicker-input');
-      const hiddenInput2 = $('#test-wrapper-2 .nepali-datepicker-input');
-      hiddenInput1.data('picker', $('.nepali-date-picker').eq(0));
-      hiddenInput2.data('picker', $('.nepali-date-picker').eq(1));
+      // Bind pickers to their respective hidden inputs
+      $('#test-wrapper-1 .nepali-datepicker-input').data('picker', pickerA);
+      $('#test-wrapper-2 .nepali-datepicker-input').data('picker', pickerB);
 
-      // Instantiate a component and call ngOnDestroy
-      component.fieldId = 'field-1';
+      // 1. Destroy Component A
       component.ngOnDestroy();
 
-      // Verify that at least the first component's elements are removed
+      // Assert Component A's elements are removed
       expect($('#test-wrapper-1 .nepali-datepicker-input')).to.have.lengthOf(0);
+      expect($('#picker-a')).to.have.lengthOf(0);
 
-      // Clean up others manually
+      // Assert Component B's elements and overlay still survive
+      expect($('#test-wrapper-2 .nepali-datepicker-input')).to.have.lengthOf(1);
+      expect($('#picker-b')).to.have.lengthOf(1);
+      expect($('.nepali-date-picker-overlay')).to.have.lengthOf(1);
+
+      // 2. Destroy Component B
+      compB.ngOnDestroy();
+
+      // Assert Component B's elements and overlay are removed
+      expect($('#test-wrapper-2 .nepali-datepicker-input')).to.have.lengthOf(0);
+      expect($('#picker-b')).to.have.lengthOf(0);
+      expect($('.nepali-date-picker-overlay')).to.have.lengthOf(0);
+
+      // Clean up wrapper DOM nodes
       $('#test-wrapper-1').remove();
       $('#test-wrapper-2').remove();
-      $('.nepali-date-picker').remove();
-      $('.nepali-date-picker-overlay').remove();
     });
+
 
     it('setLabel should use formatDateService.dayMonth', () => {
       component.isStartDate = true;
@@ -400,5 +449,6 @@ describe('Date Filter Component', () => {
       expect(formatDateService.dayMonth.args[0][0]).to.equal(startOfDayVal);
       expect(component.inputLabel).to.equal('Formatted Date');
     });
+
   });
 });
