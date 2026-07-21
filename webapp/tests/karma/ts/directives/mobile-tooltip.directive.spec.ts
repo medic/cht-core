@@ -57,4 +57,28 @@ describe('MobileTooltipDirective', () => {
     host.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
     expect(tooltip()).to.equal(null);
   });
+
+  it('dismisses on scroll', () => {
+    createOn(true);
+    trigger().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    expect(tooltip()).to.exist;
+
+    document.dispatchEvent(new Event('scroll'));
+    expect(tooltip()).to.equal(null);
+  });
+
+  it('dismisses when the focused element is detached from the DOM', async () => {
+    createOn(true);
+    document.body.appendChild(fixture.nativeElement); // so the trigger removal mutates the observed body
+    try {
+      trigger().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+      expect(tooltip()).to.exist;
+
+      trigger().remove();
+      await new Promise(resolve => setTimeout(resolve)); // let the MutationObserver callback run
+      expect(tooltip()).to.equal(null);
+    } finally {
+      fixture.nativeElement.remove();
+    }
+  });
 });
