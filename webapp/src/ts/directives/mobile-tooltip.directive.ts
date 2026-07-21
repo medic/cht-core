@@ -3,7 +3,7 @@ import { DOCUMENT } from '@angular/common';
 import { ConnectedPosition, Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { Direction } from '@angular/cdk/bidi';
-import { NavigationEnd, Router } from '@angular/router';
+import { NavigationEnd, NavigationSkipped, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 /** Renders the tooltip text inside the CDK overlay. */
@@ -69,10 +69,11 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
     // date keeps focus (no focusout) so the tooltip would linger over the loaded report. Dismiss
     // once the report has opened. NavigationEnd, not Start: the routerLink emits NavigationStart
     // synchronously before this directive's focusin handler shows the tooltip, so only a post-show
-    // event can dismiss it. A long-press focuses without navigating, so its tooltip stays. Router is
-    // optional (cht-form has none).
+    // event can dismiss it. Tapping the date of the already-open report re-navigates to the same URL,
+    // which the router skips (NavigationSkipped, not NavigationEnd), so handle both. A long-press
+    // focuses without navigating, so its tooltip stays. Router is optional (cht-form has none).
     this.routerSubscription = this.router?.events.subscribe((event) => {
-      if (event instanceof NavigationEnd) {
+      if (event instanceof NavigationEnd || event instanceof NavigationSkipped) {
         this.hide();
       }
     });
