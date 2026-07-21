@@ -1,8 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { OverlayModule } from '@angular/cdk/overlay';
-import { NavigationEnd, NavigationSkipped, Router } from '@angular/router';
-import { Subject } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -84,37 +82,39 @@ describe('MobileTooltipDirective', () => {
     }
   });
 
-  it('dismisses on navigation (e.g. a short tap on a list date that opens a report)', () => {
-    const events = new Subject<any>();
-    sinon.stub(window, 'matchMedia').returns({ matches: true } as MediaQueryList);
-    TestBed.configureTestingModule({
-      imports: [HostComponent],
-      providers: [{ provide: Router, useValue: { events } }],
-    });
-    fixture = TestBed.createComponent(HostComponent);
-    fixture.detectChanges();
+  it('dismisses when the trigger is no longer visible (e.g. single-pane view slides the list away)', async () => {
+    createOn(true);
+    document.body.appendChild(fixture.nativeElement); // so the trigger is really rendered and visible
+    try {
+      trigger().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+      expect(tooltip()).to.exist;
 
-    trigger().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
-    expect(tooltip()).to.exist;
-
-    events.next(new NavigationEnd(1, '/reports/abc', '/reports/abc'));
-    expect(tooltip()).to.equal(null);
+      // Hide the trigger without removing it, blurring it, or scrolling — like `.show-content
+      // .left-pane { left: -100% }` does on single-pane layouts when a tapped row opens its report.
+      fixture.nativeElement.style.display = 'none';
+      for (let i = 0; i < 100 && tooltip(); i++) { // IntersectionObserver reports asynchronously
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+      expect(tooltip()).to.equal(null);
+    } finally {
+      fixture.nativeElement.remove();
+    }
   });
 
-  it('dismisses on a skipped navigation (tapping the date of the already-open report)', () => {
-    const events = new Subject<any>();
-    sinon.stub(window, 'matchMedia').returns({ matches: true } as MediaQueryList);
-    TestBed.configureTestingModule({
-      imports: [HostComponent],
-      providers: [{ provide: Router, useValue: { events } }],
-    });
-    fixture = TestBed.createComponent(HostComponent);
-    fixture.detectChanges();
+  it('keeps the tooltip while the trigger stays visible (e.g. two-pane view after opening a report)', async () => {
+    createOn(true);
+    document.body.appendChild(fixture.nativeElement);
+    try {
+      trigger().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+      expect(tooltip()).to.exist;
 
-    trigger().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
-    expect(tooltip()).to.exist;
-
-    events.next(new NavigationSkipped(1, '/reports/abc', 'ignored same URL'));
-    expect(tooltip()).to.equal(null);
+      // Give the IntersectionObserver time to deliver its initial entries — a visible, focused
+      // trigger must not have its tooltip dismissed (regression: navigation-based dismissal killed
+      // it on two-pane layouts, where every list-row tap navigates but the list stays on screen).
+      await new Promise(resolve => setTimeout(resolve, 100));
+      expect(tooltip()).to.exist;
+    } finally {
+      fixture.nativeElement.remove();
+    }
   });
 });

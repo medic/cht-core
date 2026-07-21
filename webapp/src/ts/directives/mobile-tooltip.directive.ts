@@ -1,10 +1,8 @@
-import { Component, Directive, Inject, Input, NgZone, OnDestroy, OnInit, Optional } from '@angular/core';
+import { Component, Directive, Inject, Input, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { ConnectedPosition, Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { Direction } from '@angular/cdk/bidi';
-import { NavigationEnd, NavigationSkipped, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
 
 /** Renders the tooltip text inside the CDK overlay. */
 @Component({
@@ -41,7 +39,7 @@ const POSITIONS: ConnectedPosition[] = [
 export class MobileTooltipDirective implements OnInit, OnDestroy {
   private overlayRef: OverlayRef | null = null;
   private removalObserver: MutationObserver | null = null;
-  private routerSubscription?: Subscription;
+  private visibilityObserver: IntersectionObserver | null = null;
   private readonly focusIn = (event: FocusEvent) => this.show(event);
   private readonly dismiss = () => this.hide();
 
@@ -49,7 +47,6 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
     private overlay: Overlay,
     private zone: NgZone,
     @Inject(DOCUMENT) private document: Document,
-    @Optional() private router: Router | null,
   ) { }
 
   ngOnInit() {
@@ -65,25 +62,12 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
       // doesn't observe) still dismiss the tooltip instead of leaving it floating.
       this.document.addEventListener('scroll', this.dismiss, true);
     });
-    // A short tap on a list-row date both focuses it (showing the tooltip) and opens the report; the
-    // date keeps focus (no focusout) so the tooltip would linger over the loaded report. Dismiss
-    // once the report has opened. NavigationEnd, not Start: the routerLink emits NavigationStart
-    // synchronously before this directive's focusin handler shows the tooltip, so only a post-show
-    // event can dismiss it. Tapping the date of the already-open report re-navigates to the same URL,
-    // which the router skips (NavigationSkipped, not NavigationEnd), so handle both. A long-press
-    // focuses without navigating, so its tooltip stays. Router is optional (cht-form has none).
-    this.routerSubscription = this.router?.events.subscribe((event) => {
-      if (event instanceof NavigationEnd || event instanceof NavigationSkipped) {
-        this.hide();
-      }
-    });
   }
 
   ngOnDestroy() {
     this.document.removeEventListener('focusin', this.focusIn);
     this.document.removeEventListener('focusout', this.dismiss);
     this.document.removeEventListener('scroll', this.dismiss, true);
-    this.routerSubscription?.unsubscribe();
     this.hide();
   }
 
@@ -132,11 +116,27 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
       }
     });
     this.removalObserver.observe(this.document.body, { childList: true, subtree: true });
+
+    // The trigger can also stop being visible without leaving the DOM, gaining a focusout, or
+    // scrolling: on single-pane (mobile) layouts, tapping a list-row date opens the report and
+    // slides the still-focused list off-screen (`.show-content .left-pane { left: -100% }`), which
+    // would leave the tooltip hovering over the report. Dismiss when the trigger leaves the
+    // viewport. On two-pane layouts the list — and the tooltip — correctly stay put, which is why
+    // this watches visibility instead of router navigation events: every list-row tap navigates
+    // (or is skipped as a same-URL navigation), visible trigger or not.
+    this.visibilityObserver = new IntersectionObserver((entries) => {
+      if (entries.some(entry => !entry.isIntersecting)) {
+        this.hide();
+      }
+    });
+    this.visibilityObserver.observe(target);
   }
 
   private hide() {
     this.removalObserver?.disconnect();
     this.removalObserver = null;
+    this.visibilityObserver?.disconnect();
+    this.visibilityObserver = null;
     this.overlayRef?.dispose();
     this.overlayRef = null;
   }
