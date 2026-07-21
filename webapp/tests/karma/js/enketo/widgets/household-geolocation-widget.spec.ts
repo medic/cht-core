@@ -64,6 +64,7 @@ describe('Enketo: Household Geolocation Widget', () => {
           isAvailable: sinon.stub().returns(true),
           isPermissionDenied: sinon.stub().returns(false),
           currentPromise: new Promise(() => {}),
+          currentHandle: { cancel: sinon.stub() },
         },
       };
     });
@@ -514,6 +515,35 @@ describe('Enketo: Household Geolocation Widget', () => {
           checkbox.checked = false;
           $(checkbox).trigger('change');
           expect((widget.element as HTMLInputElement).value).to.equal('');
+        });
+
+        it('should cancel the pending geolocation handle when checked', async () => {
+          const { container } = await initWidgetAfterFailure();
+          const checkbox = container.querySelector(SELECTORS.SAVE_WITHOUT_CHECKBOX) as HTMLInputElement;
+          checkbox.checked = true;
+          $(checkbox).trigger('change');
+          expect((window as any).CHTCore.Geolocation.currentHandle.cancel.callCount).to.equal(1);
+        });
+
+        it('should not cancel the pending geolocation handle when unchecked', async () => {
+          const { container } = await initWidgetAfterFailure();
+          const checkbox = container.querySelector(SELECTORS.SAVE_WITHOUT_CHECKBOX) as HTMLInputElement;
+          checkbox.checked = true;
+          $(checkbox).trigger('change');
+          (window as any).CHTCore.Geolocation.currentHandle.cancel.resetHistory();
+
+          checkbox.checked = false;
+          $(checkbox).trigger('change');
+
+          expect((window as any).CHTCore.Geolocation.currentHandle.cancel.callCount).to.equal(0);
+        });
+
+        it('should not throw when currentHandle is unavailable', async () => {
+          const { container } = await initWidgetAfterFailure();
+          (window as any).CHTCore.Geolocation.currentHandle = undefined;
+          const checkbox = container.querySelector(SELECTORS.SAVE_WITHOUT_CHECKBOX) as HTMLInputElement;
+          checkbox.checked = true;
+          expect(() => $(checkbox).trigger('change')).to.not.throw();
         });
       });
 

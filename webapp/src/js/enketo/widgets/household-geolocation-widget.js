@@ -226,6 +226,9 @@ class HouseholdGeolocationWidget extends Widget {
       event.stopPropagation();
       const checked = $checkbox.prop('checked');
       $label.attr('data-checked', checked ? 'true' : null);
+      if (checked && globalThis.CHTCore.Geolocation.currentHandle) {
+        globalThis.CHTCore.Geolocation.currentHandle.cancel();
+      }
       $(this.element).val(checked ? 'skipped' : '').trigger('change');
     });
     return $label;
