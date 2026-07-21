@@ -7,7 +7,6 @@ const GEO_SUCCESS = {
 const GEO_FAILURE = { code: -2, message: 'Geolocation timeout exceeded' };
 
 const SELECTORS = {
-  CONTINUE_WITHOUT_BTN: '.geolocation-continue-without-btn',
   CAPTURE_NEW_RADIO: 'input[value="capture-new"]',
   CONTEXT_OPTIONS: '.geolocation-context-options',
   EDIT_BADGE: '.geolocation-edit-badge',
@@ -19,6 +18,7 @@ const SELECTORS = {
   PROGRESS_BAR: '.geolocation-progress-bar',
   REMOVE_RADIO: 'input[value="removed"]',
   RETRY_BTN: '.geolocation-retry-btn',
+  SAVE_WITHOUT_CHECKBOX: '.geolocation-save-without-checkbox',
   STATUS: '.geolocation-status',
   SUCCESS_MSG: '.geolocation-success-msg',
 };
@@ -55,22 +55,22 @@ describe('cht-form web component - HouseholdGeolocation Widget', () => {
     expect(await $(SELECTORS.RETRY_BTN).isExisting()).to.be.false;
   });
 
-  it('should show retry and continue-without buttons when GPS fails', async () => {
+  it('should show retry button and save-without-location checkbox when GPS fails', async () => {
     await mockGeoResolved(GEO_FAILURE);
     await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
 
     await $(SELECTORS.RETRY_BTN).waitForExist();
-    expect(await $(SELECTORS.CONTINUE_WITHOUT_BTN).isExisting()).to.be.true;
+    expect(await $(SELECTORS.SAVE_WITHOUT_CHECKBOX).isExisting()).to.be.true;
     expect(await $(SELECTORS.SUCCESS_MSG).isExisting()).to.be.false;
     expect(await $(SELECTORS.CONTEXT_OPTIONS).isExisting()).to.be.false;
   });
 
-  it('should set form value to skipped when continue-without is clicked', async () => {
+  it('should set form value to skipped when save-without-location checkbox is checked', async () => {
     await mockGeoResolved(GEO_FAILURE);
     await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
 
-    await $(SELECTORS.CONTINUE_WITHOUT_BTN).waitForExist();
-    await $(SELECTORS.CONTINUE_WITHOUT_BTN).click();
+    await $(SELECTORS.SAVE_WITHOUT_CHECKBOX).waitForExist();
+    await $(SELECTORS.SAVE_WITHOUT_CHECKBOX).click();
 
     const captureValue = await browser.execute(() => {
       return document.querySelector('.or-appearance-geolocation-capture input[name="/data/geo_capture"]').value;
@@ -156,16 +156,15 @@ describe('cht-form web component - Geolocation Widget (edit mode)', () => {
     expect(await $(SELECTORS.OTHER_RADIO).isExisting()).to.be.true;
   });
 
-  it('should show continue-without button when GPS fails and capture-new is selected', async () => {
-    await mockGeoResolved(GEO_FAILURE);
-    await loadEditForm();
+  it('should keep "Record new location" disabled and never show a save-without-location checkbox when GPS fails',
+    async () => {
+      await mockGeoResolved(GEO_FAILURE);
+      await loadEditForm();
 
-    await $(SELECTORS.RETRY_BTN).waitForExist();
-    expect(await $(SELECTORS.CONTINUE_WITHOUT_BTN).isExisting()).to.be.false;
-
-    await $(SELECTORS.CAPTURE_NEW_RADIO).click();
-    expect(await $(SELECTORS.CONTINUE_WITHOUT_BTN).isExisting()).to.be.true;
-  });
+      await $(SELECTORS.RETRY_BTN).waitForExist();
+      expect(await $(SELECTORS.CAPTURE_NEW_RADIO).isEnabled()).to.be.false;
+      expect(await $(SELECTORS.SAVE_WITHOUT_CHECKBOX).isExisting()).to.be.false;
+    });
 
   it('should remove context options when switching from capture-new to keep after GPS success', async () => {
     await mockGeoResolved(GEO_SUCCESS);
