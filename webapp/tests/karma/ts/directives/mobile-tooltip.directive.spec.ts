@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { OverlayModule } from '@angular/cdk/overlay';
+import { NavigationEnd, Router } from '@angular/router';
+import { Subject } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -80,5 +82,22 @@ describe('MobileTooltipDirective', () => {
     } finally {
       fixture.nativeElement.remove();
     }
+  });
+
+  it('dismisses on navigation (e.g. a short tap on a list date that opens a report)', () => {
+    const events = new Subject<any>();
+    sinon.stub(window, 'matchMedia').returns({ matches: true } as MediaQueryList);
+    TestBed.configureTestingModule({
+      imports: [HostComponent],
+      providers: [{ provide: Router, useValue: { events } }],
+    });
+    fixture = TestBed.createComponent(HostComponent);
+    fixture.detectChanges();
+
+    trigger().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    expect(tooltip()).to.exist;
+
+    events.next(new NavigationEnd(1, '/reports/abc', '/reports/abc'));
+    expect(tooltip()).to.equal(null);
   });
 });
