@@ -509,9 +509,13 @@ export class FormService { // NOSONAR
 
     await this.restoreGeoFieldsIfKept(geoCaptureValue, docId, preparedDocs.preparedDocs);
 
-    const docsWithGeo = geoCaptureValue === 'kept'
-      ? preparedDocs.preparedDocs
-      : await this.saveGeo(geoHandle, preparedDocs.preparedDocs, contextValue, true);
+    if (geoCaptureValue !== 'kept') {
+      // Only the doc that owns the geolocation-capture field should receive the captured location -
+      // sibling/repeated docs created in the same submission (e.g. a new primary contact for a new
+      // household) must not be stamped with it too.
+      await this.saveGeo(geoHandle, [primaryDoc ?? preparedDocs.preparedDocs[0]], contextValue, true);
+    }
+    const docsWithGeo = preparedDocs.preparedDocs;
     await this.preserveHomeGeoIfNonHomeCapture(geoCaptureValue, contextValue, docId, docsWithGeo);
     docsWithGeo.forEach((doc: any) => delete doc.geo_capture);
     this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);

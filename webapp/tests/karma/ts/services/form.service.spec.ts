@@ -2142,6 +2142,54 @@ describe('Form service', () => {
       assert.notProperty(savedDocs[0], 'geolocation');
     });
 
+    it('does not stamp geolocation onto sibling or repeated child docs created in the same submission',
+      async () => {
+        const type = 'clinic';
+        const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
+        const geoHandle = sinon.stub().resolves(geoData);
+
+        const captureInput = document.createElement('input');
+        captureInput.type = 'hidden';
+        captureInput.dataset.geoContext = 'home';
+        const captureWrapper = document.createElement('div');
+        captureWrapper.classList.add('or-appearance-geolocation-capture');
+        captureWrapper.appendChild(captureInput);
+        const html = document.createElement('div');
+        html.appendChild(captureWrapper);
+
+        enketoTranslationService.contactRecordToJs.returns({
+          doc: { _id: 'main1', type: 'clinic', geo_capture: 'captured', contact: 'NEW' },
+          siblings: {
+            contact: { _id: 'sis1', type: 'person', parent: 'PARENT' },
+          },
+          repeats: {
+            child_data: [{ _id: 'kid1', type: 'child', parent: 'PARENT' }],
+          },
+        });
+        extractLineageService.extract.callsFake(contact => contact);
+        dbBulkDocs.resolves([]);
+
+        await service.saveContact(
+          { docId: undefined, type },
+          { form: { getDataStr: () => '<data></data>', view: { html } } },
+          false,
+          geoHandle
+        );
+
+        const savedDocs = dbBulkDocs.args[0][0];
+        const mainDoc = savedDocs.find(doc => doc._id === 'main1');
+        const siblingDoc = savedDocs.find(doc => doc._id === 'sis1');
+        const childDoc = savedDocs.find(doc => doc._id === 'kid1');
+
+        assert.deepEqual(mainDoc.geolocation, geoData);
+        assert.property(mainDoc, 'geolocation_log');
+
+        assert.notProperty(siblingDoc, 'geolocation');
+        assert.notProperty(siblingDoc, 'geolocation_log');
+        assert.notProperty(childDoc, 'geolocation');
+        assert.notProperty(childDoc, 'geolocation_log');
+      });
+
     it('does not modify geolocation fields when geo_capture is kept', async () => {
       const type = 'some-contact-type';
       const existingGeo = { latitude: 1.23, longitude: 36.8, accuracy: 10 };
