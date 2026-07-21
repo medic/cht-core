@@ -837,6 +837,18 @@ describe('Form service', () => {
       expect(captureInput.dataset.geoHasLocation).to.equal('true');
     });
 
+    it('sets data-geo-has-location when latitude is exactly 0 (equator)', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation: { latitude: 0, longitude: 36.8 },
+        geolocation_log: [
+          { timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 0, longitude: 36.8 }, is_home: true }
+        ],
+      });
+      expect(captureInput.dataset.geoHasLocation).to.equal('true');
+    });
+
     it('sets data-geo-last-capture with isHome:true from most recent successful home entry', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {

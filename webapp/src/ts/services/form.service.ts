@@ -290,7 +290,7 @@ export class FormService { // NOSONAR
 
     captureInput.dataset.geoIsEdit = 'true';
 
-    if (!contact.geolocation?.latitude) {
+    if (typeof contact.geolocation?.latitude !== 'number') {
       return;
     }
 
