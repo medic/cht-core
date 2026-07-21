@@ -25,6 +25,8 @@ const TRANSLATION_KEYS = {
 };
 
 const WEAK_SIGNAL_CODES = new Set([2, 3, -2]);
+// Standard GeolocationPositionError.PERMISSION_DENIED code (W3C Geolocation API spec).
+const GEOLOCATION_PERMISSION_DENIED = 1;
 
 class HouseholdGeolocationWidget extends Widget {
   static get selector() {
@@ -158,7 +160,7 @@ class HouseholdGeolocationWidget extends Widget {
       }
     }
 
-    if (this._isPermissionDenied()) {
+    if (errorCode === GEOLOCATION_PERMISSION_DENIED) {
       $('<p class="geolocation-permission-denied">')
         .text(this._translate(TRANSLATION_KEYS.PERMISSION_DENIED))
         .appendTo($status);

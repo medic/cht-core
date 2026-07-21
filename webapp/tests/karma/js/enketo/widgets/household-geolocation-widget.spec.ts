@@ -34,6 +34,7 @@ const GPS_SUCCESS = {
   latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7,
 };
 const GPS_FAILURE = { code: -2, message: 'Geolocation timeout exceeded' };
+const GPS_PERMISSION_DENIED = { code: 1, message: 'User denied Geolocation' };
 
 describe('Enketo: Household Geolocation Widget', () => {
   const $ = jQuery;
@@ -547,12 +548,11 @@ describe('Enketo: Household Geolocation Widget', () => {
         });
       });
 
-      describe('when permission is denied at GPS failure time', () => {
+      describe('when GPS fails with a real permission-denied error code', () => {
         const initWidgetAfterPermissionDeniedFailure = async () => {
-          const promise = Promise.resolve(GPS_FAILURE);
+          const promise = Promise.resolve(GPS_PERMISSION_DENIED);
           (window as any).CHTCore.Geolocation.currentPromise = promise;
           const result = initWidget();
-          (window as any).CHTCore.Geolocation.isPermissionDenied = sinon.stub().returns(true);
           await promise;
           return result;
         };
@@ -582,6 +582,21 @@ describe('Enketo: Household Geolocation Widget', () => {
           const { container } = await initWidgetAfterPermissionDeniedFailure();
           expect(container.querySelector('.geolocation-progress-bar.geolocation-progress-failure'))
             .to.not.be.null;
+        });
+      });
+
+      describe('when isPermissionDenied() reports stale/unrelated live state', () => {
+        it('should show the generic failure message, not permission-denied, for a timeout error', async () => {
+          const promise = Promise.resolve(GPS_FAILURE);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const { container } = initWidget();
+          // Live permission state says "denied", but this specific attempt failed with a timeout (-2),
+          // not a permission error. The message must reflect the actual error, not the live state.
+          (window as any).CHTCore.Geolocation.isPermissionDenied = sinon.stub().returns(true);
+          await promise;
+
+          expect(container.querySelector(SELECTORS.FAILURE_MSG)).to.not.be.null;
+          expect(container.querySelector(SELECTORS.PERMISSION_DENIED)).to.be.null;
         });
       });
     });
