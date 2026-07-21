@@ -393,6 +393,15 @@ describe('Enketo: Household Geolocation Widget', () => {
           expect(container.querySelector(SELECTORS.RETRY_BTN)).to.not.be.null;
         });
 
+        it('should show retry button inside geolocation-status, so its CSS actually applies', async () => {
+          const promise = Promise.resolve(GPS_FAILURE);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const { container } = initWidget();
+          await promise;
+          const statusEl = container.querySelector('.geolocation-status')!;
+          expect(statusEl.querySelector(SELECTORS.RETRY_BTN)).to.not.be.null;
+        });
+
         it('should show "save without location" checkbox after GPS failure', async () => {
           const promise = Promise.resolve(GPS_FAILURE);
           (window as any).CHTCore.Geolocation.currentPromise = promise;
@@ -763,15 +772,19 @@ describe('Enketo: Household Geolocation Widget', () => {
         expect(container.querySelector(SELECTORS.RETRY_BTN)).to.not.be.null;
       });
 
-      it('should show retry button above the edit choices', async () => {
+      it('should show retry button inside geolocation-status, positioned above the edit choices', async () => {
         const promise = Promise.resolve(GPS_FAILURE);
         (window as any).CHTCore.Geolocation.currentPromise = promise;
         const { container } = initEditWithLocationWidget();
         await promise;
+
+        const statusEl = container.querySelector('.geolocation-status')!;
+        expect(statusEl.querySelector(SELECTORS.RETRY_BTN)).to.not.be.null;
+
         const children = Array.from(container.children);
-        const retryIndex = children.findIndex(el => el.classList.contains('geolocation-retry-btn'));
+        const statusIndex = children.indexOf(statusEl);
         const choicesIndex = children.findIndex(el => el.classList.contains('geolocation-edit-choices'));
-        expect(retryIndex).to.be.lessThan(choicesIndex);
+        expect(statusIndex).to.be.lessThan(choicesIndex);
       });
 
       it('should not show "save without location" checkbox on GPS failure without selecting Record New', async () => {

@@ -197,12 +197,7 @@ class HouseholdGeolocationWidget extends Widget {
       this._waitForCapture($status, $bar);
     });
 
-    const $editChoices = $(this.question).find('.geolocation-edit-choices');
-    if ($editChoices.length) {
-      $retryBtn.insertBefore($editChoices);
-    } else {
-      $(this.question).append($retryBtn);
-    }
+    $status.append($retryBtn);
 
     if (!this._isEditWithLocation) {
       this._appendSaveWithoutCheckbox();
