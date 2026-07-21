@@ -100,9 +100,7 @@ describe('cht-form web component - HouseholdGeolocation Widget', () => {
 });
 
 describe('cht-form web component - Geolocation Widget (edit mode)', () => {
-  const loadEditForm = () => mockConfig.loadFormWithEditContext(
-    'default', 'household-geolocation-widget', {}
-  );
+  const loadEditForm = () => mockConfig.loadFormWithEditContext('default', 'household-geolocation-widget');
 
   it('should render edit badge and all three edit choices on load', async () => {
     await mockGeoPending();

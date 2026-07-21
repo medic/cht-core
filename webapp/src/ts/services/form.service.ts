@@ -270,16 +270,6 @@ export class FormService { // NOSONAR
     return Object.values(instanceData)[0];
   }
 
-  private setLastCapture(log: any[], captureInput: HTMLInputElement, homeOnly: boolean) {
-    const entry = [...log].reverse().find(e => (!homeOnly || e.is_home) && e.recording && !('code' in e.recording));
-    if (entry) {
-      captureInput.dataset.geoLastCapture = JSON.stringify({
-        isHome: entry.is_home,
-        timestamp: entry.timestamp,
-      });
-    }
-  }
-
   private injectGeoEditContext(formHtml: Element | undefined, contact: any) {
     const captureInput = formHtml?.querySelector(
       '.or-appearance-geolocation-capture input'
@@ -294,9 +284,7 @@ export class FormService { // NOSONAR
       return;
     }
 
-    const log: any[] = contact.geolocation_log || [];
     captureInput.dataset.geoHasLocation = 'true';
-    this.setLastCapture(log, captureInput, true);
   }
 
   private getGeoContext(formHtml?: Element): string | undefined {
