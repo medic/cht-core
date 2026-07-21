@@ -544,5 +544,35 @@ describe('Geolocation service', () => {
       expect(service.isPermissionDenied()).to.be.false;
       expect(consoleErrorStub.callCount).to.equal(1);
     });
+
+    it('returns true when the browser reports a native PERMISSION_DENIED error, even without the Android bridge',
+      () => {
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsArgWith(1, { code: 1, message: 'User denied Geolocation' });
+        service.init();
+        expect(service.isPermissionDenied()).to.be.true;
+      });
+
+    it('does not report permission denied for a non-permission GPS error (e.g. timeout)', () => {
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsArgWith(1, { code: 3, message: 'Timeout expired' });
+      service.init();
+      expect(service.isPermissionDenied()).to.be.false;
+    });
+
+    it('reflects the most recent attempt, not a stale error from a previous init()', () => {
+      const position = {
+        latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7,
+      };
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsArgWith(1, { code: 1, message: 'User denied Geolocation' });
+      service.init();
+      expect(service.isPermissionDenied()).to.be.true;
+
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsArgWith(0, { coords: position });
+      service.init();
+      expect(service.isPermissionDenied()).to.be.false;
+    });
   });
 });

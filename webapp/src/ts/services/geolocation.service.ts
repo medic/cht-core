@@ -2,6 +2,9 @@ import { Injectable } from '@angular/core';
 
 import { TelemetryService } from '@mm-services/telemetry.service';
 
+// Standard GeolocationPositionError.PERMISSION_DENIED code (W3C Geolocation API spec).
+const GEOLOCATION_PERMISSION_DENIED = 1;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -172,6 +175,6 @@ export class GeolocationService {
   }
 
   isPermissionDenied(): boolean {
-    return !this.getAndroidPermission();
+    return !this.getAndroidPermission() || this.geoError?.code === GEOLOCATION_PERMISSION_DENIED;
   }
 }
