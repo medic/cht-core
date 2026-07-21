@@ -291,11 +291,11 @@ describe('ContactsEdit component', () => {
       expect(formService.unload.args[0]).to.deep.equal(['form instance']);
     });
 
-    it('should cancel geolocation watcher on destroy when currentHandle exists', async () => {
+    it('should cancel its own geolocation handle on destroy when one exists', async () => {
       await createComponent();
 
       const cancel = sinon.stub();
-      geolocationService.currentHandle = { cancel };
+      component.geoHandle = { cancel };
       component.ngOnDestroy();
 
       expect(cancel.callCount).to.equal(1);
@@ -304,7 +304,7 @@ describe('ContactsEdit component', () => {
     it('should not throw on destroy when no geolocation watcher is active', async () => {
       await createComponent();
 
-      geolocationService.currentHandle = undefined;
+      component.geoHandle = undefined;
       expect(() => component.ngOnDestroy()).to.not.throw();
     });
 
@@ -362,6 +362,50 @@ describe('ContactsEdit component', () => {
         titleKey: 'other_key',
       });
     }));
+  });
+
+  describe('geolocation handle lifecycle', () => {
+    it('should call geolocationService.init() and store the result as its own handle', async () => {
+      const handle = { cancel: sinon.stub() };
+      geolocationService.init.returns(handle);
+
+      await createComponent();
+      await fixture.whenStable();
+
+      expect(geolocationService.init.callCount).to.equal(1);
+      expect(component.geoHandle).to.equal(handle);
+    });
+
+    it('should cancel the previous geo handle and acquire a new one when navigating to a different contact',
+      fakeAsync(async () => {
+        routeSnapshot.params = { id: 'contact_a' };
+        route.params.next({ id: 'contact_a' });
+
+        const handleA = { cancel: sinon.stub() };
+        const handleB = { cancel: sinon.stub() };
+        geolocationService.init.onFirstCall().returns(handleA).onSecondCall().returns(handleB);
+
+        lineageModelGeneratorService.contact
+          .withArgs('contact_a', { merge: true }).resolves({ doc: { _id: 'contact_a', type: 'clinic' } })
+          .withArgs('contact_b', { merge: true }).resolves({ doc: { _id: 'contact_b', type: 'clinic' } });
+        contactTypesService.get.resolves({ edit_form: 'clinic_edit_form_id', edit_key: 'clinic_edit_key' });
+        dbGet.resolves({ _id: 'clinic_edit_form_id', the: 'form' });
+
+        await createComponent();
+        await fixture.whenStable();
+
+        expect(component.geoHandle).to.equal(handleA);
+        expect(handleA.cancel.callCount).to.equal(0);
+
+        routeSnapshot = { params: { id: 'contact_b' } };
+        route.params.next({ id: 'contact_b' });
+
+        await fixture.whenStable();
+        flushMicrotasks();
+
+        expect(handleA.cancel.callCount).to.equal(1);
+        expect(component.geoHandle).to.equal(handleB);
+      }));
   });
 
   describe('loading form', () => {

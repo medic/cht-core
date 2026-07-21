@@ -42,7 +42,6 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
 import { Contact, Qualifier, Report } from '@medic/cht-datasource';
 import { DOC_TYPES } from '@medic/constants';
-import { GeolocationService } from '@mm-services/geolocation.service';
 
 describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
@@ -109,7 +108,6 @@ describe('Form service', () => {
   let performanceService;
   let performanceTracking;
   let userContactSummaryService;
-  let geolocationService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -193,7 +191,6 @@ describe('Form service', () => {
     contactsService = { getSiblings };
     performanceTracking = { stop: sinon.stub() };
     performanceService = { track: sinon.stub().returns(performanceTracking) };
-    geolocationService = { init: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -229,7 +226,6 @@ describe('Form service', () => {
         { provide: ContactsService, useValue: contactsService },
         { provide: PerformanceService, useValue: performanceService },
         { provide: UserContactSummaryService, useValue: userContactSummaryService },
-        { provide: GeolocationService, useValue: geolocationService },
       ],
     });
 
@@ -686,8 +682,11 @@ describe('Form service', () => {
       }
     }));
 
-    describe('geolocation service initialization', () => {
-      const setupRender = (html: string) => {
+    describe('geo edit context injection is gated by form type', () => {
+      const html = '<div><div class="or-appearance-geolocation-capture"><input type="hidden" /></div></div>';
+      const instanceData = { clinic: { _id: 'contact1', geolocation: { latitude: 1.23, longitude: 36.8 } } };
+
+      const setupRender = () => {
         UserContact.resolves({ contact_id: '123' });
         xmlFormsService.canAccessForm.resolves(true);
         dbGetAttachment
@@ -700,24 +699,24 @@ describe('Form service', () => {
         EnketoPrepopulationData.returns('<xml></xml>');
       };
 
-      it('should call geolocationService.init() before rendering when form has geolocation capture widget',
-        async () => {
-          const html = '<div><div class="or-appearance-geolocation-capture"><input type="hidden" /></div></div>';
-          setupRender(html);
-          const renderForm = sinon.spy(EnketoService.prototype, 'renderForm');
+      it('applies geo edit context when form type is contact', async () => {
+        setupRender();
+        const renderForm = sinon.spy(EnketoService.prototype, 'renderForm');
 
-          await service.render(new WebappEnketoFormContext('#div', 'contact', mockEnketoDoc('clinic')));
+        await service.render(new WebappEnketoFormContext('#div', 'contact', mockEnketoDoc('clinic'), instanceData));
 
-          expect(geolocationService.init.callCount).to.equal(1);
-          expect(geolocationService.init.calledBefore(renderForm)).to.be.true;
-        });
+        const renderedHtml = renderForm.args[0][1].html.get(0);
+        expect(renderedHtml.querySelector('input').dataset.geoIsEdit).to.equal('true');
+      });
 
-      it('should not call geolocationService.init() when form has no geolocation capture widget', async () => {
-        setupRender('<div>my form</div>');
+      it('does not apply geo edit context when form type is not contact', async () => {
+        setupRender();
+        const renderForm = sinon.spy(EnketoService.prototype, 'renderForm');
 
-        await service.render(new WebappEnketoFormContext('#div', 'contact', mockEnketoDoc('clinic')));
+        await service.render(new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('clinic'), instanceData));
 
-        expect(geolocationService.init.callCount).to.equal(0);
+        const renderedHtml = renderForm.args[0][1].html.get(0);
+        expect(renderedHtml.querySelector('input').dataset.geoIsEdit).to.be.undefined;
       });
     });
   });

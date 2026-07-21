@@ -69,6 +69,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   enketoContact;
 
   private routeSnapshot;
+  private geoHandle: any;
   private trackRender;
   private trackEditDuration;
   private trackSave;
@@ -169,7 +170,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnDestroy() {
     this.subscription.unsubscribe();
     this.translationsLoadedSubscription?.unsubscribe();
-    this.geolocationService.currentHandle?.cancel();
+    this.geoHandle?.cancel();
     this.globalActions.setTitle();
     if (this.enketoContact?.formInstance) {
       this.formService.unload(this.enketoContact.formInstance);
@@ -185,6 +186,8 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private async initForm() {
     this.contentError = false;
     this.errorTranslationKey = false;
+    this.geoHandle?.cancel();
+    this.geoHandle = this.geolocationService.init();
 
     try {
       const contact = await this.getContact();
@@ -458,7 +461,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
             { docId, type: this.enketoContact.type },
             { form, xmlVersion: this.xmlVersion, duplicateCheck: this.duplicateCheck },
             this.duplicatesAcknowledged,
-            this.geolocationService?.currentHandle,
+            this.geoHandle,
           )
           .then((result) => {
             console.debug('saved contact', result);
