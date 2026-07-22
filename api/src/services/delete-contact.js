@@ -2,16 +2,10 @@ const db = require('../db');
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
 const bulkOperations = require('./bulk-operations');
-const { NotFoundError } = require('../errors');
+const { NotFoundError, BadRequestError } = require('../errors');
 const { BULK_OPERATIONS } = require('@medic/constants');
 
 const { ACTIONS } = BULK_OPERATIONS;
-
-const httpError = (status, message) => {
-  const err = new Error(message);
-  err.status = status;
-  return err;
-};
 
 // contacts_by_depth returns one row per contact in the subtree, each carrying its uuid and shortcode.
 const getSubtree = (id) => db.medic.query('medic/contacts_by_depth', { key: [id] });
@@ -78,8 +72,7 @@ const deleteContactHierarchy = async (id, { deleteUsers, dryRun } = {}) => {
   ]);
 
   if (userIds.length && !deleteUsers) {
-    throw httpError(
-      400,
+    throw new BadRequestError(
       `${userIds.length} user(s) are linked to contacts in this hierarchy. ` +
         `Set delete_users=true (requires can_delete_users) to remove them.`
     );

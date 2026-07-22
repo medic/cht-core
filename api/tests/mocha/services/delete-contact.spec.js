@@ -5,7 +5,7 @@ const db = require('../../../src/db');
 const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
 const bulkOperations = require('../../../src/services/bulk-operations');
-const { NotFoundError } = require('../../../src/errors');
+const { NotFoundError, BadRequestError } = require('../../../src/errors');
 const service = require('../../../src/services/delete-contact');
 
 describe('Delete contact service', () => {
@@ -161,7 +161,9 @@ describe('Delete contact service', () => {
       await handlerFor(get)(req, res);
 
       expect(serverUtils.error.calledOnce).to.be.true;
-      expect(serverUtils.error.args[0][0].status).to.equal(400);
+      const err = serverUtils.error.args[0][0];
+      expect(err).to.be.an.instanceOf(BadRequestError);
+      expect(err.message).to.contain('user(s) are linked to contacts');
       expect(queue.called).to.equal(false);
     });
   });
