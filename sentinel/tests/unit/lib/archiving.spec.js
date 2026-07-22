@@ -432,9 +432,13 @@ describe('Sentinel archiving lib', () => {
   });
 
   describe('canArchive', () => {
-    it('accepts the four archivable types', () => {
+    it('accepts contacts (modern and legacy types), reports, tasks and targets', () => {
       const canArchive = lib.__get__('canArchive');
       chai.expect(canArchive({ type: 'contact' })).to.equal(true);
+      chai.expect(canArchive({ type: 'person' })).to.equal(true);
+      chai.expect(canArchive({ type: 'clinic' })).to.equal(true);
+      chai.expect(canArchive({ type: 'health_center' })).to.equal(true);
+      chai.expect(canArchive({ type: 'district_hospital' })).to.equal(true);
       chai.expect(canArchive({ type: 'data_record' })).to.equal(true);
       chai.expect(canArchive({ type: 'task' })).to.equal(true);
       chai.expect(canArchive({ type: 'target' })).to.equal(true);
@@ -442,9 +446,8 @@ describe('Sentinel archiving lib', () => {
 
     it('rejects other types and missing docs', () => {
       const canArchive = lib.__get__('canArchive');
-      chai.expect(canArchive({ type: 'person' })).to.equal(false);
-      chai.expect(canArchive({ type: 'clinic' })).to.equal(false);
       chai.expect(canArchive({ type: 'feedback' })).to.equal(false);
+      chai.expect(canArchive({ type: 'usersmeta' })).to.equal(false);
       chai.expect(canArchive({})).to.equal(false);
       chai.expect(canArchive(null)).to.equal(false);
       chai.expect(canArchive(undefined)).to.equal(false);
@@ -482,7 +485,7 @@ describe('Sentinel archiving lib', () => {
         rows: [
           { doc: { _id: 'c1', _rev: '1-a', type: 'contact', name: 'C' } },
           { doc: { _id: 'r1', _rev: '1-b', type: 'data_record', form: 'visit' } },
-          { doc: { _id: 'p1', _rev: '1-c', type: 'person' } }, // not archivable
+          { doc: { _id: 'x1', _rev: '1-c', type: 'feedback' } }, // not archivable
           { doc: null }, // missing
         ],
       });
@@ -497,11 +500,11 @@ describe('Sentinel archiving lib', () => {
       const audit = lib.__get__('audit');
       sinon.stub(audit, 'recordArchiving').resolves();
 
-      await archiveBatch([' c1 ', 'r1', 'p1', 'missing']);
+      await archiveBatch([' c1 ', 'r1', 'x1', 'missing']);
 
       chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
         attachments: true,
-        keys: ['c1', 'r1', 'p1', 'missing'],
+        keys: ['c1', 'r1', 'x1', 'missing'],
         include_docs: true,
         conflicts: true,
       }]);

@@ -3,7 +3,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const reportFactory = require('@factories/cht/reports/generic-report');
-const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 const { expect } = require('chai');
 
 describe('Bulk operations API', () => {
@@ -37,17 +37,6 @@ describe('Bulk operations API', () => {
     throw new Error(`bulk operation ${id} did not complete`);
   };
 
-  const cleanupArchiveJobs = async () => {
-    const result = await utils.sentinelDb.allDocs({
-      startkey: PREFIXES.ARCHIVE_JOB,
-      endkey: `${PREFIXES.ARCHIVE_JOB}￰`,
-    });
-    if (!result.rows.length) {
-      return;
-    }
-    await utils.sentinelDb.bulkDocs(result.rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true })));
-  };
-
   before(async () => {
     await utils.saveDocs(allDocItems);
     await utils.createUsers([offlineUser]);
@@ -56,10 +45,6 @@ describe('Bulk operations API', () => {
   after(async () => {
     await utils.revertDb([], true);
     await utils.deleteUsers([offlineUser]);
-  });
-
-  afterEach(async () => {
-    await cleanupArchiveJobs();
   });
 
   describe('GET /api/v1/bulk-operations/:id', () => {
@@ -91,6 +76,22 @@ describe('Bulk operations API', () => {
       const actions = Object.values(log.actions);
       expect(actions).to.have.lengthOf(1);
       expect(actions[0]).to.include({ action: 'archive', status: 'completed' });
+    });
+  });
+
+  describe('DELETE end to end', () => {
+    it('archives and purges the deleted contact and its reports', async function () {
+      this.timeout(60000);
+      const person = personFactory.build({ parent: { _id: place0._id, parent: place0.parent } });
+      const report = reportFactory.report().build({ form: 'test-report' }, { patient: person });
+      await utils.saveDocs([person, report]);
+
+      const { id } = await utils.request({ path: `/api/v1/person/${person._id}`, method: 'DELETE' });
+      await pollBulkOperation(id);
+
+      const remaining = await utils.db.allDocs({ keys: [person._id, report._id] });
+      const stillPresent = remaining.rows.filter(row => !row.error);
+      expect(stillPresent).to.have.lengthOf(0);
     });
   });
 });

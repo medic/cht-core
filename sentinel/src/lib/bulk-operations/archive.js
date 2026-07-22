@@ -1,25 +1,8 @@
-const { v7: uuid } = require('uuid');
 const logger = require('@medic/logger');
-const db = require('../../db');
-const archivingUtils = require('@medic/archiving-utils');
-const { PREFIXES } = require('@medic/constants');
+const archiving = require('../archiving');
 
-const buildArchiveJob = (ids) => ({
-  _id: `${PREFIXES.ARCHIVE_JOB}${uuid()}`,
-  type: PREFIXES.ARCHIVE_JOB,
-  date: Date.now(),
-  total: ids.length,
-  cursor: 0,
-  _attachments: {
-    [archivingUtils.ATTACHMENT_NAME]: {
-      content_type: archivingUtils.ATTACHMENT_TYPE,
-      data: archivingUtils.encodeIds(ids),
-    },
-  },
-});
-
-// Hand the batch off to the archiving queue; the archiving schedule copies the docs to the archive
-// database and purges them from medic. The whole batch fails if the job cannot be written.
+// Archive the batch directly: copy the docs to the archive database and purge them from medic.
+// The whole batch fails if archiving throws.
 const archive = async (batch, actionId) => {
   const failed = [];
   const ids = [];
@@ -37,9 +20,9 @@ const archive = async (batch, actionId) => {
   }
 
   try {
-    await db.sentinel.put(buildArchiveJob(ids));
+    await archiving.archiveBatch(ids);
   } catch (err) {
-    logger.error(`bulk-operations: archive failed to queue job (action ${actionId}): %o`, err);
+    logger.error(`bulk-operations: archive failed (action ${actionId}): %o`, err);
     return batch;
   }
   return failed;

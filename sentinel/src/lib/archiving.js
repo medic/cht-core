@@ -30,6 +30,8 @@ const readIds = async (job) => {
 const canArchive = (doc) => {
   const archivableDocTypes = [
     'contact',
+    'person',
+    ...Object.values(constants.CONTACT_TYPES),
     constants.DOC_TYPES.DATA_RECORD,
     'task',
     'target',
@@ -173,4 +175,5 @@ const archive = async ({ duration } = {}) => {
 
 module.exports = {
   archive,
+  archiveBatch,
 };
