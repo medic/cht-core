@@ -115,7 +115,7 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
 
   describe('Edit permissions disabled', () => {
     before(async () => {
-      await utils.updatePermissions(onlineUser.roles, [], ['can_edit']);
+      await utils.updatePermissions(onlineUser.roles, [], ['can_edit', 'can_update_contacts']);
       await commonPage.closeReloadModal();
     });
 

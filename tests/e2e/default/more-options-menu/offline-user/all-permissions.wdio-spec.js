@@ -125,7 +125,7 @@ describe('More Options Menu - Offline User', () => {
 
   describe('All permissions disabled', () => {
     before(async () => {
-      const allPermissions = ['can_edit', 'can_delete_contacts', 'can_export_all',
+      const allPermissions = ['can_edit', 'can_update_contacts', 'can_delete_contacts', 'can_export_all',
         'can_export_contacts', 'can_export_messages',
         'can_delete_reports', 'can_update_reports'];
       await utils.updatePermissions(offlineUser.roles, [], allPermissions, true);
