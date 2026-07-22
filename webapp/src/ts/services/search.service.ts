@@ -252,10 +252,10 @@ export class SearchService {
       additionalDocIds
         .filter(docId => searchResults.docIds.indexOf(docId) === -1)
         .forEach(docId => searchResults.docIds.push(docId));
-      const dataRecordsPromise = this.getDataRecordsService.get(
-        searchResults.docIds,
-        { hydrateContactNames, include_docs: options.include_docs }
-      );
+      const getDataRecordsOptions = { hydrateContactNames, include_docs: options.include_docs };
+      const dataRecordsPromise = type === 'reports'
+        ? this.getDataRecordsService.getReports(searchResults.docIds, getDataRecordsOptions)
+        : this.getDataRecordsService.getContacts(searchResults.docIds, getDataRecordsOptions);
 
       if (!displayLastVisitedDate && !displayTaskCount) {
         return dataRecordsPromise;

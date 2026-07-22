@@ -251,7 +251,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
       .getUserFacilityId(userSettings)
       .filter(id => !!id);
 
-    let homePlaces = await this.getDataRecordsService.get(facilityIds);
+    let homePlaces = await this.getDataRecordsService.getContacts(facilityIds);
     homePlaces = homePlaces?.filter(place => !!place);
     homePlaces?.forEach(homePlace => homePlace.home = true);
     return homePlaces;

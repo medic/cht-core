@@ -88,7 +88,7 @@ describe('Contacts component', () => {
       get: sinon.stub().resolves({ facility_id: district._id })
     };
     getDataRecordsService = {
-      get: sinon.stub().resolves([ district ])
+      getContacts: sinon.stub().resolves([ district ])
     };
     contactTypesService = {
       getChildren: sinon.stub().resolves([
@@ -283,7 +283,7 @@ describe('Contacts component', () => {
       sinon.resetHistory();
       sessionService.isOnlineOnly.returns(true);
       userSettingsService.get.resolves({ facility_id: undefined });
-      getDataRecordsService.get.resolves(undefined);
+      getDataRecordsService.getContacts.resolves(undefined);
       searchResults = [{ _id: 'search-result' }];
       searchService.search.resolves(searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
@@ -311,7 +311,7 @@ describe('Contacts component', () => {
     it('when paginating, does not skip the extra place for admins #4085', fakeAsync(() => {
       sinon.resetHistory();
       userSettingsService.get.resolves({ facility_id: undefined });
-      getDataRecordsService.get.resolves(undefined);
+      getDataRecordsService.getContacts.resolves(undefined);
       const searchResult = { _id: 'search-result' };
       searchResults = Array(50).fill(searchResult);
       searchService.search.resolves(searchResults);
@@ -373,7 +373,7 @@ describe('Contacts component', () => {
     it('when refreshing list as admin, does not modify limit #4085', fakeAsync(() => {
       sinon.resetHistory();
       userSettingsService.get.resolves({ facility_id: undefined });
-      getDataRecordsService.get.resolves(undefined);
+      getDataRecordsService.getContacts.resolves(undefined);
       const searchResult = { _id: 'search-result' };
       searchResults = Array(60).fill(searchResult);
       searchService.search.resolves(searchResults);
@@ -1199,7 +1199,7 @@ describe('Contacts component', () => {
       }];
 
       userSettingsService.get.resolves({ facility_id: [multi_facility[0]._id, multi_facility[1]._id] });
-      getDataRecordsService.get.resolves(multi_facility);
+      getDataRecordsService.getContacts.resolves(multi_facility);
 
       sinon.stub(ContactsActions.prototype, 'updateContactsList');
       component.ngOnInit();
