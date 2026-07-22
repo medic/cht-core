@@ -207,4 +207,13 @@ describe('contacts_by_freetext', () => {
       { key: ['name:बुद्ध élève'], value }
     ]);
   });
+  it('normalizes Devanagari numerals to Latin in emitted keys', () => {
+    const doc = { type: CONTACT_TYPES.DISTRICT_HOSPITAL, phone: '१२३४५' };
+    const emitted = mapFn(doc, true);
+    const value = expectedValue({ typeIndex: 0 });
+    expect(emitted).to.deep.equal([
+      { key: ['12345'], value },
+      { key: ['phone:12345'], value }
+    ]);
+  });
 });
