@@ -178,7 +178,7 @@ const waitForLoaders = async (timeout = 5000) => {
   });
 };
 
-const waitForAngularLoaded = async (timeout = 60000) => {
+const waitForAngularLoaded = async (timeout = 40000) => {
   await hamburgerMenuSelectors.hamburgerMenu().waitForDisplayed({ timeout });
 };
 

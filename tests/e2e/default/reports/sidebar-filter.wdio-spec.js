@@ -199,7 +199,7 @@ describe('Reports Sidebar Filter', () => {
     await reportsPage.openSidebarFilterDateAccordion();
 
     // 1. Max Date parity - verify future dates are disabled
-    await $('#fromDateFilter').click();
+    await reportsPage.clickSidebarFilterFromDate();
     await reportsPage.waitForNepaliDatePickerDisplayed();
 
     // Future dates in the current month should be disabled
@@ -212,10 +212,9 @@ describe('Reports Sidebar Filter', () => {
     expect(await picker.isDisplayed()).to.be.false;
 
     // 3. Dismiss by clicking outside (e.g. the accordion header)
-    await $('#fromDateFilter').click();
+    await reportsPage.clickSidebarFilterFromDate();
     expect(await picker.isDisplayed()).to.be.true;
-    const accordionHeader = await $('#date-filter-accordion mat-expansion-panel-header');
-    await accordionHeader.click();
+    await reportsPage.clickSidebarFilterDateAccordionHeader();
     expect(await picker.isDisplayed()).to.be.false;
 
     // 4. Select From and To dates
@@ -223,7 +222,7 @@ describe('Reports Sidebar Filter', () => {
     await reportsPage.setSidebarFilterBikToDate();
 
     // 5. Reopen active selection verification
-    await $('#toDateFilter').click();
+    await reportsPage.clickSidebarFilterToDate();
     // Verify that the active selected date is highlighted correctly
     expect(await reportsPage.isNepaliDatePickerActiveCellDisplayed()).to.be.true;
     
