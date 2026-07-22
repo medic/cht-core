@@ -4,6 +4,7 @@ const { Place, Qualifier} = require('@medic/cht-datasource');
 const auth = require('../../../src/auth');
 const dataContext = require('../../../src/services/data-context');
 const serverUtils = require('../../../src/server-utils');
+const { NotFoundError } = require('../../../src/errors');
 
 describe('Place Controller', () => {
   const sandbox = sinon.createSandbox();
@@ -222,11 +223,12 @@ describe('Place Controller', () => {
         await controller.v1.delete(req, res);
 
         expect(placeGet.calledOnceWithExactly(Qualifier.byUuid('person-1'))).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(
-          { status: 404, message: 'Place not found' },
-          req,
-          res
-        )).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        const err = serverUtilsError.args[0][0];
+        expect(err).to.be.an.instanceOf(NotFoundError);
+        expect(err.message).to.equal('Place not found');
+        expect(serverUtilsError.args[0][1]).to.equal(req);
+        expect(serverUtilsError.args[0][2]).to.equal(res);
       });
     });
   });

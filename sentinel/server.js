@@ -48,7 +48,7 @@ logger.info('Running server checks...');
     schedule.init();
 
     const bulkOperations = require('./src/lib/bulk-operations');
-    bulkOperations.listen();
+    await bulkOperations.listen();
 
     logger.info('startup complete.');
 

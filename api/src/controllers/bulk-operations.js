@@ -13,7 +13,8 @@ module.exports = {
      *     description: >
      *       Returns the log document for a bulk operation, including the per-action status and the
      *       count of changes applied so far. Used to poll the progress of an operation that was
-     *       started through one of the bulk endpoints.
+     *       started through one of the bulk endpoints. The bulk operation can be considered finished
+     *       when all of its actions have a status of "completed" or "failed".
      *     tags: [Bulk]
      *     x-since: 5.3.0
      *     parameters:

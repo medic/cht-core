@@ -118,7 +118,7 @@ const SWAGGER_OPTIONS = {
           schema: { type: 'boolean', default: false },
           description:
             'Also delete user accounts linked to the removed contacts. Requires the can_delete_users ' +
-            'permission. When not set, the request is rejected with 400 if any linked users exist.',
+            'permission. When not set, the request is rejected with 400 if any contacts to delete have linked users.',
         },
         dryRun: {
           in: 'query',

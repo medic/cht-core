@@ -1,8 +1,9 @@
 const { v7: uuid } = require('uuid');
 const db = require('../db');
-const { BULK_OPERATIONS } = require('@medic/constants');
+const { BULK_OPERATIONS, PREFIXES } = require('@medic/constants');
 
-const { LOG_ID_PREFIX, ACTION_ID_PREFIX, OPERATIONS_ATTACHMENT, STATUSES } = BULK_OPERATIONS;
+const { OPERATIONS_ATTACHMENT, STATUSES } = BULK_OPERATIONS;
+const { BULK_OPERATION_LOG: LOG_ID_PREFIX, BULK_OPERATION_ACTION: ACTION_ID_PREFIX } = PREFIXES;
 const OPERATIONS_CONTENT_TYPE = 'application/json';
 
 const getOperationUuid = (operationId) => operationId.slice(LOG_ID_PREFIX.length);
@@ -33,7 +34,8 @@ const buildLogAction = (action, totalChangesCount, date) => ({
   total_changes_count: totalChangesCount,
 });
 
-const buildBulkOperation = (actionOperations, date) => {
+const buildBulkOperation = (actionOperations) => {
+  const date = new Date();
   const operationId = generateOperationId();
   const actions = actionOperations.map(({ action, operations }) => buildActionDoc(operationId, action, operations));
 
@@ -81,10 +83,11 @@ const getLog = async (id) => {
  */
 const queue = async (actionOperations) => {
   const nonEmpty = actionOperations.filter(({ operations }) => operations.length);
-  const { log, actions } = buildBulkOperation(nonEmpty, new Date());
+  const { log, actions } = buildBulkOperation(nonEmpty);
 
   await db.medicLogs.put(log);
-  await db.sentinel.bulkDocs(actions);
+  // saveDocs checks each result; bulkDocs alone does not reject when an individual doc fails.
+  await db.saveDocs(db.sentinel, actions);
 
   return log._id;
 };

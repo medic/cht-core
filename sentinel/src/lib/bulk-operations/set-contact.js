@@ -40,9 +40,16 @@ const setContact = async (batch, actionId) => {
   });
 
   if (toUpdate.length) {
-    await db.medic.bulkDocs(toUpdate);
+    // bulkDocs does not reject when an individual doc fails, so check each result.
+    const results = await db.medic.bulkDocs(toUpdate);
+    results.forEach((res, i) => {
+      if (res.error) {
+        logger.error(`bulk-operations: set-contact failed for ${toUpdate[i]._id}: %o (action ${actionId})`, res);
+        failed.push(batch.find(op => op.id === toUpdate[i]._id));
+      }
+    });
   }
   return failed;
 };
 
-module.exports = setContact;
+module.exports = { setContact };

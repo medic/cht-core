@@ -2,6 +2,7 @@ const db = require('../db');
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
 const bulkOperations = require('./bulk-operations');
+const { NotFoundError } = require('../errors');
 const { BULK_OPERATIONS } = require('@medic/constants');
 
 const { ACTIONS } = BULK_OPERATIONS;
@@ -35,11 +36,11 @@ const getReportIds = async (subjectKeys) => {
 // Surviving places whose primary contact is being deleted; the current id guards a since-changed ref.
 const getPrimaryContactClears = async (contactIds) => {
   const result = await db.medic.query('medic/contacts_by_primary_contact', { keys: contactIds });
-  const deleted = new Set(contactIds);
-  const seen = new Set();
+  // Seeded with the deleted ids so those rows are skipped; grows as surviving places are collected.
+  const seen = new Set(contactIds);
   const operations = [];
   result.rows.forEach(row => {
-    if (deleted.has(row.id) || seen.has(row.id)) {
+    if (seen.has(row.id)) {
       return;
     }
     seen.add(row.id);
@@ -129,7 +130,7 @@ const handleDelete = ({ get, type }) => serverUtils.doOrError(async (req, res) =
   const { uuid } = req.params;
   const contact = await get(uuid);
   if (!contact) {
-    return serverUtils.error({ status: 404, message: `${type} not found` }, req, res);
+    return serverUtils.error(new NotFoundError(`${type} not found`), req, res);
   }
 
   const result = await deleteContactHierarchy(uuid, { deleteUsers, dryRun });

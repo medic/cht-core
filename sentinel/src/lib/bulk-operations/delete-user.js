@@ -16,7 +16,7 @@ const deleteUser = async (batch, actionId) => {
       continue;
     }
     try {
-      await userManagement.deleteUser(op.id.replace(PREFIXES.COUCH_USER, ''));
+      await userManagement.users.deleteUser(op.id.replace(PREFIXES.COUCH_USER, ''));
     } catch (err) {
       logger.error(`bulk-operations: delete-user failed for ${op.id} (action ${actionId}): %o`, err);
       failed.push(op);
@@ -25,4 +25,4 @@ const deleteUser = async (batch, actionId) => {
   return failed;
 };
 
-module.exports = deleteUser;
+module.exports = { deleteUser };

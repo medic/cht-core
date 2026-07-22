@@ -65,19 +65,35 @@ describe('bulk-operations sentinel processor', () => {
       return service.processAction(actionId).then(() => {
         const entry = log.actions[actionId];
         expect(entry.status).to.equal('failed');
-        expect(entry.total_changes_count).to.equal(1);
+        expect(entry.total_changes_count).to.equal(2);
         expect(entry.failed_operations.map(op => op.id)).to.deep.equal([ 'b' ]);
       });
     });
 
-    it('throws when there is no handler for the action', () => {
-      stubDb(buildAction({ action: 'archive' }), []);
+    it('records the action failed and still deletes it when there is no handler', () => {
+      const { put, log } = stubDb(buildAction({ action: 'archive' }), []);
       service.__set__('HANDLERS', {});
 
       return service
         .processAction(actionId)
         .then(() => chai.expect.fail('should have thrown'))
-        .catch(err => expect(err.message).to.contain('no handler'));
+        .catch(err => {
+          expect(err.message).to.contain('no handler');
+          expect(log.actions[actionId].status).to.equal('failed');
+          expect(put.args.some(callArgs => callArgs[0]._deleted === true)).to.equal(true);
+        });
+    });
+
+    it('treats an unexpected handler error as a failed batch and still records and deletes', () => {
+      const { put, log } = stubDb(buildAction(), [ { id: 'a' }, { id: 'b' } ]);
+      service.__set__('HANDLERS', { 'set-contact': sinon.stub().rejects(new Error('boom')) });
+
+      return service.processAction(actionId).then(() => {
+        const entry = log.actions[actionId];
+        expect(entry.status).to.equal('failed');
+        expect(entry.failed_operations.map(op => op.id)).to.deep.equal([ 'a', 'b' ]);
+        expect(put.args.some(callArgs => callArgs[0]._deleted === true)).to.equal(true);
+      });
     });
 
     it('is a no-op when the action doc is already gone', () => {

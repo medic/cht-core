@@ -1,11 +1,13 @@
 const async = require('async');
 const logger = require('@medic/logger');
 const db = require('../../db');
-const { BULK_OPERATIONS } = require('@medic/constants');
-const setContact = require('./set-contact');
-const deleteUser = require('./delete-user');
+const { BULK_OPERATIONS, PREFIXES } = require('@medic/constants');
+const { setContact } = require('./set-contact');
+const { deleteUser } = require('./delete-user');
+const { archive } = require('./archive');
 
-const { ACTIONS, STATUSES, OPERATIONS_ATTACHMENT, ACTION_ID_PREFIX } = BULK_OPERATIONS;
+const { ACTIONS, STATUSES, OPERATIONS_ATTACHMENT } = BULK_OPERATIONS;
+const { BULK_OPERATION_ACTION: ACTION_ID_PREFIX } = PREFIXES;
 
 const BATCH_SIZE = 100;
 const RETRY_TIMEOUT = 60000;
@@ -13,7 +15,7 @@ const RETRY_TIMEOUT = 60000;
 const HANDLERS = {
   [ACTIONS.SET_CONTACT]: setContact,
   [ACTIONS.DELETE_USER]: deleteUser,
-  // ACTIONS.ARCHIVE handler is added when #6615 lands.
+  [ACTIONS.ARCHIVE]: archive,
 };
 
 const readOperations = async (actionId) => {
@@ -32,31 +34,22 @@ const saveProgress = async (action, processedCount, failed) => {
   return updated;
 };
 
-// A missing log doc is skipped (and logged) rather than crashing Sentinel.
-const recordResultOnLog = async (action) => {
-  let log;
+// Never throws: by the time we record the result there is nothing more to do about a failure.
+const recordResultOnLog = async (action, status) => {
   try {
-    log = await db.medicLogs.get(action.bulk_operation_id);
+    const log = await db.medicLogs.get(action.bulk_operation_id);
+    log.actions = log.actions || {};
+    log.actions[action._id] = {
+      status,
+      action: action.action,
+      updated_date: new Date(),
+      total_changes_count: action.total,
+      failed_operations: action.failed_operations,
+    };
+    await db.medicLogs.put(log);
   } catch (err) {
-    if (err.status === 404) {
-      logger.error(
-        `bulk-operations: log doc ${action.bulk_operation_id} not found; skipping result for ${action._id}`
-      );
-      return;
-    }
-    throw err;
+    logger.error(`bulk-operations: error updating log ${action.bulk_operation_id}: %o`, err);
   }
-
-  const failed = action.failed_operations || [];
-  log.actions = log.actions || {};
-  log.actions[action._id] = {
-    status: failed.length ? STATUSES.FAILED : STATUSES.COMPLETED,
-    action: action.action,
-    updated_date: new Date(),
-    total_changes_count: action.total - failed.length,
-    failed_operations: failed.length ? failed : undefined,
-  };
-  await db.medicLogs.put(log);
 };
 
 const deleteAction = async (action) => {
@@ -80,30 +73,46 @@ const runOperations = async (action, handler, actionId) => {
   const operations = await readOperations(actionId);
   while (action.cursor < operations.length) {
     const batch = operations.slice(action.cursor, action.cursor + BATCH_SIZE);
-    const failed = await handler(batch, actionId);
-    action = await saveProgress(action, batch.length, failed);
+    let failed;
+    try {
+      failed = await handler(batch, actionId);
+    } catch (err) {
+      // Unexpected handler error: treat the whole batch as failed so the rest still runs.
+      logger.error(`bulk-operations: error handling action ${actionId}: %o`, err);
+      failed = batch;
+    } finally {
+      action = await saveProgress(action, batch.length, failed);
+    }
   }
   return action;
 };
 
+// Always record the result and delete the action, so a failed action is not re-queued on the next
+// Sentinel start (via loadInitialQueue).
 const processAction = async (actionId) => {
-  let action = await getAction(actionId);
+  const action = await getAction(actionId);
   if (!action) {
     return;
   }
 
   const handler = HANDLERS[action.action];
-  if (!handler) {
-    throw new Error(`bulk-operations: no handler for action "${action.action}"`);
+  let completedAction;
+  try {
+    if (!handler) {
+      throw new Error(`bulk-operations: no handler for action "${action.action}"`);
+    }
+    completedAction = action.cursor < action.total
+      ? await runOperations(action, handler, actionId)
+      : action;
+  } finally {
+    const status = !completedAction || completedAction.failed_operations?.length
+      ? STATUSES.FAILED
+      : STATUSES.COMPLETED;
+    completedAction = completedAction || action;
+    await recordResultOnLog(completedAction, status);
+    await deleteAction(completedAction);
+    logger.info(`bulk-operations: completed action ${actionId}`);
   }
-
-  if (action.cursor < action.total) {
-    action = await runOperations(action, handler, actionId);
-  }
-
-  await recordResultOnLog(action);
-  await deleteAction(action);
-  logger.info(`bulk-operations: completed action ${actionId}`);
 };
 
 // inProgress stops our own cursor writes (which show up on the feed) from re-queueing an in-flight
@@ -140,7 +149,7 @@ const registerFeed = () => {
         enqueue(change.id);
       }
     })
-    .on('error', /* istanbul ignore next: feed-error retry, exercised via integration tests */ (err) => {
+    .on('error', (err) => {
       logger.error('bulk-operations: changes feed error: %o', err);
       setTimeout(registerFeed, RETRY_TIMEOUT);
     });
