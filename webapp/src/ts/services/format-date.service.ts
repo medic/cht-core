@@ -67,8 +67,14 @@ export class FormatDateService {
       return momentDate.format(this.config[key]);
     }
 
+    // bikram-sambat expects an ISO date string (YYYY-MM-DD). Passing a moment made it `Date.parse`
+    // a full timestamp, so an evening time-of-day rolled the day over before local midnight in
+    // timezones ahead of UTC (Nepal at 18:15). Clone with 'en' locale so the active 'ne' locale
+    // doesn't emit Devanagari numerals that `Date.parse` can't read. Ref: #11241
+    const localDate = momentDate.clone().locale('en').format('YYYY-MM-DD');
+
     if (key === 'dayMonth') {
-      const bikDate = toBikramSambat(momentDate);
+      const bikDate = toBikramSambat(localDate);
       const devanagariDate = toDevanagariDate(
         bikDate.year,
         bikDate.month,
@@ -77,7 +83,7 @@ export class FormatDateService {
       return `${devanagariDate.day} ${devanagariDate.month}`;
     }
 
-    const bkDateText = toBikramSambatText(momentDate);
+    const bkDateText = toBikramSambatText(localDate);
     if (key === 'date') {
       return bkDateText;
     }
