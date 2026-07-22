@@ -26,7 +26,7 @@ export class AppComponent {
     CONTACT_TYPES.DISTRICT_HOSPITAL,
     CONTACT_TYPES.HEALTH_CENTER,
     'clinic',
-    'person'
+    CONTACT_TYPES.PERSON
   ];
 
   private readonly chtDataSourceService: CHTDatasourceServiceStub;

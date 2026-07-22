@@ -7,6 +7,7 @@ import { EnketoTranslationService } from '@mm-services/enketo-translation.servic
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { AttachmentService } from '@mm-services/attachment.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { CONTACT_TYPES } from '@medic/constants';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import FileManager from '../../js/enketo/file-manager';
@@ -267,7 +268,7 @@ export class ContactSaveService {
     // by default all siblings are "person" types but can be overridden
     // by specifying the type and contact_type in the form
     if (!preparedSibling.type) {
-      preparedSibling.type = 'person';
+      preparedSibling.type = CONTACT_TYPES.PERSON;
     }
 
     if (preparedSibling.parent === 'PARENT') {
