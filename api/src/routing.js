@@ -54,6 +54,7 @@ const infodoc = require('./controllers/infodoc');
 const impact = require('./controllers/impact');
 const targetController = require('./controllers/target');
 const credentials = require('./controllers/credentials');
+const archive = require('./controllers/archive');
 const authorization = require('./middleware/authorization');
 const deprecation = require('./middleware/deprecation');
 const hydration = require('./controllers/hydration');
@@ -797,6 +798,13 @@ app.put(
   authorization.offlineUserFirewall,
   textParser,
   credentials.put
+);
+
+app.post(
+  '/api/v1/archive',
+  authorization.handleAuthErrors,
+  authorization.offlineUserFirewall,
+  archive.create
 );
 
 app.get('/api/v1/users-doc-count', replicationLimitLogController.get);

@@ -25,6 +25,7 @@ if (UNIT_TEST_ENV) {
     post: stubMe('post'),
     query: stubMe('query'),
     get: stubMe('get'),
+    getAttachment: stubMe('getAttachment'),
     changes: stubMe('changes'),
   };
 
@@ -52,15 +53,23 @@ if (UNIT_TEST_ENV) {
     post: stubMe('post'),
     query: stubMe('query'),
     get: stubMe('get'),
+    getAttachment: stubMe('getAttachment'),
     changes: stubMe('changes'),
   };
 
+  module.exports.archive = {
+    allDocs: stubMe('allDocs'),
+    bulkDocs: stubMe('bulkDocs'),
+    get: stubMe('get'),
+    put: stubMe('put'),
+  };
 
   module.exports.allDbs = stubMe('allDbs');
   module.exports.get = stubMe('get');
   module.exports.close = stubMe('close');
   module.exports.medicDbName = stubMe('medicDbName');
   module.exports.queryMedic = stubMe('queryMedic');
+  module.exports.purge = stubMe('purge');
 } else {
   const service = 'sentinel';
   environment.setService(service);
@@ -83,8 +92,9 @@ if (UNIT_TEST_ENV) {
   };
 
   module.exports.medic = new PouchDB(couchUrl, { fetch: fetchFn });
-  module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, { fetch: fetchFn});
+  module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, { fetch: fetchFn });
   module.exports.medicLogs = new PouchDB(`${couchUrl}-logs`, { fetch: fetchFn });
+  module.exports.archive = new PouchDB(`${couchUrl}-archive`, { fetch: fetchFn });
   module.exports.allDbs = () => request.get({ url: `${environment.serverUrl}/_all_dbs`, json: true });
   module.exports.get = db => new PouchDB(`${environment.serverUrl}/${db}`);
   module.exports.close = db => {
@@ -99,6 +109,7 @@ if (UNIT_TEST_ENV) {
     }
   };
   module.exports.users = new PouchDB(`${environment.serverUrl}/_users`, { fetch: fetchFn });
+
   module.exports.queryMedic = (viewPath, queryParams, body) => {
     const [ddoc, view] = viewPath.split('/');
     const url = ddoc === 'allDocs' ? `${couchUrl}/_all_docs` : `${couchUrl}/_design/${ddoc}/_view/${view}`;
@@ -108,6 +119,15 @@ if (UNIT_TEST_ENV) {
       qs: queryParams,
       json: true,
       body,
+    });
+  };
+
+  module.exports.purge = (db, docs) => {
+    const purgePayload = Object.fromEntries(docs.map(doc => [ doc._id, [ doc._rev, ...doc._conflicts || [] ] ]));
+
+    return request.post({
+      url: `${db.name}/_purge`,
+      body: purgePayload,
     });
   };
 }
