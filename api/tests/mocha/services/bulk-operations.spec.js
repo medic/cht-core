@@ -25,7 +25,7 @@ describe('Bulk operations service', () => {
         start_date: 'date',
         actions: { 'bulk-operation-action:abc:1': { status: 'queued' } },
       });
-      expect(log._rev).to.equal(undefined);
+      expect(log._rev).to.be.undefined;
     });
 
     it('returns null when the operation does not exist', async () => {
@@ -33,7 +33,7 @@ describe('Bulk operations service', () => {
 
       const log = await service.getLog('bulk-operation:missing');
 
-      expect(log).to.equal(null);
+      expect(log).to.be.null;
     });
 
     it('does not query the database for an id that is not a bulk operation', async () => {

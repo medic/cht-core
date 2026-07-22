@@ -87,9 +87,7 @@ const queue = async (actionOperations) => {
 
   await db.medicLogs.put(log);
   // saveDocs checks each result; bulkDocs alone does not reject when an individual doc fails.
-  await db.saveDocs(db.sentinel, actions);
-
-  return log._id;
+  return db.saveDocs(db.sentinel, actions).then(() => log._id);
 };
 
 module.exports = {
