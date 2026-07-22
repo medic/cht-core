@@ -5,7 +5,6 @@ const chaiExclude = require('chai-exclude');
 const db = require('../../src/db');
 const config = require('../../src/config');
 const infodoc = require('@medic/infodoc');
-const logger = require('@medic/logger');
 const dataContext = require('../../src/data-context');
 const { Contact } = require('@medic/cht-datasource');
 const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
@@ -390,13 +389,10 @@ describe('functional transitions', () => {
       });
     });
 
-    const RETRY_INTERVAL = 100;
-    const MAX_RETRIES = 5;
-    const STALE_INTERVAL = 2 * 60 * 1000;
+    const RETRY_INTERVAL = 1000;
+    const MAX_RETRIES = 30;
     const NOW = new Date('2026-06-30T12:00:00.000Z').valueOf();
-    // a marker set just now is fresh (Sentinel waits); one older than STALE_INTERVAL is stale
-    const RECENT_MARKER = new Date(NOW).toISOString();
-    const STALE_MARKER = new Date(NOW - STALE_INTERVAL - 1).toISOString();
+    const MARKER = new Date(NOW).toISOString();
     // start processChange under fake timers; the caller advances the clock one interval at a time and
     // asserts the read count between ticks, so reads chained within a single tick can't slip through
     const startProcessChange = (change) => {
@@ -413,8 +409,8 @@ describe('functional transitions', () => {
 
       // infodoc is mid-write (API is running transitions) on the first two reads, then clears
       const get = sinon.stub(infodoc, 'get');
-      get.onCall(0).resolves({ _id: 'my_id-info', transitions: {}, transitions_started: RECENT_MARKER });
-      get.onCall(1).resolves({ _id: 'my_id-info', transitions: {}, transitions_started: RECENT_MARKER });
+      get.onCall(0).resolves({ _id: 'my_id-info', transitions: {}, transitions_started: MARKER });
+      get.onCall(1).resolves({ _id: 'my_id-info', transitions: {}, transitions_started: MARKER });
       get.onCall(2).resolves({ _id: 'my_id-info', transitions: {} });
       const saveTransitions = sinon.stub(infodoc, 'saveTransitions').resolves();
       const put = sinon.stub(db.medic, 'put').resolves({ ok: true });
@@ -423,6 +419,8 @@ describe('functional transitions', () => {
       sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
 
       transitions.loadTransitions();
+      // applyTransitions only runs on the process path; the skip path returns before reaching it
+      const applyTransitions = sinon.spy(transitions, 'applyTransitions');
       const { clock, processed } = startProcessChange({ id: doc._id });
 
       // initial read happens before any retry timer fires
@@ -438,18 +436,21 @@ describe('functional transitions', () => {
       assert.isUndefined(result);
       // marker cleared on the 3rd read, so no further retries
       assert.equal(get.callCount, 3);
-      // no transition matched, so nothing is saved, but the change was processed (not skipped)
+      // the change was processed (applyTransitions ran) rather than skipped
+      assert.equal(applyTransitions.callCount, 1);
+      // no transition matched, so nothing is saved
       assert.equal(saveTransitions.callCount, 0);
       assert.equal(put.callCount, 0);
     });
 
-    it('should skip processing the change when transitions_started never clears', async () => {
+    it('should clear the marker and process the change once the wait window is exhausted', async () => {
       configGet.withArgs('transitions').returns({ conditional_alerts: {} });
       configGet.withArgs('forms').returns({ V: { } });
 
-      // infodoc stays mid-write forever, but the marker is recent so it never goes stale
+      // marker stays set forever (API likely crashed mid-write and never cleared it)
       const get = sinon.stub(infodoc, 'get')
-        .resolves({ _id: 'my_id-info', transitions: {}, transitions_started: RECENT_MARKER });
+        .resolves({ _id: 'my_id-info', transitions: {}, transitions_started: MARKER });
+      const clearTransitionsStarted = sinon.stub(infodoc, 'clearTransitionsStarted').resolves();
       const saveTransitions = sinon.stub(infodoc, 'saveTransitions').resolves();
       const put = sinon.stub(db.medic, 'put').resolves({ ok: true });
 
@@ -457,8 +458,8 @@ describe('functional transitions', () => {
       sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
 
       transitions.loadTransitions();
-      // stub after loadTransitions so we only capture the skip warning, not the "disabled transition" ones
-      const warn = sinon.stub(logger, 'warn');
+      // applyTransitions only runs on the process path; a skip would return before reaching it
+      const applyTransitions = sinon.spy(transitions, 'applyTransitions');
       const { clock, processed } = startProcessChange({ id: doc._id });
 
       // initial read happens before any retry timer fires
@@ -472,22 +473,24 @@ describe('functional transitions', () => {
 
       const result = await processed;
       assert.isUndefined(result);
-      // initial read + 5 retries, then it gives up
-      assert.equal(get.callCount, 6);
-      // the change is skipped: no transitions run and nothing is saved
+      // initial read + MAX_RETRIES retries, then the wait window is exhausted
+      assert.equal(get.callCount, MAX_RETRIES + 1);
+      // the marker never cleared on its own, so we clear it and process the change (not skip)
+      assert.equal(clearTransitionsStarted.callCount, 1);
+      assert.deepEqual(clearTransitionsStarted.args[0], ['my_id']);
+      assert.equal(applyTransitions.callCount, 1);
       assert.equal(saveTransitions.callCount, 0);
       assert.equal(put.callCount, 0);
-      assert.equal(warn.callCount, 1);
-      assert.match(warn.args[0][0], /still mid-write after 5 retries, skipping/);
     });
 
-    it('should clear a stale transitions_started marker and process the change', async () => {
+    it('should clear an already-stale marker on the first read, without waiting', async () => {
       configGet.withArgs('transitions').returns({ conditional_alerts: {} });
       configGet.withArgs('forms').returns({ V: { } });
 
-      // marker is older than STALE_INTERVAL: API likely crashed and never cleared it
+      // marker was set longer ago than the wait window (API crashed earlier, or sentinel is catching up)
+      const staleMarker = new Date(NOW - RETRY_INTERVAL * MAX_RETRIES).toISOString();
       const get = sinon.stub(infodoc, 'get')
-        .resolves({ _id: 'my_id-info', transitions: {}, transitions_started: STALE_MARKER });
+        .resolves({ _id: 'my_id-info', transitions: {}, transitions_started: staleMarker });
       const clearTransitionsStarted = sinon.stub(infodoc, 'clearTransitionsStarted').resolves();
       const saveTransitions = sinon.stub(infodoc, 'saveTransitions').resolves();
       const put = sinon.stub(db.medic, 'put').resolves({ ok: true });
@@ -496,6 +499,7 @@ describe('functional transitions', () => {
       sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
 
       transitions.loadTransitions();
+      const applyTransitions = sinon.spy(transitions, 'applyTransitions');
       const { clock, processed } = startProcessChange({ id: doc._id });
 
       // stale marker short-circuits the wait: a single read, no retries
@@ -504,11 +508,11 @@ describe('functional transitions', () => {
 
       const result = await processed;
       assert.isUndefined(result);
-      // no retries were attempted - the stale marker was not waited on
+      // no retries were attempted - the stale marker was taken over immediately
       assert.equal(get.callCount, 1);
-      // the marker is cleared and the change is processed (not skipped)
       assert.equal(clearTransitionsStarted.callCount, 1);
       assert.deepEqual(clearTransitionsStarted.args[0], ['my_id']);
+      assert.equal(applyTransitions.callCount, 1);
       assert.equal(saveTransitions.callCount, 0);
       assert.equal(put.callCount, 0);
     });
@@ -525,6 +529,10 @@ describe('functional transitions', () => {
     });
 
     it('should run all async transitions over docs and save all docs', () => {
+      // fake Date only (not timers) so transitions_started has a known value we can assert exactly,
+      // without interfering with the async flow the transitions rely on
+      const STARTED = '2026-01-01T00:00:00.000Z';
+      sinon.useFakeTimers({ now: new Date(STARTED).valueOf(), toFake: ['Date'] });
       configGet.withArgs('transitions').returns({
         conditional_alerts: { disabled: true },
         default_responses: {},
@@ -705,11 +713,11 @@ describe('functional transitions', () => {
         assert.equal(infodocSaves.length, 2);
         // the first write only marks the infodoc as mid-write, with no transitions yet
         let startedSave = infodocSaves.find(args => args[0].transitions_started)[0];
-        assert.isString(startedSave.transitions_started);
-        assert.deepEqualExcluding(startedSave, {
+        assert.deepEqual(startedSave, {
           id: `${savedDocs[0]._id}-info`,
           doc_id: savedDocs[0]._id,
-        }, 'transitions_started');
+          transitions_started: STARTED,
+        });
         // the second write commits the transitions and removes the mid-write marker
         let txnSave = infodocSaves.find(args => args[0].transitions)[0];
         assert.isUndefined(txnSave.transitions_started);
@@ -731,11 +739,11 @@ describe('functional transitions', () => {
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[1]._id);
         assert.equal(infodocSaves.length, 2);
         startedSave = infodocSaves.find(args => args[0].transitions_started)[0];
-        assert.isString(startedSave.transitions_started);
-        assert.deepEqualExcluding(startedSave, {
+        assert.deepEqual(startedSave, {
           id: `${savedDocs[1]._id}-info`,
           doc_id: savedDocs[1]._id,
-        }, 'transitions_started');
+          transitions_started: STARTED,
+        });
         txnSave = infodocSaves.find(args => args[0].transitions)[0];
         assert.isUndefined(txnSave.transitions_started);
         assert.sameMembers(Object.keys(txnSave.transitions), ['default_responses', 'update_clinics']);
@@ -754,11 +762,11 @@ describe('functional transitions', () => {
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[3]._id);
         assert.equal(infodocSaves.length, 2);
         startedSave = infodocSaves.find(args => args[0].transitions_started)[0];
-        assert.isString(startedSave.transitions_started);
-        assert.deepEqualExcluding(startedSave, {
+        assert.deepEqual(startedSave, {
           id: `${savedDocs[3]._id}-info`,
           doc_id: savedDocs[3]._id,
-        }, 'transitions_started');
+          transitions_started: STARTED,
+        });
         txnSave = infodocSaves.find(args => args[0].transitions)[0];
         assert.isUndefined(txnSave.transitions_started);
         assert.sameMembers(Object.keys(txnSave.transitions), ['default_responses', 'update_sent_by']);
@@ -779,11 +787,11 @@ describe('functional transitions', () => {
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[4]._id);
         assert.equal(infodocSaves.length, 2);
         startedSave = infodocSaves.find(args => args[0].transitions_started)[0];
-        assert.isString(startedSave.transitions_started);
-        assert.deepEqualExcluding(startedSave, {
+        assert.deepEqual(startedSave, {
           id: `${savedDocs[4]._id}-info`,
           doc_id: savedDocs[4]._id,
-        }, 'transitions_started');
+          transitions_started: STARTED,
+        });
         txnSave = infodocSaves.find(args => args[0].transitions)[0];
         assert.isUndefined(txnSave.transitions_started);
         assert.sameMembers(
