@@ -217,6 +217,9 @@ describe('Reports Sidebar Filter', () => {
     await reportsPage.clickSidebarFilterDateAccordionHeader();
     expect(await picker.isDisplayed()).to.be.false;
 
+    // Re-expand the Date accordion since the dismissal click collapsed it
+    await reportsPage.openSidebarFilterDateAccordion();
+
     // 4. Select From and To dates
     await reportsPage.setSidebarFilterBikFromDate();
     await reportsPage.setSidebarFilterBikToDate();
