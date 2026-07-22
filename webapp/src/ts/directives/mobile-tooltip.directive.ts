@@ -30,8 +30,8 @@ const POSITIONS: ConnectedPosition[] = [
  * (LTR/RTL). It replaces the previous `[title]:focus::before` CSS tooltip, which grew from a fixed
  * edge and was clipped off-screen (and by ancestor `overflow`) in several contexts.
  *
- * Desktop is unaffected: the native `title` tooltip is used there, so this only runs on
- * touch / no-hover devices.
+ * Hover-capable devices are unaffected: the native `title` tooltip is used there, so this only
+ * shows on no-hover devices.
  */
 @Directive({
   selector: '[mmMobileTooltip]',
@@ -40,6 +40,7 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
   private overlayRef: OverlayRef | null = null;
   private removalObserver: MutationObserver | null = null;
   private visibilityObserver: IntersectionObserver | null = null;
+  private noHoverQuery: MediaQueryList | null = null;
   private readonly focusIn = (event: FocusEvent) => this.show(event);
   private readonly dismiss = () => this.hide();
 
@@ -50,9 +51,11 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    if (!this.isTouchDevice()) {
-      return;
-    }
+    // `hover: none` alone, NOT `pointer: coarse`: a device that can hover shows the native `title`
+    // tooltip, so rendering this overlay as well displays two tooltips at once (click + hover) —
+    // touchscreen laptops, for instance, can match `pointer: coarse` while the mouse still hovers.
+    // The overlay is only warranted where hovering is impossible.
+    this.noHoverQuery = this.document.defaultView?.matchMedia('(hover: none)') ?? null;
     // Outside the Angular zone: these fire on every focus/scroll on the page and must not trigger
     // app-wide change detection. The overlay's content is rendered with a manual detectChanges().
     this.zone.runOutsideAngular(() => {
@@ -71,14 +74,16 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
     this.hide();
   }
 
-  private isTouchDevice(): boolean {
-    return this.document.defaultView?.matchMedia('(hover: none), (pointer: coarse)').matches ?? false;
-  }
-
   private show(event: FocusEvent) {
     // Always clear any existing tooltip first — even when focus lands on a title-less element — so a
     // previous one can't be left behind.
     this.hide();
+
+    // Checked live on every focus rather than once at startup, so input-capability changes
+    // (DevTools device emulation toggled, a convertible docking/undocking) apply without a reload.
+    if (!this.noHoverQuery?.matches) {
+      return;
+    }
 
     const target = event.target as HTMLElement;
     const title = target?.getAttribute?.('title');

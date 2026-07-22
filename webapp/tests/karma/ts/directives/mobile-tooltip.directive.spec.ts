@@ -49,8 +49,28 @@ describe('MobileTooltipDirective', () => {
     expect(tooltip()).to.be.null;
   });
 
-  it('does nothing on a non-touch device (native title is used)', () => {
+  it('does nothing on a hover-capable device (the native title is used; two tooltips otherwise)', () => {
     createOn(false);
+    trigger().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    expect(tooltip()).to.be.null;
+  });
+
+  it('follows live hover-capability changes (e.g. DevTools emulation toggled) without a reload', () => {
+    const query = { matches: false } as MediaQueryList;
+    sinon.stub(window, 'matchMedia').returns(query);
+    TestBed.configureTestingModule({ imports: [HostComponent] });
+    fixture = TestBed.createComponent(HostComponent);
+    fixture.detectChanges();
+
+    trigger().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    expect(tooltip()).to.be.null;
+
+    (query as { matches: boolean }).matches = true;
+    trigger().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    expect(tooltip()?.textContent).to.equal('Full tooltip text');
+
+    (query as { matches: boolean }).matches = false;
+    trigger().dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
     trigger().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
     expect(tooltip()).to.be.null;
   });
