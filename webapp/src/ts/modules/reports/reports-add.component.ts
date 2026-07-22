@@ -201,6 +201,20 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     return this.getAttachment(docId, legacyAttachmentName);
   }
 
+  private getPreviewElement(acceptType: string, base64: string, mimeType: string) {
+    const dataUri = `data:${mimeType};base64,${base64}`;
+    if (acceptType === 'image/*') {
+      return `<img src="${dataUri}">`;
+    }
+    if (acceptType === 'audio/*') {
+      return `<audio src="${dataUri}" controls></audio>`;
+    }
+    if (acceptType === 'video/*') {
+      return `<video src="${dataUri}" controls></video>`;
+    }
+    return null;
+  } 
+
   private renderAttachmentPreviews(model) {
     return Promise
       .resolve()
@@ -216,9 +230,10 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
               .find('.file-feedback')
               .empty();
 
-            // Currently only support rendering image previews when editing reports
+            // Support rendering image, audio, and video previews when editing reports
             // https://github.com/medic/cht-core/issues/9165
-            if ($element.attr('accept') !== 'image/*') {
+            const acceptType = $element.attr('accept') ?? '';
+            if (!['image/*', 'audio/*', 'video/*'].includes(acceptType)) {
               return;
             }
 
@@ -227,11 +242,16 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
               return;
             }
 
-            const base64 = await this.fileReaderService.base64(attachmentBlob);
+            const base64 = await this.fileReaderService.base64(attachmentBlob) as string;
+            const mimeType = (attachmentBlob as Blob).type;
+            const previewElement = this.getPreviewElement(acceptType, base64, mimeType);
+            if (!previewElement) {
+              return;
+            }
 
             const $preview = $picker.find('.file-preview');
             $preview.empty();
-            $preview.append('<img src="data:' + base64 + '">');
+            $preview.append(previewElement);
           })));
   }
 
