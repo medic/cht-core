@@ -358,6 +358,30 @@ describe('CHTScriptApiService service', () => {
     });
   });
 
+  describe('v1.translate()', () => {
+    it('should call TranslateService.instant with key', async () => {
+      translateService.instant.returns('Translated Text');
+      await service.isInitialized();
+      const api = await service.get();
+
+      const result = api.v1.translate('some.key');
+
+      expect(result).to.equal('Translated Text');
+      expect(translateService.instant.calledOnceWithExactly('some.key', undefined)).to.be.true;
+    });
+
+    it('should call TranslateService.instant with key and params', async () => {
+      translateService.instant.returns('Hello John');
+      await service.isInitialized();
+      const api = await service.get();
+
+      const result = api.v1.translate('greeting', { name: 'John' });
+
+      expect(result).to.equal('Hello John');
+      expect(translateService.instant.calledOnceWithExactly('greeting', { name: 'John' })).to.be.true;
+    });
+  });
+
   describe('v1.hasPermissions()', () => {
 
     it('should return true when user has the permission', async () => {
