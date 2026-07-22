@@ -7,7 +7,11 @@ import sinon from 'sinon';
 import { MobileTooltipDirective } from '@mm-directives/mobile-tooltip.directive';
 
 @Component({
-  template: `<div mmMobileTooltip><span id="trigger" title="Full tooltip text" tabindex="0">x</span></div>`,
+  template: `
+    <div mmMobileTooltip>
+      <span id="trigger" title="Full tooltip text" tabindex="0">x</span>
+      <span id="other" title="Other text" tabindex="0">y</span>
+    </div>`,
   imports: [MobileTooltipDirective, OverlayModule],
 })
 class HostComponent { }
@@ -56,6 +60,37 @@ describe('MobileTooltipDirective', () => {
     const host = fixture.nativeElement.querySelector('div');
     host.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
     expect(tooltip()).to.equal(null);
+  });
+
+  it('clears an existing tooltip when focus lands on a title-less element, without a focusout', () => {
+    createOn(true);
+    trigger().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    expect(tooltip()).to.exist;
+
+    // No focusout in between (e.g. the previously focused element was replaced mid-session): the
+    // focusin alone must clear the old tooltip, or it would be stranded on screen.
+    const host = fixture.nativeElement.querySelector('div');
+    host.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    expect(tooltip()).to.equal(null);
+  });
+
+  it('shows only the newest tooltip when focus moves between titled elements', () => {
+    createOn(true);
+    trigger().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    fixture.nativeElement.querySelector('#other').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+
+    const contents = document.querySelectorAll('.mm-mobile-tooltip__content');
+    expect(contents.length).to.equal(1);
+    expect(contents[0].textContent).to.equal('Other text');
+  });
+
+  it('renders the overlay with the trigger\'s direction, so RTL anchors and bidi text are correct', () => {
+    createOn(true);
+    fixture.nativeElement.querySelector('div').setAttribute('dir', 'rtl');
+    trigger().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+
+    expect(tooltip()).to.exist;
+    expect(document.querySelector('.cdk-overlay-container [dir="rtl"]')).to.exist;
   });
 
   it('dismisses on scroll', () => {
