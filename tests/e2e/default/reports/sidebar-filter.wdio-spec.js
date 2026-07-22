@@ -211,14 +211,11 @@ describe('Reports Sidebar Filter', () => {
     const picker = reportsPage.getNepaliDatePicker();
     expect(await picker.isDisplayed()).to.be.false;
 
-    // 3. Dismiss by clicking outside (e.g. the accordion header)
+    // 3. Dismiss by clicking outside (e.g. the freetext search input)
     await reportsPage.clickSidebarFilterFromDate();
     expect(await picker.isDisplayed()).to.be.true;
-    await reportsPage.clickSidebarFilterDateAccordionHeader();
+    await reportsPage.clickSidebarFilterFreetext();
     expect(await picker.isDisplayed()).to.be.false;
-
-    // Re-expand the Date accordion since the dismissal click collapsed it
-    await reportsPage.openSidebarFilterDateAccordion();
 
     // 4. Select From and To dates
     await reportsPage.setSidebarFilterBikFromDate();

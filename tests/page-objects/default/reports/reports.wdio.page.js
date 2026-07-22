@@ -255,6 +255,12 @@ const clickSidebarFilterDateAccordionHeader = async () => {
   await el.click();
 };
 
+const clickSidebarFilterFreetext = async () => {
+  const el = $('#freetext');
+  await el.waitForClickable();
+  await el.click();
+};
+
 const openSidebarFilter = async () => {
   if (!await sidebarFilterSelectors.resetBtn().isDisplayed()) {
     await sidebarFilterSelectors.openBtn().click();
@@ -551,6 +557,7 @@ module.exports = {
   clickSidebarFilterFromDate,
   clickSidebarFilterToDate,
   clickSidebarFilterDateAccordionHeader,
+  clickSidebarFilterFreetext,
   filterByForm,
   filterByFacility,
   filterByStatus,
