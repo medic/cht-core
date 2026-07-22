@@ -4,6 +4,20 @@ const registrationUtils = require('@medic/registration-utils');
 const constants = require('@medic/constants');
 const DOC_TYPES = constants.DOC_TYPES;
 
+const collect = function(generator) {
+  const results = [];
+  const iterate = function() {
+    return generator.next().then(function(result) {
+      if (result.done) {
+        return results;
+      }
+      results.push(result.value);
+      return iterate();
+    });
+  };
+  return iterate();
+};
+
 angular.module('services').factory('MessageQueueUtils',
   function(
     $q,
@@ -26,6 +40,7 @@ angular.module('services').factory('MessageQueue',
     $q,
     $translate,
     DB,
+    DataContext,
     GetSummaries,
     Languages,
     MessageQueueUtils,
@@ -93,12 +108,15 @@ angular.module('services').factory('MessageQueue',
         return messages;
       }
 
-      return DB({ remote: true })
-        .query('medic-client/contacts_by_phone', { keys: phoneNumbers })
-        .then(function(contactsByPhone) {
-          const ids = contactsByPhone.rows.map(function(row) {
-            return row.id;
-          });
+      return DataContext
+        .then(function(dataContext) {
+          const contact = dataContext.getDatasource().v1.contact;
+          return $q.all(phoneNumbers.map(function(phone) {
+            return collect(contact.getUuidsByPhone(String(phone)));
+          }));
+        })
+        .then(function(idsPerPhone) {
+          const ids = compactUnique(idsPerPhone.flat());
 
           return GetSummaries.getContacts(ids);
         })

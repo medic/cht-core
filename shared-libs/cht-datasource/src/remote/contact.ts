@@ -5,6 +5,8 @@ import {
   IdsQualifier,
   isContactTypeQualifier,
   isIdsQualifier,
+  isPhoneQualifier,
+  PhoneQualifier,
   UuidQualifier
 } from '../qualifier';
 import { Nullable, Page } from '../libs/core';
@@ -44,10 +46,13 @@ export namespace v1 {
 
   /** @internal */
   export const getUuidsPage = (remoteContext: RemoteDataContext) => (
-    qualifier: ContactTypeQualifier | FreetextQualifier,
+    qualifier: ContactTypeQualifier | FreetextQualifier | PhoneQualifier,
     cursor: Nullable<string>,
     limit: number
   ): Promise<Page<string>> => {
+    const phoneParams: Record<string, string> = isPhoneQualifier(qualifier)
+      ? { phone: qualifier.phone }
+      : {};
     const freetextParams: Record<string, string> = isFreetextType(qualifier)
       ? { freetext: qualifier.freetext }
       : {};
@@ -60,18 +65,22 @@ export namespace v1 {
       ...(cursor ? { cursor } : {}),
       ...typeParams,
       ...freetextParams,
+      ...phoneParams,
     };
     return getContactUuids(remoteContext)(queryParams);
   };
 
   /** @internal */
   export const getPage = (remoteContext: RemoteDataContext) => (
-    qualifier: ContactTypeQualifier | IdsQualifier,
+    qualifier: ContactTypeQualifier | IdsQualifier | PhoneQualifier,
     cursor: Nullable<string>,
     limit: number
   ): Promise<Page<Contact.v1.Contact>> => {
     const idsParams: Record<string, string> = isIdsQualifier(qualifier)
       ? { ids: qualifier.ids.join(',') }
+      : {};
+    const phoneParams: Record<string, string> = isPhoneQualifier(qualifier)
+      ? { phone: qualifier.phone }
       : {};
     const typeParams: Record<string, string> = isContactTypeQualifier(qualifier)
       ? { type: qualifier.contactType }
@@ -82,6 +91,7 @@ export namespace v1 {
       ...(cursor ? { cursor } : {}),
       ...typeParams,
       ...idsParams,
+      ...phoneParams,
     };
     return getContacts(remoteContext)(queryParams);
   };

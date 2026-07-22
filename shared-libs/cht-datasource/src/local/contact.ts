@@ -16,6 +16,8 @@ import {
   isFreetextQualifier,
   isIdsQualifier,
   isKeyedFreetextQualifier,
+  isPhoneQualifier,
+  PhoneQualifier,
   UuidQualifier
 } from '../qualifier';
 import * as Contact from '../contact';
@@ -69,6 +71,21 @@ const getOfflineFreetextQueryFn = (medicDb: PouchDB.Database<Doc>) => {
       [qualifier.freetext], [qualifier.freetext + END_OF_ALPHABET_MARKER], limit, skip
     );
   };
+};
+
+const getContactDocsPageFn = (
+  qualifier: ContactTypeQualifier | IdsQualifier | PhoneQualifier,
+  getMedicDocsByIds: ReturnType<typeof getDocsByIds>,
+  queryDocsByType: ReturnType<typeof queryDocsByKey>,
+  queryDocsByPhone: ReturnType<typeof queryDocsByKey>,
+): ((limit: number, skip: number) => Promise<Nullable<Doc>[]>) => {
+  if (isIdsQualifier(qualifier)) {
+    return (limit: number, skip: number) => getMedicDocsByIds(qualifier.ids.slice(skip, skip + limit));
+  }
+  if (isPhoneQualifier(qualifier)) {
+    return (limit: number, skip: number) => queryDocsByPhone(qualifier.phone, limit, skip);
+  }
+  return (limit: number, skip: number) => queryDocsByType([qualifier.contactType], limit, skip);
 };
 
 /** @internal */
@@ -127,14 +144,21 @@ export namespace v1 {
   export const getUuidsPage = ({ medicDb, settings }: LocalDataContext) => {
     const queryNouveauFreetext = queryByFreetext(medicDb, 'contacts_by_freetext');
     const queryViewByType = queryDocIdsByKey(medicDb, 'medic-client/contacts_by_type');
+    const queryViewByPhone = queryDocIdsByKey(medicDb, 'medic-client/contacts_by_phone');
     const getOfflineFreetextQueryPageFn = getOfflineFreetextQueryFn(medicDb);
     const promisedUseNouveau = useNouveauIndexes(medicDb);
 
     return async (
-      qualifier: ContactTypeQualifier | FreetextQualifier,
+      qualifier: ContactTypeQualifier | FreetextQualifier | PhoneQualifier,
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<string>> => {
+      if (isPhoneQualifier(qualifier)) {
+        const skip = validateCursor(cursor);
+        const getPageFn = (limit: number, skip: number) => queryViewByPhone(qualifier.phone, limit, skip);
+        return await fetchAndFilterIds(getPageFn, limit)(limit, skip);
+      }
+
       if (isContactTypeQualifier(qualifier)) {
         assertValidContactType(settings.getAll(), qualifier);
       }
@@ -163,20 +187,19 @@ export namespace v1 {
   export const getPage = ({ medicDb, settings }: LocalDataContext) => {
     const getMedicDocsByIds = getDocsByIds(medicDb);
     const queryDocsByType = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
+    const queryDocsByPhone = queryDocsByKey(medicDb, 'medic-client/contacts_by_phone');
 
     return async (
-      qualifier: ContactTypeQualifier | IdsQualifier,
+      qualifier: ContactTypeQualifier | IdsQualifier | PhoneQualifier,
       cursor: Nullable<string>,
       limit: number,
     ): Promise<Page<Contact.v1.Contact>> => {
-      if (!isIdsQualifier(qualifier)) {
+      if (isContactTypeQualifier(qualifier)) {
         assertValidContactType(settings.getAll(), qualifier);
       }
 
       const skip = validateCursor(cursor);
-      const getPageFn = isIdsQualifier(qualifier)
-        ? (limit: number, skip: number) => getMedicDocsByIds(qualifier.ids.slice(skip, skip + limit))
-        : (limit: number, skip: number) => queryDocsByType([qualifier.contactType], limit, skip);
+      const getPageFn = getContactDocsPageFn(qualifier, getMedicDocsByIds, queryDocsByType, queryDocsByPhone);
 
       return await fetchAndFilter(
         getPageFn,

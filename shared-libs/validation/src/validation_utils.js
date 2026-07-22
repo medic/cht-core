@@ -3,7 +3,7 @@ const moment = require('moment');
 const logger = require('@medic/logger');
 const phoneNumberParser = require('@medic/phone-number');
 const config = require('../../transitions/src/config');
-const { Qualifier, Report } = require('@medic/cht-datasource');
+const { Contact, Qualifier, Report } = require('@medic/cht-datasource');
 
 let db;
 let dataContext;
@@ -143,8 +143,15 @@ const validPhone = (value) => {
 };
 
 const uniquePhone = async (value) => {
-  const results = await db.medic.query('medic-client/contacts_by_phone', { key: value });
-  return !results?.rows?.length;
+  if (!value) {
+    // No phone provided, so it cannot clash with an existing contact. This mirrors the previous behaviour of
+    // querying the view with an empty key (which returned no rows).
+    return true;
+  }
+  const getContactUuids = dataContext.bind(Contact.v1.getUuids);
+  const generator = getContactUuids(Qualifier.byPhone(String(value)));
+  const { done } = await generator.next();
+  return done;
 };
 
 module.exports = {
