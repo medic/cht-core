@@ -106,6 +106,7 @@ class Bikramsambatdatepicker extends Widget {
           if ( $( event.target ).is( $realDateInput ) ) {
             return;
           }
+          event.stopPropagation();
           clearIfIncomplete();
           // Re-check after the library's own change/blur handlers have run,
           // in case they wrote a value back after our guard cleared it.
@@ -140,7 +141,7 @@ const setupCalendarPicker = ($parent, widget) => {
   const $calendarBtn = $group.find('.calendar-btn');
 
   // Create hidden input to attach the nepaliDatePicker instance
-  const $hiddenDateInput = $('<input type="text" class="nepali-datepicker-input">');
+  const $hiddenDateInput = $('<input type="text" class="nepali-datepicker-input ignore">');
   $calendarBtn.after($hiddenDateInput);
   widget.$hiddenDateInput = $hiddenDateInput;
   activeWidgets.add(widget);
@@ -209,13 +210,13 @@ module.exports = Bikramsambatdatepicker;
 
 const TEMPLATE = `
   <div class="input-group bikram-sambat-input-group bikram-sambat-widget">
-    <input name="day" type="tel" class="form-control devanagari-number-input day-field" 
+    <input name="day" type="tel" class="form-control devanagari-number-input day-field ignore" 
       placeholder="गते" aria-label="गते" maxlength="2">
-    <input name="month" type="hidden">
+    <input name="month" type="hidden" class="ignore">
     <div class="input-group-btn month-dropdown">
       <button type="button" class="btn btn-default dropdown-toggle" 
         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        ${MONTH_PLACEHOLDER} <span class="caret"></span>
+        \${MONTH_PLACEHOLDER} <span class="caret"></span>
       </button>
       <ul class="dropdown-menu">
         <li><a>बैशाख</a></li>
@@ -232,7 +233,7 @@ const TEMPLATE = `
         <li><a>चैत</a></li>
       </ul>
     </div>
-    <input name="year" type="tel" class="form-control devanagari-number-input year-field" 
+    <input name="year" type="tel" class="form-control devanagari-number-input year-field ignore" 
       placeholder="साल" aria-label="साल" maxlength="4">
     <button type="button" class="calendar-btn" title="मिति रोज्नुहोस्">
       <span class="calendar-icon"></span>
