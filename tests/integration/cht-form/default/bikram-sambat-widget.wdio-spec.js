@@ -8,7 +8,7 @@ describe('cht-form web component - Bikram Sambat Widget', () => {
     await firstWidget.waitForDisplayed({ timeout: 5000 });
   });
 
-  it('hides the native date input', async () => {
+  it('hides the native date input and displays the initial placeholder text', async () => {
     // There should be two native date inputs hidden from screen readers and keyboard focus
     const nativeInputs = await $$('input[type="date"]');
     expect(nativeInputs).to.have.lengthOf(2);
@@ -16,6 +16,12 @@ describe('cht-form web component - Bikram Sambat Widget', () => {
     for (const nativeInput of nativeInputs) {
       expect(await nativeInput.isDisplayed()).to.be.false;
     }
+
+    // Verify the first (empty) widget displays the default placeholder 'महिना'
+    const widgets = await $$('.bikram-sambat-widget');
+    const emptyWidget = widgets[0];
+    const monthText = (await emptyWidget.$('.month-dropdown button').getText()).trim();
+    expect(monthText).to.equal('महिना');
   });
 
   it('pre-populates manual fields correctly with Devanagari numbers on load', async () => {

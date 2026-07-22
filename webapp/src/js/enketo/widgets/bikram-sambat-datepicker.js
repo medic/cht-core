@@ -216,7 +216,7 @@ const TEMPLATE = `
     <div class="input-group-btn month-dropdown">
       <button type="button" class="btn btn-default dropdown-toggle" 
         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        \${MONTH_PLACEHOLDER} <span class="caret"></span>
+        ${MONTH_PLACEHOLDER} <span class="caret"></span>
       </button>
       <ul class="dropdown-menu">
         <li><a>बैशाख</a></li>
