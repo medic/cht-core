@@ -50,7 +50,7 @@ const DEFAULT_DDOCS = [
  */
 
 // fake view map, to store whether doc is a medic.user-settings doc
-const couchDbUser = doc => doc.type === 'user-settings';
+const couchDbUser = doc => doc.type === DOC_TYPES.USER_SETTINGS;
 
 const getUserSettingsId = username => `${PREFIXES.COUCH_USER}${username}`;
 const getDefaultDocs = (userCtx) => [ ...DEFAULT_DDOCS, getUserSettingsId(userCtx?.name)];
@@ -369,7 +369,7 @@ const getAuthorizationContext = async (userCtx) => {
     await addPrimaryContactsSubjects(authCtx, contactsSubjects);
   }
 
-  authCtx.subjectIds = _.uniq(authCtx.subjectIds);
+  authCtx.subjectIds = [...new Set(authCtx.subjectIds)];
   if (hasAccessToUnassignedDocs(userCtx)) {
     authCtx.subjectIds.push(UNASSIGNED_KEY);
     authCtx.subjectsDepth[UNASSIGNED_KEY] = 0;
@@ -392,7 +392,7 @@ const addPrimaryContactsSubjects = async (authCtx, contacts) => {
     .values(contacts)
     .map(({ primaryContact }) => primaryContact)
     .filter(id => !!id);
-  const unknownPrimaryContacts = _.uniq(primaryContactIds.filter(id => !contacts[id]));
+  const unknownPrimaryContacts = [...new Set(primaryContactIds.filter(id => !contacts[id]))];
 
   if (unknownPrimaryContacts.length) {
     const result = await db.medic.query('medic/contacts_by_depth', { keys: unknownPrimaryContacts.map(id => [id] ) });
@@ -438,7 +438,7 @@ const findContactsByReplicationKeys = (replicationKeys) => {
     return Promise.resolve([]);
   }
 
-  replicationKeys = _.uniq(replicationKeys);
+  replicationKeys = [...new Set(replicationKeys)];
   const keys = replicationKeys.map(id => ['shortcode', id]);
 
   return db.medic
@@ -697,12 +697,12 @@ const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTasks = tru
   }
 
   for (const hit of docsByReplicationKey) {
-    if (hit.fields.type !== 'task' || includeTasks) {
+    if (hit.fields.type !== DOC_TYPES.TASK || includeTasks) {
       validatedIds.push(hit.id);
     }
   }
 
-  return _.uniq(validatedIds);
+  return [...new Set(validatedIds)];
 };
 
 /**
