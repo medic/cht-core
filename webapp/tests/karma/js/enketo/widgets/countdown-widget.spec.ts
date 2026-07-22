@@ -11,10 +11,12 @@ const buildHtml = (html: string) => document.body.insertAdjacentHTML('afterbegin
 describe('Countdown Timer Widget', () => {
   const DEFAULT_DURATION = 60;
   let animate;
+  let stopAnimation;
   let settingsService;
 
   beforeEach(() => {
-    animate = sinon.stub(TimerAnimation, 'animate');
+    stopAnimation = sinon.stub();
+    animate = sinon.stub(TimerAnimation, 'animate').returns(stopAnimation);
     settingsService = {
       get: sinon.stub().resolves({})
     };
@@ -135,6 +137,27 @@ describe('Countdown Timer Widget', () => {
 
       expect(animate.calledOnce).to.be.true;
       expect(animate.args[0][1]).to.equal(1);
+    });
+  });
+
+  describe('destroy', () => {
+    const buildTrigger = () => buildHtml(`
+      <fieldset class="question simple-select trigger or-appearance-countdown-timer">
+        <div class="option-wrapper">
+          <label>
+            <input value="OK" type="radio" name="/form/timer" data-type-xml="string">
+          </label>
+        </div>
+      </fieldset>`);
+
+    it('calls the animation stop function on destroy', () => {
+      buildTrigger();
+      const widget = new Timerwidget($(Timerwidget.selector)[0], {}, settingsService);
+
+      expect(stopAnimation.notCalled).to.be.true;
+      widget.destroy();
+      expect(stopAnimation.calledOnce).to.be.true;
+      expect($(`#${testId} canvas`)).to.have.length(0);
     });
   });
 });
