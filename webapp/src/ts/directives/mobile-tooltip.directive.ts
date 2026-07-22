@@ -44,9 +44,9 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
   private readonly dismiss = () => this.hide();
 
   constructor(
-    private overlay: Overlay,
-    private zone: NgZone,
-    @Inject(DOCUMENT) private document: Document,
+    private readonly overlay: Overlay,
+    private readonly zone: NgZone,
+    @Inject(DOCUMENT) private readonly document: Document,
   ) { }
 
   ngOnInit() {

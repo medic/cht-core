@@ -46,20 +46,20 @@ describe('MobileTooltipDirective', () => {
     expect(tooltip()).to.exist;
 
     trigger().dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
-    expect(tooltip()).to.equal(null);
+    expect(tooltip()).to.be.null;
   });
 
   it('does nothing on a non-touch device (native title is used)', () => {
     createOn(false);
     trigger().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
-    expect(tooltip()).to.equal(null);
+    expect(tooltip()).to.be.null;
   });
 
   it('ignores focus on elements without a title', () => {
     createOn(true);
     const host = fixture.nativeElement.querySelector('div');
     host.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
-    expect(tooltip()).to.equal(null);
+    expect(tooltip()).to.be.null;
   });
 
   it('clears an existing tooltip when focus lands on a title-less element, without a focusout', () => {
@@ -71,7 +71,7 @@ describe('MobileTooltipDirective', () => {
     // focusin alone must clear the old tooltip, or it would be stranded on screen.
     const host = fixture.nativeElement.querySelector('div');
     host.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
-    expect(tooltip()).to.equal(null);
+    expect(tooltip()).to.be.null;
   });
 
   it('shows only the newest tooltip when focus moves between titled elements', () => {
@@ -80,7 +80,7 @@ describe('MobileTooltipDirective', () => {
     fixture.nativeElement.querySelector('#other').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
 
     const contents = document.querySelectorAll('.mm-mobile-tooltip__content');
-    expect(contents.length).to.equal(1);
+    expect(contents).to.have.lengthOf(1);
     expect(contents[0].textContent).to.equal('Other text');
   });
 
@@ -99,7 +99,7 @@ describe('MobileTooltipDirective', () => {
     expect(tooltip()).to.exist;
 
     document.dispatchEvent(new Event('scroll'));
-    expect(tooltip()).to.equal(null);
+    expect(tooltip()).to.be.null;
   });
 
   it('dismisses when the focused element is detached from the DOM', async () => {
@@ -111,7 +111,7 @@ describe('MobileTooltipDirective', () => {
 
       trigger().remove();
       await new Promise(resolve => setTimeout(resolve)); // let the MutationObserver callback run
-      expect(tooltip()).to.equal(null);
+      expect(tooltip()).to.be.null;
     } finally {
       fixture.nativeElement.remove();
     }
@@ -130,7 +130,7 @@ describe('MobileTooltipDirective', () => {
       for (let i = 0; i < 100 && tooltip(); i++) { // IntersectionObserver reports asynchronously
         await new Promise(resolve => setTimeout(resolve, 10));
       }
-      expect(tooltip()).to.equal(null);
+      expect(tooltip()).to.be.null;
     } finally {
       fixture.nativeElement.remove();
     }
