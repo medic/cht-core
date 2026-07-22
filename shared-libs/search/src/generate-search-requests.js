@@ -2,6 +2,7 @@ const _ = require('lodash/core');
 const moment = require('moment');
 
 const MINIMUM_SEARCH_TERM_LENGTH = 3;
+const phoneNumber = require('@medic/phone-number');
 
 const getKeysArray = (keys) => keys.map(key => [ key ]);
 
@@ -94,6 +95,20 @@ const freetextRequestParams = (word) => {
   return params;
 };
 
+const getNormalizedPhone = (word, settings) => {
+  if (!settings?.default_country_code) {
+    return null;
+  }
+  const normalized = phoneNumber.normalize(settings, word);
+  if (typeof normalized !== 'string') {
+    return null;
+  }
+  if (normalized === word) {
+    return null;
+  }
+  return normalized;
+};
+
 const freetextRequest = (filters, view) => {
   if (!filters.search) {
     return;
@@ -103,8 +118,27 @@ const freetextRequest = (filters, view) => {
     .toLowerCase()
     .split(/\s+/);
   const requests = words.map((word) => {
-    const params = freetextRequestParams(word);
-    return params && { view, params, freetext: true };
+    const originalParams = freetextRequestParams(word);
+    const normalizedPhone = getNormalizedPhone(word, filters.settings);
+    const normalizedParams = normalizedPhone ? freetextRequestParams(normalizedPhone) : null;
+
+    if (originalParams && normalizedParams) {
+      return {
+        view,
+        union: true,
+        freetext: true,
+        paramSets: [ originalParams, normalizedParams ]
+      };
+    }
+
+    const params = originalParams || normalizedParams;
+    if (params) {
+      return {
+        view,
+        freetext: true,
+        params
+      };
+    }
   });
   return _.compact(requests);
 };
@@ -199,21 +233,37 @@ const makeCombinedParams = (freetextRequest, typeKey) => {
   return params;
 };
 
+const combineParams = (typeKeys, freetextParamSets) => {
+  const combined = [];
+  for (const typeKey of typeKeys) {
+    for (const freetextParams of freetextParamSets) {
+      combined.push(makeCombinedParams({ params: freetextParams }, typeKey));
+    }
+  }
+  return combined;
+};
+
 const getContactsByTypeAndFreetextRequest = (typeRequests, freetextRequest) => {
   const result = {
     view: 'contacts_by_type_freetext',
-    union: typeRequests.params.keys.length > 1,
     freetext: true
   };
 
-  if (result.union) {
-    result.paramSets = typeRequests.params.keys.map(typeRequest => {
-      return makeCombinedParams(freetextRequest, typeRequest);
-    });
-    return result;
+  const freetextParamSets = freetextRequest.union
+    ? freetextRequest.paramSets
+    : [ freetextRequest.params ];
+
+  const typeKeys = typeRequests.params.keys;
+  const combinedParamSets = combineParams(typeKeys, freetextParamSets);
+
+  if (combinedParamSets.length > 1) {
+    result.union = true;
+    result.paramSets = combinedParamSets;
+  } else {
+    result.union = false;
+    result.params = combinedParamSets[0];
   }
 
-  result.params = makeCombinedParams(freetextRequest, typeRequests.params.keys[0]);
   return result;
 };
 
