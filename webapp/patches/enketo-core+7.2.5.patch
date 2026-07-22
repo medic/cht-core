@@ -14,7 +14,7 @@ index 62003af..db02cba 100644
               * Copied from relevant.js:
               *
 diff --git a/node_modules/enketo-core/src/js/relevant.js b/node_modules/enketo-core/src/js/relevant.js
-index 463af2c..d10ec81 100644
+index 463af2c..47c6072 100644
 --- a/node_modules/enketo-core/src/js/relevant.js
 +++ b/node_modules/enketo-core/src/js/relevant.js
 @@ -265,7 +265,14 @@ export default {
