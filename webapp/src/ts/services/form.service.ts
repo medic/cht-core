@@ -41,7 +41,7 @@ import { PerformanceService } from '@mm-services/performance.service';
 @Injectable({
   providedIn: 'root'
 })
-export class FormService { // NOSONAR
+export class FormService {
   constructor(
     private store: Store,
     private contactSaveService: ContactSaveService,
