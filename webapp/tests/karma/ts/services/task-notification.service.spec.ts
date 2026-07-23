@@ -127,22 +127,25 @@ describe('TasksNotificationService', () => {
     expect(service).to.be.ok;
   });
 
-  it('should initialize max notifications value from settings', async () => {
+  it('should initialize notifications values from settings', async () => {
     settingsService.get.resolves({
       tasks: {
-        max_task_notifications: 20
+        max_task_notifications: 20,
+        task_notification_window: { start: '10:00', end: '18:00' }
       }
     });
-    const maxNotifications = await service.getMaxNotificationSettings();
+    const { maxNotifications, notificationWindow } = await service.getNotificationSettings();
     expect(settingsService.get.callCount).to.equal(1);
     expect(maxNotifications).to.equal(20);
+    expect(notificationWindow).to.deep.equal({ start: '10:00', end: '18:00' });
   });
 
-  it('should return default max notifications value if settings value is not valid', async () => {
+  it('should return default notification values if settings value is not valid', async () => {
     settingsService.get.resolves({ max_task_notifications: '2o' });
-    const maxNotifications = await service.getMaxNotificationSettings();
+    const { maxNotifications, notificationWindow } = await service.getNotificationSettings();
     expect(settingsService.get.callCount).to.equal(1);
     expect(maxNotifications).to.equal(8);
+    expect(notificationWindow).to.deep.equal({ start: '08:00', end: '19:00' });
   });
 
   it('should fetch notifications', async () => {
@@ -257,6 +260,56 @@ describe('TasksNotificationService', () => {
     expect(consoleErrorMock.callCount).to.equal(0);
     expect(subscribeToRulesEngineStub.callCount).to.equal(0);
     expect(updateAndroidStoreStub.callCount).to.equal(0);
+  });
+
+  describe('updateAndroidStore', () => {
+    let androidApi: any;
+
+    beforeEach(() => {
+      androidApi = {};
+      (globalThis as any).medicmobile_android = androidApi;
+    });
+
+    afterEach(() => {
+      delete (globalThis as any).medicmobile_android;
+    });
+
+    it('should update the android store without settings when only the basic api is available', async () => {
+      androidApi.updateTaskNotificationStore = sinon.stub();
+
+      await service.updateAndroidStore();
+
+      expect(androidApi.updateTaskNotificationStore.callCount).to.equal(1);
+
+      const [notificationsJson, maxNotifications] = androidApi.updateTaskNotificationStore.args[0];
+      expect(JSON.parse(notificationsJson)).to.be.an('array').that.has.lengthOf(3);
+      expect(maxNotifications).to.equal(8);
+    });
+
+    it('should update the android store with settings when the settings api is available', async () => {
+      androidApi.updateTaskNotificationStore = sinon.stub();
+      androidApi.updateTaskNotificationStoreWithSettings = sinon.stub();
+      settingsService.get.resolves({
+        tasks: {
+          max_task_notifications: 20,
+          task_notification_window: { start: '10:00', end: '18:00' },
+        },
+      });
+
+      await service.updateAndroidStore();
+
+      expect(androidApi.updateTaskNotificationStore.callCount).to.equal(0);
+      expect(androidApi.updateTaskNotificationStoreWithSettings.callCount).to.equal(1);
+
+      const [notificationsJson, settingsJson] =
+        androidApi.updateTaskNotificationStoreWithSettings.args[0];
+      expect(JSON.parse(notificationsJson)).to.be.an('array').that.has.lengthOf(3);
+      expect(JSON.parse(settingsJson)).to.deep.equal({
+        maxNotifications: 20,
+        start: '10:00', 
+        end: '18:00'
+      });
+    });
   });
 
 });
