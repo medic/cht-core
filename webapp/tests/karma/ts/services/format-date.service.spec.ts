@@ -472,4 +472,98 @@ describe('FormatDate service', () => {
       expect(translateInstant.args[0]).to.deep.equal(['task.overdue.days', { DAYS: 4 }]);
     });
   });
+
+  describe('Bikram Sambat - Real Library Conversions', () => {
+    beforeEach(() => {
+      languageService.useDevanagariScript.returns(true);
+      settingsService.get.resolves({ date_format: 'DD-MMM-YYYY' });
+    });
+
+    it('formats Gregorian date into Devanagari Bikram Sambat date correctly without stubs', () => {
+      const date = moment('2024-06-29T12:00:00.000'); // 2081-03-15 BS (noon to be timezone safe)
+      const formatted = service.date(date);
+      expect(formatted).to.equal('१५ असार २०८१');
+    });
+
+    it('formats Gregorian date and time into Devanagari Bikram Sambat datetime correctly', () => {
+      const date = moment('2024-06-29T10:15:30.000'); // 2081-03-15 BS
+      const formatted = service.datetime(date);
+      expect(formatted).to.contain('१५ असार २०८१');
+      expect(formatted).to.contain('10:15:30 AM');
+    });
+
+    it('handles day-boundaries (midnight) correctly', () => {
+      const date = moment('2024-06-29T00:00:00.000');
+      expect(service.date(date)).to.equal('१५ असार २०८१');
+    });
+
+    it('handles day-boundaries (end-of-day) correctly', () => {
+      const date = moment('2024-06-29T23:59:59.999');
+      expect(service.date(date)).to.equal('१५ असार २०८१');
+    });
+
+    it('correctly handles conversion across timezones and negative offsets', () => {
+      const dateInUTC = moment.utc('2024-06-29T05:00:00Z');
+      const localDate = dateInUTC.local();
+      
+      const localDay = localDate.date();
+      const expectedText = localDay === 29 ? '१५ असार २०८१' : '१४ असार २०८१';
+      expect(service.date(localDate)).to.equal(expectedText);
+    });
+
+    it('correctly handles conversion across Daylight Saving Time (DST) boundaries', () => {
+      const beforeDST = moment('2024-03-10T01:59:59'); // Standard Time
+      const afterDST = moment('2024-03-10T03:00:00'); // DST (02:00:00 doesn't exist)
+      
+      expect(service.date(beforeDST)).to.equal('२७ फाल्गुन २०८०');
+      expect(service.date(afterDST)).to.equal('२७ फाल्गुन २०८०');
+    });
+
+    it('toGreg_text reverse conversion round-trips correctly at month/year boundaries via the service', () => {
+      const gregStr = '2024-04-12';
+      const formatted = service.date(moment(gregStr));
+      expect(formatted).to.equal('३० चैत २०८०');
+    });
+
+    it('returns the correct formatted days for divergent years 2082 and 2083 via the service', () => {
+      // Mansir 2082 (month 8) has 29 days
+      const gregMansir29 = '2025-12-15';
+      expect(service.date(moment(gregMansir29))).to.equal('२९ मंसिर २०८२');
+
+      // Magh 2082 (month 10) has 29 days
+      const gregMagh29 = '2026-02-12';
+      expect(service.date(moment(gregMagh29))).to.equal('२९ माघ २०८२');
+
+      // Jestha 2082 (month 2) has 31 days
+      const gregJestha31 = '2025-06-14';
+      expect(service.date(moment(gregJestha31))).to.equal('३१ जेठ २०८२');
+
+      // Shrawan 2082 (month 4) has 31 days
+      const gregShrawan31 = '2025-08-16';
+      expect(service.date(moment(gregShrawan31))).to.equal('३१ साउन २०८२');
+
+      // Mansir 2083 (month 8) has 29 days
+      const greg2083Mansir29 = '2026-12-15';
+      expect(service.date(moment(greg2083Mansir29))).to.equal('२९ मंसिर २०८३');
+
+      // Magh 2083 (month 10) has 29 days
+      const greg2083Magh29 = '2027-02-12';
+      expect(service.date(moment(greg2083Magh29))).to.equal('२९ माघ २०८३');
+    });
+
+    it('handles Devanagari free-text search queries or invalid dates gracefully without throwing', () => {
+      let threwException = false;
+      let dateResult;
+      let datetimeResult;
+      try {
+        dateResult = service.date('असार');
+        datetimeResult = service.datetime('२०८१');
+      } catch (_e) {
+        threwException = true;
+      }
+      expect(threwException).to.be.false;
+      expect(dateResult).to.equal('Invalid date');
+      expect(datetimeResult).to.equal('Invalid date');
+    });
+  });
 });
