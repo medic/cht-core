@@ -344,6 +344,53 @@ describe('Replication Failure Log Service', () => {
     });
   });
 
+  describe('getDailyFailuresByUserSince', () => {
+    const row = (day, user, count) => ({ key: [day, user], value: count });
+
+    it('should query the view from the given day and nest counts by user then day', async () => {
+      db.medicLogs.query.resolves({
+        rows: [
+          row('2026-04-10', 'alice', 1),
+          row('2026-04-12', 'alice', 3),
+          row('2026-04-14', 'bob', 2),
+        ],
+      });
+
+      const result = await replicationFailureLog.getDailyFailuresByUserSince('2026-04-01');
+
+      expect(db.medicLogs.query.callCount).to.equal(1);
+      expect(db.medicLogs.query.args[0]).to.deep.equal([
+        'logs/replication_failures',
+        { startkey: ['2026-04-01'] },
+      ]);
+      expect(result).to.deep.equal({
+        alice: { '2026-04-10': 1, '2026-04-12': 3 },
+        bob: { '2026-04-14': 2 },
+      });
+    });
+
+    it('should sum counts for a user that repeats on the same day', async () => {
+      db.medicLogs.query.resolves({
+        rows: [
+          row('2026-04-10', 'alice', 1),
+          row('2026-04-10', 'alice', 4),
+        ],
+      });
+
+      const result = await replicationFailureLog.getDailyFailuresByUserSince('2026-04-01');
+
+      expect(result).to.deep.equal({ alice: { '2026-04-10': 5 } });
+    });
+
+    it('should return an empty object when the view returns no rows', async () => {
+      db.medicLogs.query.resolves({ rows: [] });
+
+      const result = await replicationFailureLog.getDailyFailuresByUserSince('2026-04-01');
+
+      expect(result).to.deep.equal({});
+    });
+  });
+
   describe('capture', () => {
     it('should create a new log when none exists', async () => {
       const now = new Date('2026-04-15T12:00:00Z').valueOf();
