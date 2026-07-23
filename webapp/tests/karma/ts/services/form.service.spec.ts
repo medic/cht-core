@@ -70,6 +70,7 @@ describe('Form service', () => {
   let getReport;
   let getContact;
   let dbBulkDocs;
+  let dbGet;
   let ContactSummary;
   let Form2Sms;
   let UserContact;
@@ -114,6 +115,7 @@ describe('Form service', () => {
     getReport = sinon.stub();
     getContact = sinon.stub();
     dbBulkDocs = sinon.stub();
+    dbGet = sinon.stub();
     ContactSummary = sinon.stub();
     Form2Sms = sinon.stub();
     UserContact = sinon.stub();
@@ -196,7 +198,7 @@ describe('Form service', () => {
         {
           provide: DbService,
           useValue: {
-            get: () => ({ getAttachment: dbGetAttachment, bulkDocs: dbBulkDocs })
+            get: () => ({ getAttachment: dbGetAttachment, bulkDocs: dbBulkDocs, get: dbGet })
           }
         },
         { provide: ContactSummaryService, useValue: { get: ContactSummary } },
@@ -679,6 +681,251 @@ describe('Form service', () => {
         expect(feedbackService.submit.notCalled).to.be.true;
       }
     }));
+
+    describe('geo edit context injection is gated by form type', () => {
+      const html = '<div><div class="or-appearance-geolocation-capture"><input type="hidden" /></div></div>';
+      const instanceData = { clinic: { _id: 'contact1', geolocation: { latitude: 1.23, longitude: 36.8 } } };
+
+      const setupRender = () => {
+        UserContact.resolves({ contact_id: '123' });
+        xmlFormsService.canAccessForm.resolves(true);
+        dbGetAttachment
+          .onFirstCall().resolves(html)
+          .onSecondCall().resolves(VISIT_MODEL);
+        FileReader.utf8
+          .onFirstCall().resolves(html)
+          .onSecondCall().resolves(VISIT_MODEL);
+        enketoInit.returns([]);
+        EnketoPrepopulationData.returns('<xml></xml>');
+      };
+
+      it('applies geo edit context when form type is contact', async () => {
+        setupRender();
+        const renderForm = sinon.spy(EnketoService.prototype, 'renderForm');
+
+        await service.render(new WebappEnketoFormContext('#div', 'contact', mockEnketoDoc('clinic'), instanceData));
+
+        const renderedHtml = renderForm.args[0][1].html.get(0);
+        expect(renderedHtml.querySelector('input').dataset.geoIsEdit).to.equal('true');
+      });
+
+      it('does not apply geo edit context when form type is not contact', async () => {
+        setupRender();
+        const renderForm = sinon.spy(EnketoService.prototype, 'renderForm');
+
+        await service.render(new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('clinic'), instanceData));
+
+        const renderedHtml = renderForm.args[0][1].html.get(0);
+        expect(renderedHtml.querySelector('input').dataset.geoIsEdit).to.be.undefined;
+      });
+    });
+  });
+
+  describe('injectGeoEditContext', () => {
+    const EARLIER_CAPTURE_TS = 1749168000000; // 2025-06-06T00:00:00.000Z
+    const LATER_CAPTURE_TS   = 1749600000000; // 2025-06-11T00:00:00.000Z
+
+    const buildFormHtml = () => {
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const formHtml = document.createElement('div');
+      formHtml.appendChild(captureWrapper);
+      return { formHtml, captureInput };
+    };
+
+    beforeEach(() => {
+      service = TestBed.inject(FormService);
+    });
+
+    it('does nothing when formHtml is undefined', () => {
+      const fn = () => (service as any).injectGeoEditContext(
+        undefined,
+        { geolocation_log: [{ timestamp: EARLIER_CAPTURE_TS }] }
+      );
+      expect(fn).not.to.throw();
+    });
+
+    it('does nothing when contact is undefined', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, undefined);
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+      expect(captureInput.dataset.geoIsEdit).to.be.undefined;
+    });
+
+    it('does nothing when contact has no geolocation data', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, { _id: 'contact1' });
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+    });
+
+    it('sets data-geo-is-edit when contact is present even without geolocation data', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, { _id: 'contact1' });
+      expect(captureInput.dataset.geoIsEdit).to.equal('true');
+    });
+
+    it('sets data-geo-is-edit when contact has geolocation data', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation_log: [
+          { timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: true }
+        ],
+      });
+      expect(captureInput.dataset.geoIsEdit).to.equal('true');
+    });
+
+    it('does nothing when contact has empty geolocation_log and no geolocation', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, { _id: 'contact1', geolocation_log: [] });
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+    });
+
+    it('does nothing when geolocation_log contains only failed recordings and no geolocation', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation: '',
+        geolocation_log: [
+          { timestamp: EARLIER_CAPTURE_TS, recording: { code: 1, message: 'User denied Geolocation' }, is_home: true }
+        ],
+      });
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+    });
+
+    it('does not throw when a log entry has a null recording', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      expect(() => (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation_log: [
+          { timestamp: EARLIER_CAPTURE_TS, recording: null, is_home: false },
+          { timestamp: LATER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: true },
+        ],
+      })).to.not.throw();
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+    });
+
+    it('does not set data-geo-has-location when geolocation_log is non-empty but geolocation field is absent', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation_log: [
+          { timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: true }
+        ],
+      });
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+    });
+
+    it('sets data-geo-has-location when geolocation exists but log is empty (defensive)', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation_log: [],
+        geolocation: { latitude: 1.23, longitude: 36.8 },
+      });
+      expect(captureInput.dataset.geoHasLocation).to.equal('true');
+    });
+
+    it('sets data-geo-has-location when geolocation exists and log field is absent (defensive)', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1', geolocation: { latitude: 1.23, longitude: 36.8 }
+      });
+      expect(captureInput.dataset.geoHasLocation).to.equal('true');
+    });
+
+    it('sets data-geo-has-location when latitude is exactly 0 (equator)', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation: { latitude: 0, longitude: 36.8 },
+        geolocation_log: [
+          { timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 0, longitude: 36.8 }, is_home: true }
+        ],
+      });
+      expect(captureInput.dataset.geoHasLocation).to.equal('true');
+    });
+
+    it('does not set data-geo-has-location when only non-home log entries exist and geolocation field is absent',
+      () => {
+        const { formHtml, captureInput } = buildFormHtml();
+        (service as any).injectGeoEditContext(formHtml, {
+          _id: 'contact1',
+          geolocation_log: [
+            { timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: false },
+            { timestamp: LATER_CAPTURE_TS, recording: { latitude: 1.30, longitude: 36.9 }, is_home: false },
+          ],
+        });
+        expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+      });
+
+    it('does nothing when geolocation field is absent even if log entries contain past successes', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation_log: [
+          { timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: false },
+          { timestamp: LATER_CAPTURE_TS, recording: { code: 2, message: 'Position unavailable' }, is_home: true },
+        ],
+      });
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+    });
+
+    it('does nothing when home was removed (geolocation is empty string and last log entry is a failure)', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation: '',
+        geolocation_log: [
+          { timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: true },
+          { timestamp: LATER_CAPTURE_TS, recording: { code: 2, message: 'Position unavailable' }, is_home: true },
+        ],
+      });
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+    });
+
+  });
+
+  describe('getGeoCaptureValue', () => {
+    const buildFormHtmlWithCaptureValue = (value: string) => {
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.value = value;
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const formHtml = document.createElement('div');
+      formHtml.appendChild(captureWrapper);
+      return formHtml;
+    };
+
+    beforeEach(() => {
+      service = TestBed.inject(FormService);
+    });
+
+    it('returns undefined when formHtml has no capture input', () => {
+      const formHtml = document.createElement('div');
+      expect((service as any).getGeoCaptureValue(formHtml)).to.be.undefined;
+    });
+
+    it('returns undefined when formHtml is undefined', () => {
+      expect((service as any).getGeoCaptureValue(undefined)).to.be.undefined;
+    });
+
+    it('returns "kept" when capture input value is kept', () => {
+      expect((service as any).getGeoCaptureValue(buildFormHtmlWithCaptureValue('kept'))).to.equal('kept');
+    });
+
+    it('returns "captured" when capture input value is captured', () => {
+      expect((service as any).getGeoCaptureValue(buildFormHtmlWithCaptureValue('captured'))).to.equal('captured');
+    });
+
+    it('returns "skipped" when capture input value is skipped', () => {
+      expect((service as any).getGeoCaptureValue(buildFormHtmlWithCaptureValue('skipped'))).to.equal('skipped');
+    });
   });
 
   describe('save', () => {
@@ -829,12 +1076,41 @@ describe('Form service', () => {
           expect(actual.geolocation_log.length).to.equal(1);
           expect(actual.geolocation_log[0].timestamp).to.be.greaterThan(0);
           expect(actual.geolocation_log[0].recording).to.deep.equal(geoData);
+          expect(actual.geolocation_log[0]).not.to.have.property('is_home');
           expect(xmlFormGetWithAttachment.callCount).to.equal(1);
           expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
           expect(AddAttachment.callCount).to.equal(0);
           expect(removeAttachment.callCount).to.equal(1);
         });
       });
+
+      it('removes the raw capture sentinel field from a report, even though reports nest form data under fields',
+        async () => {
+          form.validate.resolves(true);
+          const content = '<model><name>Sally</name><geo_capture>captured</geo_capture></model>';
+          form.getDataStr.returns(content);
+          dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
+          xmlFormGetWithAttachment.resolves({ doc: { _id: 'V' }, xml: '<form/>' });
+          UserContact.resolves({ _id: '123', phone: '555' });
+
+          const captureInput = document.createElement('input');
+          captureInput.type = 'hidden';
+          captureInput.name = '/data/geo_capture';
+          const captureWrapper = document.createElement('div');
+          captureWrapper.classList.add('or-appearance-geolocation-capture');
+          captureWrapper.appendChild(captureInput);
+          form.view.html.appendChild(captureWrapper);
+
+          const geoData = {
+            latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7
+          };
+
+          const actual = (await service.save('V', form, () => Promise.resolve(geoData)))[0];
+
+          expect(actual.geolocation).to.deep.equal(geoData);
+          expect(actual.fields.name).to.equal('Sally');
+          expect(actual.fields).to.not.have.property('geo_capture');
+        });
 
       it('saves a geolocation error into a new report', () => {
         form.validate.resolves(true);
@@ -867,6 +1143,7 @@ describe('Form service', () => {
           expect(actual.geolocation_log.length).to.equal(1);
           expect(actual.geolocation_log[0].timestamp).to.be.greaterThan(0);
           expect(actual.geolocation_log[0].recording).to.deep.equal(geoError);
+          expect(actual.geolocation_log[0]).not.to.have.property('is_home');
           expect(xmlFormGetWithAttachment.callCount).to.equal(1);
           expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
           expect(AddAttachment.callCount).to.equal(0);
@@ -939,6 +1216,7 @@ describe('Form service', () => {
           expect(setLastChangedDoc.args[0]).to.deep.equal([actual]);
         });
       });
+
     });
 
     it('creates report with erroring geolocation', () => {
@@ -1398,7 +1676,7 @@ describe('Form service', () => {
           {
             provide: DbService,
             useValue: {
-              get: () => ({ getAttachment: dbGetAttachment, bulkDocs: dbBulkDocs })
+              get: () => ({ getAttachment: dbGetAttachment, bulkDocs: dbBulkDocs, get: dbGet })
             }
           },
           { provide: ContactSummaryService, useValue: { get: ContactSummary } },
@@ -1764,6 +2042,314 @@ describe('Form service', () => {
       ]]);
       expect(performanceService.track.notCalled).to.be.true;
       expect(performanceTracking.stop.notCalled).to.be.true;
+    });
+
+    it('does not add geolocation fields when no geoHandle is provided', async () => {
+      const form = { getDataStr: () => '<data></data>' };
+      const type = 'some-contact-type';
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'some-contact-type' }
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact({ docId: undefined, type }, { form });
+
+      assert.equal(dbBulkDocs.callCount, 1);
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.equal(savedDocs.length, 1);
+      assert.notProperty(savedDocs[0], 'geolocation');
+      assert.notProperty(savedDocs[0], 'geolocation_log');
+    });
+
+    it('saves is_home: true into a contact doc log entry when context is home', async () => {
+      const type = 'some-contact-type';
+      const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
+      const geoHandle = sinon.stub().resolves(geoData);
+
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.name = '/data/geo_capture';
+      captureInput.dataset.geoContext = 'home';
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const html = document.createElement('div');
+      html.appendChild(captureWrapper);
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'some-contact-type', geo_capture: 'captured' }
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact(
+        { docId: undefined, type },
+        { form: { getDataStr: () => '<data></data>', view: { html } } },
+        false,
+        geoHandle
+      );
+
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.isTrue(savedDocs[0].geolocation_log[0].is_home);
+      assert.deepEqual(savedDocs[0].geolocation, geoData);
+      assert.notProperty(savedDocs[0], 'geo_capture');
+    });
+
+    it('removes the raw capture sentinel field using its actual field name, not a hardcoded one', async () => {
+      const type = 'some-contact-type';
+      const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
+      const geoHandle = sinon.stub().resolves(geoData);
+
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.name = '/data/location_capture';
+      captureInput.dataset.geoContext = 'home';
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const html = document.createElement('div');
+      html.appendChild(captureWrapper);
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'some-contact-type', location_capture: 'captured' }
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact(
+        { docId: undefined, type },
+        { form: { getDataStr: () => '<data></data>', view: { html } } },
+        false,
+        geoHandle
+      );
+
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.notProperty(savedDocs[0], 'location_capture');
+      assert.deepEqual(savedDocs[0].geolocation, geoData);
+    });
+
+    it('saves is_home: false and omits geolocation on contact doc when context is other', async () => {
+      const type = 'some-contact-type';
+      const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
+      const geoHandle = sinon.stub().resolves(geoData);
+
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.dataset.geoContext = 'other';
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const html = document.createElement('div');
+      html.appendChild(captureWrapper);
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'some-contact-type' }
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact(
+        { docId: undefined, type },
+        { form: { getDataStr: () => '<data></data>', view: { html } } },
+        false,
+        geoHandle
+      );
+
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.isFalse(savedDocs[0].geolocation_log[0].is_home);
+      assert.notProperty(savedDocs[0], 'geolocation');
+    });
+
+    it('does not stamp geolocation onto sibling or repeated child docs created in the same submission',
+      async () => {
+        const type = 'clinic';
+        const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
+        const geoHandle = sinon.stub().resolves(geoData);
+
+        const captureInput = document.createElement('input');
+        captureInput.type = 'hidden';
+        captureInput.dataset.geoContext = 'home';
+        const captureWrapper = document.createElement('div');
+        captureWrapper.classList.add('or-appearance-geolocation-capture');
+        captureWrapper.appendChild(captureInput);
+        const html = document.createElement('div');
+        html.appendChild(captureWrapper);
+
+        enketoTranslationService.contactRecordToJs.returns({
+          doc: { _id: 'main1', type: 'clinic', geo_capture: 'captured', contact: 'NEW' },
+          siblings: {
+            contact: { _id: 'sis1', type: 'person', parent: 'PARENT' },
+          },
+          repeats: {
+            child_data: [{ _id: 'kid1', type: 'child', parent: 'PARENT' }],
+          },
+        });
+        extractLineageService.extract.callsFake(contact => contact);
+        dbBulkDocs.resolves([]);
+
+        await service.saveContact(
+          { docId: undefined, type },
+          { form: { getDataStr: () => '<data></data>', view: { html } } },
+          false,
+          geoHandle
+        );
+
+        const savedDocs = dbBulkDocs.args[0][0];
+        const mainDoc = savedDocs.find(doc => doc._id === 'main1');
+        const siblingDoc = savedDocs.find(doc => doc._id === 'sis1');
+        const childDoc = savedDocs.find(doc => doc._id === 'kid1');
+
+        assert.deepEqual(mainDoc.geolocation, geoData);
+        assert.property(mainDoc, 'geolocation_log');
+
+        assert.notProperty(siblingDoc, 'geolocation');
+        assert.notProperty(siblingDoc, 'geolocation_log');
+        assert.notProperty(childDoc, 'geolocation');
+        assert.notProperty(childDoc, 'geolocation_log');
+      });
+
+    it('does not modify geolocation fields when geo_capture is kept', async () => {
+      const type = 'some-contact-type';
+      const existingGeo = { latitude: 1.23, longitude: 36.8, accuracy: 10 };
+      const existingLog = [{ timestamp: 1749168000000, recording: existingGeo, is_home: true }];
+      const geoHandle = sinon.stub().resolves({ latitude: 9.99, longitude: 99.9, accuracy: 5 });
+
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.value = 'kept';
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const html = document.createElement('div');
+      html.appendChild(captureWrapper);
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type, geolocation: existingGeo, geolocation_log: existingLog }
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact(
+        { docId: undefined, type },
+        { form: { getDataStr: () => '<data></data>', view: { html } } },
+        false,
+        geoHandle
+      );
+
+      assert.equal(geoHandle.callCount, 0);
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.deepEqual(savedDocs[0].geolocation, existingGeo);
+      assert.deepEqual(savedDocs[0].geolocation_log, existingLog);
+    });
+
+    it('still saves non-geolocation field changes when geo_capture is kept', async () => {
+      const type = 'some-contact-type';
+      const existingGeo = { latitude: 1.23, longitude: 36.8, accuracy: 10 };
+
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.value = 'kept';
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const html = document.createElement('div');
+      html.appendChild(captureWrapper);
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type, name: 'Updated Name', geolocation: existingGeo }
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact(
+        { docId: undefined, type },
+        { form: { getDataStr: () => '<data></data>', view: { html } } },
+        false,
+        sinon.stub()
+      );
+
+      assert.equal(dbBulkDocs.callCount, 1);
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.equal(savedDocs[0].name, 'Updated Name');
+      assert.deepEqual(savedDocs[0].geolocation, existingGeo);
+    });
+
+    it('restores geolocation fields from the original doc when geo_capture is kept', async () => {
+      const docId = 'existing-contact-id';
+      const type = 'clinic';
+      const originalGeo = { latitude: 43.06, longitude: -89.45, altitude: 0, accuracy: 35 };
+      const originalLog = [{ timestamp: 1749168000000, recording: originalGeo, is_home: true }];
+
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.name = '/data/geo_capture';
+      captureInput.value = 'kept';
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const html = document.createElement('div');
+      html.appendChild(captureWrapper);
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: docId, type, name: 'My Household', geolocation: '', geo_capture: 'kept' }
+      });
+      dbGet.withArgs(docId).resolves({
+        _id: docId,
+        geolocation: originalGeo,
+        geo_capture: 'captured',
+        geolocation_log: originalLog
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact(
+        { docId, type },
+        { form: { getDataStr: () => '<data></data>', view: { html } } },
+        false,
+        sinon.stub()
+      );
+
+      assert.equal(dbGet.callCount, 1);
+      assert.equal(dbBulkDocs.callCount, 1);
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.deepEqual(savedDocs[0].geolocation, originalGeo);
+      assert.notProperty(savedDocs[0], 'geo_capture');
+      assert.deepEqual(savedDocs[0].geolocation_log, originalLog);
+      assert.equal(savedDocs[0].name, 'My Household');
+    });
+
+    it('preserves existing home geolocation when capture context is other during edit', async () => {
+      const docId = 'existing-contact-id';
+      const type = 'clinic';
+      const originalGeo = { latitude: 43.06, longitude: -89.45, altitude: 0, accuracy: 35 };
+      const originalLog = [{ timestamp: 1749168000000, recording: originalGeo, is_home: true }];
+      const capturedGeoData = { latitude: 1.5, longitude: 37.0, accuracy: 8 };
+
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.value = 'captured';
+      captureInput.dataset.geoContext = 'other';
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const html = document.createElement('div');
+      html.appendChild(captureWrapper);
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: docId, type, name: 'My Household', geolocation: '', geo_capture: 'captured' }
+      });
+      dbGet.withArgs(docId).resolves({
+        _id: docId,
+        geolocation: originalGeo,
+        geolocation_log: originalLog
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact(
+        { docId, type },
+        { form: { getDataStr: () => '<data></data>', view: { html } } },
+        false,
+        sinon.stub().resolves(capturedGeoData)
+      );
+
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.deepEqual(savedDocs[0].geolocation, originalGeo);
+      assert.isFalse(savedDocs[0].geolocation_log[savedDocs[0].geolocation_log.length - 1].is_home);
     });
   });
 

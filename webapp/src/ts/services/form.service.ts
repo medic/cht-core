@@ -208,6 +208,9 @@ export class FormService {
       if (!await this.canAccessForm(formContext)) {
         throw { translationKey: 'error.loading.form.no_authorized' };
       }
+      if (formContext.type === 'contact') {
+        this.injectGeoEditContext(doc.html.get(0), this.getContactFromInstanceData(instanceData));
+      }
       return await this.enketoService.renderForm(formContext, doc, userSettings);
     } catch (error) {
       if (error.translationKey) {
@@ -260,7 +263,59 @@ export class FormService {
     return contact;
   }
 
-  private saveGeo(geoHandle, docs) {
+  private getContactFromInstanceData(instanceData: any): any {
+    if (typeof instanceData !== 'object' || instanceData === null) {
+      return undefined;
+    }
+    return Object.values(instanceData)[0];
+  }
+
+  private injectGeoEditContext(formHtml: Element | undefined, contact: any) {
+    const captureInput = formHtml?.querySelector(
+      '.or-appearance-geolocation-capture input'
+    ) as HTMLInputElement | null;
+    if (!captureInput || !contact?._id) {
+      return;
+    }
+
+    captureInput.dataset.geoIsEdit = 'true';
+
+    if (typeof contact.geolocation?.latitude !== 'number') {
+      return;
+    }
+
+    captureInput.dataset.geoHasLocation = 'true';
+  }
+
+  private getGeoContext(formHtml?: Element): string | undefined {
+    const captureInput = formHtml?.querySelector('.or-appearance-geolocation-capture input') as HTMLInputElement;
+    return captureInput?.dataset?.geoContext || undefined;
+  }
+
+  private getGeoCaptureValue(formHtml?: Element): string | undefined {
+    const captureInput = formHtml?.querySelector('.or-appearance-geolocation-capture input') as HTMLInputElement;
+    return captureInput?.value || undefined;
+  }
+
+  private getGeoCaptureFieldName(formHtml?: Element): string | undefined {
+    const captureInput = formHtml?.querySelector('.or-appearance-geolocation-capture input') as HTMLInputElement;
+    const name = captureInput?.getAttribute('name');
+    return name?.split('/').pop() || undefined;
+  }
+
+  // Contact docs have form fields flattened onto the doc itself; report docs nest them under
+  // "fields". Deleting from both is harmless since only one will ever be present on a given doc.
+  private stripGeoCaptureField(doc: any, fieldName?: string) {
+    if (!fieldName) {
+      return;
+    }
+    delete doc[fieldName];
+    if (doc.fields) {
+      delete doc.fields[fieldName];
+    }
+  }
+
+  private saveGeo(geoHandle, docs, contextValue?: string, restrictGeoToHomeCaptures = false) {
     if (!geoHandle) {
       return docs;
     }
@@ -268,13 +323,17 @@ export class FormService {
     return geoHandle()
       .catch(err => err)
       .then(geoData => {
+        const isHome = contextValue === 'home';
         docs.forEach(doc => {
           doc.geolocation_log = doc.geolocation_log || [];
-          doc.geolocation_log.push({
-            timestamp: Date.now(),
-            recording: geoData
-          });
-          doc.geolocation = geoData;
+          const entry: any = { timestamp: Date.now(), recording: geoData };
+          if (contextValue !== undefined) {
+            entry.is_home = isHome;
+          }
+          doc.geolocation_log.push(entry);
+          if (!restrictGeoToHomeCaptures || (!geoData.code && isHome)) {
+            doc.geolocation = geoData;
+          }
         });
         return docs;
       });
@@ -324,12 +383,18 @@ export class FormService {
 
   async save(formInternalId, form, geoHandle, docId?) {
     const docs = await this.completeReport(formInternalId, form, docId);
-    return this.ngZone.runOutsideAngular(() => this._save(docs, geoHandle));
+    const contextValue = this.getGeoContext(form?.view?.html);
+    const geoCaptureFieldName = this.getGeoCaptureFieldName(form?.view?.html);
+    return this.ngZone.runOutsideAngular(() => this._save(docs, geoHandle, contextValue, geoCaptureFieldName));
   }
 
-  private _save(docs, geoHandle) {
+  private _save(docs, geoHandle, contextValue?: string, geoCaptureFieldName?: string) {
     return this.validateAttachments(docs)
-      .then((docs) => this.saveGeo(geoHandle, docs))
+      .then((docs) => this.saveGeo(geoHandle, docs, contextValue))
+      .then((docs) => {
+        docs.forEach((doc: any) => this.stripGeoCaptureField(doc, geoCaptureFieldName));
+        return docs;
+      })
       .then((docs) => this.transitionsService.applyTransitions(docs))
       .then((docs) => this.saveDocs(docs))
       .then((docs) => {
@@ -384,6 +449,38 @@ export class FormService {
     }
   }
 
+  private async restoreGeoFieldsIfKept(
+    geoCaptureValue: string | undefined,
+    docId: string | undefined,
+    preparedDocs: any[]
+  ) {
+    if (geoCaptureValue !== 'kept' || !docId) {
+      return;
+    }
+    const originalDoc = await this.dbService.get().get(docId);
+    const contactDoc = preparedDocs.find(doc => doc._id === docId);
+    if (contactDoc && originalDoc) {
+      contactDoc.geolocation = originalDoc.geolocation;
+      contactDoc.geolocation_log = originalDoc.geolocation_log;
+    }
+  }
+
+  private async preserveHomeGeoIfNonHomeCapture(
+    geoCaptureValue: string | undefined,
+    contextValue: string | undefined,
+    docId: string | undefined,
+    docs: any[]
+  ) {
+    if (geoCaptureValue !== 'captured' || contextValue === 'home' || !docId) {
+      return;
+    }
+    const originalDoc = await this.dbService.get().get(docId);
+    const contactDoc = docs.find(doc => doc._id === docId);
+    if (contactDoc && originalDoc) {
+      contactDoc.geolocation = originalDoc.geolocation;
+    }
+  }
+
   async saveContact(
     contactInfo: {
       docId: string | undefined;
@@ -394,7 +491,8 @@ export class FormService {
       xmlVersion: string | undefined;
       duplicateCheck?: DuplicateCheck
     },
-    duplicatesAcknowledged: boolean,
+    duplicatesAcknowledged: boolean = false,
+    geoHandle?,
   ) {
     const { docId, type } = contactInfo;
     const { form, xmlVersion, duplicateCheck } = formInfo;
@@ -417,8 +515,23 @@ export class FormService {
       throw new DuplicatesFoundError('Duplicates found', duplicates);
     }
 
+    const contextValue = this.getGeoContext(form?.view?.html);
+    const geoCaptureValue = this.getGeoCaptureValue(form?.view?.html);
+
+    await this.restoreGeoFieldsIfKept(geoCaptureValue, docId, preparedDocs.preparedDocs);
+
+    if (geoCaptureValue !== 'kept') {
+      // Only the doc that owns the geolocation-capture field should receive the captured location -
+      // sibling/repeated docs created in the same submission (e.g. a new primary contact for a new
+      // household) must not be stamped with it too.
+      await this.saveGeo(geoHandle, [primaryDoc ?? preparedDocs.preparedDocs[0]], contextValue, true);
+    }
+    const docsWithGeo = preparedDocs.preparedDocs;
+    await this.preserveHomeGeoIfNonHomeCapture(geoCaptureValue, contextValue, docId, docsWithGeo);
+    const geoCaptureFieldName = this.getGeoCaptureFieldName(form?.view?.html);
+    docsWithGeo.forEach((doc: any) => this.stripGeoCaptureField(doc, geoCaptureFieldName));
     this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
-    const bulkDocsResult = await this.dbService.get().bulkDocs(preparedDocs.preparedDocs);
+    const bulkDocsResult = await this.dbService.get().bulkDocs(docsWithGeo);
     const failureMessage = this.generateFailureMessage(bulkDocsResult);
 
     if (failureMessage) {

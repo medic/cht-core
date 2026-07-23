@@ -43,6 +43,22 @@ describe('Geolocation service', () => {
   });
 
   describe('Geolocation', () => {
+    it('should store currentHandle after init()', () => {
+      const handle = service.init();
+      expect(service.currentHandle).to.equal(handle);
+    });
+
+    it('should store a pending currentPromise after init()', async () => {
+      service.init();
+      expect(service.currentPromise).to.be.instanceOf(Promise);
+      let resolved = false;
+      void service.currentPromise.then(() => {
+        resolved = true;
+      });
+      await Promise.resolve();
+      expect(resolved).to.be.false;
+    });
+
     it('correctly returns a successful geo result', () => {
       const position = {
         latitude: 1,
@@ -211,6 +227,27 @@ describe('Geolocation service', () => {
       expect(Telemetry.record.args[0][0]).to.equal('geolocation:failure:-1');
     });
 
+    it('resolves currentPromise when complete() is called before GPS acquires a position', async () => {
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsFake(() => {
+        // GPS never fires
+      });
+
+      const complete = service.init();
+
+      let currentPromiseResolved = false;
+      void service.currentPromise.then(() => {
+        currentPromiseResolved = true;
+      });
+      await Promise.resolve();
+      expect(currentPromiseResolved).to.be.false;
+
+      await complete();
+      await Promise.resolve();
+
+      expect(currentPromiseResolved).to.be.true;
+    });
+
     it('should resolve immediately when watcher never calls any callback', () => {
       window.navigator.geolocation.watchPosition = sinon.stub();
 
@@ -280,6 +317,96 @@ describe('Geolocation service', () => {
       expect(error).to.deep.equal({ code: 'true', message: 'no' });
     }));
 
+    it('should update currentHandle and currentPromise when retry() is called', () => {
+      service.init();
+      const handleBefore = service.currentHandle;
+      const promiseBefore = service.currentPromise;
+
+      service.retry();
+
+      expect(service.currentHandle).to.not.equal(handleBefore);
+      expect(service.currentPromise).to.not.equal(promiseBefore);
+      expect(service.currentHandle).to.be.a('function');
+      expect(service.currentPromise).to.be.instanceOf(Promise);
+    });
+
+    describe('cancel()', () => {
+      it('stops the underlying watcher and timeout', () => {
+        const complete = service.init();
+        (<any>window.navigator.geolocation.clearWatch).resetHistory();
+
+        complete.cancel();
+
+        expect((<any>window.navigator.geolocation.clearWatch).callCount).to.equal(1);
+      });
+
+      it('resolves currentPromise with a cancellation result when GPS has not yet resolved', async () => {
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsFake(() => {
+          // GPS never fires
+        });
+
+        const complete = service.init();
+        complete.cancel();
+
+        const result = await service.currentPromise;
+        expect(result).to.deep.equal({ code: -4, message: 'Geolocation cancelled' });
+      });
+
+      it('does not overwrite an already-resolved successful result, nor record duplicate telemetry', async () => {
+        const position = {
+          latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7,
+        };
+        let successFn;
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsFake(success => {
+          successFn = success;
+        });
+
+        const complete = service.init();
+        successFn({ coords: position });
+        expect(await service.currentPromise).to.deep.equal(position);
+
+        Telemetry.record.resetHistory();
+        complete.cancel();
+
+        expect(Telemetry.record.callCount).to.equal(0);
+        expect(await service.currentPromise).to.deep.equal(position);
+      });
+
+      it('does not overwrite an already-recorded failure, nor record duplicate telemetry', async () => {
+        let failureFn;
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsFake((_, failure) => {
+          failureFn = failure;
+        });
+
+        const complete = service.init();
+        failureFn({ code: 2, message: 'Position unavailable' });
+        expect(await service.currentPromise).to.deep.equal({ code: 2, message: 'Position unavailable' });
+
+        Telemetry.record.resetHistory();
+        complete.cancel();
+
+        expect(Telemetry.record.callCount).to.equal(0);
+        expect(await service.currentPromise).to.deep.equal({ code: 2, message: 'Position unavailable' });
+      });
+
+      it('is safe to call more than once', async () => {
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsFake(() => {
+          // GPS never fires
+        });
+
+        const complete = service.init();
+        complete.cancel();
+        expect(() => complete.cancel()).to.not.throw();
+
+        const result = await service.currentPromise;
+        expect(result).to.deep.equal({ code: -4, message: 'Geolocation cancelled' });
+      });
+    });
+
     describe('android api', () => {
       const position = {
         latitude: 1,
@@ -338,6 +465,16 @@ describe('Geolocation service', () => {
         });
       });
 
+      it('should dispatch geolocationPermissionGranted event when permissionRequestResolved is called', () => {
+        window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
+        service.init();
+        const listener = sinon.stub();
+        document.addEventListener('geolocationPermissionGranted', listener);
+        service.permissionRequestResolved();
+        document.removeEventListener('geolocationPermissionGranted', listener);
+        expect(listener.callCount).to.equal(1);
+      });
+
       it('should defer starting watcher until response from Android is received', () => {
         window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
         // @ts-ignore
@@ -366,6 +503,76 @@ describe('Geolocation service', () => {
           });
       });
 
+    });
+  });
+
+  describe('isAvailable', () => {
+    it('returns true when navigator.geolocation is present', () => {
+      expect(service.isAvailable()).to.be.true;
+    });
+
+    it('returns false when navigator.geolocation is absent', () => {
+      // @ts-ignore
+      sinon.replaceGetter(window, 'navigator', () => ({}));
+      expect(service.isAvailable()).to.be.false;
+    });
+  });
+
+  describe('isPermissionDenied', () => {
+    it('returns false when not running in Android app', () => {
+      expect(service.isPermissionDenied()).to.be.false;
+    });
+
+    it('returns false when Android API is present but not a function', () => {
+      window.medicmobile_android = { getLocationPermissions: 'string' };
+      expect(service.isPermissionDenied()).to.be.false;
+    });
+
+    it('returns false when Android permission is granted', () => {
+      window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(true) };
+      expect(service.isPermissionDenied()).to.be.false;
+    });
+
+    it('returns true when Android permission is denied', () => {
+      window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
+      expect(service.isPermissionDenied()).to.be.true;
+    });
+
+    it('returns false when Android API throws', () => {
+      const consoleErrorStub = sinon.stub(console, 'error');
+      window.medicmobile_android = { getLocationPermissions: sinon.stub().throws(new Error('error')) };
+      expect(service.isPermissionDenied()).to.be.false;
+      expect(consoleErrorStub.callCount).to.equal(1);
+    });
+
+    it('returns true when the browser reports a native PERMISSION_DENIED error, even without the Android bridge',
+      () => {
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsArgWith(1, { code: 1, message: 'User denied Geolocation' });
+        service.init();
+        expect(service.isPermissionDenied()).to.be.true;
+      });
+
+    it('does not report permission denied for a non-permission GPS error (e.g. timeout)', () => {
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsArgWith(1, { code: 3, message: 'Timeout expired' });
+      service.init();
+      expect(service.isPermissionDenied()).to.be.false;
+    });
+
+    it('reflects the most recent attempt, not a stale error from a previous init()', () => {
+      const position = {
+        latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7,
+      };
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsArgWith(1, { code: 1, message: 'User denied Geolocation' });
+      service.init();
+      expect(service.isPermissionDenied()).to.be.true;
+
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsArgWith(0, { coords: position });
+      service.init();
+      expect(service.isPermissionDenied()).to.be.false;
     });
   });
 });

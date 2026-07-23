@@ -22,13 +22,14 @@ import { DuplicateCheck } from '@mm-services/deduplicate.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { GeolocationService } from '@mm-services/geolocation.service';
 import events from 'enketo-core/src/js/event';
 
 @Component({
   templateUrl: './contacts-edit.component.html',
   imports: [NgIf, NgFor, MatAccordion, EnketoComponent, TranslatePipe, DuplicateContactsComponent, NgClass]
 })
-export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
+export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit { // NOSONAR
   constructor(
     private readonly store: Store,
     private readonly route: ActivatedRoute,
@@ -43,6 +44,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly translateService: TranslateService,
     private readonly ngZone: NgZone,
     private readonly fileReaderService: FileReaderService,
+    private readonly geolocationService: GeolocationService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
@@ -67,6 +69,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   enketoContact;
 
   private routeSnapshot;
+  private geoHandle: any;
   private trackRender;
   private trackEditDuration;
   private trackSave;
@@ -167,6 +170,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnDestroy() {
     this.subscription.unsubscribe();
     this.translationsLoadedSubscription?.unsubscribe();
+    this.geoHandle?.cancel();
     this.globalActions.setTitle();
     if (this.enketoContact?.formInstance) {
       this.formService.unload(this.enketoContact.formInstance);
@@ -182,6 +186,8 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private async initForm() {
     this.contentError = false;
     this.errorTranslationKey = false;
+    this.geoHandle?.cancel();
+    this.geoHandle = this.geolocationService.init();
 
     try {
       const contact = await this.getContact();
@@ -452,9 +458,10 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
         return this.formService
           .saveContact(
-            { docId, type: this.enketoContact.type }, 
-            { form, xmlVersion: this.xmlVersion, duplicateCheck: this.duplicateCheck}, 
-            this.duplicatesAcknowledged
+            { docId, type: this.enketoContact.type },
+            { form, xmlVersion: this.xmlVersion, duplicateCheck: this.duplicateCheck },
+            this.duplicatesAcknowledged,
+            this.geoHandle,
           )
           .then((result) => {
             console.debug('saved contact', result);
