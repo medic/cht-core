@@ -60,70 +60,50 @@
 'use strict';
 
 const { spawnSync } = require('node:child_process');
+const { parseArgs: nodeParseArgs } = require('node:util');
+
+// ---------------------------------------------------------------------------
+// CI workflow coupling — keep in sync with .github/workflows/build.yml
+// ---------------------------------------------------------------------------
+
+const CI_WORKFLOW_FILE = 'build.yml';
+// Jobs that run tests and whose logs are worth scanning.
+const TEST_JOB_RE = /(ci-webdriver|wdio-performance|ci-integration|test-cht-form|integration-cht-form|upgrade-)/i;
+// Integration jobs use mocha; every other job in TEST_JOB_RE is wdio.
+const INTEGRATION_JOB_RE = /ci-integration/i;
 
 // ---------------------------------------------------------------------------
 // CLI parsing
 // ---------------------------------------------------------------------------
 
-const asString = (value) => value;
-
-// Flag table: boolean flags carry `flag: true`; value flags carry a `parse`
-// that converts the following argv token.
-const ARG_FLAGS = {
-  '-h': { key: 'help', flag: true },
-  '--help': { key: 'help', flag: true },
-  '--scan-all': { key: 'scanAll', flag: true },
-  '--json': { key: 'json', flag: true },
-  '--debug': { key: 'debug', flag: true },
-  '--branch': { key: 'branch', parse: asString },
-  '--since': { key: 'since', parse: asString },
-  '--repo': { key: 'repo', parse: asString },
-  '--job': { key: 'job', parse: asString },
-  '--limit': { key: 'limit', parse: Number },
-};
-
-const applyPositional = (rest, arg) => {
-  if (arg.startsWith('--')) {
-    throw new Error(`Unknown option: ${arg}`);
-  }
-  rest.push(arg);
-};
-
-// Apply argv[i] to opts. Returns the index of the last token consumed (i for a
-// boolean/positional, i+1 for a value flag).
-const applyArg = (opts, rest, argv, i) => {
-  const spec = ARG_FLAGS[argv[i]];
-  if (!spec) {
-    applyPositional(rest, argv[i]);
-    return i;
-  }
-  if (spec.flag) {
-    opts[spec.key] = true;
-    return i;
-  }
-  opts[spec.key] = spec.parse(argv[i + 1]);
-  return i + 1;
-};
-
 const parseArgs = (argv) => {
-  const opts = {
-    term: null,
-    branch: null,
-    limit: 100,
-    since: null,
-    job: null,
-    repo: 'medic/cht-core',
-    scanAll: false,
-    json: false,
-    debug: false,
+  const { values, positionals } = nodeParseArgs({
+    args: argv,
+    allowPositionals: true,
+    options: {
+      help: { type: 'boolean', short: 'h', default: false },
+      'scan-all': { type: 'boolean', default: false },
+      json: { type: 'boolean', default: false },
+      debug: { type: 'boolean', default: false },
+      branch: { type: 'string' },
+      since: { type: 'string' },
+      repo: { type: 'string', default: 'medic/cht-core' },
+      job: { type: 'string' },
+      limit: { type: 'string', default: '100' },
+    },
+  });
+  return {
+    term: positionals[0] || null,
+    branch: values.branch || null,
+    since: values.since || null,
+    job: values.job || null,
+    repo: values.repo,
+    limit: Number(values.limit),
+    scanAll: values['scan-all'],
+    json: values.json,
+    debug: values.debug,
+    help: values.help,
   };
-  const rest = [];
-  let i = 0;
-  while (i < argv.length) {
-    i = applyArg(opts, rest, argv, i) + 1;
-  }
-  opts.term = rest[0] || null;
-  return opts;
 };
 
 const HELP = `Search CI history for runs where a specific test failed.
@@ -152,8 +132,9 @@ Options:
 // gh helpers
 // ---------------------------------------------------------------------------
 
-const runGh = (args, { allowFail = false, maxBuffer = 256 * 1024 * 1024 } = {}) => {
-  const res = spawnSync('gh', args, { encoding: 'utf8', maxBuffer });
+const runGh = (args, { allowFail = false } = {}) => {
+  // 256MB: job logs can be tens of MB, well above spawnSync's 1MB default
+  const res = spawnSync('gh', args, { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 });
   if (res.error) {
     if (res.error.code === 'ENOENT') {
       throw new Error('`gh` CLI not found. Install it: https://cli.github.com/');
@@ -171,7 +152,7 @@ const ghJson = (endpoint) => {
   return JSON.parse(stdout);
 };
 
-const  assertAuth = () => {
+const assertAuth = () => {
   const res = runGh(['auth', 'status'], { allowFail: true });
   if (res.status !== 0 && !process.env.GH_TOKEN && !process.env.GITHUB_TOKEN) {
     throw new Error(
@@ -362,10 +343,6 @@ const parseMochaLog = (lines) => {
   return failures;
 };
 
-const isIntegrationJob = (jobName) => /ci-integration/i.test(jobName);
-
-const TEST_JOB_RE = /(ci-webdriver|wdio-performance|ci-integration|test-cht-form|integration-cht-form|upgrade-)/i;
-
 // ---------------------------------------------------------------------------
 // Concurrency helper
 // ---------------------------------------------------------------------------
@@ -405,7 +382,7 @@ const runsEndpoint = (opts, perPage, page) => {
   if (opts.since) {
     params.push(`created=${encodeURIComponent('>=' + opts.since)}`);
   }
-  return `/repos/${opts.repo}/actions/workflows/build.yml/runs?${params.join('&')}`;
+  return `/repos/${opts.repo}/actions/workflows/${CI_WORKFLOW_FILE}/runs?${params.join('&')}`;
 };
 
 const listRuns = (opts) => {
@@ -451,7 +428,7 @@ const scanJob = async (job, run, opts, matcher) => {
     return [];
   }
   const lines = log.split('\n');
-  const failures = isIntegrationJob(job.name)
+  const failures = INTEGRATION_JOB_RE.test(job.name)
     ? parseMochaLog(lines)
     : parseWdioLog(lines, opts.scanAll);
 
@@ -554,7 +531,7 @@ const describeScan = (opts) => {
   const scope = opts.scanAll ? 'all' : 'failed-only';
   const branch = opts.branch ? `, branch=${opts.branch}` : ', all branches';
   const since = opts.since ? `, since=${opts.since}` : '';
-  return `Listing build.yml runs (${scope}${branch}${since}, limit=${opts.limit})...`;
+  return `Listing ${CI_WORKFLOW_FILE} runs (${scope}${branch}${since}, limit=${opts.limit})...`;
 };
 
 // scan runs sequentially; log downloads within each run are parallelised
@@ -603,11 +580,7 @@ const main = async () => {
   emitResults(matchedRuns, runs, opts);
 };
 
-if (require.main === module) {
-  main().catch((err) => {
-    process.stderr.write(`\nError: ${err.message}\n`);
-    process.exit(1);
-  });
-}
-
-module.exports = { parseWdioLog, parseMochaLog, cleanLine, buildMatcher };
+main().catch((err) => {
+  process.stderr.write(`\nError: ${err.message}\n`);
+  process.exit(1);
+});
