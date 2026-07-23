@@ -282,6 +282,26 @@ describe('Date Filter Component', () => {
       setFilter.restore();
     });
 
+    it('should ignore selection of invalid/non-existent days', () => {
+      component.ngAfterViewInit();
+      component.isStartDate = true;
+      component.dateRange = { from: undefined, to: undefined };
+
+      const hiddenInput = $('#bikram-sambat-test-wrapper .nepali-datepicker-input');
+      const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
+
+      const event = $.Event('dateSelect');
+      (event as any).datePickerData = {
+        bsYear: 2082,
+        bsMonth: 8,
+        bsDate: 30
+      };
+      hiddenInput.trigger(event);
+
+      expect(setFilter.callCount).to.equal(0);
+      setFilter.restore();
+    });
+
     it('ngOnDestroy should clean up specific picker container and overlay', () => {
       component.ngAfterViewInit();
       const hiddenInput = $('#bikram-sambat-test-wrapper .nepali-datepicker-input');

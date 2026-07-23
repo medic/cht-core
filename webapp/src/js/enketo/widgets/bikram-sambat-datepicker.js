@@ -6,6 +6,7 @@ const bikram_sambat_bs = require( 'bikram-sambat-bootstrap' );
 const eurodigit = require( 'eurodigit' );
 const toDevanagari = eurodigit.to_non_euro.devanagari;
 const fromDevanagari = eurodigit.to_euro;
+const BikramSambat = require( 'bikram-sambat' );
 
 const {
   setupNepaliDatePicker,
@@ -92,13 +93,28 @@ class Bikramsambatdatepicker extends Widget {
         // setTimeout) after both "change" and "blur", once the library's
         // own handlers have finished running.
         const clearIfIncomplete = () => {
-          const day   = $parent.find( 'input[name="day"]' ).val();
-          const month = $parent.find( 'input[name="month"]' ).val();
-          const year  = $parent.find( 'input[name="year"]' ).val();
+          const dayDev   = $parent.find( 'input[name="day"]' ).val();
+          const monthDev = $parent.find( 'input[name="month"]' ).val();
+          const yearDev  = $parent.find( 'input[name="year"]' ).val();
 
-          if ( !day || !month || !year ) {
+          if ( !dayDev || !monthDev || !yearDev ) {
             $realDateInput.val( '' );
             $realDateInput.trigger( 'change' );
+            return;
+          }
+
+          const day = Number(fromDevanagari(dayDev));
+          const month = Number(fromDevanagari(monthDev));
+          const year = Number(fromDevanagari(yearDev));
+
+          if (!Number.isNaN(day) && !Number.isNaN(month) && !Number.isNaN(year)) {
+            const maxDays = BikramSambat.daysInMonth(year, month);
+            // Guard against invalid day values on manual entry (see #11252)
+            if (day < 1 || day > maxDays) {
+              $realDateInput.val( '' );
+              $realDateInput.trigger( 'change' );
+              $parent.find( 'input[name="day"]' ).val( '' );
+            }
           }
         };
 
@@ -153,6 +169,12 @@ const setupCalendarPicker = ($parent, widget) => {
       const year = data.bsYear;
       const monthNum = data.bsMonth;
       const day = data.bsDate;
+
+      // Guard against invalid days (e.g. Mansir 30, 2082)
+      // Clicks on non-existent/phantom days are ignored intentionally (see #11252)
+      if (day > BikramSambat.daysInMonth(year, monthNum)) {
+        return;
+      }
       const monthName = NEPALI_MONTH_NAMES[monthNum - 1];
       if (monthName) {
         // Update the input fields with Devanagari digits and trigger change
