@@ -199,6 +199,47 @@ describe('update_notifications', () => {
       });
   });
 
+  it('should add notification_error code on errors when notification fails', () => {
+    const settings = {
+      transitions: { update_notifications: true },
+      notifications: {
+        on_form: 'on',
+        off_form: 'off',
+        messages: [{
+          event_type: 'patient_not_found',
+          recipient: '12345',
+          message: [{
+            locale: 'en',
+            content: 'Patient not found'
+          }],
+        }],
+      }
+    };
+
+    const doc = {
+      _id: uuid(),
+      type: DOC_TYPES.DATA_RECORD,
+      form: 'off',
+      from: '12345',
+      fields: {
+        patient_id: 'unknown'
+      },
+      reported_date: new Date().getTime(),
+      content_type: 'xml'
+    };
+
+    return utils
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
+      .then(() => utils.saveDoc(doc))
+      .then(() => sentinelUtils.waitForSentinel(doc._id))
+      .then(() => utils.getDoc(doc._id))
+      .then(updated => {
+        expect(updated.errors).to.not.be.undefined;
+        expect(updated.errors).to.have.lengthOf(1);
+        expect(updated.errors[0].code).to.equal('notification_error');
+      });
+  });
+
   it('should mute and unmute a person', () => {
     const settings = {
       transitions: { update_notifications: true },

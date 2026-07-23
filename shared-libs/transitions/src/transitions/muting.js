@@ -243,14 +243,12 @@ module.exports = {
     }
   },
   _addErr: (eventType, doc) => {
+
     const locale = utils.getLocale(doc);
     const evConf = _.find(getConfig().messages, { event_type: eventType });
 
-    const msg = messages.getMessage(evConf, locale);
-    if (msg) {
-      messages.addError(doc, msg);
-    } else {
-      messages.addError(doc, `Failed to complete muting request, event type "${eventType}" misconfigured.`);
-    }
+    const msg = messages.getMessage(evConf, locale) ||
+    `Failed to complete muting request, event type "${eventType}" misconfigured.`;
+    messages.addError(doc, { code: 'muting_error', message: msg });
   }
 };

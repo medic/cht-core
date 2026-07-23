@@ -439,6 +439,21 @@ describe('messages', () => {
       assert.equal(utils.addError.callCount, 1);
     });
 
+    it('preserves error code for string errors', () => {
+      sinon.stub(messageUtils, 'template').returns('some_error');
+      sinon.stub(utils, 'addError');
+
+      const doc = { errors: [] };
+
+      messages.addError(doc, 'some_error');
+
+      assert.equal(utils.addError.callCount, 1);
+
+      const errorArg = utils.addError.args[0][1];
+      assert.equal(errorArg.code, 'some_error');
+      assert.equal(errorArg.message, 'some_error');
+    });
+
     it('catches errors thrown during template processing', () => {
       sinon.stub(messageUtils, 'template').throws(new Error('template parse failure'));
       sinon.stub(utils, 'addError');
