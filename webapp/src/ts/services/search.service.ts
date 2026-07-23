@@ -57,6 +57,85 @@ export class SearchService {
     return false;
   }
 
+  private async getTaskCounts(householdIds: string[]) {
+    if (!householdIds?.length) {
+      return [];
+    }
+
+    const parentKeys = householdIds.map(id => [id, 'person']);
+    const personResult = await this.dbService
+      .get()
+      .query('medic-client/contacts_by_parent', { keys: parentKeys });
+
+    const householdToPersonIds: Map<string, string[]> = new Map();
+    const allPersonIds: string[] = [];
+    personResult.rows.forEach(row => {
+      const householdId = row.key[0];
+      const personId = row.id;
+      if (!householdToPersonIds.has(householdId)) {
+        householdToPersonIds.set(householdId, []);
+      }
+      householdToPersonIds.get(householdId)!.push(personId);
+      allPersonIds.push(personId);
+    });
+
+    const taskCountByPerson: Map<string, number> = new Map();
+    if (allPersonIds.length) {
+      const ownerKeys = allPersonIds.map(id => `owner-${id}`);
+      const taskResult = await this.dbService
+        .get()
+        .query('medic-client/tasks_by_contact', { keys: ownerKeys });
+      taskResult.rows.forEach(row => {
+        const personId = (row.key as string).replace(/^owner-/, '');
+        taskCountByPerson.set(personId, (taskCountByPerson.get(personId) || 0) + 1);
+      });
+    }
+
+    return householdIds.map(householdId => {
+      const personIds = householdToPersonIds.get(householdId) || [];
+      const taskCount = personIds.reduce((sum, personId) => {
+        return sum + (taskCountByPerson.get(personId) || 0);
+      }, 0);
+      return { key: householdId, value: { taskCount } };
+    });
+  }
+
+  private async enrichSearchResults(dataRecordsPromise, searchResults, options) {
+    const { displayLastVisitedDate, visitCountSettings, displayTaskCount, sortByTaskCount, extensions } = options;
+
+    const lastVisitedDatePromise = displayLastVisitedDate
+      ? this.getLastVisitedDates(searchResults.docIds, searchResults.queryResultsCache, visitCountSettings)
+      : Promise.resolve([]);
+
+    const taskCountPromise = displayTaskCount
+      ? this.getTaskCounts(searchResults.docIds)
+      : Promise.resolve([]);
+
+    const [dataRecords, lastVisitedDates, taskCounts] = await Promise.all([
+      dataRecordsPromise,
+      lastVisitedDatePromise,
+      taskCountPromise,
+    ]);
+
+    lastVisitedDates.forEach((dateResult) => {
+      const relevantDataRecord = dataRecords.find(r => r._id === dateResult.key);
+      if (relevantDataRecord) {
+        Object.assign(relevantDataRecord, dateResult.value);
+        relevantDataRecord.sortByLastVisitedDate = extensions.sortByLastVisitedDate;
+      }
+    });
+
+    taskCounts.forEach((taskResult) => {
+      const relevantDataRecord = dataRecords.find(r => r._id === taskResult.key);
+      if (relevantDataRecord) {
+        Object.assign(relevantDataRecord, taskResult.value);
+        relevantDataRecord.sortByTaskCount = sortByTaskCount;
+      }
+    });
+
+    return dataRecords;
+  }
+  
   private getLastVisitedDates(searchResults, searchResultsCache, settings) {
     settings = settings || {};
     const interval = CalendarInterval.getCurrent(settings.monthStartDate);
@@ -140,6 +219,8 @@ export class SearchService {
       hydrateContactNames,
       displayLastVisitedDate,
       visitCountSettings,
+      displayTaskCount,
+      sortByTaskCount,
       additionalDocIds = [],
       ...options
     }: SearchOptions
@@ -176,34 +257,15 @@ export class SearchService {
         ? this.getDataRecordsService.getReports(searchResults.docIds, getDataRecordsOptions)
         : this.getDataRecordsService.getContacts(searchResults.docIds, getDataRecordsOptions);
 
-      if (!displayLastVisitedDate) {
+      if (!displayLastVisitedDate && !displayTaskCount) {
         return dataRecordsPromise;
       }
 
-
-      const lastVisitedDatePromise = this.getLastVisitedDates(
-        searchResults.docIds,
-        searchResults.queryResultsCache,
-        visitCountSettings
-      );
-
-      const [dataRecords, lastVisitedDates] = await Promise.all([
+      return this.enrichSearchResults(
         dataRecordsPromise,
-        lastVisitedDatePromise
-      ]);
-
-      lastVisitedDates.forEach((dateResult) => {
-        const relevantDataRecord = dataRecords.find((dataRecord) => {
-          return dataRecord._id === dateResult.key;
-        });
-
-        if (relevantDataRecord) {
-          Object.assign(relevantDataRecord, dateResult.value);
-          relevantDataRecord.sortByLastVisitedDate = extensions.sortByLastVisitedDate;
-        }
-      });
-
-      return dataRecords;
+        searchResults,
+        { displayLastVisitedDate, visitCountSettings, displayTaskCount, sortByTaskCount, extensions }
+      );
     } finally {
       this._currentQuery = {};
     }
@@ -226,5 +288,7 @@ interface SearchOptions {
   sortByLastVisitedDate?: boolean,
   displayLastVisitedDate?: boolean,
   visitCountSettings?: Record<string, unknown>,
+  displayTaskCount?: boolean,
+  sortByTaskCount?: boolean,
   additionalDocIds?: string[]
 }
