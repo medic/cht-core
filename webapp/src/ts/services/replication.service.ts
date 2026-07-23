@@ -16,6 +16,7 @@ export class ReplicationService {
   }
 
   private readonly BATCH_SIZE=100;
+  private readonly FORM_DOC_ID_PREFIX='form:';
 
   async replicateFrom():Promise<{ read_docs: number }> {
     const remoteDocIdsRevs = await this.getRemoteDocs();
@@ -43,9 +44,16 @@ export class ReplicationService {
       .filter(({ id, rev }) => !localIdRevMap[id] || localIdRevMap[id] !== rev);
     const nbrDocs = docIdRevsToDownload.length;
 
-    while (docIdRevsToDownload.length) {
-      const batch = docIdRevsToDownload.splice(0, this.BATCH_SIZE);
+    const formDocIdRevs = docIdRevsToDownload.filter(({ id }) => id.startsWith(this.FORM_DOC_ID_PREFIX));
+    const nonFormDocIdRevs = docIdRevsToDownload.filter(({ id }) => !id.startsWith(this.FORM_DOC_ID_PREFIX));
+
+    while (nonFormDocIdRevs.length) {
+      const batch = nonFormDocIdRevs.splice(0, this.BATCH_SIZE);
       await this.downloadDocsBatch(batch);
+    }
+
+    for (const idRev of formDocIdRevs) {
+      await this.downloadFormDoc(idRev);
     }
 
     return nbrDocs;
@@ -78,5 +86,11 @@ export class ReplicationService {
       .filter(doc => doc);
     await this.dbService.get().bulkDocs(docs, { new_edits: false });
     this.rulesEngineService.monitorExternalChanges({ docs });
+  }
+
+  private async downloadFormDoc({ id, rev }):Promise<void> {
+    const doc = await this.dbService.get({ remote: true }).get(id, { attachments: true, rev, revs: true });
+    await this.dbService.get().bulkDocs([doc], { new_edits: false });
+    this.rulesEngineService.monitorExternalChanges({ docs: [doc] });
   }
 }
