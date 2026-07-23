@@ -150,7 +150,7 @@ describe('utils', () => {
         assert.equal(query.callCount, 1);
         assert.equal(registrationUtils.isValidRegistration.callCount, 1);
         assert.deepEqual(registrationUtils.isValidRegistration.args[0], [expectedDoc, { config: 'all' }]);
-        assert.equal(query.args[0][0], 'medic-client/registered_patients');
+        assert.equal(query.args[0][0], 'medic-client/reports_by_subject');
         assert.equal(query.args[0][1].key, given);
         assert.equal(query.args[0][1].include_docs, true);
       });
@@ -159,8 +159,8 @@ describe('utils', () => {
     it('queries by ids if given', () => {
       sinon.stub(registrationUtils, 'isValidRegistration').returns(true);
       config.getAll.returns({ config: 'all' });
-      const expectedDoc1 = { id: 'a' };
-      const expectedDoc2 = { id: 'b' };
+      const expectedDoc1 = { _id: 'a' };
+      const expectedDoc2 = { _id: 'b' };
       const expected = [ { doc: expectedDoc1 }, { doc: expectedDoc2 } ];
       const given = ['11111', '22222'];
       const view = db.medic.query.resolves({ rows: expected });
@@ -170,7 +170,7 @@ describe('utils', () => {
         assert.deepEqual(registrationUtils.isValidRegistration.args[1], [expectedDoc2, { config: 'all' }]);
         assert.deepEqual(actual, [expectedDoc1, expectedDoc2 ]);
         assert.equal(view.callCount, 1);
-        assert.equal(view.args[0][0], 'medic-client/registered_patients');
+        assert.equal(view.args[0][0], 'medic-client/reports_by_subject');
         assert.equal(view.args[0][1].keys, given);
         assert.equal(view.args[0][1].include_docs, true);
       });
