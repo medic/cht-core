@@ -10,6 +10,11 @@ const personFactory = require('@factories/cht/contacts/person');
 const reportFactory = require('@factories/cht/reports/generic-report');
 const { CONTACT_TYPES } = require('@medic/constants');
 
+const fromDevanagari = (str) => {
+  const devanagariDigits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+  return str.replace(/[०-९]/g, (d) => devanagariDigits.indexOf(d).toString());
+};
+
 describe('Reports Sidebar Filter', () => {
   const places = placeFactory.generateHierarchy();
 
@@ -202,9 +207,15 @@ describe('Reports Sidebar Filter', () => {
     await reportsPage.clickSidebarFilterFromDate();
     await reportsPage.waitForNepaliDatePickerDisplayed();
 
-    // Future dates in the current month should be disabled
+    // Future dates in the current month should be disabled (unless today is the last day of the Nepali month)
     const disableCells = await reportsPage.getDisabledNepaliDateCells();
-    expect(disableCells.length).to.be.greaterThan(0);
+    if (disableCells.length === 0) {
+      const activeCellText = await reportsPage.getNepaliDatePickerActiveCellText();
+      const activeDay = Number.parseInt(fromDevanagari(activeCellText), 10);
+      expect(activeDay).to.be.at.least(29);
+    } else {
+      expect(disableCells.length).to.be.greaterThan(0);
+    }
 
     // 2. Escape Dismissal - press Escape and verify picker is dismissed
     await browser.keys(['Escape']);
@@ -220,6 +231,13 @@ describe('Reports Sidebar Filter', () => {
     // 4. Select From and To dates
     await reportsPage.setSidebarFilterBikFromDate();
     await reportsPage.setSidebarFilterBikToDate();
+
+    // Verify both From and To input fields have selected date values
+    expect(await reportsPage.getFromDateValue()).to.not.equal('');
+    expect(await reportsPage.getToDateValue()).to.not.equal('');
+
+    // Dismiss the open picker so we can test reopening it
+    await browser.keys(['Escape']);
 
     // 5. Reopen active selection verification
     await reportsPage.clickSidebarFilterToDate();
