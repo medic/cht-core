@@ -30,3 +30,6 @@ module.exports = (sourceDb, sourceConfig, sourceDataContext) => {
     isWithinTimeFrame: utils.isWithinTimeFrame,
   };
 };
+
+module.exports.isMutedInLineage = require('./lib/muted-lineage').isMutedInLineage;
+module.exports.findMutedAncestor = require('./lib/muted-lineage').findMutedAncestor;
