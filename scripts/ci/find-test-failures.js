@@ -212,12 +212,25 @@ const groupBy = (items, keyFn) => {
 
 const WDIO_SPEC_HEADER_RE = /^\s*(?:Spec:|»)\s*(\S+\.js)\s*$/;
 const WDIO_STREAMING_TAIL_RE = /»\s*\[/;
-const WDIO_FAIL_RE = /(?:\[FAIL\]|✖)(.*)$/;
+const WDIO_FAIL_MARKER_RE = /\[FAIL\]|✖/;
 
 // "✖ <title> » [ <path> ]" — split on the marker so the regex stays linear.
 const isStreamingLine = (line) => {
   const marker = line.indexOf('✖');
   return marker !== -1 && WDIO_STREAMING_TAIL_RE.test(line.slice(marker + 1));
+};
+
+// The title is everything after the fail marker; slicing it off in code keeps
+// the regex quantifier-free (sonar S8786).
+const recordFailLine = (line, block) => {
+  const marker = line.match(WDIO_FAIL_MARKER_RE);
+  if (!marker || !block) {
+    return;
+  }
+  const title = line.slice(marker.index + marker[0].length).trim();
+  if (title) {
+    block.fails.push(title);
+  }
 };
 
 // Fold one (prefix-stripped) wdio log line into the running block list, and
@@ -235,13 +248,7 @@ const foldWdioLine = (line, blocks, current) => {
   if (isStreamingLine(line)) {
     return current;
   }
-  const failMatch = line.match(WDIO_FAIL_RE);
-  if (failMatch && current) {
-    const title = failMatch[1].trim();
-    if (title) {
-      current.fails.push(title);
-    }
-  }
+  recordFailLine(line, current);
   return current;
 };
 
