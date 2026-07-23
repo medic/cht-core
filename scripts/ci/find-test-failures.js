@@ -133,8 +133,10 @@ Options:
 // ---------------------------------------------------------------------------
 
 const runGh = (args, { allowFail = false } = {}) => {
-  // 256MB: job logs can be tens of MB, well above spawnSync's 1MB default
-  const res = spawnSync('gh', args, { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 });
+  // 256MB: job logs can be tens of MB, well above spawnSync's 1MB default.
+  // NOSONAR suppresses S8705 (argv-array spawn — no shell to escape) and
+  // S4036 (resolving gh from PATH is inherent to wrapping a CLI).
+  const res = spawnSync('gh', args, { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }); // NOSONAR
   if (res.error) {
     if (res.error.code === 'ENOENT') {
       throw new Error('`gh` CLI not found. Install it: https://cli.github.com/');
