@@ -706,6 +706,7 @@ describe('mark_for_outbound', () => {
         .then((result) => collect = result)
         .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
+        .then(() => utils.delayPromise(1000))
         .then(() => collect())
         .then(logs => {
           expect(logs).to.have.lengthOf(2);

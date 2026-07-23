@@ -86,7 +86,7 @@ describe('message duplicates', () => {
     return utils
       .updateSettings(settings, { ignoreReload: true })
       .then(() => postMessages(firstMessages))
-      .then(ids => utils.getDocs(ids))
+      .then(ids => utils.delayPromise(1000).then(() => utils.getDocs(ids)))
       .then(docs => {
         docs.forEach(doc => {
           chai.expect(doc.tasks.length).to.equal(1, `doc: ${JSON.stringify(doc, null, 2)}`);
@@ -100,7 +100,7 @@ describe('message duplicates', () => {
         });
       })
       .then(() => postMessages(secondMessages))
-      .then(ids => utils.getDocs(ids))
+      .then(ids => utils.delayPromise(1000).then(() => utils.getDocs(ids)))
       .then(docs => {
         docs.forEach(doc => {
           chai.expect(doc.tasks.length).to.equal(1, `doc: ${JSON.stringify(doc, null, 2)}`);
@@ -114,7 +114,7 @@ describe('message duplicates', () => {
         });
       })
       .then(() => postMessages(thirdMessages))
-      .then(ids => utils.getDocs(ids))
+      .then(ids => utils.delayPromise(1000).then(() => utils.getDocs(ids)))
       .then(docs => {
         docs.forEach(doc => {
           chai.expect(doc.tasks.length).to.equal(1, `doc: ${JSON.stringify(doc, null, 2)}`);
@@ -156,7 +156,7 @@ describe('message duplicates', () => {
     return utils
       .updateSettings(settings, { ignoreReload: true })
       .then(() => postMessages(firstMessages))
-      .then(ids => utils.getDocs(ids))
+      .then(ids => utils.delayPromise(1000).then(() => utils.getDocs(ids)))
       .then(docs => {
         docs.forEach(doc => {
           chai.expect(doc.tasks.length).to.equal(1, `doc: ${JSON.stringify(doc, null, 2)}`);
@@ -170,7 +170,7 @@ describe('message duplicates', () => {
         });
       })
       .then(() => postMessages(secondMessages))
-      .then(ids => utils.getDocs(ids))
+      .then(ids => utils.delayPromise(1000).then(() => utils.getDocs(ids)))
       .then(docs => {
         docs.forEach(doc => {
           chai.expect(doc.tasks.length).to.equal(1, `doc: ${JSON.stringify(doc, null, 2)}`);
