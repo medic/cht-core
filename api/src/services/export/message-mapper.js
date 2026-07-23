@@ -175,14 +175,15 @@ module.exports = {
               translationKey: task.message_key,
               message: task.message
             };
-            task.messages = messageUtils.generate(
-              config.get(),
-              config.translate,
-              record,
+            task.messages = messageUtils.generate({
+              config: config.get(),
+              translate: config.translate,
+              doc: record,
               content,
-              task.recipient,
-              context
-            );
+              recipient: task.recipient,
+              extraContext: context,
+              extensionLibs: config.getExtensionLibs(),
+            });
           }
 
           const taskType = (task.translation_key && config.translate(task.translation_key, { group: task.group })) ||

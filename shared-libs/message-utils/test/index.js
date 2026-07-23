@@ -4,6 +4,7 @@ const expect = require('chai').expect;
 const should = require('chai').should();
 const rewire = require('rewire');
 const { CONTACT_TYPES } = require('@medic/constants');
+const logger = require('@medic/logger');
 const utils = rewire('../src/index');
 
 const MAX_GSM_LENGTH = 160;
@@ -1178,6 +1179,17 @@ describe('messageUtils', () => {
         expect(messages[0].error).to.equal('messages.errors.place.missing');
       });
 
+      it('should preserve place error precedence when both patient and place are missing', () => {
+        const context = {
+          registrations: [{ _id: 'patient-registration' }],
+          placeRegistrations: [{ _id: 'place-registration' }],
+        };
+
+        const messages = utils.generate({}, null, {}, { message: 'sms' }, '1234', context);
+
+        expect(messages[0].error).to.equal('messages.errors.place.missing');
+      });
+
       it('should not add an error when no patient, no place and no registrations are provided', () => {
         const config = {};
         const translate = null;
@@ -1745,6 +1757,176 @@ describe('messageUtils', () => {
         content: 'Call {{#local_phone}} {{patient_phone}} {{/local_phone}}' }] };
       const result = utils.template(config, translate, doc, content);
       expect(result).to.equal('Call 9841234567');
+    });
+  });
+
+  describe('extension-lib mustache helpers', () => {
+    const translate = (key) => key;
+
+    it('uses the extension-lib filename without the .js suffix as the helper name', () => {
+      const extensionLibs = {
+        'to_devanagari.js': value => value.replace(/\d/g, digit => '०१२३४५६७८९'[digit]),
+      };
+      const doc = { locale: 'en', patient_id: '12345' };
+      const content = {
+        message: [{
+          locale: 'en',
+          content: 'ID: {{#to_devanagari}}{{patient_id}}{{/to_devanagari}}',
+        }],
+      };
+
+      const result = utils.template({ config: {}, translate, doc, content, extensionLibs });
+
+      expect(result).to.equal('ID: १२३४५');
+    });
+
+    it('applies extension-lib helpers to translated outgoing messages', () => {
+      const extensionLibs = {
+        'uppercase.js': value => value.toUpperCase(),
+      };
+      const translateMessage = sinon.stub().returns('Hello {{#uppercase}}{{patient.name}}{{/uppercase}}');
+      const result = utils.generate({
+        config: {},
+        translate: translateMessage,
+        doc: { locale: 'en', from: '+123', patient: { name: 'Ada' } },
+        content: { translationKey: 'messages.greeting' },
+        extensionLibs,
+      });
+
+      expect(result[0].message).to.equal('Hello ADA');
+    });
+
+    it('supports extension-lib names that do not have a .js suffix', () => {
+      const extensionLibs = {
+        uppercase: value => value.toUpperCase(),
+      };
+
+      const result = utils.template({
+        config: {},
+        doc: { name: 'Ada' },
+        content: { message: '{{#uppercase}}{{name}}{{/uppercase}}' },
+        extensionLibs,
+      });
+
+      expect(result).to.equal('ADA');
+    });
+
+    it('ignores extension-lib exports that are not functions', () => {
+      const extensionLibs = {
+        'not_a_helper.js': { value: 'not a function' },
+      };
+
+      const result = utils.template({
+        config: {},
+        doc: {},
+        content: { message: 'value: {{#not_a_helper}}text{{/not_a_helper}}' },
+        extensionLibs,
+      });
+
+      expect(result).to.equal('value: ');
+    });
+
+    it('does not allow an extension-lib to replace a built-in helper', () => {
+      const customHelper = sinon.stub().returns('custom');
+      const extensionLibs = { 'local_phone.js': customHelper };
+
+      const result = utils.template({
+        config: { default_country_code: '977' },
+        doc: {},
+        content: { message: '{{#local_phone}}+9779841234567{{/local_phone}}' },
+        extensionLibs,
+      });
+
+      expect(result).to.equal('9841234567');
+      expect(customHelper.callCount).to.equal(0);
+    });
+
+    it('falls back to rendered content when an extension-lib throws', () => {
+      const error = new Error('broken helper');
+      const logError = sinon.stub(logger, 'error');
+      const extensionLibs = {
+        'uppercase.js': () => {
+          throw error;
+        },
+      };
+
+      const result = utils.template({
+        config: {},
+        doc: { name: 'Ada' },
+        content: { message: 'Hello {{#uppercase}}{{name}}{{/uppercase}}' },
+        extensionLibs,
+      });
+
+      expect(result).to.equal('Hello Ada');
+      expect(logError.calledOnce).to.equal(true);
+      expect(logError.firstCall.args[1]).to.equal(error);
+    });
+
+    it('does not allow an extension-lib helper to shadow template data', () => {
+      const customHelper = sinon.stub().returns('custom');
+      const logWarning = sinon.stub(logger, 'warn');
+
+      const result = utils.template({
+        config: {},
+        doc: { patient: { name: 'Ada' } },
+        content: { message: '{{patient.name}}' },
+        extensionLibs: { 'patient.js': customHelper },
+      });
+
+      expect(result).to.equal('Ada');
+      expect(customHelper.notCalled).to.equal(true);
+      expect(logWarning.calledWithMatch('conflicts with template data')).to.equal(true);
+    });
+
+    it('uses the first extension-lib when helper names collide', () => {
+      const logWarning = sinon.stub(logger, 'warn');
+      const extensionLibs = {
+        'change_case.js': value => value.toUpperCase(),
+        change_case: value => value.toLowerCase(),
+      };
+
+      const result = utils.template({
+        config: {},
+        doc: { name: 'Ada' },
+        content: { message: '{{#change_case}}{{name}}{{/change_case}}' },
+        extensionLibs,
+      });
+
+      expect(result).to.equal('ADA');
+      expect(logWarning.calledWithMatch('conflicts with another extension lib helper')).to.equal(true);
+    });
+
+    it('warns when a positive Mustache section is missing', () => {
+      const logWarning = sinon.stub(logger, 'warn');
+
+      const result = utils.template({
+        config: {},
+        doc: { patient_id: '12345' },
+        content: { message: 'ID: {{#to_devanagri}}{{patient_id}}{{/to_devanagri}}' },
+      });
+
+      expect(result).to.equal('ID: ');
+      expect(logWarning.calledWithMatch('Mustache section "to_devanagri" is not defined')).to.equal(true);
+    });
+
+    it('caches helpers for an unchanged extension-lib registry', () => {
+      let reads = 0;
+      const registry = new Proxy({ 'uppercase.js': value => value.toUpperCase() }, {
+        ownKeys: target => {
+          reads++;
+          return Reflect.ownKeys(target);
+        },
+      });
+      const options = {
+        config: {},
+        doc: { name: 'Ada' },
+        content: { message: '{{#uppercase}}{{name}}{{/uppercase}}' },
+        extensionLibs: registry,
+      };
+
+      expect(utils.template(options)).to.equal('ADA');
+      expect(utils.template(options)).to.equal('ADA');
+      expect(reads).to.equal(1);
     });
   });
 });
