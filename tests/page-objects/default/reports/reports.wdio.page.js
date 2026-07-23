@@ -237,6 +237,38 @@ const filterByDate = async (startDate, endDate) => {
   await $('#freetext').click(); // blur the datepicker
 };
 
+const clickSidebarFilterFromDate = async () => {
+  const el = sidebarFilterSelectors.fromDate();
+  await el.waitForClickable();
+  await el.click();
+};
+
+const clickSidebarFilterToDate = async () => {
+  const el = sidebarFilterSelectors.toDate();
+  await el.waitForClickable();
+  await el.click();
+};
+
+const clickSidebarFilterDateAccordionHeader = async () => {
+  const el = sidebarFilterSelectors.dateAccordionHeader();
+  await el.waitForClickable();
+  await el.click();
+};
+
+const clickSidebarFilterFreetext = async () => {
+  const el = $('#freetext');
+  await el.waitForClickable();
+  await el.click();
+};
+
+const getFromDateValue = async () => {
+  return await sidebarFilterSelectors.fromDate().$('.mm-button-text').getText();
+};
+
+const getToDateValue = async () => {
+  return await sidebarFilterSelectors.toDate().$('.mm-button-text').getText();
+};
+
 const openSidebarFilter = async () => {
   if (!await sidebarFilterSelectors.resetBtn().isDisplayed()) {
     await sidebarFilterSelectors.openBtn().click();
@@ -279,6 +311,7 @@ const filterByFacility = async (parentFacility, reportFacility) => {
 
 const setSidebarFilterDate = async (fieldPromise, calendarIdx, date) => {
   await fieldPromise.waitForDisplayed();
+  await fieldPromise.waitForClickable();
   await fieldPromise.click();
 
   const dateRangePicker = `.daterangepicker:nth-of-type(${calendarIdx})`;
@@ -301,6 +334,7 @@ const setSidebarFilterToDate = () => {
 
 const setSidebarFilterBikDate = async (fieldPromise, prevClicks, cellIndex) => {
   await fieldPromise.waitForDisplayed();
+  await fieldPromise.waitForClickable();
   await fieldPromise.click();
 
   let picker;
@@ -322,8 +356,18 @@ const setSidebarFilterBikDate = async (fieldPromise, prevClicks, cellIndex) => {
   }
 
   const cells = await picker.$$('table tbody td.current-month-date:not(.disable)');
-  if (cells.length > cellIndex) {
-    await cells[cellIndex].click();
+  if (cellIndex === 'last') {
+    if (cells.length > 0) {
+      await cells[cells.length - 1].click();
+    } else {
+      throw new Error('No enabled cells found in the Nepali date picker');
+    }
+  } else {
+    if (cells.length > cellIndex) {
+      await cells[cellIndex].click();
+    } else {
+      throw new Error(`Requested cell index ${cellIndex} is not available. Only ${cells.length} cells are enabled.`);
+    }
   }
 };
 
@@ -332,7 +376,7 @@ const setSidebarFilterBikFromDate = () => {
 };
 
 const setSidebarFilterBikToDate = () => {
-  return setSidebarFilterBikDate(sidebarFilterSelectors.toDate(), 0, 20);
+  return setSidebarFilterBikDate(sidebarFilterSelectors.toDate(), 0, 'last');
 };
 
 const firstReportDetailField = () => $('#reports-content .details ul li:first-child p');
@@ -488,7 +532,58 @@ const waitForReportsLoaded = async (timeout) => {
   );
 };
 
+const getNepaliDatePicker = () => $('.nepali-date-picker');
+const getNepaliDatePickerOverlay = () => $('.nepali-date-picker-overlay');
+
+const getVisibleNepaliDatePicker = async () => {
+  const pickers = await $$('.nepali-date-picker');
+  for (const p of pickers) {
+    if (await p.isDisplayed()) {
+      return p;
+    }
+  }
+  return null;
+};
+
+const waitForNepaliDatePickerDisplayed = async () => {
+  const picker = getNepaliDatePicker();
+  await browser.waitUntil(async () => {
+    return await picker.isDisplayed();
+  }, { timeout: 5000, timeoutMsg: 'Nepali date picker not displayed' });
+  return picker;
+};
+
+const getDisabledNepaliDateCells = async () => {
+  const picker = await getVisibleNepaliDatePicker() || getNepaliDatePicker();
+  return await picker.$$('table tbody td.current-month-date.disable');
+};
+
+const isNepaliDatePickerActiveCellDisplayed = async () => {
+  const picker = await getVisibleNepaliDatePicker();
+  if (!picker) {
+    return false;
+  }
+  const activeCell = picker.$('table tbody td.current-month-date.active');
+  return await activeCell.isDisplayed();
+};
+
+const getNepaliDatePickerActiveCellText = async () => {
+  const picker = await getVisibleNepaliDatePicker();
+  if (!picker) {
+    return '';
+  }
+  const activeCell = picker.$('table tbody td.current-month-date.active');
+  await activeCell.waitForDisplayed();
+  return (await activeCell.getText()).trim();
+};
+
 module.exports = {
+  getNepaliDatePicker,
+  getNepaliDatePickerOverlay,
+  waitForNepaliDatePickerDisplayed,
+  getDisabledNepaliDateCells,
+  isNepaliDatePickerActiveCellDisplayed,
+  getNepaliDatePickerActiveCellText,
   leftPanelSelectors,
   rightPanelSelectors,
   deleteDialogSelectors,
@@ -503,6 +598,12 @@ module.exports = {
   setSidebarFilterToDate,
   setSidebarFilterBikFromDate,
   setSidebarFilterBikToDate,
+  clickSidebarFilterFromDate,
+  clickSidebarFilterToDate,
+  clickSidebarFilterDateAccordionHeader,
+  clickSidebarFilterFreetext,
+  getFromDateValue,
+  getToDateValue,
   filterByForm,
   filterByFacility,
   filterByStatus,
