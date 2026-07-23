@@ -27,6 +27,38 @@ const WEAK_SIGNAL_CODES = new Set([2, 3, -2]);
 // Standard GeolocationPositionError.PERMISSION_DENIED code (W3C Geolocation API spec).
 const GEOLOCATION_PERMISSION_DENIED = 1;
 
+// Class names referenced from more than one method - created in one place, queried/removed in
+// another. Kept as a single source of truth so the two sides can't silently drift apart.
+const CLASS_NAMES = {
+  PROGRESS_ROW: 'geolocation-progress-row',
+  RESULT_ROW: 'geolocation-result-row',
+  WEAK_SIGNAL_MSG: 'geolocation-weak-signal-msg',
+  SAVE_WITHOUT_LABEL: 'geolocation-save-without-label',
+  PERMISSION_DENIED_MSG: 'geolocation-permission-denied',
+};
+
+// The edit-choices radio group's own DOM `value`s - distinct from FIELD_VALUES below, which are
+// what actually gets written to the form field once a choice is made.
+const RADIO_VALUES = {
+  KEPT: 'kept',
+  CHANGE_LOCATION: 'capture-home',
+  NOT_AT_HOUSEHOLD: 'capture-other',
+  REMOVED: 'removed',
+};
+
+const CAPTURE_RADIOS_SELECTOR = `input[type="radio"][value="${RADIO_VALUES.CHANGE_LOCATION}"], ` +
+  `input[type="radio"][value="${RADIO_VALUES.NOT_AT_HOUSEHOLD}"]`;
+
+const FIELD_VALUES = {
+  SKIPPED: 'skipped',
+  CAPTURED: 'captured',
+};
+
+const GEO_CONTEXT = {
+  HOME: 'home',
+  OTHER: 'other',
+};
+
 class HouseholdGeolocationWidget extends Widget {
   static get selector() {
     return '.or-appearance-geolocation-capture input';
@@ -37,12 +69,12 @@ class HouseholdGeolocationWidget extends Widget {
     const $question = $(this.question);
 
     if (this._isPermissionDenied()) {
-      $('<p class="geolocation-permission-denied">')
+      $(`<p class="${CLASS_NAMES.PERMISSION_DENIED_MSG}">`)
         .text(this._translate(TRANSLATION_KEYS.PERMISSION_DENIED))
         .appendTo($question);
       this._appendSaveWithoutCheckbox($question);
       document.addEventListener('geolocationPermissionGranted', () => {
-        $question.find('.geolocation-permission-denied, .geolocation-save-without-label').remove();
+        $question.find(`.${CLASS_NAMES.PERMISSION_DENIED_MSG}, .${CLASS_NAMES.SAVE_WITHOUT_LABEL}`).remove();
         if (this.element.dataset.geoHasLocation === 'true') {
           this._initEditMode($question);
         } else {
@@ -106,15 +138,15 @@ class HouseholdGeolocationWidget extends Widget {
   }
 
   _onCaptureSuccess($status) {
-    $('.geolocation-progress-row').hide();
+    $(`.${CLASS_NAMES.PROGRESS_ROW}`).hide();
 
     if (this._isEditWithLocation) {
       $(this.question)
-        .find('input[type="radio"][value="capture-home"], input[type="radio"][value="capture-other"]')
+        .find(CAPTURE_RADIOS_SELECTOR)
         .prop('disabled', false);
     }
 
-    const $resultRow = $('<div class="geolocation-result-row">');
+    const $resultRow = $(`<div class="${CLASS_NAMES.RESULT_ROW}">`);
     $('<span class="alert alert-success">')
       .append(
         $('<i class="fa fa-check" aria-hidden="true">'),
@@ -131,11 +163,11 @@ class HouseholdGeolocationWidget extends Widget {
   _buildContextChoices() {
     const radioName = 'geo-ctx-' + (this.element.getAttribute('name') || '').replace(/\W/g, '-');
 
-    const $atHousehold = $('<input type="radio">').attr('name', radioName).val('home');
+    const $atHousehold = $('<input type="radio">').attr('name', radioName).val(GEO_CONTEXT.HOME);
     const $atHouseholdLabel = $('<label class="geolocation-context-option">')
       .append($atHousehold, $('<span>').text(this._translate(TRANSLATION_KEYS.AT_HOUSEHOLD)));
 
-    const $somewhereElse = $('<input type="radio">').attr('name', radioName).val('other');
+    const $somewhereElse = $('<input type="radio">').attr('name', radioName).val(GEO_CONTEXT.OTHER);
     const $somewhereElseLabel = $('<label class="geolocation-context-option">')
       .append($somewhereElse, $('<span>').text(this._translate(TRANSLATION_KEYS.SOMEWHERE_ELSE)));
 
@@ -145,18 +177,18 @@ class HouseholdGeolocationWidget extends Widget {
     $contextOptions.on('change', 'input[type="radio"]', event => {
       event.stopPropagation();
       this.element.dataset.geoContext = event.target.value;
-      $(this.element).val('captured').trigger('change');
+      $(this.element).val(FIELD_VALUES.CAPTURED).trigger('change');
     });
 
     return $contextOptions;
   }
 
   _onCaptureFailure(errorCode, $status, $bar) {
-    $('.geolocation-progress-row').hide();
+    $(`.${CLASS_NAMES.PROGRESS_ROW}`).hide();
 
     if (this._isEditWithLocation) {
       $(this.question)
-        .find('input[type="radio"][value="capture-home"], input[type="radio"][value="capture-other"]')
+        .find(CAPTURE_RADIOS_SELECTOR)
         .prop('disabled', true);
     }
 
@@ -169,7 +201,7 @@ class HouseholdGeolocationWidget extends Widget {
   }
 
   _showPermissionDeniedFailure($status) {
-    $('<p class="geolocation-permission-denied">')
+    $(`<p class="${CLASS_NAMES.PERMISSION_DENIED_MSG}">`)
       .text(this._translate(TRANSLATION_KEYS.PERMISSION_DENIED))
       .appendTo($status);
     if (!this._isEditWithLocation) {
@@ -178,7 +210,7 @@ class HouseholdGeolocationWidget extends Widget {
   }
 
   _showGenericFailure(errorCode, $status, $bar) {
-    const $resultRow = $('<div class="geolocation-result-row">');
+    const $resultRow = $(`<div class="${CLASS_NAMES.RESULT_ROW}">`);
     $('<span class="alert alert-error">')
       .append(
         $('<i class="fa fa-exclamation-triangle" aria-hidden="true">'),
@@ -188,7 +220,7 @@ class HouseholdGeolocationWidget extends Widget {
     $status.append($resultRow);
 
     if (WEAK_SIGNAL_CODES.has(errorCode)) {
-      $('<p class="geolocation-weak-signal-msg">')
+      $(`<p class="${CLASS_NAMES.WEAK_SIGNAL_MSG}">`)
         .append(
           $('<i class="fa fa-info-circle" aria-hidden="true">'),
           $('<span>').text(' ' + this._translate(TRANSLATION_KEYS.SIGNAL_WEAK))
@@ -203,11 +235,11 @@ class HouseholdGeolocationWidget extends Widget {
       );
 
     $retryBtn.on('click', () => {
-      $('.geolocation-progress-row').show();
+      $(`.${CLASS_NAMES.PROGRESS_ROW}`).show();
       globalThis.CHTCore.Geolocation.retry();
-      $status.find('.geolocation-result-row, .geolocation-weak-signal-msg').remove();
+      $status.find(`.${CLASS_NAMES.RESULT_ROW}, .${CLASS_NAMES.WEAK_SIGNAL_MSG}`).remove();
       $retryBtn.remove();
-      $(this.question).find('.geolocation-save-without-label').remove();
+      $(this.question).find(`.${CLASS_NAMES.SAVE_WITHOUT_LABEL}`).remove();
       this._waitForCapture($status, $bar);
     });
 
@@ -220,7 +252,7 @@ class HouseholdGeolocationWidget extends Widget {
 
   _buildProgressRow() {
     const $status = $('<div class="geolocation-status">');
-    const $progressRow = $('<div class="geolocation-progress-row">');
+    const $progressRow = $(`<div class="${CLASS_NAMES.PROGRESS_ROW}">`);
     $('<span class="geolocation-progress-label">')
       .text(this._translate(TRANSLATION_KEYS.PROGRESS)).appendTo($progressRow);
     const $bar = $('<div class="geolocation-progress-bar">');
@@ -231,7 +263,7 @@ class HouseholdGeolocationWidget extends Widget {
 
   _buildSaveWithoutCheckbox() {
     const $checkbox = $('<input type="checkbox" class="geolocation-save-without-checkbox">');
-    const $label = $('<label class="geolocation-save-without-label">')
+    const $label = $(`<label class="${CLASS_NAMES.SAVE_WITHOUT_LABEL}">`)
       .append($checkbox, $('<span>').text(this._translate(TRANSLATION_KEYS.SAVE_WITHOUT)));
     $checkbox.on('change', (event) => {
       event.stopPropagation();
@@ -240,7 +272,7 @@ class HouseholdGeolocationWidget extends Widget {
       if (checked && globalThis.CHTCore.Geolocation.currentHandle) {
         globalThis.CHTCore.Geolocation.currentHandle.cancel();
       }
-      $(this.element).val(checked ? 'skipped' : '').trigger('change');
+      $(this.element).val(checked ? FIELD_VALUES.SKIPPED : '').trigger('change');
     });
     return $label;
   }
@@ -260,28 +292,28 @@ class HouseholdGeolocationWidget extends Widget {
       $('<div class="geolocation-edit-badge">').text(this._translate(TRANSLATION_KEYS.EDIT_BADGE))
     );
 
-    setTimeout(() => $(this.element).val('kept').trigger('change'), 0);
+    setTimeout(() => $(this.element).val(RADIO_VALUES.KEPT).trigger('change'), 0);
     $question.append(this._buildEditChoices());
   }
 
   _buildEditChoices() {
     const radioName = 'geo-edit-' + (this.element.getAttribute('name') || '').replace(/\W/g, '-');
 
-    const $keepRadio = $('<input type="radio">').attr('name', radioName).val('kept').prop('checked', true);
+    const $keepRadio = $('<input type="radio">').attr('name', radioName).val(RADIO_VALUES.KEPT).prop('checked', true);
     const $keepLabel = $('<label class="geolocation-edit-option">')
       .append($keepRadio, $('<span>').text(this._translate(TRANSLATION_KEYS.EDIT_KEEP)));
 
     const $changeLocationRadio = $('<input type="radio">')
-      .attr('name', radioName).val('capture-home').prop('disabled', true);
+      .attr('name', radioName).val(RADIO_VALUES.CHANGE_LOCATION).prop('disabled', true);
     const $changeLocationLabel = $('<label class="geolocation-edit-option">')
       .append($changeLocationRadio, $('<span>').text(this._translate(TRANSLATION_KEYS.EDIT_CHANGE_LOCATION)));
 
     const $notAtHouseholdRadio = $('<input type="radio">')
-      .attr('name', radioName).val('capture-other').prop('disabled', true);
+      .attr('name', radioName).val(RADIO_VALUES.NOT_AT_HOUSEHOLD).prop('disabled', true);
     const $notAtHouseholdLabel = $('<label class="geolocation-edit-option">')
       .append($notAtHouseholdRadio, $('<span>').text(this._translate(TRANSLATION_KEYS.EDIT_NOT_AT_HOUSEHOLD)));
 
-    const $removeRadio = $('<input type="radio">').attr('name', radioName).val('removed');
+    const $removeRadio = $('<input type="radio">').attr('name', radioName).val(RADIO_VALUES.REMOVED);
     const $removeLabel = $('<label class="geolocation-edit-option">')
       .append($removeRadio, $('<span>').text(this._translate(TRANSLATION_KEYS.EDIT_REMOVE)));
 
@@ -291,16 +323,16 @@ class HouseholdGeolocationWidget extends Widget {
     $choices.on('change', 'input[type="radio"]', event => {
       event.stopPropagation();
       const value = event.target.value;
-      if (value === 'kept') {
-        $(this.element).val('kept').trigger('change');
-      } else if (value === 'removed') {
-        $(this.element).val('skipped').trigger('change');
-      } else if (value === 'capture-home') {
-        this.element.dataset.geoContext = 'home';
-        $(this.element).val('captured').trigger('change');
-      } else if (value === 'capture-other') {
-        this.element.dataset.geoContext = 'other';
-        $(this.element).val('captured').trigger('change');
+      if (value === RADIO_VALUES.KEPT) {
+        $(this.element).val(RADIO_VALUES.KEPT).trigger('change');
+      } else if (value === RADIO_VALUES.REMOVED) {
+        $(this.element).val(FIELD_VALUES.SKIPPED).trigger('change');
+      } else if (value === RADIO_VALUES.CHANGE_LOCATION) {
+        this.element.dataset.geoContext = GEO_CONTEXT.HOME;
+        $(this.element).val(FIELD_VALUES.CAPTURED).trigger('change');
+      } else if (value === RADIO_VALUES.NOT_AT_HOUSEHOLD) {
+        this.element.dataset.geoContext = GEO_CONTEXT.OTHER;
+        $(this.element).val(FIELD_VALUES.CAPTURED).trigger('change');
       }
     });
 
