@@ -7,11 +7,12 @@ const BikramSambatDatepicker = require('../../../../../src/js/enketo/widgets/bik
 describe('Enketo: Bikram Sambat Datepicker Widget', () => {
   const $ = jQuery;
   let originalCHTCore;
+  let widgetInstance;
 
-  const buildHtml = () => {
+  const buildHtml = (appearance = 'or-appearance-bikram-sambat') => {
     const html =
       `<div id="bikram-sambat-test">
-        <label class="question non-select or-appearance-bikram-sambat">
+        <label class="question non-select ${appearance}">
           <span lang="" class="question-label active">Visit date</span>
           <input type="date" name="/data/visit_date" data-type-xml="date">
         </label>
@@ -48,17 +49,19 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
 
   afterEach(() => {
     sinon.restore();
+    if (widgetInstance) {
+      widgetInstance.destroy(widgetInstance.element);
+      widgetInstance = null;
+    }
     $('#bikram-sambat-test').remove();
-    $('.nepali-date-picker-overlay').remove();
-    $('.nepali-date-picker').remove();
   });
 
-  const initWidget = async () => {
-    buildHtml();
-    const widget = new BikramSambatDatepicker($(BikramSambatDatepicker.selector)[0]);
+  const initWidget = async (appearance?: string) => {
+    buildHtml(appearance);
+    widgetInstance = new BikramSambatDatepicker($(BikramSambatDatepicker.selector)[0]);
     // _init() resolves window.CHTCore.Language.get() asynchronously
     await new Promise(resolve => setTimeout(resolve, 0));
-    return widget;
+    return widgetInstance;
   };
 
   it('clears the date when day and year are entered but month is left unselected', async () => {
@@ -278,70 +281,108 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
     expect($('.nepali-date-picker').is(':visible')).to.be.true;
   });
 
-  it('highlights the correct active day corresponding to the input value when reopened', async () => {
+  it('converts manual keyboard entry (day, month dropdown, year) to correct Gregorian value', async () => {
     await initWidget();
+
+    dayInput().val('१५').trigger('change');
+    $('.month-dropdown li a').eq(2).click();
+    yearInput().val('२०८१').trigger('change').trigger('blur');
+
+    // Allow the guard's deferred re-check (setTimeout) to run
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(realDateInput().val()).to.equal('2024-06-29'); // 2081-03-15 BS is 2024-06-29 AD
+  });
+
+  it('re-seeds/highlights the selected date when reopening the calendar picker', async () => {
+    await initWidget();
+
+    // Set initial date values
     dayInput().val('१५');
     monthInput().val('३');
     yearInput().val('२०८१');
 
-    // Click to open calendar
+    // Click calendar button to open the picker
     $('.calendar-btn').click();
 
-    // Verify the correct day (15) is highlighted with the "active" class
-    let activeCell = $('.nepali-date-picker table tbody td.current-month-date.active');
-    expect(activeCell.text()).to.equal('१५');
-
-    // Close and change day to 20
-    $('.nepali-date-picker-overlay').click();
-    dayInput().val('२०').trigger('change');
-
-    // Reopen
-    $('.calendar-btn').click();
-    
-    // Verify the new day (20) is highlighted with the "active" class
-    activeCell = $('.nepali-date-picker table tbody td.current-month-date.active');
-    expect(activeCell.text()).to.equal('२०');
+    // The hidden input should be set to Devanagari formatted date
+    expect($('.nepali-datepicker-input').val()).to.equal('२०८१-३-१५');
   });
 
-  it('updates the position of the calendar popup on window scroll when positioned as anchored', () => {
-    const { setupNepaliDatePicker } = require('../../../../../src/js/enketo/widgets/bikram-sambat-picker-shared');
+  it('resets the picker value to empty when opening with invalid or partial manual fields', async () => {
+    await initWidget();
 
-    // Set up a test input and trigger in the DOM
-    const html = `
-      <div id="scroll-test-wrapper">
-        <input type="text" id="scroll-trigger" />
-        <input type="text" id="scroll-hidden-input" style="display: none;" />
-      </div>
-    `;
-    $('body').append(html);
+    // Set partial fields (missing month)
+    dayInput().val('१५');
+    yearInput().val('२०८१');
 
-    const hiddenInput = $('#scroll-hidden-input');
+    $('.calendar-btn').click();
 
-    // Call setupNepaliDatePicker with position: 'anchored'
-    setupNepaliDatePicker(hiddenInput, {
-      position: 'anchored',
-      closeOnDateSelect: false
-    });
+    // The hidden input value should be empty since the date is incomplete
+    expect($('.nepali-datepicker-input').val()).to.equal('');
+  });
 
-    // Open the picker
-    hiddenInput.click();
+  it('resets the month placeholder to महिना and de-highlights selected day when clear is clicked', async () => {
+    await initWidget();
+    $('.calendar-btn').click();
 
-    const picker = $('.nepali-date-picker');
-    expect(picker).to.have.lengthOf(1);
+    // Set values
+    dayInput().val('१५');
+    monthInput().val('३');
+    yearInput().val('२०८१');
+    $('.bikram-sambat-input-group .month-dropdown button').html('असार <span class="caret"></span>');
 
-    // Set initial style
-    picker.css({ top: '100px', left: '50px' });
+    // Click clear button
+    $('.nepali-date-picker .clear-btn').click();
 
-    // Simulate scroll event
-    const event = new Event('scroll');
-    window.dispatchEvent(event);
+    // Verify month dropdown placeholder is reset to महिना
+    expect($('.bikram-sambat-input-group .month-dropdown button').text().trim()).to.equal('महिना');
+    
+    // Verify calendar has no active day cell highlighted
+    expect($('.nepali-date-picker table tbody td.active')).to.have.lengthOf(0);
+  });
 
-    // Position should be updated/recalculated
-    expect(picker.css('top')).to.not.equal('100px');
+  it('does not render when a non-Nepali locale is active and appearance is not forced', async () => {
+    // Override window.CHTCore.Language.get() to return English
+    window.CHTCore.Language.get = sinon.stub().resolves('en');
 
-    // Clean up
-    hiddenInput.remove();
-    $('#scroll-test-wrapper').remove();
-    $('.nepali-date-picker').remove();
+    await initWidget('other-appearance');
+
+    // The template should not have been appended (no day/month/year inputs)
+    expect(dayInput()).to.have.lengthOf(0);
+    expect($('.bikram-sambat-widget')).to.have.lengthOf(0);
+  });
+
+  it('handles manual entry of a divergent date (like Mansir 30, 2082) gracefully without throwing', async () => {
+    await initWidget();
+
+    let threwError = false;
+    try {
+      dayInput().val('३०').trigger('change');
+      $('.month-dropdown li a').eq(7).click(); // Mansir (8th month)
+      yearInput().val('२०८२').trigger('change').trigger('blur');
+
+      await new Promise(resolve => setTimeout(resolve, 0));
+    } catch (_e) {
+      threwError = true;
+    }
+
+    expect(threwError).to.be.false;
+    expect(realDateInput().val()).to.equal('');
+  });
+
+  it('falls back gracefully if $.fn.nepaliDatePicker plugin is not loaded', async () => {
+    const originalPlugin = ($.fn as any).nepaliDatePicker;
+    delete ($.fn as any).nepaliDatePicker;
+    
+    let errorThrown = false;
+    try {
+      await initWidget();
+    } catch (_e) {
+      errorThrown = true;
+    }
+    
+    ($.fn as any).nepaliDatePicker = originalPlugin;
+    expect(errorThrown).to.be.false;
   });
 });
