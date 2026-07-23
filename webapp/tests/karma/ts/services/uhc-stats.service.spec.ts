@@ -344,4 +344,136 @@ describe('UHCStats Service', () => {
     expect(contactTypesService.get.callCount).to.equal(1);
     expect(localDb.query.callCount).to.equal(0);
   });
+
+  describe('getVisitStats', () => {
+    const range = {
+      start: moment('2021-03-26 00:00:00.000').valueOf(),
+      end: moment('2021-04-25 23:59:59.999').valueOf()
+    };
+    const visitCountSettings = {
+      monthStartDate: 26,
+      visitCountGoal: 5
+    };
+
+    it('should return empty object if visit settings or contact ids arent provided', async () => {
+      expect(await service.getVisitStats([ '2b' ], null as any)).to.deep.equal({});
+      expect(await service.getVisitStats([], visitCountSettings)).to.deep.equal({});
+      expect(await service.getVisitStats(null as any, visitCountSettings)).to.deep.equal({});
+
+      expect(authService.has.callCount).to.equal(0);
+      expect(localDb.query.callCount).to.equal(0);
+    });
+
+    it('should return empty object if user is DB Admin', async () => {
+      sessionService.isAdmin.returns(true);
+
+      const result = await service.getVisitStats([ '2b' ], visitCountSettings);
+
+      expect(result).to.deep.equal({});
+      expect(sessionService.isAdmin.callCount).to.equal(1);
+      expect(authService.has.callCount).to.equal(0);
+      expect(localDb.query.callCount).to.equal(0);
+    });
+
+    it('should return empty object if user doesnt have permission', async () => {
+      sessionService.isAdmin.returns(false);
+      authService.has.resolves(false);
+
+      const result = await service.getVisitStats([ '2b' ], visitCountSettings);
+
+      expect(result).to.deep.equal({});
+      expect(sessionService.isAdmin.callCount).to.equal(1);
+      expect(authService.has.callCount).to.equal(1);
+      expect(authService.has.args[0]).to.deep.equal([ 'can_view_last_visited_date' ]);
+      expect(localDb.query.callCount).to.equal(0);
+    });
+
+    it('should get visit stats for contacts when online', async () => {
+      sessionService.isAdmin.returns(false);
+      sessionService.isOnlineOnly = sinon.stub().returns(true);
+      authService.has.resolves(true);
+      // Query - last visited dates
+      localDb.query.onCall(0).returns({ rows: [
+        { key: '2b', value: moment('2021-04-15 22:59:59').valueOf() },
+        { key: '3c', value: { count: 1, max: 0, min: 0 } },
+      ]});
+      // Query - visits in date range
+      localDb.query.onCall(1).returns({ rows: [
+        { key: moment('2021-04-15 09:20:00').valueOf(), value: '2b' },
+        { key: moment('2021-04-15 15:00:00').valueOf(), value: '2b' },
+        { key: moment('2021-04-17 23:59:59').valueOf(), value: '2b' },
+        { key: moment('2021-04-18 23:59:59').valueOf(), value: 'other' },
+      ]});
+
+      const result = await service.getVisitStats([ '2b', '3c', '4d' ], visitCountSettings);
+
+      expect(result).to.deep.equal({
+        '2b': {
+          lastVisitedDate: moment('2021-04-15 22:59:59').valueOf(),
+          count: 2,
+          countGoal: 5
+        },
+        '3c': {
+          lastVisitedDate: 0,
+          count: 0,
+          countGoal: 5
+        }
+      });
+      expect(localDb.query.callCount).to.equal(2);
+      expect(localDb.query.args[0]).to.have.deep.members([
+        'medic-client/contacts_by_last_visited',
+        { group: true, reduce: true, keys: [ '2b', '3c', '4d' ] }
+      ]);
+      expect(localDb.query.args[1]).to.have.deep.members([
+        'medic-client/visits_by_date',
+        { start_key: range.start, end_key: range.end }
+      ]);
+    });
+
+    it('should not query with keys when offline', async () => {
+      sessionService.isAdmin.returns(false);
+      sessionService.isOnlineOnly = sinon.stub().returns(false);
+      authService.has.resolves(true);
+      // Query - last visited dates
+      localDb.query.onCall(0).returns({ rows: [
+        { key: '2b', value: moment('2021-04-15 22:59:59').valueOf() },
+        { key: 'not-requested', value: moment('2021-04-16 22:59:59').valueOf() },
+      ]});
+      // Query - visits in date range
+      localDb.query.onCall(1).returns({ rows: [
+        { key: moment('2021-04-15 09:20:00').valueOf(), value: '2b' },
+      ]});
+
+      const result = await service.getVisitStats([ '2b' ], visitCountSettings);
+
+      expect(result).to.deep.equal({
+        '2b': {
+          lastVisitedDate: moment('2021-04-15 22:59:59').valueOf(),
+          count: 1,
+          countGoal: 5
+        }
+      });
+      expect(localDb.query.callCount).to.equal(2);
+      expect(localDb.query.args[0]).to.have.deep.members([
+        'medic-client/contacts_by_last_visited',
+        { group: true, reduce: true }
+      ]);
+      expect(localDb.query.args[1]).to.have.deep.members([
+        'medic-client/visits_by_date',
+        { start_key: range.start, end_key: range.end }
+      ]);
+    });
+
+    it('should cache the permission check', async () => {
+      sessionService.isAdmin.returns(false);
+      sessionService.isOnlineOnly = sinon.stub().returns(true);
+      authService.has.resolves(true);
+      localDb.query.returns({ rows: [] });
+
+      await service.getVisitStats([ '2b' ], visitCountSettings);
+      await service.getVisitStats([ '2b' ], visitCountSettings);
+
+      expect(authService.has.callCount).to.equal(1);
+    });
+  });
 });

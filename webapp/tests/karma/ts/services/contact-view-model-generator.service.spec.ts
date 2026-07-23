@@ -11,6 +11,10 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { DbService } from '@mm-services/db.service';
+import { SettingsService } from '@mm-services/settings.service';
+import { UHCSettingsService } from '@mm-services/uhc-settings.service';
+import { UHCStatsService } from '@mm-services/uhc-stats.service';
+import { RelativeDateService } from '@mm-services/relative-date.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 import { CONTACT_TYPES } from '@medic/constants';
 
@@ -34,6 +38,10 @@ describe('ContactViewModelGenerator service', () => {
   let chtDatasourceService;
   let get;
   let getContact;
+  let settingsService;
+  let uhcSettingsService;
+  let uhcStatsService;
+  let relativeDateService;
 
   const childPlaceIcon = 'fa-mushroom';
 
@@ -127,6 +135,11 @@ describe('ContactViewModelGenerator service', () => {
       bind: sinon.stub().withArgs(Contact.v1.get).returns(getContact)
     };
 
+    settingsService = { get: sinon.stub().resolves({}) };
+    uhcSettingsService = { getVisitCountSettings: sinon.stub().returns({}) };
+    uhcStatsService = { getVisitStats: sinon.stub().resolves({}) };
+    relativeDateService = { getRelativeDate: sinon.stub().returns('relative-time') };
+
     TestBed.configureTestingModule({
       providers: [
         { provide: TranslateService, useValue: { instant: sinon.stub().returnsArg(0) } },
@@ -136,6 +149,10 @@ describe('ContactViewModelGenerator service', () => {
         { provide: GetDataRecordsService, useValue: getDataRecordsService },
         { provide: DbService, useValue: { get: () => ({ query: dbQuery, get: dbGet }) } },
         { provide: CHTDatasourceService, useValue: chtDatasourceService },
+        { provide: SettingsService, useValue: settingsService },
+        { provide: UHCSettingsService, useValue: uhcSettingsService },
+        { provide: UHCStatsService, useValue: uhcStatsService },
+        { provide: RelativeDateService, useValue: relativeDateService },
         { provide: HttpClient, useValue: {} },
       ]
     });
@@ -307,6 +324,106 @@ describe('ContactViewModelGenerator service', () => {
         assert.equal(model.children[0].contacts[1].deceased, true);
         assert.equal(model.children[0].deceasedCount, 1);
         assert.equal(model.children[0].activeCount, 1);
+      });
+    });
+
+    describe('children visit stats', () => {
+      it('should add visit stats to children whose type counts visits', () => {
+        types.find(type => type.id === 'mushroom').count_visits = true;
+        const visitCountSettings = { monthStartDate: 26, visitCountGoal: 2 };
+        uhcSettingsService.getVisitCountSettings.returns(visitCountSettings);
+        uhcStatsService.getVisitStats.resolves({
+          [childPlace._id]: { lastVisitedDate: new Date().getTime() - 1000, count: 2, countGoal: 2 },
+          [childPlace2._id]: { lastVisitedDate: 0, count: 0, countGoal: 2 },
+        });
+
+        return runPlaceTest([childContactPerson, childPlace, childPlace2]).then(model => {
+          expect(uhcStatsService.getVisitStats.callCount).to.equal(1);
+          expect(uhcStatsService.getVisitStats.args[0]).to.deep.equal([
+            [ childPlace._id, childPlace2._id ],
+            visitCountSettings
+          ]);
+
+          const placeGroup = model.children.find(group => group.type?.id === 'mushroom');
+          const visited = placeGroup.contacts.find(child => child.doc._id === childPlace._id);
+          expect(visited.overdue).to.equal(false);
+          expect(visited.summary).to.equal('contact.last.visited.date');
+          expect(visited.visits).to.deep.equal({
+            count: 'contacts.visits.count',
+            summary: 'contacts.visits.visits',
+            status: 'done'
+          });
+
+          const neverVisited = placeGroup.contacts.find(child => child.doc._id === childPlace2._id);
+          expect(neverVisited.overdue).to.equal(true);
+          expect(neverVisited.summary).to.equal('contact.last.visit.unknown');
+          expect(neverVisited.visits).to.deep.equal({
+            count: 'contacts.visits.count',
+            summary: 'contacts.visits.visits',
+            status: 'pending'
+          });
+
+          const personGroup = model.children.find(group => group.type?.person);
+          personGroup.contacts.forEach(child => {
+            expect(child.summary).to.equal(undefined);
+            expect(child.visits).to.equal(undefined);
+          });
+        });
+      });
+
+      it('should mark children overdue when last visited over a month ago', () => {
+        types.find(type => type.id === 'mushroom').count_visits = true;
+        const overAMonthAgo = new Date().getTime() - (31 * 24 * 60 * 60 * 1000);
+        uhcStatsService.getVisitStats.resolves({
+          [childPlace._id]: { lastVisitedDate: overAMonthAgo, count: 1, countGoal: 2 },
+        });
+
+        return runPlaceTest([childPlace]).then(model => {
+          const child = model.children[0].contacts.find(child => child.doc._id === childPlace._id);
+          expect(child.overdue).to.equal(true);
+          expect(child.summary).to.equal('contact.last.visited.date');
+          expect(child.visits.status).to.equal('started');
+        });
+      });
+
+      it('should not set visit status when there is no visit count goal', () => {
+        types.find(type => type.id === 'mushroom').count_visits = true;
+        uhcStatsService.getVisitStats.resolves({
+          [childPlace._id]: { lastVisitedDate: new Date().getTime(), count: 1, countGoal: undefined },
+        });
+
+        return runPlaceTest([childPlace]).then(model => {
+          const child = model.children[0].contacts.find(child => child.doc._id === childPlace._id);
+          expect(child.visits.status).to.equal(undefined);
+        });
+      });
+
+      it('should not get visit stats when no child type counts visits', () => {
+        return runPlaceTest([childContactPerson, childPlace]).then(() => {
+          expect(settingsService.get.callCount).to.equal(0);
+          expect(uhcStatsService.getVisitStats.callCount).to.equal(0);
+        });
+      });
+
+      it('should not annotate children when there are no stats', () => {
+        types.find(type => type.id === 'mushroom').count_visits = true;
+        uhcStatsService.getVisitStats.resolves({});
+
+        return runPlaceTest([childPlace]).then(model => {
+          const child = model.children.at(-1).contacts[0];
+          expect(child.overdue).to.equal(undefined);
+          expect(child.summary).to.equal(undefined);
+          expect(child.visits).to.equal(undefined);
+        });
+      });
+
+      it('should still load children when getting visit stats fails', () => {
+        types.find(type => type.id === 'mushroom').count_visits = true;
+        uhcStatsService.getVisitStats.rejects(new Error('boom'));
+
+        return runPlaceTest([childContactPerson, childPlace]).then(model => {
+          expect(model.children.length).to.equal(2);
+        });
       });
     });
 

@@ -13,7 +13,9 @@ import { AuthService } from '@mm-services/auth.service';
 })
 export class UHCStatsService {
   private readonly permission = 'can_view_uhc_stats';
+  private readonly lastVisitedDatePermission = 'can_view_last_visited_date';
   private canViewUHCStats;
+  private canViewLastVisitedDate;
 
   constructor(
     private dbService: DbService,
@@ -60,6 +62,52 @@ export class UHCStatsService {
     return this.canViewUHCStats;
   }
 
+  private async canUserViewLastVisitedDate() {
+    if (this.canViewLastVisitedDate !== undefined) {
+      return this.canViewLastVisitedDate;
+    }
+
+    // Disable UHC for DB admins.
+    this.canViewLastVisitedDate = this.sessionService.isAdmin()
+      ? false
+      : await this.authService.has(this.lastVisitedDatePermission);
+
+    return this.canViewLastVisitedDate;
+  }
+
+  private async getLastVisitedDates(contactIds) {
+    const options: Record<string, unknown> = { reduce: true, group: true };
+    if (this.sessionService.isOnlineOnly()) {
+      options.keys = contactIds;
+    }
+    // querying with keys in PouchDB is very unoptimal, so offline users query the whole view
+    const records = await this.dbService
+      .get()
+      .query('medic-client/contacts_by_last_visited', options);
+
+    const lastVisitedDates = {};
+    records?.rows?.forEach(row => {
+      lastVisitedDates[row.key] = _isObject(row.value) ? (row.value as any).max : row.value;
+    });
+
+    return lastVisitedDates;
+  }
+
+  private async getVisitDatesInDateRange(dateRange: DateRange) {
+    const records = await this.dbService
+      .get()
+      .query('medic-client/visits_by_date', { start_key: dateRange.start, end_key: dateRange.end });
+
+    const visitDates = {};
+    records?.rows?.forEach(row => {
+      const day = moment(row.key).startOf('day').valueOf();
+      visitDates[row.value] = visitDates[row.value] || [];
+      visitDates[row.value].push(day);
+    });
+
+    return visitDates;
+  }
+
   getUHCInterval(visitCountSettings: VisitCountSettings): DateRange | undefined {
     if (!visitCountSettings) {
       return;
@@ -95,6 +143,46 @@ export class UHCStatsService {
       count: visits.length,
       countGoal: visitCountSettings.visitCountGoal!
     };
+  }
+
+  /**
+   * Batched version of getHomeVisitStats: returns visit stats for many contacts using two view queries,
+   * instead of two queries per contact. Used to display UHC info in lists of contacts.
+   */
+  async getVisitStats(
+    contactIds: string[],
+    visitCountSettings: VisitCountSettings
+  ): Promise<Record<string, VisitStats>> {
+    const stats: Record<string, VisitStats> = {};
+
+    if (!visitCountSettings || !contactIds?.length) {
+      return stats;
+    }
+
+    const canView = await this.canUserViewLastVisitedDate();
+    if (!canView) {
+      return stats;
+    }
+
+    const dateRange = this.getUHCInterval(visitCountSettings)!;
+    const [ lastVisitedDates, visitDates ] = await Promise.all([
+      this.getLastVisitedDates(contactIds),
+      this.getVisitDatesInDateRange(dateRange),
+    ]);
+
+    contactIds.forEach(contactId => {
+      const lastVisitedDate = lastVisitedDates[contactId];
+      if (!Number.isInteger(lastVisitedDate)) {
+        return;
+      }
+      stats[contactId] = {
+        lastVisitedDate: lastVisitedDate,
+        count: _uniq(visitDates[contactId]).length,
+        countGoal: visitCountSettings.visitCountGoal!
+      };
+    });
+
+    return stats;
   }
 }
 

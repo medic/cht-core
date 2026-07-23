@@ -11,6 +11,10 @@ import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { SettingsService } from '@mm-services/settings.service';
+import { UHCSettingsService } from '@mm-services/uhc-settings.service';
+import { UHCStatsService } from '@mm-services/uhc-stats.service';
+import { RelativeDateService } from '@mm-services/relative-date.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 
 /**
@@ -43,6 +47,10 @@ export class ContactViewModelGeneratorService {
     private searchService:SearchService,
     private contactMutedService:ContactMutedService,
     private getDataRecordsService:GetDataRecordsService,
+    private settingsService:SettingsService,
+    private uhcSettingsService:UHCSettingsService,
+    private uhcStatsService:UHCStatsService,
+    private relativeDateService:RelativeDateService,
     private ngZone:NgZone,
     readonly chtDatasourceService: CHTDatasourceService,
   ){
@@ -242,6 +250,76 @@ export class ContactViewModelGeneratorService {
     return childModels;
   }
 
+  private async addVisitStats(childModels) {
+    const groups = childModels.filter(group => group.type?.count_visits && group.contacts?.length);
+    if (!groups.length) {
+      return childModels;
+    }
+
+    try {
+      const settings = await this.settingsService.get();
+      const visitCountSettings = this.uhcSettingsService.getVisitCountSettings(settings);
+      const contactIds = groups
+        .map(group => group.contacts.map(child => child.doc?._id))
+        .flat()
+        .filter(id => !!id);
+      const visitStats = await this.uhcStatsService.getVisitStats(contactIds, visitCountSettings);
+
+      groups.forEach(group => {
+        group.contacts.forEach(child => this.setVisitDetails(child, visitStats[child.doc?._id]));
+      });
+    } catch (error) {
+      console.error('Error getting visit stats for children', error);
+    }
+
+    return childModels;
+  }
+
+  private setVisitDetails(child, stats) {
+    if (!stats || !Number.isInteger(stats.lastVisitedDate)) {
+      return;
+    }
+    child.lastVisitedDate = stats.lastVisitedDate;
+    this.setVisitOverdue(child);
+    this.setVisitCountDetails(child, stats);
+  }
+
+  private setVisitOverdue(child) {
+    if (child.lastVisitedDate === 0) {
+      child.overdue = true;
+      child.summary = this.translateService.instant('contact.last.visit.unknown');
+      return;
+    }
+    const now = new Date().getTime();
+    const oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
+    child.overdue = child.lastVisitedDate <= oneMonthAgo;
+    child.summary = this.translateService.instant(
+      'contact.last.visited.date',
+      { date: this.relativeDateService.getRelativeDate(child.lastVisitedDate, {}) }
+    );
+  }
+
+  private setVisitCountDetails(child, stats) {
+    const visitCount = Math.min(stats.count, 99) + (stats.count > 99 ? '+' : '');
+    child.visits = {
+      count: this.translateService.instant('contacts.visits.count', { count: visitCount }),
+      summary: this.translateService.instant('contacts.visits.visits', { VISITS: stats.count }),
+    };
+    if (stats.countGoal) {
+      child.visits.status = this.getVisitStatus(stats.count, stats.countGoal);
+    }
+  }
+
+  private getVisitStatus(visitCount, visitCountGoal) {
+    if (!visitCount) {
+      return 'pending';
+    }
+    if (visitCount < visitCountGoal) {
+      return 'started';
+    }
+    return 'done';
+  }
+
   loadChildren(model, options?) {
     return this.ngZone.runOutsideAngular(() => this._loadChildren(model, options));
   }
@@ -258,6 +336,7 @@ export class ContactViewModelGeneratorService {
           .then(children => this.groupChildrenByType(children))
           .then(groups => this.buildChildModels(groups, types))
           .then(childModels => this.markDeceased(childModels))
+          .then(childModels => this.addVisitStats(childModels))
           .then(childModels => this.sortChildren(childModels));
       });
   }
