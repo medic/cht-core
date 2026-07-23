@@ -27,7 +27,7 @@ const SELECTORS = {
   OTHER_RADIO: '.geolocation-context-options input[value="other"]',
   REMOVE_RADIO: 'input[value="removed"]',
   RETRY_BTN: '.geolocation-retry-btn',
-  SUCCESS_MSG: '.geolocation-success-msg',
+  SUCCESS_MSG: '.geolocation-result-row .alert-success',
 };
 
 const selectHomeContext = async () => {

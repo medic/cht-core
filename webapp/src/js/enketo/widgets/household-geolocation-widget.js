@@ -6,7 +6,6 @@ require('enketo-core/src/js/plugins');
 
 const TRANSLATION_KEYS = {
   PROGRESS: 'geolocation.progress',
-  RESULT_LABEL: 'geolocation.result.label',
   FAILURE: 'geolocation.failure',
   SIGNAL_WEAK: 'geolocation.signal.weak',
   RETRY: 'geolocation.retry',
@@ -106,8 +105,8 @@ class HouseholdGeolocationWidget extends Widget {
     });
   }
 
-  _onCaptureSuccess($status, $bar) {
-    $bar.addClass('geolocation-progress-success');
+  _onCaptureSuccess($status) {
+    $('.geolocation-progress-row').hide();
 
     if (this._isEditWithLocation) {
       $(this.question)
@@ -116,9 +115,12 @@ class HouseholdGeolocationWidget extends Widget {
     }
 
     const $resultRow = $('<div class="geolocation-result-row">');
-    $('<span class="geolocation-result-label">')
-      .text(this._translate(TRANSLATION_KEYS.RESULT_LABEL)).appendTo($resultRow);
-    $('<p class="geolocation-success-msg">').text(this._translate(TRANSLATION_KEYS.SUCCESS)).appendTo($resultRow);
+    $('<span class="alert alert-success">')
+      .append(
+        $('<i class="fa fa-check" aria-hidden="true">'),
+        $('<span>').text(' ' + this._translate(TRANSLATION_KEYS.SUCCESS))
+      )
+      .appendTo($resultRow);
     $status.append($resultRow);
 
     if (!this._isEditWithLocation) {
@@ -150,7 +152,7 @@ class HouseholdGeolocationWidget extends Widget {
   }
 
   _onCaptureFailure(errorCode, $status, $bar) {
-    $bar.addClass('geolocation-progress-failure');
+    $('.geolocation-progress-row').hide();
 
     if (this._isEditWithLocation) {
       $(this.question)
@@ -169,27 +171,33 @@ class HouseholdGeolocationWidget extends Widget {
     }
 
     const $resultRow = $('<div class="geolocation-result-row">');
-    $('<span class="geolocation-result-label">')
-      .text(this._translate(TRANSLATION_KEYS.RESULT_LABEL)).appendTo($resultRow);
-    $('<span class="geolocation-failure-msg">').text(this._translate(TRANSLATION_KEYS.FAILURE)).appendTo($resultRow);
+    $('<span class="alert alert-error">')
+      .append(
+        $('<i class="fa fa-exclamation-triangle" aria-hidden="true">'),
+        $('<span>').text(' ' + this._translate(TRANSLATION_KEYS.FAILURE))
+      )
+      .appendTo($resultRow);
     $status.append($resultRow);
 
     if (WEAK_SIGNAL_CODES.has(errorCode)) {
       $('<p class="geolocation-weak-signal-msg">')
-        .text(this._translate(TRANSLATION_KEYS.SIGNAL_WEAK))
+        .append(
+          $('<i class="fa fa-info-circle" aria-hidden="true">'),
+          $('<span>').text(' ' + this._translate(TRANSLATION_KEYS.SIGNAL_WEAK))
+        )
         .appendTo($status);
     }
 
-    const $retryBtn = $('<button type="button" class="btn btn-default geolocation-retry-btn">')
+    const $retryBtn = $('<button type="button" class="btn btn-primary geolocation-retry-btn">')
       .append(
-        $('<i class="fa fa-map-marker" aria-hidden="true">'),
+        $('<i class="fa fa-refresh" aria-hidden="true">'),
         $('<span class="geolocation-btn-label">').text(this._translate(TRANSLATION_KEYS.RETRY))
       );
 
     $retryBtn.on('click', () => {
+      $('.geolocation-progress-row').show();
       globalThis.CHTCore.Geolocation.retry();
       $status.find('.geolocation-result-row, .geolocation-weak-signal-msg').remove();
-      $bar.removeClass('geolocation-progress-failure');
       $retryBtn.remove();
       $(this.question).find('.geolocation-save-without-label').remove();
       this._waitForCapture($status, $bar);

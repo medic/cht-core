@@ -10,9 +10,10 @@ const SELECTORS = {
   GEO_CAPTURE_LABEL: '.or-appearance-geolocation-capture',
   PERMISSION_DENIED: '.geolocation-permission-denied',
   UNAVAILABLE: '.geolocation-unavailable',
+  PROGRESS_ROW: '.geolocation-progress-row',
   PROGRESS_BAR: '.geolocation-progress-bar',
-  SUCCESS_MSG: '.geolocation-success-msg',
-  FAILURE_MSG: '.geolocation-failure-msg',
+  SUCCESS_MSG: '.geolocation-result-row .alert-success',
+  FAILURE_MSG: '.geolocation-result-row .alert-error',
   SIGNAL_WEAK_MSG: '.geolocation-weak-signal-msg',
   RETRY_BTN: '.geolocation-retry-btn',
   SAVE_WITHOUT_LABEL: '.geolocation-save-without-label',
@@ -274,24 +275,13 @@ describe('Enketo: Household Geolocation Widget', () => {
       });
 
       describe('on GPS success', () => {
-        it('should add success class to progress bar', async () => {
+        it('should hide the progress row', async () => {
           const promise = Promise.resolve(GPS_SUCCESS);
           (window as any).CHTCore.Geolocation.currentPromise = promise;
           const { container } = initWidget();
           await promise;
-          expect(
-            container.querySelector(SELECTORS.PROGRESS_BAR)!.classList.contains('geolocation-progress-success')
-          ).to.be.true;
-        });
-
-        it('should not add failure class to progress bar on success', async () => {
-          const promise = Promise.resolve(GPS_SUCCESS);
-          (window as any).CHTCore.Geolocation.currentPromise = promise;
-          const { container } = initWidget();
-          await promise;
-          expect(
-            container.querySelector(SELECTORS.PROGRESS_BAR)!.classList.contains('geolocation-progress-failure')
-          ).to.be.false;
+          const progressRow = container.querySelector(SELECTORS.PROGRESS_ROW) as HTMLElement;
+          expect(progressRow.style.display).to.equal('none');
         });
 
         it('should show success message', async () => {
@@ -300,6 +290,14 @@ describe('Enketo: Household Geolocation Widget', () => {
           const { container } = initWidget();
           await promise;
           expect(container.querySelector(SELECTORS.SUCCESS_MSG)).to.not.be.null;
+        });
+
+        it('should show a check icon alongside the success message', async () => {
+          const promise = Promise.resolve(GPS_SUCCESS);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const { container } = initWidget();
+          await promise;
+          expect(container.querySelector(`${SELECTORS.SUCCESS_MSG} .fa-check`)).to.not.be.null;
         });
 
         it('should not show failure message on success', async () => {
@@ -358,24 +356,13 @@ describe('Enketo: Household Geolocation Widget', () => {
       });
 
       describe('on GPS failure', () => {
-        it('should add failure class to progress bar', async () => {
+        it('should hide the progress row', async () => {
           const promise = Promise.resolve(GPS_FAILURE);
           (window as any).CHTCore.Geolocation.currentPromise = promise;
           const { container } = initWidget();
           await promise;
-          expect(
-            container.querySelector(SELECTORS.PROGRESS_BAR)!.classList.contains('geolocation-progress-failure')
-          ).to.be.true;
-        });
-
-        it('should not add success class to progress bar on failure', async () => {
-          const promise = Promise.resolve(GPS_FAILURE);
-          (window as any).CHTCore.Geolocation.currentPromise = promise;
-          const { container } = initWidget();
-          await promise;
-          expect(
-            container.querySelector(SELECTORS.PROGRESS_BAR)!.classList.contains('geolocation-progress-success')
-          ).to.be.false;
+          const progressRow = container.querySelector(SELECTORS.PROGRESS_ROW) as HTMLElement;
+          expect(progressRow.style.display).to.equal('none');
         });
 
         it('should show failure message', async () => {
@@ -384,6 +371,14 @@ describe('Enketo: Household Geolocation Widget', () => {
           const { container } = initWidget();
           await promise;
           expect(container.querySelector(SELECTORS.FAILURE_MSG)).to.not.be.null;
+        });
+
+        it('should show a warning icon alongside the failure message', async () => {
+          const promise = Promise.resolve(GPS_FAILURE);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const { container } = initWidget();
+          await promise;
+          expect(container.querySelector(`${SELECTORS.FAILURE_MSG} .fa-exclamation-triangle`)).to.not.be.null;
         });
 
         it('should show retry button', async () => {
@@ -474,6 +469,8 @@ describe('Enketo: Household Geolocation Widget', () => {
           expect(retryStub.callCount).to.equal(1);
           expect(container.querySelector(SELECTORS.RETRY_BTN)).to.be.null;
           expect(container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
+          const progressRow = container.querySelector(SELECTORS.PROGRESS_ROW) as HTMLElement;
+          expect(progressRow.style.display).to.not.equal('none');
         });
 
         it('should remove "save without location" checkbox when retry is clicked', async () => {
@@ -588,10 +585,10 @@ describe('Enketo: Household Geolocation Widget', () => {
           expect(container.querySelector(SELECTORS.SIGNAL_WEAK_MSG)).to.be.null;
         });
 
-        it('should mark the progress bar as failed', async () => {
+        it('should hide the progress row', async () => {
           const { container } = await initWidgetAfterPermissionDeniedFailure();
-          expect(container.querySelector('.geolocation-progress-bar.geolocation-progress-failure'))
-            .to.not.be.null;
+          const progressRow = container.querySelector(SELECTORS.PROGRESS_ROW) as HTMLElement;
+          expect(progressRow.style.display).to.equal('none');
         });
       });
 
@@ -738,24 +735,22 @@ describe('Enketo: Household Geolocation Widget', () => {
         expect(container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
       });
 
-      it('should add success class to progress bar on GPS success without selecting Record New', async () => {
+      it('should hide the progress row on GPS success without selecting a change option', async () => {
         const promise = Promise.resolve(GPS_SUCCESS);
         (window as any).CHTCore.Geolocation.currentPromise = promise;
         const { container } = initEditWithLocationWidget();
         await promise;
-        expect(
-          container.querySelector(SELECTORS.PROGRESS_BAR)!.classList.contains('geolocation-progress-success')
-        ).to.be.true;
+        const progressRow = container.querySelector(SELECTORS.PROGRESS_ROW) as HTMLElement;
+        expect(progressRow.style.display).to.equal('none');
       });
 
-      it('should add failure class to progress bar on GPS failure without selecting Record New', async () => {
+      it('should hide the progress row on GPS failure without selecting a change option', async () => {
         const promise = Promise.resolve(GPS_FAILURE);
         (window as any).CHTCore.Geolocation.currentPromise = promise;
         const { container } = initEditWithLocationWidget();
         await promise;
-        expect(
-          container.querySelector(SELECTORS.PROGRESS_BAR)!.classList.contains('geolocation-progress-failure')
-        ).to.be.true;
+        const progressRow = container.querySelector(SELECTORS.PROGRESS_ROW) as HTMLElement;
+        expect(progressRow.style.display).to.equal('none');
       });
 
       it('should show failure message on GPS failure without selecting Record New', async () => {

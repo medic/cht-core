@@ -16,12 +16,13 @@ const SELECTORS = {
   KEPT_RADIO: 'input[value="kept"]',
   NO_LOCATION_MSG: '.geolocation-no-location-msg',
   OTHER_RADIO: '.geolocation-context-options input[value="other"]',
+  PROGRESS_ROW: '.geolocation-progress-row',
   PROGRESS_BAR: '.geolocation-progress-bar',
   REMOVE_RADIO: 'input[value="removed"]',
   RETRY_BTN: '.geolocation-retry-btn',
   SAVE_WITHOUT_CHECKBOX: '.geolocation-save-without-checkbox',
   STATUS: '.geolocation-status',
-  SUCCESS_MSG: '.geolocation-success-msg',
+  SUCCESS_MSG: '.geolocation-result-row .alert-success',
 };
 
 const mockGeoPending = async () => {
@@ -54,6 +55,7 @@ describe('cht-form web component - HouseholdGeolocation Widget', () => {
     expect(await $(SELECTORS.OTHER_RADIO).isExisting()).to.be.true;
     expect(await $(SELECTORS.SUCCESS_MSG).isExisting()).to.be.true;
     expect(await $(SELECTORS.RETRY_BTN).isExisting()).to.be.false;
+    expect(await $(SELECTORS.PROGRESS_ROW).isDisplayed()).to.be.false;
   });
 
   it('should show retry button and save-without-location checkbox when GPS fails', async () => {
