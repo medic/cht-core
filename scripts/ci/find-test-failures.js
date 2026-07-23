@@ -191,7 +191,8 @@ const buildMatcher = (term) => {
 // Shared helpers
 // ---------------------------------------------------------------------------
 
-const SPEC_FILE_RE = /(?:[\w./-]*\/)?[\w.-]+\.(?:wdio-spec|spec)\.js/;
+const SPEC_FILE_SUFFIX_RE = /\.(?:wdio-spec|spec)\.js/;
+const SPEC_FILE_CHAR_RE = /[\w./-]/;
 
 const groupBy = (items, keyFn) => {
   const map = new Map();
@@ -210,8 +211,14 @@ const groupBy = (items, keyFn) => {
 // ---------------------------------------------------------------------------
 
 const WDIO_SPEC_HEADER_RE = /^\s*(?:Spec:|»)\s*(\S+\.js)\s*$/;
-const WDIO_STREAMING_RE = /✖.*»\s*\[/;
-const WDIO_FAIL_RE = /(?:\[FAIL\]|✖)\s*(.+?)\s*$/;
+const WDIO_STREAMING_TAIL_RE = /»\s*\[/;
+const WDIO_FAIL_RE = /(?:\[FAIL\]|✖)(.*)$/;
+
+// "✖ <title> » [ <path> ]" — split on the marker so the regex stays linear.
+const isStreamingLine = (line) => {
+  const marker = line.indexOf('✖');
+  return marker !== -1 && WDIO_STREAMING_TAIL_RE.test(line.slice(marker + 1));
+};
 
 // Fold one (prefix-stripped) wdio log line into the running block list, and
 // return the block that subsequent failure lines belong to.
@@ -225,12 +232,15 @@ const foldWdioLine = (line, blocks, current) => {
   // Streaming concise lines ("✖ <title> » [ <path> ]") repeat every attempt and
   // aren't tied to an open block; skip them. The grouped block re-reports the
   // same failures and is authoritative for retry handling.
-  if (WDIO_STREAMING_RE.test(line)) {
+  if (isStreamingLine(line)) {
     return current;
   }
   const failMatch = line.match(WDIO_FAIL_RE);
   if (failMatch && current) {
-    current.fails.push(failMatch[1].trim());
+    const title = failMatch[1].trim();
+    if (title) {
+      current.fails.push(title);
+    }
   }
   return current;
 };
@@ -262,7 +272,7 @@ const parseWdioLog = (lines, includeAllAttempts) => {
 
 // Mocha "N failing" entry: "  1) Suite title", indented sub-titles, then the
 // error message / stack. These delimit the title and the stack respectively.
-const MOCHA_HEADER_RE = /^\s{1,4}(\d+)\)\s+(.*\S)\s*$/;
+const MOCHA_HEADER_RE = /^\s{1,4}(\d+)\)\s+(\S.*)$/;
 const MOCHA_NEXT_RE = /^\s{1,4}\d+\)\s/;
 const MOCHA_STACK_RE = /^\s*(at\s|[A-Z]\w*(Error|Exception):|AssertionError|\+ expected|- actual|Error:)/;
 
@@ -283,7 +293,7 @@ const gatherTitle = (clean, start, end, firstPart) => {
   for (let k = start + 1; k < end; k++) {
     parts.push(clean[k].trim());
   }
-  return parts.join(' ').replace(/:$/, '').replace(/\s+/g, ' ').trim();
+  return parts.join(' ').replace(/\s+/g, ' ').trim().replace(/:$/, '');
 };
 
 // Index of the next numbered entry (or end of log), bounding this entry's stack.
@@ -296,9 +306,19 @@ const nextEntryIndex = (clean, start) => {
   return clean.length;
 };
 
+// Locate the spec suffix, then extend backwards over path characters. A single
+// path regex here backtracks super-linearly on non-matching lines (sonar S8786).
 const matchSpecFile = (line) => {
-  const m = line.match(SPEC_FILE_RE);
-  return m && /tests\//.test(m[0]) ? m[0] : null;
+  const suffix = line.match(SPEC_FILE_SUFFIX_RE);
+  if (!suffix) {
+    return null;
+  }
+  let start = suffix.index;
+  while (start > 0 && SPEC_FILE_CHAR_RE.test(line[start - 1])) {
+    start--;
+  }
+  const file = line.slice(start, suffix.index + suffix[0].length);
+  return file.includes('tests/') ? file : null;
 };
 
 const findSpecFile = (entryLines) => {
@@ -521,9 +541,20 @@ const handleHelp = (opts) => {
   }
 };
 
-const validateLimit = (opts) => {
+// repo and since are interpolated into `gh api` endpoint paths — allowlist
+// their shape so arbitrary CLI input can't reshape the request (sonar S8705).
+const REPO_RE = /^[\w.-]+\/[\w.-]+$/;
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+const validateOpts = (opts) => {
   if (!Number.isFinite(opts.limit) || opts.limit <= 0) {
     throw new Error('--limit must be a positive number');
+  }
+  if (!REPO_RE.test(opts.repo)) {
+    throw new Error('--repo must be in owner/repo format');
+  }
+  if (opts.since && !DATE_RE.test(opts.since)) {
+    throw new Error('--since must be a YYYY-MM-DD date');
   }
 };
 
@@ -564,7 +595,7 @@ const emitResults = (matchedRuns, runs, opts) => {
 const main = async () => {
   const opts = parseArgs(process.argv.slice(2));
   handleHelp(opts);
-  validateLimit(opts);
+  validateOpts(opts);
 
   assertAuth();
   const matcher = buildMatcher(opts.term);
