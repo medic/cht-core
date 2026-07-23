@@ -13,6 +13,10 @@ const logger = require('@medic/logger');
 const { CONTACT_TYPES } = require('@medic/constants');
 const SMS_TRUNCATION_SUFFIX = '...';
 const DEFAULT_LOCALE = 'en';
+const EMPTY_EXTENSION_LIBS = Object.freeze({});
+const BUILT_IN_HELPER_NAMES = new Set([ 'bikram_sambat_date', 'date', 'datetime', 'local_phone' ]);
+const extensionLibHelpersCache = new WeakMap();
+const loggedViewCollisions = new WeakMap();
 
 const getParent = function(doc, type) {
   let facility = doc.parent ? doc : doc.contact;
@@ -333,21 +337,75 @@ const formatDate = function({ config, text, view, formatString, locale, extensio
   return moment(date).locale(locale).format(formatString);
 };
 
-const getExtensionLibHelpers = (extensionLibs = {}) => Object.entries(extensionLibs)
-  .filter(([, extensionLib]) => typeof extensionLib === 'function')
-  .reduce((helpers, [fileName, extensionLib]) => {
-    const helperName = fileName.replace(/\.js$/, '');
-    helpers[helperName] = function() {
-      return function(text, renderText) {
-        return extensionLib(renderText(text));
+const getExtensionLibHelpers = (extensionLibs = EMPTY_EXTENSION_LIBS) => {
+  const cached = extensionLibHelpersCache.get(extensionLibs);
+  if (cached) {
+    return cached;
+  }
+
+  const helpers = Object.entries(extensionLibs)
+    .filter(([, extensionLib]) => typeof extensionLib === 'function')
+    .reduce((helpers, [fileName, extensionLib]) => {
+      const helperName = fileName.replace(/\.js$/, '');
+      if (BUILT_IN_HELPER_NAMES.has(helperName)) {
+        logger.warn(`Extension lib "${fileName}" conflicts with built-in helper "${helperName}" and will be ignored.`);
+        return helpers;
+      }
+      if (helpers[helperName]) {
+        logger.warn(`Extension lib "${fileName}" conflicts with another extension lib helper "${helperName}" and ` +
+          'will be ignored.');
+        return helpers;
+      }
+      helpers[helperName] = function() {
+        return function(text, renderText) {
+          const renderedText = renderText(text);
+          try {
+            return extensionLib(renderedText);
+          } catch (err) {
+            logger.error(`Error executing extension lib "${fileName}" - using untransformed content: %o`, err);
+            return renderedText;
+          }
+        };
       };
-    };
+      return helpers;
+    }, {});
+  extensionLibHelpersCache.set(extensionLibs, helpers);
+  return helpers;
+};
+
+const withoutViewCollisions = (extensionLibs, extensionHelpers, view) => {
+  let loggedCollisions = loggedViewCollisions.get(extensionLibs);
+  if (!loggedCollisions) {
+    loggedCollisions = new Set();
+    loggedViewCollisions.set(extensionLibs, loggedCollisions);
+  }
+
+  return Object.entries(extensionHelpers).reduce((helpers, [helperName, helper]) => {
+    if (Object.prototype.hasOwnProperty.call(view, helperName)) {
+      if (!loggedCollisions.has(helperName)) {
+        logger.warn(`Extension lib helper "${helperName}" conflicts with template data and will be ignored.`);
+        loggedCollisions.add(helperName);
+      }
+      return helpers;
+    }
+    helpers[helperName] = helper;
     return helpers;
   }, {});
+};
+
+const warnForMissingSections = (template, view) => {
+  mustache.parse(template).forEach(token => {
+    if (token[0] === '#' && objectPath.get(view, token[1]) === undefined) {
+      logger.warn(`Mustache section "${token[1]}" is not defined; its content will be omitted.`);
+    }
+  });
+};
 
 const render = function({ config, template, view, locale, extensionLibs }) {
+  extensionLibs = extensionLibs || EMPTY_EXTENSION_LIBS;
+  const extensionHelpers = withoutViewCollisions(extensionLibs, getExtensionLibHelpers(extensionLibs), view);
   const helpers = {
-    ...getExtensionLibHelpers(extensionLibs),
+    ...extensionHelpers,
     bikram_sambat_date: function() {
       return function(text) {
         return toBikramSambatLetters(formatDate({
@@ -376,7 +434,9 @@ const render = function({ config, template, view, locale, extensionLibs }) {
       };
     }
   };
-  return mustache.render(template, { ...view, ...helpers });
+  const renderContext = { ...view, ...helpers };
+  warnForMissingSections(template, renderContext);
+  return mustache.render(template, renderContext);
 };
 
 const truncateMessage = function(parts, max) {
@@ -384,14 +444,24 @@ const truncateMessage = function(parts, max) {
   return message.slice(0, -SMS_TRUNCATION_SUFFIX.length) + SMS_TRUNCATION_SUFFIX;
 };
 
-const normalizeGenerateOptions = (options, legacyArgs) => legacyArgs.length ? {
-  config: options,
-  translate: legacyArgs[0],
-  doc: legacyArgs[1],
-  content: legacyArgs[2],
-  recipient: legacyArgs[3],
-  extraContext: legacyArgs[4],
-} : options;
+const normalizeOptions = (options, legacyArgs, hasRecipient) => {
+  if (!legacyArgs.length) {
+    return options;
+  }
+
+  const [ translate, doc, content, recipientOrExtraContext, extraContext ] = legacyArgs;
+  const normalized = {
+    config: options,
+    translate,
+    doc,
+    content,
+  };
+  normalized.extraContext = hasRecipient ? extraContext : recipientOrExtraContext;
+  if (hasRecipient) {
+    normalized.recipient = recipientOrExtraContext;
+  }
+  return normalized;
+};
 
 const applyMessageLength = (result, message, config) => {
   const parsed = gsm(message);
@@ -407,11 +477,11 @@ const applyMessageLength = (result, message, config) => {
 };
 
 const getMissingContextError = extraContext => {
-  if (extraContext?.registrations?.length && !extraContext.patient) {
-    return 'messages.errors.patient.missing';
-  }
   if (extraContext?.placeRegistrations?.length && !extraContext.place) {
     return 'messages.errors.place.missing';
+  }
+  if (extraContext?.registrations?.length && !extraContext.patient) {
+    return 'messages.errors.patient.missing';
   }
 };
 
@@ -444,7 +514,7 @@ exports.generate = function(options, ...legacyArgs) {
     recipient,
     extraContext,
     extensionLibs,
-  } = normalizeGenerateOptions(options, legacyArgs);
+  } = normalizeOptions(options, legacyArgs, true);
 
   const context = extendedTemplateContext(doc, extraContext || {});
 
@@ -483,13 +553,7 @@ exports.generate = function(options, ...legacyArgs) {
  * @returns {String} The message.
  */
 exports.template = function(options, ...legacyArgs) {
-  const { config, translate, doc, content, extraContext, extensionLibs } = legacyArgs.length ? {
-    config: options,
-    translate: legacyArgs[0],
-    doc: legacyArgs[1],
-    content: legacyArgs[2],
-    extraContext: legacyArgs[3],
-  } : options;
+  const { config, translate, doc, content, extraContext, extensionLibs } = normalizeOptions(options, legacyArgs, false);
   const contextExtras = extraContext || {};
   const locale = getLocale(config, doc);
   const template = exports.getMessage(content, translate, locale);

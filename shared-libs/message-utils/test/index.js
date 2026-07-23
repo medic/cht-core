@@ -4,6 +4,7 @@ const expect = require('chai').expect;
 const should = require('chai').should();
 const rewire = require('rewire');
 const { CONTACT_TYPES } = require('@medic/constants');
+const logger = require('@medic/logger');
 const utils = rewire('../src/index');
 
 const MAX_GSM_LENGTH = 160;
@@ -1178,6 +1179,17 @@ describe('messageUtils', () => {
         expect(messages[0].error).to.equal('messages.errors.place.missing');
       });
 
+      it('should preserve place error precedence when both patient and place are missing', () => {
+        const context = {
+          registrations: [{ _id: 'patient-registration' }],
+          placeRegistrations: [{ _id: 'place-registration' }],
+        };
+
+        const messages = utils.generate({}, null, {}, { message: 'sms' }, '1234', context);
+
+        expect(messages[0].error).to.equal('messages.errors.place.missing');
+      });
+
       it('should not add an error when no patient, no place and no registrations are provided', () => {
         const config = {};
         const translate = null;
@@ -1827,6 +1839,94 @@ describe('messageUtils', () => {
 
       expect(result).to.equal('9841234567');
       expect(customHelper.callCount).to.equal(0);
+    });
+
+    it('falls back to rendered content when an extension-lib throws', () => {
+      const error = new Error('broken helper');
+      const logError = sinon.stub(logger, 'error');
+      const extensionLibs = {
+        'uppercase.js': () => {
+          throw error;
+        },
+      };
+
+      const result = utils.template({
+        config: {},
+        doc: { name: 'Ada' },
+        content: { message: 'Hello {{#uppercase}}{{name}}{{/uppercase}}' },
+        extensionLibs,
+      });
+
+      expect(result).to.equal('Hello Ada');
+      expect(logError.calledOnce).to.equal(true);
+      expect(logError.firstCall.args[1]).to.equal(error);
+    });
+
+    it('does not allow an extension-lib helper to shadow template data', () => {
+      const customHelper = sinon.stub().returns('custom');
+      const logWarning = sinon.stub(logger, 'warn');
+
+      const result = utils.template({
+        config: {},
+        doc: { patient: { name: 'Ada' } },
+        content: { message: '{{patient.name}}' },
+        extensionLibs: { 'patient.js': customHelper },
+      });
+
+      expect(result).to.equal('Ada');
+      expect(customHelper.notCalled).to.equal(true);
+      expect(logWarning.calledWithMatch('conflicts with template data')).to.equal(true);
+    });
+
+    it('uses the first extension-lib when helper names collide', () => {
+      const logWarning = sinon.stub(logger, 'warn');
+      const extensionLibs = {
+        'change_case.js': value => value.toUpperCase(),
+        change_case: value => value.toLowerCase(),
+      };
+
+      const result = utils.template({
+        config: {},
+        doc: { name: 'Ada' },
+        content: { message: '{{#change_case}}{{name}}{{/change_case}}' },
+        extensionLibs,
+      });
+
+      expect(result).to.equal('ADA');
+      expect(logWarning.calledWithMatch('conflicts with another extension lib helper')).to.equal(true);
+    });
+
+    it('warns when a positive Mustache section is missing', () => {
+      const logWarning = sinon.stub(logger, 'warn');
+
+      const result = utils.template({
+        config: {},
+        doc: { patient_id: '12345' },
+        content: { message: 'ID: {{#to_devanagri}}{{patient_id}}{{/to_devanagri}}' },
+      });
+
+      expect(result).to.equal('ID: ');
+      expect(logWarning.calledWithMatch('Mustache section "to_devanagri" is not defined')).to.equal(true);
+    });
+
+    it('caches helpers for an unchanged extension-lib registry', () => {
+      let reads = 0;
+      const registry = new Proxy({ 'uppercase.js': value => value.toUpperCase() }, {
+        ownKeys: target => {
+          reads++;
+          return Reflect.ownKeys(target);
+        },
+      });
+      const options = {
+        config: {},
+        doc: { name: 'Ada' },
+        content: { message: '{{#uppercase}}{{name}}{{/uppercase}}' },
+        extensionLibs: registry,
+      };
+
+      expect(utils.template(options)).to.equal('ADA');
+      expect(utils.template(options)).to.equal('ADA');
+      expect(reads).to.equal(1);
     });
   });
 });

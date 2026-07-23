@@ -39,7 +39,7 @@ export class CHTDatasourceService {
   private async init() {
     this.watchChanges();
     this.userCtx = this.sessionService.userCtx();
-    await Promise.all([this.getSettings(), this.loadExtensionLibs(), this.customResourceService.init()]);
+    await Promise.all([this.getSettings(), this.customResourceService.init()]);
     this.dataContext = await this.createDataContext();
   }
 
@@ -54,7 +54,9 @@ export class CHTDatasourceService {
   }
 
   private async loadExtensionLibs() {
-    return extensionLibs.load(this.dbService.get());
+    return extensionLibs.load(this.dbService.get()).catch(err => {
+      console.error('Error reloading extension libs - keeping the previous version', err);
+    });
   }
 
   private async getSettings() {
@@ -64,9 +66,9 @@ export class CHTDatasourceService {
 
   private watchChanges() {
     this.changesService.subscribe({
-      key: 'cht-script-api-settings-changes',
-      filter: change => change.id === DOC_IDS.SETTINGS,
-      callback: () => this.getSettings()
+      key: 'cht-script-api-config-changes',
+      filter: change => [ DOC_IDS.SETTINGS, DOC_IDS.EXTENSION_LIBS ].includes(change.id),
+      callback: change => change.id === DOC_IDS.SETTINGS ? this.getSettings() : this.loadExtensionLibs()
     });
   }
 

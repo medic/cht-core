@@ -12,6 +12,7 @@ describe('MessageQueue service', function() {
   let GetSummaries;
   let translate;
   let clock;
+  let log;
 
   beforeEach(() => {
     Settings = sinon.stub();
@@ -24,6 +25,7 @@ describe('MessageQueue service', function() {
     translate.storage = sinon.stub();
     translate.preferredLanguage = sinon.stub();
     clock = sinon.useFakeTimers();
+    log = { error: sinon.stub() };
     utils = {
       loadExtensionLibs: sinon.stub().resolves({}),
       messages: {
@@ -43,6 +45,7 @@ describe('MessageQueue service', function() {
     module(($provide) => {
       $provide.value('$translate', translate);
       $provide.value('$q', Q);
+      $provide.value('$log', log);
       $provide.value('Settings', Settings);
       $provide.value('Languages', Languages);
       $provide.value('MessageQueueUtils', utils);
@@ -101,14 +104,16 @@ describe('MessageQueue service', function() {
       });
     });
 
-    it('rejects when extension-libs cannot be loaded', () => {
+    it('falls back to no extension-libs when they cannot be loaded', () => {
       const error = new Error('extension-libs unavailable');
-      utils.loadExtensionLibs.rejects(error);
+      utils.loadExtensionLibs.callsFake(() => Q.reject(error));
       query.resolves({ rows: [] });
 
       return service.query('tab')
-        .then(() => chai.expect.fail('Expected query to reject'))
-        .catch(err => chai.expect(err).to.equal(error));
+        .then(result => {
+          chai.expect(result).to.deep.equal({ messages: [], total: 0 });
+          chai.expect(log.error.calledOnceWithExactly('Error loading extension libs', error)).to.equal(true);
+        });
     });
 
     it('should query the message_queue view with correct default params', () => {

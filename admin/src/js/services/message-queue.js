@@ -49,7 +49,8 @@ angular.module('services').factory('MessageQueue',
 
     const findIdByKey = (contactsByReference, key) => {
       const row = contactsByReference.rows.find((row) => row.key[1] === key);
-      return row && row.id; // NOSONAR: browserify-ngannotate does not support optional chaining.
+      // browserify-ngannotate does not support optional chaining.
+      return row && row.id; // NOSONAR
     };
 
     const findPatientUuid = (contactsByReference, message) => {
@@ -215,6 +216,14 @@ angular.module('services').factory('MessageQueue',
       return messages;
     };
 
+    const loadExtensionLibs = () => $q
+      .when()
+      .then(() => MessageQueueUtils.loadExtensionLibs())
+      .catch(err => {
+        $log.error('Error loading extension libs', err);
+        return {};
+      });
+
     const getTaskDisplayName = function(task) {
       if (task.translation_key) {
         return $translate.instant(task.translation_key, { group: task.group });
@@ -318,7 +327,7 @@ angular.module('services').factory('MessageQueue',
             Settings(),
             DB({ remote: true }).query('medic-admin/message_queue', params.list),
             DB({ remote: true }).query('medic-admin/message_queue', params.count),
-            MessageQueueUtils.loadExtensionLibs(),
+            loadExtensionLibs(),
           ])
           .then(([settings, messagesList, messagesCount, extensionLibs]) => {
             const messages = messagesList.rows.map((row) => {
