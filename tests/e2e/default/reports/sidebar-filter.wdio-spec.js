@@ -1,4 +1,5 @@
 const moment = require('moment');
+const { toBik_dev } = require('bikram-sambat');
 
 const utils = require('@utils');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
@@ -210,9 +211,9 @@ describe('Reports Sidebar Filter', () => {
     // Future dates in the current month should be disabled (unless today is the last day of the Nepali month)
     const disableCells = await reportsPage.getDisabledNepaliDateCells();
     if (disableCells.length === 0) {
-      const activeCellText = await reportsPage.getNepaliDatePickerActiveCellText();
-      const activeDay = Number.parseInt(fromDevanagari(activeCellText), 10);
-      expect(activeDay).to.be.at.least(29);
+      const todayBik = toBik_dev(moment().format('YYYY-MM-DD'));
+      const todayDay = Number.parseInt(fromDevanagari(todayBik.split('-')[2]), 10);
+      expect(todayDay).to.be.at.least(29);
     } else {
       expect(disableCells.length).to.be.greaterThan(0);
     }

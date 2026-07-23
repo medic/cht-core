@@ -262,11 +262,11 @@ const clickSidebarFilterFreetext = async () => {
 };
 
 const getFromDateValue = async () => {
-  return await sidebarFilterSelectors.fromDate().getValue();
+  return await sidebarFilterSelectors.fromDate().$('.mm-button-text').getText();
 };
 
 const getToDateValue = async () => {
-  return await sidebarFilterSelectors.toDate().getValue();
+  return await sidebarFilterSelectors.toDate().$('.mm-button-text').getText();
 };
 
 const openSidebarFilter = async () => {
