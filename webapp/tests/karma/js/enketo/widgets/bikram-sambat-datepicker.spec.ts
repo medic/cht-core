@@ -385,4 +385,48 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
     ($.fn as any).nepaliDatePicker = originalPlugin;
     expect(errorThrown).to.be.false;
   });
+
+  it('ignores dateSelect event with an invalid/non-existent day', async () => {
+    await initWidget();
+    const hiddenInput = $('.nepali-datepicker-input');
+
+    // Seed a valid date first to verify it survives the invalid event
+    dayInput().val('१५');
+    monthInput().val('३');
+    yearInput().val('२०८१');
+
+    const event: any = $.Event('dateSelect');
+    event.datePickerData = {
+      bsYear: 2082,
+      bsMonth: 8, // Mansir
+      bsDate: 30  // Invalid day (Mansir 2082 only has 29 days)
+    };
+    
+    let threwError = false;
+    try {
+      hiddenInput.trigger(event);
+    } catch (_e) {
+      threwError = true;
+    }
+
+    expect(threwError).to.be.false;
+    // Verify that the valid date is NOT cleared because the event was ignored
+    expect(dayInput().val()).to.equal('१५');
+    expect(monthInput().val()).to.equal('३');
+    expect(yearInput().val()).to.equal('२०८१');
+  });
+
+  it('clears invalid day input on manual entry of non-existent day', async () => {
+    await initWidget();
+
+    dayInput().val('३०').trigger('change');
+    monthInput().val('८').trigger('change');
+    yearInput().val('२०८२').trigger('change').trigger('blur');
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(dayInput().val()).to.equal('');
+    expect(realDateInput().val()).to.equal('');
+  });
 });
+

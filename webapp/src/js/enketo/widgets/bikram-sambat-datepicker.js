@@ -109,6 +109,7 @@ class Bikramsambatdatepicker extends Widget {
 
           if (!Number.isNaN(day) && !Number.isNaN(month) && !Number.isNaN(year)) {
             const maxDays = BikramSambat.daysInMonth(year, month);
+            // Guard against invalid day values on manual entry (see #11252)
             if (day < 1 || day > maxDays) {
               $realDateInput.val( '' );
               $realDateInput.trigger( 'change' );
@@ -170,6 +171,7 @@ const setupCalendarPicker = ($parent, widget) => {
       const day = data.bsDate;
 
       // Guard against invalid days (e.g. Mansir 30, 2082)
+      // Clicks on non-existent/phantom days are ignored intentionally (see #11252)
       if (day > BikramSambat.daysInMonth(year, monthNum)) {
         return;
       }
