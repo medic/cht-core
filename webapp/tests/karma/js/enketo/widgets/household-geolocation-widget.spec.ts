@@ -26,7 +26,8 @@ const SELECTORS = {
   EDIT_BADGE_CONTEXT: '.geolocation-edit-badge-context',
   EDIT_CHOICES: '.geolocation-edit-choices',
   KEEP_RADIO: 'input[type="radio"][value="kept"]',
-  RECORD_NEW_RADIO: 'input[type="radio"][value="capture-new"]',
+  CHANGE_LOCATION_RADIO: 'input[type="radio"][value="capture-home"]',
+  NOT_AT_HOUSEHOLD_RADIO: 'input[type="radio"][value="capture-other"]',
   REMOVE_RADIO: 'input[type="radio"][value="removed"]',
 };
 
@@ -722,12 +723,13 @@ describe('Enketo: Household Geolocation Widget', () => {
         expect(container.querySelector(SELECTORS.EDIT_BADGE)).to.not.be.null;
       });
 
-      it('should show Keep, Record New, and Remove choices', () => {
+      it('should show Keep, Change location, Not at household, and Remove choices', () => {
         const { container } = initEditWithLocationWidget();
         const choices = container.querySelector(SELECTORS.EDIT_CHOICES);
         expect(choices).to.not.be.null;
         expect(choices!.querySelector(SELECTORS.KEEP_RADIO)).to.not.be.null;
-        expect(choices!.querySelector(SELECTORS.RECORD_NEW_RADIO)).to.not.be.null;
+        expect(choices!.querySelector(SELECTORS.CHANGE_LOCATION_RADIO)).to.not.be.null;
+        expect(choices!.querySelector(SELECTORS.NOT_AT_HOUSEHOLD_RADIO)).to.not.be.null;
         expect(choices!.querySelector(SELECTORS.REMOVE_RADIO)).to.not.be.null;
       });
 
@@ -795,29 +797,37 @@ describe('Enketo: Household Geolocation Widget', () => {
         expect(container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
       });
 
-      it('should have "Record new location" radio disabled initially', () => {
+      it('should have "Change household location" and "I am not at the household" radios disabled initially', () => {
         const { container } = initEditWithLocationWidget();
-        const recordNew = container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
-        expect(recordNew.disabled).to.be.true;
+        const changeLocation = container.querySelector(SELECTORS.CHANGE_LOCATION_RADIO) as HTMLInputElement;
+        const notAtHousehold = container.querySelector(SELECTORS.NOT_AT_HOUSEHOLD_RADIO) as HTMLInputElement;
+        expect(changeLocation.disabled).to.be.true;
+        expect(notAtHousehold.disabled).to.be.true;
       });
 
-      it('should enable "Record new location" radio on GPS success', async () => {
-        const promise = Promise.resolve(GPS_SUCCESS);
-        (window as any).CHTCore.Geolocation.currentPromise = promise;
-        const { container } = initEditWithLocationWidget();
-        await promise;
-        const recordNew = container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
-        expect(recordNew.disabled).to.be.false;
-      });
+      it('should enable "Change household location" and "I am not at the household" radios on GPS success',
+        async () => {
+          const promise = Promise.resolve(GPS_SUCCESS);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const { container } = initEditWithLocationWidget();
+          await promise;
+          const changeLocation = container.querySelector(SELECTORS.CHANGE_LOCATION_RADIO) as HTMLInputElement;
+          const notAtHousehold = container.querySelector(SELECTORS.NOT_AT_HOUSEHOLD_RADIO) as HTMLInputElement;
+          expect(changeLocation.disabled).to.be.false;
+          expect(notAtHousehold.disabled).to.be.false;
+        });
 
-      it('should disable "Record new location" radio on GPS failure', async () => {
-        const promise = Promise.resolve(GPS_FAILURE);
-        (window as any).CHTCore.Geolocation.currentPromise = promise;
-        const { container } = initEditWithLocationWidget();
-        await promise;
-        const recordNew = container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
-        expect(recordNew.disabled).to.be.true;
-      });
+      it('should keep "Change household location" and "I am not at the household" radios disabled on GPS failure',
+        async () => {
+          const promise = Promise.resolve(GPS_FAILURE);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const { container } = initEditWithLocationWidget();
+          await promise;
+          const changeLocation = container.querySelector(SELECTORS.CHANGE_LOCATION_RADIO) as HTMLInputElement;
+          const notAtHousehold = container.querySelector(SELECTORS.NOT_AT_HOUSEHOLD_RADIO) as HTMLInputElement;
+          expect(changeLocation.disabled).to.be.true;
+          expect(notAtHousehold.disabled).to.be.true;
+        });
 
       it('should not show "save without location" checkbox on GPS failure', async () => {
         const promise = Promise.resolve(GPS_FAILURE);
@@ -827,20 +837,7 @@ describe('Enketo: Household Geolocation Widget', () => {
         expect(container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
       });
 
-      it('should revert to "Keep saved location" if "Record new location" was selected when GPS fails', async () => {
-        const promise = Promise.resolve(GPS_FAILURE);
-        (window as any).CHTCore.Geolocation.currentPromise = promise;
-        const { widget, container } = initEditWithLocationWidget();
-        const recordNewRadio = container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
-        recordNewRadio.checked = true;
-        $(recordNewRadio).trigger('change');
-        await promise;
-        const keepRadio = container.querySelector(SELECTORS.KEEP_RADIO) as HTMLInputElement;
-        expect(keepRadio.checked).to.be.true;
-        expect((widget.element as HTMLInputElement).value).to.equal('kept');
-      });
-
-      it('should not show context choices on GPS success without selecting Record New', async () => {
+      it('should not show context choices on GPS success without selecting a change option', async () => {
         const promise = Promise.resolve(GPS_SUCCESS);
         (window as any).CHTCore.Geolocation.currentPromise = promise;
         const { container } = initEditWithLocationWidget();
@@ -889,21 +886,6 @@ describe('Enketo: Household Geolocation Widget', () => {
           expect(changeHandler.callCount).to.equal(1);
         });
 
-        it('should remove context options when switching from Record New after GPS success', async () => {
-          const promise = Promise.resolve(GPS_SUCCESS);
-          (window as any).CHTCore.Geolocation.currentPromise = promise;
-          const result = initEditWithLocationWidget();
-          const recordNewRadio = result.container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
-          recordNewRadio.checked = true;
-          $(recordNewRadio).trigger('change');
-          await promise;
-          expect(result.container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.not.be.null;
-          const keepRadio = result.container.querySelector(SELECTORS.KEEP_RADIO) as HTMLInputElement;
-          keepRadio.checked = true;
-          $(keepRadio).trigger('change');
-          expect(result.container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.be.null;
-        });
-
       });
 
       describe('when "Remove saved location" is selected', () => {
@@ -925,117 +907,121 @@ describe('Enketo: Household Geolocation Widget', () => {
           expect(changeHandler.callCount).to.equal(1);
         });
 
-        it('should remove context options when switching from Record New after GPS success', async () => {
-          const promise = Promise.resolve(GPS_SUCCESS);
-          (window as any).CHTCore.Geolocation.currentPromise = promise;
-          const result = initEditWithLocationWidget();
-          const recordNewRadio = result.container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
-          recordNewRadio.checked = true;
-          $(recordNewRadio).trigger('change');
-          await promise;
-          expect(result.container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.not.be.null;
-          const removeRadio = result.container.querySelector(SELECTORS.REMOVE_RADIO) as HTMLInputElement;
-          removeRadio.checked = true;
-          $(removeRadio).trigger('change');
-          expect(result.container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.be.null;
-        });
-
       });
 
-      describe('when "Record new location" is selected', () => {
-        const selectRecordNew = ({ container }: { container: Element }) => {
-          const radio = container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
+      describe('when "Change household location" is selected', () => {
+        const selectChangeLocation = ({ container }: { container: Element }) => {
+          const radio = container.querySelector(SELECTORS.CHANGE_LOCATION_RADIO) as HTMLInputElement;
           radio.checked = true;
           $(radio).trigger('change');
         };
 
-        it('should set element value to empty string', () => {
-          const { widget, container } = initEditWithLocationWidget();
-          const radio = container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
-          radio.checked = true;
-          $(radio).trigger('change');
-          expect((widget.element as HTMLInputElement).value).to.equal('');
-        });
-
-        it('should fire a change event on the element', () => {
-          const { widget, container } = initEditWithLocationWidget();
-          const changeHandler = sinon.stub();
-          $((widget.element as HTMLInputElement)).on('change', changeHandler);
-          const radio = container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
-          radio.checked = true;
-          $(radio).trigger('change');
-          expect(changeHandler.callCount).to.equal(1);
-        });
-
-        it('should remove invalid-required class so required error is not shown immediately', async () => {
-          const { widget, container } = initEditWithLocationWidget();
-          // Simulate Enketo adding invalid-required synchronously on change with empty value.
-          // The widget removes it via setTimeout(0) (a macrotask), so we must await one tick.
-          $((widget.element as HTMLInputElement)).on('change', () => {
-            if ((widget.element as HTMLInputElement).value === '') {
-              container.classList.add('invalid-required');
-            }
-          });
-          const radio = container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
-          radio.checked = true;
-          $(radio).trigger('change');
-          await new Promise(resolve => setTimeout(resolve, 0));
-          expect(container.classList.contains('invalid-required')).to.be.false;
-        });
-
-        it('should keep the edit choices visible', () => {
-          const result = initEditWithLocationWidget();
-          selectRecordNew(result);
-          expect(result.container.querySelector(SELECTORS.EDIT_CHOICES)).to.not.be.null;
-        });
-
-        it('should show progress bar', () => {
-          const result = initEditWithLocationWidget();
-          selectRecordNew(result);
-          expect(result.container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
-        });
-
-        it('should show success UI after GPS succeeds', async () => {
+        it('should set value to "captured" and geo-context to "home"', async () => {
           const promise = Promise.resolve(GPS_SUCCESS);
           (window as any).CHTCore.Geolocation.currentPromise = promise;
           const result = initEditWithLocationWidget();
-          selectRecordNew(result);
           await promise;
-          expect(result.container.querySelector(SELECTORS.SUCCESS_MSG)).to.not.be.null;
-          expect(result.container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.not.be.null;
+          selectChangeLocation(result);
+          expect((result.widget.element as HTMLInputElement).value).to.equal('captured');
+          expect((result.widget.element as HTMLInputElement).dataset.geoContext).to.equal('home');
         });
 
-        it('should show failure UI after GPS fails', async () => {
-          const promise = Promise.resolve(GPS_FAILURE);
+        it('should fire a change event on the element', async () => {
+          const promise = Promise.resolve(GPS_SUCCESS);
           (window as any).CHTCore.Geolocation.currentPromise = promise;
           const result = initEditWithLocationWidget();
-          selectRecordNew(result);
           await promise;
-          expect(result.container.querySelector(SELECTORS.FAILURE_MSG)).to.not.be.null;
-          expect(result.container.querySelector(SELECTORS.RETRY_BTN)).to.not.be.null;
-          expect(result.container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
+          const changeHandler = sinon.stub();
+          $((result.widget.element as HTMLInputElement)).on('change', changeHandler);
+          selectChangeLocation(result);
+          expect(changeHandler.callCount).to.equal(1);
+        });
+
+        it('should keep the edit choices visible', async () => {
+          const promise = Promise.resolve(GPS_SUCCESS);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const result = initEditWithLocationWidget();
+          await promise;
+          selectChangeLocation(result);
           expect(result.container.querySelector(SELECTORS.EDIT_CHOICES)).to.not.be.null;
         });
 
-        it('should not add duplicate UI when toggling between Keep and Record New', async () => {
-          const promise = Promise.resolve(GPS_FAILURE);
+        it('should not show context choices', async () => {
+          const promise = Promise.resolve(GPS_SUCCESS);
           (window as any).CHTCore.Geolocation.currentPromise = promise;
-          (window as any).CHTCore.Geolocation.retry = sinon.stub();
           const result = initEditWithLocationWidget();
-
-          selectRecordNew(result);
           await promise;
-
-          const keepRadio = result.container.querySelector(SELECTORS.KEEP_RADIO) as HTMLInputElement;
-          keepRadio.checked = true;
-          $(keepRadio).trigger('change');
-
-          selectRecordNew(result);
-          await promise; // flush microtask queue so any re-triggered callbacks fire
-
-          expect(result.container.querySelectorAll(SELECTORS.FAILURE_MSG)).to.have.lengthOf(1);
-          expect(result.container.querySelectorAll(SELECTORS.RETRY_BTN)).to.have.lengthOf(1);
+          selectChangeLocation(result);
+          expect(result.container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.be.null;
         });
+      });
+
+      describe('when "I am not at the household" is selected', () => {
+        const selectNotAtHousehold = ({ container }: { container: Element }) => {
+          const radio = container.querySelector(SELECTORS.NOT_AT_HOUSEHOLD_RADIO) as HTMLInputElement;
+          radio.checked = true;
+          $(radio).trigger('change');
+        };
+
+        it('should set value to "captured" and geo-context to "other"', async () => {
+          const promise = Promise.resolve(GPS_SUCCESS);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const result = initEditWithLocationWidget();
+          await promise;
+          selectNotAtHousehold(result);
+          expect((result.widget.element as HTMLInputElement).value).to.equal('captured');
+          expect((result.widget.element as HTMLInputElement).dataset.geoContext).to.equal('other');
+        });
+
+        it('should fire a change event on the element', async () => {
+          const promise = Promise.resolve(GPS_SUCCESS);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const result = initEditWithLocationWidget();
+          await promise;
+          const changeHandler = sinon.stub();
+          $((result.widget.element as HTMLInputElement)).on('change', changeHandler);
+          selectNotAtHousehold(result);
+          expect(changeHandler.callCount).to.equal(1);
+        });
+
+        it('should keep the edit choices visible', async () => {
+          const promise = Promise.resolve(GPS_SUCCESS);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const result = initEditWithLocationWidget();
+          await promise;
+          selectNotAtHousehold(result);
+          expect(result.container.querySelector(SELECTORS.EDIT_CHOICES)).to.not.be.null;
+        });
+
+        it('should not show context choices', async () => {
+          const promise = Promise.resolve(GPS_SUCCESS);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const result = initEditWithLocationWidget();
+          await promise;
+          selectNotAtHousehold(result);
+          expect(result.container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.be.null;
+        });
+      });
+
+      it('should not add duplicate UI when toggling between Keep and Change household location', async () => {
+        const promise = Promise.resolve(GPS_SUCCESS);
+        (window as any).CHTCore.Geolocation.currentPromise = promise;
+        const result = initEditWithLocationWidget();
+        await promise;
+
+        const changeLocationRadio = result.container.querySelector(SELECTORS.CHANGE_LOCATION_RADIO) as
+          HTMLInputElement;
+        changeLocationRadio.checked = true;
+        $(changeLocationRadio).trigger('change');
+
+        const keepRadio = result.container.querySelector(SELECTORS.KEEP_RADIO) as HTMLInputElement;
+        keepRadio.checked = true;
+        $(keepRadio).trigger('change');
+
+        changeLocationRadio.checked = true;
+        $(changeLocationRadio).trigger('change');
+
+        expect(result.container.querySelectorAll(SELECTORS.SUCCESS_MSG)).to.have.lengthOf(1);
       });
     });
 

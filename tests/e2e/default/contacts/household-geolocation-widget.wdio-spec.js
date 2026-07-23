@@ -10,14 +10,14 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
-const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const { CONTACT_TYPES } = require('@medic/constants');
 
 const GEO_SUCCESS = {
   latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 0, speed: 0
 };
 const SELECTORS = {
-  CAPTURE_NEW_RADIO: 'input[value="capture-new"]',
+  CHANGE_LOCATION_RADIO: 'input[value="capture-home"]',
+  NOT_AT_HOUSEHOLD_RADIO: 'input[value="capture-other"]',
   CONTEXT_OPTIONS: '.geolocation-context-options',
   EDIT_BADGE: '.geolocation-edit-badge',
   EDIT_CHOICES: '.geolocation-edit-choices',
@@ -200,14 +200,15 @@ describe('HouseholdGeolocation widget - contact save pipeline', () => {
       await $(SELECTORS.EDIT_BADGE).waitForExist();
     };
 
-    it('should show edit-mode badge and all three edit choices when editing a contact with existing geolocation',
+    it('should show edit-mode badge and all four edit choices when editing a contact with existing geolocation',
       async () => {
         await openEditForm();
 
         expect(await $(SELECTORS.EDIT_BADGE).isExisting()).to.be.true;
         expect(await $(SELECTORS.EDIT_CHOICES).isExisting()).to.be.true;
         expect(await $(SELECTORS.KEPT_RADIO).isExisting()).to.be.true;
-        expect(await $(SELECTORS.CAPTURE_NEW_RADIO).isExisting()).to.be.true;
+        expect(await $(SELECTORS.CHANGE_LOCATION_RADIO).isExisting()).to.be.true;
+        expect(await $(SELECTORS.NOT_AT_HOUSEHOLD_RADIO).isExisting()).to.be.true;
         expect(await $(SELECTORS.REMOVE_RADIO).isExisting()).to.be.true;
         expect(await $(SELECTORS.CONTEXT_OPTIONS).isExisting()).to.be.false;
       });
@@ -226,19 +227,23 @@ describe('HouseholdGeolocation widget - contact save pipeline', () => {
       expect(savedDoc.geolocation.latitude).to.equal(seedGeoData.latitude);
     });
 
-    it('should show GPS context options when capture-new is selected after GPS success', async () => {
+    it('should store a new home geolocation when "Change household location" is selected and submitted', async () => {
       await mockGeoResolved(GEO_SUCCESS);
       await openEditForm();
 
-      await $(SELECTORS.CAPTURE_NEW_RADIO).click();
-
-      await $(SELECTORS.CONTEXT_OPTIONS).waitForExist({ timeout: 10000 });
-      expect(await $(SELECTORS.HOME_RADIO).isExisting()).to.be.true;
-      expect(await $(SELECTORS.OTHER_RADIO).isExisting()).to.be.true;
+      await $(SELECTORS.CHANGE_LOCATION_RADIO).waitForEnabled({ timeout: 10000 });
+      await $(SELECTORS.CHANGE_LOCATION_RADIO).click();
+      expect(await $(SELECTORS.CONTEXT_OPTIONS).isExisting()).to.be.false;
       expect(await $(SELECTORS.RETRY_BTN).isExisting()).to.be.false;
 
-      await genericForm.cancelForm();
-      await modalPage.submit();
+      await genericForm.submitForm();
+      await commonPage.waitForPageLoaded();
+      await contactPage.waitForContactLoaded();
+
+      const savedDoc = await utils.getDoc(contactWithGeo._id);
+      expect(savedDoc.geolocation_log).to.have.lengthOf(2);
+      expect(savedDoc.geolocation_log[1].is_home).to.be.true;
+      expect(savedDoc.geolocation.latitude).to.equal(GEO_SUCCESS.latitude);
     });
 
   });

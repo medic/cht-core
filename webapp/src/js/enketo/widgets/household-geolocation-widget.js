@@ -18,9 +18,9 @@ const TRANSLATION_KEYS = {
   SOMEWHERE_ELSE: 'geolocation.somewhere.else',
   NO_LOCATION_RECORDED: 'geolocation.no.location.recorded',
   EDIT_BADGE: 'geolocation.edit.badge',
-  EDIT_CONTEXT_LABEL: 'geolocation.edit.context.label',
   EDIT_KEEP: 'geolocation.edit.keep.saved',
-  EDIT_RECORD_NEW: 'geolocation.edit.record.new',
+  EDIT_CHANGE_LOCATION: 'geolocation.edit.change.location',
+  EDIT_NOT_AT_HOUSEHOLD: 'geolocation.edit.not.at.household',
   EDIT_REMOVE: 'geolocation.edit.remove',
 };
 
@@ -110,7 +110,9 @@ class HouseholdGeolocationWidget extends Widget {
     $bar.addClass('geolocation-progress-success');
 
     if (this._isEditWithLocation) {
-      $(this.question).find('input[type="radio"][value="capture-new"]').prop('disabled', false);
+      $(this.question)
+        .find('input[type="radio"][value="capture-home"], input[type="radio"][value="capture-other"]')
+        .prop('disabled', false);
     }
 
     const $resultRow = $('<div class="geolocation-result-row">');
@@ -119,7 +121,7 @@ class HouseholdGeolocationWidget extends Widget {
     $('<p class="geolocation-success-msg">').text(this._translate(TRANSLATION_KEYS.SUCCESS)).appendTo($resultRow);
     $status.append($resultRow);
 
-    if (!this._isEditWithLocation || this._isRecordNewSelected()) {
+    if (!this._isEditWithLocation) {
       $(this.question).append(this._buildContextChoices());
     }
   }
@@ -151,13 +153,9 @@ class HouseholdGeolocationWidget extends Widget {
     $bar.addClass('geolocation-progress-failure');
 
     if (this._isEditWithLocation) {
-      const $recordNew = $(this.question).find('input[type="radio"][value="capture-new"]');
-      $recordNew.prop('disabled', true);
-      if (this._isRecordNewSelected()) {
-        const $keepRadio = $(this.question).find('input[type="radio"][value="kept"]');
-        $keepRadio.prop('checked', true);
-        $keepRadio.trigger('change');
-      }
+      $(this.question)
+        .find('input[type="radio"][value="capture-home"], input[type="radio"][value="capture-other"]')
+        .prop('disabled', true);
     }
 
     if (errorCode === GEOLOCATION_PERMISSION_DENIED) {
@@ -235,10 +233,6 @@ class HouseholdGeolocationWidget extends Widget {
     $target.append(this._buildSaveWithoutCheckbox());
   }
 
-  _isRecordNewSelected() {
-    return !!(this.question.querySelector('input[type="radio"][value="capture-new"]:checked'));
-  }
-
   _initEditMode($question) {
     this._isEditWithLocation = true;
 
@@ -251,61 +245,50 @@ class HouseholdGeolocationWidget extends Widget {
     );
 
     setTimeout(() => $(this.element).val('kept').trigger('change'), 0);
-    $question.append(this._buildEditChoices($bar));
+    $question.append(this._buildEditChoices());
   }
 
-  _buildEditChoices($bar) {
+  _buildEditChoices() {
     const radioName = 'geo-edit-' + (this.element.getAttribute('name') || '').replace(/\W/g, '-');
 
     const $keepRadio = $('<input type="radio">').attr('name', radioName).val('kept').prop('checked', true);
     const $keepLabel = $('<label class="geolocation-edit-option">')
       .append($keepRadio, $('<span>').text(this._translate(TRANSLATION_KEYS.EDIT_KEEP)));
 
-    const $recordNewRadio = $('<input type="radio">').attr('name', radioName).val('capture-new').prop('disabled', true);
-    const $recordNewLabel = $('<label class="geolocation-edit-option">')
-      .append($recordNewRadio, $('<span>').text(this._translate(TRANSLATION_KEYS.EDIT_RECORD_NEW)));
+    const $changeLocationRadio = $('<input type="radio">')
+      .attr('name', radioName).val('capture-home').prop('disabled', true);
+    const $changeLocationLabel = $('<label class="geolocation-edit-option">')
+      .append($changeLocationRadio, $('<span>').text(this._translate(TRANSLATION_KEYS.EDIT_CHANGE_LOCATION)));
+
+    const $notAtHouseholdRadio = $('<input type="radio">')
+      .attr('name', radioName).val('capture-other').prop('disabled', true);
+    const $notAtHouseholdLabel = $('<label class="geolocation-edit-option">')
+      .append($notAtHouseholdRadio, $('<span>').text(this._translate(TRANSLATION_KEYS.EDIT_NOT_AT_HOUSEHOLD)));
 
     const $removeRadio = $('<input type="radio">').attr('name', radioName).val('removed');
     const $removeLabel = $('<label class="geolocation-edit-option">')
       .append($removeRadio, $('<span>').text(this._translate(TRANSLATION_KEYS.EDIT_REMOVE)));
 
     const $choices = $('<div class="geolocation-edit-choices">')
-      .append($keepLabel, $recordNewLabel, $removeLabel);
+      .append($keepLabel, $changeLocationLabel, $notAtHouseholdLabel, $removeLabel);
 
     $choices.on('change', 'input[type="radio"]', event => {
       event.stopPropagation();
       const value = event.target.value;
       if (value === 'kept') {
         $(this.element).val('kept').trigger('change');
-        $(this.question).find(
-          '.geolocation-context-options, .geolocation-save-without-label, .geolocation-context-label'
-        ).remove();
       } else if (value === 'removed') {
         $(this.element).val('skipped').trigger('change');
-        $(this.question).find(
-          '.geolocation-context-options, .geolocation-save-without-label, .geolocation-context-label'
-        ).remove();
-      } else if (value === 'capture-new') {
-        this._onCaptureNewSelected($bar);
+      } else if (value === 'capture-home') {
+        this.element.dataset.geoContext = 'home';
+        $(this.element).val('captured').trigger('change');
+      } else if (value === 'capture-other') {
+        this.element.dataset.geoContext = 'other';
+        $(this.element).val('captured').trigger('change');
       }
     });
 
     return $choices;
-  }
-
-  _onCaptureNewSelected($bar) {
-    $(this.element).val('').trigger('change');
-    // Enketo validates async (Promise), so defer the removal to a macrotask
-    // that runs after the validation completes and adds the class.
-    // This one-shot timeout means the error still appears on submit.
-    setTimeout(() => $(this.question).removeClass('invalid-required'), 0);
-    if ($bar.hasClass('geolocation-progress-success') &&
-        !$(this.question).find('.geolocation-context-options').length) {
-      $('<p class="geolocation-context-label">')
-        .text(this._translate(TRANSLATION_KEYS.EDIT_CONTEXT_LABEL))
-        .appendTo($(this.question));
-      $(this.question).append(this._buildContextChoices());
-    }
   }
 
   _translate(key) {
