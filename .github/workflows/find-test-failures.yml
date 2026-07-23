@@ -50,7 +50,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # TEMP fallbacks after || are for push-trigger testing only — remove with the push trigger before merge
-          SEARCH_TERM: ${{ github.event.inputs.search_term || 'timed out' }}
+          SEARCH_TERM: ${{ github.event.inputs.search_term || 'africas-talking.wdio-spec.js' }}
           JOB: ${{ github.event.inputs.job }}
           BRANCH: ${{ github.event.inputs.branch }}
           SINCE: ${{ github.event.inputs.since }}
