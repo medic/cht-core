@@ -309,6 +309,74 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
     expect($('.nepali-datepicker-input').val()).to.equal('२०८१-३-१५');
   });
 
+  it('highlights the correct active day corresponding to the input value when reopened', async () => {
+    await initWidget();
+    dayInput().val('१५');
+    monthInput().val('३');
+    yearInput().val('२०८१');
+
+    // Click to open calendar
+    $('.calendar-btn').click();
+
+    // Verify the correct day (15) is highlighted with the "active" class
+    let activeCell = $('.nepali-date-picker table tbody td.current-month-date.active');
+    expect(activeCell.text()).to.equal('१५');
+
+    // Close and change day to 20
+    $('.nepali-date-picker-overlay').click();
+    dayInput().val('२०').trigger('change');
+
+    // Reopen
+    $('.calendar-btn').click();
+    
+    // Verify the new day (20) is highlighted with the "active" class
+    activeCell = $('.nepali-date-picker table tbody td.current-month-date.active');
+    expect(activeCell.text()).to.equal('२०');
+  });
+
+  it('updates the position of the calendar popup on window scroll when positioned as anchored', () => {
+    const { setupNepaliDatePicker } = require('../../../../../src/js/enketo/widgets/bikram-sambat-picker-shared');
+
+    // Set up a test input and trigger in the DOM
+    const html = `
+      <div id="scroll-test-wrapper">
+        <input type="text" id="scroll-trigger" />
+        <input type="text" id="scroll-hidden-input" style="display: none;" />
+      </div>
+    `;
+    $('body').append(html);
+
+    const hiddenInput = $('#scroll-hidden-input');
+
+    // Call setupNepaliDatePicker with position: 'anchored'
+    setupNepaliDatePicker(hiddenInput, {
+      position: 'anchored',
+      closeOnDateSelect: false
+    });
+
+    // Open the picker
+    hiddenInput.click();
+
+    const picker = $('.nepali-date-picker');
+    expect(picker).to.have.lengthOf(1);
+
+    // Set initial style
+    picker.css({ top: '100px', left: '50px' });
+
+    // Simulate scroll event
+    const event = new Event('scroll');
+    window.dispatchEvent(event);
+
+    // Position should be updated/recalculated
+    expect(picker.css('top')).to.not.equal('100px');
+
+    // Clean up
+    hiddenInput.remove();
+    $('#scroll-test-wrapper').remove();
+    $('.nepali-date-picker').remove();
+  });
+
+
   it('resets the picker value to empty when opening with invalid or partial manual fields', async () => {
     await initWidget();
 

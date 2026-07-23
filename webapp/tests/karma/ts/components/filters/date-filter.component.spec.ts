@@ -16,6 +16,7 @@ import { Selectors } from '@mm-selectors/index';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { LanguageService } from '@mm-services/language.service';
 import { FormatDateService } from '@mm-services/format-date.service';
+import { toBik_dev } from 'bikram-sambat';
 
 describe('Date Filter Component', () => {
   let component: DateFilterComponent;
@@ -195,7 +196,8 @@ describe('Date Filter Component', () => {
       expect(nepaliDatePickerStub.callCount).to.equal(1);
 
       const maxDateVal = nepaliDatePickerStub.args[0][0].maxDate;
-      expect(maxDateVal).to.match(/^[०-९-]+$/);
+      const expectedMaxDate = toBik_dev(moment().clone().locale('en').format('YYYY-MM-DD'));
+      expect(maxDateVal).to.equal(expectedMaxDate);
 
       const hiddenInput = $('#bikram-sambat-test-wrapper .nepali-datepicker-input');
       expect(hiddenInput).to.have.lengthOf(1);
@@ -254,7 +256,7 @@ describe('Date Filter Component', () => {
 
       expect(setFilter.callCount).to.equal(1);
       const appliedDate = setFilter.args[0][0].date.from;
-      expect(moment(appliedDate).format('YYYY-MM-DD')).to.equal('2024-07-24');
+      expect(moment(appliedDate).format('YYYY-MM-DD HH:mm:ss.SSS')).to.equal('2024-07-24 00:00:00.000');
       setFilter.restore();
     });
 
@@ -300,6 +302,133 @@ describe('Date Filter Component', () => {
       expect($('.nepali-date-picker-overlay')).to.have.lengthOf(0);
     });
 
+    it('should maintain independent picker elements for From and To components and leave each other unchanged', () => {
+      // Create From component
+      const fixtureFrom = TestBed.createComponent(DateFilterComponent);
+      const compFrom = fixtureFrom.componentInstance;
+      compFrom.isStartDate = true;
+      compFrom.fieldId = 'from-test-field';
+      
+      const htmlFrom = `<div id="from-test-wrapper"><input id="from-test-field" /></div>`;
+      document.body.insertAdjacentHTML('afterbegin', htmlFrom);
+      fixtureFrom.detectChanges();
+
+      // Create To component
+      const fixtureTo = TestBed.createComponent(DateFilterComponent);
+      const compTo = fixtureTo.componentInstance;
+      compTo.isStartDate = false;
+      compTo.fieldId = 'to-test-field';
+
+      const htmlTo = `<div id="to-test-wrapper"><input id="to-test-field" /></div>`;
+      document.body.insertAdjacentHTML('afterbegin', htmlTo);
+      fixtureTo.detectChanges();
+
+      // Verify each appended its own hidden input
+      const fromHiddenInput = $('#from-test-wrapper .nepali-datepicker-input');
+      const toHiddenInput = $('#to-test-wrapper .nepali-datepicker-input');
+      expect(fromHiddenInput).to.have.lengthOf(1);
+      expect(toHiddenInput).to.have.lengthOf(1);
+
+      // Simulate date selection on From component
+      const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
+      const eventFrom = $.Event('dateSelect');
+      (eventFrom as any).datePickerData = { bsYear: 2081, bsMonth: 4, bsDate: 9 };
+      fromHiddenInput.trigger(eventFrom);
+
+      // Verify From component's selection was registered
+      expect(setFilter.callCount).to.equal(1);
+      expect(setFilter.firstCall.args[0].date.from).to.not.be.undefined;
+      expect(setFilter.firstCall.args[0].date.to).to.be.undefined;
+
+      // Clear call history
+      setFilter.resetHistory();
+
+      // Simulate date selection on To component
+      const eventTo = $.Event('dateSelect');
+      (eventTo as any).datePickerData = { bsYear: 2081, bsMonth: 4, bsDate: 20 };
+      toHiddenInput.trigger(eventTo);
+
+      // Verify To component's selection was registered independently
+      expect(setFilter.callCount).to.equal(1);
+      expect(setFilter.firstCall.args[0].date.to).to.not.be.undefined;
+      expect(setFilter.firstCall.args[0].date.from).to.be.undefined;
+
+      setFilter.restore();
+
+      // Clean up DOM
+      compFrom.ngOnDestroy();
+      compTo.ngOnDestroy();
+      $('#from-test-wrapper').remove();
+      $('#to-test-wrapper').remove();
+    });
+
+    it('clearing/resetting the date filter should set the date to undefined', () => {
+      component.ngAfterViewInit();
+      const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
+      component.dateRange = { from: moment('2024-07-24').valueOf(), to: undefined };
+
+      component.clear();
+
+      expect(setFilter.callCount).to.equal(1);
+      expect(setFilter.args[0]).to.deep.equal([{ date: undefined }]);
+      setFilter.restore();
+    });
+
+    it('ngOnDestroy should clean up multiple pickers and overlays completely', () => {
+      // Create two DOM wrappers
+      const html1 = `<div id="test-wrapper-1"><input id="field-1" /></div>`;
+      const html2 = `<div id="test-wrapper-2"><input id="field-2" /></div>`;
+      document.body.insertAdjacentHTML('afterbegin', html1);
+      document.body.insertAdjacentHTML('afterbegin', html2);
+
+      // Instantiate and setup Component B
+      const fixtureB = TestBed.createComponent(DateFilterComponent);
+      const compB = fixtureB.componentInstance;
+      compB.fieldId = 'field-2';
+      compB.ngOnInit();
+
+      // Setup Component A
+      component.fieldId = 'field-1';
+
+      // Initialize both components (which creates hidden inputs)
+      component.ngAfterViewInit();
+      compB.ngAfterViewInit();
+
+      // Create the pickers and overlay in the DOM
+      const pickerA = $('<div class="nepali-date-picker" id="picker-a"></div>').appendTo('body');
+      const pickerB = $('<div class="nepali-date-picker" id="picker-b"></div>').appendTo('body');
+      $('<div class="nepali-date-picker-overlay"></div>').appendTo('body');
+
+      // Bind pickers to their respective hidden inputs
+      $('#test-wrapper-1 .nepali-datepicker-input').data('picker', pickerA);
+      $('#test-wrapper-2 .nepali-datepicker-input').data('picker', pickerB);
+
+      // 1. Destroy Component A
+      component.ngOnDestroy();
+
+      // Assert Component A's elements are removed
+      expect($('#test-wrapper-1 .nepali-datepicker-input')).to.have.lengthOf(0);
+      expect($('#picker-a')).to.have.lengthOf(0);
+
+      // Assert Component B's elements and overlay still survive
+      expect($('#test-wrapper-2 .nepali-datepicker-input')).to.have.lengthOf(1);
+      expect($('#picker-b')).to.have.lengthOf(1);
+      expect($('.nepali-date-picker-overlay')).to.have.lengthOf(1);
+
+      // 2. Destroy Component B
+      compB.ngOnDestroy();
+
+      // Assert Component B's elements and overlay are removed
+      expect($('#test-wrapper-2 .nepali-datepicker-input')).to.have.lengthOf(0);
+      expect($('#picker-b')).to.have.lengthOf(0);
+      expect($('.nepali-date-picker-overlay')).to.have.lengthOf(0);
+
+      // Clean up wrapper DOM nodes
+      $('#test-wrapper-1').remove();
+      $('#test-wrapper-2').remove();
+    });
+
+
     it('setLabel should use formatDateService.dayMonth', () => {
       component.isStartDate = true;
       component.setLabel({ from: moment('2024-07-24').valueOf(), to: undefined });
@@ -320,5 +449,6 @@ describe('Date Filter Component', () => {
       expect(formatDateService.dayMonth.args[0][0]).to.equal(startOfDayVal);
       expect(component.inputLabel).to.equal('Formatted Date');
     });
+
   });
 });
