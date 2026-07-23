@@ -19,8 +19,7 @@ const findInfoDocs = (database, ids) => {
 };
 
 //
-// Given a set of changes, find all the infoDocs or create them as necessary. Also takes care of
-// migrating legacy infodocs from the medic db, and legacy transition information from records.
+// Given a set of changes, find all the infoDocs or create them as necessary.
 //
 // @param      {Array}  changes  an array of PouchDB changes objects, each containing at least {id, doc}
 // @return     {Array}  array of infodocs. NB: will not necessarily be in the same order as the
@@ -35,108 +34,37 @@ const resolveInfoDocs = (changes, writeDirtyInfoDocs) => {
     return results.reduce((acc, row) => {
       if (!row.doc) {
         acc.missing.push({ _id: row.key });
-      } else if (!row.doc.transitions) {
-        // No transitions may mean that API created this infodoc on write but sentinel hasn't seen
-        // it yet. It's possible that there is a legacy infodoc with transition information.
-        acc.missingTransitions.push(row.doc);
       } else {
         acc.valid.push(row.doc);
       }
 
       return acc;
 
-    }, { valid: [], missing: [], missingTransitions: [] });
+    }, { valid: [], missing: [] });
   };
+
+  const changeForInfoDoc = infoDocId => changes.find(change => getInfoDocId(change.id) === infoDocId);
 
   const infoDocIds = changes.map(change => getInfoDocId(change.id));
 
-  // First attempt, directly from sentinel where they should live
   return findInfoDocs(db.sentinel, infoDocIds)
     .then(results => {
-      const { valid, missing, missingTransitions: missingTransitionsSentinel } = splitInfoDocRows(results);
+      const { valid, missing } = splitInfoDocRows(results);
 
-      const lookForInMedic = missing.concat(missingTransitionsSentinel).map(r => r._id);
+      const infoDocs = valid;
+      const dirtyInfoDocs = [];
 
-      if (!lookForInMedic.length) {
-        return valid;
+      missing.forEach(missingDoc => {
+        const change = changeForInfoDoc(missingDoc._id);
+        const infoDoc = blankInfoDoc(change.id, !change.doc._rev && Date.now());
+        infoDocs.push(infoDoc);
+        dirtyInfoDocs.push(infoDoc);
+      });
+
+      if (writeDirtyInfoDocs && dirtyInfoDocs.length) {
+        return bulkUpdate(dirtyInfoDocs).then(() => infoDocs);
       }
-
-      // the infodocs missing transitions are still valid, we just need to look for their transitions!
-      const infoDocs = valid.concat(missingTransitionsSentinel);
-
-      // Missing infodocs or missing transitions may be either
-      return findInfoDocs(db.medic, lookForInMedic)
-        .then(results => {
-          const migratedInfoDocs = [];
-          const { valid, missing, missingTransitions: missingTransitionsMedic } = splitInfoDocRows(results);
-
-          // Back when infodocs were in the medic db, transitions were still stored against the
-          // actual document. We'll deal with this below
-          valid.push(...missingTransitionsMedic);
-
-          // Convert valid MedicDB infodocs into Sentinel ones
-          valid.forEach(medicInfoDoc => {
-            const sentinelInfoDoc = missingTransitionsSentinel.find(d => d._id === medicInfoDoc._id);
-
-            const change = changes.find(change => change.id === medicInfoDoc.doc_id);
-
-            if (sentinelInfoDoc) {
-              // Merge information from the medic infodoc into sentinel's
-              Object.keys(medicInfoDoc).forEach(k => {
-                if (sentinelInfoDoc[k] === undefined) {
-                  sentinelInfoDoc[k] = medicInfoDoc[k];
-                }
-              });
-
-              // Explicitly take the older (and so more correct) initial_replication_date. These would
-              // be different if a new write occurred on an old infodoc-unmigrated document, as api
-              // creates a new sentinel infodoc with an initial and latest replication date
-              sentinelInfoDoc.initial_replication_date = medicInfoDoc.initial_replication_date;
-
-              // Source transitions from the document if they don't exist
-              sentinelInfoDoc.transitions = sentinelInfoDoc.transitions || (change.doc && change.doc.transitions);
-
-              migratedInfoDocs.push(sentinelInfoDoc);
-            } else {
-              const infoDoc = Object.assign({}, medicInfoDoc);
-              delete infoDoc._rev;
-              infoDoc.transitions = change.doc && change.doc.transitions;
-              infoDocs.push(infoDoc);
-              migratedInfoDocs.push(infoDoc);
-            }
-
-            medicInfoDoc._deleted = true;
-          });
-
-          // Intentionally not waiting on the promise for performance
-          if (valid.length) {
-            db.medic.bulkDocs(valid);
-          }
-
-          // Infodocs that aren't in the Medic DB. This could mean there isn't one at all, or it
-          // could be that there was one without transition data back in sentinel
-          missing.forEach(missingDoc => {
-            const docId = getDocId(missingDoc._id);
-
-            const collectedInfoDoc = infoDocs.find(i => i._id === missingDoc._id);
-            const change = changes.find(change => change.id === docId);
-            const infoDoc = collectedInfoDoc || blankInfoDoc(docId, !change.doc._rev && Date.now());
-
-            infoDoc.transitions = change.doc && change.doc.transitions;
-
-            if (!collectedInfoDoc) {
-              infoDocs.push(infoDoc);
-            }
-
-            migratedInfoDocs.push(infoDoc);
-          });
-
-          // Store any infoDocs that have been migrated.
-          if (writeDirtyInfoDocs && migratedInfoDocs.length) {
-            return bulkUpdate(migratedInfoDocs);
-          }
-          return infoDocs;
-        });
+      return infoDocs;
     });
 };
 
@@ -152,32 +80,58 @@ const updateTransition = (change, transition, ok) => {
 };
 
 const saveTransitions = change => {
-  return saveProperty(change.id, change.info, 'transitions', {});
+  const modify = infoDoc => {
+    infoDoc.transitions = change.info?.transitions || {};
+    delete infoDoc.transitions_started;
+  };
+  return modifyInfoDoc(change.id, modify, change.info);
 };
 
 const saveCompletedTasks = (id, infodoc, completedTasks = []) => {
-  return saveProperty(id, infodoc, 'completed_tasks', completedTasks);
+  return modifyInfoDoc(id, infoDoc => {
+    infoDoc.completed_tasks = infodoc?.completed_tasks || completedTasks;
+  }, infodoc);
 };
 
-const saveProperty = async (id, infodoc, property, defaultValue = {}) => {
-  let updatedInfoDoc;
+const markTransitionsStarted = (id) => {
+  const modify = infoDoc => {
+    infoDoc.transitions_started = new Date().toISOString();
+  };
+  return modifyInfoDoc(id, modify, blankInfoDoc(id));
+};
+
+const clearTransitionsStarted = (id) => {
+  const modify = infoDoc => {
+    delete infoDoc.transitions_started;
+  };
+  return modifyInfoDoc(id, modify, blankInfoDoc(id));
+};
+
+// Fetch the infodoc. If it is missing, return `fallback` (to be created) when provided;
+const fetchInfoDoc = async (id, fallback) => {
   try {
-    updatedInfoDoc = await db.sentinel.get(getInfoDocId(id));
-    updatedInfoDoc[property] = (infodoc && infodoc[property]) || defaultValue;
+    return await db.sentinel.get(getInfoDocId(id));
   } catch (err) {
-    if (err.status !== 404) {
-      throw err;
+    if (err.status === 404 && fallback) {
+      return fallback;
     }
-    updatedInfoDoc = infodoc;
+    throw err;
   }
+};
+
+// Fetch the infodoc, apply `modify`, and save, retrying on conflict
+const modifyInfoDoc = async (id, modify, fallback) => {
+  const infoDoc = await fetchInfoDoc(id, fallback);
+
+  modify(infoDoc);
 
   try {
-    return await db.sentinel.put(updatedInfoDoc);
+    return await db.sentinel.put(infoDoc);
   } catch (err) {
     if (err.status !== 409) {
       throw err;
     }
-    return saveProperty(id, infodoc, property, defaultValue);
+    return modifyInfoDoc(id, modify, fallback);
   }
 };
 
@@ -283,6 +237,8 @@ module.exports = {
   bulkUpdate: bulkUpdate,
   saveTransitions: saveTransitions,
   saveCompletedTasks: saveCompletedTasks,
+  markTransitionsStarted: markTransitionsStarted,
+  clearTransitionsStarted: clearTransitionsStarted,
 
   // Used to update infodoc metadata that occurs at write time. A delete does not count as a write
   // in this instance, as deletes resolve as infodoc cleanups once sentinel's background-cleanup

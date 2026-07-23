@@ -45,27 +45,49 @@ const AVAILABLE_TRANSITIONS = [
 const transitions = [];
 let loadErrors = false;
 
+// Sentinel waits 30s for an in-progress API write to clear its transitions_started marker; a marker
+// older than that window is treated as abandoned, and the change processed anyway.
+const MAX_INFODOC_WAIT = 30;
+const INFODOC_WAIT_INTERVAL = 1000;
+const MID_WRITE_STALE_INTERVAL = MAX_INFODOC_WAIT * INFODOC_WAIT_INTERVAL;
+
+const isInfoDocMidWrite = infoDoc => infoDoc?.transitions_started !== undefined;
+
+const isMidWriteStale = infoDoc => {
+  return isInfoDocMidWrite(infoDoc) &&
+    Date.now() - Date.parse(infoDoc.transitions_started) >= MID_WRITE_STALE_INTERVAL;
+};
+
+// Wait for the transitions_started marker to absent from an infoDoc
+// after MID_WRITE_STALE_INTERVAL, return the infoDoc anyway
+const getConsistentInfoDoc = async (change, retriesLeft) => {
+  const infoDocForChange = await infodoc.get(change);
+
+  if (!isInfoDocMidWrite(infoDocForChange)) {
+    return infoDocForChange;
+  }
+
+  if (isMidWriteStale(infoDocForChange) || retriesLeft <= 0) {
+    await infodoc.clearTransitionsStarted(change.id);
+    delete infoDocForChange.transitions_started;
+    return infoDocForChange;
+  }
+
+  await new Promise(resolve => setTimeout(resolve, INFODOC_WAIT_INTERVAL));
+  return getConsistentInfoDoc(change, retriesLeft - 1);
+};
+
 // applies all loaded transitions over a change
-const processChange = (change, callback) => {
-  lineage
-    .fetchHydratedDoc(change.id)
-    .then(doc => {
-      change.doc = doc;
-      return infodoc.get(change).then(infoDoc => {
-        change.info = infoDoc;
-        change.initialProcessing = !infoDoc.transitions;
-        // Remove transitions from doc since those
-        // will be handled by the info doc(sentinel db) after this
-        if (change.doc.transitions) {
-          delete change.doc.transitions;
-        }
-        module.exports.applyTransitions(change, callback);
-      });
-    })
-    .catch(err => {
-      logger.error('transitions: processChange failed for %s : %o', change.id, err);
-      return callback(err);
-    });
+const processChange = async (change, callback) => {
+  try {
+    change.doc = await lineage.fetchHydratedDoc(change.id);
+    change.info = await getConsistentInfoDoc(change, MAX_INFODOC_WAIT);
+    change.initialProcessing = !change.info.transitions;
+    return module.exports.applyTransitions(change, callback);
+  } catch (err) {
+    logger.error('transitions: processChange failed for %s : %o', change.id, err);
+    return callback(err);
+  }
 };
 
 // given a collection of docs this function will:
@@ -100,17 +122,19 @@ const processDocs = docs => {
     .then(() => {
       return new Promise((resolve, reject) => {
         const operations = changes.map(change => callback => {
-          applyTransitions(change, (err, result) => {
+          const onTransitionsApplied = (err, result) => {
             if (err || result) {
               return callback(null, err || result);
             }
 
             // doc was not changed by any transition, so we save the original doc
             change.doc = docs.find(doc => doc._id === change.id);
-            saveDoc(change, (err, result) => {
-              callback(null, err || result);
-            });
-          });
+            saveDoc(change).then(
+              result => callback(null, result),
+              err => callback(null, err)
+            );
+          };
+          applyTransitions(change, onTransitionsApplied, { markStarted: true });
         });
         async.series(operations, (err, results) => {
           return err ? reject(err) : resolve(results);
@@ -235,46 +259,60 @@ const canRun = ({ key, change, transition }) => {
  * did nothing and saving is unnecessary.  If results has a true value in
  * it then a change was made.
  */
-const finalize = ({ change, results }, callback) => {
-  logger.debug(`transition results: ${JSON.stringify(results)}`);
-
-  const changed = _.some(results, i => Boolean(i));
-  if (!changed) {
-    logger.debug(
-      `nothing changed skipping saveDoc for doc ${change.id} seq ${change.seq}`
-    );
-    // info.transitions is how we know if a doc has been processed by Sentinel before. Even if no transitions ran,
-    // we still want to save transitions, so we know it's been processed.
-    return Promise
-      .resolve()
-      .then(() => {
-        if (change.initialProcessing) {
-          return infodoc.saveTransitions(change);
-        }
-      })
-      .then(() => callback())
-      .catch(err => callback(err));
-  }
-  logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
-
-  saveDoc(change, (err, result) => {
-    // todo: how to handle a failed save? for now just
-    // waiting until next change and try again.
-    if (err) {
+const finalize = ({ change, results, markStarted = false }, callback) => {
+  finalizeChange({ change, results, markStarted })
+    .then(result => callback(null, result))
+    .catch(err => {
       logger.error(`error saving changes on doc ${change.id} seq ${change.seq}: %o`, err);
-      return callback(err);
-    }
-
-    logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
-    infodoc.saveTransitions(change)
-      .then(() => callback(null, result))
-      .catch(err => callback(err));
-  });
+      callback(err);
+    });
 };
 
-const saveDoc = (change, callback) => {
+const finalizeChange = async ({ change, results, markStarted }) => {
+  logger.debug(`transition results: ${JSON.stringify(results)}`);
+
+  if (!_.some(results, Boolean)) {
+    logger.debug(`nothing changed skipping saveDoc for doc ${change.id} seq ${change.seq}`);
+    // info.transitions is how we know Sentinel has processed a doc; record it even when nothing ran.
+    if (change.initialProcessing) {
+      await infodoc.saveTransitions(change);
+    }
+    return;
+  }
+
+  logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
+  return markStarted ? saveForApi(change) : saveForSentinel(change);
+};
+
+// For transitions run by sentinel, do not set transitions_started
+const saveForSentinel = async change => {
+  const result = await saveDoc(change);
+  logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
+  await infodoc.saveTransitions(change);
+  return result;
+};
+
+// For synchrnonous transitions run by API, set transitions_started, so that sentinel
+// waits until the API process is done.
+// saveTransitions clears it on success; clear it explicitly on failure.
+const saveForApi = async change => {
+  await infodoc.markTransitionsStarted(change.id);
+  try {
+    const result = await saveDoc(change);
+    logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
+    await infodoc.saveTransitions(change);
+    return result;
+  } catch (err) {
+    await infodoc
+      .clearTransitionsStarted(change.id)
+      .catch(clearErr => logger.error(`error clearing transitions_started on doc ${change.id}: %o`, clearErr));
+    throw err;
+  }
+};
+
+const saveDoc = change => {
   lineage.minify(change.doc);
-  db.medic.put(change.doc, callback);
+  return db.medic.put(change.doc);
 };
 
 /*
@@ -335,7 +373,7 @@ const applyTransition = ({ key, change, transition, force }, callback) => {
     .then(changed => callback(null, changed)); // return the promise instead
 };
 
-const applyTransitions = (change, callback) => {
+const applyTransitions = (change, callback, { markStarted = false } = {}) => {
   const operations = transitions
     .map(transition => {
       const opts = {
@@ -353,7 +391,7 @@ const applyTransitions = (change, callback) => {
    * function.  All we care about are results and whether we need to
    * save or not.
    */
-  async.series(operations, (err, results) => finalize({ change, results }, callback));
+  async.series(operations, (err, results) => finalize({ change, results, markStarted }, callback));
 };
 
 const availableTransitions = () => {
