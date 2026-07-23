@@ -68,12 +68,6 @@
           <text id="/data/init/parent_id:hint">
             <value><output value=" /data/init/type_label "/></value>
           </text>
-          <text id="/data/person/parent:label">
-            <value>Parent ID</value>
-          </text>
-          <text id="/data/person/type:label">
-            <value>Person Type</value>
-          </text>
           <text id="/data/person/name:label">
             <value>Full name</value>
           </text>
@@ -210,12 +204,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <text id="/data/init/parent_id:hint">
             <value><output value=" /data/init/type_label "/></value>
           </text>
-          <text id="/data/person/parent:label">
-            <value>मूल ID</value>
-          </text>
-          <text id="/data/person/type:label">
-            <value>व्यक्ति के प्रकार</value>
-          </text>
           <text id="/data/person/name:label">
             <value>नाम</value>
           </text>
@@ -256,9 +244,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
             <value>-</value>
           </text>
           <text id="/data/person/short_name:hint">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
@@ -356,12 +341,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <text id="/data/init/parent_id:hint">
             <value><output value=" /data/init/type_label "/></value>
           </text>
-          <text id="/data/person/parent:label">
-            <value>Asli ID</value>
-          </text>
-          <text id="/data/person/type:label">
-            <value>Tipe Orang</value>
-          </text>
           <text id="/data/person/name:label">
             <value>Nama</value>
           </text>
@@ -396,9 +375,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
             <value>-</value>
           </text>
           <text id="/data/person/short_name:hint">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
@@ -502,12 +478,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <text id="/data/init/parent_id:hint">
             <value><output value=" /data/init/type_label "/></value>
           </text>
-          <text id="/data/person/parent:label">
-            <value>ID ya mzazi</value>
-          </text>
-          <text id="/data/person/type:label">
-            <value>Jina</value>
-          </text>
           <text id="/data/person/name:label">
             <value>Majina</value>
           </text>
@@ -542,9 +512,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
             <value>-</value>
           </text>
           <text id="/data/person/short_name:hint">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
@@ -675,12 +642,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <text id="/data/person/notes:label">
             <value>टिप्पणी</value>
           </text>
-          <text id="/data/person/parent:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/type:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/short_name:jr:constraintMsg">
             <value>-</value>
           </text>
@@ -688,9 +649,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
             <value>-</value>
           </text>
           <text id="/data/person/short_name:hint">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
@@ -794,12 +752,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <text id="/data/init/parent_id:hint">
             <value><output value=" /data/init/type_label "/></value>
           </text>
-          <text id="/data/person/parent:label">
-            <value>identifiant du parent</value>
-          </text>
-          <text id="/data/person/type:label">
-            <value>Type</value>
-          </text>
           <text id="/data/person/name:label">
             <value>Nom</value>
           </text>
@@ -842,9 +794,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <text id="/data/person/short_name:hint">
             <value>-</value>
           </text>
-          <text id="/data/person/ephemeral_dob:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
             <value>-</value>
           </text>
@@ -878,7 +827,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
         </translation>
       </itext>
       <instance>
-        <data id="contact:person:create" version="2025-05-01 22-35" prefix="J1!contact:person:create!" delimiter="#">
+        <data id="contact:person:create" version="2026-07-22  17-35" prefix="J1!contact:person:create!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -1085,14 +1034,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
         <label ref="jr:itext('/data/init/parent_id:label')"/>
         <hint ref="jr:itext('/data/init/parent_id:hint')"/>
       </input>
-      <input ref="/data/init/name" appearance="hidden"/>
-      <input ref="/data/init/type" appearance="hidden"/>
-      <select1 ref="/data/init/type_selector" appearance="hidden">
-        <itemset nodeset="instance('place_type')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
     </group>
     <group ref="/data/person">
       <input ref="/data/person/name">
