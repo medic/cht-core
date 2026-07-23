@@ -1,0 +1,43 @@
+name: AndraBot
+
+# pull_request_target is required so the workflow has a write token to comment
+# on PRs from forks. It is safe here because the workflow never checks out or
+# executes code from the PR — only the base branch is checked out, and the
+# checks operate purely on API data.
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions: {}
+
+concurrency:
+  group: andra-bot-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check external contributor PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: write
+    steps:
+      - name: Checkout base branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            scripts/ci
+            .github
+      - name: Run PR checks
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+        with:
+          script: |
+            const andraBot = require('./scripts/ci/andra-bot.js');
+            await andraBot({ github, context, core });
