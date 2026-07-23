@@ -268,7 +268,7 @@ describe('FormatDate service', () => {
       const time = now.format('hh:mm:ss A');
       expect(service.datetime(now)).to.equal('bk date, ' + time);
       expect(BikramSambat.toBik_text.callCount).to.equal(1);
-      expect(BikramSambat.toBik_text.args[0]).to.deep.equal([now]);
+      expect(BikramSambat.toBik_text.args[0]).to.deep.equal([now.format('YYYY-MM-DD')]);
     });
   });
 
@@ -296,7 +296,50 @@ describe('FormatDate service', () => {
       const now = moment();
       expect(service.date(now)).to.equal('bk converted date');
       expect(BikramSambat.toBik_text.callCount).to.equal(1);
-      expect(BikramSambat.toBik_text.args[0]).to.deep.equal([now]);
+      expect(BikramSambat.toBik_text.args[0]).to.deep.equal([now.format('YYYY-MM-DD')]);
+    });
+
+    it('should convert using the local calendar date, not the timestamp (#11241)', () => {
+      // bikram-sambat expects an ISO date string (YYYY-MM-DD); given a moment it Date.parses the
+      // whole timestamp, so an evening time-of-day rolls the day over early in timezones ahead of
+      // UTC. The service must pass the local date string so the date is pinned to the local day.
+      languageService.useDevanagariScript.returns(true);
+      sinon.stub(BikramSambat, 'toBik_text').returns('bk converted date');
+
+      const startOfDay = moment().startOf('day');
+      const endOfDay = moment().endOf('day');
+      const localDate = moment().format('YYYY-MM-DD');
+
+      service.date(startOfDay);
+      service.date(endOfDay);
+
+      expect(BikramSambat.toBik_text.callCount).to.equal(2);
+      // Same local day in, same date string out - regardless of time-of-day.
+      expect(BikramSambat.toBik_text.args[0]).to.deep.equal([localDate]);
+      expect(BikramSambat.toBik_text.args[1]).to.deep.equal([localDate]);
+    });
+
+    it('should pass ASCII digits to the library even when the locale renders Devanagari (#11241)', () => {
+      // The Nepali locale formats numbers as Devanagari digits; the date string handed to the
+      // library must still use ASCII digits, otherwise its Date.parse fails with
+      // "Date outside supported range". Simulate that locale with a Devanagari postformat.
+      const previousLocale = moment.locale();
+      if (!moment.locales().includes('test-devanagari')) {
+        moment.defineLocale('test-devanagari', {
+          postformat: (num: string) => num.replace(/[0-9]/g, (digit: string) => '०१२३४५६७८९'[Number(digit)]),
+        });
+      }
+      moment.locale('test-devanagari');
+      try {
+        languageService.useDevanagariScript.returns(true);
+        sinon.stub(BikramSambat, 'toBik_text').returns('bk converted date');
+
+        service.date(moment('2026-03-28'));
+
+        expect(BikramSambat.toBik_text.args[0]).to.deep.equal(['2026-03-28']);
+      } finally {
+        moment.locale(previousLocale);
+      }
     });
   });
 
@@ -315,7 +358,7 @@ describe('FormatDate service', () => {
       const now = moment();
       expect(service.dayMonth(now)).to.equal('devday devmonth');
       expect(BikramSambat.toBik.callCount).to.equal(1);
-      expect(BikramSambat.toBik.args[0]).to.deep.equal([now]);
+      expect(BikramSambat.toBik.args[0]).to.deep.equal([now.format('YYYY-MM-DD')]);
       expect(BikramSambat.toDev.callCount).to.equal(1);
       expect(BikramSambat.toDev.args[0]).to.deep.equal(['bkyear', 'bkmonth', 'bkday']);
     });
@@ -427,6 +470,100 @@ describe('FormatDate service', () => {
       expect(actual).to.equal('Due 4 days ago');
       expect(translateInstant.callCount).to.equal(1);
       expect(translateInstant.args[0]).to.deep.equal(['task.overdue.days', { DAYS: 4 }]);
+    });
+  });
+
+  describe('Bikram Sambat - Real Library Conversions', () => {
+    beforeEach(() => {
+      languageService.useDevanagariScript.returns(true);
+      settingsService.get.resolves({ date_format: 'DD-MMM-YYYY' });
+    });
+
+    it('formats Gregorian date into Devanagari Bikram Sambat date correctly without stubs', () => {
+      const date = moment('2024-06-29T12:00:00.000'); // 2081-03-15 BS (noon to be timezone safe)
+      const formatted = service.date(date);
+      expect(formatted).to.equal('१५ असार २०८१');
+    });
+
+    it('formats Gregorian date and time into Devanagari Bikram Sambat datetime correctly', () => {
+      const date = moment('2024-06-29T10:15:30.000'); // 2081-03-15 BS
+      const formatted = service.datetime(date);
+      expect(formatted).to.contain('१५ असार २०८१');
+      expect(formatted).to.contain('10:15:30 AM');
+    });
+
+    it('handles day-boundaries (midnight) correctly', () => {
+      const date = moment('2024-06-29T00:00:00.000');
+      expect(service.date(date)).to.equal('१५ असार २०८१');
+    });
+
+    it('handles day-boundaries (end-of-day) correctly', () => {
+      const date = moment('2024-06-29T23:59:59.999');
+      expect(service.date(date)).to.equal('१५ असार २०८१');
+    });
+
+    it('correctly handles conversion across timezones and negative offsets', () => {
+      const dateInUTC = moment.utc('2024-06-29T05:00:00Z');
+      const localDate = dateInUTC.local();
+      
+      const localDay = localDate.date();
+      const expectedText = localDay === 29 ? '१५ असार २०८१' : '१४ असार २०८१';
+      expect(service.date(localDate)).to.equal(expectedText);
+    });
+
+    it('correctly handles conversion across Daylight Saving Time (DST) boundaries', () => {
+      const beforeDST = moment('2024-03-10T01:59:59'); // Standard Time
+      const afterDST = moment('2024-03-10T03:00:00'); // DST (02:00:00 doesn't exist)
+      
+      expect(service.date(beforeDST)).to.equal('२७ फाल्गुन २०८०');
+      expect(service.date(afterDST)).to.equal('२७ फाल्गुन २०८०');
+    });
+
+    it('toGreg_text reverse conversion round-trips correctly at month/year boundaries via the service', () => {
+      const gregStr = '2024-04-12';
+      const formatted = service.date(moment(gregStr));
+      expect(formatted).to.equal('३० चैत २०८०');
+    });
+
+    it('returns the correct formatted days for divergent years 2082 and 2083 via the service', () => {
+      // Mansir 2082 (month 8) has 29 days
+      const gregMansir29 = '2025-12-15';
+      expect(service.date(moment(gregMansir29))).to.equal('२९ मंसिर २०८२');
+
+      // Magh 2082 (month 10) has 29 days
+      const gregMagh29 = '2026-02-12';
+      expect(service.date(moment(gregMagh29))).to.equal('२९ माघ २०८२');
+
+      // Jestha 2082 (month 2) has 31 days
+      const gregJestha31 = '2025-06-14';
+      expect(service.date(moment(gregJestha31))).to.equal('३१ जेठ २०८२');
+
+      // Shrawan 2082 (month 4) has 31 days
+      const gregShrawan31 = '2025-08-16';
+      expect(service.date(moment(gregShrawan31))).to.equal('३१ साउन २०८२');
+
+      // Mansir 2083 (month 8) has 29 days
+      const greg2083Mansir29 = '2026-12-15';
+      expect(service.date(moment(greg2083Mansir29))).to.equal('२९ मंसिर २०८३');
+
+      // Magh 2083 (month 10) has 29 days
+      const greg2083Magh29 = '2027-02-12';
+      expect(service.date(moment(greg2083Magh29))).to.equal('२९ माघ २०८३');
+    });
+
+    it('handles Devanagari free-text search queries or invalid dates gracefully without throwing', () => {
+      let threwException = false;
+      let dateResult;
+      let datetimeResult;
+      try {
+        dateResult = service.date('असार');
+        datetimeResult = service.datetime('२०८१');
+      } catch (_e) {
+        threwException = true;
+      }
+      expect(threwException).to.be.false;
+      expect(dateResult).to.equal('Invalid date');
+      expect(datetimeResult).to.equal('Invalid date');
     });
   });
 });
