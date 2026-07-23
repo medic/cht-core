@@ -70,6 +70,9 @@ const self = {
       targetState: targetState.createEmptyState(settings.targets),
       monthStartDate: settings.monthStartDate,
     };
+    if (settings.useBikramSambatMonths) {
+      state.useBikramSambatMonths = settings.useBikramSambatMonths;
+    }
     currentUserContact = settings.contact;
     currentUserSettings = settings.user;
 
@@ -123,6 +126,9 @@ const self = {
         targetState: targetState.createEmptyState(settings.targets),
         monthStartDate: settings.monthStartDate,
       };
+      if (settings.useBikramSambatMonths) {
+        state.useBikramSambatMonths = settings.useBikramSambatMonths;
+      }
       currentUserContact = settings.contact;
       currentUserSettings = settings.user;
 
@@ -147,7 +153,7 @@ const self = {
       return;
     }
 
-    const reportingInterval = calendarInterval.getCurrent(state.monthStartDate);
+    const reportingInterval = calendarInterval.getCurrent(state.monthStartDate, state.useBikramSambatMonths);
     const defaultExpiry = calculatedAt + EXPIRE_CALCULATION_AFTER_MS;
 
     for (const contactId of contactIds) {
@@ -266,7 +272,7 @@ const self = {
    * @returns {Boolean} result.isUpdated True if the aggregate has been update compared to previous stored value.
    */
   aggregateStoredTargetEmissions: async (filterInterval) => {
-    const currentInterval = calendarInterval.getCurrent(state.monthStartDate);
+    const currentInterval = calendarInterval.getCurrent(state.monthStartDate, state.useBikramSambatMonths);
     const interval = filterInterval || currentInterval;
     const storeAggregate = calendarInterval.isEqual(interval, currentInterval);
 

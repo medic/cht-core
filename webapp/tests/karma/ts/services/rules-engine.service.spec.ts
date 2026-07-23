@@ -126,7 +126,10 @@ describe('RulesEngineService', () => {
     translateFromService = { get: sinon.stub().resolves(settingsDoc) };
     userContactService = { get: sinon.stub().resolves(userContactDoc) };
     userSettingsService = { get: sinon.stub().resolves(userSettingsDoc) };
-    uhcSettingsService = { getMonthStartDate: sinon.stub().returns(1) };
+    uhcSettingsService = {
+      getMonthStartDate: sinon.stub().returns(1),
+      getUseBikramSambatMonths: sinon.stub().returns(false)
+    };
     telemetryService = { record: sinon.stub() };
     pipesService = {
       pipesMap: new Map(),

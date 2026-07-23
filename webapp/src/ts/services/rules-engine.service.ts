@@ -220,7 +220,7 @@ export class RulesEngineService implements OnDestroy {
       !!this.parseProvider.parse(target.context)({ user: rulesEngineContext.userContactDoc }) : true;
     const targets = settingsTasks?.targets?.items || [];
 
-    return {
+    const settings: any = {
       rules: settingsTasks.rules,
       taskSchedules: settingsTasks.schedules,
       targets: targets.filter(filterTargetByContext),
@@ -232,6 +232,12 @@ export class RulesEngineService implements OnDestroy {
       monthStartDate: this.uhcSettingsService.getMonthStartDate(rulesEngineContext.settingsDoc),
       chtScriptApi: rulesEngineContext.chtScriptApi
     };
+
+    if (this.uhcSettingsService.getUseBikramSambatMonths(rulesEngineContext.settingsDoc)) {
+      settings.useBikramSambatMonths = true;
+    }
+
+    return settings;
   }
 
   private isReport(doc) {
@@ -570,7 +576,8 @@ export class RulesEngineService implements OnDestroy {
     monthsAgo = 1
   ): string {
     const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
-    const currentInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate);
+    const useBikramSambatMonths = this.uhcSettingsService.getUseBikramSambatMonths(settings);
+    const currentInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate, useBikramSambatMonths);
 
     if (reportingPeriod === ReportingPeriod.CURRENT) {
       return moment(currentInterval.end)
@@ -579,7 +586,11 @@ export class RulesEngineService implements OnDestroy {
     }
 
     const previousMonthDate = moment(currentInterval.end).subtract(monthsAgo, 'months');
-    const previousInterval = this.calendarIntervalService.getInterval(uhcMonthStartDate, previousMonthDate.valueOf());
+    const previousInterval = this.calendarIntervalService.getInterval(
+      uhcMonthStartDate,
+      previousMonthDate.valueOf(),
+      useBikramSambatMonths
+    );
     return moment(previousInterval.end)
       .locale('en')
       .format(this.INTERVAL_TAG_FORMAT);
