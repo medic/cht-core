@@ -381,7 +381,7 @@ const withoutViewCollisions = (extensionLibs, extensionHelpers, view) => {
   }
 
   return Object.entries(extensionHelpers).reduce((helpers, [helperName, helper]) => {
-    if (Object.prototype.hasOwnProperty.call(view, helperName)) {
+    if (Object.hasOwn(view, helperName)) {
       if (!loggedCollisions.has(helperName)) {
         logger.warn(`Extension lib helper "${helperName}" conflicts with template data and will be ignored.`);
         loggedCollisions.add(helperName);
