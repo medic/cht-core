@@ -161,15 +161,23 @@ class HouseholdGeolocationWidget extends Widget {
     }
 
     if (errorCode === GEOLOCATION_PERMISSION_DENIED) {
-      $('<p class="geolocation-permission-denied">')
-        .text(this._translate(TRANSLATION_KEYS.PERMISSION_DENIED))
-        .appendTo($status);
-      if (!this._isEditWithLocation) {
-        this._appendSaveWithoutCheckbox();
-      }
+      this._showPermissionDeniedFailure($status);
       return;
     }
 
+    this._showGenericFailure(errorCode, $status, $bar);
+  }
+
+  _showPermissionDeniedFailure($status) {
+    $('<p class="geolocation-permission-denied">')
+      .text(this._translate(TRANSLATION_KEYS.PERMISSION_DENIED))
+      .appendTo($status);
+    if (!this._isEditWithLocation) {
+      this._appendSaveWithoutCheckbox();
+    }
+  }
+
+  _showGenericFailure(errorCode, $status, $bar) {
     const $resultRow = $('<div class="geolocation-result-row">');
     $('<span class="alert alert-error">')
       .append(
