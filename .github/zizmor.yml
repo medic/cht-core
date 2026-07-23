@@ -13,7 +13,8 @@ rules:
       # comment on PRs from forks. It never checks out or executes PR code —
       # checkout targets the base branch (the pull_request_target default) and
       # all checks operate on API data only. Risk accepted: 2026-07-21.
-      - .github/workflows/andra-bot.yml
+      # NOTE: ignore entries must be the workflow basename, not a path.
+      - andra-bot.yml
 
   template-injection:
     ignore:

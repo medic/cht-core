@@ -21,7 +21,16 @@ const getMessage = (name, replacements = {}) => {
     .reduce((text, [key, value]) => text.replaceAll(`{{${key}}}`, value), template);
 };
 
-const TEMPLATE_SECTIONS = (TEMPLATE.replace(/<!--[\s\S]*?-->/g, '').match(/^# .+$/gm) || [])
+const stripComments = (text) => {
+  let previous;
+  do {
+    previous = text;
+    text = text.replace(/<!--[\s\S]*?-->/g, '');
+  } while (text !== previous);
+  return text;
+};
+
+const TEMPLATE_SECTIONS = (stripComments(TEMPLATE).match(/^# .+$/gm) || [])
   .map(heading => `\`${heading.trim().slice(2)}\``)
   .join(', ');
 
@@ -33,8 +42,7 @@ describe('AndraBot', () => {
 
   const getPr = (overrides = {}) => ({
     number: 42,
-    node_id: 'PR_node42',
-    draft: false,
+    labels: [],
     user: { login: 'external-dev', type: 'User' },
     author_association: 'NONE',
     body: TEMPLATE,
@@ -74,11 +82,14 @@ describe('AndraBot', () => {
           createComment: sinon.stub().resolves(),
           updateComment: sinon.stub().resolves(),
           listComments: sinon.stub(),
+          addLabels: sinon.stub().resolves(),
+          removeLabel: sinon.stub().resolves(),
         },
       },
     };
     core = {
       info: sinon.stub(),
+      warning: sinon.stub(),
       setFailed: sinon.stub(),
     };
     setLinkedIssues([]);
@@ -217,29 +228,81 @@ describe('AndraBot', () => {
     });
   });
 
-  describe('draft conversion', () => {
-    it('should convert the PR to a draft when checks fail', async () => {
+  describe('labelling', () => {
+    const FAILURE_LABEL = 'Waiting for contributor';
+    const SUCCESS_LABEL = 'Ready for review';
+
+    it('should add the failure label when checks fail', async () => {
       await run(getPr());
 
       expect(core.setFailed.calledOnce).to.be.true;
-      const mutations = graphqlCalls('convertPullRequestToDraft');
-      expect(mutations.length).to.equal(1);
-      expect(mutations[0][1]).to.deep.equal({ pullRequestId: 'PR_node42' });
+      expect(github.rest.issues.addLabels.calledOnce).to.be.true;
+      expect(github.rest.issues.addLabels.args[0][0]).to.deep.equal({
+        owner: 'medic',
+        repo: 'cht-core',
+        issue_number: 42,
+        labels: [FAILURE_LABEL],
+      });
     });
 
-    it('should not convert when the PR is already a draft', async () => {
-      await run(getPr({ draft: true }));
+    it('should swap the success label for the failure label when checks fail', async () => {
+      await run(getPr({ labels: [{ name: SUCCESS_LABEL }] }));
 
       expect(core.setFailed.calledOnce).to.be.true;
-      expect(graphqlCalls('convertPullRequestToDraft').length).to.equal(0);
+      expect(github.rest.issues.addLabels.args[0][0].labels).to.deep.equal([FAILURE_LABEL]);
+      expect(github.rest.issues.removeLabel.calledOnce).to.be.true;
+      expect(github.rest.issues.removeLabel.args[0][0].name).to.equal(SUCCESS_LABEL);
     });
 
-    it('should not convert when all checks pass', async () => {
+    it('should not add the failure label again when already present', async () => {
+      await run(getPr({ labels: [{ name: FAILURE_LABEL }] }));
+
+      expect(core.setFailed.calledOnce).to.be.true;
+      expect(github.rest.issues.addLabels.called).to.be.false;
+    });
+
+    it('should swap the failure label for the success label once all checks pass', async () => {
+      setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
+      await run(getPr({ body: filledTemplate, labels: [{ name: FAILURE_LABEL }] }));
+
+      expect(core.setFailed.called).to.be.false;
+      expect(github.rest.issues.addLabels.calledOnce).to.be.true;
+      expect(github.rest.issues.addLabels.args[0][0].labels).to.deep.equal([SUCCESS_LABEL]);
+      expect(github.rest.issues.removeLabel.calledOnce).to.be.true;
+      expect(github.rest.issues.removeLabel.args[0][0]).to.deep.equal({
+        owner: 'medic',
+        repo: 'cht-core',
+        issue_number: 42,
+        name: FAILURE_LABEL,
+      });
+    });
+
+    it('should only add the success label when checks pass on an unlabelled PR', async () => {
       setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
       await run(getPr({ body: filledTemplate }));
 
-      expect(core.setFailed.called).to.be.false;
-      expect(graphqlCalls('convertPullRequestToDraft').length).to.equal(0);
+      expect(github.rest.issues.addLabels.calledOnce).to.be.true;
+      expect(github.rest.issues.addLabels.args[0][0].labels).to.deep.equal([SUCCESS_LABEL]);
+      expect(github.rest.issues.removeLabel.called).to.be.false;
+    });
+
+    it('should not touch labels when checks pass and the success label is already set', async () => {
+      setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
+      await run(getPr({ body: filledTemplate, labels: [{ name: SUCCESS_LABEL }] }));
+
+      expect(github.rest.issues.addLabels.called).to.be.false;
+      expect(github.rest.issues.removeLabel.called).to.be.false;
+    });
+
+    it('should warn but still report the check failures when labelling fails', async () => {
+      github.rest.issues.addLabels.rejects(new Error('Label does not exist'));
+      await run(getPr());
+
+      expect(core.warning.calledOnce).to.be.true;
+      expect(core.warning.args[0][0]).to.contain('Label does not exist');
+      expect(core.setFailed.calledOnce).to.be.true;
+      expect(core.setFailed.args[0][0]).to.contain('AndraBot checks failed');
+      expect(github.rest.issues.createComment.calledOnce).to.be.true;
     });
   });
 

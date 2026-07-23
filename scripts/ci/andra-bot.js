@@ -5,7 +5,8 @@
  * - the PR description follows the pull request template
  * - the PR is linked to an issue (closing keyword or the "Development" sidebar)
  * - the PR author is assigned to the linked issue
- * and posts (or updates) a single comment listing anything that needs fixing.
+ * and posts (or updates) a single comment listing anything that needs fixing. The PR is
+ * labelled with FAILURE_LABEL while checks fail and SUCCESS_LABEL once they all pass.
  *
  * The message texts live in ./andra-bot-messages/ so they can be edited without touching this script.
  */
@@ -14,6 +15,8 @@ const fs = require('fs');
 const path = require('path');
 
 const COMMENT_MARKER = '<!-- andra-bot -->';
+const FAILURE_LABEL = 'Waiting for contributor';
+const SUCCESS_LABEL = 'Ready for review';
 const TRUSTED_ASSOCIATIONS = ['OWNER', 'MEMBER', 'COLLABORATOR'];
 const MESSAGES_DIR = path.join(__dirname, 'andra-bot-messages');
 const PR_TEMPLATE_PATH = path.join(__dirname, '..', '..', '.github', 'PULL_REQUEST_TEMPLATE.md');
@@ -27,7 +30,16 @@ const getMessage = (name, replacements = {}) => {
 
 const readPrTemplate = () => fs.readFileSync(PR_TEMPLATE_PATH, 'utf8');
 
-const stripComments = (text) => text.replace(/<!--[\s\S]*?-->/g, '');
+// Strips repeatedly so removals can't splice new comment markers together
+// (e.g. `<!-<!-- x -->- y -->`); also keeps CodeQL's sanitization check happy.
+const stripComments = (text) => {
+  let previous;
+  do {
+    previous = text;
+    text = text.replace(/<!--[\s\S]*?-->/g, '');
+  } while (text !== previous);
+  return text;
+};
 
 const getHeadings = (template) => {
   const headings = stripComments(template).match(/^# .+$/gm) || [];
@@ -149,19 +161,44 @@ const upsertComment = async (github, context, existingComment, body) => {
   });
 };
 
-const convertToDraft = async (github, context, core) => {
+const hasLabel = (pr, name) => pr.labels.some(label => label.name === name);
+
+const addLabel = async (github, context, core, name) => {
   const pr = context.payload.pull_request;
-  if (pr.draft) {
+  if (hasLabel(pr, name)) {
     return;
   }
-  const mutation = `
-    mutation ($pullRequestId: ID!) {
-      convertPullRequestToDraft(input: { pullRequestId: $pullRequestId }) {
-        pullRequest { isDraft }
-      }
-    }`;
-  await github.graphql(mutation, { pullRequestId: pr.node_id });
-  core.info('Converted the PR to a draft.');
+  try {
+    await github.rest.issues.addLabels({
+      ...context.repo,
+      issue_number: pr.number,
+      labels: [name],
+    });
+  } catch (err) {
+    // The check outcome stands either way — warn instead of masking the check results.
+    core.warning(`Could not add the "${name}" label: ${err.message}`);
+  }
+};
+
+const removeLabel = async (github, context, core, name) => {
+  const pr = context.payload.pull_request;
+  if (!hasLabel(pr, name)) {
+    return;
+  }
+  try {
+    await github.rest.issues.removeLabel({
+      ...context.repo,
+      issue_number: pr.number,
+      name,
+    });
+  } catch (err) {
+    core.warning(`Could not remove the "${name}" label: ${err.message}`);
+  }
+};
+
+const swapLabels = async (github, context, core, addName, removeName) => {
+  await addLabel(github, context, core, addName);
+  await removeLabel(github, context, core, removeName);
 };
 
 const findExistingComment = async (github, context) => {
@@ -189,11 +226,12 @@ module.exports = async ({ github, context, core }) => {
       const body = `${COMMENT_MARKER}\n${getMessage('success', { author: pr.user.login })}`;
       await upsertComment(github, context, existingComment, body);
     }
+    await swapLabels(github, context, core, SUCCESS_LABEL, FAILURE_LABEL);
     core.info('All AndraBot checks passed.');
     return;
   }
 
   await upsertComment(github, context, existingComment, buildCommentBody(pr, failures));
-  await convertToDraft(github, context, core);
+  await swapLabels(github, context, core, FAILURE_LABEL, SUCCESS_LABEL);
   core.setFailed(`AndraBot checks failed:\n- ${failures.join('\n- ')}`);
 };

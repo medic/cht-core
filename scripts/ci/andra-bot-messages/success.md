@@ -1,1 +1,1 @@
-All checks passed — thank you @{{author}}! You can now mark the PR as ready for review.
+All checks passed — thank you @{{author}}! This PR is ready for review.
