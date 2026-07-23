@@ -303,6 +303,7 @@ const filterByFacility = async (parentFacility, reportFacility) => {
 
 const setSidebarFilterDate = async (fieldPromise, calendarIdx, date) => {
   await fieldPromise.waitForDisplayed();
+  await fieldPromise.waitForClickable();
   await fieldPromise.click();
 
   const dateRangePicker = `.daterangepicker:nth-of-type(${calendarIdx})`;
@@ -325,6 +326,7 @@ const setSidebarFilterToDate = () => {
 
 const setSidebarFilterBikDate = async (fieldPromise, prevClicks, cellIndex) => {
   await fieldPromise.waitForDisplayed();
+  await fieldPromise.waitForClickable();
   await fieldPromise.click();
 
   let picker;
