@@ -4,6 +4,7 @@ const { Person, Qualifier } = require('@medic/cht-datasource');
 const auth = require('../../../src/auth');
 const dataContext = require('../../../src/services/data-context');
 const serverUtils = require('../../../src/server-utils');
+const { NotFoundError } = require('../../../src/errors');
 
 describe('Person Controller', () => {
   const sandbox = sinon.createSandbox();
@@ -202,6 +203,24 @@ describe('Person Controller', () => {
         expect(updatePerson.calledOnceWithExactly(input)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
         expect(res.json.calledOnceWithExactly(updatePersonDoc)).to.be.true;
+      });
+    });
+
+    describe('delete', () => {
+      // the delete logic itself is covered in the delete-contact service spec
+      it('responds 404 for an id that is not a person', async () => {
+        req = { params: { uuid: 'place-1' }, query: {} };
+        personGet.resolves(null);
+
+        await controller.v1.delete(req, res);
+
+        expect(personGet.calledOnceWithExactly(Qualifier.byUuid('place-1'))).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        const err = serverUtilsError.args[0][0];
+        expect(err).to.be.an.instanceOf(NotFoundError);
+        expect(err.message).to.equal('Person not found');
+        expect(serverUtilsError.args[0][1]).to.equal(req);
+        expect(serverUtilsError.args[0][2]).to.equal(res);
       });
     });
   });

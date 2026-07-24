@@ -70,6 +70,7 @@ const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-senti
 const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 const auditDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-audit`, { auth });
+const archiveDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-archive`, { auth });
 const existingFeedbackDocIds = [];
 const MINIMUM_BROWSER_VERSION = '107';
 const KUBECTL_CONTEXT = `-n ${PROJECT_NAME} --context k3d-${PROJECT_NAME}`;
@@ -1210,7 +1211,17 @@ const waitForAuditCount = async (docId, expectedCount, retries = 15) => {
   return waitForAuditCount(docId, expectedCount, retries - 1);
 };
 
-
+const waitForBulkOperation = async (id, tries = 30) => {
+  for (let i = 0; i < tries; i++) {
+    const log = await request({ path: `/api/v1/bulk-operations/${id}` });
+    const actions = Object.values(log.actions || {});
+    if (actions.every(action => action.status !== 'queued')) {
+      return log;
+    }
+    await delayPromise(100);
+  }
+  throw new Error(`bulk operation ${id} did not complete`);
+};
 
 const getDefaultSettings = () => {
   const pathToDefaultAppSettings = path.join(__dirname, '../config.default.json');
@@ -1870,6 +1881,7 @@ module.exports = {
   logsDb,
   usersDb,
   auditDb,
+  archiveDb,
 
   SW_SUCCESSFUL_REGEX,
   ONE_YEAR_IN_S,
@@ -1919,8 +1931,8 @@ module.exports = {
   setTransitionSeqToNow,
   waitForDocRev,
   waitForAuditCount,
+  waitForBulkOperation,
   getDefaultSettings,
-
   addTranslations,
   enableLanguage,
   enableLanguages,
