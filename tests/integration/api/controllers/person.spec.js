@@ -3,7 +3,8 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const reportFactory = require('@factories/cht/reports/generic-report');
-const { USER_ROLES, CONTACT_TYPES } = require('@medic/constants');
+const { v7: uuid } = require('uuid');
+const { USER_ROLES, CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 const { expect } = require('chai');
 
 describe('Person API', () => {
@@ -497,30 +498,74 @@ describe('Person API', () => {
   describe('DELETE /api/v1/person/:uuid', () => {
     const endpoint = '/api/v1/person';
 
-    it('returns a dry-run summary and deletes nothing', async () => {
-      const person = personFactory.build({ parent: { _id: place0._id, parent: place0.parent } });
-      const reports = [
-        reportFactory.report().build({ form: 'test-report' }, { patient: person }),
-        reportFactory.report().build({ form: 'test-report' }, { patient: person }),
-      ];
-      await utils.saveDocs([person, ...reports]);
+    const place3Id = uuid();
+    const person0 = utils.deepFreeze(personFactory.build({
+      name: 'person0',
+      patient_id: 'person-with-data',
+      role: 'chw',
+      parent: { _id: place3Id, parent: place1 }
+    }));
+    const person1 = utils.deepFreeze(personFactory.build({ patient_id: 'person-without-data', role: 'patient' }));
+    const place3 = utils.deepFreeze(placeFactory.place().build({
+      _id: place3Id,
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+      parent: place1,
+      contact: person0
+    }));
+    const userToDelete = utils.deepFreeze(userFactory.build({
+      username: 'user-to-delete',
+      place: place3._id,
+      contact: person0._id,
+      roles: [USER_ROLES.ONLINE]
+    }));
+    const deletedUserId = `${PREFIXES.COUCH_USER}${userToDelete.username}`;
+    const reports = utils.deepFreeze([
+      reportFactory.report().build({ form: 'test-report' }, { patient: person0, submitter: person0 }),
+      reportFactory.report().build({ form: 'test-report' }, { patient: person0, submitter: person0 }),
+    ]);
 
+    const expectArchived = async (doc) => {
+      expect(await utils.archiveDb.get(doc._id)).excludingEvery(['_rev', 'reported_date', 'archive_date'])
+        .to.deep.equal(doc);
+      await expect(utils.getDoc(doc._id)).to.be.rejectedWith('404 - {"error":"not_found","reason":"missing"}');
+    };
+
+    before(async () => {
+      await utils.saveDocs([person0, person1, place3, ...reports]);
+      await utils.createUsers([userToDelete]);
+    });
+
+    after(() => utils.deleteUsers([userToDelete]));
+
+    it('returns a dry-run summary and deletes nothing when passing dry_run', async () => {
       const response = await utils.request({
-        path: `${endpoint}/${person._id}`,
+        path: `${endpoint}/${person0._id}`,
         method: 'DELETE',
-        qs: { dry_run: true },
+        qs: { dry_run: true, delete_users: true },
       });
 
       expect(response).to.deep.equal({
-        summary: { archive: { contacts: 1, reports: 2 }, 'set-contact': 0, 'delete-user': 0 },
+        summary: { archive: { contacts: 1, reports: 2 }, 'set-contact': 1, 'delete-user': 1 },
       });
-      const stillThere = await utils.getDoc(person._id);
-      expect(stillThere._id).to.equal(person._id);
+      await expect(utils.getDoc(person0._id)).to.be.fulfilled;
+      await expect(utils.getDoc(reports[0]._id)).to.be.fulfilled;
+      await expect(utils.getDoc(reports[1]._id)).to.be.fulfilled;
+      const updatedPlace = await utils.getDoc(place3Id);
+      expect(updatedPlace.contact._id).to.equal(person0._id);
+      await expect(utils.usersDb.get(deletedUserId)).to.be.fulfilled;
     });
 
-    it('throws 404 when the id is a place, not a person', async () => {
+    it('throws 404 when the id is not a person', async () => {
       await expect(utils.request({ path: `${endpoint}/${place0._id}`, method: 'DELETE' }))
         .to.be.rejectedWith('404 - {"code":404,"error":"Person not found"}');
+    });
+
+    it('throws 400 when deleting a person with a user when delete_users is not passed', async () => {
+      await expect(utils.request({ path: `${endpoint}/${person0._id}`, method: 'DELETE' }))
+        .to.be.rejectedWith(
+          '400 - {"code":400,"error":"1 user(s) are linked to contacts in this hierarchy. '
+          + 'Set delete_users=true (requires can_delete_users) to remove them."}'
+        );
     });
 
     [
@@ -535,6 +580,31 @@ describe('Person API', () => {
         };
         await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
       });
+    });
+
+    it('archives a person with minimal data', async () => {
+      const { id, summary } = await utils.request({ path: `${endpoint}/${person1._id}`, method: 'DELETE' });
+      await utils.waitForBulkOperation(id);
+
+      expect(summary).to.deep.equal({ archive: { contacts: 1, reports: 0 }, 'set-contact': 0, 'delete-user': 0 });
+      await expectArchived(person1);
+    });
+
+    it('archives a person with related entities', async () => {
+      const { id, summary } = await utils.request({
+        path: `${endpoint}/${person0._id}`,
+        method: 'DELETE',
+        qs: { delete_users: true },
+      });
+      await utils.waitForBulkOperation(id);
+
+      expect(summary).to.deep.equal({ archive: { contacts: 1, reports: 2 }, 'set-contact': 1, 'delete-user': 1 });
+      await expectArchived(person0);
+      await expectArchived(reports[0]);
+      await expectArchived(reports[1]);
+      const updatedPlace = await utils.getDoc(place3Id);
+      expect(updatedPlace.contact).to.be.undefined;
+      await expect(utils.usersDb.get(deletedUserId)).to.be.rejectedWith('deleted');
     });
   });
 });
