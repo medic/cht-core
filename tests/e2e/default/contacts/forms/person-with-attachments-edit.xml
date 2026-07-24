@@ -14,6 +14,9 @@
           <text id="/data/person_with_attachments/document:label">
             <value>Document</value>
           </text>
+          <text id="/data/person_with_attachments/badge:label">
+            <value>Badge</value>
+          </text>
         </translation>
       </itext>
       <instance>
@@ -24,6 +27,7 @@
             <name/>
             <photo/>
             <document/>
+            <badge type="binary"/>
           </person_with_attachments>
           <meta tag="hidden">
             <instanceID/>
@@ -35,6 +39,7 @@
       <bind nodeset="/data/person_with_attachments/name" type="string" required="true()"/>
       <bind nodeset="/data/person_with_attachments/photo" type="binary"/>
       <bind nodeset="/data/person_with_attachments/document" type="binary"/>
+      <bind nodeset="/data/person_with_attachments/badge" type="string" readonly="true()"/>
       <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
@@ -49,6 +54,9 @@
       <upload ref="/data/person_with_attachments/document" mediatype="application/*">
         <label ref="jr:itext('/data/person_with_attachments/document:label')"/>
       </upload>
+      <input ref="/data/person_with_attachments/badge" appearance="display-base64-image">
+        <label ref="jr:itext('/data/person_with_attachments/badge:label')"/>
+      </input>
     </group>
   </h:body>
 </h:html>

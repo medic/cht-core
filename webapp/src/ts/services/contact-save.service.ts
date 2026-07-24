@@ -1,25 +1,32 @@
 import { v7 as uuid } from 'uuid';
 import { Injectable, NgZone } from '@angular/core';
 import { defaults as _defaults, isObject as _isObject } from 'lodash-es';
-import * as objectPath from 'object-path';
 
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { AttachmentService } from '@mm-services/attachment.service';
+import { AttachmentRoutingService } from '@mm-services/attachment-routing.service';
+import { AttachmentRoutingStrategy, FieldPath, computeFieldPath } from '@mm-providers/attachment-routing.provider';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
-import { Xpath } from '@mm-providers/xpath-element-path.provider';
-import FileManager from '../../js/enketo/file-manager';
+
+interface ContactOwnerContext {
+  root: Element;
+  preparedDocs: Record<string, any>[];
+  mainDoc: Record<string, any>;
+  submittedRepeatsLen: number;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class ContactSaveService {
   private readonly CONTACT_FIELD_NAMES = [ 'parent', 'contact' ];
-  private readonly USER_FILE_ATTACHMENT_PREFIX = 'user-file-';
+  private readonly REPEAT_CHILD_NODE_NAME = 'child';
   private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
   constructor(
+    private readonly attachmentRoutingService: AttachmentRoutingService,
     private enketoTranslationService:EnketoTranslationService,
     private extractLineageService:ExtractLineageService,
     private readonly attachmentService:AttachmentService,
@@ -55,7 +62,7 @@ export class ContactSaveService {
 
         // Process attachments for all documents
         const preparedDocs = [ doc ].concat(repeated, siblings); // NB: order matters: #4200
-        this.processAllAttachments(preparedDocs, xmlStr);
+        this.processAllAttachments(preparedDocs, submitted, xmlStr);
 
         return {
           docId: doc._id,
@@ -86,176 +93,122 @@ export class ContactSaveService {
     });
   }
 
-  /**
-   * Sanitizes a file name by removing special characters.
-   * Only allows letters (a-z, A-Z), numbers (0-9), underscores (_), dashes (-), and dots (.).
-   * All other characters are removed.
-   *
-   * If sanitizing removes all characters from the file stem (e.g. a file name written entirely
-   * in a non-Latin script like Devanagari), a UUID is used as the stem to ensure a valid file name.
-   *
-   * @param fileName - The file name to sanitize
-   * @returns The sanitized file name with special characters removed, or a UUID-based name if
-   *          the stem becomes empty after sanitization
-   */
-  private sanitizeFileName(fileName: string): string {
-    const disallowedChars = /[^a-zA-Z0-9_.-]/g;
-    const lastDotIndex = fileName.lastIndexOf('.');
-    const hasExtension = lastDotIndex > 0;
-
-    if (!hasExtension) {
-      return fileName.replace(disallowedChars, '') || uuid(); // NOSONAR
-    }
-
-    const stem = fileName.slice(0, lastDotIndex);
-    const extension = fileName.slice(lastDotIndex);
-    const sanitizedStem = stem.replace(disallowedChars, ''); // NOSONAR
-    return (sanitizedStem || uuid()) + extension;
-  }
-
-  /**
-   * Finds all paths in a document that match a given filter predicate.
-   * Returns paths in dot notation (e.g., 'photo', 'metadata.images.0.photo').
-   *
-   * Always skips keys starting with underscore (CouchDB internal fields like _id, _rev, _attachments).
-   *
-   * @param doc - The document to search
-   * @param filter - Predicate function that returns true for values we want to find
-   * @returns Array of paths in dot notation
-   */
-  private findPaths(
-    doc: Record<string, any>,
-    filter: (value: any) => boolean
-  ): string[] {
-    const paths: string[] = [];
-
-    const traverse = (current: any, currentPath: string[] = []) => {
-      if (filter(current)) {
-        paths.push(currentPath.join('.'));
-      }
-
-      if (Array.isArray(current)) {
-        current.forEach((item, idx) => traverse(item, [...currentPath, idx.toString()]));
-      } else if (current && typeof current === 'object') {
-        Object.entries(current).forEach(([key, value]) => {
-          if (!key.startsWith('_')) {
-            traverse(value, [...currentPath, key]);
-          }
-        });
-      }
+  private processAllAttachments(
+    preparedDocs: Record<string, any>[],
+    submitted: { doc; siblings?; repeats? },
+    xmlStr: string,
+  ) {
+    const ctx: ContactOwnerContext = {
+      root: $.parseXML(xmlStr).documentElement,
+      preparedDocs,
+      mainDoc: preparedDocs[0],
+      submittedRepeatsLen: submitted?.repeats?.child_data?.length ?? 0
     };
 
-    Object.entries(doc).forEach(([key, value]) => {
-      if (!key.startsWith('_')) {
-        traverse(value, [key]);
-      }
-    });
-
-    return paths;
+    this.attachmentRoutingService.route(this.contactRoutingStrategy(ctx));
   }
 
   /**
-   * Recursively scans through a document and replaces field values that reference
-   * uploaded file names with their sanitized equivalents. Modifies the document in place.
-   *
-   * @param doc - The document to scan and modify
-   * @param fileNameMap - Map of original file names to sanitized file names
+   * Contact pipeline's attachment-routing strategy. Owner resolution classifies
+   * the element's section (main / sibling / repeat `<child>`); the reference
+   * container is that same section / `<child>`; field paths are plain dot-paths
+   * relative to it (contact repeats are separate docs, never arrays).
    */
-  private sanitizeFieldValues(doc: Record<string, any>, fileNameMap: Map<string, string>): void {
-    const pathsToUpdate = this.findPaths(
-      doc,
-      value => typeof value === 'string' && fileNameMap.has(value)
-    );
-
-    pathsToUpdate.forEach(path => {
-      const currentValue = objectPath.get(doc, path);
-      objectPath.set(doc, path, fileNameMap.get(currentValue));
-    });
-  }
-
-  private processAllAttachments(preparedDocs: Record<string, any>[], xmlStr: string) {
-    const mainDoc = preparedDocs[0];
-    const newAttachmentNames = new Set<string>();
-    const fileNameMap = new Map<string, string>(); // Map of original file name -> sanitized file name
-
-    // Attach files from FileManager (uploaded via file widgets)
-    FileManager
-      .getCurrentFiles()
-      .forEach(file => {
-        const sanitizedFileName = this.sanitizeFileName(file.name);
-        const attachmentName = `${this.USER_FILE_ATTACHMENT_PREFIX}${sanitizedFileName}`;
-        newAttachmentNames.add(attachmentName);
-        this.attachmentService.add(mainDoc, attachmentName, file, file.type, false);
-
-        // Track the mapping for field value sanitization
-        fileNameMap.set(file.name, sanitizedFileName);
-      });
-
-    // Process binary fields from XML
-    if (xmlStr) {
-      const $record = $($.parseXML(xmlStr));
-      const formId = $record.find(':first').attr('id');
-
-      $record
-        .find('[type=binary]')
-        .each((_idx, element) => {
-          const content = $(element).text();
-          if (content) {
-            const xpath = Xpath.getElementXPath(element);
-            // Replace instance root element node name with form internal ID
-            const filename = this.USER_FILE_ATTACHMENT_PREFIX.slice(0, -1) +
-              (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId));
-            newAttachmentNames.add(filename);
-            this.attachmentService.add(mainDoc, filename, content, 'image/png', true);
-          }
-        });
-    }
-
-    // Sanitize field values in the document to match sanitized attachment names
-    this.sanitizeFieldValues(mainDoc, fileNameMap);
-
-    // Remove orphaned user attachments that are no longer referenced
-    const referencedAttachmentNames = this.findReferencedAttachments(mainDoc);
-    const validAttachmentNames = new Set([...newAttachmentNames, ...referencedAttachmentNames]);
-    this.removeOrphanedAttachments(mainDoc, validAttachmentNames);
-  }
-
-  private findReferencedAttachments(doc: Record<string, any>): Set<string> {
-    const referenced = new Set<string>();
-    if (!doc._attachments) {
-      return referenced;
-    }
-
-    const existingAttachmentNames = Object.keys(doc._attachments);
-
-    const isReferencedAttachment = (value: any): boolean => {
-      if (typeof value !== 'string' || !value) {
-        return false;
-      }
-      const possibleAttachmentName = `${this.USER_FILE_ATTACHMENT_PREFIX}${value}`;
-      return existingAttachmentNames.includes(possibleAttachmentName);
+  private contactRoutingStrategy(ctx: ContactOwnerContext): AttachmentRoutingStrategy {
+    return {
+      root: ctx.root,
+      docs: ctx.preparedDocs,
+      mainDoc: ctx.mainDoc,
+      resolveOwnerForNode: (element: Element) => this.resolveContactOwnerDoc(element, ctx),
+      containerFor: (element: Element) => this.findFieldContainerElement(element, ctx),
+      fieldPathFor: (element: Element): FieldPath | null => {
+        const container = this.findFieldContainerElement(element, ctx);
+        return container ? computeFieldPath(element, container) : null;
+      },
     };
-
-    const referencedPaths = this.findPaths(doc, isReferencedAttachment);
-
-    referencedPaths.forEach(path => {
-      const value = objectPath.get(doc, path);
-      referenced.add(`${this.USER_FILE_ATTACHMENT_PREFIX}${value}`);
-    });
-
-    return referenced;
   }
 
-  private removeOrphanedAttachments(doc: Record<string, any>, validAttachmentNames: Set<string>) {
-    if (!doc._attachments) {
-      return;
+  private findSectionForElement(el: Element, root: Element): Element | null {
+    let section: Element = el;
+    while (section.parentNode && section.parentNode !== root) {
+      section = section.parentNode as Element;
     }
-
-    Object.keys(doc._attachments)
-      .filter(name => name.startsWith(this.USER_FILE_ATTACHMENT_PREFIX) && !validAttachmentNames.has(name))
-      .forEach(name => this.attachmentService.remove(doc, name));
+    return section.parentNode === root ? section : null;
   }
 
+  private isMainSection(section: Element, root: Element): boolean {
+    const ignored = new Set([ 'meta', 'inputs', 'repeat' ]);
+    const firstSection = (Array.from(root.children) as Element[])
+      .find(c => !ignored.has(c.tagName) && c.childElementCount > 0);
+    return section === firstSection;
+  }
+
+  private findSiblingDoc(
+    section: Element,
+    preparedDocs: Record<string, any>[],
+    mainDoc: Record<string, any>,
+  ): Record<string, any> {
+    const siblingId = mainDoc[section.tagName]?._id;
+    return preparedDocs.find((d: Record<string, any>) => d._id === siblingId) ?? mainDoc;
+  }
+
+  private findRepeatDoc(
+    section: Element,
+    el: Element,
+    preparedDocs: Record<string, any>[],
+    submittedRepeatsLen: number,
+  ): Record<string, any> | null {
+    // a <repeat> can also serialize non-<child> nodes (e.g. child_count); skip them
+    const repeatChildren = (Array.from(section.children) as Element[])
+      .filter(c => c.tagName === this.REPEAT_CHILD_NODE_NAME);
+    const childIdx = repeatChildren.findIndex(c => c.contains(el));
+    if (childIdx >= 0 && childIdx < submittedRepeatsLen) {
+      return preparedDocs[1 + childIdx];
+    }
+    return null;
+  }
+
+  /**
+   * The element whose children map 1:1 to the owner doc's top-level fields:
+   * the section itself for main/sibling, the i-th `<child>` of `<repeat>` for
+   * repeats. Anchors `computeFieldPath`.
+   */
+  private findFieldContainerElement(el: Element, ctx: ContactOwnerContext): Element | null {
+    const section = this.findSectionForElement(el, ctx.root);
+    if (!section) {
+      return null;
+    }
+    if (section.tagName === 'repeat') {
+      const repeatChildren = (Array.from(section.children) as Element[])
+        .filter(c => c.tagName === this.REPEAT_CHILD_NODE_NAME);
+      return repeatChildren.find(c => c.contains(el)) ?? null;
+    }
+    return section;
+  }
+
+  /**
+   * Resolves the prepared sub-doc that owns an XML element by walking up to its
+   * section root (a direct child of the form root):
+   *
+   *   - main section (first non-meta/inputs/repeat element child of root) -> preparedDocs[0]
+   *   - <contact> / <parent> peer of main section -> sibling doc with matching _id
+   *   - <repeat>'s i-th <child> -> preparedDocs[1 + i] (repeats precede siblings in concat)
+   *   - anything else (meta, inputs, unknown) -> mainDoc
+   */
+  private resolveContactOwnerDoc(el: Element, ctx: ContactOwnerContext): Record<string, any> {
+    const { root, preparedDocs, mainDoc, submittedRepeatsLen } = ctx;
+    const section = this.findSectionForElement(el, root);
+    if (!section || this.isMainSection(section, root)) {
+      return mainDoc;
+    }
+    if (this.CONTACT_FIELD_NAMES.includes(section.tagName)) {
+      return this.findSiblingDoc(section, preparedDocs, mainDoc);
+    }
+    if (section.tagName === 'repeat') {
+      return this.findRepeatDoc(section, el, preparedDocs, submittedRepeatsLen) ?? mainDoc;
+    }
+    return mainDoc;
+  }
 
   private extractIfRequired(name, value) {
     return this.CONTACT_FIELD_NAMES.includes(name) ? this.extractLineageService.extract(value) : value;
