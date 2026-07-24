@@ -1,6 +1,3 @@
-const fs = require('fs');
-const path = require('path');
-
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
@@ -9,28 +6,41 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const utils = require('@utils');
 const { DOC_IDS } = require('@medic/constants');
 
-const colorsXmlContent = fs.readFileSync(path.join(__dirname, 'forms', 'colors.xml'));
+const colorsXmlContent = `<root>
+  <item>
+    <name>red</name>
+    <label>Red</label>
+  </item>
+  <item>
+    <name>green</name>
+    <label>Green</label>
+  </item>
+  <item>
+    <name>blue</name>
+    <label>Blue</label>
+  </item>
+</root>
+`;
+
+let originalResourcesDoc;
 
 const upsertResourcesDoc = async () => {
-  // The resource must be registered in the `resources` map (name -> attachment name) as well as
-  // added as an attachment, otherwise CustomResourceService.getResource/getXml cannot resolve it.
-  const resources = { 'colors.xml': 'colors.xml' };
-  const attachment = {
-    'colors.xml': {
-      content_type: 'application/xml',
-      data: Buffer.from(colorsXmlContent).toString('base64'),
+  originalResourcesDoc = await utils.getDoc(DOC_IDS.RESOURCES);
+  const { rev } = await utils.saveDoc({
+    ...originalResourcesDoc,
+    resources: {
+      ...originalResourcesDoc.resources,
+      'colors.xml': 'colors.xml'
+    },
+    _attachments: {
+      ...originalResourcesDoc._attachments,
+      'colors.xml': {
+        content_type: 'application/xml',
+        data: Buffer.from(colorsXmlContent).toString('base64'),
+      }
     }
-  };
-
-  let resourcesDoc;
-  try {
-    resourcesDoc = await utils.getDoc(DOC_IDS.RESOURCES);
-    resourcesDoc.resources = { ...resourcesDoc.resources, ...resources };
-    resourcesDoc._attachments = { ...resourcesDoc._attachments, ...attachment };
-  } catch {
-    resourcesDoc = { _id: DOC_IDS.RESOURCES, resources, _attachments: attachment };
-  }
-  await utils.saveDoc(resourcesDoc);
+  });
+  originalResourcesDoc._rev = rev;
 };
 
 describe('Select from external dataset (select_one_from_file)', () => {
@@ -40,6 +50,8 @@ describe('Select from external dataset (select_one_from_file)', () => {
     await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/select_from_file`));
     await commonPage.reloadSession();
   });
+
+  after(() => utils.saveDoc(originalResourcesDoc));
 
   it('loads choices from external XML dataset and submits selected value', async () => {
     await loginPage.cookieLogin();
@@ -58,5 +70,4 @@ describe('Select from external dataset (select_one_from_file)', () => {
     await reportsPage.firstReportDetailField().waitForDisplayed();
     expect(await reportsPage.firstReportDetailField().getText()).to.equal('red');
   });
-
 });
