@@ -5,7 +5,8 @@
  * - the PR description follows the pull request template
  * - the PR is linked to an issue (closing keyword or the "Development" sidebar)
  * - the PR author is assigned to the linked issue
- * and posts (or updates) a single comment listing anything that needs fixing. The PR is
+ * and posts a single comment listing anything that needs fixing, replaced whenever its
+ * content changes so the author is notified (comment edits are silent). The PR is
  * labelled with FAILURE_LABEL while checks fail and SUCCESS_LABEL once they all pass.
  *
  * The message texts live in ./andra-bot-messages/ so they can be edited without touching this script.
@@ -152,14 +153,20 @@ const buildCommentBody = (pr, failures) => {
   return `${COMMENT_MARKER}\n${intro}\n\n${items}\n\n${outro}`;
 };
 
-const upsertComment = async (github, context, existingComment, body) => {
+// GitHub may store comment bodies with \r\n line endings, so normalize before comparing.
+const sameContent = (a, b) => a.replaceAll('\r\n', '\n').trim() === b.replaceAll('\r\n', '\n').trim();
+
+// Editing a comment does not notify the PR author, so when the content changes the old
+// comment is deleted and a new one is posted instead. Identical content is left alone.
+const syncComment = async (github, context, existingComment, body) => {
+  if (existingComment && sameContent(existingComment.body, body)) {
+    return;
+  }
   if (existingComment) {
-    await github.rest.issues.updateComment({
+    await github.rest.issues.deleteComment({
       ...context.repo,
       comment_id: existingComment.id,
-      body,
     });
-    return;
   }
   await github.rest.issues.createComment({
     ...context.repo,
@@ -231,14 +238,14 @@ const runAndraBot = async ({ github, context, core }) => {
   if (!failures.length) {
     if (existingComment) {
       const body = `${COMMENT_MARKER}\n${getMessage('success', { author: pr.user.login })}`;
-      await upsertComment(github, context, existingComment, body);
+      await syncComment(github, context, existingComment, body);
     }
     await swapLabels(github, context, core, { add: SUCCESS_LABEL, remove: FAILURE_LABEL });
     core.info('All AndraBot checks passed.');
     return;
   }
 
-  await upsertComment(github, context, existingComment, buildCommentBody(pr, failures));
+  await syncComment(github, context, existingComment, buildCommentBody(pr, failures));
   await swapLabels(github, context, core, { add: FAILURE_LABEL, remove: SUCCESS_LABEL });
   core.setFailed(`AndraBot checks failed:\n- ${failures.join('\n- ')}`);
 };

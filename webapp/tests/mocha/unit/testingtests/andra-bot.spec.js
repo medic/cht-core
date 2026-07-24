@@ -80,7 +80,7 @@ describe('AndraBot', () => {
       rest: {
         issues: {
           createComment: sinon.stub().resolves(),
-          updateComment: sinon.stub().resolves(),
+          deleteComment: sinon.stub().resolves(),
           listComments: sinon.stub(),
           addLabels: sinon.stub().resolves(),
           removeLabel: sinon.stub().resolves(),
@@ -341,27 +341,54 @@ describe('AndraBot', () => {
       expect(args.body).to.contain(getMessage('outro'));
     });
 
-    it('should update the existing bot comment instead of creating a new one', async () => {
+    it('should replace the existing bot comment when the content differs', async () => {
       github.paginate.resolves([
         { id: 7, body: 'a human comment' },
         { id: 8, body: `${COMMENT_MARKER}\nold bot comment` },
       ]);
       await run(getPr());
 
-      expect(github.rest.issues.createComment.called).to.be.false;
-      expect(github.rest.issues.updateComment.calledOnce).to.be.true;
-      expect(github.rest.issues.updateComment.args[0][0].comment_id).to.equal(8);
+      expect(github.rest.issues.deleteComment.calledOnce).to.be.true;
+      expect(github.rest.issues.deleteComment.args[0][0].comment_id).to.equal(8);
+      expect(github.rest.issues.createComment.calledOnce).to.be.true;
+      expect(github.rest.issues.createComment.args[0][0].body).to.contain(templateMismatchMessage());
     });
 
-    it('should update the bot comment with a success message once all checks pass', async () => {
+    it('should leave the bot comment alone when the content is unchanged', async () => {
+      await run(getPr());
+      const body = github.rest.issues.createComment.args[0][0].body;
+
+      github.rest.issues.createComment.resetHistory();
+      github.paginate.resolves([{ id: 8, body }]);
+      await run(getPr());
+
+      expect(github.rest.issues.deleteComment.called).to.be.false;
+      expect(github.rest.issues.createComment.called).to.be.false;
+      expect(core.setFailed.calledTwice).to.be.true;
+    });
+
+    it('should treat stored \\r\\n line endings as unchanged content', async () => {
+      await run(getPr());
+      const body = github.rest.issues.createComment.args[0][0].body;
+
+      github.rest.issues.createComment.resetHistory();
+      github.paginate.resolves([{ id: 8, body: body.replaceAll('\n', '\r\n') }]);
+      await run(getPr());
+
+      expect(github.rest.issues.deleteComment.called).to.be.false;
+      expect(github.rest.issues.createComment.called).to.be.false;
+    });
+
+    it('should replace the bot comment with a success message once all checks pass', async () => {
       github.paginate.resolves([{ id: 8, body: `${COMMENT_MARKER}\nold bot comment` }]);
       setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
       await run(getPr({ body: filledTemplate }));
 
       expect(core.setFailed.called).to.be.false;
-      expect(github.rest.issues.createComment.called).to.be.false;
-      expect(github.rest.issues.updateComment.calledOnce).to.be.true;
-      expect(github.rest.issues.updateComment.args[0][0].body)
+      expect(github.rest.issues.deleteComment.calledOnce).to.be.true;
+      expect(github.rest.issues.deleteComment.args[0][0].comment_id).to.equal(8);
+      expect(github.rest.issues.createComment.calledOnce).to.be.true;
+      expect(github.rest.issues.createComment.args[0][0].body)
         .to.contain(getMessage('success', { author: 'external-dev' }));
     });
 
@@ -370,7 +397,7 @@ describe('AndraBot', () => {
       await run(getPr({ body: filledTemplate }));
 
       expect(github.rest.issues.createComment.called).to.be.false;
-      expect(github.rest.issues.updateComment.called).to.be.false;
+      expect(github.rest.issues.deleteComment.called).to.be.false;
       expect(core.setFailed.called).to.be.false;
     });
   });
