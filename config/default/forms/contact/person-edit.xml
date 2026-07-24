@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
   <h:head>
     <h:title>Edit Person</h:title>
     <model odk:xforms-version="1.0.0">
@@ -97,12 +97,6 @@
           </text>
           <text id="/data/person/short_name:hint">
             <value>Please enter a short name that is preferred by the person.</value>
-          </text>
-          <text id="/data/person/date_of_birth:label">
-            <value>Date of Birth</value>
-          </text>
-          <text id="/data/person/date_of_birth_method:label">
-            <value>Method to select date of birth</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
             <value>Date must be before today</value>
@@ -243,9 +237,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <text id="/data/person/name:label">
             <value>नाम</value>
           </text>
-          <text id="/data/person/date_of_birth:label">
-            <value>जन्म की तारीख</value>
-          </text>
           <text id="/data/person/phone:jr:constraintMsg">
             <value>कृपया एक सही स्थानीय नंबर दर्ज करें, या मानक अंतरराष्ट्रीय प्रारूप का उपयोग करें, जिसमें एक प्लस साइन (+) और देश कोड शामिल है। उदाहरण के लिए: +914712345678</value>
           </text>
@@ -283,12 +274,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
             <value>-</value>
           </text>
           <text id="/data/person/short_name:hint">
-            <value>-</value>
-          </text>
-          <text id="/data/person/date_of_birth_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
@@ -404,9 +389,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <text id="/data/person/name:label">
             <value>Nama</value>
           </text>
-          <text id="/data/person/date_of_birth:label">
-            <value>Tanggal Lahir</value>
-          </text>
           <text id="/data/person/phone:label">
             <value>Nomor Telepon</value>
           </text>
@@ -438,12 +420,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
             <value>-</value>
           </text>
           <text id="/data/person/short_name:hint">
-            <value>-</value>
-          </text>
-          <text id="/data/person/date_of_birth_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
@@ -565,9 +541,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <text id="/data/person/name:label">
             <value>Jina</value>
           </text>
-          <text id="/data/person/date_of_birth:label">
-            <value>Tarehe ya Kuzaliwa</value>
-          </text>
           <text id="/data/person/phone:label">
             <value>Namba ya simu</value>
           </text>
@@ -599,12 +572,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
             <value>-</value>
           </text>
           <text id="/data/person/short_name:hint">
-            <value>-</value>
-          </text>
-          <text id="/data/person/date_of_birth_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
@@ -726,9 +693,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <text id="/data/person/name:label">
             <value>नाम</value>
           </text>
-          <text id="/data/person/date_of_birth:label">
-            <value>जन्म मिती</value>
-          </text>
           <text id="/data/person/phone:label">
             <value>फोन नम्बर</value>
           </text>
@@ -760,12 +724,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
             <value>-</value>
           </text>
           <text id="/data/person/short_name:hint">
-            <value>-</value>
-          </text>
-          <text id="/data/person/date_of_birth_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
@@ -890,9 +848,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <text id="/data/person/name:label">
             <value>Nom</value>
           </text>
-          <text id="/data/person/date_of_birth:label">
-            <value>Date de naissance</value>
-          </text>
           <text id="/data/person/phone:jr:constraintMsg">
             <value>Veuillez entrer un numéro local valide ou utiliser le format international standard, qui comprend un signe plus (+) et le code du pays. Par exemple: +254712345678</value>
           </text>
@@ -929,12 +884,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <text id="/data/person/short_name:hint">
             <value>-</value>
           </text>
-          <text id="/data/person/date_of_birth_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
             <value>-</value>
           </text>
@@ -968,7 +917,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
         </translation>
       </itext>
       <instance>
-        <data id="contact:person:edit" version="2025-05-01 22-43" prefix="J1!contact:person:edit!" delimiter="#">
+        <data id="contact:person:edit" version="20260724164712" prefix="J1!contact:person:edit!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -1003,8 +952,8 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
               <dob_iso/>
               <dob_debug/>
             </ephemeral_dob>
-            <phone/>
-            <phone_alternate/>
+            <phone cht:unique_tel="true"/>
+            <phone_alternate cht:unique_tel="true"/>
             <sex/>
             <role/>
             <role_other/>
@@ -1156,8 +1105,8 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
       <bind nodeset="/data/person/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected( ../dob_method,'approx')), &#10;../dob_calendar,&#10;../dob_approx)"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"/>
-      <bind nodeset="/data/person/phone" type="tel" constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone:jr:constraintMsg')"/>
-      <bind nodeset="/data/person/phone_alternate" type="tel" constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone_alternate:jr:constraintMsg')"/>
+      <bind nodeset="/data/person/phone" type="string" constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone:jr:constraintMsg')"/>
+      <bind nodeset="/data/person/phone_alternate" type="string" constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone_alternate:jr:constraintMsg')"/>
       <bind nodeset="/data/person/sex" type="string"/>
       <bind nodeset="/data/person/role" type="string"/>
       <bind nodeset="/data/person/role_other" type="string" required="true()" relevant="selected(  /data/person/role ,'other')"/>
@@ -1190,8 +1139,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
       <input ref="/data/init/person_parent" appearance="select-contact hidden">
         <label ref="jr:itext('/data/init/person_parent:label')"/>
       </input>
-      <input ref="/data/init/type" appearance="hidden"/>
-      <input ref="/data/init/name" appearance="hidden"/>
       <input ref="/data/init/note_place">
         <label ref="jr:itext('/data/init/note_place:label')"/>
       </input>
@@ -1252,10 +1199,10 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <label ref="jr:itext('/data/person/ephemeral_dob/dob_debug:label')"/>
         </input>
       </group>
-      <input ref="/data/person/phone">
+      <input ref="/data/person/phone" appearance="numbers tel">
         <label ref="jr:itext('/data/person/phone:label')"/>
       </input>
-      <input ref="/data/person/phone_alternate">
+      <input ref="/data/person/phone_alternate" appearance="numbers tel">
         <label ref="jr:itext('/data/person/phone_alternate:label')"/>
       </input>
       <select1 ref="/data/person/sex" appearance="columns">

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
   <h:head>
     <h:title>New Person</h:title>
     <model odk:xforms-version="1.0.0">
@@ -827,7 +827,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
         </translation>
       </itext>
       <instance>
-        <data id="contact:person:create" version="2026-07-22  17-35" prefix="J1!contact:person:create!" delimiter="#">
+        <data id="contact:person:create" version="20260724164712" prefix="J1!contact:person:create!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -862,8 +862,8 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
               <dob_debug/>
             </ephemeral_dob>
             <sex/>
-            <phone/>
-            <phone_alternate/>
+            <phone cht:unique_tel="true"/>
+            <phone_alternate cht:unique_tel="true"/>
             <role/>
             <role_other/>
             <external_id/>
@@ -1002,8 +1002,8 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
       <bind nodeset="/data/person/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"/>
       <bind nodeset="/data/person/sex" type="string" required="true()"/>
-      <bind nodeset="/data/person/phone" type="tel" constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone:jr:constraintMsg')"/>
-      <bind nodeset="/data/person/phone_alternate" type="tel" constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone_alternate:jr:constraintMsg')"/>
+      <bind nodeset="/data/person/phone" type="string" constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone:jr:constraintMsg')"/>
+      <bind nodeset="/data/person/phone_alternate" type="string" constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone_alternate:jr:constraintMsg')"/>
       <bind nodeset="/data/person/role" type="string"/>
       <bind nodeset="/data/person/role_other" type="string" required="true()" relevant="selected(  /data/person/role ,'other')"/>
       <bind nodeset="/data/person/external_id" type="string"/>
@@ -1074,10 +1074,10 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <label ref="jr:itext(itextId)"/>
         </itemset>
       </select1>
-      <input ref="/data/person/phone">
+      <input ref="/data/person/phone" appearance="numbers tel">
         <label ref="jr:itext('/data/person/phone:label')"/>
       </input>
-      <input ref="/data/person/phone_alternate">
+      <input ref="/data/person/phone_alternate" appearance="numbers tel">
         <label ref="jr:itext('/data/person/phone_alternate:label')"/>
       </input>
       <select1 ref="/data/person/role">

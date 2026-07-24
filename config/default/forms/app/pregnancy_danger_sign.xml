@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
   <h:head>
     <h:title>Pregnancy danger sign</h:title>
     <model odk:xforms-version="1.0.0">
@@ -17,41 +17,11 @@
           <text id="translate_woman_start_label-0">
             <value>The woman</value>
           </text>
-          <text id="/data/inputs/source:label">
-            <value>Source</value>
-          </text>
-          <text id="/data/inputs/source_id:label">
-            <value>Source ID</value>
-          </text>
           <text id="/data/inputs/contact:label">
             <value>Contact</value>
           </text>
           <text id="/data/inputs/contact/_id:label">
             <value>What is the patient's name?</value>
-          </text>
-          <text id="/data/inputs/contact/name:label">
-            <value>Name</value>
-          </text>
-          <text id="/data/inputs/contact/short_name:label">
-            <value>Short Name</value>
-          </text>
-          <text id="/data/inputs/contact/patient_id:label">
-            <value>Patient ID</value>
-          </text>
-          <text id="/data/inputs/contact/date_of_birth:label">
-            <value>Date of Birth</value>
-          </text>
-          <text id="/data/inputs/contact/sex:label">
-            <value>Sex</value>
-          </text>
-          <text id="/data/inputs/contact/parent/_id:label">
-            <value>Parent ID</value>
-          </text>
-          <text id="/data/inputs/contact/parent/parent/contact/chw_name:label">
-            <value>CHW name</value>
-          </text>
-          <text id="/data/inputs/contact/parent/parent/contact/phone:label">
-            <value>CHW phone</value>
           </text>
           <text id="/data/danger_signs:label">
             <value>Danger Sign Check</value>
@@ -104,10 +74,16 @@
           <text id="/data/danger_signs/refer_patient_note_2:label">
             <value>&lt;span style="color:red"&gt;Please complete the follow-up task within 3 days.&lt;/span&gt;</value>
           </text>
+          <text id="/data/danger_signs/custom_translations/custom_woman_label_translator:label">
+            <value>hidden</value>
+          </text>
+          <text id="/data/danger_signs/custom_translations/custom_woman_start_label_translator:label">
+            <value>hidden</value>
+          </text>
         </translation>
       </itext>
       <instance>
-        <data id="pregnancy_danger_sign" version="2025-05-01 22:25:49.920000" prefix="J1!pregnancy_danger_sign!" delimiter="#">
+        <data id="pregnancy_danger_sign" version="20260724164711" prefix="J1!pregnancy_danger_sign!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -401,12 +377,14 @@
       </input>
       <group appearance="hidden" ref="/data/danger_signs/custom_translations">
         <select1 ref="/data/danger_signs/custom_translations/custom_woman_label_translator">
+          <label ref="jr:itext('/data/danger_signs/custom_translations/custom_woman_label_translator:label')"/>
           <itemset nodeset="instance('translate_woman_label')/root/item">
             <value ref="name"/>
             <label ref="jr:itext(itextId)"/>
           </itemset>
         </select1>
         <select1 ref="/data/danger_signs/custom_translations/custom_woman_start_label_translator">
+          <label ref="jr:itext('/data/danger_signs/custom_translations/custom_woman_start_label_translator:label')"/>
           <itemset nodeset="instance('translate_woman_start_label')/root/item">
             <value ref="name"/>
             <label ref="jr:itext(itextId)"/>
