@@ -1,5 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { v7 as uuid } from 'uuid';
+import { cloneDeep as _cloneDeep, isEqual as _isEqual, isPlainObject as _isPlainObject } from 'lodash-es';
 import * as pojo2xml from 'pojo2xml';
 import type JQuery from 'jquery';
 import * as FileManager from '../../js/enketo/file-manager.js';
@@ -17,6 +18,18 @@ import { TranslateService } from '@mm-services/translate.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Qualifier, Report } from '@medic/cht-datasource';
 import { DOC_TYPES } from '@medic/constants';
+import * as contactTypesUtils from '@medic/contact-types-utils';
+
+// Behaviour applied to a db-doc child when the parent report is edited and re-saved.
+// - link:     update the existing child in place
+// - readonly: leave existing child untouched (it may be edited elsewhere)
+type DbDocEdit = 'link' | 'readonly';
+const DB_DOC_EDIT_VALUES: DbDocEdit[] = ['link', 'readonly'];
+
+const RESERVED_CHILD_KEYS = new Set(['_id', '_rev']);
+
+// drop any key that would set a prototype rather than an own property.
+const UNSAFE_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
 /**
  * Service for interacting with Enketo forms. This code is intended for displaying forms in the CHT as well as being
@@ -362,10 +375,15 @@ export class EnketoService {
     return form;
   }
 
-  private xmlToDocs(doc, formXml, xmlVersion, record) {
+  private async xmlToDocs(doc, formXml, xmlVersion, record) {
     const recordDoc = $.parseXML(record);
     const $record = $($(recordDoc).children()[0]);
+    const recordRoot = $record[0];
     const repeatPaths = this.enketoTranslationService.getRepeatPaths(formXml);
+    const editing = !!doc._id;
+    // Source for recovering each db-doc child's previously-assigned id. Forms do not declare
+    // an `<_id>` node, so Enketo's prepopulation drops it on reload; recover it from `fields` instead.
+    const previousFields = editing ? doc.fields : undefined;
 
     const mapOrAssignId = (e, id?) => {
       if (!id) {
@@ -381,6 +399,56 @@ export class EnketoService {
     };
 
     mapOrAssignId($record[0], doc._id || uuid());
+
+    const countPrecedingSameNameSiblings = (node) => {
+      let index = 0;
+      for (let sibling = node.previousSibling; sibling; sibling = sibling.previousSibling) {
+        if (sibling.nodeType === Node.ELEMENT_NODE && sibling.nodeName === node.nodeName) {
+          index++;
+        }
+      }
+      return index;
+    };
+
+    // Mirrors the shape of `fields` so a db-doc child can be looked up in previousFields
+    // (repeat rows match by sibling index among same-named siblings).
+    const getFieldsPath = (element) => {
+      const segments: { name: string; index: number }[] = [];
+      for (let node = element; node && node !== recordRoot; node = node.parentNode) {
+        segments.unshift({ name: node.nodeName, index: countPrecedingSameNameSiblings(node) });
+      }
+      return segments;
+    };
+
+    const navigateOneSegment = (cursor, name, index) => {
+      if (!cursor || typeof cursor !== 'object') {
+        return undefined;
+      }
+      const next = cursor[name];
+      return Array.isArray(next) ? next[index] : next;
+    };
+
+    const recoverChildSnapshot = (element): any => {
+      if (!previousFields) {
+        return;
+      }
+      let cursor: any = previousFields;
+      for (const { name, index } of getFieldsPath(element)) {
+        cursor = navigateOneSegment(cursor, name, index);
+      }
+      return cursor && typeof cursor === 'object' ? cursor : undefined;
+    };
+
+    const writeChildIdNode = (element, id) => {
+      let idNode: any = Array
+        .from(element.childNodes)
+        .find((node: any) => node.nodeType === Node.ELEMENT_NODE && node.nodeName === '_id');
+      if (!idNode) {
+        idNode = recordDoc.createElement('_id');
+        element.insertBefore(idNode, element.firstChild);
+      }
+      idNode.textContent = id;
+    };
 
     const getId = (xpath) => {
       const xPathResult = recordDoc.evaluate(xpath, recordDoc, null, XPathResult.ANY_TYPE, null);
@@ -444,13 +512,18 @@ export class EnketoService {
     };
 
     const dbDocTags: string[] = [];
+    const dbDocChildren: { element: any; intent: DbDocEdit; recoveredSnapshot?: any }[] = [];
     $record
       .find('[db-doc]')
       .filter((idx, element) => {
         return $(element).attr('db-doc')?.toLowerCase() === 'true';
       })
       .each((idx, element) => {
-        mapOrAssignId(element);
+        const intent = this.resolveDbDocEditIntent(element);
+        const recoveredSnapshot = recoverChildSnapshot(element);
+        mapOrAssignId(element, recoveredSnapshot?._id);
+        writeChildIdNode(element, element._couchId);
+        dbDocChildren.push({ element, intent, recoveredSnapshot });
         dbDocTags.push(element.tagName);
       });
 
@@ -465,15 +538,31 @@ export class EnketoService {
         $element.text(refId);
       });
 
-    const docsToStore = $record
-      .find('[db-doc=true]')
-      .map((idx, element) => {
-        const docToStore: any = this.enketoTranslationService.reportRecordToJs(getOuterHTML(element));
-        docToStore._id = getId(Xpath.getElementXPath(element));
-        docToStore.reported_date = Date.now();
-        return docToStore;
-      })
-      .get();
+    // For children we are linking to existing documents, fetch their current revisions so the
+    // in-place update does not fail with a conflict.
+    const linkIds = dbDocChildren
+      .filter(child => child.intent === 'link' && child.recoveredSnapshot?._id)
+      .map(child => child.element._couchId);
+    const existingDocs = await this.fetchExistingDocs(linkIds);
+
+    const docsToStore: any[] = [];
+    dbDocChildren.forEach(({ element, intent, recoveredSnapshot }) => {
+      const docToStore: any = this.enketoTranslationService.reportRecordToJs(getOuterHTML(element));
+      docToStore._id = getId(Xpath.getElementXPath(element));
+
+      if (intent === 'readonly' && recoveredSnapshot?._id) {
+        return;
+      }
+
+      const existing = existingDocs.get(docToStore._id);
+      if (intent === 'link' && existing) {
+        docsToStore.push(this.buildLinkedDocUpdate(existing, docToStore, recoveredSnapshot));
+        return;
+      }
+
+      docToStore.reported_date = Date.now();
+      docsToStore.push(docToStore);
+    });
 
     doc._id = getId('/*');
     if (xmlVersion) {
@@ -513,6 +602,94 @@ export class EnketoService {
 
     doc.fields = this.enketoTranslationService.reportRecordToJs(record, formXml);
     return docsToStore;
+  }
+
+  private resolveDbDocEditIntent(element): DbDocEdit {
+    const attr = $(element).attr('db-doc-edit')?.trim().toLowerCase();
+    if (attr) {
+      if ((DB_DOC_EDIT_VALUES as string[]).includes(attr)) {
+        return attr as DbDocEdit;
+      }
+      console.warn(
+        `Unknown db-doc-edit value "${attr}" on <${element.nodeName}>. ` +
+        `Expected one of: ${DB_DOC_EDIT_VALUES.join(', ')}. Falling back to default behaviour.`
+      );
+    }
+
+    const type = $(element).children('type').text().trim();
+    const isContact = type === 'contact' || contactTypesUtils.isHardcodedType(type);
+    return isContact ? 'readonly' : 'link';
+  }
+
+  private async fetchExistingDocs(ids: string[]): Promise<Map<string, any>> {
+    const existing = new Map<string, any>();
+    if (!ids.length) {
+      return existing;
+    }
+    const response = await this.dbService.get().allDocs({ keys: ids, include_docs: true });
+    response.rows?.forEach((row) => {
+      if (row.doc && !row.error && !row.value?.deleted) {
+        existing.set(row.id, row.doc);
+      }
+    });
+    return existing;
+  }
+
+  // Last writer wins: overlay only the current edit so independent edits to `existing` are preserved.
+  // With no `recoveredSnapshot` (legacy/first edit) we fall back to a whole-subtree overlay.
+  private buildLinkedDocUpdate(existing, docToStore, recoveredSnapshot) {
+    const merged = recoveredSnapshot
+      ? this.mergeChangedFields(existing, docToStore, recoveredSnapshot)
+      : { ...existing, ...docToStore };
+    return {
+      ...merged,
+      _id: docToStore._id,
+      _rev: existing._rev,
+      reported_date: existing.reported_date,
+    };
+  }
+
+  private mergeChangedFields(existing, next, prev) {
+    const merged = _cloneDeep(existing);
+    this.applyChangedFields(merged, next, prev || {});
+    return merged;
+  }
+
+  // Keys absent from `next` are never removed from `target` — clearing a parent field
+  // does not delete the corresponding key on the live doc.
+  private applyChangedFields(target, next, prev) {
+    Object.keys(next).forEach((key) => {
+      if (RESERVED_CHILD_KEYS.has(key) || UNSAFE_KEYS.has(key)) {
+        return;
+      }
+      if (key === '_attachments') {
+        this.applyChangedAttachments(target, next._attachments);
+        return;
+      }
+      if (_isEqual(next[key], prev?.[key])) {
+        return;
+      }
+      if (_isPlainObject(next[key]) && _isPlainObject(target[key]) && _isPlainObject(prev?.[key])) {
+        this.applyChangedFields(target[key], next[key], prev[key]);
+        return;
+      }
+      target[key] = _cloneDeep(next[key]);
+    });
+  }
+
+  // Names absent from `nextAtts` are left as-is — clearing a parent binary field orphans the
+  // old attachment on the doc rather than deleting it (mirrors applyChangedFields).
+  private applyChangedAttachments(target, nextAtts) {
+    if (!nextAtts) {
+      return;
+    }
+    target._attachments = target._attachments || {};
+    Object.keys(nextAtts).forEach((name) => {
+      if (UNSAFE_KEYS.has(name)) {
+        return;
+      }
+      target._attachments[name] = nextAtts[name];
+    });
   }
 
   private async update(docId) {

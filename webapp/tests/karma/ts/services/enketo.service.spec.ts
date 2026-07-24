@@ -38,6 +38,7 @@ describe('Enketo service', () => {
 
   let enketoInit;
   let dbGetAttachment;
+  let dbAllDocs;
   let getReport;
   let createObjectURL;
   let TranslateFrom;
@@ -53,6 +54,7 @@ describe('Enketo service', () => {
   beforeEach(() => {
     enketoInit = sinon.stub();
     dbGetAttachment = sinon.stub();
+    dbAllDocs = sinon.stub().resolves({ rows: [] });
     getReport = sinon.stub();
     createObjectURL = sinon.stub();
     TranslateFrom = sinon.stub();
@@ -94,7 +96,7 @@ describe('Enketo service', () => {
         {
           provide: DbService,
           useValue: {
-            get: () => ({ getAttachment: dbGetAttachment })
+            get: () => ({ getAttachment: dbGetAttachment, allDocs: dbAllDocs })
           }
         },
         { provide: TranslateFromService, useValue: { get: TranslateFrom } },
@@ -582,10 +584,12 @@ describe('Enketo service', () => {
           expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'doc1', 'doc2']);
 
           expect(actualReport.fields.doc1).to.deep.equal({
+            _id: actual[1]._id,
             some_property_1: 'some_value_1',
             type: 'thing_1',
           });
           expect(actualReport.fields.doc2).to.deep.equal({
+            _id: actual[2]._id,
             some_property_2: 'some_value_2',
             type: 'thing_2',
           });
@@ -637,6 +641,7 @@ describe('Enketo service', () => {
           expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'doc1', 'doc2']);
 
           expect(actualReport.fields.doc1).to.deep.equal({
+            _id: doc1_id,
             type: 'thing_1',
             some_property_1: 'some_value_1',
             my_self_1: doc1_id,
@@ -644,6 +649,7 @@ describe('Enketo service', () => {
             my_sibling_1: doc2_id
           });
           expect(actualReport.fields.doc2).to.deep.equal({
+            _id: doc2_id,
             type: 'thing_2',
             some_property_2: 'some_value_2',
             my_self_2: doc2_id,
@@ -1100,6 +1106,348 @@ describe('Enketo service', () => {
           expect(removeAttachment.args[0]).excludingEvery('_rev').to.deep.equal([actual, 'content']);
           expect(dispatchEventStub).to.have.been.calledOnceWithExactly(events.BeforeSave());
         });
+    });
+
+    it('links and updates non-contact extra docs in place instead of duplicating them', () => {
+      form.validate.resolves(true);
+      // The live form data has no <_id> node (forms do not declare one), exactly as on a real edit.
+      form.getDataStr.returns(`
+        <data>
+          <name>Sally</name>
+          <doc1 db-doc="true">
+            <type>thing_1</type>
+            <some_property_1>updated_value</some_property_1>
+          </doc1>
+        </data>
+      `);
+      getReport.resolves({
+        _id: 'report-1',
+        _rev: '3-report',
+        form: 'V',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 1000,
+        fields: {
+          name: 'Sally',
+          doc1: { _id: 'child-1', type: 'thing_1', some_property_1: 'original_value' },
+        },
+      });
+      dbAllDocs.resolves({
+        rows: [{
+          id: 'child-1',
+          doc: {
+            _id: 'child-1',
+            _rev: '5-child',
+            type: 'thing_1',
+            some_property_1: 'original_value',
+            reported_date: 500,
+            patient_id: 'kept-by-transition',
+          },
+        }],
+      });
+
+      return service
+        .completeExistingReport(form, { doc: {} }, 'report-1')
+        .then(actual => {
+          // main report + the single child - the child is NOT duplicated
+          expect(actual.length).to.equal(2);
+          const report = actual[0];
+          const child = actual[1];
+
+          expect(report._id).to.equal('report-1');
+          expect(child._id).to.equal('child-1');               // reused, not a new uuid
+          expect(child._rev).to.equal('5-child');              // existing rev for in-place update
+          expect(child.reported_date).to.equal(500);           // original date preserved
+          expect(child.some_property_1).to.equal('updated_value'); // form field updated
+          expect(child.patient_id).to.equal('kept-by-transition'); // foreign field preserved
+          // the child id is round-tripped back into fields for the next edit
+          expect(report.fields.doc1._id).to.equal('child-1');
+          expect(dbAllDocs.calledOnce).to.be.true;
+          expect(dbAllDocs.args[0][0]).to.deep.equal({ keys: ['child-1'], include_docs: true });
+        });
+    });
+
+    it('leaves contact extra docs untouched on edit but keeps references resolving', () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns(`
+        <data>
+          <name>Sally</name>
+          <patient db-doc="true">
+            <type>person</type>
+            <name>Updated Baby</name>
+          </patient>
+          <patient_ref db-doc-ref="/data/patient"/>
+        </data>
+      `);
+      getReport.resolves({
+        _id: 'report-2',
+        _rev: '2-report',
+        form: 'V',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 1000,
+        fields: {
+          name: 'Sally',
+          patient: { _id: 'patient-1', type: 'person', name: 'Baby' },
+          patient_ref: 'patient-1',
+        },
+      });
+
+      return service
+        .completeExistingReport(form, { doc: {} }, 'report-2')
+        .then(actual => {
+          // only the main report is saved; the contact is not re-saved
+          expect(actual.length).to.equal(1);
+          const report = actual[0];
+
+          expect(report._id).to.equal('report-2');
+          expect(report.fields.patient._id).to.equal('patient-1'); // id preserved
+          expect(report.fields.patient_ref).to.equal('patient-1'); // reference still resolves
+          expect(dbAllDocs.called).to.be.false; // readonly never fetches for update
+        });
+    });
+
+    it('honours db-doc-edit="link" to update a contact the report owns', () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns(`
+        <data>
+          <name>Sally</name>
+          <patient db-doc="true" db-doc-edit="link">
+            <type>person</type>
+            <name>Updated Baby</name>
+          </patient>
+        </data>
+      `);
+      getReport.resolves({
+        _id: 'report-2b',
+        _rev: '2-report',
+        form: 'V',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 1000,
+        fields: {
+          name: 'Sally',
+          patient: { _id: 'patient-2', type: 'person', name: 'Baby' },
+        },
+      });
+      dbAllDocs.resolves({
+        rows: [{
+          id: 'patient-2',
+          doc: { _id: 'patient-2', _rev: '7-child', type: 'person', name: 'Baby', reported_date: 400 },
+        }],
+      });
+
+      return service
+        .completeExistingReport(form, { doc: {} }, 'report-2b')
+        .then(actual => {
+          expect(actual.length).to.equal(2);
+          const child = actual[1];
+          expect(child._id).to.equal('patient-2');
+          expect(child._rev).to.equal('7-child');
+          expect(child.name).to.equal('Updated Baby'); // contact updated because author opted in
+          expect(child.reported_date).to.equal(400);
+        });
+    });
+
+    it('re-creates a linked extra doc, reusing its id, when the original is missing', () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns(`
+        <data>
+          <name>Sally</name>
+          <doc1 db-doc="true">
+            <type>thing_1</type>
+            <some_property_1>some_value_1</some_property_1>
+          </doc1>
+        </data>
+      `);
+      getReport.resolves({
+        _id: 'report-4',
+        _rev: '1-report',
+        form: 'V',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 1000,
+        fields: {
+          name: 'Sally',
+          doc1: { _id: 'child-gone', type: 'thing_1', some_property_1: 'some_value_1' },
+        },
+      });
+      dbAllDocs.resolves({ rows: [{ key: 'child-gone', error: 'not_found' }] });
+
+      return service
+        .completeExistingReport(form, { doc: {} }, 'report-4')
+        .then(actual => {
+          expect(actual.length).to.equal(2);
+          const child = actual[1];
+          expect(child._id).to.equal('child-gone'); // reuses the recovered id, no duplicate
+          expect(child._rev).to.be.undefined;       // created fresh, no conflict
+          expect(actual[0].fields.doc1._id).to.equal('child-gone');
+        });
+    });
+
+    it('preserves an independent edit, applying only the field the parent changed', () => {
+      form.validate.resolves(true);
+      // Parent edits some_property_1; leaves some_property_2 as it was in the last report snapshot.
+      form.getDataStr.returns(`
+        <data>
+          <name>Sally</name>
+          <doc1 db-doc="true">
+            <type>thing_1</type>
+            <some_property_1>parent_new</some_property_1>
+            <some_property_2>snapshot_val</some_property_2>
+          </doc1>
+        </data>
+      `);
+      getReport.resolves({
+        _id: 'report-5',
+        _rev: '3-report',
+        form: 'V',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 1000,
+        fields: {
+          name: 'Sally',
+          doc1: { _id: 'child-1', type: 'thing_1', some_property_1: 'snap1', some_property_2: 'snapshot_val' },
+        },
+      });
+      // The live doc diverged on some_property_2 since the report was last saved (changed elsewhere).
+      dbAllDocs.resolves({
+        rows: [{
+          id: 'child-1',
+          doc: {
+            _id: 'child-1',
+            _rev: '9-child',
+            type: 'thing_1',
+            some_property_1: 'snap1',
+            some_property_2: 'changed_elsewhere',
+            reported_date: 500,
+          },
+        }],
+      });
+
+      return service
+        .completeExistingReport(form, { doc: {} }, 'report-5')
+        .then(actual => {
+          const child = actual[1];
+          expect(child._id).to.equal('child-1');
+          expect(child.some_property_1).to.equal('parent_new');       // parent wins for the field it edited
+          expect(child.some_property_2).to.equal('changed_elsewhere'); // independent edit preserved
+        });
+    });
+
+    it('preserves a field added to the linked doc by a transition', () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns(`
+        <data>
+          <name>Sally</name>
+          <doc1 db-doc="true">
+            <type>thing_1</type>
+            <some_property_1>v2</some_property_1>
+          </doc1>
+        </data>
+      `);
+      getReport.resolves({
+        _id: 'report-6',
+        _rev: '2-report',
+        form: 'V',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 1000,
+        fields: {
+          name: 'Sally',
+          doc1: { _id: 'child-2', type: 'thing_1', some_property_1: 'v1' },
+        },
+      });
+      dbAllDocs.resolves({
+        rows: [{
+          id: 'child-2',
+          doc: {
+            _id: 'child-2',
+            _rev: '4-child',
+            type: 'thing_1',
+            some_property_1: 'v1',
+            patient_id: 'added-by-transition',
+            reported_date: 600,
+          },
+        }],
+      });
+
+      return service
+        .completeExistingReport(form, { doc: {} }, 'report-6')
+        .then(actual => {
+          const child = actual[1];
+          expect(child.some_property_1).to.equal('v2');                 // parent edit applied
+          expect(child.patient_id).to.equal('added-by-transition');     // transition field untouched
+        });
+    });
+  });
+
+  describe('applyChangedAttachments (linked-child attachment overlay)', () => {
+    // Called from applyChangedFields when overlaying the parent's edited fields onto a linked
+    // db-doc child. The parent's `_attachments` (routed in by an upstream PR) is merged
+    // last-writer-wins per name; names absent from `next._attachments` keep their live value.
+    beforeEach(() => {
+      service = TestBed.inject(EnketoService);
+    });
+
+    const applyChangedAttachments = (target, nextAtts) => {
+      (service as any).applyChangedAttachments(target, nextAtts);
+      return target;
+    };
+
+    it('adds a new attachment uploaded by the parent under a new name', () => {
+      const live = {
+        _id: 'child-1',
+        _attachments: {
+          'user-file-existing.png': { content_type: 'image/png', data: 'live-bytes' },
+        },
+      };
+      const nextAtts = {
+        'user-file-new.png': { content_type: 'image/png', data: 'parent-bytes' },
+      };
+
+      const merged = applyChangedAttachments(live, nextAtts);
+      expect(merged._attachments['user-file-existing.png'].data).to.equal('live-bytes');
+      expect(merged._attachments['user-file-new.png'].data).to.equal('parent-bytes');
+    });
+
+    it('overwrites the live attachment when the parent uploads under an existing name', () => {
+      const live = {
+        _id: 'child-1',
+        _attachments: {
+          'user-file-photo.png': { content_type: 'image/png', data: 'live-bytes' },
+        },
+      };
+      const nextAtts = {
+        'user-file-photo.png': { content_type: 'image/png', data: 'parent-new-bytes' },
+      };
+
+      const merged = applyChangedAttachments(live, nextAtts);
+      expect(merged._attachments['user-file-photo.png'].data).to.equal('parent-new-bytes');
+    });
+
+    it('preserves a live attachment whose name is absent from the parent edit', () => {
+      const live = {
+        _id: 'child-1',
+        _attachments: {
+          'user-file-untouched.png': { content_type: 'image/png', data: 'live-bytes' },
+        },
+      };
+      const nextAtts = {
+        'user-file-other.png': { content_type: 'image/png', data: 'parent-bytes' },
+      };
+
+      const merged = applyChangedAttachments(live, nextAtts);
+      expect(merged._attachments['user-file-untouched.png'].data).to.equal('live-bytes');
+      expect(merged._attachments['user-file-other.png'].data).to.equal('parent-bytes');
+    });
+
+    it('leaves live attachments untouched when next._attachments is undefined', () => {
+      const live = {
+        _id: 'child-1',
+        _attachments: {
+          'user-file-only.png': { content_type: 'image/png', data: 'live-bytes' },
+        },
+      };
+
+      const merged = applyChangedAttachments(live, undefined);
+      expect(merged._attachments).to.deep.equal({
+        'user-file-only.png': { content_type: 'image/png', data: 'live-bytes' },
+      });
     });
   });
 
