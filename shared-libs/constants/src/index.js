@@ -61,12 +61,16 @@ const USER_ROLES = {
 
 const DB_ADMIN_ROLES = [USER_ROLES.ADMIN, USER_ROLES.COUCHDB_ADMIN];
 
+// Maximum HTTP request body size in bytes, shared by the api body parsers and streaming routes.
+const MAX_REQUEST_SIZE = 32 * 1024 * 1024;
+
 // Document ID prefixes used for _all_docs prefix range scans.
 const PREFIXES = {
   COUCH_USER: 'org.couchdb.user:',
   TRANSLATIONS: 'messages-',
   FORM: 'form:',
-  UI_EXTENSION: `${DOC_TYPES.UI_EXTENSION}:`
+  UI_EXTENSION: `${DOC_TYPES.UI_EXTENSION}:`,
+  ARCHIVE_JOB: 'archive:',
 };
 
 module.exports = {
@@ -79,4 +83,5 @@ module.exports = {
   CONTACT_TYPES,
   STANDARD_HTTP_HEADERS,
   PREFIXES,
+  MAX_REQUEST_SIZE,
 };

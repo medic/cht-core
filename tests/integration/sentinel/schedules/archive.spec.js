@@ -1,0 +1,440 @@
+const PouchDB = require('pouchdb-core');
+PouchDB.plugin(require('pouchdb-adapter-http'));
+
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
+const constants = require('@constants');
+const { DOC_TYPES, DOC_IDS, PREFIXES } = require('@medic/constants');
+
+const auth = { username: constants.USERNAME, password: constants.PASSWORD };
+const archiveDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-archive`, { auth });
+
+const postCsv = (csv, opts = {}) => utils.request({
+  path: '/api/v1/archive',
+  method: 'POST',
+  body: csv,
+  headers: { 'Content-Type': 'text/csv' },
+  ...opts,
+});
+
+const cleanupArchiveDb = async () => {
+  const result = await archiveDb.allDocs();
+  const tombstones = result.rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
+  await archiveDb.bulkDocs(tombstones, { new_edits: true });
+};
+
+const waitForInfoDocs = async (ids) => {
+  let missingCount = 0;
+  do {
+    await utils.delayPromise(500);
+    const infoIds = ids.map(id => `${id}-info`);
+    const result = await utils.sentinelDb.allDocs({ keys: infoIds });
+    const missing = result.rows.filter(row => row.error);
+    missingCount = missing.length;
+  } while (missingCount);
+};
+
+const cleanupArchiveJobs = async () => {
+  const result = await utils.sentinelDb.allDocs({
+    startkey: PREFIXES.ARCHIVE_JOB,
+    endkey: `${PREFIXES.ARCHIVE_JOB}\ufff0`,
+  });
+  if (!result.rows.length) {
+    return;
+  }
+  await utils.sentinelDb.bulkDocs(result.rows.map(row => ({
+    _id: row.id,
+    _rev: row.value.rev,
+    _deleted: true,
+  })));
+};
+
+// allDocs wrapper that returns only rows for docs that are present (live) — drops both
+// missing rows (`error: 'not_found'`) and deleted tombstone rows (`value.deleted: true`).
+const liveRows = async (db, opts = {}) => {
+  const result = await db.allDocs(opts);
+  return result.rows.filter(row => row.value && !row.value.deleted);
+};
+
+const expectFullyPurgedFromMedic = async (ids) => {
+  const allDocs = await utils.db.allDocs({ keys: ids });
+  const stillPresent = allDocs.rows.filter(row => !row.error);
+  expect(stillPresent).to.have.lengthOf(0);
+
+  const changes = await utils.request({
+    path: `/${constants.DB_NAME}/_changes`,
+    method: 'POST',
+    qs: { since: 0, filter: '_doc_ids' },
+    body: { doc_ids: ids },
+  });
+  expect(changes.results).to.have.lengthOf(0);
+};
+
+const expectInfoDocsPurged = async (ids) => {
+  const infoIds = ids.map(id => `${id}-info`);
+  const result = await utils.sentinelDb.allDocs({ keys: infoIds });
+  const stillPresent = result.rows.filter(row => !row.error);
+  expect(stillPresent).to.deep.equal([]);
+};
+
+const expectAuditedArchive = async (ids) => {
+  const result = await utils.auditDb.allDocs({ keys: ids, include_docs: true });
+  const audited = result.rows.filter(row => row.doc);
+  expect(audited.map(row => row.id), ).to.have.members(ids);
+  for (const row of audited) {
+    const archiveEntries = row.doc.history.filter(h => h.archived);
+    const latest = archiveEntries[archiveEntries.length - 1];
+    expect(latest.archived).to.equal(true);
+  }
+};
+
+const waitForJobStatus = async (id, status) => {
+  let doc;
+  do {
+    await utils.delayPromise(1000);
+    doc = await utils.sentinelDb.get(id);
+  } while (doc.status !== status);
+  return doc;
+};
+
+describe('sentinel processes archive jobs', () => {
+  const fixtures = [
+    { _id: 'archive-e2e-contact', type: 'contact', name: 'Archived contact' },
+    { _id: 'archive-e2e-person', type: 'person', name: 'Archived person' },
+    { _id: 'archive-e2e-clinic', type: 'clinic', name: 'Archived clinic' },
+    { _id: 'archive-e2e-report', type: DOC_TYPES.DATA_RECORD, form: 'visit', reported_date: 1 },
+    { _id: 'archive-e2e-task', type: 'task', state: 'Completed' },
+    { _id: 'archive-e2e-target', type: 'target', targets: [] },
+    { _id: 'archive-e2e-random', type: 'random', info: 'not archivable' },
+  ];
+  const archivableIds = fixtures
+    .filter(d => d._id !== 'archive-e2e-random')
+    .map(d => d._id);
+  const nonArchivableIds = [
+    'messages-en',
+    '_design/medic',
+    'form:pregnancy',
+    ...Object.values(DOC_IDS),
+  ];
+  const allIds = fixtures.map(d => d._id);
+
+  // Some entries in `nonArchivableIds` are present by default in a fresh test db
+  // (e.g. `_design/medic`, `settings`) and others (e.g. `partners`)
+  // are not.
+  const ensureExists = async (id) => {
+    try {
+      await utils.db.get(id);
+    } catch (err) {
+      if (err.status !== 404) {
+        throw err;
+      }
+      await utils.db.put({ _id: id, type: 'archive-e2e-stub' });
+    }
+  };
+
+  const updateSettings = async (duration = '2 hours') => {
+    await utils.updateSettings(
+      { archive: { text_expression: 'every 1 seconds', duration: duration } },
+      { ignoreReload: true }
+    );
+    await utils.toggleSentinelTransitions();
+    await sentinelUtils.skipToSeq();
+  };
+
+  const runArchiving = async () => {
+    await utils.runSentinelTasks();
+    await sentinelUtils.waitForArchiveCompletion();
+  };
+
+  before(async () => {
+    await utils.saveDocs(fixtures);
+    await Promise.all(nonArchivableIds.map(ensureExists));
+  });
+
+  after(async () => {
+    await cleanupArchiveJobs();
+    await cleanupArchiveDb();
+  });
+
+  beforeEach(async () => {
+    await sentinelUtils.skipToSeq();
+  });
+
+  afterEach(async () => {
+    await utils.revertSettings(true);
+    await cleanupArchiveJobs();
+  });
+
+  it('moves archivable docs to the archive db and purges them from medic', async function () {
+    this.timeout(60000);
+
+    // Snapshot the originals so we can compare body-for-body after archive runs.
+    const originals = await utils.db.allDocs({ keys: archivableIds, include_docs: true });
+    const originalById = Object.fromEntries(originals.rows.map(row => [row.id, row.doc]));
+
+    const csv = [...allIds, ...nonArchivableIds].join('\n');
+    const { jobs } = await postCsv(csv);
+    expect(jobs).to.have.lengthOf(1);
+
+    await updateSettings();
+    await runArchiving();
+
+    const archiveRows = await liveRows(archiveDb, { keys: archivableIds, include_docs: true });
+    expect(archiveRows).to.have.lengthOf(archivableIds.length);
+    for (const row of archiveRows) {
+      expect(row.doc).excluding('archive_date').to.deep.equal(originalById[row.id]);
+    }
+
+    await expectFullyPurgedFromMedic(archivableIds);
+    await expectInfoDocsPurged(archivableIds);
+    await expectAuditedArchive(archivableIds);
+
+    const survivors = ['archive-e2e-random', ...nonArchivableIds];
+    const medicSurvivorIds = (await liveRows(utils.db, { keys: survivors })).map(row => row.id);
+    expect(medicSurvivorIds ).to.have.members(survivors);
+
+    const archiveSurvivorIds = (await liveRows(archiveDb, { keys: survivors })).map(row => row.id);
+    expect(archiveSurvivorIds).to.deep.equal([]);
+  });
+
+  it('processes a multi-batch payload, archiving thousands of docs', async function () {
+    this.timeout(180000);
+    await updateSettings();
+
+    // Larger than BATCH_SIZE (1000) so the archive loop has to take more than one batch
+    // and persist the cursor between them.
+    const COUNT = 15000;
+    const bulkDocs = Array.from({ length: COUNT }, (_, i) => ({
+      _id: `archive-e2e-bulk-${String(i).padStart(5, '0')}`,
+      type: DOC_TYPES.DATA_RECORD,
+      form: 'visit',
+      fields: { patient_id: `p-${i}` },
+      reported_date: 1,
+    }));
+
+    await utils.saveDocs(bulkDocs);
+    const ids = bulkDocs.map(d => d._id);
+
+    await waitForInfoDocs(ids);
+
+    const { jobs } = await postCsv(ids.join('\n'));
+    expect(jobs).to.have.lengthOf(1);
+    expect(jobs[0].count).to.equal(COUNT);
+
+    await runArchiving();
+
+    const archived = await liveRows(archiveDb, { keys: ids });
+    expect(archived).to.have.lengthOf(COUNT);
+
+    await expectFullyPurgedFromMedic(ids);
+    await expectInfoDocsPurged(ids);
+    await expectAuditedArchive(ids);
+  });
+
+  it('exits at the duration deadline and resumes on the next run', async function () {
+    this.timeout(180000);
+
+    const COUNT = 2000;
+    const bulkDocs = Array.from({ length: COUNT }, (_, i) => ({
+      _id: `archive-e2e-resume-${String(i).padStart(5, '0')}`,
+      type: DOC_TYPES.DATA_RECORD,
+      form: 'visit',
+      fields: { patient_id: `p-${i}` },
+      reported_date: 1,
+    }));
+    await utils.saveDocs(bulkDocs);
+    const ids = bulkDocs.map(d => d._id);
+
+    const { jobs } = await postCsv(ids.join('\n'));
+    expect(jobs).to.have.lengthOf(1);
+    const jobId = jobs[0].id;
+
+    await updateSettings('20 milliseconds');
+
+    const firstRunDone = await utils.waitForSentinelLogs(true, /Finished archiving/);
+    await utils.runSentinelTasks();
+    await firstRunDone.promise;
+
+    const partial = await utils.sentinelDb.get(jobId);
+    expect(partial.cursor).to.be.greaterThan(0);
+    expect(partial.cursor).to.be.lessThan(COUNT);
+
+    const partiallyArchived = await liveRows(archiveDb, { keys: ids });
+    expect(partiallyArchived).to.have.lengthOf(partial.cursor);
+    const stillInMedic = await liveRows(utils.db, { keys: ids });
+    expect(stillInMedic).to.have.lengthOf(COUNT - partial.cursor);
+
+    await utils.runSentinelTasks();
+    await sentinelUtils.waitForArchiveCompletion();
+
+    const archived = await liveRows(archiveDb, { keys: ids });
+    expect(archived).to.have.lengthOf(COUNT);
+    await expectFullyPurgedFromMedic(ids);
+    await expectInfoDocsPurged(ids);
+    await expectAuditedArchive(ids);
+  });
+
+  it('preserves attachments when archiving', async function () {
+    this.timeout(60000);
+
+    const id = 'archive-e2e-with-attachment';
+    const payload = 'hello archived world';
+    const doc = {
+      _id: id,
+      type: DOC_TYPES.DATA_RECORD,
+      form: 'visit',
+      reported_date: 1,
+      _attachments: {
+        'note.txt': {
+          content_type: 'text/plain',
+          data: Buffer.from(payload, 'utf8').toString('base64'),
+        },
+      },
+    };
+    await utils.saveDocs([doc]);
+
+    await postCsv(id);
+
+    await updateSettings();
+    await runArchiving();
+
+    const archived = await archiveDb.get(id, { attachments: true });
+    expect(archived._attachments['note.txt'].content_type).to.equal('text/plain');
+    const restored = Buffer.from(archived._attachments['note.txt'].data, 'base64').toString('utf8');
+    expect(restored).to.equal(payload);
+
+    await expectFullyPurgedFromMedic([id]);
+    await expectInfoDocsPurged([id]);
+    await expectAuditedArchive([id]);
+  });
+
+  it('purges every revision when the source doc has conflicts', async function () {
+    this.timeout(60000);
+
+    const id = 'archive-e2e-with-conflict';
+
+    const revA = '1-a000000000000000000000000000000a';
+    const revB = '1-b000000000000000000000000000000b';
+    const docA = { _id: id, _rev: revA, type: DOC_TYPES.DATA_RECORD, form: 'visit', reported_date: 1, source: 'A' };
+    const docB = { _id: id, _rev: revB, type: DOC_TYPES.DATA_RECORD, form: 'visit', reported_date: 1, source: 'B' };
+
+    await utils.request({
+      path: `/${constants.DB_NAME}/_bulk_docs`,
+      method: 'POST',
+      body: { docs: [docA, docB], new_edits: false },
+    });
+
+    // Sanity check: the doc has a conflict before we archive.
+    const beforeArchive = await utils.db.get(id, { conflicts: true });
+    expect(beforeArchive._conflicts).to.have.lengthOf(1);
+
+    await postCsv(id);
+
+    await updateSettings();
+    await runArchiving();
+
+    const archived = await archiveDb.get(id);
+    expect(archived._rev).to.equal(revB);
+    expect(archived.source).to.equal('B');
+
+    await expectFullyPurgedFromMedic([id]);
+    await expectInfoDocsPurged([id]);
+    await expectAuditedArchive([id]);
+  });
+
+  it('purges resolved (deleted) conflict revisions, leaving no trace in the changes feed', async function () {
+    this.timeout(60000);
+
+    const id = 'archive-e2e-resolved-conflict';
+
+    const revA = '1-c000000000000000000000000000000c';
+    const revB = '1-d000000000000000000000000000000d';
+    const docA = { _id: id, _rev: revA, type: DOC_TYPES.DATA_RECORD, form: 'visit', reported_date: 1, source: 'A' };
+    const docB = { _id: id, _rev: revB, type: DOC_TYPES.DATA_RECORD, form: 'visit', reported_date: 1, source: 'B' };
+
+    await utils.request({
+      path: `/${constants.DB_NAME}/_bulk_docs`,
+      method: 'POST',
+      body: { docs: [docA, docB], new_edits: false },
+    });
+
+    // Resolve the conflict by deleting the losing branch, leaving a deleted conflict leaf behind.
+    await utils.request({
+      path: `/${constants.DB_NAME}/${id}`,
+      method: 'DELETE',
+      qs: { rev: revA },
+    });
+
+    // Sanity check: no live conflicts remain, but the deleted branch is still in the rev tree.
+    // PouchDB's get() drops the deleted_conflicts option, so query CouchDB directly.
+    const beforeArchive = await utils.request({
+      path: `/${constants.DB_NAME}/${id}`,
+      qs: { conflicts: true, deleted_conflicts: true },
+    });
+    expect(beforeArchive._conflicts).to.be.undefined;
+    expect(beforeArchive._deleted_conflicts).to.have.lengthOf(1);
+
+    await postCsv(id);
+
+    await updateSettings();
+    await runArchiving();
+
+    const archived = await archiveDb.get(id);
+    expect(archived._rev).to.equal(revB);
+    expect(archived.source).to.equal('B');
+
+    // expectFullyPurgedFromMedic asserts the changes feed is empty for the doc, which fails
+    // if the deleted conflict leaf survives the purge.
+    await expectFullyPurgedFromMedic([id]);
+    await expectInfoDocsPurged([id]);
+    await expectAuditedArchive([id]);
+  });
+
+  it('quarantines a job that keeps failing and keeps processing the queue behind it', async function () {
+    this.timeout(60000);
+
+    // A healthy archivable doc with its own job.
+    const healthyId = 'archive-e2e-quarantine-healthy';
+    await utils.saveDocs([{ _id: healthyId, type: DOC_TYPES.DATA_RECORD, form: 'visit', reported_date: 1 }]);
+    await waitForInfoDocs([healthyId]);
+
+    // A poison job: no `ids` attachment, so readIds throws on every run. Its id sorts before any
+    // uuid-v7 job id, so the loop hits it first. Seed error_count at the threshold-1 (the lib's
+    // MAX_JOB_ATTEMPTS is 20) so a single run trips the quarantine.
+    const poisonId = `${PREFIXES.ARCHIVE_JOB}0000-poison`;
+    await utils.sentinelDb.put({
+      _id: poisonId,
+      date: Date.now(),
+      total: 1,
+      cursor: 0,
+      error_count: 19,
+    });
+
+    const { jobs } = await postCsv(healthyId);
+    expect(jobs).to.have.lengthOf(1);
+    const healthyJobId = jobs[0].id;
+    // Sanity: the poison job is encountered before the healthy job.
+    expect(poisonId < healthyJobId).to.equal(true);
+
+    await updateSettings();
+
+    // Can't use waitForArchiveCompletion here — the quarantined job intentionally stays behind.
+    await utils.runSentinelTasks();
+    const poison = await waitForJobStatus(poisonId, 'failed');
+
+    expect(poison.error_count).to.equal(20);
+    expect(poison.status).to.equal('failed');
+    // The job doc is kept (not deleted) for an admin to inspect.
+    expect(poison._deleted).to.not.equal(true);
+
+    // The healthy job behind the poison job was not blocked — it ran to completion and was deleted.
+    const healthyJobRow = (await utils.sentinelDb.allDocs({ keys: [healthyJobId] })).rows[0];
+    console.warn(JSON.stringify(healthyJobRow, null, 2));
+    expect(healthyJobRow.error || healthyJobRow.value.deleted).to.be.ok;
+
+    const archived = await liveRows(archiveDb, { keys: [healthyId] });
+    expect(archived).to.have.lengthOf(1);
+    await expectFullyPurgedFromMedic([healthyId]);
+    await expectAuditedArchive([healthyId]);
+  });
+});

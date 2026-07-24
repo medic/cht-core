@@ -20,21 +20,25 @@ if (UNIT_TEST_ENV) {
   module.exports.medic = {
     allDocs: stubMe('allDocs'),
     bulkDocs: stubMe('bulkDocs'),
+    bulkGet: stubMe('bulkGet'),
     put: stubMe('put'),
     remove: stubMe('remove'),
     post: stubMe('post'),
     query: stubMe('query'),
     get: stubMe('get'),
+    getAttachment: stubMe('getAttachment'),
     changes: stubMe('changes'),
   };
 
   module.exports.sentinel = {
     allDocs: stubMe('allDocs'),
     bulkDocs: stubMe('bulkDocs'),
+    bulkGet: stubMe('bulkGet'),
     put: stubMe('put'),
     post: stubMe('post'),
     query: stubMe('query'),
     get: stubMe('get'),
+    getAttachment: stubMe('getAttachment'),
     changes: stubMe('changes'),
   };
 
@@ -45,15 +49,23 @@ if (UNIT_TEST_ENV) {
     post: stubMe('post'),
     query: stubMe('query'),
     get: stubMe('get'),
+    getAttachment: stubMe('getAttachment'),
     changes: stubMe('changes'),
   };
 
+  module.exports.archive = {
+    allDocs: stubMe('allDocs'),
+    bulkDocs: stubMe('bulkDocs'),
+    get: stubMe('get'),
+    put: stubMe('put'),
+  };
 
   module.exports.allDbs = stubMe('allDbs');
   module.exports.get = stubMe('get');
   module.exports.close = stubMe('close');
   module.exports.medicDbName = stubMe('medicDbName');
   module.exports.queryMedic = stubMe('queryMedic');
+  module.exports.purge = stubMe('purge');
 } else {
   const service = 'sentinel';
   environment.setService(service);
@@ -76,7 +88,8 @@ if (UNIT_TEST_ENV) {
   };
 
   module.exports.medic = new PouchDB(couchUrl, { fetch: fetchFn });
-  module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, { fetch: fetchFn});
+  module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, { fetch: fetchFn });
+  module.exports.archive = new PouchDB(`${couchUrl}-archive`, { fetch: fetchFn });
   module.exports.allDbs = () => request.get({ url: `${environment.serverUrl}/_all_dbs`, json: true });
   module.exports.get = db => new PouchDB(`${environment.serverUrl}/${db}`);
   module.exports.close = db => {
@@ -91,6 +104,7 @@ if (UNIT_TEST_ENV) {
     }
   };
   module.exports.users = new PouchDB(`${environment.serverUrl}/_users`, { fetch: fetchFn });
+
   module.exports.queryMedic = (viewPath, queryParams, body) => {
     const [ddoc, view] = viewPath.split('/');
     const url = ddoc === 'allDocs' ? `${couchUrl}/_all_docs` : `${couchUrl}/_design/${ddoc}/_view/${view}`;
@@ -100,6 +114,23 @@ if (UNIT_TEST_ENV) {
       qs: queryParams,
       json: true,
       body,
+    });
+  };
+
+  /**
+   * Permanently removes docs from a database via CouchDB's `_purge` endpoint.
+   * @param {PouchDB.Database} db - the database to purge from
+   * @param {Array<{ _id: string, _revs: string[] }>} docs - every doc must carry `_revs`:
+   *   the list of leaf revisions to purge
+   * @returns {Promise<{ purge_seq: string|null, purged: Object.<string, string[]> }>} the CouchDB
+   *   `_purge` response, mapping each doc id to the revisions actually purged
+   */
+  module.exports.purge = (db, docs) => {
+    const purgePayload = Object.fromEntries(docs.map(doc => [ doc._id, doc._revs ]));
+
+    return request.post({
+      url: `${db.name}/_purge`,
+      body: purgePayload,
     });
   };
 }
