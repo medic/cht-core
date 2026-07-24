@@ -88,6 +88,11 @@ export class ChangesService {
   }
 
   private init() {
+    if (!this.session.userCtx()) {
+      // No authenticated user yet (e.g. mid logout/reauth, where the app boots without a session cookie).
+      return Promise.resolve();
+    }
+
     console.info('Initiating changes service');
     this.watches = [];
     return Promise

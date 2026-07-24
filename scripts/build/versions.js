@@ -10,11 +10,15 @@ const {
   INTERNAL_CONTRIBUTOR,
 } = process.env;
 
+const FEATURE_RELEASE_BRANCH_PATTERN = /^\d+\.\d+\.\d+-FR-.+/;
+
 const escapeBranchName = (branch) => branch?.replace(/[^A-Za-z0-9.-]/g, '-');
+const isFeatureReleaseBranch = (branch) => FEATURE_RELEASE_BRANCH_PATTERN.test(branch);
 
 const getBranchVersion = (release) => {
   const branch = BRANCH === 'master' ? 'alpha' : escapeBranchName(BRANCH);
-  const base = `${packageJson.version}-${branch}`;
+  // Feature-release branches (e.g. 5.1.2-FR-foo) already carry their own version
+  const base = isFeatureReleaseBranch(branch) ? branch : `${packageJson.version}-${branch}`;
   return release ? base : `${base}.${BUILD_NUMBER}`;
 };
 

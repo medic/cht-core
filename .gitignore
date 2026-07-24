@@ -42,7 +42,7 @@ config/*/forms/contact/*.xlsx
 /**/*/.snapshots/local.json
 tests/integration/results/
 allure*
-tests/config-temp
+tests/utils/config-temp
 .eslintcache
 doc-conflicts/
 cht-docker-compose.log

@@ -198,7 +198,7 @@ export class TargetAggregatesService {
           .map(place => place.contact);
 
         return this.getDataRecordsService
-          .get(contactIds)
+          .getContacts(contactIds)
           .then(newContacts => {
             contacts.push(...newContacts);
 
@@ -221,7 +221,7 @@ export class TargetAggregatesService {
 
   private async getHomePlace(facilityId?) {
     if (facilityId) {
-      const places = await this.getDataRecordsService.get([ facilityId ]);
+      const places = await this.getDataRecordsService.getContacts([ facilityId ]);
       return places?.[0];
     }
 
@@ -229,7 +229,7 @@ export class TargetAggregatesService {
     if (!facilityIds?.length) {
       return;
     }
-    const places = await this.getDataRecordsService.get(facilityIds);
+    const places = await this.getDataRecordsService.getContacts(facilityIds);
     return places?.[0];
   }
 

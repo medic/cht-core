@@ -1,8 +1,15 @@
 function(doc) {
   var skip = ['_id', '_rev', 'type', 'refid', 'content'];
+  var maxLength = 1000;
+  var minLength = 3;
 
   var indexMaybe = function(type, fieldName, value, opts) {
-    if(String(value).length < 3) { // Too short
+    var stringValue = String(value);
+    if (stringValue.length < minLength) { // Too short
+      return;
+    }
+
+    if (type === 'string' && stringValue.length > maxLength) {
       return;
     }
     index(type, fieldName, value, opts);
@@ -39,7 +46,7 @@ function(doc) {
     });
   }
   if (doc.contact && doc.contact._id && typeof doc.contact._id === 'string') {
-    index('string', 'exact_match', 'contact:' + doc.contact._id.toLowerCase());
+    indexMaybe('string', 'exact_match', 'contact:' + doc.contact._id.toLowerCase());
   }
   var reportedDate = doc.reported_date && typeof doc.reported_date === 'number' ? doc.reported_date : 0;
   index('double', 'reported_date', reportedDate, { store: true });

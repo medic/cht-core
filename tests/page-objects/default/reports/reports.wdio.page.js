@@ -61,7 +61,7 @@ const reviewDialogSelectors = {
 };
 
 const sidebarFilterSelectors = {
-  openBtn: () => $('mm-search-bar .open-filter'),
+  openBtn: () => $('mm-search-bar .open-filter, .mm-search-bar-container .btn.open-filter'),
   resetBtn: () => $('.sidebar-reset'),
   dateAccordionHeader: () => $('#date-filter-accordion mat-expansion-panel-header'),
   dateAccordionBody: () => $('#date-filter-accordion mat-panel-description'),

@@ -115,4 +115,13 @@ describe('scripts/ci/.secretlintrc.json', () => {
       expect(runSecretlint('2024-01-01 INFO: Authorization: Bearer ****').flagged).to.be.false;
     });
   });
+
+  describe('CouchDB sequence strings', () => {
+    it('does not flag a CouchDB sequence string', () => {
+      const line = '2024-01-01 INFO: seq ' +
+        '1-g1AAAABXeJzLYWBgYMpgTmEQTM4vTc5ISXIwNDDUS8lP1kssS0zJzcxL1UvJzEvVT87P10_OyS9NsgCSDPXhKjIUyZEsAJIiD8s';
+      expect(runSecretlint(line).flagged).to.be.false;
+    });
+  });
 });
+

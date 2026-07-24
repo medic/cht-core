@@ -1,4 +1,4 @@
-import { DataContext } from '../src';
+import { DataContext, Page } from '../src';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import * as Qualifier from '../src/qualifier';
@@ -12,17 +12,21 @@ import * as Input from '../src/input';
 import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
 
 describe('report', () => {
-  const dataContext = { } as DataContext;
+  const dataContext = { bind: () => null } as DataContext;
+  let dataContextBind: SinonStub;
   let assertDataContext: SinonStub;
   let adapt: SinonStub;
   let isUuidQualifier: SinonStub;
   let isFreetextQualifier: SinonStub;
+  let isIdsQualifier: SinonStub;
 
   beforeEach(() => {
+    dataContextBind = sinon.stub(dataContext, 'bind');
     assertDataContext = sinon.stub(Context, 'assertDataContext');
     adapt = sinon.stub(Context, 'adapt');
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
     isFreetextQualifier = sinon.stub(Qualifier, 'isFreetextQualifier');
+    isIdsQualifier = sinon.stub(Qualifier, 'isIdsQualifier');
   });
 
   afterEach(() => sinon.restore());
@@ -138,6 +142,155 @@ describe('report', () => {
         expect(adapt.notCalled).to.be.true;
         expect(isUuidQualifier.notCalled).to.be.true;
         expect(getReportWithLineage.notCalled).to.be.true;
+      });
+    });
+
+    describe('getSummariesPage', () => {
+      const ids = ['report-1', 'report-2', 'report-3'];
+      const qualifier = { ids };
+      const summaries = [{ _id: 'report-1' }, { _id: 'report-2' }] as Report.v1.ReportSummary[];
+      let getSummariesFn: SinonStub;
+
+      beforeEach(() => {
+        getSummariesFn = sinon.stub();
+        adapt.returns(getSummariesFn);
+        isIdsQualifier.returns(true);
+      });
+
+      it('retrieves the first page of summaries when cursor is null', async () => {
+        getSummariesFn.resolves(summaries);
+
+        const result = await Report.v1.getSummariesPage(dataContext)(qualifier, null, 2);
+
+        expect(result).to.deep.equal({ data: summaries, cursor: '2' });
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(
+          adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getSummaries, Remote.Report.v1.getSummaries)
+        ).to.be.true;
+        expect(getSummariesFn.calledOnceWithExactly({ ids: ['report-1', 'report-2'] })).to.be.true;
+      });
+
+      it('returns a null cursor for the last page', async () => {
+        getSummariesFn.resolves(summaries);
+
+        const result = await Report.v1.getSummariesPage(dataContext)(qualifier, '2', 2);
+
+        expect(result).to.deep.equal({ data: summaries, cursor: null });
+        expect(getSummariesFn.calledOnceWithExactly({ ids: ['report-3'] })).to.be.true;
+      });
+
+      it('uses the default limit when not provided', async () => {
+        getSummariesFn.resolves(summaries);
+
+        const result = await Report.v1.getSummariesPage(dataContext)(qualifier);
+
+        expect(result).to.deep.equal({ data: summaries, cursor: null });
+        expect(getSummariesFn.calledOnceWithExactly({ ids })).to.be.true;
+      });
+
+      it('accepts a stringified limit', async () => {
+        getSummariesFn.resolves(summaries);
+
+        const result = await Report.v1.getSummariesPage(dataContext)(qualifier, null, '2');
+
+        expect(result).to.deep.equal({ data: summaries, cursor: '2' });
+        expect(getSummariesFn.calledOnceWithExactly({ ids: ['report-1', 'report-2'] })).to.be.true;
+      });
+
+      it('throws an error if the data context is invalid', () => {
+        assertDataContext.throws(new Error(`Invalid data context [null].`));
+
+        expect(() => Report.v1.getSummariesPage(dataContext)).to.throw(`Invalid data context [null].`);
+
+        expect(adapt.notCalled).to.be.true;
+      });
+
+      ([
+        null,
+        undefined,
+        'not-an-array',
+        { ids: 'not-an-array' },
+        { ids: [1, 2] },
+        { ids: ['valid', ''] },
+      ] as unknown[]).forEach((invalid) => {
+        it(`throws an error for invalid qualifier ${JSON.stringify(invalid)}`, async () => {
+          isIdsQualifier.returns(false);
+
+          await expect(Report.v1.getSummariesPage(dataContext)(invalid as never))
+            .to.be.rejectedWith(`Invalid identifiers [${JSON.stringify(invalid)}].`);
+
+          expect(getSummariesFn.notCalled).to.be.true;
+        });
+      });
+
+      [-1, null, {}, '', 0, 1.1, false].forEach((limitValue) => {
+        it(`throws an error if limit is invalid: ${JSON.stringify(limitValue)}`, async () => {
+          await expect(Report.v1.getSummariesPage(dataContext)(qualifier, null, limitValue as number))
+            .to.be.rejectedWith(`The limit must be a positive integer: [${JSON.stringify(limitValue)}]`);
+
+          expect(getSummariesFn.notCalled).to.be.true;
+        });
+      });
+
+      [{}, '', 1, false, 'abc', '-1', '1.1'].forEach((cursorValue) => {
+        it(`throws an error if cursor is invalid: ${JSON.stringify(cursorValue)}`, async () => {
+          await expect(Report.v1.getSummariesPage(dataContext)(qualifier, cursorValue as string, 2))
+            .to.be.rejectedWith(`The cursor must be a string or null for first page: [${JSON.stringify(cursorValue)}]`);
+
+          expect(getSummariesFn.notCalled).to.be.true;
+        });
+      });
+    });
+
+    describe('getSummaries', () => {
+      const ids = ['report-1', 'report-2'];
+      const qualifier = { ids };
+      const mockGenerator = {} as AsyncGenerator<Report.v1.ReportSummary, null>;
+      let reportGetSummariesPage: sinon.SinonStub;
+      let getPagedGenerator: sinon.SinonStub;
+
+      beforeEach(() => {
+        reportGetSummariesPage = sinon.stub(Report.v1, 'getSummariesPage');
+        dataContext.bind = sinon.stub().returns(reportGetSummariesPage);
+        getPagedGenerator = sinon.stub(Core, 'getPagedGenerator');
+        isIdsQualifier.returns(true);
+      });
+
+      it('should get summaries generator with correct parameters', () => {
+        getPagedGenerator.returns(mockGenerator);
+
+        const generator = Report.v1.getSummaries(dataContext)(qualifier);
+
+        expect(generator).to.deep.equal(mockGenerator);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(getPagedGenerator.calledOnceWithExactly(reportGetSummariesPage, qualifier)).to.be.true;
+      });
+
+      it('should throw an error for invalid datacontext', () => {
+        const errMsg = 'Invalid data context [null].';
+        assertDataContext.throws(new Error(errMsg));
+
+        expect(() => Report.v1.getSummaries(dataContext)).to.throw(errMsg);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(reportGetSummariesPage.notCalled).to.be.true;
+      });
+
+      ([
+        null,
+        undefined,
+        'not-an-array',
+        { ids: 'not-an-array' },
+        { ids: [1, 2] },
+        { ids: ['valid', ''] },
+      ] as unknown[]).forEach((invalid) => {
+        it(`throws an error for invalid qualifier ${JSON.stringify(invalid)}`, () => {
+          isIdsQualifier.returns(false);
+
+          expect(() => Report.v1.getSummaries(dataContext)(invalid as never))
+            .to.throw(`Invalid identifiers [${JSON.stringify(invalid)}].`);
+
+          expect(getPagedGenerator.notCalled).to.be.true;
+        });
       });
     });
 
@@ -332,6 +485,139 @@ describe('report', () => {
       });
     });
 
+    describe('getPage', () => {
+      const reports = [{ _id: 'r1' }, { _id: 'r2' }] as Report.v1.Report[];
+      const cursor = '1';
+      const pageData = { data: reports, cursor };
+      const limit = 3;
+      const stringifiedLimit = '3';
+      const idsQualifier: Qualifier.IdsQualifier = { ids: ['r1', 'r2'] };
+      const invalidQualifier = { ids: [] };
+      let getPage: SinonStub;
+
+      beforeEach(() => {
+        getPage = sinon.stub();
+        adapt.returns(getPage);
+      });
+
+      it('retrieves reports for an ids qualifier', async () => {
+        isIdsQualifier.returns(true);
+        getPage.resolves(pageData);
+
+        const result = await Report.v1.getPage(dataContext)(idsQualifier, cursor, limit);
+
+        expect(result).to.equal(pageData);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getPage, Remote.Report.v1.getPage)).to.be.true;
+        expect(getPage.calledOnceWithExactly(idsQualifier, cursor, limit)).to.be.true;
+        expect(isIdsQualifier.calledOnceWithExactly(idsQualifier)).to.be.true;
+      });
+
+      it('uses default cursor and limit when not provided', async () => {
+        isIdsQualifier.returns(true);
+        getPage.resolves(pageData);
+
+        const result = await Report.v1.getPage(dataContext)(idsQualifier);
+
+        expect(result).to.equal(pageData);
+        expect(getPage.calledOnceWithExactly(idsQualifier, null, 100)).to.be.true;
+      });
+
+      it('accepts a stringified limit', async () => {
+        isIdsQualifier.returns(true);
+        getPage.resolves(pageData);
+
+        const result = await Report.v1.getPage(dataContext)(idsQualifier, cursor, stringifiedLimit);
+
+        expect(result).to.equal(pageData);
+        expect(getPage.calledOnceWithExactly(idsQualifier, cursor, limit)).to.be.true;
+      });
+
+      it('throws an error if the data context is invalid', () => {
+        assertDataContext.throws(new Error(`Invalid data context [null].`));
+
+        expect(() => Report.v1.getPage(dataContext)).to.throw(`Invalid data context [null].`);
+
+        expect(adapt.notCalled).to.be.true;
+        expect(getPage.notCalled).to.be.true;
+      });
+
+      it('throws an error if the qualifier is invalid', async () => {
+        isIdsQualifier.returns(false);
+
+        await expect(Report.v1.getPage(dataContext)(invalidQualifier as never, cursor, limit))
+          .to.be.rejectedWith(`Invalid identifiers [${JSON.stringify(invalidQualifier)}].`);
+
+        expect(isIdsQualifier.calledOnceWithExactly(invalidQualifier)).to.be.true;
+        expect(getPage.notCalled).to.be.true;
+      });
+
+      [-1, null, {}, '', 0, 1.1, false].forEach((limitValue) => {
+        it(`throws an error if limit is invalid: ${JSON.stringify(limitValue)}`, async () => {
+          isIdsQualifier.returns(true);
+          getPage.resolves(pageData);
+
+          await expect(Report.v1.getPage(dataContext)(idsQualifier, cursor, limitValue as number))
+            .to.be.rejectedWith(`The limit must be a positive integer: [${JSON.stringify(limitValue)}]`);
+
+          expect(getPage.notCalled).to.be.true;
+        });
+      });
+
+      [{}, '', 1, false].forEach((skipValue) => {
+        it(`throws an error if cursor is invalid: ${JSON.stringify(skipValue)}`, async () => {
+          isIdsQualifier.returns(true);
+          getPage.resolves(pageData);
+
+          await expect(Report.v1.getPage(dataContext)(idsQualifier, skipValue as string, limit))
+            .to.be.rejectedWith(`The cursor must be a string or null for first page: [${JSON.stringify(skipValue)}]`);
+
+          expect(getPage.notCalled).to.be.true;
+        });
+      });
+    });
+
+    describe('getAll', () => {
+      const idsQualifier: Qualifier.IdsQualifier = { ids: ['r1'] };
+      const mockGenerator = {} as AsyncGenerator<Report.v1.Report, null>;
+      let reportGetPage: sinon.SinonStub;
+      let getPagedGenerator: sinon.SinonStub;
+
+      beforeEach(() => {
+        reportGetPage = sinon.stub(Report.v1, 'getPage');
+        dataContext.bind = sinon.stub().returns(reportGetPage);
+        getPagedGenerator = sinon.stub(Core, 'getPagedGenerator');
+      });
+
+      it('returns a generator for an ids qualifier', () => {
+        isIdsQualifier.returns(true);
+        getPagedGenerator.returns(mockGenerator);
+
+        const generator = Report.v1.getAll(dataContext)(idsQualifier);
+
+        expect(generator).to.deep.equal(mockGenerator);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(getPagedGenerator.calledOnceWithExactly(reportGetPage, idsQualifier)).to.be.true;
+        expect(isIdsQualifier.calledOnceWithExactly(idsQualifier)).to.be.true;
+      });
+
+      it('throws an error for invalid data context', () => {
+        const errMsg = 'Invalid data context [null].';
+        assertDataContext.throws(new Error(errMsg));
+
+        expect(() => Report.v1.getAll(dataContext)).to.throw(errMsg);
+        expect(reportGetPage.notCalled).to.be.true;
+      });
+
+      it('throws an error for an invalid qualifier', () => {
+        isIdsQualifier.returns(false);
+
+        expect(() => Report.v1.getAll(dataContext)({ ids: [] } as never))
+          .to.throw(`Invalid identifiers [${JSON.stringify({ ids: [] })}].`);
+        expect(reportGetPage.notCalled).to.be.true;
+      });
+    });
+
     describe('create', () => {
       let createReportDoc: SinonStub;
 
@@ -418,6 +704,244 @@ describe('report', () => {
         expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.update, Remote.Report.v1.update))
           .to.be.true;
         expect(updateReportDoc.calledOnceWithExactly(input)).to.be.true;
+      });
+    });
+
+    describe('getDatasource', () => {
+      let report: Report.v1.Datasource;
+
+      beforeEach(() => report = Report.v1.getDatasource(dataContext));
+
+      it('contains expected keys', () => {
+        expect(report).to.have.all.keys([
+          'getSummaries',
+          'getSummariesPage',
+          'getUuidsByFreetext',
+          'getUuidsPageByFreetext',
+          'getByUuid',
+          'create',
+          'update',
+          'getByUuidWithLineage',
+          'getPageByIds',
+          'getByIds',
+        ]);
+      });
+
+      it('getSummaries', () => {
+        const mockAsyncGenerator = fakeGenerator();
+        const reportGetSummaries = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(reportGetSummaries);
+        const ids = ['uuid-1', 'uuid-2'];
+        const qualifier = { ids };
+        const byIds = sinon.stub(Qualifier, 'byIds').returns(qualifier);
+
+        const res = report.getSummaries(ids);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getSummaries)).to.be.true;
+        expect(reportGetSummaries.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byIds.calledOnceWithExactly(ids)).to.be.true;
+      });
+
+      it('getSummariesPage', async () => {
+        const expectedPage: Page<Report.v1.ReportSummary> = { data: [], cursor: null };
+        const reportGetSummariesPage = sinon.stub().resolves(expectedPage);
+        dataContextBind.returns(reportGetSummariesPage);
+        const ids = ['uuid-1', 'uuid-2'];
+        const qualifier = { ids };
+        const limit = 2;
+        const cursor = '1';
+        const byIds = sinon.stub(Qualifier, 'byIds').returns(qualifier);
+
+        const returnedPage = await report.getSummariesPage(ids, cursor, limit);
+
+        expect(returnedPage).to.equal(expectedPage);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getSummariesPage)).to.be.true;
+        expect(reportGetSummariesPage.calledOnceWithExactly(qualifier, cursor, limit)).to.be.true;
+        expect(byIds.calledOnceWithExactly(ids)).to.be.true;
+      });
+
+      it('getSummariesPage uses default cursor and limit', async () => {
+        const expectedPage: Page<Report.v1.ReportSummary> = { data: [], cursor: null };
+        const reportGetSummariesPage = sinon.stub().resolves(expectedPage);
+        dataContextBind.returns(reportGetSummariesPage);
+        const ids = ['uuid-1', 'uuid-2'];
+        const qualifier = { ids };
+        sinon.stub(Qualifier, 'byIds').returns(qualifier);
+
+        const returnedPage = await report.getSummariesPage(ids);
+
+        expect(returnedPage).to.equal(expectedPage);
+        expect(reportGetSummariesPage.calledOnceWithExactly(qualifier, null, 100)).to.be.true;
+      });
+
+      it('getByUuid', async () => {
+        const expectedReport = {};
+        const reportGet = sinon.stub().resolves(expectedReport);
+        dataContextBind.returns(reportGet);
+        const qualifier = { uuid: 'my-report-uuid' };
+        const byUuid = sinon.stub(Qualifier, 'byUuid').returns(qualifier);
+
+        const returnedReport = await report.getByUuid(qualifier.uuid);
+
+        expect(returnedReport).to.equal(expectedReport);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.get)).to.be.true;
+        expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
+      });
+
+      it('getByUuidWithLineage', async () => {
+        const expectedReport = {};
+        const reportGet = sinon.stub().resolves(expectedReport);
+        dataContextBind.returns(reportGet);
+        const qualifier = { uuid: 'my-report-uuid' };
+        const byUuid = sinon.stub(Qualifier, 'byUuid').returns(qualifier);
+
+        const returnedReport = await report.getByUuidWithLineage(qualifier.uuid);
+
+        expect(returnedReport).to.equal(expectedReport);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getWithLineage)).to.be.true;
+        expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
+      });
+
+      it('getUuidsPageByFreetext', async () => {
+        const expectedReportIds: Page<Report.v1.Report> = { data: [], cursor: null };
+        const reportGetIdsPage = sinon.stub().resolves(expectedReportIds);
+        dataContextBind.returns(reportGetIdsPage);
+        const freetext = 'abc';
+        const limit = 2;
+        const cursor = '1';
+        const qualifier = { freetext };
+        const byFreetext = sinon.stub(Qualifier, 'byFreetext').returns(qualifier);
+
+        const returnedContactIds = await report.getUuidsPageByFreetext(freetext, cursor, limit);
+
+        expect(returnedContactIds).to.equal(expectedReportIds);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
+        expect(
+          reportGetIdsPage.calledOnceWithExactly(qualifier, cursor, limit)
+        ).to.be.true;
+        expect(byFreetext.calledOnceWithExactly(freetext)).to.be.true;
+      });
+
+      it('getUuidsPageByFreetext uses default cursor and limit', async () => {
+        const expectedReportIds: Page<Report.v1.Report> = {data: [], cursor: null};
+        const reportGetIdsPage = sinon.stub().resolves(expectedReportIds);
+        dataContextBind.returns(reportGetIdsPage);
+        const freetext = 'abc';
+        const qualifier = { freetext };
+        sinon.stub(Qualifier, 'byFreetext').returns(qualifier);
+
+        const returnedContactIds = await report.getUuidsPageByFreetext(freetext);
+
+        expect(returnedContactIds).to.equal(expectedReportIds);
+        expect(reportGetIdsPage.calledOnceWithExactly(qualifier, null, 10000)).to.be.true;
+      });
+
+      it('getUuidsByFreetext', () => {
+        const mockAsyncGenerator = fakeGenerator();
+
+        const contactGetIds = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(contactGetIds);
+        const freetext = 'abc';
+        const qualifier = { freetext };
+        const byFreetext = sinon.stub(Qualifier, 'byFreetext').returns(qualifier);
+
+        const res = report.getUuidsByFreetext(freetext);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuids)).to.be.true;
+        expect(contactGetIds.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byFreetext.calledOnceWithExactly(freetext)).to.be.true;
+      });
+
+      it('getPageByIds', async () => {
+        const expectedReports: Page<Report.v1.Report> = { data: [], cursor: null };
+        const reportGetPage = sinon.stub().resolves(expectedReports);
+        dataContextBind.returns(reportGetPage);
+        const ids: [string, ...string[]] = ['r1', 'r2'];
+        const idsQualifier = { ids };
+        const byIds = sinon.stub(Qualifier, 'byIds').returns(idsQualifier);
+        const limit = 2;
+        const cursor = '1';
+
+        const returnedReports = await report.getPageByIds(ids, cursor, limit);
+
+        expect(returnedReports).to.equal(expectedReports);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getPage)).to.be.true;
+        expect(reportGetPage.calledOnceWithExactly(idsQualifier, cursor, limit)).to.be.true;
+        expect(byIds.calledOnceWithExactly(ids)).to.be.true;
+      });
+
+      it('getPageByIds uses default cursor and limit', async () => {
+        const expectedReports: Page<Report.v1.Report> = { data: [], cursor: null };
+        const reportGetPage = sinon.stub().resolves(expectedReports);
+        dataContextBind.returns(reportGetPage);
+        const ids: [string, ...string[]] = ['r1', 'r2'];
+        const idsQualifier = { ids };
+        sinon.stub(Qualifier, 'byIds').returns(idsQualifier);
+
+        const returnedReports = await report.getPageByIds(ids);
+
+        expect(returnedReports).to.equal(expectedReports);
+        expect(reportGetPage.calledOnceWithExactly(idsQualifier, null, 100)).to.be.true;
+      });
+
+      it('getByIds', () => {
+        const mockAsyncGenerator = fakeGenerator();
+        const reportGetAll = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(reportGetAll);
+        const ids: [string, ...string[]] = ['r1', 'r2'];
+        const idsQualifier = { ids };
+        const byIds = sinon.stub(Qualifier, 'byIds').returns(idsQualifier);
+
+        const res = report.getByIds(ids);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getAll)).to.be.true;
+        expect(reportGetAll.calledOnceWithExactly(idsQualifier)).to.be.true;
+        expect(byIds.calledOnceWithExactly(ids)).to.be.true;
+      });
+
+      it('create', async () => {
+        const reportInput = { form: 'apoorva', type: 'report', contact: 'c1' };
+        const expectedReport = {
+          ...reportInput,
+          reported_date: 12312312
+        };
+        const reportCreate = sinon.stub().resolves(expectedReport);
+        dataContextBind.returns(reportCreate);
+
+        const returnedReport = await report.create(reportInput);
+
+        expect(returnedReport).to.equal(expectedReport);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.create)).to.be.true;
+        expect(reportCreate.calledOnceWithExactly(reportInput)).to.be.true;
+      });
+
+      it('update', async () => {
+        const reportInput = {
+          form: 'apoorva',
+          type: DOC_TYPES.DATA_RECORD,
+          contact: { _id: 'c1' },
+          _id: '123',
+          _rev: '1-abc',
+          reported_date: 12312312,
+          fields: {}
+        };
+        const expectedReport = {
+          ...reportInput,
+          _rev: '2-def',
+        };
+        const reportUpdate = sinon.stub().resolves(expectedReport);
+        dataContextBind.returns(reportUpdate);
+
+        const returnedPlace = await report.update(reportInput);
+
+        expect(returnedPlace).to.equal(expectedReport);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.update)).to.be.true;
+        expect(reportUpdate.calledOnceWithExactly(reportInput)).to.be.true;
       });
     });
   });

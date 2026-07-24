@@ -22,6 +22,9 @@ const getApiSmsChanges = (messages) => {
           return;
         }
         const idx = expectedMessages.findIndex(message => message === change.doc.sms_message.message);
+        if (idx === -1) {
+          console.error('unexpected message', JSON.stringify(change.doc, null, 2));
+        }
         changes.push(change);
         expectedMessages.splice(idx, 1);
 

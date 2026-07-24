@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { LocationService } from '@mm-services/location.service';
 
 @Injectable({
@@ -18,14 +18,14 @@ export class UserLoginService {
    * @param {String} username username of the user to be logged in.
    * @param {String} password password of the user.
    */
-  login(username, password): Promise<Object> {
+  login(username: string, password: string): Promise<Object> {
 
     const url = '/' + this.location.dbName + '/login';
 
-    const headers: any = {
+    const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       Accept: 'application/json',
-    };
+    });
 
     const data = JSON.stringify({
       user: username,

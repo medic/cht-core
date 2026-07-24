@@ -216,6 +216,33 @@ describe('Auth', () => {
     });
   });
 
+  describe('assertDbAdmin', () => {
+    it('should return the userCtx when the user is a db admin', async () => {
+      sinon.stub(request, 'get').resolves({ userCtx: { name: 'admin', roles: [COUCHDB_ADMIN] } });
+
+      const result = await auth.assertDbAdmin(req);
+
+      chai.expect(result).to.deep.equal({ name: 'admin', roles: [COUCHDB_ADMIN] });
+    });
+
+    it('should throw a PermissionError when the user is logged in but not a db admin', async () => {
+      sinon.stub(request, 'get').resolves({ userCtx: { name: 'user', roles: ['chw'] } });
+
+      await chai.expect(auth.assertDbAdmin(req))
+        .to.be.rejectedWith(PermissionError, 'User is not an admin');
+    });
+
+    it('should propagate authentication errors from getUserCtx', async () => {
+      sinon.stub(request, 'get').rejects({ status: 401, error: 'not logged in' });
+
+      await chai.expect(auth.assertDbAdmin(req)).to.be.rejected.and.eventually.deep.equal({
+        code: 401,
+        message: 'Not logged in',
+        err: { status: 401, error: 'not logged in' }
+      });
+    });
+  });
+
   describe('assertPermissions', () => {
     const requestOptions = {
       url: 'http://abc.com/_session',
