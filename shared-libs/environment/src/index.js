@@ -1,7 +1,7 @@
 const logger = require('@medic/logger');
 
 const { COUCH_URL, BUILDS_URL, PROXY_CHANGE_ORIGIN = false } = process.env;
-const DEFAULT_BUILDS_URL = 'https://staging.dev.medicmobile.org/_couch/builds_4';
+const DEFAULT_BUILDS_URL = 'https://staging.app.medicmobile.org/_couch/builds_4';
 
 const isString = value => typeof value === 'string' || value instanceof String;
 const isTrue = value => isString(value) ? value.toLowerCase() === 'true' : value === true;

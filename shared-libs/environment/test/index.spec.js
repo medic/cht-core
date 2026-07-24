@@ -68,7 +68,7 @@ describe('environment', () => {
 
     expect(env).excludingEvery(['setService', 'getService']).to.deep.equal({
       couchUrl: 'https://admin:pass@couchdb:5984/medicdb',
-      buildsUrl: 'https://staging.dev.medicmobile.org/_couch/builds_4',
+      buildsUrl: 'https://staging.app.medicmobile.org/_couch/builds_4',
       serverUrl: 'https://admin:pass@couchdb:5984/',
       serverUrlNoAuth: 'https://couchdb:5984/',
       protocol: 'https:',

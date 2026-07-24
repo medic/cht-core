@@ -25,7 +25,7 @@ cache_images: true # DEFAULT: Good default for production
 # Upstream server configuration
 upstream_servers:
   docker_registry: "public.ecr.aws/medic" # DEFAULT: Good default
-  builds_url: "https://staging.dev.medicmobile.org/_couch/builds_4" # DEFAULT: Good default
+  builds_url: "https://staging.app.medicmobile.org/_couch/builds_4" # DEFAULT: Good default
 
 # CouchDB Settings
 couchdb:

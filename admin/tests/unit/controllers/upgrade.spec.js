@@ -277,7 +277,7 @@ describe('UpgradeCtrl controller', () => {
     await scope.setupPromise;
 
     expect(pouchDb.callCount).to.equal(1);
-    expect(pouchDb.args[0][0]).to.equal('https://staging.dev.medicmobile.org/_couch/builds_4');
+    expect(pouchDb.args[0][0]).to.equal('https://staging.app.medicmobile.org/_couch/builds_4');
     expect(scope.loading).to.equal(false);
     expect(scope.versions.releases[0].compare).to.deep.equal([{ ddoc: '_design/medic', db: 'medic', indexing: true }]);
     expect(scope.versions.releases[0].requiresIndexing).to.equal(true);

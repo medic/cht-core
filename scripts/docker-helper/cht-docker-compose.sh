@@ -8,7 +8,7 @@ homeDir=
 green='\033[0;32m'   #'0;32' is Green's ANSI color code
 red='\033[0;31m'   #'0;31' is Red's ANSI color code
 noColor='\033[0m'
-stagingUrl='https://staging.dev.medicmobile.org/_couch/builds_4'
+stagingUrl='https://staging.app.medicmobile.org/_couch/builds_4'
 
 get_existing_projects() {
   find . -name "*.env" -type f | sed "s/\.\///" | sed "s/\.env//"
