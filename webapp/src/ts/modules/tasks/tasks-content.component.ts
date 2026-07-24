@@ -21,6 +21,8 @@ import { SimpleDatePipe } from '@mm-pipes/date.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
+import { FormConfig } from '@mm-services/form/form-config';
+import { EnketoForm } from '@mm-services/enketo.service';
 
 @Component({
   templateUrl: './tasks-content.component.html',
@@ -28,18 +30,18 @@ import { Contact, Qualifier } from '@medic/cht-datasource';
 })
 export class TasksContentComponent implements OnInit, OnDestroy {
   constructor(
-    private translateService:TranslateService,
-    private route:ActivatedRoute,
-    private store:Store,
-    private formService:FormService,
-    private performanceService:PerformanceService,
-    private translateFromService:TranslateFromService,
-    private xmlFormsService:XmlFormsService,
-    private geolocationService:GeolocationService,
-    chtDatasourceService: CHTDatasourceService,
-    private router:Router,
-    private tasksForContactService:TasksForContactService,
+    private readonly translateService:TranslateService,
+    private readonly route:ActivatedRoute,
+    private readonly store:Store,
+    private readonly formService:FormService,
+    private readonly performanceService:PerformanceService,
+    private readonly translateFromService:TranslateFromService,
+    private readonly xmlFormsService:XmlFormsService,
+    private readonly geolocationService:GeolocationService,
+    private readonly router:Router,
+    private readonly tasksForContactService:TasksForContactService,
     private readonly interactionTrackingService:InteractionTrackingService,
+    chtDatasourceService: CHTDatasourceService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.tasksActions = new TasksActions(store);
@@ -47,18 +49,17 @@ export class TasksContentComponent implements OnInit, OnDestroy {
   }
 
   subscription = new Subscription();
-  private globalActions;
-  private tasksActions;
+  private readonly globalActions;
+  private readonly tasksActions;
   private readonly getContact: ReturnType<typeof Contact.v1.get>;
 
   enketoStatus;
   private enketoEdited;
   loadingContent;
   selectedTask: any = null;
-  form;
+  form?: EnketoForm;
   loadingForm;
   contentError;
-  formId;
   private cancelCallback;
   errorTranslationKey;
   private tasksList;
@@ -68,16 +69,15 @@ export class TasksContentComponent implements OnInit, OnDestroy {
   private trackRender;
   private trackEditDuration;
   private trackSave;
-  private trackMetadata = { action: '' };
-  private viewInited = new Subject();
+  private readonly trackMetadata = { action: '' };
+  private readonly viewInited = new Subject();
 
   ngOnInit() {
     this.trackRender = this.performanceService.track();
     this.subscribeToStore();
     this.subscribeToRouteParams();
 
-    this.form = null;
-    this.formId = null;
+    this.form = undefined;
     this.resetFormError();
 
     this.tasksActions.setLastSubmittedTask(null);
@@ -223,10 +223,10 @@ export class TasksContentComponent implements OnInit, OnDestroy {
     }
   }
 
-  private renderForm(action, formDoc) {
+  private renderForm(action, formConfig: FormConfig) {
     this.globalActions.setEnketoEditedStatus(false);
 
-    const formContext = new WebappEnketoFormContext('#task-report', 'task', formDoc, action.content);
+    const formContext = new WebappEnketoFormContext('#task-report', formConfig, action.content);
     formContext.editedListener = this.markFormEdited.bind(this);
     formContext.valuechangeListener = this.resetFormError.bind(this);
 
@@ -235,10 +235,10 @@ export class TasksContentComponent implements OnInit, OnDestroy {
       .then((formInstance) => {
         this.form = formInstance;
         this.loadingForm = false;
-        if (formDoc?.translation_key) {
-          this.globalActions.setTitle(this.translateService.instant(formDoc.translation_key));
+        if (formConfig.doc.translation_key) {
+          this.globalActions.setTitle(this.translateService.instant(formConfig.doc.translation_key));
         } else {
-          this.globalActions.setTitle(this.translateFromService.get(formDoc?.title));
+          this.globalActions.setTitle(this.translateFromService.get(formConfig.doc.title));
         }
       });
   }
@@ -272,7 +272,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
         this.interactionTrackingService.record('task:back');
         this.tasksActions.setSelectedTask(null);
         this.formService.unload(this.form);
-        this.form = null;
+        this.form = undefined;
         this.loadingForm = false;
         this.contentError = false;
         this.globalActions.clearNavigation();
@@ -286,14 +286,13 @@ export class TasksContentComponent implements OnInit, OnDestroy {
     if (action.type === 'report') {
       this.interactionTrackingService.record('task:form_open', action.form);
       this.loadingForm = true;
-      this.formId = action.form;
       return this.xmlFormsService
-        .get(action.form)
-        .then((formDoc) => this.renderForm(action, formDoc))
+        .getFormConfig('task', action.form)
+        .then((formConfig) => this.renderForm(action, formConfig))
         .then(() => {
           this.trackMetadata.action = action.content.doc ? 'edit' : 'add';
           this.trackRender?.stop({
-            name: [ 'enketo', 'tasks', this.formId, this.trackMetadata.action, 'render' ].join(':'),
+            name: [ 'enketo', 'tasks', action.form, this.trackMetadata.action, 'render' ].join(':'),
             recordApdex: true,
           });
           this.trackEditDuration = this.performanceService.track();
@@ -326,10 +325,11 @@ export class TasksContentComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.interactionTrackingService.record('task:form_save', this.formId);
+    const formId = this.form?.config.doc.internalId;
+    this.interactionTrackingService.record('task:form_save', formId);
 
     this.trackEditDuration?.stop({
-      name: [ 'enketo', 'tasks', this.formId, this.trackMetadata.action, 'user_edit_time' ].join(':'),
+      name: [ 'enketo', 'tasks', formId, this.trackMetadata.action, 'user_edit_time' ].join(':'),
     });
     this.trackSave = this.performanceService.track();
 
@@ -337,7 +337,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
     this.resetFormError();
 
     return this.formService
-      .save(this.formId, this.form, this.geoHandle)
+      .save(this.form!, this.geoHandle)
       .then((docs) => {
         console.debug('saved report and associated docs', docs);
         this.globalActions.setSnackbarContent(this.translateService.instant('report.created'));
@@ -349,12 +349,12 @@ export class TasksContentComponent implements OnInit, OnDestroy {
         this.globalActions.unsetSelected();
         this.globalActions.clearNavigation();
 
-        this.interactionTrackingService.record('task:complete', this.formId);
+        this.interactionTrackingService.record('task:complete', formId);
         this.router.navigate(['/tasks', 'group']);
       })
       .then(() => {
         this.trackSave?.stop({
-          name: [ 'enketo', 'tasks', this.formId, this.trackMetadata.action, 'save' ].join(':'),
+          name: [ 'enketo', 'tasks', formId, this.trackMetadata.action, 'save' ].join(':'),
           recordApdex: true,
         });
       })
@@ -366,7 +366,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
   }
 
   navigationCancel() {
-    this.interactionTrackingService.record('task:cancel', this.formId);
+    this.interactionTrackingService.record('task:cancel', this.form?.config.doc.internalId);
     this.globalActions.navigationCancel();
   }
 

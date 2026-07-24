@@ -19,6 +19,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { NgIf } from '@angular/common';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
+import { FormConfig } from '@mm-services/form/form-config';
 
 @Component({
   templateUrl: './reports-add.component.html',
@@ -32,19 +33,19 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   subscription: Subscription = new Subscription();
 
   constructor(
-    private store:Store,
-    private dbService:DbService,
-    private fileReaderService:FileReaderService,
-    private geolocationService:GeolocationService,
-    private getReportContentService:GetReportContentService,
-    private lineageModelGeneratorService:LineageModelGeneratorService,
-    private xmlFormsService:XmlFormsService,
-    private formService:FormService,
-    private translateService:TranslateService,
-    private router:Router,
-    private route:ActivatedRoute,
-    private performanceService:PerformanceService,
-    private ngZone:NgZone,
+    private readonly store:Store,
+    private readonly dbService:DbService,
+    private readonly fileReaderService:FileReaderService,
+    private readonly geolocationService:GeolocationService,
+    private readonly getReportContentService:GetReportContentService,
+    private readonly lineageModelGeneratorService:LineageModelGeneratorService,
+    private readonly xmlFormsService:XmlFormsService,
+    private readonly formService:FormService,
+    private readonly translateService:TranslateService,
+    private readonly router:Router,
+    private readonly route:ActivatedRoute,
+    private readonly performanceService:PerformanceService,
+    private readonly ngZone:NgZone,
   ) {
     this.globalActions = new GlobalActions(this.store);
     this.reportsActions = new ReportsActions(this.store);
@@ -63,12 +64,12 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   selectMode;
 
   private geoHandle: any;
-  private globalActions: GlobalActions;
-  private reportsActions: ReportsActions;
+  private readonly globalActions: GlobalActions;
+  private readonly reportsActions: ReportsActions;
   private trackRender;
   private trackEditDuration;
   private trackSave;
-  private trackMetadata = { action: '', form: '' };
+  private readonly trackMetadata = { action: '', form: '' };
   private routeSnapshot;
 
   private subscribeToStore() {
@@ -159,13 +160,13 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
 
         return Promise
           .all([
-            this.getReportContentService.getReportContent(model?.doc),
-            this.xmlFormsService.get(model?.formInternalId)
+            this.getReportContentService.getReportContent(model.doc),
+            this.xmlFormsService.getFormConfig('report', model.formInternalId)
           ])
-          .then(([ reportContent, form ]) => {
+          .then(([ reportContent, formConfig ]) => {
             this.globalActions.setEnketoEditedStatus(false);
 
-            return this.ngZone.run(() => this.renderForm(form, reportContent, model));
+            return this.ngZone.run(() => this.renderForm(formConfig, reportContent, model));
           });
       })
       .catch((err) => {
@@ -235,8 +236,8 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
           })));
   }
 
-  private async renderForm(formDoc, reportContent, model) {
-    const formContext = new WebappEnketoFormContext('#report-form', 'report', formDoc, reportContent);
+  private async renderForm(formConfig: FormConfig, reportContent, model) {
+    const formContext = new WebappEnketoFormContext('#report-form', formConfig, reportContent);
     formContext.editing = !!reportContent;
     formContext.editedListener = this.markFormEdited.bind(this);
     formContext.valuechangeListener = this.resetFormError.bind(this);
@@ -332,10 +333,9 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
     const reportId = this.selectedReport?.doc?._id;
-    const formInternalId = this.selectedReport?.formInternalId;
 
     return this.formService
-      .save(formInternalId, this.form, this.geoHandle, reportId)
+      .save(this.form, this.geoHandle, reportId)
       .then((docs) => {
         console.debug('saved report and associated docs', docs);
         this.globalActions.setEnketoSavingStatus(false);

@@ -1,15 +1,15 @@
 import { Component, EventEmitter, Inject, Input, Output } from '@angular/core';
-import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
+import { EnketoForm, EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
 import * as medicXpathExtensions from '../../../src/js/enketo/medic-xpath-extensions';
 import moment from 'moment';
 import { toBik_text } from 'bikram-sambat';
 import { TranslateService } from '@mm-services/translate.service';
-import { ContactSaveService } from '@mm-services/contact-save.service';
 import { NgIf, DOCUMENT } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { CHTDatasourceService as CHTDatasourceServiceStub } from './stubs/cht-datasource.service';
 import { CONTACT_TYPES } from '@medic/constants';
+import { FormConfig } from '@mm-services/form/form-config';
 
 const DEFAULT_FORM_ID = 'cht-form-id';
 
@@ -32,12 +32,9 @@ export class AppComponent {
   private readonly chtDataSourceService: CHTDatasourceServiceStub;
 
   private formContext = new ChtFormEnketoFormContext();
-
-  private _formXml?: string;
-  private _formModel?: string;
-  private _formHtml?: string;
   private _user: typeof this.DEFAULT_USER & Record<string, any> = this.DEFAULT_USER;
 
+  private enketoForm?: EnketoForm;
   private currentRender?: Promise<void>;
   private reRenderForm = false;
 
@@ -47,7 +44,6 @@ export class AppComponent {
 
   constructor(
     chtDatasourceService: CHTDatasourceService,
-    private readonly contactSaveService: ContactSaveService,
     private readonly enketoService: EnketoService,
     private readonly translateService: TranslateService,
     @Inject(DOCUMENT) private readonly document: Document,
@@ -66,17 +62,17 @@ export class AppComponent {
   }
 
   @Input() set formHtml(value: string | undefined) {
-    this._formHtml = value;
+    this.formContext.formHtml = value;
     this.queueRenderForm();
   }
 
   @Input() set formModel(value: string | undefined) {
-    this._formModel = value;
+    this.formContext.formModel = value;
     this.queueRenderForm();
   }
 
   @Input() set formXml(value: string | undefined) {
-    this._formXml = value;
+    this.formContext.formXml = value;
     this.queueRenderForm();
   }
 
@@ -141,7 +137,7 @@ export class AppComponent {
     this.formContext.status.saving = true;
 
     try {
-      const submittedDocs = await this.getDocsFromForm();
+      const submittedDocs = (await this.getDocsFromForm()).map(doc => this.cleanDoc(doc));
       this.onSubmit.emit(submittedDocs);
     } catch (e) {
       console.error('Error submitting form data: ', e);
@@ -151,26 +147,28 @@ export class AppComponent {
     }
   }
 
+  private cleanDoc(doc: Record<string, any>) {
+    const attachments = doc._attachments;
+    // Pass through JSON to remove any dangling properties set to `undefined`.
+    const cleanDoc = JSON.parse(JSON.stringify(doc));
+    if (attachments) {
+      cleanDoc._attachments = attachments;
+    }
+    return cleanDoc;
+  }
+
   private async getDocsFromForm() {
-    const currentForm = this.enketoService.getCurrentForm();
     const { contactType } = this.formContext;
     if (contactType) {
       const typeFields = this.HARDCODED_TYPES.includes(contactType)
         ? { type: contactType }
         : { type: 'contact', contact_type: contactType };
-      const { preparedDocs } = await this.contactSaveService.save(currentForm, null, typeFields, null);
+      const { preparedDocs } = await this.enketoService.saveContact(this.enketoForm!, typeFields);
       return preparedDocs;
     }
-
-    const formDoc = {
-      xml: this._formXml,
-      doc: {}
-    };
-    return this.enketoService.completeNewReport(
-      this.formContext.formId,
-      currentForm,
-      formDoc,
-      this.formContext.content?.contact
+    return this.enketoService.saveReport(
+      this.enketoForm!,
+      { contact: this.formContext.content?.contact }
     );
   }
 
@@ -193,7 +191,7 @@ export class AppComponent {
 
   private async renderForm() {
     this.unloadForm();
-    if (!this._formHtml || !this._formModel || !this._formXml) {
+    if (!this.formContext.formHtml || !this.formContext.formModel || !this.formContext.formXml) {
       return;
     }
 
@@ -204,15 +202,14 @@ export class AppComponent {
         .then(() => this.renderForm());
     }
 
-    const formDetails = this.getFormDetails();
-    await this.enketoService.renderForm(this.formContext, formDetails, this._user);
+    this.enketoForm = await this.enketoService.renderForm(this.formContext, this._user);
     this.onRender.emit();
   }
 
   private unloadForm() {
-    const currentForm = this.enketoService.getCurrentForm();
-    if (currentForm) {
-      this.enketoService.unload(currentForm);
+    if (this.enketoForm) {
+      this.enketoService.unload(this.enketoForm.form);
+      this.enketoForm = undefined;
       $(`${this.formContext.selector} .container.pages`).empty();
     }
   }
@@ -230,18 +227,6 @@ export class AppComponent {
         attributeFilter: ['id'],
       });
     });
-  }
-
-  private getFormDetails() {
-    const $html = $(this._formHtml!);
-    const hasContactSummary = $(this._formModel!)
-      .find('> instance[id="contact-summary"]')
-      .length === 1;
-    return {
-      html: $html,
-      model: this._formModel,
-      hasContactSummary: hasContactSummary
-    };
   }
 
   private tearDownForm() {
@@ -288,12 +273,21 @@ class ChtFormEnketoFormContext implements EnketoFormContext {
   };
 
   formId = DEFAULT_FORM_ID;
+  formXml?: string;
+  formHtml?: string;
+  formModel?: string;
   contactType?: string;
   content?: Record<string, any>;
   editing = false;
 
-  get formDoc() {
-    return { _id: this.formId };
+  get formConfig() {
+    return new FormConfig(
+      { _id: this.formId },
+      this.type,
+      this.formXml || 'xml',
+      this.formHtml || '',
+      this.formModel || ''
+    );
   }
 
   get instanceData() {

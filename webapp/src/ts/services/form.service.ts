@@ -6,7 +6,6 @@ import * as moment from 'moment';
 import * as enketoConstants from './../../js/enketo/constants';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
 import { DbService } from '@mm-services/db.service';
-import { FileReaderService } from '@mm-services/file-reader.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { SubmitFormBySmsService } from '@mm-services/submit-form-by-sms.service';
 import { UserContactService } from '@mm-services/user-contact.service';
@@ -20,17 +19,17 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { GlobalActions } from '@mm-actions/global';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { ContactSummary, EnketoFormContext, EnketoService, FormType } from '@mm-services/enketo.service';
+import { ContactSummary, EnketoForm, EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
-import { ContactSaveService } from '@mm-services/contact-save.service';
 import { reduce as _reduce } from 'lodash-es';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
-import { Nullable, Person, Contact } from '@medic/cht-datasource';
+import { Nullable, Person, Contact, Report, Qualifier } from '@medic/cht-datasource';
 import { DeduplicateService, DuplicateCheck } from '@mm-services/deduplicate.service';
 import { ContactsService } from '@mm-services/contacts.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { FormConfig } from '@mm-services/form/form-config';
 
 /**
  * Service for interacting with forms. This is the primary entry-point for CHT code to render forms and save the
@@ -43,40 +42,42 @@ import { PerformanceService } from '@mm-services/performance.service';
 })
 export class FormService {
   constructor(
-    private store: Store,
-    private contactSaveService: ContactSaveService,
-    private contactSummaryService: ContactSummaryService,
-    private contactTypesService: ContactTypesService,
-    private dbService: DbService,
-    private fileReaderService: FileReaderService,
-    private lineageModelGeneratorService: LineageModelGeneratorService,
-    private submitFormBySmsService: SubmitFormBySmsService,
-    private userContactService: UserContactService,
-    private userSettingsService: UserSettingsService,
-    private xmlFormsService: XmlFormsService,
-    private zScoreService: ZScoreService,
-    private trainingCardsService: TrainingCardsService,
-    private transitionsService: TransitionsService,
-    private translateService: TranslateService,
-    private ngZone: NgZone,
-    private chtDatasourceService: CHTDatasourceService,
-    private enketoService: EnketoService,
-    private targetAggregatesService: TargetAggregatesService,
-    private contactViewModelGeneratorService: ContactViewModelGeneratorService,
+    private readonly store: Store,
+    private readonly contactSummaryService: ContactSummaryService,
+    private readonly contactTypesService: ContactTypesService,
+    private readonly dbService: DbService,
+    private readonly lineageModelGeneratorService: LineageModelGeneratorService,
+    private readonly submitFormBySmsService: SubmitFormBySmsService,
+    private readonly userContactService: UserContactService,
+    private readonly userSettingsService: UserSettingsService,
+    private readonly xmlFormsService: XmlFormsService,
+    private readonly zScoreService: ZScoreService,
+    private readonly trainingCardsService: TrainingCardsService,
+    private readonly transitionsService: TransitionsService,
+    private readonly translateService: TranslateService,
+    private readonly ngZone: NgZone,
+    private readonly chtDatasourceService: CHTDatasourceService,
+    private readonly enketoService: EnketoService,
+    private readonly targetAggregatesService: TargetAggregatesService,
+    private readonly contactViewModelGeneratorService: ContactViewModelGeneratorService,
     private readonly deduplicateService: DeduplicateService,
     private readonly contactsService: ContactsService,
     private readonly performanceService: PerformanceService,
-    private userContactSummaryService: UserContactSummaryService,
+    private readonly userContactSummaryService: UserContactSummaryService,
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
     this.servicesActions = new ServicesActions(this.store);
+    this.getReport = chtDatasourceService.bind(Report.v1.get);
+    this.getContact = chtDatasourceService.bind(Contact.v1.get);
   }
 
-  private globalActions: GlobalActions;
-  private servicesActions: ServicesActions;
+  private readonly getReport: ReturnType<typeof Report.v1.get>;
+  private readonly getContact: ReturnType<typeof Contact.v1.get>;
+  private readonly globalActions: GlobalActions;
+  private readonly servicesActions: ServicesActions;
 
-  private inited;
+  private readonly inited;
   private userContactId;
   private userFacilityIds;
 
@@ -93,30 +94,6 @@ export class FormService {
       })
       .catch((err) => {
         console.error('Error initialising enketo service', err);
-      });
-  }
-
-  private getAttachment(id, name) {
-    return this.dbService
-      .get()
-      .getAttachment(id, name)
-      .then(blob => this.fileReaderService.utf8(blob));
-  }
-
-  private transformXml(form) {
-    return Promise
-      .all([
-        this.getAttachment(form._id, this.xmlFormsService.HTML_ATTACHMENT_NAME),
-        this.getAttachment(form._id, this.xmlFormsService.MODEL_ATTACHMENT_NAME)
-      ])
-      .then(([html, model]) => {
-        const $html = $(html);
-
-        return {
-          html: $html,
-          model: model,
-          title: form.title,
-        };
       });
   }
 
@@ -155,10 +132,10 @@ export class FormService {
     return await this.contactSummaryService.get(contact, reports, lineage, targetDocs);
   }
 
-  private async getContactSummary(formDoc, instanceData):Promise<ContactSummary|undefined> {
+  private async getContactSummary(formConfig: FormConfig, instanceData):Promise<ContactSummary|undefined> {
     const instanceId = 'contact-summary';
     const contact = instanceData?.contact;
-    if (!this.modelHasInstance(formDoc.model, instanceId) || !contact) {
+    if (!this.modelHasInstance(formConfig.model, instanceId) || !contact) {
       return;
     }
 
@@ -168,9 +145,9 @@ export class FormService {
     };
   }
 
-  private async getUserContactSummary(formDoc):Promise<ContactSummary|undefined> {
+  private async getUserContactSummary(formConfig: FormConfig):Promise<ContactSummary|undefined> {
     const instanceId = 'user-contact-summary';
-    if (!this.modelHasInstance(formDoc.model, instanceId)) {
+    if (!this.modelHasInstance(formConfig.model, instanceId)) {
       return;
     }
 
@@ -182,7 +159,7 @@ export class FormService {
 
   private canAccessForm(formContext: WebappEnketoFormContext) {
     return this.xmlFormsService.canAccessForm(
-      formContext.formDoc,
+      formContext.formConfig.doc,
       formContext.userContact,
       formContext.userContactSummary?.context,
       {
@@ -194,26 +171,23 @@ export class FormService {
   }
 
   private async renderForm(formContext: WebappEnketoFormContext) {
-    const { formDoc, instanceData } = formContext;
+    const { formConfig, instanceData } = formContext;
 
     try {
-      this.unload(this.enketoService.getCurrentForm());
-      const [doc, userSettings] = await Promise.all([
-        this.transformXml(formDoc),
-        this.userSettingsService.getWithLanguage()
-      ]);
-      formContext.contactSummary = await this.getContactSummary(doc, instanceData);
-      formContext.userContactSummary = await this.getUserContactSummary(doc);
+      this.enketoService.unload(this.enketoService.getCurrentForm());
+      const userSettings = await this.userSettingsService.getWithLanguage();
+      formContext.contactSummary = await this.getContactSummary(formConfig, instanceData);
+      formContext.userContactSummary = await this.getUserContactSummary(formConfig);
 
       if (!await this.canAccessForm(formContext)) {
         throw { translationKey: 'error.loading.form.no_authorized' };
       }
-      return await this.enketoService.renderForm(formContext, doc, userSettings);
+      return await this.enketoService.renderForm(formContext, userSettings);
     } catch (error) {
       if (error.translationKey) {
         throw error;
       }
-      const errorMessage = `Failed during the form "${formDoc.internalId}" rendering : `;
+      const errorMessage = `Failed during the form "${formConfig.doc.internalId}" rendering : `;
       throw new Error(errorMessage + error.message);
     }
   }
@@ -306,24 +280,24 @@ export class FormService {
     return docs;
   }
 
-  private async completeReport(formInternalId, form, docId?) {
-    const formDoc = await this.ngZone
-      .runOutsideAngular(() => this.xmlFormsService.getDocAndFormAttachment(formInternalId));
+  private async completeReport(enketoForm: EnketoForm, docId?) {
     if (docId) {
-      return this.enketoService.completeExistingReport(form, formDoc, docId);
+      const doc = await this.getReport(Qualifier.byUuid(docId));
+      return this.enketoService.saveReport(enketoForm, doc!);
     }
 
-    const isTrainingCardForm = this.trainingCardsService.isTrainingCardForm(formInternalId);
+    const isTrainingCardForm = this.trainingCardsService.isTrainingCardForm(enketoForm.config.doc.internalId);
     const contact = await this.getUserContact(!isTrainingCardForm);
-    const docs = await this.enketoService.completeNewReport(formInternalId, form, formDoc, contact);
+
+    const docs = await this.enketoService.saveReport(enketoForm, { contact });
     if (!docId && isTrainingCardForm) {
       docs[0]._id = this.trainingCardsService.getTrainingCardDocId();
     }
     return docs;
   }
 
-  async save(formInternalId, form, geoHandle, docId?) {
-    const docs = await this.completeReport(formInternalId, form, docId);
+  async save(enketoForm: EnketoForm, geoHandle, docId?) {
+    const docs = await this.completeReport(enketoForm, docId);
     return this.ngZone.runOutsideAngular(() => this._save(docs, geoHandle));
   }
 
@@ -389,20 +363,17 @@ export class FormService {
       docId: string | undefined;
       type: string;
     },
-    formInfo: {
-      form: any;
-      xmlVersion: string | undefined;
-      duplicateCheck?: DuplicateCheck
-    },
+    enketoForm: EnketoForm,
     duplicatesAcknowledged: boolean,
   ) {
     const { docId, type } = contactInfo;
-    const { form, xmlVersion, duplicateCheck } = formInfo;
     const typeFields = this.contactTypesService.isHardcodedType(type)
       ? { type }
       : { type: 'contact', contact_type: type };
 
-    const docs = await this.contactSaveService.save(form, docId, typeFields, xmlVersion);
+    const defaultData = docId ? await this.getContact(Qualifier.byUuid(docId)) : typeFields;
+    const docs = await this.enketoService.saveContact(enketoForm, defaultData!);
+
     const preparedDocs = await this.applyTransitions(docs);
 
     const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
@@ -411,7 +382,7 @@ export class FormService {
       primaryDoc ?? preparedDocs.preparedDocs[0],
       type,
       duplicatesAcknowledged,
-      duplicateCheck
+      enketoForm.config.doc.duplicate_check
     );
     if (duplicates?.length) {
       throw new DuplicatesFoundError('Duplicates found', duplicates);
@@ -428,8 +399,8 @@ export class FormService {
     return { docId: preparedDocs.docId, bulkDocsResult };
   }
 
-  unload(form) {
-    this.enketoService.unload(form);
+  unload(form?: EnketoForm) {
+    this.enketoService.unload(form?.form);
   }
 }
 export class DuplicatesFoundError extends Error {
@@ -444,8 +415,7 @@ export class DuplicatesFoundError extends Error {
 
 export class WebappEnketoFormContext implements EnketoFormContext {
   readonly selector: string;
-  readonly formDoc: Record<string, any>;
-  readonly type: FormType;
+  readonly formConfig: FormConfig;
   readonly instanceData?: string | Record<string, any>;
   editedListener?: () => void;
   valuechangeListener?: () => void;
@@ -457,19 +427,18 @@ export class WebappEnketoFormContext implements EnketoFormContext {
   editing?: boolean;
   userContact?: Nullable<Person.v1.Person>;
 
-  constructor(selector: string, type: FormType, formDoc: Record<string, any>, instanceData?) {
+  constructor(selector: string, formConfig: FormConfig, instanceData?) {
     this.selector = selector;
-    this.type = type;
-    this.formDoc = formDoc;
+    this.formConfig = formConfig;
     this.instanceData = instanceData;
   }
 
   shouldEvaluateExpression() {
-    if (this.type === 'task') {
+    if (this.formConfig.type === 'task') {
       return false;
     }
 
-    if (this.type === 'report' && this.editing) {
+    if (this.formConfig.type === 'report' && this.editing) {
       return false;
     }
     return true;
@@ -477,6 +446,6 @@ export class WebappEnketoFormContext implements EnketoFormContext {
 
   requiresContact() {
     // Users can access contact forms even when they don't have a contact associated.
-    return this.type !== 'contact' && this.type !== 'training-card';
+    return this.formConfig.type !== 'contact' && this.formConfig.type !== 'training-card';
   }
 }
