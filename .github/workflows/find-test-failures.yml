@@ -1,8 +1,6 @@
 name: Find test failures
 
 on:
-  push: # TEMP: remove before merge — only for testing the workflow on this branch
-    branches: [11194-add-test-failure-scanner]
   workflow_dispatch:
     inputs:
       search_term:
@@ -49,12 +47,11 @@ jobs:
       - name: Run failure scanner
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # TEMP fallbacks after || are for push-trigger testing only — remove with the push trigger before merge
-          SEARCH_TERM: ${{ github.event.inputs.search_term || 'africas-talking.wdio-spec.js' }}
+          SEARCH_TERM: ${{ github.event.inputs.search_term }}
           JOB: ${{ github.event.inputs.job }}
           BRANCH: ${{ github.event.inputs.branch }}
           SINCE: ${{ github.event.inputs.since }}
-          LIMIT: ${{ github.event.inputs.limit || '10' }}
+          LIMIT: ${{ github.event.inputs.limit }}
           SCAN_ALL: ${{ github.event.inputs.scan_all }}
         run: |
           args=("$SEARCH_TERM" --repo "$GITHUB_REPOSITORY" --limit "$LIMIT")
