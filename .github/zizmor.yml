@@ -7,6 +7,15 @@
 # To add a new suppression, document the reason and the risk acceptance date.
 
 rules:
+  dangerous-triggers:
+    ignore:
+      # andra-bot.yml uses pull_request_target because it needs a write token to
+      # comment on PRs from forks. It never checks out or executes PR code —
+      # checkout targets the base branch (the pull_request_target default) and
+      # all checks operate on API data only. Risk accepted: 2026-07-21.
+      # NOTE: ignore entries must be the workflow basename, not a path.
+      - andra-bot.yml
+
   template-injection:
     ignore:
       # release-notes.yml passes workflow_dispatch inputs through env: vars.
