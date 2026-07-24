@@ -168,6 +168,9 @@ export class CustomResourceService {
     const bytes = Uint8Array.from(atob(resource.data), c => c.codePointAt(0)!);
     const content = new TextDecoder().decode(bytes);
     const xml = new DOMParser().parseFromString(content, 'text/xml');
+    if (xml.querySelector('parsererror')) {
+      return null;
+    }
     this.xmlCache.set(name, xml);
     return xml;
   }

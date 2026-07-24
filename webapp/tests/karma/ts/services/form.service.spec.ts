@@ -716,10 +716,8 @@ describe('Form service', () => {
 
       await service.render(formContext);
 
-      expect(formContext.externalInstances).to.be.an('array');
-      const itemsEntry = formContext.externalInstances!.find(e => e.id === 'items');
-      expect(itemsEntry).to.not.be.undefined;
-      expect(itemsEntry!.xml).to.equal(xmlDoc);
+      expect(customResourceService.getXml).to.have.been.calledOnceWithExactly('items.xml');
+      expect(formContext.externalInstances).to.deep.equal([{ id: 'items', xml: xmlDoc }]);
     });
 
     it('throws when resource is not found', async () => {
@@ -728,40 +726,6 @@ describe('Form service', () => {
       const formContext = new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('myform'));
 
       await expect(service.render(formContext)).to.be.rejectedWith('not found in resources');
-    });
-
-    it('sets formContext.externalInstances during render', async () => {
-      setupRenderStubs();
-      const xmlDoc = new DOMParser().parseFromString('<root><item><name>a</name></item></root>', 'text/xml');
-      customResourceService.getXml.withArgs('items.xml').returns(xmlDoc);
-      const formContext = new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('myform'));
-
-      await service.render(formContext);
-
-      expect(formContext.externalInstances).to.be.an('array').with.lengthOf(1);
-      expect(formContext.externalInstances![0].id).to.equal('items');
-    });
-
-    it('cache: CustomResourceService.getXml called once per render (caching is in CustomResourceService)', async () => {
-      const xmlDoc = new DOMParser().parseFromString('<root><item><name>a</name></item></root>', 'text/xml');
-      customResourceService.getXml.withArgs('items.xml').returns(xmlDoc);
-
-      UserContact.resolves({ contact_id: '123-user-contact' });
-      xmlFormsService.canAccessForm.resolves(true);
-      dbGetAttachment.resolves(VISIT_MODEL_WITH_EXTERNAL_DATASET);
-      FileReader.utf8
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves(VISIT_MODEL_WITH_EXTERNAL_DATASET)
-        .onThirdCall().resolves('<div>my form</div>')
-        .onCall(3).resolves(VISIT_MODEL_WITH_EXTERNAL_DATASET);
-
-      const ctx1 = new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('myform'));
-      const ctx2 = new WebappEnketoFormContext('#div2', 'report', mockEnketoDoc('myform'));
-
-      await service.render(ctx1);
-      await service.render(ctx2);
-
-      expect(customResourceService.getXml.withArgs('items.xml').callCount).to.equal(2);
     });
   });
 

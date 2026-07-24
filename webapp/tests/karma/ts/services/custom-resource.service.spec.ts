@@ -663,6 +663,15 @@ describe('ResourceIcons service', () => {
       expect(service.getXml('missing.xml')).to.be.null;
     }));
 
+    it('should return null when the resource data is not valid XML', fakeAsync(() => {
+      // mismatched tags cause DOMParser to produce a <parsererror> element
+      get.resolves(makeResources(btoa('<root><unclosed></root>')));
+      const service = getService();
+      tick();
+
+      expect(service.getXml('items.xml')).to.be.null;
+    }));
+
     it('should return cached Document on second call', fakeAsync(() => {
       get.resolves(makeResources(btoa('<root/>')));
       const service = getService();
