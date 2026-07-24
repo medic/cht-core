@@ -11,13 +11,13 @@
  * The message texts live in ./andra-bot-messages/ so they can be edited without touching this script.
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const COMMENT_MARKER = '<!-- andra-bot -->';
 const FAILURE_LABEL = 'Waiting for contributor';
 const SUCCESS_LABEL = 'Ready for review';
-const TRUSTED_ASSOCIATIONS = ['OWNER', 'MEMBER', 'COLLABORATOR'];
+const TRUSTED_ASSOCIATIONS = new Set(['OWNER', 'MEMBER', 'COLLABORATOR']);
 const MESSAGES_DIR = path.join(__dirname, 'andra-bot-messages');
 const PR_TEMPLATE_PATH = path.join(__dirname, '..', '..', '.github', 'PULL_REQUEST_TEMPLATE.md');
 
@@ -109,6 +109,20 @@ const getLinkedIssues = async (github, context) => {
   return result.repository.pullRequest.closingIssuesReferences.nodes;
 };
 
+const getLinkedIssueFailure = (pr, linkedIssues) => {
+  if (!linkedIssues.length) {
+    return getMessage('missing-linked-issue');
+  }
+  const isAssigned = linkedIssues.some(
+    issue => issue.assignees.nodes.some(assignee => assignee.login === pr.user.login)
+  );
+  if (isAssigned) {
+    return null;
+  }
+  const issueList = linkedIssues.map(issue => `#${issue.number}`).join(', ');
+  return getMessage('not-assigned', { issueList });
+};
+
 const getFailures = async (github, context) => {
   const pr = context.payload.pull_request;
   const failures = [];
@@ -123,16 +137,9 @@ const getFailures = async (github, context) => {
   }
 
   const linkedIssues = await getLinkedIssues(github, context);
-  if (!linkedIssues.length) {
-    failures.push(getMessage('missing-linked-issue'));
-  } else {
-    const isAssigned = linkedIssues.some(
-      issue => issue.assignees.nodes.some(assignee => assignee.login === pr.user.login)
-    );
-    if (!isAssigned) {
-      const issueList = linkedIssues.map(issue => `#${issue.number}`).join(', ');
-      failures.push(getMessage('not-assigned', { issueList }));
-    }
+  const linkedIssueFailure = getLinkedIssueFailure(pr, linkedIssues);
+  if (linkedIssueFailure) {
+    failures.push(linkedIssueFailure);
   }
 
   return failures;
@@ -196,9 +203,9 @@ const removeLabel = async (github, context, core, name) => {
   }
 };
 
-const swapLabels = async (github, context, core, addName, removeName) => {
-  await addLabel(github, context, core, addName);
-  await removeLabel(github, context, core, removeName);
+const swapLabels = async (github, context, core, { add, remove }) => {
+  await addLabel(github, context, core, add);
+  await removeLabel(github, context, core, remove);
 };
 
 const findExistingComment = async (github, context) => {
@@ -207,13 +214,13 @@ const findExistingComment = async (github, context) => {
     issue_number: context.payload.pull_request.number,
     per_page: 100,
   });
-  return comments.find(comment => comment.body && comment.body.includes(COMMENT_MARKER));
+  return comments.find(comment => comment.body?.includes(COMMENT_MARKER));
 };
 
-module.exports = async ({ github, context, core }) => {
+const runAndraBot = async ({ github, context, core }) => {
   const pr = context.payload.pull_request;
 
-  if (pr.user.type === 'Bot' || TRUSTED_ASSOCIATIONS.includes(pr.author_association)) {
+  if (pr.user.type === 'Bot' || TRUSTED_ASSOCIATIONS.has(pr.author_association)) {
     core.info(`Skipping AndraBot checks for ${pr.user.login} (${pr.author_association}).`);
     return;
   }
@@ -226,12 +233,14 @@ module.exports = async ({ github, context, core }) => {
       const body = `${COMMENT_MARKER}\n${getMessage('success', { author: pr.user.login })}`;
       await upsertComment(github, context, existingComment, body);
     }
-    await swapLabels(github, context, core, SUCCESS_LABEL, FAILURE_LABEL);
+    await swapLabels(github, context, core, { add: SUCCESS_LABEL, remove: FAILURE_LABEL });
     core.info('All AndraBot checks passed.');
     return;
   }
 
   await upsertComment(github, context, existingComment, buildCommentBody(pr, failures));
-  await swapLabels(github, context, core, FAILURE_LABEL, SUCCESS_LABEL);
+  await swapLabels(github, context, core, { add: FAILURE_LABEL, remove: SUCCESS_LABEL });
   core.setFailed(`AndraBot checks failed:\n- ${failures.join('\n- ')}`);
 };
+
+module.exports = runAndraBot;

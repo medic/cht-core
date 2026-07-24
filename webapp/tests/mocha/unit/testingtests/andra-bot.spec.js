@@ -219,7 +219,7 @@ describe('AndraBot', () => {
       await run(getPr({ body: filledTemplate }));
 
       const queries = graphqlCalls('closingIssuesReferences');
-      expect(queries.length).to.equal(1);
+      expect(queries).to.have.lengthOf(1);
       expect(queries[0][1]).to.deep.equal({
         owner: 'medic',
         repo: 'cht-core',
