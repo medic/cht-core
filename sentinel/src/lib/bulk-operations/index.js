@@ -163,6 +163,5 @@ const listen = async () => {
 };
 
 module.exports = {
-  processAction,
   listen,
 };

@@ -526,6 +526,29 @@ describe('Sentinel archiving lib', () => {
       chai.expect(audit.recordArchiving.args[0]).to.deep.equal([['c1', 'r1'], 424242]);
     });
 
+    it('returns the ids it could not archive when the batch mixes valid and invalid docs', async () => {
+      const archiveBatch = freshLib.__get__('archiveBatch');
+      clock.setSystemTime(777);
+
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { key: 'c1', doc: { _id: 'c1', _rev: '1-a', type: 'contact' } }, // archivable
+          { key: 'x1', doc: { _id: 'x1', _rev: '1-b', type: 'feedback' } }, // wrong type
+          { key: 'missing', doc: null }, // not in the db
+        ],
+      });
+      sinon.stub(db.archive, 'bulkDocs').resolves();
+      sinon.stub(db, 'purge').resolves();
+      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [{ doc: { _id: 'c1-info', _rev: '1-x' } }] });
+      const audit = lib.__get__('audit');
+      sinon.stub(audit, 'recordArchiving').resolves();
+
+      const rejected = await archiveBatch(['c1', 'x1', 'missing']);
+
+      chai.expect(rejected).to.deep.equal(['x1', 'missing']);
+      chai.expect(db.archive.bulkDocs.args[0][0].map(d => d._id)).to.deep.equal(['c1']);
+    });
+
     it('skips info docs that the sentinel db is missing without crashing the purge call', async () => {
       const archiveBatch = freshLib.__get__('archiveBatch');
       clock.setSystemTime(1);

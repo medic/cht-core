@@ -14,7 +14,7 @@ describe('bulk-operations archive handler', () => {
   afterEach(() => sinon.restore());
 
   it('archives the batch ids and returns no failures', async () => {
-    archiveBatch.resolves();
+    archiveBatch.resolves([]);
 
     const failed = await archive([ { id: 'a' }, { id: 'b' } ], 'action-1');
 
@@ -22,12 +22,13 @@ describe('bulk-operations archive handler', () => {
     expect(archiveBatch.calledOnceWithExactly([ 'a', 'b' ])).to.equal(true);
   });
 
-  it('fails an operation with no id and archives only the rest', async () => {
-    archiveBatch.resolves();
+  it('returns the ids that failed to be archived', async () => {
+    archiveBatch.resolves([ 'a' ]);
 
     const failed = await archive([ { id: 'a' }, {} ], 'action-1');
 
-    expect(failed).to.have.length(1);
+    // The id-less op is failed up front; archiveBatch then rejects 'a'.
+    expect(failed).to.deep.equal([ {}, { id: 'a' } ]);
     expect(archiveBatch.calledOnceWithExactly([ 'a' ])).to.equal(true);
   });
 

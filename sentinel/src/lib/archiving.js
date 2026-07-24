@@ -48,14 +48,22 @@ const archiveBatch = async (batch) => {
 
   const medicDocs = await db.medic.allDocs({ attachments: true, keys: ids, include_docs: true, conflicts: true });
 
+  const rejected = [];
   const docsToArchive = medicDocs.rows
-    .filter(row => canArchive(row.doc))
+    .filter(row => {
+      if (canArchive(row.doc)) {
+        return true;
+      }
+      rejected.push(row.key);
+      return false;
+    })
     .map(row => ({ ...row.doc, archive_date: date }));
 
   await db.archive.bulkDocs(docsToArchive, { new_edits: false });
   await persistAudit(docsToArchive, date);
   await purgeInfoDocs(docsToArchive);
   await db.purge(db.medic, docsToArchive);
+  return rejected;
 };
 
 const purgeInfoDocs = async (docsToArchive) => {

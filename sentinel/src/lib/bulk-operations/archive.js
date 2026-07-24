@@ -20,7 +20,8 @@ const archive = async (batch, actionId) => {
   }
 
   try {
-    await archiving.archiveBatch(ids);
+    const rejected = await archiving.archiveBatch(ids);
+    rejected.forEach(id => failed.push({ id }));
   } catch (err) {
     logger.error(`bulk-operations: archive failed (action ${actionId}): %o`, err);
     return batch;
