@@ -2846,7 +2846,7 @@ describe('registration', () => {
       return transition.addMessages(testConfig, testDoc)
         .then(() => transition.addMessages(testConfig, testDoc))
         .then(() => {
-          testDoc.tasks.length.should.equal(1);
+          testDoc.tasks.should.have.lengthOf(1);
           testDoc.tasks[0].messages[0].message.should.equal('Await further instructions');
           testDoc.tasks[0].messages[0].to.should.equal(testPhone);
         });
