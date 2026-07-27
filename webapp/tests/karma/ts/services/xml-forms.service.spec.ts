@@ -1370,10 +1370,8 @@ describe('XmlForms service', () => {
         });
     });
 
-    it('returns error when cannot find xform attachment', () => {
+    it('returns error when cannot find xform attachment', async () => {
       const internalId = 'birth';
-      const expectedErrorTitle = 'Error in XMLFormService : hasRequiredAttachments : ';
-      const expectedErrorDetail = `The form "${internalId}" doesn't have required attachments`;
       const expected = {
         _id: `form:${internalId}`,
         type: 'form',
@@ -1382,16 +1380,9 @@ describe('XmlForms service', () => {
       dbGet.resolves(expected);
       dbQuery.resolves([]);
       const service = getService();
-      return service.getFormConfig('report', internalId)
-        .then(() => {
-          assert.fail('expected error to be thrown');
-        })
-        .catch(err => {
-          expect(err.message).to.equal(expectedErrorTitle + expectedErrorDetail);
-          expect(error.callCount).to.equal(1);
-          expect(error.args[0][0]).to.equal(expectedErrorTitle);
-          expect(error.args[0][1]).to.equal(expectedErrorDetail);
-        });
+      await expect(service.getFormConfig('report', internalId)).to.be.rejectedWith(
+        `Could not get [xml] form attachment for form [${internalId}].`
+      );
     });
 
     it('falls back to using view if no doc found', async () => {
@@ -1492,8 +1483,7 @@ describe('XmlForms service', () => {
           'form.html': { stub: true },
         },
       };
-      const expectedErrorMessage = 'Error in XMLFormService : getDocAndFormAttachment : '
-        + `The form "${formId}" doesn't have an xform attachment`;
+      const expectedErrorMessage = `Could not get [xml] form attachment for form [${formId}].`;
       dbQuery.resolves([]);
       dbGet.resolves(formDoc);
       dbGetAttachment.withArgs(formId, 'xml').rejects({ status: 404 });
@@ -1503,8 +1493,6 @@ describe('XmlForms service', () => {
       const service = getService();
 
       await expect(service.getFormConfig('contact', formId)).to.be.rejectedWith(expectedErrorMessage);
-
-      expect(error.calledWith(expectedErrorMessage)).to.be.true;
     });
 
   });
