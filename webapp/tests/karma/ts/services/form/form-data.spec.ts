@@ -181,7 +181,7 @@ describe('form-data', () => {
         const result = contactData.deserializeDoc(buildFormConfig());
 
         expect(result).to.deep.equal({
-          _id: 'catchment-id',
+          _id: 'the-id',
           form_version: '1.0',
           name: 'A New Catchment Area',
           parent: { _id: 'parent-abc' },

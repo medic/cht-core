@@ -18,9 +18,9 @@ export class EnketoFormData {
 
   public deserializeDoc(formConfig: FormConfig): Record<string, any> {
     return {
+      ...this.deserialize(formConfig),
       _id: this.id,
-      form_version: formConfig.doc.xmlVersion,
-      ...this.deserialize(formConfig)
+      form_version: formConfig.doc.xmlVersion
     };
   }
 
@@ -77,14 +77,10 @@ export abstract class EnketoRootFormData extends EnketoFormData {
   }
 
   public findNodeWithTextContent(textContent: string) {
-    const result = this.xmlDoc.evaluate(
-      `.//*[text()=${JSON.stringify(textContent)}]`,
-      this.rootElement,
-      null,
-      XPathResult.FIRST_ORDERED_NODE_TYPE,
-      null
-    );
-    return result.singleNodeValue;
+    // XPath query is not viable here because attachment filenames can contain chars that break the XPath (e.g. ")
+    return Array
+      .from(this.rootElement.querySelectorAll('*'))
+      .find(node => node.textContent === textContent) ?? null;
   }
 
   public getNodeByXpath(contextNode: Node, rawXpath?: string | null): Node | null {
