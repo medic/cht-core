@@ -130,6 +130,10 @@ describe('AppComponent', () => {
     };
     const contactSummary = { hello: 'world' };
     const content = { my: 'content' };
+    const externalInstances = [
+      { id: 'contacts', xml: new DOMParser().parseFromString('<root><a/></root>', 'text/xml') },
+      { id: 'products', xml: new DOMParser().parseFromString('<root><b/></root>', 'text/xml') },
+    ];
 
     const component = await getComponent();
     const onRender = sinon.stub();
@@ -145,6 +149,8 @@ describe('AppComponent', () => {
     component.contactType = 'person';
     tick();
     component.content = content;
+    tick();
+    component.externalInstances = externalInstances;
     tick();
     component.extensionLibs = {
       hello: 'world',
@@ -169,6 +175,7 @@ describe('AppComponent', () => {
       instanceData: content,
       contactSummary: { id: 'contact-summary', context: contactSummary }
     });
+    expect(actualContext.externalInstances).to.equal(externalInstances);
     expect(actualContext.editedListener).to.exist;
     expect(actualContext.valuechangeListener).to.exist;
     expect(enketoService.renderForm.args[0][1]).to.deep.equal({
@@ -183,6 +190,7 @@ describe('AppComponent', () => {
     component.contactSummary = undefined;
     component.contactType = undefined;
     component.content = undefined;
+    component.externalInstances = undefined;
     component.extensionLibs = undefined;
     tick();
 
@@ -197,6 +205,7 @@ describe('AppComponent', () => {
       formDoc: { _id: formId },
       instanceData: undefined
     });
+    expect(actualContext1.externalInstances).to.be.undefined;
     expect(actualContext.contactSummary).to.be.undefined;
     expect(enketoService.renderForm.args[2][1]).to.deep.equal({
       html: $(FORM_HTML),
@@ -337,6 +346,9 @@ describe('AppComponent', () => {
     };
     const contactSummary = { hello: 'world' };
     const content = { my: 'content' };
+    const externalInstances = [
+      { id: 'contacts', xml: new DOMParser().parseFromString('<root><a/></root>', 'text/xml') },
+    ];
     const currentForm = { _id: 'current-form' };
     enketoService.getCurrentForm.returns(currentForm);
 
@@ -353,6 +365,7 @@ describe('AppComponent', () => {
     component.contactSummary = contactSummary;
     component.contactType = 'person';
     component.content = content;
+    component.externalInstances = externalInstances;
     // Set the form ID again
     component.formId = formId;
     // Trigger change detection to update the bound id attribute
@@ -370,6 +383,7 @@ describe('AppComponent', () => {
       instanceData: content,
       contactSummary: { id: 'contact-summary', context: contactSummary }
     });
+    expect(actualContext.externalInstances).to.equal(externalInstances);
     expect(actualContext.editedListener).to.exist;
     expect(actualContext.valuechangeListener).to.exist;
     expect(enketoService.renderForm.args[0][1]).to.deep.equal({
