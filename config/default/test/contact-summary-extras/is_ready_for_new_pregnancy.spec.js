@@ -5,8 +5,6 @@ const { isReadyForNewPregnancy } = require('../../contact-summary-extras');
 describe('isReadyForNewPregnancy()', () => {
   const person = { type: 'person' };
 
-  // Parent rule (H1 / #9285 / #6047): after pregnancy + newer delivery,
-  // pregnancy registration should be allowed once delivery is more than 6 weeks ago.
   it('returns true when pregnancy was followed by a delivery more than 6 weeks ago', () => {
     const pregnancyReported = moment().subtract(8, 'months');
     const deliveryReported = moment().subtract(8, 'weeks');
