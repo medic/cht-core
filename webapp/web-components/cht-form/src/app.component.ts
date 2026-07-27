@@ -57,22 +57,23 @@ export class AppComponent {
     if (!value?.trim().length) {
       throw new Error('The Form Id must be populated.');
     }
-    this.formContext.formId = value;
+    this.formContext.setFormConfig({ formId: value });
     this.queueRenderForm();
   }
 
   @Input() set formHtml(value: string | undefined) {
-    this.formContext.formHtml = value;
+    this.formContext.setFormConfig({ formHtml: value });
     this.queueRenderForm();
   }
 
   @Input() set formModel(value: string | undefined) {
-    this.formContext.formModel = value;
+    this.formContext.setFormConfig({ formModel: value });
     this.queueRenderForm();
   }
 
   @Input() set formXml(value: string | undefined) {
     this.formContext.formXml = value;
+    this.formContext.setFormConfig();
     this.queueRenderForm();
   }
 
@@ -83,6 +84,7 @@ export class AppComponent {
 
   @Input() set contactType(value: string | undefined) {
     this.formContext.contactType = value;
+    this.formContext.setFormConfig();
     this.queueRenderForm();
   }
 
@@ -125,7 +127,7 @@ export class AppComponent {
   }
 
   get formId(): string {
-    return this.formContext.formId;
+    return this.formContext.formConfig.doc._id;
   }
 
   cancelForm(): void {
@@ -191,7 +193,11 @@ export class AppComponent {
 
   private async renderForm() {
     this.unloadForm();
-    if (!this.formContext.formHtml || !this.formContext.formModel || !this.formContext.formXml) {
+    if (
+      !this.formContext.formConfig.html
+      || !this.formContext.formConfig.model
+      || !this.formContext.formXml
+    ) {
       return;
     }
 
@@ -239,7 +245,7 @@ export class AppComponent {
     // twice. So, we cannot just reset the internal state of the "inputs" here. We need to call "through the front door"
     //  so the context knows that the values have changed instead of just directly resetting the state of this class.
     const myForm = this.document
-      .getElementById(this.formContext.formId)
+      .getElementById(this.formContext.formConfig.doc._id)
       ?.closest('cht-form');
     const component = myForm || this;
     // @ts-expect-error it does exist
@@ -272,22 +278,26 @@ class ChtFormEnketoFormContext implements EnketoFormContext {
     error: null as string | null
   };
 
-  formId = DEFAULT_FORM_ID;
   formXml?: string;
-  formHtml?: string;
-  formModel?: string;
+  formConfig: FormConfig = this.setFormConfig();
+
   contactType?: string;
   content?: Record<string, any>;
   editing = false;
 
-  get formConfig() {
-    return new FormConfig(
-      { _id: this.formId },
+  setFormConfig({
+    formId = this.formConfig?.doc._id,
+    formHtml = this.formConfig?.html,
+    formModel = this.formConfig?.model,
+  }: { formId?: string, formHtml?: string, formModel?: string } = {}) {
+    this.formConfig = new FormConfig(
+      { ...this.formConfig?.doc, _id: formId || DEFAULT_FORM_ID },
       this.type,
       this.formXml || 'xml',
-      this.formHtml || '',
-      this.formModel || ''
+      formHtml || '',
+      formModel || ''
     );
+    return this.formConfig;
   }
 
   get instanceData() {
@@ -295,7 +305,7 @@ class ChtFormEnketoFormContext implements EnketoFormContext {
   }
 
   get selector() {
-    return `#${this.formId}`;
+    return `#${this.formConfig.doc._id}`;
   }
 
   get type() {
