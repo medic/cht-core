@@ -419,6 +419,8 @@ describe('Enketo service', () => {
   });
 
   describe('saveReport', () => {
+    const repeatXml = '<data><repeat nodeset="/data/repeat_section"></repeat></data>';
+
     beforeEach(() => {
       service = TestBed.inject(EnketoService);
       sinon.stub(FileManager, 'getCurrentFiles').returns([]);
@@ -674,6 +676,346 @@ describe('Enketo service', () => {
       expect(thing3.reported_date).to.be.a('number');
     });
 
+    it('creates a db-doc for each repeated db-doc element', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns(loadXML('extra-docs-with-repeat'));
+
+      const [report, thing1, thing2, thing3, ...additional] = await saveReport(
+        { contact: { _id: '123', phone: '555' } },
+        { doc: { internalId: 'V' } }
+      );
+
+      expect(additional).to.be.empty;
+      const doc1 = { my_parent: report._id, some_property: 'some_value_1', type: 'repeater' };
+      const doc2 = { my_parent: report._id, some_property: 'some_value_2', type: 'repeater' };
+      const doc3 = { my_parent: report._id, some_property: 'some_value_3', type: 'repeater' };
+      expect(report).excluding(['reported_date']).to.deep.equal({
+        _id: report._id,
+        contact: { _id: '123' },
+        content_type: 'xml',
+        fields: {
+          name: 'Sally',
+          lmp: '10',
+          secret_code_name: 'S4L',
+          // The three repeated <repeat_doc> elements are not declared as a repeat path, so only the last one survives
+          // deserialization of the report fields (each still becomes its own db-doc below).
+          repeat_doc: doc3,
+        },
+        form: 'V',
+        form_version: undefined,
+        from: '555',
+        hidden_fields: ['secret_code_name', 'repeat_doc'],
+        type: DOC_TYPES.DATA_RECORD,
+        _attachments: undefined,
+      });
+      expect(thing1).excluding(['reported_date']).to.deep.equal({ ...doc1, _id: thing1._id, form_version: undefined });
+      expect(thing2).excluding(['reported_date']).to.deep.equal({ ...doc2, _id: thing2._id, form_version: undefined });
+      expect(thing3).excluding(['reported_date']).to.deep.equal({ ...doc3, _id: thing3._id, form_version: undefined });
+    });
+
+    it('populates db-doc-ref elements inside deeply-nested repeats', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns(loadXML('db-doc-ref-in-deep-repeat'));
+
+      const [report, thing1, thing2, thing3, ...additional] = await saveReport(
+        { contact: { _id: '123', phone: '555' } },
+        { xml: repeatXml, doc: { internalId: 'V' } }
+      );
+
+      expect(additional).to.be.empty;
+      const doc1 = { my_parent: report._id, some_property: 'some_value_1', type: 'repeater' };
+      const doc2 = { my_parent: report._id, some_property: 'some_value_1', type: 'repeater' };
+      const doc3 = { my_parent: report._id, some_property: 'some_value_1', type: 'repeater' };
+      expect(report).excluding(['reported_date']).to.deep.equal({
+        _id: report._id,
+        contact: { _id: '123' },
+        content_type: 'xml',
+        fields: {
+          name: 'Sally',
+          lmp: '10',
+          secret_code_name: 'S4L',
+          repeat_section: [
+            {
+              extra: 'data1',
+              other: { deep: { structure: { repeat_doc: doc1 } } },
+              some: { deep: { structure: { repeat_doc_ref: thing1._id } } },
+            },
+            {
+              extra: 'data2',
+              other: { deep: { structure: { repeat_doc: doc2 } } },
+              some: { deep: { structure: { repeat_doc_ref: thing2._id } } },
+            },
+            {
+              extra: 'data3',
+              other: { deep: { structure: { repeat_doc: doc3 } } },
+              some: { deep: { structure: { repeat_doc_ref: thing3._id } } },
+            },
+          ],
+        },
+        form: 'V',
+        form_version: undefined,
+        from: '555',
+        hidden_fields: ['secret_code_name', 'repeat_section.other.deep.structure.repeat_doc'],
+        type: DOC_TYPES.DATA_RECORD,
+        _attachments: undefined,
+      });
+      expect(thing1).excluding(['reported_date']).to.deep.equal({ ...doc1, _id: thing1._id, form_version: undefined });
+      expect(thing2).excluding(['reported_date']).to.deep.equal({ ...doc2, _id: thing2._id, form_version: undefined });
+      expect(thing3).excluding(['reported_date']).to.deep.equal({ ...doc3, _id: thing3._id, form_version: undefined });
+    });
+
+    it('populates db-doc-ref elements that reference a db-doc outside the repeat', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns(loadXML('db-doc-ref-outside-of-repeat'));
+
+      const [report, separateDoc, ...additional] = await saveReport(
+        { contact: { _id: '123', phone: '555' } },
+        { xml: repeatXml, doc: { internalId: 'V' } }
+      );
+
+      expect(additional).to.be.empty;
+      const separate = { my_parent: report._id, some_property: 'some_value_1', type: 'separat5e' };
+      expect(report).excluding(['reported_date']).to.deep.equal({
+        _id: report._id,
+        contact: { _id: '123' },
+        content_type: 'xml',
+        fields: {
+          name: 'Sally',
+          lmp: '10',
+          secret_code_name: 'S4L',
+          separate_doc: separate,
+          // Every repeat instance references the single db-doc defined outside the repeat.
+          repeat_section: [
+            { extra: 'data1', repeat_doc_ref: separateDoc._id },
+            { extra: 'data2', repeat_doc_ref: separateDoc._id },
+            { extra: 'data3', repeat_doc_ref: separateDoc._id },
+          ],
+        },
+        form: 'V',
+        form_version: undefined,
+        from: '555',
+        hidden_fields: ['secret_code_name', 'separate_doc'],
+        type: DOC_TYPES.DATA_RECORD,
+        _attachments: undefined,
+      });
+      expect(separateDoc).excluding(['reported_date'])
+        .to.deep.equal({ ...separate, _id: separateDoc._id, form_version: undefined });
+    });
+
+    it('creates a db-doc from each repeat instance when the repeat itself is the db-doc', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns(loadXML('db-doc-ref-same-as-repeat'));
+
+      const [report, doc1, doc2, doc3, ...additional] = await saveReport(
+        { contact: { _id: '123', phone: '555' } },
+        { xml: repeatXml, doc: { internalId: 'V' } }
+      );
+
+      expect(additional).to.be.empty;
+      const repeat1 = {
+        extra: 'data1', type: 'repeater', some_property: 'some_value_1', my_parent: report._id,
+        repeat_doc_ref: doc1._id,
+      };
+      const repeat2 = {
+        extra: 'data2', type: 'repeater', some_property: 'some_value_2', my_parent: report._id,
+        repeat_doc_ref: doc2._id,
+      };
+      const repeat3 = {
+        extra: 'data3', type: 'repeater', some_property: 'some_value_3', my_parent: report._id,
+        child: { repeat_doc_ref: doc3._id },
+      };
+      expect(report).excluding(['reported_date']).to.deep.equal({
+        _id: report._id,
+        contact: { _id: '123' },
+        content_type: 'xml',
+        fields: {
+          name: 'Sally',
+          lmp: '10',
+          secret_code_name: 'S4L',
+          repeat_section: [repeat1, repeat2, repeat3],
+          // A db-doc-ref outside any repeat resolves to the first (closest) repeat_section db-doc.
+          repeat_doc_ref: doc1._id,
+        },
+        form: 'V',
+        form_version: undefined,
+        from: '555',
+        hidden_fields: ['secret_code_name', 'repeat_section'],
+        type: DOC_TYPES.DATA_RECORD,
+        _attachments: undefined,
+      });
+      expect(doc1).excluding(['reported_date']).to.deep.equal({ ...repeat1, _id: doc1._id, form_version: undefined });
+      expect(doc2).excluding(['reported_date']).to.deep.equal({ ...repeat2, _id: doc2._id, form_version: undefined });
+      expect(doc3).excluding(['reported_date']).to.deep.equal({ ...repeat3, _id: doc3._id, form_version: undefined });
+    });
+
+    it('leaves db-doc-ref elements with unresolvable references untouched', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns(loadXML('db-doc-ref-broken-ref'));
+
+      const [report, doc1, doc2, doc3, ...additional] = await saveReport(
+        { contact: { _id: '123', phone: '555' } },
+        { xml: repeatXml, doc: { internalId: 'V' } }
+      );
+
+      expect(additional).to.be.empty;
+      const repeat1 = {
+        extra: 'data1', type: 'repeater', some_property: 'some_value_1', my_parent: report._id,
+        repeat_doc_ref: 'value1',
+      };
+      const repeat2 = {
+        extra: 'data2', type: 'repeater', some_property: 'some_value_2', my_parent: report._id,
+        repeat_doc_ref: 'value2', ing: 'something',
+      };
+      const repeat3 = {
+        extra: 'data3', type: 'repeater', some_property: 'some_value_3', my_parent: report._id,
+        repeat_doc_ref: 'value3',
+      };
+      expect(report).excluding(['reported_date']).to.deep.equal({
+        _id: report._id,
+        contact: { _id: '123' },
+        content_type: 'xml',
+        fields: {
+          name: 'Sally',
+          lmp: '10',
+          secret_code_name: 'S4L',
+          // None of the db-doc-refs point at a real element, so each keeps its original literal value.
+          repeat_section: [repeat1, repeat2, repeat3],
+        },
+        form: 'V',
+        form_version: undefined,
+        from: '555',
+        hidden_fields: ['secret_code_name', 'repeat_section'],
+        type: DOC_TYPES.DATA_RECORD,
+        _attachments: undefined,
+      });
+      expect(doc1).excluding(['reported_date']).to.deep.equal({ ...repeat1, _id: doc1._id, form_version: undefined });
+      expect(doc2).excluding(['reported_date']).to.deep.equal({ ...repeat2, _id: doc2._id, form_version: undefined });
+      expect(doc3).excluding(['reported_date']).to.deep.equal({ ...repeat3, _id: doc3._id, form_version: undefined });
+    });
+
+    it('populates a local (./) db-doc-ref with the sibling db-doc in the same repeat', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns(loadXML('db-doc-ref-in-repeats-with-local-references'));
+
+      const [report, thing1, thing2, thing3, ...additional] = await saveReport(
+        { contact: { _id: '123', phone: '555' } },
+        { xml: repeatXml, doc: { internalId: 'V' } }
+      );
+
+      expect(additional).to.be.empty;
+      const doc1 = { my_parent: report._id, some_property: 'some_value_1', type: 'repeater' };
+      const doc2 = { my_parent: report._id, some_property: 'some_value_2', type: 'repeater' };
+      const doc3 = { my_parent: report._id, some_property: 'some_value_3', type: 'repeater' };
+      expect(report).excluding(['reported_date']).to.deep.equal({
+        _id: report._id,
+        contact: { _id: '123' },
+        content_type: 'xml',
+        fields: {
+          name: 'Sally',
+          lmp: '10',
+          secret_code_name: 'S4L',
+          repeat_section: [
+            { extra: 'data1', repeat_doc: doc1, repeat_doc_ref: thing1._id },
+            { extra: 'data2', repeat_doc: doc2, repeat_doc_ref: thing2._id },
+            { extra: 'data3', repeat_doc: doc3, repeat_doc_ref: thing3._id },
+          ],
+        },
+        form: 'V',
+        form_version: undefined,
+        from: '555',
+        hidden_fields: ['secret_code_name', 'repeat_section.repeat_doc'],
+        type: DOC_TYPES.DATA_RECORD,
+        _attachments: undefined,
+      });
+      expect(thing1).excluding(['reported_date']).to.deep.equal({ ...doc1, _id: thing1._id, form_version: undefined });
+      expect(thing2).excluding(['reported_date']).to.deep.equal({ ...doc2, _id: thing2._id, form_version: undefined });
+      expect(thing3).excluding(['reported_date']).to.deep.equal({ ...doc3, _id: thing3._id, form_version: undefined });
+    });
+
+    it('resolves a db-doc-ref to the db-doc when a non-db-doc sibling shares the element name', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns(loadXML('db-doc-ref-in-deep-repeats-extra-repeats'));
+
+      const [report, thing1, thing2, thing3, ...additional] = await saveReport(
+        { contact: { _id: '123', phone: '555' } },
+        { xml: repeatXml, doc: { internalId: 'V' } }
+      );
+
+      expect(additional).to.be.empty;
+      const doc = { my_parent: report._id, some_property: 'some_value_1', type: 'repeater' };
+      const buildRepeat = (extra: string, refId: string) => ({
+        extra,
+        other: { deep: { structure: { repeat_doc: doc } } },
+        some: { deep: { structure: { repeat_doc_ref: refId } } },
+      });
+      expect(report).excluding(['reported_date']).to.deep.equal({
+        _id: report._id,
+        contact: { _id: '123' },
+        content_type: 'xml',
+        fields: {
+          name: 'Sally',
+          lmp: '10',
+          secret_code_name: 'S4L',
+          repeat_section: [
+            buildRepeat('data1', thing1._id),
+            buildRepeat('data2', thing2._id),
+            buildRepeat('data3', thing3._id),
+          ],
+        },
+        form: 'V',
+        form_version: undefined,
+        from: '555',
+        hidden_fields: ['secret_code_name', 'repeat_section.other.deep.structure.repeat_doc'],
+        type: DOC_TYPES.DATA_RECORD,
+        _attachments: undefined,
+      });
+      expect(thing1).excluding(['reported_date']).to.deep.equal({ ...doc, _id: thing1._id, form_version: undefined });
+      expect(thing2).excluding(['reported_date']).to.deep.equal({ ...doc, _id: thing2._id, form_version: undefined });
+      expect(thing3).excluding(['reported_date']).to.deep.equal({ ...doc, _id: thing3._id, form_version: undefined });
+    });
+
+    it('populates a deeply-nested local db-doc-ref, skipping the non-db-doc sibling', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns(loadXML('db-doc-ref-in-deep-repeats-with-local-references'));
+
+      const [report, thing1, thing2, thing3, ...additional] = await saveReport(
+        { contact: { _id: '123', phone: '555' } },
+        { xml: repeatXml, doc: { internalId: 'V' } }
+      );
+
+      expect(additional).to.be.empty;
+      const doc = { my_parent: report._id, some_property: 'some_value_1', type: 'repeater' };
+      const buildRepeat = (extra: string, refId: string) => ({
+        extra,
+        other: { deep: { structure: { repeat_doc: doc } } },
+        some: { deep: { structure: { repeat_doc_ref: refId } } },
+      });
+      expect(report).excluding(['reported_date']).to.deep.equal({
+        _id: report._id,
+        contact: { _id: '123' },
+        content_type: 'xml',
+        fields: {
+          name: 'Sally',
+          lmp: '10',
+          secret_code_name: 'S4L',
+          repeat_section: [
+            buildRepeat('data1', thing1._id),
+            buildRepeat('data2', thing2._id),
+            buildRepeat('data3', thing3._id),
+          ],
+        },
+        form: 'V',
+        form_version: undefined,
+        from: '555',
+        hidden_fields: ['secret_code_name', 'repeat_section.other.deep.structure.repeat_doc'],
+        type: DOC_TYPES.DATA_RECORD,
+        _attachments: undefined,
+      });
+      expect(thing1).excluding(['reported_date']).to.deep.equal({ ...doc, _id: thing1._id, form_version: undefined });
+      expect(thing2).excluding(['reported_date']).to.deep.equal({ ...doc, _id: thing2._id, form_version: undefined });
+      expect(thing3).excluding(['reported_date']).to.deep.equal({ ...doc, _id: thing3._id, form_version: undefined });
+    });
+
     describe('attachments', () => {
       let getCurrentFiles;
 
@@ -718,6 +1060,38 @@ describe('Enketo service', () => {
         });
         expect(report._attachments['user-file/my-form/my_file']).to.deep.equal({
           data: 'some image data',
+          content_type: 'image/png',
+        });
+      });
+
+      it('names binary attachments by the form internalId and full field path, not the root node name', async () => {
+        form.validate.resolves(true);
+        form.getDataStr.returns(loadXML('deep-file-fields'));
+
+        const [report] = await saveReport(
+          { contact: { _id: 'my-user', phone: '8989' } },
+          { doc: { internalId: 'my-form' } }
+        );
+
+        expect(report.fields).to.deep.equal({
+          name: 'Mary',
+          age: '10',
+          gender: 'f',
+          my_file: '',
+          sub_element: { sub_sub_element: { other_file: '' } },
+        });
+        // Attachment names use the form internalId ("my-form") and the field's full path - not the root node name
+        // ("my-root-element") - even for a deeply-nested field.
+        expect(Object.keys(report._attachments)).to.have.members([
+          'user-file/my-form/my_file',
+          'user-file/my-form/sub_element/sub_sub_element/other_file',
+        ]);
+        expect(report._attachments['user-file/my-form/my_file']).to.deep.equal({
+          data: 'some image data',
+          content_type: 'image/png',
+        });
+        expect(report._attachments['user-file/my-form/sub_element/sub_sub_element/other_file']).to.deep.equal({
+          data: 'some other data',
           content_type: 'image/png',
         });
       });

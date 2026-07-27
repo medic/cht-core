@@ -2,7 +2,7 @@ import { expect } from 'chai';
 
 import { FormConfig } from '@mm-services/form/form-config';
 import {
-  EnektoContactFormData,
+  EnketoContactFormData,
   EnketoFormData,
   EnketoReportFormData,
 } from '@mm-services/form/form-data';
@@ -135,11 +135,11 @@ describe('form-data', () => {
     });
   });
 
-  describe('EnektoContactFormData', () => {
+  describe('EnketoContactFormData', () => {
     it('throws when the group named after the contact type is missing', () => {
       const doc = parseXml('<data><clinic><name>A Clinic</name></clinic></data>');
 
-      expect(() => new EnektoContactFormData(doc, 'the-id', 'person'))
+      expect(() => new EnketoContactFormData(doc, 'the-id', 'person'))
         .to.throw('Failed to save contact form because the data for the contact is not contained in the person group.');
     });
 
@@ -152,7 +152,7 @@ describe('form-data', () => {
               <phone>+123456789</phone>
             </person>
           </data>`);
-        const contactData = new EnektoContactFormData(doc, 'the-id', 'person');
+        const contactData = new EnketoContactFormData(doc, 'the-id', 'person');
 
         const result = contactData.deserializeDoc(buildFormConfig([], '3.5'));
 
@@ -176,7 +176,7 @@ describe('form-data', () => {
               <contact>contact-xyz</contact>
             </clinic>
           </data>`);
-        const contactData = new EnektoContactFormData(doc, 'the-id', 'clinic');
+        const contactData = new EnketoContactFormData(doc, 'the-id', 'clinic');
 
         const result = contactData.deserializeDoc(buildFormConfig());
 
@@ -198,7 +198,7 @@ describe('form-data', () => {
               <contact><_id>contact-xyz</_id><name>The Contact</name></contact>
             </clinic>
           </data>`);
-        const contactData = new EnektoContactFormData(doc, 'the-id', 'clinic');
+        const contactData = new EnketoContactFormData(doc, 'the-id', 'clinic');
 
         const result = contactData.deserializeDoc(buildFormConfig());
 
@@ -222,7 +222,7 @@ describe('form-data', () => {
               <child><name>Baby Bear</name></child>
             </repeat>
           </data>`);
-        const contactData = new EnektoContactFormData(doc, 'the-id', 'person');
+        const contactData = new EnketoContactFormData(doc, 'the-id', 'person');
 
         const [child1, child2, ...additional] = contactData.getChildData();
 
@@ -236,7 +236,7 @@ describe('form-data', () => {
 
       it('returns an empty array when there are no repeat > child elements', () => {
         const doc = parseXml('<data><person><name>Mum</name></person></data>');
-        const contactData = new EnektoContactFormData(doc, 'the-id', 'person');
+        const contactData = new EnketoContactFormData(doc, 'the-id', 'person');
 
         expect(contactData.getChildData()).to.deep.equal([]);
       });
@@ -250,7 +250,7 @@ describe('form-data', () => {
             <parent><_id>parent-1</_id><name>The Parent</name></parent>
             <contact><name>The Contact</name></contact>
           </data>`);
-        const contactData = new EnektoContactFormData(doc, 'the-id', 'clinic');
+        const contactData = new EnketoContactFormData(doc, 'the-id', 'clinic');
 
         const parent = contactData.getSiblingData('parent');
         expect(parent!.id).to.equal('parent-1');
@@ -263,7 +263,7 @@ describe('form-data', () => {
 
       it('returns null when the sibling group is not present', () => {
         const doc = parseXml('<data><clinic><name>A Clinic</name></clinic></data>');
-        const contactData = new EnektoContactFormData(doc, 'the-id', 'clinic');
+        const contactData = new EnketoContactFormData(doc, 'the-id', 'clinic');
 
         expect(contactData.getSiblingData('parent')).to.be.null;
       });
@@ -346,53 +346,6 @@ describe('form-data', () => {
 
       const refs = reportData.dbDocRefElements.map(element => element.getAttribute('db-doc-ref'));
       expect(refs).to.deep.equal(['/data/my_doc', '/data/name']);
-    });
-
-    describe('getNodeByXpath', () => {
-      it('resolves an absolute xpath', () => {
-        const doc = parseXml('<data><report><name>The Report</name></report></data>');
-        const reportData = new EnketoReportFormData(doc, 'the-id');
-
-        const node = reportData.getNodeByXpath(doc.documentElement, '/data/report/name');
-
-        expect(node!.textContent).to.equal('The Report');
-      });
-
-      it('resolves a relative xpath against the context node', () => {
-        const doc = parseXml('<data><report><name>The Report</name></report></data>');
-        const reportData = new EnketoReportFormData(doc, 'the-id');
-        const reportNode = doc.getElementsByTagName('report')[0];
-
-        expect(reportData.getNodeByXpath(reportNode, 'name')!.textContent).to.equal('The Report');
-        expect(reportData.getNodeByXpath(reportNode, './name')!.textContent).to.equal('The Report');
-      });
-
-      it('returns null for an empty or missing xpath', () => {
-        const doc = parseXml('<data><report><name>The Report</name></report></data>');
-        const reportData = new EnketoReportFormData(doc, 'the-id');
-
-        expect(reportData.getNodeByXpath(doc.documentElement, null)).to.be.null;
-        expect(reportData.getNodeByXpath(doc.documentElement, '   ')).to.be.null;
-      });
-
-      it('resolves an absolute xpath to a node in the same repeat entry as the context node', () => {
-        const repeatXml = `
-        <data>
-          <repeat_section><name>first</name><value>first-value</value></repeat_section>
-          <repeat_section><name>second</name><value>second-value</value></repeat_section>
-          <repeat_section><name>third</name><value>third-value</value></repeat_section>
-        </data>`;
-        const doc = parseXml(repeatXml);
-        const reportData = new EnketoReportFormData(doc, 'the-id');
-        // Context node is the <name> nested inside the SECOND repeat entry.
-        const contextNode = doc.getElementsByTagName('repeat_section')[1].getElementsByTagName('name')[0];
-
-        const node = reportData.getNodeByXpath(contextNode, '/data/repeat_section/value');
-        expect(node!.textContent).to.equal('second-value');
-
-        const relativeNode = reportData.getNodeByXpath(contextNode, '../value');
-        expect(relativeNode!.textContent).to.equal('second-value');
-      });
     });
 
     describe('findNodeWithTextContent', () => {

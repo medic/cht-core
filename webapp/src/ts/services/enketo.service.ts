@@ -16,7 +16,7 @@ import { Contact, Qualifier } from '@medic/cht-datasource';
 import { DOC_TYPES } from '@medic/constants';
 import { FormConfig } from '@mm-services/form/form-config';
 import {
-  EnektoContactFormData,
+  EnketoContactFormData,
   EnketoFormData,
   EnketoReportFormData,
   EnketoRootFormData
@@ -401,7 +401,7 @@ export class EnketoService {
     return this.ngZone.runOutsideAngular(async () => {
       await this.validate(form);
       const contactDoc = this.initializeDoc(defaultData);
-      const formData = new EnektoContactFormData(
+      const formData = new EnketoContactFormData(
         this.getFormDataXml(form),
         contactDoc._id,
         isHardcodedType(contactDoc.type) ? contactDoc.type : contactDoc.contact_type
@@ -417,9 +417,9 @@ export class EnketoService {
         _attachments: formAttachments
       };
 
-      const siblings = EnektoContactFormData.SIBLING_FIELD_NAMES
-        .map(fieldName => ({ fieldName, doc: formData.getSiblingData(fieldName)?.deserializeDoc(config) }))
-        .map(({ fieldName, doc }) => ({ fieldName, doc: this.initializeContactSibling(rootOutputDoc, doc)}));
+      const siblings = EnketoContactFormData.SIBLING_FIELD_NAMES
+                                            .map(fieldName => ({ fieldName, doc: formData.getSiblingData(fieldName)?.deserializeDoc(config) }))
+                                            .map(({ fieldName, doc }) => ({ fieldName, doc: this.initializeContactSibling(rootOutputDoc, doc)}));
       await Promise.all(siblings.map(async ({ fieldName, doc }) => {
         rootOutputDoc[fieldName] = await this.getContactSiblingValue(
           doc, rootOutputDoc[fieldName], defaultData[fieldName]
@@ -559,16 +559,30 @@ export class EnketoService {
     };
   }
 
+  private findReferencedDoc(refElement: Element, reference: string | null, allData: EnketoFormData[]) {
+    const target = reference?.trim().replace(/^\.?\//, ''); // strip leading "./" or "/"
+    if (!target) {
+      return;
+    }
+    const matches = allData.filter(({ rootElement }) => {
+      const path = Xpath.getElementRawXPath(rootElement).replace(/^\//, ''); // strip leading "/"
+      return path === target || path.endsWith(`/${target}`);
+    });
+
+    // For the docs that match the path tail, find the one with the closest ancestor node to the refElement.
+    for (let ancestor: Element | null = refElement; ancestor; ancestor = ancestor.parentElement) {
+      const match = matches.find(({ rootElement }) => ancestor?.contains(rootElement));
+      if (match) {
+        return match;
+      }
+    }
+  }
+
   private populateDbDocRefElements(formData: EnketoReportFormData, allData: EnketoFormData[]) {
     formData.dbDocRefElements.forEach(element => {
-      const reference = element.getAttribute('db-doc-ref');
-      const referencedNode = formData.getNodeByXpath(element, reference);
-      if (!referencedNode) {
-        return;
-      }
-      const refDoc = allData.find(({ rootElement }) => rootElement === referencedNode);
-      if (refDoc) {
-        element.textContent = refDoc.id;
+      const referencedDoc = this.findReferencedDoc(element, element.getAttribute('db-doc-ref'), allData);
+      if (referencedDoc) {
+        element.textContent = referencedDoc.id;
       }
     });
   }

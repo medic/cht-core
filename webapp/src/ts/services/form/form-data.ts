@@ -69,10 +69,10 @@ export abstract class EnketoRootFormData extends EnketoFormData {
   public readonly binaryTypeElements: Element[];
 
   protected constructor(
-    private readonly xmlDoc: XMLDocument,
+    rootElement: Element,
     id: string,
   ) {
-    super(xmlDoc.documentElement, id);
+    super(rootElement, id);
     this.binaryTypeElements = Array.from(this.rootElement.querySelectorAll('[type=binary]'));
   }
 
@@ -82,52 +82,15 @@ export abstract class EnketoRootFormData extends EnketoFormData {
       .from(this.rootElement.querySelectorAll('*'))
       .find(node => node.textContent === textContent) ?? null;
   }
-
-  public getNodeByXpath(contextNode: Node, rawXpath?: string | null): Node | null {
-    const xpath = rawXpath?.trim();
-    if (!xpath) {
-      return null;
-    }
-    const xpathSegments = xpath
-      .trim()
-      .split('/')
-      .filter(Boolean);
-    const contextLineage = this.getNodeWithLineage(contextNode);
-
-    // Number of leading segments the target path shares with the context node's lineage.
-    const firstDivergence = xpathSegments
-      .findIndex((segment, i) => segment !== contextLineage[i]?.nodeName);
-    const commonAncestorIndex = firstDivergence === -1 ? xpathSegments.length : firstDivergence;
-
-    // Fall back to contextNode in case of relative xpath
-    const anchor = contextLineage[commonAncestorIndex - 1] ?? contextNode;
-    const relativePath = xpathSegments.slice(commonAncestorIndex).join('/') || '.';
-    const result = this.xmlDoc.evaluate(
-      relativePath,
-      anchor,
-      null,
-      XPathResult.FIRST_ORDERED_NODE_TYPE,
-      null
-    );
-    return result.singleNodeValue;
-  }
-
-  private getNodeWithLineage(contextNode?: Node | null, lineage: Node[] = []): Node[] {
-    if (!this.isElementNode(contextNode)) {
-      return lineage;
-    }
-    lineage.unshift(contextNode);
-    return this.getNodeWithLineage(contextNode.parentNode, lineage);
-  }
 }
 
-export class EnektoContactFormData extends EnketoRootFormData {
+export class EnketoContactFormData extends EnketoRootFormData {
   public static readonly SIBLING_FIELD_NAMES = ['parent', 'contact'] as const;
   private readonly childElements: Element[];
   private readonly rootContactElement: Element;
 
   constructor(xmlDoc: XMLDocument, id: string, type: string) {
-    super(xmlDoc, id);
+    super(xmlDoc.documentElement, id);
     this.childElements = Array.from(this.rootElement.querySelectorAll(':scope > repeat > child'));
     const elementForType = this.findChildNode(this.rootElement, type);
     if (!elementForType) {
@@ -155,7 +118,7 @@ export class EnektoContactFormData extends EnketoRootFormData {
     return this.childElements.map(dbDoc => new EnketoFormData(dbDoc, this.getDocId(dbDoc)));
   }
 
-  public getSiblingData(fieldName: typeof EnektoContactFormData.SIBLING_FIELD_NAMES[number]) {
+  public getSiblingData(fieldName: typeof EnketoContactFormData.SIBLING_FIELD_NAMES[number]) {
     const element = this.findChildNode(this.rootElement, fieldName);
     return element ? new EnketoFormData(element, this.getDocId(element)) : null;
   }
@@ -167,7 +130,7 @@ export class EnketoReportFormData extends EnketoRootFormData {
   public readonly dbDocRefElements: Element[];
 
   constructor(xmlDoc: XMLDocument, id: string) {
-    super(xmlDoc, id);
+    super(xmlDoc.documentElement, id);
     this.dbDocElements = Array.from(this.rootElement.querySelectorAll('[db-doc=true i]'));
     this.hiddenElements = Array.from(this.rootElement.querySelectorAll('[tag=hidden i]'));
     this.dbDocRefElements = Array.from(this.rootElement.querySelectorAll('[db-doc-ref]'));
