@@ -285,6 +285,10 @@ function isReadyForNewPregnancy(thisContact, allReports) {
     if (mostRecentDeliveryReport && getDeliveryDate(mostRecentDeliveryReport) < today.clone().subtract(6 * 7, 'day')) {
       return true; //Delivery date on most recently submitted delivery form is more than 6 weeks ago
     }
+    if (getRecentANCVisitWithEvent(allReports, mostRecentPregnancyReport, 'abortion') ||
+      getRecentANCVisitWithEvent(allReports, mostRecentPregnancyReport, 'miscarriage')) {
+      return true;
+    }
   }
   return false;
 }
