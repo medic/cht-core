@@ -24,6 +24,7 @@ dist
 .idea/
 /build/
 /local-build/
+/local/
 api/**/extracted-resources/**/*
 api/build/**/*
 jsdocs

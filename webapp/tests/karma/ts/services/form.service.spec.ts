@@ -69,6 +69,7 @@ describe('Form service', () => {
 
   let enketoInit;
   let dbGetAttachment;
+  let dbAllDocs;
   let getReport;
   let getContact;
   let dbBulkDocs;
@@ -114,6 +115,7 @@ describe('Form service', () => {
   beforeEach(() => {
     enketoInit = sinon.stub();
     dbGetAttachment = sinon.stub();
+    dbAllDocs = sinon.stub().resolves({ rows: [] });
     getReport = sinon.stub();
     getContact = sinon.stub();
     dbBulkDocs = sinon.stub();
@@ -200,7 +202,7 @@ describe('Form service', () => {
         {
           provide: DbService,
           useValue: {
-            get: () => ({ getAttachment: dbGetAttachment, bulkDocs: dbBulkDocs })
+            get: () => ({ getAttachment: dbGetAttachment, bulkDocs: dbBulkDocs, allDocs: dbAllDocs })
           }
         },
         { provide: ContactSummaryService, useValue: { get: ContactSummary } },
@@ -1099,10 +1101,12 @@ describe('Form service', () => {
         expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'doc1', 'doc2']);
 
         expect(actualReport.fields.doc1).to.deep.equal({
+          _id: actual[1]._id,
           some_property_1: 'some_value_1',
           type: 'thing_1',
         });
         expect(actualReport.fields.doc2).to.deep.equal({
+          _id: actual[2]._id,
           some_property_2: 'some_value_2',
           type: 'thing_2',
         });
@@ -1171,10 +1175,12 @@ describe('Form service', () => {
         expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'doc1', 'doc2']);
 
         expect(actualReport.fields.doc1).to.deep.equal({
+          _id: actual[1]._id,
           some_property_1: 'some_value_1',
           type: 'thing_1',
         });
         expect(actualReport.fields.doc2).to.deep.equal({
+          _id: actual[2]._id,
           some_property_2: 'some_value_2',
           type: 'thing_2',
         });
