@@ -22,6 +22,7 @@ import { Contact, Qualifier } from '@medic/cht-datasource';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { FormType } from '@mm-services/form/form-config';
 import { FormValidationError } from '@mm-services/enketo.service';
 
 @Component({
@@ -322,7 +323,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private async renderForm(formId: string, titleKey: string) {
-    const formConfig = await this.xmlFormsService.getFormConfig('contact', formId);
+    const formConfig = await this.xmlFormsService.getFormConfig(FormType.Contact, formId);
     this.globalActions.setEnketoEditedStatus(false);
 
     const formContext = new WebappEnketoFormContext('#contact-form', formConfig, this.getFormInstanceData());
@@ -414,7 +415,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     };
   }
 
-  save() {
+  async save() {
     if (this.enketoSaving) {
       console.debug('Attempted to call contacts-edit:save more than once');
       return;
@@ -436,50 +437,49 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       );
     }
 
-    return this.formService
-      .saveContact(
+    try {
+      const result = await this.formService.saveContact(
         { docId, type: this.enketoContact.type },
         form,
         this.duplicatesAcknowledged
-      )
-      .then((result) => {
-        console.debug('saved contact', result);
+      );
 
-        this.globalActions.setEnketoSavingStatus(false);
-        this.globalActions.setEnketoEditedStatus(false);
+      console.debug('saved contact', result);
 
-        this.trackSave?.stop({
-          name: ['enketo', 'contacts', this.trackMetadata.form, this.trackMetadata.action, 'save'].join(':'),
-          recordApdex: true,
-        });
+      this.globalActions.setEnketoSavingStatus(false);
+      this.globalActions.setEnketoEditedStatus(false);
 
-        this.translateService
-          .get(docId ? 'contact.updated' : 'contact.created')
-          .then(snackBarContent => this.globalActions.setSnackbarContent(snackBarContent));
-
-        this.router.navigate(['/contacts', result.docId]);
-      })
-      .catch((err) => {
-        this.globalActions.setEnketoSavingStatus(false);
-
-        if (err instanceof FormValidationError) {
-          // validation messages will be displayed for individual fields.
-          // That's all we want, really.
-          return;
-        }
-
-        if (err instanceof DuplicatesFoundError) {
-          this.duplicates = err.duplicates;
-        } else {
-          this.duplicates = [];
-        }
-
-        console.error('Error submitting form data', err);
-
-        return this.translateService
-          .get('Error updating contact')
-          .then(error => this.globalActions.setEnketoError(error));
+      this.trackSave?.stop({
+        name: ['enketo', 'contacts', this.trackMetadata.form, this.trackMetadata.action, 'save'].join(':'),
+        recordApdex: true,
       });
+
+      this.translateService
+        .get(docId ? 'contact.updated' : 'contact.created')
+        .then(snackBarContent => this.globalActions.setSnackbarContent(snackBarContent));
+
+      this.router.navigate(['/contacts', result.docId]);
+    } catch (err) {
+      this.globalActions.setEnketoSavingStatus(false);
+
+      if (err instanceof FormValidationError) {
+        // validation messages will be displayed for individual fields.
+        // That's all we want, really.
+        return;
+      }
+
+      if (err instanceof DuplicatesFoundError) {
+        this.duplicates = err.duplicates;
+      } else {
+        this.duplicates = [];
+      }
+
+      console.error('Error submitting form data', err);
+
+      return this.translateService
+        .get('Error updating contact')
+        .then(error => this.globalActions.setEnketoError(error));
+    }
   }
 
   navigationCancel() {

@@ -19,7 +19,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { NgIf } from '@angular/common';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
-import { FormConfig } from '@mm-services/form/form-config';
+import { FormConfig, FormType } from '@mm-services/form/form-config';
 
 @Component({
   templateUrl: './reports-add.component.html',
@@ -161,7 +161,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
         return Promise
           .all([
             this.getReportContentService.getReportContent(model.doc),
-            this.xmlFormsService.getFormConfig('report', model.formInternalId)
+            this.xmlFormsService.getFormConfig(FormType.Report, model.formInternalId)
           ])
           .then(([ reportContent, formConfig ]) => {
             this.globalActions.setEnketoEditedStatus(false);

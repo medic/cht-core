@@ -13,7 +13,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { NgIf } from '@angular/common';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
-import { FormConfig } from '@mm-services/form/form-config';
+import { FormConfig, FormType } from '@mm-services/form/form-config';
 
 @Component({
   selector: 'training-cards-form',
@@ -113,7 +113,7 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
       this.loadingContent = true;
       this.geoHandle?.cancel();
       this.geoHandle = this.geolocationService.init();
-      const formConfig = await this.xmlFormsService.getFormConfig('training-card', this.trainingCardFormId!);
+      const formConfig = await this.xmlFormsService.getFormConfig(FormType.TrainingCard, this.trainingCardFormId!);
       await this.ngZone.run(() => this.renderForm(formConfig));
     } catch (error) {
       this.setError(error);

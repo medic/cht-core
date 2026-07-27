@@ -379,7 +379,7 @@ export class XmlFormsService {
   async getFormConfig(formType: FormType, id: string) {
     return this.ngZone.runOutsideAngular(async () => {
       // contact_types config stores full _id value. All other forms are referenced by internalId
-      const formDoc = await (formType === 'contact'
+      const formDoc = await (formType === FormType.Contact
         ? this.dbService.get().get(id)
         : this.get(id));
       const xmlAttachmentName = this.findXFormAttachmentName(formDoc);

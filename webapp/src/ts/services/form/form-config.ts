@@ -1,4 +1,12 @@
-export type FormType = 'contact' | 'report' | 'task' | 'training-card';
+export const FormType = {
+  Contact: 'contact',
+  Report: 'report',
+  Task: 'task',
+  TrainingCard: 'training-card',
+} as const;
+
+// eslint-disable-next-line no-redeclare -- intentional value/type merge so FormType works as both
+export type FormType = typeof FormType[keyof typeof FormType];
 
 // Putting this in the xml-forms.service file causes that service (and dependencies) to leak into cht-form.
 // This breaks the cht-form build.

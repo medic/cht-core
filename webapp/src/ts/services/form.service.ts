@@ -297,8 +297,10 @@ export class FormService {
   }
 
   async save(enketoForm: EnketoForm, geoHandle, docId?) {
-    const docs = await this.completeReport(enketoForm, docId);
-    return this.ngZone.runOutsideAngular(() => this._save(docs, geoHandle));
+    return this.ngZone.runOutsideAngular(async () => {
+      const docs = await this.completeReport(enketoForm, docId);
+      return this._save(docs, geoHandle);
+    });
   }
 
   private _save(docs, geoHandle) {
@@ -366,37 +368,39 @@ export class FormService {
     enketoForm: EnketoForm,
     duplicatesAcknowledged: boolean,
   ) {
-    const { docId, type } = contactInfo;
-    const typeFields = this.contactTypesService.isHardcodedType(type)
-      ? { type }
-      : { type: 'contact', contact_type: type };
+    return this.ngZone.runOutsideAngular(async () => {
+      const { docId, type } = contactInfo;
+      const typeFields = this.contactTypesService.isHardcodedType(type)
+        ? { type }
+        : { type: 'contact', contact_type: type };
 
-    const defaultData = docId ? await this.getContact(Qualifier.byUuid(docId)) : typeFields;
-    const docs = await this.enketoService.saveContact(enketoForm, defaultData!);
+      const defaultData = docId ? await this.getContact(Qualifier.byUuid(docId)) : typeFields;
+      const docs = await this.enketoService.saveContact(enketoForm, defaultData!);
 
-    const preparedDocs = await this.applyTransitions(docs);
+      const preparedDocs = await this.applyTransitions(docs);
 
-    const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
+      const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
 
-    const duplicates = await this.checkForDuplicates(
-      primaryDoc ?? preparedDocs.preparedDocs[0],
-      type,
-      duplicatesAcknowledged,
-      enketoForm.config.doc.duplicate_check
-    );
-    if (duplicates?.length) {
-      throw new DuplicatesFoundError('Duplicates found', duplicates);
-    }
+      const duplicates = await this.checkForDuplicates(
+        primaryDoc ?? preparedDocs.preparedDocs[0],
+        type,
+        duplicatesAcknowledged,
+        enketoForm.config.doc.duplicate_check
+      );
+      if (duplicates?.length) {
+        throw new DuplicatesFoundError('Duplicates found', duplicates);
+      }
 
-    this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
-    const bulkDocsResult = await this.dbService.get().bulkDocs(preparedDocs.preparedDocs);
-    const failureMessage = this.generateFailureMessage(bulkDocsResult);
+      this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
+      const bulkDocsResult = await this.dbService.get().bulkDocs(preparedDocs.preparedDocs);
+      const failureMessage = this.generateFailureMessage(bulkDocsResult);
 
-    if (failureMessage) {
-      throw new Error(failureMessage);
-    }
+      if (failureMessage) {
+        throw new Error(failureMessage);
+      }
 
-    return { docId: preparedDocs.docId, bulkDocsResult };
+      return { docId: preparedDocs.docId, bulkDocsResult };
+    });
   }
 
   unload(form?: EnketoForm) {

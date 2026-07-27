@@ -9,7 +9,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { CHTDatasourceService as CHTDatasourceServiceStub } from './stubs/cht-datasource.service';
 import { CONTACT_TYPES } from '@medic/constants';
-import { FormConfig } from '@mm-services/form/form-config';
+import { FormConfig, FormType } from '@mm-services/form/form-config';
 
 const DEFAULT_FORM_ID = 'cht-form-id';
 
@@ -299,6 +299,6 @@ class ChtFormEnketoFormContext implements EnketoFormContext {
   }
 
   get type() {
-    return this.contactType ? 'contact': 'report';
+    return this.contactType ? FormType.Contact : FormType.Report;
   }
 }

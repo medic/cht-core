@@ -12,6 +12,7 @@ import { Selectors } from '@mm-selectors/index';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { FormType } from '@mm-services/form/form-config';
 import { TranslateService } from '@mm-services/translate.service';
 import { NgIf } from '@angular/common';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
@@ -116,7 +117,7 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
     return Promise
       .all([
         this.getContact(),
-        this.xmlFormsService.getFormConfig('report', this.routeSnapshot.params?.formId),
+        this.xmlFormsService.getFormConfig(FormType.Report, this.routeSnapshot.params?.formId),
       ]);
   }
 

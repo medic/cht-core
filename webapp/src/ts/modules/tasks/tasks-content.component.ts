@@ -21,7 +21,7 @@ import { SimpleDatePipe } from '@mm-pipes/date.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
-import { FormConfig } from '@mm-services/form/form-config';
+import { FormConfig, FormType } from '@mm-services/form/form-config';
 import { EnketoForm } from '@mm-services/enketo.service';
 
 @Component({
@@ -287,7 +287,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
       this.interactionTrackingService.record('task:form_open', action.form);
       this.loadingForm = true;
       return this.xmlFormsService
-        .getFormConfig('task', action.form)
+        .getFormConfig(FormType.Task, action.form)
         .then((formConfig) => this.renderForm(action, formConfig))
         .then(() => {
           this.trackMetadata.action = action.content.doc ? 'edit' : 'add';
