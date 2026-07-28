@@ -570,7 +570,10 @@ describe('Form service', () => {
       const xmlDoc = new DOMParser()
         .parseFromString('<root><item><name>a</name><label>Choice A</label></item></root>', 'text/xml');
       customResourceService.getXml.withArgs('items.xml').returns(xmlDoc);
-      const formContext = new WebappEnketoFormContext('#div', mockFormConfig('myform', { model: VISIT_MODEL_WITH_EXTERNAL_DATASET }));
+      const formContext = new WebappEnketoFormContext(
+        '#div',
+        mockFormConfig('myform', { model: VISIT_MODEL_WITH_EXTERNAL_DATASET })
+      );
 
       await service.render(formContext);
 
@@ -581,7 +584,10 @@ describe('Form service', () => {
     it('throws when resource is not found', async () => {
       setupRenderStubs();
       customResourceService.getXml.withArgs('items.xml').returns(null);
-      const formContext = new WebappEnketoFormContext('#div', mockFormConfig('myform', { model: VISIT_MODEL_WITH_EXTERNAL_DATASET }));
+      const formContext = new WebappEnketoFormContext(
+        '#div',
+        mockFormConfig('myform', { model: VISIT_MODEL_WITH_EXTERNAL_DATASET })
+      );
 
       await expect(service.render(formContext)).to.be.rejectedWith('not found in resources');
     });

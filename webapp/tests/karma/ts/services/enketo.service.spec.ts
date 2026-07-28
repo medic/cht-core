@@ -377,10 +377,6 @@ describe('Enketo service', () => {
       const formContext = new WebappEnketoFormContext('#div', formConfig);
       formContext.contactSummary = { id: 'contact-summary', context: { pregnant: true } };
       formContext.externalInstances = externalInstances;
-      const doc = {
-        html: $('<div>my form</div>'),
-        model: VISIT_MODEL_WITH_EXTERNAL_DATASET,
-      };
       const userSettings = { language: 'en' };
       return service.renderForm(formContext, userSettings).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
