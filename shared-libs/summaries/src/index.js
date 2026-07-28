@@ -56,7 +56,7 @@ const isContact = (doc) => {
   if (!type) {
     return false;
   }
-  return type === 'contact' || contactTypesUtils.isHardcodedType(type);
+  return type === DOC_TYPES.CONTACT || contactTypesUtils.isHardcodedType(type);
 };
 
 const isReport = (doc) => {

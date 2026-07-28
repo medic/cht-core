@@ -1,3 +1,4 @@
+import { DOC_TYPES } from '@medic/constants';
 import { AfterViewInit, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
@@ -252,7 +253,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     } else { // adding
       this.trackMetadata.action = 'add';
       this.contact = {
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         contact_type: this.routeSnapshot.params?.type,
         parent: this.routeSnapshot.params?.parent_id || '',
       };

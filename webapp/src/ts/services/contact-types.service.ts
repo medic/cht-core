@@ -1,3 +1,4 @@
+import { DOC_TYPES } from '@medic/constants';
 import { Injectable } from '@angular/core';
 import * as contactTypesUtils from '@medic/contact-types-utils';
 
@@ -48,7 +49,7 @@ export class ContactTypesService {
     if (!type) {
       return false;
     }
-    return type === 'contact' ||   // configurable hierarchy
+    return type === DOC_TYPES.CONTACT ||   // configurable hierarchy
       contactTypesUtils.isHardcodedType(type);  // hardcoded
   }
 

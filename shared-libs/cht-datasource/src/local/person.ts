@@ -1,5 +1,6 @@
 import { Doc, isDoc } from '../libs/doc';
 import contactTypeUtils from '@medic/contact-types-utils';
+import { DOC_TYPES } from '@medic/constants';
 import { assertHasRequiredField, DataObject, Nullable, Page } from '../libs/core';
 import * as Qualifier from '../qualifier';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
@@ -29,7 +30,7 @@ const getTypeProperties = (settings: DataObject, input: Input.v1.PersonInput) =>
     throw new InvalidArgumentError(`[${input.type}] is not a valid person type.`);
   }
   return customType
-    ? { contact_type: input.type, type: 'contact' }
+    ? { contact_type: input.type, type: DOC_TYPES.CONTACT }
     : { type: input.type };
 };
 

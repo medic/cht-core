@@ -1,3 +1,4 @@
+import { DOC_TYPES } from '@medic/constants';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subject, Subscription } from 'rxjs';
@@ -307,7 +308,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
         .then(() => this.preloadTaskGroupContact(action));
     }
 
-    if (action.type === 'contact') {
+    if (action.type === DOC_TYPES.CONTACT) {
       if (action.content?.parent_id && action.content?.type) {
         this.router.navigate(['/contacts', action.content.parent_id, 'add', action.content.type || '']);
       } else if (action.content?.type) {
