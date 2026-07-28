@@ -193,10 +193,10 @@ export class EnketoService {
   }
 
   private renderFromXmls(xmlFormContext: XmlFormContext, userSettings) {
-    const { formConfig, titleKey, wrapper, isFormInModal } = xmlFormContext;
+    const { formConfig, $formHtml, titleKey, wrapper, isFormInModal } = xmlFormContext;
 
     const formContainer = wrapper.find('.container').first();
-    formContainer.html($(formConfig.html).get(0)!);
+    formContainer.html($formHtml.get(0)!);
 
     return this
       .getEnketoForm(xmlFormContext, userSettings)
@@ -350,11 +350,12 @@ export class EnketoService {
       isFormInModal,
     } = formContext;
 
-    const $html = $(formConfig.html);
-    this.replaceDataI18nTranslations($html);
-    this.replaceJavarosaMediaWithLoaders($html);
+    const $formHtml = $(formConfig.html);
+    this.replaceDataI18nTranslations($formHtml);
+    this.replaceJavarosaMediaWithLoaders($formHtml);
     const xmlFormContext: XmlFormContext = {
       formConfig,
+      $formHtml,
       wrapper: $(selector),
       instanceData,
       titleKey,
@@ -400,7 +401,7 @@ export class EnketoService {
   public async saveContact({ config, form }: EnketoForm, defaultData: Record<string, any>) {
     return this.ngZone.runOutsideAngular(async () => {
       await this.validate(form);
-      const contactDoc = this.initializeDoc(defaultData);
+      const contactDoc: Record<string, any> = { _id: uuid(), ...defaultData };
       const formData = new EnketoContactFormData(
         this.getFormDataXml(form),
         contactDoc._id,
@@ -408,41 +409,38 @@ export class EnketoService {
       );
 
       const formAttachments = this.processFormAttachments(config.doc.internalId, formData, contactDoc._attachments);
-
+      const reportedDate = Date.now();
       const rootOutputDoc: Record<string, any> = {
         ...contactDoc,
         ...formData.deserializeDoc(config),
+        _id: contactDoc._id,
         type: contactDoc.type,
         contact_type: contactDoc.contact_type,
+        reported_date: contactDoc.reported_date || reportedDate,
         _attachments: formAttachments
       };
-
-      const siblings = EnketoContactFormData.SIBLING_FIELD_NAMES
-                                            .map(fieldName => ({ fieldName, doc: formData.getSiblingData(fieldName)?.deserializeDoc(config) }))
-                                            .map(({ fieldName, doc }) => ({ fieldName, doc: this.initializeContactSibling(rootOutputDoc, doc)}));
-      await Promise.all(siblings.map(async ({ fieldName, doc }) => {
-        rootOutputDoc[fieldName] = await this.getContactSiblingValue(
-          doc, rootOutputDoc[fieldName], defaultData[fieldName]
-        );
-      }));
+      const siblings = await this.processContactSiblings(formData, config, rootOutputDoc, defaultData);
+      siblings.forEach(({ fieldName, fieldValue }) => rootOutputDoc[fieldName] = fieldValue);
       const outputSiblings = siblings
         .filter(({ fieldName, doc }) => doc && rootOutputDoc[fieldName] === doc)
-        .map(({ doc }) => doc)
-        .filter(doc => !!doc);
+        .map(({ doc }) => ({ ...doc, reported_date: reportedDate }));
 
       const childDocs = formData
         .getChildData()
-        .map(doc => this.initializeDoc(doc.deserializeDoc(config)))
-        .map(doc => ({ ...doc, parent: rootOutputDoc }));
+        .map(doc => doc.deserializeDoc(config))
+        .map(doc => ({ ...doc, reported_date: reportedDate, parent: rootOutputDoc }));
 
       return {
         docId: rootOutputDoc._id,
-        preparedDocs: [rootOutputDoc, ...outputSiblings, ...childDocs].map(doc => this.dehydrateContactLineage(doc))
+        preparedDocs: [rootOutputDoc, ...outputSiblings, ...childDocs].map(doc => this.minifyContactLineage(doc))
       };
     });
   }
 
-  public async saveReport({ config, form }: EnketoForm, defaultData: Record<string, any>) {
+  public async saveReport(
+    { config, form }: EnketoForm,
+    defaultData: Record<string, any>
+  ): Promise<Record<string, any>[]> {
     return this.ngZone.runOutsideAngular(async () => {
       await this.validate(form);
       const { internalId, xmlVersion } = config.doc;
@@ -461,16 +459,18 @@ export class EnketoService {
         ...subDocsData.map(({ rootElement }) => rootElement)
       ]);
 
+      const reportedDate = Date.now();
       const rootOutputDoc: Record<string, any> = {
         ...reportDoc,
         hidden_fields: hiddenFields,
         fields: formData.deserialize(config),
+        reported_date: reportDoc.reported_date || reportedDate,
         _attachments: attachments
       };
 
       const dbDocObjects = subDocsData
         .map(docData => docData.deserializeDoc(config))
-        .map(doc => this.initializeDoc(doc));
+        .map(doc => ({ ...doc, reported_date: reportedDate }));
       return [rootOutputDoc, ...dbDocObjects];
     });
   }
@@ -488,13 +488,29 @@ export class EnketoService {
     return new DOMParser().parseFromString(formString, 'text/xml');
   }
 
+  private async processContactSiblings(
+    formData: EnketoContactFormData,
+    config: FormConfig,
+    rootOutputDoc: Record<string, any>,
+    defaultData: Record<string, any>
+  ) {
+    return Promise.all(EnketoContactFormData.SIBLING_FIELD_NAMES.map(async (fieldName) => {
+      const sibling = formData
+        .getSiblingData(fieldName)
+        ?.deserializeDoc(config);
+      const doc = this.initializeContactSibling(rootOutputDoc, sibling);
+      const fieldValue = await this.getContactSiblingValue(doc, rootOutputDoc[fieldName], defaultData[fieldName]);
+      return { fieldName, fieldValue, doc, };
+    }));
+  }
+
   private initializeContactSibling(rootContactDoc: Record<string, any>, rawSibling?: Record<string, any>) {
     if (!rawSibling) {
       return;
     }
     return {
       type: 'person', // legacy support - form data should override this
-      ...this.initializeDoc(rawSibling),
+      ...rawSibling,
       parent: rawSibling.parent === 'PARENT' ? rootContactDoc : rawSibling.parent
     };
   }
@@ -517,7 +533,7 @@ export class EnketoService {
     return await this.getContactFromDatasource(Qualifier.byUuid(currentValue._id));
   }
 
-  private dehydrateContactLineage(contactDoc: Record<string, any>) {
+  private minifyContactLineage(contactDoc: Record<string, any>) {
     return {
       ...contactDoc,
       parent: this.extractLineageService.extract(contactDoc.parent),
@@ -539,21 +555,14 @@ export class EnketoService {
         .join('.'));
   }
 
-  private initializeDoc(defaultData: Record<string, any>): Record<string, any> {
-    return {
-      _id: defaultData._id || uuid(),
-      reported_date: Date.now(),
-      ...defaultData
-    };
-  }
-
   private initializeReportDoc(form: string, formVersion: string, defaultData: Record<string, any>) {
     return {
+      _id: uuid(),
       form,
       type: DOC_TYPES.DATA_RECORD,
       content_type: 'xml',
       from: defaultData.contact?.phone,
-      ...this.initializeDoc(defaultData),
+      ...defaultData,
       contact: this.extractLineageService.extract(defaultData.contact),
       form_version: formVersion
     };
@@ -612,7 +621,7 @@ export class EnketoService {
     const binaryAttachments = rootData.binaryTypeElements
       .map(element => this.buildBinaryAttachmentData(form, originalAttachments, element))
       .filter(({ attachment }) => attachment)
-      .reduce((acc, { filename, attachment }) => ({ ...acc, [filename]: attachment }), {});
+      .reduce((binaryAttachments, { filename, attachment }) => ({ ...binaryAttachments, [filename]: attachment }), {});
     const newFileAttachments = FileManager
       .getCurrentFiles()
       .map(file => ({
@@ -620,12 +629,12 @@ export class EnketoService {
         content_type: file.type,
         data: new Blob([ file ], { type: file.type })
       }))
-      .reduce((acc, { name, content_type, data }) => ({ ...acc, [name]: { content_type, data } }), {});
+      .reduce((attachments, { name, content_type, data }) => ({ ...attachments, [name]: { content_type, data } }), {});
     const existingAttachments = Object
       .entries(originalAttachments)
       // Keep custom attachments and existing file attachments still referenced by a field
       .filter(([key]) => hasCustomAttachmentName(key) || isExistingFileAttachment(key))
-      .reduce((acc, [key, attachment]) => ({ ...acc, [key]: attachment }), {});
+      .reduce((existingAttachments, [key, attachment]) => ({ ...existingAttachments, [key]: attachment }), {});
 
     const attachments = {
       ...existingAttachments,
@@ -671,6 +680,7 @@ interface EnketoOptions {
 
 interface XmlFormContext {
   formConfig: FormConfig;
+  $formHtml: JQuery;
   wrapper: JQuery;
   instanceData?: string | Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey?: string;
