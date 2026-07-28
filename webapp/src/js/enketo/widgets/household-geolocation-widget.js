@@ -68,6 +68,14 @@ class HouseholdGeolocationWidget extends Widget {
     $(this.element).hide();
     const $question = $(this.question);
 
+    // A saved location always goes through edit mode, whatever the live permission/availability
+    // state - _initEditMode()'s own capture-failure handling already reacts correctly to denial
+    // or unavailability without offering the destructive "save without location" checkbox.
+    if (this.element.dataset.geoHasLocation === 'true') {
+      this._initEditMode($question);
+      return;
+    }
+
     if (this._isPermissionDenied()) {
       $(`<p class="${CLASS_NAMES.PERMISSION_DENIED_MSG}">`)
         .text(this._translate(TRANSLATION_KEYS.PERMISSION_DENIED))
@@ -75,15 +83,11 @@ class HouseholdGeolocationWidget extends Widget {
       this._appendSaveWithoutCheckbox($question);
       document.addEventListener('geolocationPermissionGranted', () => {
         $question.find(`.${CLASS_NAMES.PERMISSION_DENIED_MSG}, .${CLASS_NAMES.SAVE_WITHOUT_LABEL}`).remove();
-        if (this.element.dataset.geoHasLocation === 'true') {
-          this._initEditMode($question);
-        } else {
-          this._initCreateFlow($question);
-          if (this.element.dataset.geoIsEdit === 'true') {
-            $('<p class="geolocation-no-location-msg">')
-              .text(this._translate(TRANSLATION_KEYS.NO_LOCATION_RECORDED))
-              .appendTo($question);
-          }
+        this._initCreateFlow($question);
+        if (this.element.dataset.geoIsEdit === 'true') {
+          $('<p class="geolocation-no-location-msg">')
+            .text(this._translate(TRANSLATION_KEYS.NO_LOCATION_RECORDED))
+            .appendTo($question);
         }
       }, { once: true });
       return;
@@ -94,11 +98,6 @@ class HouseholdGeolocationWidget extends Widget {
         .text(this._translate(TRANSLATION_KEYS.UNAVAILABLE))
         .appendTo($question);
       this._appendSaveWithoutCheckbox($question);
-      return;
-    }
-
-    if (this.element.dataset.geoHasLocation === 'true') {
-      this._initEditMode($question);
       return;
     }
 

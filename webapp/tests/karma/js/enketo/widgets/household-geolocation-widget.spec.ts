@@ -998,6 +998,57 @@ describe('Enketo: Household Geolocation Widget', () => {
         });
       });
 
+      describe('when permission is already denied at mount time', () => {
+        const initWithPermissionDeniedAtMount = () => {
+          (window as any).CHTCore.Geolocation.isPermissionDenied = sinon.stub().returns(true);
+          return initEditWithLocationWidget();
+        };
+
+        it('should show the edit choices (Keep, Change location, Not at household, Remove)', () => {
+          const { container } = initWithPermissionDeniedAtMount();
+          const choices = container.querySelector(SELECTORS.EDIT_CHOICES);
+          expect(choices).to.not.be.null;
+          expect(choices!.querySelector(SELECTORS.KEEP_RADIO)).to.not.be.null;
+          expect(choices!.querySelector(SELECTORS.CHANGE_LOCATION_RADIO)).to.not.be.null;
+          expect(choices!.querySelector(SELECTORS.NOT_AT_HOUSEHOLD_RADIO)).to.not.be.null;
+          expect(choices!.querySelector(SELECTORS.REMOVE_RADIO)).to.not.be.null;
+        });
+
+        it('should show the edit badge', () => {
+          const { container } = initWithPermissionDeniedAtMount();
+          expect(container.querySelector(SELECTORS.EDIT_BADGE)).to.not.be.null;
+        });
+
+        it('should not force the "save without location" checkbox', () => {
+          const { container } = initWithPermissionDeniedAtMount();
+          expect(container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
+        });
+
+        it('should keep "Change household location" and "I am not at the household" radios disabled', () => {
+          const { container } = initWithPermissionDeniedAtMount();
+          const changeLocation = container.querySelector(SELECTORS.CHANGE_LOCATION_RADIO) as HTMLInputElement;
+          const notAtHousehold = container.querySelector(SELECTORS.NOT_AT_HOUSEHOLD_RADIO) as HTMLInputElement;
+          expect(changeLocation.disabled).to.be.true;
+          expect(notAtHousehold.disabled).to.be.true;
+        });
+
+        it('should keep "Keep saved location" selected, not silently clear the saved geolocation', async () => {
+          const { widget } = initWithPermissionDeniedAtMount();
+          await new Promise(resolve => setTimeout(resolve, 0));
+          expect((widget.element as HTMLInputElement).value).to.equal('kept');
+        });
+
+        it('should show the permission-denied message without the checkbox once GPS confirms denial',
+          async () => {
+            const promise = Promise.resolve(GPS_PERMISSION_DENIED);
+            (window as any).CHTCore.Geolocation.currentPromise = promise;
+            const { container } = initWithPermissionDeniedAtMount();
+            await promise;
+            expect(container.querySelector(SELECTORS.PERMISSION_DENIED)).to.not.be.null;
+            expect(container.querySelector(SELECTORS.SAVE_WITHOUT_LABEL)).to.be.null;
+          });
+      });
+
       it('should not add duplicate UI when toggling between Keep and Change household location', async () => {
         const promise = Promise.resolve(GPS_SUCCESS);
         (window as any).CHTCore.Geolocation.currentPromise = promise;
