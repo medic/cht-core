@@ -1129,13 +1129,20 @@ proxyForAuth.on('proxyRes', (proxyRes, req, res) => {
   proxyRes.on('data', data => (body = Buffer.concat([body, data])));
 
   proxyRes.on('end', () => {
-    body = JSON.parse(body.toString());
-    if (res.interceptResponse) {
-      body = res.interceptResponse(req, res, body);
+    let parsedBody;
+    try {
+      parsedBody = JSON.parse(body.toString());
+    } catch (err) {
+      logger.error('Invalid JSON in proxyForAuth response. Status: %s, error: %s, body preview: %s',
+        proxyRes.statusCode, err.message, body.toString().substring(0, 100));
+      return res.status(502).json({ error: 'bad_upstream_response', details: 'Invalid response from upstream' });
     }
-    res.json(body);
+    if (res.interceptResponse) {
+      parsedBody = res.interceptResponse(req, res, parsedBody);
+    }
+    res.json(parsedBody);
 
-    audit.expressCallback(req, body, asyncLocalStorage.getRequest());
+    audit.expressCallback(req, parsedBody, asyncLocalStorage.getRequest());
   });
 });
 
