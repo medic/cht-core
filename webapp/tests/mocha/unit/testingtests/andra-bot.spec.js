@@ -43,9 +43,11 @@ describe('AndraBot', () => {
   const getPr = (overrides = {}) => ({
     number: 42,
     labels: [],
+    draft: false,
     user: { login: 'external-dev', type: 'User' },
     author_association: 'NONE',
     body: TEMPLATE,
+    base: { repo: { full_name: 'medic/cht-core' } },
     ...overrides,
   });
 
@@ -60,8 +62,9 @@ describe('AndraBot', () => {
     .replace('<!-- DESCRIPTION -->', 'Fixes the date conversion by using the local format.')
     .replace('<!-- ISSUE NUMBER -->', 'Closes #1234');
 
-  const linkedIssue = (number, assigneeLogins) => ({
+  const linkedIssue = (number, assigneeLogins, repo = 'medic/cht-core') => ({
     number,
+    repository: { nameWithOwner: repo, owner: { login: repo.split('/')[0] } },
     assignees: { nodes: assigneeLogins.map(login => ({ login })) },
   });
 
@@ -115,6 +118,16 @@ describe('AndraBot', () => {
       expect(github.graphql.called).to.be.false;
       expect(github.rest.issues.createComment.called).to.be.false;
       expect(core.setFailed.called).to.be.false;
+    });
+
+    it('should skip checks for draft PRs', async () => {
+      await run(getPr({ draft: true }));
+
+      expect(github.graphql.called).to.be.false;
+      expect(github.rest.issues.createComment.called).to.be.false;
+      expect(github.rest.issues.addLabels.called).to.be.false;
+      expect(core.setFailed.called).to.be.false;
+      expect(core.info.calledOnce).to.be.true;
     });
   });
 
@@ -226,6 +239,22 @@ describe('AndraBot', () => {
         number: 42,
       });
     });
+
+    it('should count an issue linked from another repo in the same org', async () => {
+      setLinkedIssues([linkedIssue(1234, ['external-dev'], 'medic/cht-android')]);
+      await run(getPr({ body: filledTemplate }));
+
+      expect(core.setFailed.called).to.be.false;
+    });
+
+    it('should not count an issue linked from a repo outside the org', async () => {
+      setLinkedIssues([linkedIssue(1234, ['external-dev'], 'external-dev/cht-core')]);
+      await run(getPr({ body: filledTemplate }));
+
+      expect(core.setFailed.calledOnce).to.be.true;
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('missing-linked-issue'));
+    });
   });
 
   describe('labelling', () => {
@@ -325,6 +354,18 @@ describe('AndraBot', () => {
 
       expect(core.setFailed.called).to.be.false;
     });
+
+    it('should reference cross-repo issues by their full name', async () => {
+      setLinkedIssues([
+        linkedIssue(1234, ['someone-else']),
+        linkedIssue(5678, ['someone-else'], 'medic/cht-android'),
+      ]);
+      await run(getPr({ body: filledTemplate }));
+
+      expect(core.setFailed.calledOnce).to.be.true;
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('not-assigned', { issueList: '#1234, medic/cht-android#5678' }));
+    });
   });
 
   describe('comment management', () => {
@@ -343,8 +384,8 @@ describe('AndraBot', () => {
 
     it('should replace the existing bot comment when the content differs', async () => {
       github.paginate.resolves([
-        { id: 7, body: 'a human comment' },
-        { id: 8, body: `${COMMENT_MARKER}\nold bot comment` },
+        { id: 7, body: 'a human comment', user: { login: 'external-dev', type: 'User' } },
+        { id: 8, body: `${COMMENT_MARKER}\nold bot comment`, user: { login: 'github-actions[bot]', type: 'Bot' } },
       ]);
       await run(getPr());
 
@@ -354,12 +395,22 @@ describe('AndraBot', () => {
       expect(github.rest.issues.createComment.args[0][0].body).to.contain(templateMismatchMessage());
     });
 
+    it('should not delete a user comment containing the comment marker', async () => {
+      github.paginate.resolves([
+        { id: 7, body: `${COMMENT_MARKER}\nlooks like a bot comment`, user: { login: 'external-dev', type: 'User' } },
+      ]);
+      await run(getPr());
+
+      expect(github.rest.issues.deleteComment.called).to.be.false;
+      expect(github.rest.issues.createComment.calledOnce).to.be.true;
+    });
+
     it('should leave the bot comment alone when the content is unchanged', async () => {
       await run(getPr());
       const body = github.rest.issues.createComment.args[0][0].body;
 
       github.rest.issues.createComment.resetHistory();
-      github.paginate.resolves([{ id: 8, body }]);
+      github.paginate.resolves([{ id: 8, body, user: { login: 'github-actions[bot]', type: 'Bot' } }]);
       await run(getPr());
 
       expect(github.rest.issues.deleteComment.called).to.be.false;
@@ -372,7 +423,9 @@ describe('AndraBot', () => {
       const body = github.rest.issues.createComment.args[0][0].body;
 
       github.rest.issues.createComment.resetHistory();
-      github.paginate.resolves([{ id: 8, body: body.replaceAll('\n', '\r\n') }]);
+      github.paginate.resolves([
+        { id: 8, body: body.replaceAll('\n', '\r\n'), user: { login: 'github-actions[bot]', type: 'Bot' } },
+      ]);
       await run(getPr());
 
       expect(github.rest.issues.deleteComment.called).to.be.false;
@@ -380,7 +433,9 @@ describe('AndraBot', () => {
     });
 
     it('should replace the bot comment with a success message once all checks pass', async () => {
-      github.paginate.resolves([{ id: 8, body: `${COMMENT_MARKER}\nold bot comment` }]);
+      github.paginate.resolves([
+        { id: 8, body: `${COMMENT_MARKER}\nold bot comment`, user: { login: 'github-actions[bot]', type: 'Bot' } },
+      ]);
       setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
       await run(getPr({ body: filledTemplate }));
 

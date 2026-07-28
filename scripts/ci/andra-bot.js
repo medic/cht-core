@@ -94,6 +94,10 @@ const getLinkedIssues = async (github, context) => {
           closingIssuesReferences(first: 20) {
             nodes {
               number
+              repository {
+                nameWithOwner
+                owner { login }
+              }
               assignees(first: 20) {
                 nodes { login }
               }
@@ -107,7 +111,10 @@ const getLinkedIssues = async (github, context) => {
     repo: context.repo.repo,
     number: context.payload.pull_request.number,
   });
-  return result.repository.pullRequest.closingIssuesReferences.nodes;
+  // Issues linked from repositories outside the org don't count as linked.
+  return result.repository.pullRequest.closingIssuesReferences.nodes.filter(
+    issue => issue.repository.owner.login === context.repo.owner
+  );
 };
 
 const getLinkedIssueFailure = (pr, linkedIssues) => {
@@ -120,7 +127,11 @@ const getLinkedIssueFailure = (pr, linkedIssues) => {
   if (isAssigned) {
     return null;
   }
-  const issueList = linkedIssues.map(issue => `#${issue.number}`).join(', ');
+  const issueList = linkedIssues
+    .map(issue => issue.repository.nameWithOwner === pr.base.repo.full_name
+      ? `#${issue.number}`
+      : `${issue.repository.nameWithOwner}#${issue.number}`)
+    .join(', ');
   return getMessage('not-assigned', { issueList });
 };
 
@@ -221,7 +232,9 @@ const findExistingComment = async (github, context) => {
     issue_number: context.payload.pull_request.number,
     per_page: 100,
   });
-  return comments.find(comment => comment.body?.includes(COMMENT_MARKER));
+  return comments.find(
+    comment => comment.user?.type === 'Bot' && comment.body?.includes(COMMENT_MARKER)
+  );
 };
 
 const runAndraBot = async ({ github, context, core }) => {
@@ -229,6 +242,11 @@ const runAndraBot = async ({ github, context, core }) => {
 
   if (pr.user.type === 'Bot' || TRUSTED_ASSOCIATIONS.has(pr.author_association)) {
     core.info(`Skipping AndraBot checks for ${pr.user.login} (${pr.author_association}).`);
+    return;
+  }
+
+  if (pr.draft) {
+    core.info(`Skipping AndraBot checks for draft PR #${pr.number}.`);
     return;
   }
 
