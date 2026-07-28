@@ -124,7 +124,8 @@ class HouseholdGeolocationWidget extends Widget {
     }
 
     globalThis.CHTCore.Geolocation.currentPromise.then(result => {
-      if (!this._isEditWithLocation && $(this.element).val() !== '') {
+      const alreadyResolved = $(this.element).val() !== '';
+      if (!this._isEditWithLocation && alreadyResolved) {
         return;
       }
 
