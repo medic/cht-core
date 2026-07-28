@@ -431,11 +431,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     this.globalActions.setEnketoSavingStatus(true);
     this.globalActions.setEnketoError(null);
 
-    if (this.duplicatesAcknowledged && this.duplicates.length) {
-      this.telemetryService.record(
-        ['enketo', 'contacts', this.enketoContact.type, 'duplicates_acknowledged'].join(':')
-      );
-    }
+    this.recordDuplicatesAcknowledgedTelemetry();
 
     try {
       const result = await this.formService.saveContact(
@@ -468,17 +464,28 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         return;
       }
 
-      if (err instanceof DuplicatesFoundError) {
-        this.duplicates = err.duplicates;
-      } else {
-        this.duplicates = [];
-      }
-
+      this.populateErrorDuplicates(err);
       console.error('Error submitting form data', err);
 
       return this.translateService
         .get('Error updating contact')
         .then(error => this.globalActions.setEnketoError(error));
+    }
+  }
+
+  private recordDuplicatesAcknowledgedTelemetry() {
+    if (this.duplicatesAcknowledged && this.duplicates.length) {
+      this.telemetryService.record(
+        ['enketo', 'contacts', this.enketoContact.type, 'duplicates_acknowledged'].join(':')
+      );
+    }
+  }
+
+  private populateErrorDuplicates(err) {
+    if (err instanceof DuplicatesFoundError) {
+      this.duplicates = err.duplicates;
+    } else {
+      this.duplicates = [];
     }
   }
 
