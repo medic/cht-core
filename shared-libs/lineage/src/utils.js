@@ -6,10 +6,8 @@ const isContact = doc => {
   if (!doc) {
     return;
   }
-
-  return doc.type === 'contact' || contactTypeUtils.HARDCODED_TYPES.includes(doc.type);
+  return doc.type === DOC_TYPES.CONTACT || contactTypeUtils.HARDCODED_TYPES.includes(doc.type);
 };
-
 const getId = (item) => item && (typeof item === 'string' ? item : item._id);
 
 // don't process linked docs for non-contact types

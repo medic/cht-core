@@ -1,3 +1,4 @@
+import { DOC_TYPES } from '@medic/constants';
 import { createReducer, on } from '@ngrx/store';
 
 import { UniqueSortedList } from '@mm-reducers/utils';
@@ -16,7 +17,7 @@ const initialState = {
 };
 
 const getContactTypeOrder = (contact) => {
-  if (contact.type === 'contact') {
+  if (contact.type === DOC_TYPES.CONTACT) {
     const idx = ContactTypesService.HARDCODED_TYPES().indexOf(contact.contact_type);
     if (idx !== -1) {
       // matches a hardcoded type - order by the index

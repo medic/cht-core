@@ -1,3 +1,4 @@
+import { DOC_TYPES } from '@medic/constants';
 import { Injectable, NgZone } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { toBik_text } from 'bikram-sambat';
@@ -400,7 +401,7 @@ export class FormService {
     const { form, xmlVersion, duplicateCheck } = formInfo;
     const typeFields = this.contactTypesService.isHardcodedType(type)
       ? { type }
-      : { type: 'contact', contact_type: type };
+      : { type: DOC_TYPES.CONTACT, contact_type: type };
 
     const docs = await this.contactSaveService.save(form, docId, typeFields, xmlVersion);
     const preparedDocs = await this.applyTransitions(docs);
@@ -477,6 +478,6 @@ export class WebappEnketoFormContext implements EnketoFormContext {
 
   requiresContact() {
     // Users can access contact forms even when they don't have a contact associated.
-    return this.type !== 'contact' && this.type !== 'training-card';
+    return this.type !== DOC_TYPES.CONTACT && this.type !== 'training-card';
   }
 }

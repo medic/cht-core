@@ -1,3 +1,4 @@
+import { DOC_TYPES } from '@medic/constants';
 import { Injectable } from '@angular/core';
 
 import { DbService } from '@mm-services/db.service';
@@ -47,7 +48,7 @@ export class GetDataRecordsService {
   }
 
   getContacts(ids: string[], options: { hydrateContactNames?: boolean, include_docs?: boolean } = {}) {
-    return this.getRecords(ids, 'contact', options);
+    return this.getRecords(ids, DOC_TYPES.CONTACT, options);
   }
 
   getReports(ids: string[], options: { hydrateContactNames?: boolean, include_docs?: boolean } = {}) {

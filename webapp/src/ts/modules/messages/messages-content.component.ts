@@ -1,3 +1,4 @@
+import { DOC_TYPES } from '@medic/constants';
 import {
   AfterViewChecked,
   AfterViewInit,
@@ -178,7 +179,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
 
   // See URL parameter "id" note at top of file
   private getContactable(id, type) {
-    if (type === 'contact') {
+    if (type === DOC_TYPES.CONTACT) {
       return this.lineageModelGeneratorService
         .contact(id)
         .catch(err => {
