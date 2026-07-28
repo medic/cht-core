@@ -5,6 +5,7 @@ import * as moment from 'moment';
 
 import * as enketoConstants from './../../js/enketo/constants';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
+const HouseholdGeolocationWidget = require('../../js/enketo/widgets/household-geolocation-widget');
 import { DbService } from '@mm-services/db.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
@@ -271,9 +272,7 @@ export class FormService {
   }
 
   private injectGeoEditContext(formHtml: Element | undefined, contact: any) {
-    const captureInput = formHtml?.querySelector(
-      '.or-appearance-geolocation-capture input'
-    ) as HTMLInputElement | null;
+    const captureInput = formHtml?.querySelector(HouseholdGeolocationWidget.selector) as HTMLInputElement | null;
     if (!captureInput || !contact?._id) {
       return;
     }
@@ -288,17 +287,17 @@ export class FormService {
   }
 
   private getGeoContext(formHtml?: Element): string | undefined {
-    const captureInput = formHtml?.querySelector('.or-appearance-geolocation-capture input') as HTMLInputElement;
+    const captureInput = formHtml?.querySelector(HouseholdGeolocationWidget.selector) as HTMLInputElement;
     return captureInput?.dataset?.geoContext || undefined;
   }
 
   private getGeoCaptureValue(formHtml?: Element): string | undefined {
-    const captureInput = formHtml?.querySelector('.or-appearance-geolocation-capture input') as HTMLInputElement;
+    const captureInput = formHtml?.querySelector(HouseholdGeolocationWidget.selector) as HTMLInputElement;
     return captureInput?.value || undefined;
   }
 
   private getGeoCaptureFieldName(formHtml?: Element): string | undefined {
-    const captureInput = formHtml?.querySelector('.or-appearance-geolocation-capture input') as HTMLInputElement;
+    const captureInput = formHtml?.querySelector(HouseholdGeolocationWidget.selector) as HTMLInputElement;
     const name = captureInput?.getAttribute('name');
     return name?.split('/').pop() || undefined;
   }
