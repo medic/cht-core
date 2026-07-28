@@ -27,8 +27,6 @@ const WEAK_SIGNAL_CODES = new Set([2, 3, -2]);
 // Standard GeolocationPositionError.PERMISSION_DENIED code (W3C Geolocation API spec).
 const GEOLOCATION_PERMISSION_DENIED = 1;
 
-// Class names referenced from more than one method - created in one place, queried/removed in
-// another. Kept as a single source of truth so the two sides can't silently drift apart.
 const CLASS_NAMES = {
   PROGRESS_ROW: 'geolocation-progress-row',
   RESULT_ROW: 'geolocation-result-row',
@@ -37,8 +35,6 @@ const CLASS_NAMES = {
   PERMISSION_DENIED_MSG: 'geolocation-permission-denied',
 };
 
-// The edit-choices radio group's own DOM `value`s - distinct from FIELD_VALUES below, which are
-// what actually gets written to the form field once a choice is made.
 const RADIO_VALUES = {
   KEPT: 'kept',
   CHANGE_LOCATION: 'capture-home',
@@ -68,9 +64,6 @@ class HouseholdGeolocationWidget extends Widget {
     $(this.element).hide();
     const $question = $(this.question);
 
-    // A saved location always goes through edit mode, whatever the live permission/availability
-    // state - _initEditMode()'s own capture-failure handling already reacts correctly to denial
-    // or unavailability without offering the destructive "save without location" checkbox.
     if (this.element.dataset.geoHasLocation === 'true') {
       this._initEditMode($question);
       return;
