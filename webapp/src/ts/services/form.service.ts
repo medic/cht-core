@@ -19,7 +19,9 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { GlobalActions } from '@mm-actions/global';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { ContactSummary, EnketoForm, EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
+import {
+  ContactSummary, EnketoForm, EnketoFormContext, EnketoService, ExternalInstance
+} from '@mm-services/enketo.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { reduce as _reduce } from 'lodash-es';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -29,6 +31,7 @@ import { Nullable, Person, Contact, Report, Qualifier } from '@medic/cht-datasou
 import { DeduplicateService, DuplicateCheck } from '@mm-services/deduplicate.service';
 import { ContactsService } from '@mm-services/contacts.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { FormConfig } from '@mm-services/form/form-config';
 
 /**
@@ -64,6 +67,7 @@ export class FormService {
     private readonly contactsService: ContactsService,
     private readonly performanceService: PerformanceService,
     private readonly userContactSummaryService: UserContactSummaryService,
+    private readonly customResourceService: CustomResourceService,
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
@@ -157,6 +161,40 @@ export class FormService {
     };
   }
 
+  private getFilenameFromSrc(src: string): string | undefined {
+    if (src.startsWith('jr://file/')) {
+      return src.slice('jr://file/'.length);
+    }
+    return undefined;
+  }
+
+  private loadExternalInstance(src: string, id: string): ExternalInstance | undefined {
+    const filename = this.getFilenameFromSrc(src);
+    if (!filename) {
+      return undefined;
+    }
+    const xml = this.customResourceService.getXml(filename);
+    if (!xml) {
+      throw new Error(`External dataset "${id}" not found in resources. Only XML files are supported.`);
+    }
+    return { id, xml };
+  }
+
+  private getExternalInstances(model: string): ExternalInstance[] {
+    const results: ExternalInstance[] = [];
+    $(model)
+      .find('instance[src][id]:not([src=""]):not([id=""])')
+      .each((_, el) => {
+        const src = $(el).attr('src')!;
+        const id = $(el).attr('id')!;
+        const instance = this.loadExternalInstance(src, id);
+        if (instance) {
+          results.push(instance);
+        }
+      });
+    return results;
+  }
+
   private canAccessForm(formContext: WebappEnketoFormContext) {
     return this.xmlFormsService.canAccessForm(
       formContext.formConfig.doc,
@@ -178,6 +216,7 @@ export class FormService {
       const userSettings = await this.userSettingsService.getWithLanguage();
       formContext.contactSummary = await this.getContactSummary(formConfig, instanceData);
       formContext.userContactSummary = await this.getUserContactSummary(formConfig);
+      formContext.externalInstances = this.getExternalInstances(formConfig.model);
 
       if (!await this.canAccessForm(formContext)) {
         throw { translationKey: 'error.loading.form.no_authorized' };
@@ -427,6 +466,7 @@ export class WebappEnketoFormContext implements EnketoFormContext {
   isFormInModal?: boolean;
   contactSummary?: ContactSummary;
   userContactSummary?: ContactSummary;
+  externalInstances?: ExternalInstance[];
 
   editing?: boolean;
   userContact?: Nullable<Person.v1.Person>;

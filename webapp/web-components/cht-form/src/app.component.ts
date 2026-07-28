@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Inject, Input, Output } from '@angular/core';
-import { EnketoForm, EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
+import { EnketoForm, EnketoFormContext, EnketoService, ExternalInstance } from '@mm-services/enketo.service';
 import * as medicXpathExtensions from '../../../src/js/enketo/medic-xpath-extensions';
 import moment from 'moment';
 import { toBik_text } from 'bikram-sambat';
@@ -101,6 +101,11 @@ export class AppComponent {
       throw new Error('The user must be populated.');
     }
     this._user = { ...this.DEFAULT_USER, ...user };
+    this.queueRenderForm();
+  }
+
+  @Input() set externalInstances(value: ExternalInstance[] | undefined) {
+    this.formContext.externalInstances = value;
     this.queueRenderForm();
   }
 
@@ -265,6 +270,8 @@ export class AppComponent {
     // @ts-expect-error it does exist
     component.user = this.DEFAULT_USER;
     // @ts-expect-error it does exist
+    component.externalInstances = undefined;
+    // @ts-expect-error it does exist
     component.extensionLibs = undefined;
   }
 }
@@ -273,6 +280,7 @@ class ChtFormEnketoFormContext implements EnketoFormContext {
   readonly editedListener = () => this.editing = true;
   readonly valuechangeListener = () => this.status.error = null;
   contactSummary?: { id: string, context: Record<string, any> };
+  externalInstances?: ExternalInstance[];
   readonly status = {
     saving: false,
     error: null as string | null

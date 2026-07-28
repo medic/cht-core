@@ -9,7 +9,7 @@ import { DbService } from '@mm-services/db.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { EnketoService, FormValidationError } from '@mm-services/enketo.service';
+import { EnketoService, ExternalInstance, FormValidationError } from '@mm-services/enketo.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { FormConfig } from '@mm-services/form/form-config';
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
@@ -33,6 +33,7 @@ describe('Enketo service', () => {
 
   const VISIT_MODEL = loadXML('visit');
   const VISIT_MODEL_WITH_CONTACT_SUMMARY = loadXML('visit-contact-summary');
+  const VISIT_MODEL_WITH_EXTERNAL_DATASET = loadXML('visit-external-dataset');
 
   const buildFormConfig = ({
     doc = mockEnketoDoc('myform'),
@@ -262,6 +263,7 @@ describe('Enketo service', () => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].modelStr).to.equal(VISIT_MODEL);
         expect(EnketoForm.args[0][1].instanceStr).to.equal(data);
+        expect(EnketoForm.args[0][1].external).to.deep.equal([]);
       });
     });
 
@@ -360,6 +362,31 @@ describe('Enketo service', () => {
         expect(userContactSummary.id).to.equal('user-contact-summary');
         expect(new XMLSerializer().serializeToString(userContactSummary.xml))
           .to.equal('<context><chw>true</chw></context>');
+      });
+    });
+
+    it('spreads externalInstances into options.external', () => {
+      enketoInit.returns([]);
+      EnketoPrepopulationData.returns('<xml></xml>');
+      const externalDoc = new DOMParser().parseFromString('<root><item><name>a</name></item></root>', 'text/xml');
+      const externalInstances: ExternalInstance[] = [{ id: 'items', xml: externalDoc }];
+      const formConfig = buildFormConfig({
+        html: $('<div>my form</div>'),
+        model: VISIT_MODEL_WITH_EXTERNAL_DATASET,
+      });
+      const formContext = new WebappEnketoFormContext('#div', formConfig);
+      formContext.contactSummary = { id: 'contact-summary', context: { pregnant: true } };
+      formContext.externalInstances = externalInstances;
+      const doc = {
+        html: $('<div>my form</div>'),
+        model: VISIT_MODEL_WITH_EXTERNAL_DATASET,
+      };
+      const userSettings = { language: 'en' };
+      return service.renderForm(formContext, userSettings).then(() => {
+        expect(EnketoForm.callCount).to.equal(1);
+        const external = EnketoForm.args[0][1].external;
+        expect(external[0].id).to.equal('contact-summary');
+        expect(external[1]).to.deep.equal(externalInstances[0]);
       });
     });
 

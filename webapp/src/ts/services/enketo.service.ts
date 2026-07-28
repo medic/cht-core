@@ -159,7 +159,7 @@ export class EnketoService {
     };
 
     try {
-      const summaries:ContactSummaryXml[] = [];
+      const summaries:ExternalInstance[] = [];
       for (const contactSummary of contactSummaries) {
         const contactSummaryXml = convertSummary(contactSummary?.context);
         if (contactSummary && contactSummaryXml) {
@@ -186,7 +186,10 @@ export class EnketoService {
     const options: EnketoOptions = {
       modelStr: xmlFormContext.formConfig.model,
       instanceStr: instanceStr,
-      external: this.convertContactSummaryToXML([xmlFormContext.contactSummary, xmlFormContext.userContactSummary]),
+      external: [
+        ...this.convertContactSummaryToXML([xmlFormContext.contactSummary, xmlFormContext.userContactSummary]),
+        ...(xmlFormContext.externalInstances ?? []),
+      ],
     };
     const form = xmlFormContext.wrapper.find('form')[0];
     return new window.EnketoForm(form, options, { language: userSettings.language });
@@ -362,6 +365,7 @@ export class EnketoService {
       isFormInModal,
       contactSummary: formContext.contactSummary,
       userContactSummary: formContext.userContactSummary,
+      externalInstances: formContext.externalInstances,
     };
     const form = await this.renderFromXmls(xmlFormContext, userSettings);
     const formContainer = xmlFormContext.wrapper.find('.container').first();
@@ -667,7 +671,7 @@ export interface ContactSummary {
   context: Record<string, any>;
 }
 
-interface ContactSummaryXml {
+export interface ExternalInstance {
   id: string;
   xml: Document;
 }
@@ -675,7 +679,7 @@ interface ContactSummaryXml {
 interface EnketoOptions {
   modelStr: string;
   instanceStr: string;
-  external: ContactSummaryXml[];
+  external: ExternalInstance[];
 }
 
 interface XmlFormContext {
@@ -687,6 +691,7 @@ interface XmlFormContext {
   isFormInModal?: boolean;
   contactSummary?: ContactSummary;
   userContactSummary?: ContactSummary;
+  externalInstances?: ExternalInstance[];
 }
 
 export interface EnketoFormContext {
@@ -699,6 +704,7 @@ export interface EnketoFormContext {
   readonly isFormInModal?: boolean;
   readonly contactSummary?: ContactSummary;
   readonly userContactSummary?: ContactSummary;
+  readonly externalInstances?: ExternalInstance[];
 }
 
 export interface EnketoForm {

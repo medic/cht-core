@@ -156,6 +156,10 @@ describe('AppComponent', () => {
     };
     const contactSummary = { hello: 'world' };
     const content = { my: 'content' };
+    const externalInstances = [
+      { id: 'contacts', xml: new DOMParser().parseFromString('<root><a/></root>', 'text/xml') },
+      { id: 'products', xml: new DOMParser().parseFromString('<root><b/></root>', 'text/xml') },
+    ];
 
     const component = await getComponent();
     const onRender = sinon.stub();
@@ -171,6 +175,8 @@ describe('AppComponent', () => {
     component.contactType = 'person';
     tick();
     component.content = content;
+    tick();
+    component.externalInstances = externalInstances;
     tick();
     component.extensionLibs = {
       hello: 'world',
@@ -194,6 +200,7 @@ describe('AppComponent', () => {
       instanceData: content,
       contactSummary: { id: 'contact-summary', context: contactSummary }
     });
+    expect(actualContext.externalInstances).to.equal(externalInstances);
     expect(actualContext.editedListener).to.exist;
     expect(actualContext.valuechangeListener).to.exist;
     expect(actualContext.formConfig).to.deep.include({
@@ -210,6 +217,7 @@ describe('AppComponent', () => {
     component.contactSummary = undefined;
     component.contactType = undefined;
     component.content = undefined;
+    component.externalInstances = undefined;
     component.extensionLibs = undefined;
     tick();
 
@@ -223,6 +231,7 @@ describe('AppComponent', () => {
       type: 'report',
       instanceData: undefined
     });
+    expect(actualContext1.externalInstances).to.be.undefined;
     expect(actualContext1.contactSummary).to.be.undefined;
     expect(actualContext1.formConfig).to.deep.include({
       doc: { _id: formId },
@@ -382,6 +391,9 @@ describe('AppComponent', () => {
     };
     const contactSummary = { hello: 'world' };
     const content = { my: 'content' };
+    const externalInstances = [
+      { id: 'contacts', xml: new DOMParser().parseFromString('<root><a/></root>', 'text/xml') },
+    ];
 
     const component = await getComponent();
     const onRender = sinon.stub();
@@ -396,6 +408,7 @@ describe('AppComponent', () => {
     component.contactSummary = contactSummary;
     component.contactType = 'person';
     component.content = content;
+    component.externalInstances = externalInstances;
     // Set the form ID again
     component.formId = formId;
     // Trigger change detection to update the bound id attribute
@@ -412,6 +425,7 @@ describe('AppComponent', () => {
       instanceData: content,
       contactSummary: { id: 'contact-summary', context: contactSummary }
     });
+    expect(actualContext.externalInstances).to.equal(externalInstances);
     expect(actualContext.editedListener).to.exist;
     expect(actualContext.valuechangeListener).to.exist;
     expect(actualContext.formConfig).to.deep.include({

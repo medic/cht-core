@@ -34,6 +34,7 @@ import { DeduplicateService } from '@mm-services/deduplicate.service';
 import { ContactsService } from '@mm-services/contacts.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { Contact, Qualifier, Report } from '@medic/cht-datasource';
 import { DOC_TYPES } from '@medic/constants';
 
@@ -55,6 +56,7 @@ describe('Form service', () => {
 
   const VISIT_MODEL = loadXML('visit');
   const VISIT_MODEL_WITH_CONTACT_SUMMARY = loadXML('visit-contact-summary');
+  const VISIT_MODEL_WITH_EXTERNAL_DATASET = loadXML('visit-external-dataset');
   const USER_SETTINGS = { name: 'Jim', language: 'en' };
   const USER_CONTACT = { _id: '123', phone: '555' };
 
@@ -103,6 +105,7 @@ describe('Form service', () => {
   let performanceService;
   let performanceTracking;
   let userContactSummaryService;
+  let customResourceService;
 
   beforeEach(() => {
     dbGetAttachment = sinon.stub();
@@ -167,6 +170,7 @@ describe('Form service', () => {
     targetAggregatesService = { getTargetDocs: sinon.stub() };
     contactViewModelGeneratorService = { loadReports: sinon.stub() };
     userContactSummaryService = { get: sinon.stub() };
+    customResourceService = { getXml: sinon.stub() };
 
     const getSiblings = sinon.stub();
     getDuplicates = sinon.stub();
@@ -206,6 +210,7 @@ describe('Form service', () => {
         { provide: ContactsService, useValue: contactsService },
         { provide: PerformanceService, useValue: performanceService },
         { provide: UserContactSummaryService, useValue: userContactSummaryService },
+        { provide: CustomResourceService, useValue: customResourceService },
       ],
     });
 
@@ -542,6 +547,44 @@ describe('Form service', () => {
         expect(feedbackService.submit.notCalled).to.be.true;
       }
     }));
+  });
+
+  describe('getExternalInstances', () => {
+    const setupRenderStubs = (model = VISIT_MODEL_WITH_EXTERNAL_DATASET) => {
+      UserContact.resolves({ contact_id: '123-user-contact' });
+      xmlFormsService.canAccessForm.resolves(true);
+      dbGetAttachment
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves(model);
+    };
+
+    beforeEach(async () => {
+      sinon.stub(medicXpathExtensions, 'init');
+      service = TestBed.inject(FormService);
+      await service.init();
+      UserSettings.resolves({ name: 'Jim', language: 'en' });
+    });
+
+    it('loads jr://file/ resource as XML external instance', async () => {
+      setupRenderStubs();
+      const xmlDoc = new DOMParser()
+        .parseFromString('<root><item><name>a</name><label>Choice A</label></item></root>', 'text/xml');
+      customResourceService.getXml.withArgs('items.xml').returns(xmlDoc);
+      const formContext = new WebappEnketoFormContext('#div', mockFormConfig('myform', { model: VISIT_MODEL_WITH_EXTERNAL_DATASET }));
+
+      await service.render(formContext);
+
+      expect(customResourceService.getXml).to.have.been.calledOnceWithExactly('items.xml');
+      expect(formContext.externalInstances).to.deep.equal([{ id: 'items', xml: xmlDoc }]);
+    });
+
+    it('throws when resource is not found', async () => {
+      setupRenderStubs();
+      customResourceService.getXml.withArgs('items.xml').returns(null);
+      const formContext = new WebappEnketoFormContext('#div', mockFormConfig('myform', { model: VISIT_MODEL_WITH_EXTERNAL_DATASET }));
+
+      await expect(service.render(formContext)).to.be.rejectedWith('not found in resources');
+    });
   });
 
   describe('save', () => {
