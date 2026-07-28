@@ -292,8 +292,12 @@ class HouseholdGeolocationWidget extends Widget {
       $('<div class="geolocation-edit-badge">').text(this._translate(TRANSLATION_KEYS.EDIT_BADGE))
     );
 
-    setTimeout(() => $(this.element).val(RADIO_VALUES.KEPT).trigger('change'), 0);
+    this._setKeptValueOnceEnketoReady();
     $question.append(this._buildEditChoices());
+  }
+
+  _setKeptValueOnceEnketoReady() {
+    setTimeout(() => $(this.element).val(RADIO_VALUES.KEPT).trigger('change'), 0);
   }
 
   _buildEditChoices() {
