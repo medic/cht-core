@@ -1,7 +1,7 @@
-/* global window */
 const fs = require('fs');
 const path = require('path');
 const utils = require('@utils');
+const { setGeolocation } = require('@utils/geolocation');
 const MS_PER_DAY = 86400000;
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
@@ -40,11 +40,7 @@ const selectOtherContext = async () => {
   await $(SELECTORS.OTHER_RADIO).click();
 };
 
-const mockGeoResolved = async (result) => {
-  await browser.execute((r) => {
-    window.CHTCore.Geolocation.currentPromise = Promise.resolve(r);
-  }, result);
-};
+const mockGeoResolved = (result) => setGeolocation(result);
 
 describe('HouseholdGeolocation widget - contact save pipeline', () => {
   const places = placeFactory.generateHierarchy();
