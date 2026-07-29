@@ -1147,6 +1147,60 @@ describe('Users service', () => {
     });
   });
 
+  describe('setDeviceKey', () => {
+    const userId = PREFIXES.COUCH_USER + 'steve';
+
+    const ISO_DATE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+
+    it('adds a new device key entry to the user-settings doc', async () => {
+      db.medic.get.resolves({ _id: userId, name: 'steve', type: 'user-settings' });
+      db.medic.put.resolves({ id: userId, rev: '2-abc' });
+
+      const result = await service.setDeviceKey('steve', 'device-1', 'age1recipient');
+
+      chai.expect(db.medic.get.args[0]).to.deep.equal([userId]);
+      chai.expect(db.medic.put.calledOnce).to.be.true;
+      const saved = db.medic.put.args[0][0];
+      chai.expect(saved._id).to.equal(userId);
+      chai.expect(saved.name).to.equal('steve');
+      chai.expect(saved.device_keys).to.have.lengthOf(1);
+      chai.expect(saved.device_keys[0].device_id).to.equal('device-1');
+      chai.expect(saved.device_keys[0].public_key).to.equal('age1recipient');
+      chai.expect(saved.device_keys[0].created_at).to.match(ISO_DATE);
+      chai.expect(result).to.deep.equal({ id: userId, rev: '2-abc' });
+    });
+
+    it('replaces the existing entry when the same device re-registers', async () => {
+      db.medic.get.resolves({
+        _id: userId,
+        name: 'steve',
+        type: 'user-settings',
+        device_keys: [
+          { device_id: 'device-1', public_key: 'age1old', created_at: '2026-01-01T00:00:00.000Z' },
+          { device_id: 'device-2', public_key: 'age1other', created_at: '2026-01-01T00:00:00.000Z' },
+        ],
+      });
+      db.medic.put.resolves({ id: userId, rev: '3-abc' });
+
+      await service.setDeviceKey('steve', 'device-1', 'age1new');
+
+      const savedKeys = db.medic.put.args[0][0].device_keys;
+      chai.expect(savedKeys).to.have.lengthOf(2);
+      chai.expect(savedKeys[0].device_id).to.equal('device-1');
+      chai.expect(savedKeys[0].public_key).to.equal('age1new');
+      chai.expect(savedKeys[0].created_at).to.match(ISO_DATE);
+      chai.expect(savedKeys[1]).to.deep.equal(
+        { device_id: 'device-2', public_key: 'age1other', created_at: '2026-01-01T00:00:00.000Z' }
+      );
+    });
+
+    it('rejects when the user-settings doc is not found', () => {
+      db.medic.get.rejects({ status: 404 });
+
+      return chai.expect(service.setDeviceKey('steve', 'device-1', 'age1recipient')).to.be.rejected;
+    });
+  });
+
   describe('deleteUser', () => {
 
     it('returns _users insert errors', () => {
