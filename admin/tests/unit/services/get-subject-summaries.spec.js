@@ -26,7 +26,7 @@ describe('GetSubjectSummaries service', () => {
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.value('GetSummaries', GetSummaries);
+      $provide.value('GetSummaries', { getContacts: GetSummaries });
       $provide.value('LineageModelGenerator', LineageModelGenerator);
     });
     inject($injector => service = $injector.get('GetSubjectSummaries'));

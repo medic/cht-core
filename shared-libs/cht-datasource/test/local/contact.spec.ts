@@ -140,6 +140,58 @@ describe('local contact', () => {
       });
     });
 
+    describe('getSummaries', () => {
+      let getDocsByIdsOuter: SinonStub;
+      let getDocsByIdsInner: SinonStub;
+
+      beforeEach(() => {
+        getDocsByIdsInner = sinon.stub();
+        getDocsByIdsOuter = sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
+      });
+
+      it('passes empty ids through to getDocsByIds', async () => {
+        getDocsByIdsInner.resolves([]);
+
+        const result = await Contact.v1.getSummaries(localContext)({ ids: [] });
+
+        expect(result).to.deep.equal([]);
+        expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocsByIdsInner.calledOnceWithExactly([])).to.be.true;
+      });
+
+      it('summarises contacts and filters out non-contact docs', async () => {
+        const contactDoc = {
+          _id: 'a',
+          _rev: '1',
+          type: 'person',
+          name: 'james',
+          phone: '+456',
+          parent: { _id: 'f', parent: { _id: 'g' } },
+        };
+        const reportDoc = { _id: 'b', _rev: '2', type: 'data_record', form: 'x' };
+        getDocsByIdsInner.resolves([contactDoc, reportDoc, null]);
+        isContact.withArgs(settings, contactDoc).returns(true);
+        isContact.withArgs(settings, reportDoc).returns(false);
+
+        const result = await Contact.v1.getSummaries(localContext)({ ids: ['a', 'b', 'missing'] });
+
+        expect(result).to.deep.equal([{
+          _id: 'a',
+          _rev: '1',
+          name: 'james',
+          phone: '+456',
+          type: 'person',
+          contact_type: undefined,
+          contact: undefined,
+          lineage: ['f', 'g'],
+          date_of_death: undefined,
+          muted: undefined,
+        }]);
+        expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocsByIdsInner.calledOnceWithExactly(['a', 'b', 'missing'])).to.be.true;
+      });
+    });
+
     describe('getWithLineage', () => {
       const identifier = { uuid: 'uuid' } as const;
       let mockFetchHydratedDoc: sinon.SinonStub;
@@ -606,6 +658,107 @@ describe('local contact', () => {
             expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
             expect(fetchAndFilterIdsInner.notCalled).to.be.true;
           });
+        });
+      });
+    });
+
+    describe('getPage', () => {
+      const limit = 3;
+      const cursor = null;
+      const notNullCursor = '5';
+      const contactType = 'person';
+      const typeQualifier = { contactType } as const;
+      let getDocsByIdsInner: SinonStub;
+      let getDocsByIdsOuter: SinonStub;
+      let queryDocsByKeyInner: SinonStub;
+      let queryDocsByKeyOuter: SinonStub;
+      let fetchAndFilterInner: SinonStub;
+      let fetchAndFilterOuter: SinonStub;
+      let getContactTypeIds: SinonStub;
+
+      beforeEach(() => {
+        getDocsByIdsInner = sinon.stub();
+        getDocsByIdsOuter = sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
+        queryDocsByKeyInner = sinon.stub();
+        queryDocsByKeyOuter = sinon.stub(LocalDoc, 'queryDocsByKey').returns(queryDocsByKeyInner);
+        fetchAndFilterInner = sinon.stub();
+        fetchAndFilterOuter = sinon.stub(LocalDoc, 'fetchAndFilter').returns(fetchAndFilterInner);
+        getContactTypeIds = sinon.stub(contactTypeUtils, 'getContactTypeIds').returns([contactType]);
+      });
+
+      it('returns a page of contacts for the given type', async () => {
+        const expectedResult = { cursor: '2', data: [{ type: 'person' }] };
+        fetchAndFilterInner.resolves(expectedResult);
+
+        const res = await Contact.v1.getPage(localContext)(typeQualifier, cursor, limit);
+
+        expect(res).to.deep.equal(expectedResult);
+        expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
+        expect(queryDocsByKeyOuter.calledOnceWithExactly(
+          localContext.medicDb, 'medic-client/contacts_by_type'
+        )).to.be.true;
+        expect(fetchAndFilterOuter.calledOnce).to.be.true;
+        const getPageFn = fetchAndFilterOuter.firstCall.args[0];
+        expect(getPageFn).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[2]).to.equal(limit);
+        expect(fetchAndFilterInner.calledOnceWithExactly(limit, 0)).to.be.true;
+
+        // The page function queries the contacts_by_type view keyed by the contact type.
+        await getPageFn(limit, 0);
+        expect(queryDocsByKeyInner.calledOnceWithExactly([contactType], limit, 0)).to.be.true;
+        expect(getDocsByIdsInner.notCalled).to.be.true;
+      });
+
+      it('throws an error if the contact type is invalid', async () => {
+        getContactTypeIds.returns(['not-person']);
+
+        await expect(Contact.v1.getPage(localContext)(typeQualifier, cursor, limit))
+          .to.be.rejectedWith(`Invalid contact type [${contactType}].`);
+
+        expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
+        expect(fetchAndFilterOuter.notCalled).to.be.true;
+        expect(fetchAndFilterInner.notCalled).to.be.true;
+      });
+
+      it('returns a page of contacts for the given ids, hydrating the sliced page via getDocsByIds', async () => {
+        const ids: [string, ...string[]] = ['c1', 'c2', 'c3', 'c4'];
+        const qualifier = { ids };
+        const expectedResult = { cursor: '3', data: [{ type: 'person' }] };
+        fetchAndFilterInner.resolves(expectedResult);
+
+        const res = await Contact.v1.getPage(localContext)(qualifier, notNullCursor, limit);
+
+        expect(res).to.deep.equal(expectedResult);
+        expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(fetchAndFilterOuter.calledOnce).to.be.true;
+        const getPageFn = fetchAndFilterOuter.firstCall.args[0];
+        expect(getPageFn).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[2]).to.equal(limit);
+        expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
+        // The ids arm does not validate the contact type.
+        expect(getContactTypeIds.notCalled).to.be.true;
+
+        // The page function slices the ids by skip/limit and hydrates them with a single batched getDocsByIds call.
+        await getPageFn(2, 1);
+        expect(getDocsByIdsInner.calledOnceWithExactly(['c2', 'c3'])).to.be.true;
+        expect(queryDocsByKeyInner.notCalled).to.be.true;
+      });
+
+      [
+        {},
+        '-1',
+        undefined,
+      ].forEach((invalidCursor) => {
+        it(`throws an error if cursor is invalid: ${JSON.stringify(invalidCursor)}`, async () => {
+          const expectedMessage =
+            `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}]`;
+          await expect(Contact.v1.getPage(localContext)(typeQualifier, invalidCursor as string, limit))
+            .to.be.rejectedWith(expectedMessage);
+
+          expect(fetchAndFilterOuter.notCalled).to.be.true;
+          expect(fetchAndFilterInner.notCalled).to.be.true;
         });
       });
     });

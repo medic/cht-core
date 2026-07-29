@@ -36,8 +36,9 @@ angular.module('inboxServices').factory('GetDataRecords',
         });
     };
 
-    const getSummaries = function(ids, options) {
-      return GetSummaries(ids)
+    const getSummaries = function(ids, type, options) {
+      const summariesPromise = type === 'report' ? GetSummaries.getReports(ids) : GetSummaries.getContacts(ids);
+      return summariesPromise
         .then(summaries => {
           const promiseToSummary = options.hydrateContactNames ?
             HydrateContactNames(summaries) : Promise.resolve(summaries);
@@ -45,7 +46,7 @@ angular.module('inboxServices').factory('GetDataRecords',
         });
     };
 
-    return function(ids, options) {
+    const getRecords = function(ids, type, options) {
       const opts = Object.assign({ hydrateContactNames: false, include_docs: false }, options);
 
       if (!ids) {
@@ -58,7 +59,7 @@ angular.module('inboxServices').factory('GetDataRecords',
       if (!ids.length) {
         return $q.resolve([]);
       }
-      const getFn = opts.include_docs ? getDocs : ids => getSummaries(ids, opts);
+      const getFn = opts.include_docs ? getDocs : idList => getSummaries(idList, type, opts);
       return getFn(ids)
         .then(function(response) {
           if (!arrayGiven) {
@@ -66,5 +67,10 @@ angular.module('inboxServices').factory('GetDataRecords',
           }
           return response;
         });
+    };
+
+    return {
+      getContacts: (ids, options) => getRecords(ids, 'contact', options),
+      getReports: (ids, options) => getRecords(ids, 'report', options),
     };
   });

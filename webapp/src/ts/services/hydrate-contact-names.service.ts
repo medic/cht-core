@@ -61,7 +61,7 @@ export class HydrateContactNamesService {
       return Promise.resolve(summaries);
     }
 
-    return this.getSummariesService.get(ids).then((response) => {
+    return this.getSummariesService.getContacts(ids).then((response) => {
       summaries = this.getMutedState(summaries, response);
       return this.replaceContactIdsWithNames(summaries, response);
     });

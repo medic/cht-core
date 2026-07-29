@@ -1,5 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Subject } from 'rxjs';
+import { PREFIXES } from '@medic/constants';
 
 import { AuthService } from '@mm-services/auth.service';
 import { ChangesService } from '@mm-services/changes.service';
@@ -11,8 +12,8 @@ import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-util
 import { ParseProvider } from '@mm-providers/parse.provider';
 import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
 
-export const TRAINING_FORM_ID_PREFIX: string = 'form:training:';
-export const CONTACT_FORM_ID_PREFIX: string = 'form:contact:';
+export const TRAINING_FORM_ID_PREFIX: string = `${PREFIXES.FORM}training:`;
+export const CONTACT_FORM_ID_PREFIX: string = `${PREFIXES.FORM}contact:`;
 
 @Injectable({
   providedIn: 'root'
@@ -40,7 +41,7 @@ export class XmlFormsService {
     this.changesService.subscribe({
       key: 'xml-forms',
       filter: (change) => {
-        return change.id.indexOf('form:') === 0;
+        return change.id.startsWith(PREFIXES.FORM);
       },
       callback: () => {
         this.init = this.getForms();
@@ -54,10 +55,11 @@ export class XmlFormsService {
   private getForms() {
     const options = {
       include_docs: true,
-      key: ['form']
+      start_key: PREFIXES.FORM,
+      end_key: PREFIXES.FORM + '\ufff0',
     };
     return this.dbService.get()
-      .query('medic-client/doc_by_type', options)
+      .allDocs(options)
       .then((res) => {
         if (!res?.rows) {
           return;
@@ -70,7 +72,7 @@ export class XmlFormsService {
   }
 
   private getById(internalId) {
-    const formId = `form:${internalId}`;
+    const formId = `${PREFIXES.FORM}${internalId}`;
     return this.dbService.get().get(formId);
   }
 
