@@ -295,6 +295,7 @@ module.exports = defineConfig([
     rules: {
       'n/no-process-exit': 'off',
       'n/no-extraneous-require': 'off',
+      'n/no-extraneous-import': 'off',
     },
   },
   {

@@ -1,7 +1,7 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const secureSettings = require('@medic/settings');
-const age = require('age-encryption');
+const age = require('../../../../src/services/offline-data-bundle/age');
 
 const service = require('../../../../src/services/offline-data-bundle/server-key');
 

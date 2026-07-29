@@ -1,16 +1,16 @@
-const age = require('age-encryption');
 const secureSettings = require('@medic/settings');
+const age = require('./age');
 
 const CREDENTIAL_KEY = 'offline-data-bundle-server-key';
 
 const getServerIdentity = async () => {
-  const identity = await secureSettings.getCredentials(CREDENTIAL_KEY);
-  if (identity) {
-    return identity;
+  const stored = await secureSettings.getCredentials(CREDENTIAL_KEY);
+  if (stored) {
+    return stored;
   }
-  const generated = await age.generateIdentity();
-  await secureSettings.setCredentials(CREDENTIAL_KEY, generated);
-  return generated;
+  const identity = await age.generateIdentity();
+  await secureSettings.setCredentials(CREDENTIAL_KEY, identity);
+  return identity;
 };
 
 module.exports = {
