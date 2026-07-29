@@ -7,6 +7,9 @@ const auth = require('../auth');
 const logger = require('@medic/logger');
 const serverUtils = require('../server-utils');
 const replication = require('../services/replication/replication');
+const serverKey = require('../services/offline-data-bundle/server-key');
+
+const OFFLINE_DATA_BUNDLE_PERMISSIONS = ['can_send_offline_data_bundle', 'can_relay_offline_data_bundle'];
 
 const hasFullPermission = req => {
   return auth
@@ -463,6 +466,90 @@ module.exports = {
         `Requested by '${requesterContext?.name}'.`
       );
       res.json(result);
+    } catch (err) {
+      serverUtils.error(err, req, res);
+    }
+  },
+
+  /**
+   * @openapi
+   * /api/v1/users/{username}/device-key:
+   *   post:
+   *     summary: Register a device encryption key
+   *     operationId: v1UsersUsernameDeviceKeyPost
+   *     description: >
+   *       Stores the device's age public (recipient) key against the user and returns the server's current age
+   *       public key. Keys are per-device: re-registering the same `device_id` replaces the stored key. Requires
+   *       the `can_send_offline_data_bundle` or `can_relay_offline_data_bundle` permission. Non-admin users can
+   *       only register a key for themselves.
+   *     tags: [User]
+   *     x-permissions:
+   *       hasAny: [can_send_offline_data_bundle, can_relay_offline_data_bundle]
+   *     parameters:
+   *       - in: path
+   *         name: username
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: The username to register the device key for.
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [device_id, public_key]
+   *             properties:
+   *               device_id:
+   *                 type: string
+   *                 description: Unique identifier for the device.
+   *               public_key:
+   *                 type: string
+   *                 description: The device's age recipient (public) key.
+   *     responses:
+   *       '200':
+   *         description: Device key registered
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 server_key:
+   *                   type: string
+   *                   description: The server's age recipient (public) key.
+   *       '400':
+   *         $ref: '#/components/responses/BadRequest'
+   *       '401':
+   *         $ref: '#/components/responses/Unauthorized'
+   *       '403':
+   *         $ref: '#/components/responses/Forbidden'
+   */
+  deviceKey: async (req, res) => {
+    if (_.isEmpty(req.body)) {
+      return serverUtils.emptyJSONBodyError(req, res);
+    }
+
+    const { device_id: deviceId, public_key: publicKey } = req.body;
+    if (!deviceId || !publicKey) {
+      return serverUtils.error(
+        { code: 400, reason: 'Missing required fields: device_id and public_key' },
+        req,
+        res
+      );
+    }
+
+    try {
+      const username = req.params.username;
+      const userCtx = await auth.assertPermissions(req, { hasAny: OFFLINE_DATA_BUNDLE_PERMISSIONS });
+      if (!auth.isDbAdmin(userCtx) && !isReferencingSelf(userCtx, auth.basicAuthCredentials(req), username)) {
+        return serverUtils.error({ code: 403, message: 'You do not have permissions to modify this user' }, req, res);
+      }
+
+      await users.setDeviceKey(username, deviceId, publicKey);
+      const serverPublicKey = await serverKey.getServerPublicKey();
+
+      logger.info(`REQ ${req.id} - Registered device key for device '${deviceId}' on user '${username}'.`);
+      res.json({ server_key: serverPublicKey });
     } catch (err) {
       serverUtils.error(err, req, res);
     }

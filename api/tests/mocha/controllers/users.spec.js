@@ -4,6 +4,7 @@ const controller = require('../../../src/controllers/users');
 const auth = require('../../../src/auth');
 const authorization = require('../../../src/services/replication/authorization');
 const serverUtils = require('../../../src/server-utils');
+const serverKey = require('../../../src/services/offline-data-bundle/server-key');
 const purgedDocs = require('../../../src/services/replication/purged-docs');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
@@ -1031,6 +1032,124 @@ describe('Users Controller', () => {
         chai.expect(users.updateUser.args[0]).to.deep.equal(['beta', { field: 'update' }, true]);
         chai.expect(res.json.callCount).to.equal(1);
         chai.expect(res.json.args[0]).to.deep.equal([{ updated: true }]);
+      });
+    });
+  });
+
+  describe('deviceKey', () => {
+    beforeEach(() => {
+      res = { json: sinon.stub() };
+      sinon.stub(auth, 'assertPermissions');
+      sinon.stub(auth, 'isDbAdmin');
+      sinon.stub(auth, 'basicAuthCredentials');
+      sinon.stub(users, 'setDeviceKey');
+      sinon.stub(serverKey, 'getServerPublicKey');
+    });
+
+    it('should respond with error when empty body', () => {
+      req = { params: { username: 'chw' }, body: {} };
+      sinon.stub(serverUtils, 'emptyJSONBodyError').resolves();
+      return controller.deviceKey(req, res).then(() => {
+        chai.expect(serverUtils.emptyJSONBodyError.callCount).to.equal(1);
+        chai.expect(users.setDeviceKey.notCalled).to.be.true;
+      });
+    });
+
+    it('should respond with 400 when device_id is missing', () => {
+      req = { params: { username: 'chw' }, body: { public_key: 'age1recipient' } };
+      return controller.deviceKey(req, res).then(() => {
+        chai.expect(serverUtils.error.callCount).to.equal(1);
+        chai.expect(serverUtils.error.args[0][0]).to.deep.equal(
+          { code: 400, reason: 'Missing required fields: device_id and public_key' }
+        );
+        chai.expect(users.setDeviceKey.notCalled).to.be.true;
+      });
+    });
+
+    it('should respond with 400 when public_key is missing', () => {
+      req = { params: { username: 'chw' }, body: { device_id: 'device-1' } };
+      return controller.deviceKey(req, res).then(() => {
+        chai.expect(serverUtils.error.callCount).to.equal(1);
+        chai.expect(serverUtils.error.args[0][0]).to.deep.equal(
+          { code: 400, reason: 'Missing required fields: device_id and public_key' }
+        );
+      });
+    });
+
+    it('should propagate error when requester lacks the required permission', () => {
+      const permissionError = { code: 403, message: 'Insufficient privileges' };
+      auth.assertPermissions.rejects(permissionError);
+      req = { params: { username: 'chw' }, body: { device_id: 'device-1', public_key: 'age1recipient' } };
+
+      return controller.deviceKey(req, res).then(() => {
+        chai.expect(auth.assertPermissions.callCount).to.equal(1);
+        chai.expect(auth.assertPermissions.args[0]).to.deep.equal([
+          req,
+          { hasAny: ['can_send_offline_data_bundle', 'can_relay_offline_data_bundle'] },
+        ]);
+        chai.expect(users.setDeviceKey.notCalled).to.be.true;
+        chai.expect(serverUtils.error.args[0]).to.deep.equal([permissionError, req, res]);
+      });
+    });
+
+    it('should register the device key when referencing self', () => {
+      auth.assertPermissions.resolves({ name: 'chw', roles: ['chw'] });
+      auth.isDbAdmin.returns(false);
+      auth.basicAuthCredentials.returns(false);
+      users.setDeviceKey.resolves({ id: 'org.couchdb.user:chw', rev: '2-abc' });
+      serverKey.getServerPublicKey.resolves('age1serverrecipient');
+      req = { id: 'req-1', params: { username: 'chw' }, body: { device_id: 'device-1', public_key: 'age1recipient' } };
+
+      return controller.deviceKey(req, res).then(() => {
+        chai.expect(serverUtils.error.notCalled).to.be.true;
+        chai.expect(users.setDeviceKey.args[0]).to.deep.equal(['chw', 'device-1', 'age1recipient']);
+        chai.expect(serverKey.getServerPublicKey.callCount).to.equal(1);
+        chai.expect(res.json.args[0]).to.deep.equal([{ server_key: 'age1serverrecipient' }]);
+      });
+    });
+
+    it('should register the device key when requester is a db admin acting on another user', () => {
+      auth.assertPermissions.resolves({ name: 'admin', roles: ['_admin'] });
+      auth.isDbAdmin.returns(true);
+      auth.basicAuthCredentials.returns(false);
+      users.setDeviceKey.resolves({ id: 'org.couchdb.user:chw', rev: '2-abc' });
+      serverKey.getServerPublicKey.resolves('age1serverrecipient');
+      req = { id: 'req-2', params: { username: 'chw' }, body: { device_id: 'device-1', public_key: 'age1recipient' } };
+
+      return controller.deviceKey(req, res).then(() => {
+        chai.expect(serverUtils.error.notCalled).to.be.true;
+        chai.expect(users.setDeviceKey.args[0]).to.deep.equal(['chw', 'device-1', 'age1recipient']);
+        chai.expect(res.json.args[0]).to.deep.equal([{ server_key: 'age1serverrecipient' }]);
+      });
+    });
+
+    it('should respond with 403 when a non-admin references another user', () => {
+      auth.assertPermissions.resolves({ name: 'chw', roles: ['chw'] });
+      auth.isDbAdmin.returns(false);
+      auth.basicAuthCredentials.returns(false);
+      req = { params: { username: 'other' }, body: { device_id: 'device-1', public_key: 'age1recipient' } };
+
+      return controller.deviceKey(req, res).then(() => {
+        chai.expect(users.setDeviceKey.notCalled).to.be.true;
+        chai.expect(serverUtils.error.args[0]).to.deep.equal([
+          { code: 403, message: 'You do not have permissions to modify this user' },
+          req,
+          res,
+        ]);
+      });
+    });
+
+    it('should propagate error when saving the device key fails', () => {
+      const saveError = new Error('boom');
+      auth.assertPermissions.resolves({ name: 'chw', roles: ['chw'] });
+      auth.isDbAdmin.returns(false);
+      auth.basicAuthCredentials.returns(false);
+      users.setDeviceKey.rejects(saveError);
+      req = { id: 'req-3', params: { username: 'chw' }, body: { device_id: 'device-1', public_key: 'age1recipient' } };
+
+      return controller.deviceKey(req, res).then(() => {
+        chai.expect(res.json.notCalled).to.be.true;
+        chai.expect(serverUtils.error.args[0]).to.deep.equal([saveError, req, res]);
       });
     });
   });

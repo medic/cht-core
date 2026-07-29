@@ -621,6 +621,19 @@ const saveUserSettingsUpdates = async (userSettings) => {
   };
 };
 
+const upsertDeviceKey = async (username, deviceId, publicKey) => {
+  const userSettings = await getUserDoc(username, 'medic');
+  userSettings.device_keys = userSettings.device_keys || [];
+  const entry = { device_id: deviceId, public_key: publicKey, created_at: new Date().toISOString() };
+  const existing = userSettings.device_keys.find(key => key.device_id === deviceId);
+  if (existing) {
+    Object.assign(existing, entry);
+  } else {
+    userSettings.device_keys.push(entry);
+  }
+  return saveUserSettingsUpdates(userSettings);
+};
+
 const validateFacilityIsNeeded = (data, user) => {
   const userRoles = data.roles || user?.roles;
   if (userRoles && roles.isOffline(userRoles)) {
@@ -1046,6 +1059,7 @@ module.exports = {
   },
   getUserDoc: (username) => getUserDoc(username, 'users'),
   getUserSettings,
+  setDeviceKey: upsertDeviceKey,
   /**
    * Take the request data and create valid user, user-settings and contact
    * objects. Returns the response body in the callback.

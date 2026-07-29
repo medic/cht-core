@@ -2493,4 +2493,94 @@ describe('Users API', () => {
       });
     });
   });
+
+  describe('POST /api/v1/users/{username}/device-key', () => {
+    const password = 'passwordSUP3RS3CR37!';
+    const senderUser = {
+      username: 'devkeysender',
+      password,
+      place: {
+        _id: 'fixture:devkey-sender',
+        type: CONTACT_TYPES.HEALTH_CENTER,
+        name: 'Device key sender place',
+        parent: 'PARENT_PLACE'
+      },
+      contact: { _id: 'fixture:contact:devkey-sender', name: 'DeviceKeySender' },
+      roles: ['chw']
+    };
+    const otherUser = {
+      username: 'devkeyother',
+      password,
+      place: {
+        _id: 'fixture:devkey-other',
+        type: CONTACT_TYPES.HEALTH_CENTER,
+        name: 'Device key other place',
+        parent: 'PARENT_PLACE'
+      },
+      contact: { _id: 'fixture:contact:devkey-other', name: 'DeviceKeyOther' },
+      roles: ['data_entry']
+    };
+    // valid age recipient (public) keys
+    const deviceKeyA = 'age1lggyhqrw2nlhcxprm4t5xu7pw5rsp3nlxr6mnp5ykhtl2f6c2sqrwv3rs';
+    const deviceKeyB = 'age1e4uw9yvxm647436dtk9d8yrjr9lgpxvpqvfd8ycvz7zszx6yg9qs3lkkny';
+
+    before(async () => {
+      await utils.saveDoc(parentPlace);
+      await utils.createUsers([senderUser, otherUser]);
+      await utils.updatePermissions(['chw'], ['can_send_offline_data_bundle'], [], { ignoreReload: true });
+    });
+
+    after(async () => {
+      await utils.revertSettings(true);
+      await utils.revertDb([], true);
+      await utils.deleteUsers([senderUser, otherUser]);
+    });
+
+    it('stores the device key and returns the server public key', async () => {
+      const response = await utils.request({
+        path: `/api/v1/users/${senderUser.username}/device-key`,
+        method: 'POST',
+        body: { device_id: 'device-A', public_key: deviceKeyA },
+        auth: { username: senderUser.username, password },
+      });
+
+      chai.expect(response.server_key).to.match(/^age1/);
+
+      const userSettings = await utils.getDoc(getUserId(senderUser.username));
+      chai.expect(userSettings.device_keys).to.have.lengthOf(1);
+      chai.expect(userSettings.device_keys[0]).to.include({ device_id: 'device-A', public_key: deviceKeyA });
+      chai.expect(userSettings.device_keys[0].created_at).to.be.a('string');
+    });
+
+    it('upserts by device_id when the same device re-registers', async () => {
+      await utils.request({
+        path: `/api/v1/users/${senderUser.username}/device-key`,
+        method: 'POST',
+        body: { device_id: 'device-A', public_key: deviceKeyB },
+        auth: { username: senderUser.username, password },
+      });
+
+      const userSettings = await utils.getDoc(getUserId(senderUser.username));
+      chai.expect(userSettings.device_keys).to.have.lengthOf(1);
+      chai.expect(userSettings.device_keys[0].public_key).to.equal(deviceKeyB);
+    });
+
+    it('403s when the user lacks the offline-data-bundle permission', async () => {
+      await chai.expect(utils.request({
+        path: `/api/v1/users/${otherUser.username}/device-key`,
+        method: 'POST',
+        body: { device_id: 'device-C', public_key: deviceKeyA },
+        auth: { username: otherUser.username, password },
+      })).to.be.rejectedWith(/403/);
+    });
+
+    it('400s when required fields are missing', async () => {
+      await chai.expect(utils.request({
+        path: `/api/v1/users/${senderUser.username}/device-key`,
+        method: 'POST',
+        body: { device_id: 'device-A' },
+        auth: { username: senderUser.username, password },
+      })).to.be.rejectedWith(/400/);
+    });
+  });
 });
