@@ -277,14 +277,6 @@ export class XmlFormsService {
       Object.keys(doc._attachments).find(name => name === 'xml' || name.endsWith('.xml'));
   }
 
-  private hasRequiredAttachments(doc) {
-    return doc &&
-      doc._attachments &&
-      Object.keys(doc._attachments).find(name => name === this.MODEL_ATTACHMENT_NAME) &&
-      Object.keys(doc._attachments).find(name => name === this.HTML_ATTACHMENT_NAME) &&
-      Object.keys(doc._attachments).find(name => name === 'xml' || name.endsWith('.xml'));
-  }
-
   /**
    * Invokes the given callback with an array of docs containing xforms
    * which the user is allowed to complete. Listens for changes and invokes
