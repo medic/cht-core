@@ -1,3 +1,4 @@
+const constants = require('@medic/constants');
 angular.module('services').factory('ImportContacts',
   function(
     $http,
@@ -21,9 +22,9 @@ angular.module('services').factory('ImportContacts',
           }
           return $q.reject(new Error(`Unknown type "${provided}"" for person named "${contact.name}"`));
         }
-        if (types.find(type => type.id === 'person')) {
+        if (types.some(type => type.id === constants.CONTACT_TYPES.PERSON)) {
           // retained for backwards compatibility
-          return 'person';
+          return constants.CONTACT_TYPES.PERSON;
         }
         return $q.reject(new Error(`Undefined type for person named "${contact.name}"`));
       });
@@ -37,7 +38,7 @@ angular.module('services').factory('ImportContacts',
             phone: doc.contact.phone,
             parent: doc
           };
-          if (type === 'person') {
+          if (type === constants.CONTACT_TYPES.PERSON) {
             person.type = type;
           } else {
             person.type = 'contact';

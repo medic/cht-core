@@ -15,7 +15,7 @@ import { assertPersonInput } from '../libs/parameter-validators';
 import { CONTACT_TYPES } from '@medic/constants';
 
 const DEFAULT_PERSON_TYPE = {
-  id: 'person',
+  id: CONTACT_TYPES.PERSON,
   parents: [
     CONTACT_TYPES.DISTRICT_HOSPITAL,
     'health_center',

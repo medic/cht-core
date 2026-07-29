@@ -7,6 +7,7 @@ const places = require('./places');
 const lineage = require('./libs/lineage');
 const { Person, Qualifier } = require('@medic/cht-datasource');
 const contactTypeUtils = require('@medic/contact-types-utils');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const getPerson = id => dataContext
   .bind(Person.v1.getWithLineage)(Qualifier.byUuid(id))
@@ -20,7 +21,7 @@ const getPerson = id => dataContext
 const isAPerson = person => contactTypeUtils.isPerson(config.get(), person);
 
 const getDefaultPersonType = () => {
-  const type = contactTypeUtils.getTypeById(config.get(), 'person');
+  const type = contactTypeUtils.getTypeById(config.get(), CONTACT_TYPES.PERSON);
   return type && type.id;
 };
 
