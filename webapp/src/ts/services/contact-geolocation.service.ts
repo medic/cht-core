@@ -1,9 +1,36 @@
 import { Injectable } from '@angular/core';
 
 import { DbService } from '@mm-services/db.service';
-import { GeolocationEditState } from '@mm-services/geolocation-edit-state';
 
 const HouseholdGeolocationWidget = require('../../js/enketo/widgets/household-geolocation-widget');
+
+export class GeolocationEditState {
+  readonly hasLocation: boolean;
+  readonly isEdit: boolean;
+  readonly context: string | undefined;
+  readonly captureValue: string | undefined;
+  readonly fieldName: string | undefined;
+
+  constructor(captureInput?: HTMLInputElement | null) {
+    this.hasLocation = captureInput?.dataset?.geoHasLocation === 'true';
+    this.isEdit = captureInput?.dataset?.geoIsEdit === 'true';
+    this.context = captureInput?.dataset?.geoContext || undefined;
+    this.captureValue = captureInput?.value || undefined;
+    this.fieldName = captureInput?.getAttribute('name')?.split('/').pop() || undefined;
+  }
+
+  get isKept(): boolean {
+    return this.captureValue === 'kept';
+  }
+
+  get isCaptured(): boolean {
+    return this.captureValue === 'captured';
+  }
+
+  get isHome(): boolean {
+    return this.context === 'home';
+  }
+}
 
 @Injectable({
   providedIn: 'root'
