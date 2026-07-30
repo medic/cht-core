@@ -721,45 +721,6 @@ describe('Form service', () => {
     });
   });
 
-  describe('getGeoCaptureValue', () => {
-    const buildFormHtmlWithCaptureValue = (value: string) => {
-      const captureInput = document.createElement('input');
-      captureInput.type = 'hidden';
-      captureInput.value = value;
-      const captureWrapper = document.createElement('div');
-      captureWrapper.classList.add('or-appearance-geolocation-capture');
-      captureWrapper.appendChild(captureInput);
-      const formHtml = document.createElement('div');
-      formHtml.appendChild(captureWrapper);
-      return formHtml;
-    };
-
-    beforeEach(() => {
-      service = TestBed.inject(FormService);
-    });
-
-    it('returns undefined when formHtml has no capture input', () => {
-      const formHtml = document.createElement('div');
-      expect((service as any).getGeoCaptureValue(formHtml)).to.be.undefined;
-    });
-
-    it('returns undefined when formHtml is undefined', () => {
-      expect((service as any).getGeoCaptureValue(undefined)).to.be.undefined;
-    });
-
-    it('returns "kept" when capture input value is kept', () => {
-      expect((service as any).getGeoCaptureValue(buildFormHtmlWithCaptureValue('kept'))).to.equal('kept');
-    });
-
-    it('returns "captured" when capture input value is captured', () => {
-      expect((service as any).getGeoCaptureValue(buildFormHtmlWithCaptureValue('captured'))).to.equal('captured');
-    });
-
-    it('returns "skipped" when capture input value is skipped', () => {
-      expect((service as any).getGeoCaptureValue(buildFormHtmlWithCaptureValue('skipped'))).to.equal('skipped');
-    });
-  });
-
   describe('save', () => {
 
     beforeEach(() => {

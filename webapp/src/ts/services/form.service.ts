@@ -279,11 +279,6 @@ export class FormService {
     return captureInput?.dataset?.geoContext || undefined;
   }
 
-  private getGeoCaptureValue(formHtml?: Element): string | undefined {
-    const captureInput = formHtml?.querySelector(HouseholdGeolocationWidget.selector) as HTMLInputElement;
-    return captureInput?.value || undefined;
-  }
-
   private getGeoCaptureFieldName(formHtml?: Element): string | undefined {
     const captureInput = formHtml?.querySelector(HouseholdGeolocationWidget.selector) as HTMLInputElement;
     const name = captureInput?.getAttribute('name');
