@@ -10,7 +10,11 @@ const contactTypesUtils = require('@medic/contact-types-utils');
 const PURGE_BATCH_SIZE = 1000;
 const FETCH_BATCH_SIZE = 100;
 const MAX_JOB_ATTEMPTS = 10;
-const FAILED_STATUS = 'failed';
+const JOB_LOG_STATUS = {
+  RUNNING: 'running',
+  COMPLETED: 'completed',
+  FAILED: 'failed',
+};
 
 let currentlyArchiving = false;
 
@@ -133,11 +137,86 @@ const indexViews = async () => {
   ]);
 };
 
-const MAX_ERRORS_KEPT = 5;
+/**
+ * Returns the job's log doc from medic-logs, or a fresh one on the first write. The log doc
+ * shares the job's _id and outlives it: it is the durable record of the job's lifecycle
+ * (status, progress, errors) after the queue doc is deleted.
+ * @param {string} jobId
+ * @returns {Promise<Object>}
+ */
+const getLog = async (jobId) => {
+  try {
+    return await db.medicLogs.get(jobId);
+  } catch (err) {
+    if (err.status !== 404) {
+      throw err;
+    }
+    return {
+      _id: jobId,
+      start_date: Date.now(),
+      status: JOB_LOG_STATUS.RUNNING,
+      errors: [],
+    };
+  }
+};
+
+/**
+ * Applies the given field changes to the job's log doc and saves it, stamping updated_date.
+ * Never throws — log docs are best-effort history and must not fail the job.
+ * @param {string} jobId
+ * @param {Object} changes - fields to set on the log doc
+ * @returns {Promise<void>}
+ */
+const updateLog = async (jobId, changes) => {
+  try {
+    const log = await getLog(jobId);
+    Object.assign(log, changes, { updated_date: Date.now() });
+    await db.medicLogs.put(log);
+  } catch (err) {
+    logger.error(`Archiving: could not update the log for job ${jobId}: %o`, err);
+  }
+};
+
+const setLogRunning = (job) => updateLog(job._id, {
+  status: JOB_LOG_STATUS.RUNNING,
+  cursor: job.cursor,
+  total: job.total,
+});
+
+/**
+ * Advances the log's cursor, flipping the status to completed once the job is done.
+ * @param {Object} job - the archive job doc
+ * @returns {Promise<void>}
+ */
+const updateLogCursor = (job) => updateLog(job._id, {
+  cursor: job.cursor,
+  status: job.cursor >= job.total ? JOB_LOG_STATUS.COMPLETED : JOB_LOG_STATUS.RUNNING,
+});
+
+const setLogFailed = (jobId) => updateLog(jobId, { status: JOB_LOG_STATUS.FAILED });
+
+/**
+ * Appends an error entry to the job's log, keeping only the last MAX_JOB_ATTEMPTS entries.
+ * Never throws — log docs are best-effort history and must not fail the job.
+ * @param {string} jobId
+ * @param {string|*} message - the failure message (or raw error value)
+ * @returns {Promise<void>}
+ */
+const addLogError = async (jobId, message) => {
+  try {
+    const log = await getLog(jobId);
+    log.errors = [...(log.errors || []), { date: Date.now(), message }].slice(-MAX_JOB_ATTEMPTS);
+    log.updated_date = Date.now();
+    await db.medicLogs.put(log);
+  } catch (err) {
+    logger.error(`Archiving: could not update the log for job ${jobId}: %o`, err);
+  }
+};
 
 /**
  * Advances the job's cursor by batchSize and appends a history entry. Deletes the job doc once
- * the cursor reaches the total. 
+ * the cursor reaches the total, or once the job has exhausted its MAX_JOB_ATTEMPTS —
+ * a permanently failed job never blocks the queue, its record lives on in medic-logs.
  * @param {Object} job - the archive job doc
  * @param {number} batchSize - number of ids consumed by the batch that just completed
  * @returns {Promise<void>}
@@ -148,7 +227,7 @@ const saveJob = async (job, batchSize) => {
   job.cursor += batchSize;
   job.history = job.history || [];
   job.history.push({ date: Date.now(), cursor: job.cursor });
-  if (job.cursor >= job.total) {
+  if (job.cursor >= job.total || job.error_count >= MAX_JOB_ATTEMPTS) {
     job._deleted = true;
   }
   await db.sentinel.put(job);
@@ -156,8 +235,9 @@ const saveJob = async (job, batchSize) => {
 
 
 /**
- * Records a failure on the job doc: bumps error_count, keeps the last MAX_ERRORS_KEPT error
- * messages, and quarantines the job (status: failed) once error_count reaches MAX_JOB_ATTEMPTS.
+ * Records a failure: bumps error_count on the job doc and appends the error to the job's log
+ * doc (last MAX_JOB_ATTEMPTS entries kept). Once error_count reaches MAX_JOB_ATTEMPTS the log
+ * is marked failed and saveJob deletes the job doc.
  * Never throws — a failure to record is only logged.
  * @param {Object} job - the archive job doc
  * @param {Error|*} err - the error that failed the job
@@ -165,19 +245,14 @@ const saveJob = async (job, batchSize) => {
  */
 const recordError = async (job, err) => {
   try {
-    const latest = await db.sentinel.get(job._id);
-    job._rev = latest._rev;
     job.error_count = (job.error_count || 0) + 1;
-    job.errors = job.errors || [];
-    job.errors.push({ date: Date.now(), message: err?.message || err?.stack || err });
-    if (job.errors.length > MAX_ERRORS_KEPT) {
-      job.errors = job.errors.slice(-MAX_ERRORS_KEPT);
-    }
+    await addLogError(job._id, err?.message || err?.stack || err);
+
     if (job.error_count >= MAX_JOB_ATTEMPTS) {
-      job.status = FAILED_STATUS;
-      logger.error(`Archiving: job ${job._id} failed ${job.error_count} times, quarantining it`);
+      await setLogFailed(job._id);
+      logger.error(`Archiving: job ${job._id} failed ${job.error_count} times, giving up`);
     }
-    await db.sentinel.put(job);
+    await saveJob(job, 0);
   } catch (writeErr) {
     logger.error(`Archiving: could not record error on job ${job._id}: %o`, writeErr);
   }
@@ -185,8 +260,8 @@ const recordError = async (job, err) => {
 
 /**
  * Works through a job's ids in PURGE_BATCH_SIZE batches, resuming from the stored cursor and
- * stopping at the deadline time. Errors are recorded on the job doc and swallowed so the queue moves
- * on; the errored job itself is retried on the next run.
+ * stopping at the deadline time. Progress and errors are mirrored to the job's medic-logs doc;
+ * errors are swallowed so the queue moves on, and the errored job is retried on the next run.
  * @param {Object} job - the archive job doc
  * @param {number} deadline - epoch ms after which no further batch is started
  * @returns {Promise<void>}
@@ -197,12 +272,14 @@ const processJob = async (job, deadline) => {
   try {
     const ids = await readIds(job);
     job.total = ids.length; // account for possible doc tampering
+    await setLogRunning(job);
     let batches = 0;
 
     do {
       const batch = ids.slice(job.cursor, job.cursor + PURGE_BATCH_SIZE);
       await archiveBatch(batch);
       await saveJob(job, batch.length);
+      await updateLogCursor(job);
       if (++batches % 10 === 0) {
         await indexViews();
       }
@@ -214,7 +291,8 @@ const processJob = async (job, deadline) => {
 };
 
 /**
- * Drains the job queue in _id order until the deadline, skipping quarantined jobs.
+ * Drains the job queue in _id order until the deadline. Permanently failed jobs are deleted by
+ * recordError, so everything in the queue is processable.
  * @param {number} deadline - epoch ms after which no further job is started
  * @returns {Promise<void>}
  */
@@ -226,10 +304,6 @@ const processQueue = async (deadline) => {
       break;
     }
     startkey = job._id;
-    if (job.status === FAILED_STATUS) {
-      logger.warn(`Archiving: skipping quarantined job ${job._id} (failed ${job.error_count} times)`);
-      continue;
-    }
     await processJob(job, deadline);
   } while (Date.now() < deadline);
 };

@@ -12,7 +12,6 @@ const logger = require('@medic/logger');
 const PURGE_BATCH_SIZE = 1000;
 const FETCH_BATCH_SIZE = 100;
 const MAX_JOB_ATTEMPTS = 10;
-const MAX_ERRORS_KEPT = 5;
 
 const job = (props = {}) => Object.assign({
   _id: 'archive:2026-05-18T00:00:00.000Z:uuid',
@@ -23,12 +22,27 @@ const job = (props = {}) => Object.assign({
 
 const makeIds = (count) => Array.from({ length: count }, (_, i) => `d${i}`);
 
+// In-memory medic-logs fake: get returns a copy (404 when absent), put upserts.
+const stubLogs = () => {
+  const logs = {};
+  sinon.stub(db.medicLogs, 'get').callsFake(id => logs[id]
+    ? Promise.resolve({ ...logs[id] })
+    : Promise.reject(Object.assign(new Error('not_found'), { status: 404 })));
+  sinon.stub(db.medicLogs, 'put').callsFake(doc => {
+    logs[doc._id] = { ...doc, _rev: '1-log' };
+    return Promise.resolve({ id: doc._id, rev: '1-log' });
+  });
+  return logs;
+};
+
 // allDocs / put / get fakes that walk a queue: allDocs returns the first non-deleted
 // doc as rows[0], get returns the live doc (404 if deleted), put with _deleted flips
 // the queue flag so subsequent allDocs / get behave like the doc is gone.
+// Also wires the medic-logs fake, since every processed job now writes its log doc.
 const stubQueue = (jobs) => {
   const queue = jobs.map(j => ({ ...j }));
   const putSnapshots = [];
+  const logs = stubLogs();
   let revCounter = 0;
 
   sinon.stub(db.sentinel, 'allDocs').callsFake((opts = {}) => {
@@ -59,7 +73,7 @@ const stubQueue = (jobs) => {
     return Promise.resolve({ id: doc._id, rev: newRev });
   });
 
-  return { queue, putSnapshots };
+  return { queue, putSnapshots, logs };
 };
 
 const stubAttachment = (idsByJob) => sinon.stub(db.sentinel, 'getAttachment').callsFake(jobId => {
@@ -138,7 +152,7 @@ describe('Sentinel archiving lib', () => {
   it('processes a job in batches and deletes the doc when cursor reaches total', async () => {
     const ids = makeIds(PURGE_BATCH_SIZE * 2 + 500);
     const pending = job({ _id: 'archive:1', total: ids.length });
-    const { queue, putSnapshots } = stubQueue([pending]);
+    const { queue, putSnapshots, logs } = stubQueue([pending]);
     stubAttachment({ 'archive:1': ids });
 
     const archiveBatch = sinon.stub().resolves();
@@ -159,6 +173,9 @@ describe('Sentinel archiving lib', () => {
     expect(putSnapshots[1]._deleted).to.not.equal(true);
     expect(putSnapshots[2]).to.include({ _id: 'archive:1', cursor: ids.length, _deleted: true });
     expect(queue[0]._deleted).to.equal(true);
+    // The log doc outlives the deleted job and records the completed lifecycle.
+    expect(logs['archive:1']).to.include({ status: 'completed', cursor: ids.length, total: ids.length });
+    expect(logs['archive:1'].errors).to.deep.equal([]);
   });
 
   it('appends a {date, cursor} entry to history on every saveJob, including across cycles', async () => {
@@ -274,44 +291,26 @@ describe('Sentinel archiving lib', () => {
     expect(queue[1]._deleted).to.equal(true);
   });
 
-  it('quarantines a job once it has failed MAX_JOB_ATTEMPTS times', async () => {
+  it('deletes the job and marks its log failed once it has failed MAX_JOB_ATTEMPTS times', async () => {
     const failing = job({ _id: 'archive:1', total: 1, error_count: MAX_JOB_ATTEMPTS - 1 });
-    const { queue } = stubQueue([failing]);
+    const { queue, logs } = stubQueue([failing]);
     stubAttachment({ 'archive:1': ['x'] });
 
     lib.__set__('archiveBatch', sinon.stub().rejects(new Error('boom')));
 
     await lib.archive();
 
-    // The failure trips the threshold: status flips to 'failed', but the doc is kept for inspection.
+    // The failure trips the threshold: the job doc is deleted so it never blocks the queue
+    // again, and the durable failure record lives on the medic-logs doc.
     expect(queue[0].error_count).to.equal(MAX_JOB_ATTEMPTS);
-    expect(queue[0].status).to.equal('failed');
-    expect(queue[0]._deleted).to.not.equal(true);
+    expect(queue[0]._deleted).to.equal(true);
+    expect(logs['archive:1'].status).to.equal('failed');
+    expect(logs['archive:1'].errors[logs['archive:1'].errors.length - 1].message).to.equal('boom');
   });
 
-  it('skips a quarantined job and processes the next healthy one', async () => {
-    const quarantined = job({ _id: 'archive:1', total: 1, status: 'failed', error_count: MAX_JOB_ATTEMPTS });
-    const healthy = job({ _id: 'archive:2', total: 1 });
-    const { queue } = stubQueue([quarantined, healthy]);
-    stubAttachment({ 'archive:1': ['x1'], 'archive:2': ['x2'] });
-
-    const archiveBatch = sinon.stub().resolves();
-    lib.__set__('archiveBatch', archiveBatch);
-
-    await lib.archive();
-
-    // Quarantined job is never read or processed...
-    expect(queue[0]._deleted).to.not.equal(true);
-    expect(queue[0].status).to.equal('failed');
-    expect(db.sentinel.getAttachment.args.map(a => a[0])).to.deep.equal(['archive:2']);
-    // ...and the healthy job behind it still completes.
-    expect(archiveBatch.callCount).to.equal(1);
-    expect(queue[1]._deleted).to.equal(true);
-  });
-
-  it('records the error on the job doc when archiveBatch throws', async () => {
+  it('records the error on the job log when archiveBatch throws', async () => {
     const failing = job({ _id: 'archive:1', total: 1 });
-    const { queue } = stubQueue([failing]);
+    const { queue, logs } = stubQueue([failing]);
     stubAttachment({ 'archive:1': ['x'] });
     clock.setSystemTime(5000);
 
@@ -320,28 +319,28 @@ describe('Sentinel archiving lib', () => {
     await lib.archive();
 
     expect(queue[0].error_count).to.equal(1);
-    expect(queue[0].errors).to.deep.equal([{ date: 5000, message: 'disk full' }]);
+    expect(queue[0].errors).to.equal(undefined);
     expect(queue[0]._deleted).to.not.equal(true);
     expect(queue[0].cursor).to.equal(0);
+    expect(logs['archive:1'].errors).to.deep.equal([{ date: 5000, message: 'disk full' }]);
+    // Not a permanent failure yet — the job stays queued for a retry.
+    expect(logs['archive:1'].status).to.equal('running');
   });
 
-  it('caps the errors array at MAX_ERRORS_KEPT while error_count counts every failure', async () => {
-    const failing = job({
-      _id: 'archive:1',
-      total: 1,
-      error_count: 4,
-      errors: [
-        { date: 1, message: 'old-1' },
-        { date: 2, message: 'old-2' },
-        { date: 3, message: 'old-3' },
-        { date: 4, message: 'old-4' },
-      ],
-    });
-    const { queue } = stubQueue([failing]);
+  it('caps the stored errors at MAX_JOB_ATTEMPTS entries while error_count counts every failure', async () => {
+    const failing = job({ _id: 'archive:1', total: 1, error_count: 4 });
+    const { queue, logs } = stubQueue([failing]);
     stubAttachment({ 'archive:1': ['x'] });
+    // Seed a log doc already holding a full errors list (e.g. hand-edited or from an older run).
+    logs['archive:1'] = {
+      _id: 'archive:1',
+      start_date: 1,
+      status: 'running',
+      errors: Array.from({ length: MAX_JOB_ATTEMPTS }, (_, i) => ({ date: i, message: `old-${i}` })),
+    };
     clock.setSystemTime(100);
 
-    lib.__set__('archiveBatch', sinon.stub().rejects(new Error('boom-5')));
+    lib.__set__('archiveBatch', sinon.stub().rejects(new Error('boom')));
 
     await lib.archive();
     // Each lib.archive() call is one failed batch → one new error entry, error_count bumped.
@@ -349,20 +348,15 @@ describe('Sentinel archiving lib', () => {
     await lib.archive();
 
     expect(queue[0].error_count).to.equal(7); // 4 seeded + 3 new
-    expect(queue[0].errors).to.have.lengthOf(MAX_ERRORS_KEPT);
-    // Oldest two seeded entries fell off; latest three are the new failures.
-    expect(queue[0].errors.map(e => e.message)).to.deep.equal([
-      'old-3',
-      'old-4',
-      'boom-5',
-      'boom-5',
-      'boom-5',
-    ]);
+    expect(logs['archive:1'].errors).to.have.lengthOf(MAX_JOB_ATTEMPTS);
+    // The three oldest seeded entries fell off; the latest three are the new failures.
+    expect(logs['archive:1'].errors[0].message).to.equal('old-3');
+    expect(logs['archive:1'].errors.slice(-3).map(e => e.message)).to.deep.equal(['boom', 'boom', 'boom']);
   });
 
   it('falls back to the stack when an error has no message', async () => {
     const failing = job({ _id: 'archive:1', total: 1 });
-    const { queue } = stubQueue([failing]);
+    const { queue, logs } = stubQueue([failing]);
     stubAttachment({ 'archive:1': ['x'] });
     clock.setSystemTime(9000);
 
@@ -372,12 +366,12 @@ describe('Sentinel archiving lib', () => {
     await lib.archive();
 
     expect(queue[0].error_count).to.equal(1);
-    expect(queue[0].errors[0].message).to.equal('Error\n    at somewhere');
+    expect(logs['archive:1'].errors[0].message).to.equal('Error\n    at somewhere');
   });
 
   it('falls back to the raw err value when it has neither message nor stack', async () => {
     const failing = job({ _id: 'archive:1', total: 1 });
-    const { queue } = stubQueue([failing]);
+    const { queue, logs } = stubQueue([failing]);
     stubAttachment({ 'archive:1': ['x'] });
     clock.setSystemTime(9999);
 
@@ -390,7 +384,19 @@ describe('Sentinel archiving lib', () => {
     await lib.archive();
 
     expect(queue[0].error_count).to.equal(1);
-    expect(queue[0].errors[0].message).to.equal(rawErr);
+    expect(logs['archive:1'].errors[0].message).to.equal(rawErr);
+  });
+
+  it('a failing log write does not fail the job', async () => {
+    const pending = job({ _id: 'archive:1', total: 1 });
+    const { queue } = stubQueue([pending]);
+    stubAttachment({ 'archive:1': ['x'] });
+    db.medicLogs.put.rejects(new Error('logs db down'));
+
+    await lib.archive();
+
+    // The job ran to completion despite every log write failing.
+    expect(queue[0]._deleted).to.equal(true);
   });
 
   it('is a no-op while another archive run is in flight', async () => {
@@ -411,7 +417,7 @@ describe('Sentinel archiving lib', () => {
   it('finishes the current batch and exits when the deadline expires mid-job', async () => {
     const ids = makeIds(PURGE_BATCH_SIZE * 3 + 500);
     const pending = job({ _id: 'archive:1', total: ids.length });
-    const { queue, putSnapshots } = stubQueue([pending]);
+    const { queue, putSnapshots, logs } = stubQueue([pending]);
     stubAttachment({ 'archive:1': ids });
 
     clock.setSystemTime(1000);
@@ -427,6 +433,8 @@ describe('Sentinel archiving lib', () => {
     expect(queue[0]).to.include({ cursor: PURGE_BATCH_SIZE * 3 });
     expect(queue[0]._deleted).to.not.equal(true);
     expect(putSnapshots.some(d => d._deleted)).to.equal(false);
+    // The log reflects the interrupted run: still running, cursor mid-job.
+    expect(logs['archive:1']).to.include({ status: 'running', cursor: PURGE_BATCH_SIZE * 3 });
   });
 
   it('does not start the next job after the deadline expires', async () => {

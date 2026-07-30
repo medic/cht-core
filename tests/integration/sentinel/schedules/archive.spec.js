@@ -88,11 +88,16 @@ const expectAuditedArchive = async (ids) => {
   }
 };
 
-const waitForJobStatus = async (id, status) => {
+const waitForLogStatus = async (id, status) => {
   let doc;
   do {
     await utils.delayPromise(1000);
-    doc = await utils.sentinelDb.get(id);
+    doc = await utils.logsDb.get(id).catch(err => {
+      if (err.status !== 404) {
+        throw err;
+      }
+      return {};
+    });
   } while (doc.status !== status);
   return doc;
 };
@@ -390,7 +395,7 @@ describe('sentinel processes archive jobs', () => {
     await expectAuditedArchive([id]);
   });
 
-  it('quarantines a job that keeps failing and keeps processing the queue behind it', async function () {
+  it('gives up on a job that keeps failing and keeps processing the queue behind it', async function () {
     this.timeout(60000);
 
     // A healthy archivable doc with its own job.
@@ -400,7 +405,7 @@ describe('sentinel processes archive jobs', () => {
 
     // A poison job: no `ids` attachment, so readIds throws on every run. Its id sorts before any
     // uuid-v7 job id, so the loop hits it first. Seed error_count at the threshold-1 (the lib's
-    // MAX_JOB_ATTEMPTS is 10) so a single run trips the quarantine.
+    // MAX_JOB_ATTEMPTS is 10) so a single run trips the permanent failure.
     const poisonId = `${PREFIXES.ARCHIVE_JOB}0000-poison`;
     await utils.sentinelDb.put({
       _id: poisonId,
@@ -418,18 +423,24 @@ describe('sentinel processes archive jobs', () => {
 
     await updateSettings();
 
-    // Can't use waitForArchiveCompletion here — the quarantined job intentionally stays behind.
     await utils.runSentinelTasks();
-    const poison = await waitForJobStatus(poisonId, 'failed');
+    await sentinelUtils.waitForArchiveCompletion();
 
-    expect(poison.error_count).to.equal(10);
-    expect(poison.status).to.equal('failed');
-    // The job doc is kept (not deleted) for an admin to inspect.
-    expect(poison._deleted).to.not.equal(true);
+    // The permanently failed job doc is deleted so it never blocks the queue again...
+    const poisonRow = (await utils.sentinelDb.allDocs({ keys: [poisonId] })).rows[0];
+    expect(poisonRow.error || poisonRow.value.deleted).to.be.ok;
+    // ...and its durable failure record lives in medic-logs.
+    const poisonLog = await waitForLogStatus(poisonId, 'failed');
+    expect(poisonLog.errors.length).to.be.at.least(1);
+    expect(poisonLog.errors[poisonLog.errors.length - 1].message).to.be.ok;
 
     // The healthy job behind the poison job was not blocked — it ran to completion and was deleted.
     const healthyJobRow = (await utils.sentinelDb.allDocs({ keys: [healthyJobId] })).rows[0];
     expect(healthyJobRow.error || healthyJobRow.value.deleted).to.be.ok;
+    // Its log doc records the completed lifecycle.
+    const healthyLog = await waitForLogStatus(healthyJobId, 'completed');
+    expect(healthyLog).to.include({ cursor: 1, total: 1 });
+    expect(healthyLog.errors).to.deep.equal([]);
 
     const archived = await liveRows(archiveDb, { keys: [healthyId] });
     expect(archived).to.have.lengthOf(1);
