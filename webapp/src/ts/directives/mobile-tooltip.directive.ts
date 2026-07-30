@@ -37,9 +37,12 @@ const POSITIONS: ConnectedPosition[] = [
   selector: '[mmMobileTooltip]',
 })
 export class MobileTooltipDirective implements OnInit, OnDestroy {
-  private overlayRef: OverlayRef | null = null;
-  private removalObserver: MutationObserver | null = null;
-  private visibilityObserver: IntersectionObserver | null = null;
+  // There is one tooltip per document, so its state is shared across instances: with more than one
+  // instance listening (e.g. a host page embedding several <cht-form> elements), every instance
+  // replaces the same tooltip instead of each stacking its own copy.
+  private static overlayRef: OverlayRef | null = null;
+  private static removalObserver: MutationObserver | null = null;
+  private static visibilityObserver: IntersectionObserver | null = null;
   private noHoverQuery: MediaQueryList | null = null;
   private readonly focusIn = (event: FocusEvent) => this.show(event);
   private readonly dismiss = () => this.hide();
@@ -97,7 +100,7 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
       .withPush(true)
       .withPositions(POSITIONS);
 
-    this.overlayRef = this.overlay.create({
+    MobileTooltipDirective.overlayRef = this.overlay.create({
       positionStrategy,
       // Dismiss on scroll rather than reposition — a transient tooltip shouldn't chase the page.
       scrollStrategy: this.overlay.scrollStrategies.close(),
@@ -107,7 +110,8 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
       panelClass: 'mm-mobile-tooltip',
     });
 
-    const componentRef = this.overlayRef.attach(new ComponentPortal(MobileTooltipContentComponent));
+    const componentRef = MobileTooltipDirective.overlayRef
+      .attach(new ComponentPortal(MobileTooltipContentComponent));
     componentRef.instance.text = title;
     componentRef.changeDetectorRef.detectChanges();
 
@@ -115,12 +119,12 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
     // span re-rendering on a sync update, or list rows refreshing on the changes feed) — focus
     // silently resets to <body>. Watch for the trigger leaving the DOM and dismiss, so the tooltip
     // can't be stranded on a detached node.
-    this.removalObserver = new MutationObserver(() => {
+    MobileTooltipDirective.removalObserver = new MutationObserver(() => {
       if (!target.isConnected) {
         this.hide();
       }
     });
-    this.removalObserver.observe(this.document.body, { childList: true, subtree: true });
+    MobileTooltipDirective.removalObserver.observe(this.document.body, { childList: true, subtree: true });
 
     // The trigger can also stop being visible without leaving the DOM, gaining a focusout, or
     // scrolling: on single-pane (mobile) layouts, tapping a list-row date opens the report and
@@ -129,20 +133,20 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
     // viewport. On two-pane layouts the list — and the tooltip — correctly stay put, which is why
     // this watches visibility instead of router navigation events: every list-row tap navigates
     // (or is skipped as a same-URL navigation), visible trigger or not.
-    this.visibilityObserver = new IntersectionObserver((entries) => {
+    MobileTooltipDirective.visibilityObserver = new IntersectionObserver((entries) => {
       if (entries.some(entry => !entry.isIntersecting)) {
         this.hide();
       }
     });
-    this.visibilityObserver.observe(target);
+    MobileTooltipDirective.visibilityObserver.observe(target);
   }
 
   private hide() {
-    this.removalObserver?.disconnect();
-    this.removalObserver = null;
-    this.visibilityObserver?.disconnect();
-    this.visibilityObserver = null;
-    this.overlayRef?.dispose();
-    this.overlayRef = null;
+    MobileTooltipDirective.removalObserver?.disconnect();
+    MobileTooltipDirective.removalObserver = null;
+    MobileTooltipDirective.visibilityObserver?.disconnect();
+    MobileTooltipDirective.visibilityObserver = null;
+    MobileTooltipDirective.overlayRef?.dispose();
+    MobileTooltipDirective.overlayRef = null;
   }
 }

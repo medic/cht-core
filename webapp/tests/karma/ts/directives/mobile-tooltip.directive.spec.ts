@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { OverlayModule } from '@angular/cdk/overlay';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -12,9 +11,19 @@ import { MobileTooltipDirective } from '@mm-directives/mobile-tooltip.directive'
       <span id="trigger" title="Full tooltip text" tabindex="0">x</span>
       <span id="other" title="Other text" tabindex="0">y</span>
     </div>`,
-  imports: [MobileTooltipDirective, OverlayModule],
+  imports: [MobileTooltipDirective],
 })
 class HostComponent { }
+
+@Component({
+  template: `
+    <div mmMobileTooltip></div>
+    <div mmMobileTooltip>
+      <span id="trigger" title="Full tooltip text" tabindex="0">x</span>
+    </div>`,
+  imports: [MobileTooltipDirective],
+})
+class MultiInstanceHostComponent { }
 
 describe('MobileTooltipDirective', () => {
   let fixture: ComponentFixture<HostComponent>;
@@ -102,6 +111,24 @@ describe('MobileTooltipDirective', () => {
     const contents = document.querySelectorAll('.mm-mobile-tooltip__content');
     expect(contents).to.have.lengthOf(1);
     expect(contents[0].textContent).to.equal('Other text');
+  });
+
+  it('shows a single tooltip when multiple directive instances listen (e.g. several embedded cht-form roots)', () => {
+    sinon.stub(window, 'matchMedia').returns({ matches: true } as MediaQueryList);
+    TestBed.configureTestingModule({ imports: [MultiInstanceHostComponent] });
+    const multiFixture = TestBed.createComponent(MultiInstanceHostComponent);
+    try {
+      multiFixture.detectChanges();
+      multiFixture.nativeElement
+        .querySelector('#trigger')
+        .dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+
+      const contents = document.querySelectorAll('.mm-mobile-tooltip__content');
+      expect(contents).to.have.lengthOf(1);
+      expect(contents[0].textContent).to.equal('Full tooltip text');
+    } finally {
+      multiFixture.destroy();
+    }
   });
 
   it('renders the overlay with the trigger\'s direction, so RTL anchors and bidi text are correct', () => {

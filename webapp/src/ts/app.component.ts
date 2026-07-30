@@ -57,7 +57,6 @@ import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.c
 import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
 import { TasksNotificationService } from '@mm-services/task-notifications.service';
 import { HTTP_HEADERS, DOC_IDS, DOC_TYPES, PREFIXES } from '@medic/constants';
-import { OverlayModule } from '@angular/cdk/overlay';
 import { MobileTooltipDirective } from '@mm-directives/mobile-tooltip.directive';
 
 const SYNC_STATUS = {
@@ -100,7 +99,6 @@ const DOC_IDS_TRIGGER_UPDATE = new Set([
     HeaderComponent,
     RouterOutlet,
     SnackbarComponent,
-    OverlayModule,
     MobileTooltipDirective,
   ],
 })
