@@ -42,48 +42,57 @@ const stripComments = (text) => {
   return text;
 };
 
-const getHeadings = (template) => {
-  const headings = stripComments(template).match(/^# .+$/gm) || [];
-  return headings.map(heading => heading.trim());
+const HEADING_PREFIX = '# ';
+const HEADING_REGEX = new RegExp(`^${HEADING_PREFIX}.+$`, 'gm');
+
+const parseSections = (text) => {
+  text = stripComments(text);
+  const headings = [...text.matchAll(HEADING_REGEX)];
+  return headings.map((match, index) => ({
+    heading: match[0].trim().replace(HEADING_PREFIX, ''),
+    content: normalize(text.slice(match.index + match[0].length, headings[index + 1]?.index)),
+  }));
 };
 
-const getSection = (body, heading) => {
-  const start = body.indexOf(heading);
-  if (start === -1) {
-    return null;
-  }
-  const rest = body.slice(start + heading.length);
-  const nextHeading = rest.search(/^# /m);
-  return nextHeading === -1 ? rest : rest.slice(0, nextHeading);
-};
+const getHeadings = (template) => parseSections(template).map(section => section.heading);
 
-const normalize = (text) => stripComments(text).replace(/\s+/g, ' ').trim();
+const normalize = (text) => text.replace(/\s+/g, ' ').trim();
 
-// A section that is empty in the template (placeholder comments only, like Description)
-// must be filled in by the author; pre-filled sections only need to be present.
-const matchesTemplate = (body, template) => {
-  if (!body) {
+// The body must contain every template heading, in the template's order, each with
+// non-empty content (placeholder comments don't count as content).
+const matchesTemplate = (prBody, template) => {
+  if (!prBody) {
     return false;
   }
-  return getHeadings(template).every(heading => {
-    const section = getSection(body, heading);
-    if (section === null) {
+  const bodySections = parseSections(prBody);
+  const templateSections = parseSections(template);
+
+  let bodySectionIndex = 0;
+  for (const templateSection of templateSections) {
+    const index = bodySections.findIndex(section => section.heading === templateSection.heading);
+    if (index < bodySectionIndex) {
+      // section isn't found, or is out of template order
       return false;
     }
-    return normalize(getSection(template, heading)) ? true : normalize(section).length > 0;
-  });
+
+    if (!bodySections[index].content.length) {
+      return false;
+    }
+
+    bodySectionIndex = index + 1;
+  }
+  return true;
 };
 
-const licenseUnchanged = (body, template) => {
-  const licenseHeading = getHeadings(template).find(heading => /license/i.test(heading));
-  if (!licenseHeading || !body) {
+const matchesLicense = (prBody, template) => {
+  const templateLicenseSection = parseSections(template).find(section => /license/i.test(section.heading));
+  if (!templateLicenseSection || !prBody) {
     return true;
   }
-  const section = getSection(body, licenseHeading);
-  if (section === null) {
-    return true; // the missing heading is already reported by the template check
-  }
-  return normalize(section) === normalize(getSection(template, licenseHeading));
+
+  // missing section is already covered by the section check
+  const bodyLicenseSections = parseSections(prBody).filter(section => section.heading === templateLicenseSection.heading);
+  return bodyLicenseSections.every(section => normalize(section.content) === templateLicenseSection.content);
 };
 
 const getLinkedIssues = async (github, context) => {
@@ -121,12 +130,11 @@ const getLinkedIssueFailure = (pr, linkedIssues) => {
   if (!linkedIssues.length) {
     return getMessage('missing-linked-issue');
   }
-  const isAssigned = linkedIssues.some(
-    issue => issue.assignees.nodes.some(assignee => assignee.login === pr.user.login)
-  );
+  const isAssigned = linkedIssues.find(issue => issue.assignees.nodes.find(assignee => assignee.login === pr.user.login));
   if (isAssigned) {
     return null;
   }
+
   const issueList = linkedIssues
     .map(issue => issue.repository.nameWithOwner === pr.base.repo.full_name
       ? `#${issue.number}`
@@ -141,10 +149,10 @@ const getFailures = async (github, context) => {
 
   const template = readPrTemplate();
   if (!matchesTemplate(pr.body, template)) {
-    const sections = getHeadings(template).map(heading => `\`${heading.slice(2)}\``).join(', ');
+    const sections = getHeadings(template).join(', ');
     failures.push(getMessage('template-mismatch', { sections }));
   }
-  if (!licenseUnchanged(pr.body, template)) {
+  if (!matchesLicense(pr.body, template)) {
     failures.push(getMessage('license-changed'));
   }
 

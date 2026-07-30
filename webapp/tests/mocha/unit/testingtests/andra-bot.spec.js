@@ -31,7 +31,7 @@ const stripComments = (text) => {
 };
 
 const TEMPLATE_SECTIONS = (stripComments(TEMPLATE).match(/^# .+$/gm) || [])
-  .map(heading => `\`${heading.trim().slice(2)}\``)
+  .map(heading => heading.trim().slice(2))
   .join(', ');
 
 const templateMismatchMessage = () => getMessage('template-mismatch', { sections: TEMPLATE_SECTIONS });
@@ -157,6 +157,45 @@ describe('AndraBot', () => {
       expect(commentBody).to.contain(templateMismatchMessage());
     });
 
+    it('should not match headings that are not at the start of a line', async () => {
+      setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
+      await run(getPr({ body: filledTemplate.replace(/^# /gm, 'some text # ') }));
+
+      expect(core.setFailed.calledOnce).to.be.true;
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(templateMismatchMessage());
+    });
+
+    it('should not match headings inside html comments', async () => {
+      setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
+      await run(getPr({ body: filledTemplate.replace(/^(# .+)$/gm, '<!-- $1 -->') }));
+
+      expect(core.setFailed.calledOnce).to.be.true;
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(templateMismatchMessage());
+    });
+
+    it('should fail when the sections are out of order', async () => {
+      setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
+      const licenseStart = filledTemplate.indexOf('# License');
+      const reordered = `${filledTemplate.slice(licenseStart)}\n${filledTemplate.slice(0, licenseStart)}`;
+      await run(getPr({ body: reordered }));
+
+      expect(core.setFailed.calledOnce).to.be.true;
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(templateMismatchMessage());
+    });
+
+    it('should fail when a duplicated heading appears before its template position', async () => {
+      setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
+      await run(getPr({ body: `# Code review checklist\nchecked\n\n${filledTemplate}` }));
+
+      expect(core.setFailed.calledOnce).to.be.true;
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(templateMismatchMessage());
+      expect(commentBody).to.not.contain(getMessage('license-changed'));
+    });
+
     it('should pass when the description is filled in', async () => {
       setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
       await run(getPr({ body: filledTemplate }));
@@ -181,7 +220,7 @@ describe('AndraBot', () => {
       await run(getPr({ body: '# Summary\nI did things.\n' }));
       expect(core.setFailed.calledOnce).to.be.true;
       const commentBody = github.rest.issues.createComment.args[0][0].body;
-      expect(commentBody).to.contain(getMessage('template-mismatch', { sections: '`Summary`, `Testing`' }));
+      expect(commentBody).to.contain(getMessage('template-mismatch', { sections: 'Summary, Testing' }));
     });
   });
 
@@ -204,6 +243,33 @@ describe('AndraBot', () => {
       expect(core.setFailed.calledOnce).to.be.true;
       const commentBody = github.rest.issues.createComment.args[0][0].body;
       expect(commentBody).to.contain(getMessage('license-changed'));
+    });
+
+    it('should catch a modified license hidden behind a decoy copy in another section', async () => {
+      setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
+      const licenseText = stripComments(filledTemplate.slice(filledTemplate.indexOf('# License')));
+      const decoyed = filledTemplate
+        .replace('AGPL-3.0', 'MIT')
+        .replace(
+          'Fixes the date conversion by using the local format.',
+          `Fixes the date conversion. ${licenseText.replaceAll('\n', ' ')}`
+        );
+      await run(getPr({ body: decoyed }));
+
+      expect(core.setFailed.calledOnce).to.be.true;
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('license-changed'));
+      expect(commentBody).to.not.contain(templateMismatchMessage());
+    });
+
+    it('should fail when a duplicated license section is modified', async () => {
+      setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
+      await run(getPr({ body: `${filledTemplate}\n# License\nAll rights reserved.\n` }));
+
+      expect(core.setFailed.calledOnce).to.be.true;
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('license-changed'));
+      expect(commentBody).to.not.contain(templateMismatchMessage());
     });
 
     it('should not report a license change when the whole section is missing', async () => {
