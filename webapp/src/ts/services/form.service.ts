@@ -321,6 +321,23 @@ export class FormService {
       });
   }
 
+  private attachGeoToReport(geoHandle, docs) {
+    if (!geoHandle) {
+      return docs;
+    }
+
+    return geoHandle()
+      .catch(err => err)
+      .then(geoData => {
+        docs.forEach(doc => {
+          doc.geolocation_log = doc.geolocation_log || [];
+          doc.geolocation_log.push({ timestamp: Date.now(), recording: geoData });
+          doc.geolocation = geoData;
+        });
+        return docs;
+      });
+  }
+
   private async validateAttachments(docs) {
     const oversizeDoc = docs.find(doc => {
       let attachmentsSize = 0;

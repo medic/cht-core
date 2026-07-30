@@ -1223,6 +1223,59 @@ describe('Form service', () => {
       });
     });
 
+    describe('attachGeoToReport', () => {
+      let clock;
+
+      afterEach(() => {
+        clock?.restore();
+      });
+
+      it('returns the docs unchanged when no geoHandle is provided', async () => {
+        const docs = [{ _id: 'a' }];
+        const actual = await (service as any).attachGeoToReport(undefined, docs);
+        expect(actual).to.equal(docs);
+        expect(docs[0]).to.not.have.property('geolocation');
+        expect(docs[0]).to.not.have.property('geolocation_log');
+      });
+
+      it('unconditionally stamps geolocation and appends a log entry with no context on every doc', async () => {
+        clock = sinon.useFakeTimers({ now: 5000 });
+        const geoData = { latitude: 1, longitude: 2, accuracy: 3 };
+        const geoHandle = sinon.stub().resolves(geoData);
+        const docs = [{ _id: 'a' }, { _id: 'b' }];
+
+        const actual = await (service as any).attachGeoToReport(geoHandle, docs);
+
+        actual.forEach((doc: any) => {
+          expect(doc.geolocation).to.deep.equal(geoData);
+          expect(doc.geolocation_log).to.deep.equal([{ timestamp: 5000, recording: geoData }]);
+          expect(doc.geolocation_log[0]).to.not.have.property('is_home');
+        });
+      });
+
+      it('stamps a rejected geoHandle error onto geolocation, regardless of an error code', async () => {
+        const geoError = { code: 42, message: 'some bad geo' };
+        const geoHandle = sinon.stub().rejects(geoError);
+        const docs = [{ _id: 'a' }];
+
+        const actual = await (service as any).attachGeoToReport(geoHandle, docs);
+
+        expect(actual[0].geolocation).to.deep.equal(geoError);
+        expect(actual[0].geolocation_log[0].recording).to.deep.equal(geoError);
+      });
+
+      it('appends to an existing geolocation_log rather than replacing it', async () => {
+        const existingEntry = { timestamp: 1, recording: { old: true } };
+        const geoData = { latitude: 9, longitude: 9 };
+        const geoHandle = sinon.stub().resolves(geoData);
+        const docs = [{ _id: 'a', geolocation_log: [existingEntry] }];
+
+        const actual = await (service as any).attachGeoToReport(geoHandle, docs);
+
+        expect(actual[0].geolocation_log).to.deep.equal([existingEntry, { timestamp: Date.now(), recording: geoData }]);
+      });
+    });
+
     describe('Saving attachments', () => {
       it('should save attachments', async () => {
         const file = { name: 'my_file', type: 'image', foo: 'bar' };
