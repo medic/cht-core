@@ -59,6 +59,24 @@ describe('Enketo: Household Geolocation Widget', () => {
     expect(HouseholdGeolocationWidget.selector).to.equal(SELECTORS.GEO_CAPTURE_LABEL + ' input');
   });
 
+  it('exposes its radio/field/context value constants and dataset-true sentinel for other modules to share', () => {
+    expect(HouseholdGeolocationWidget.RADIO_VALUES).to.deep.equal({
+      KEPT: 'kept',
+      CHANGE_LOCATION: 'capture-home',
+      NOT_AT_HOUSEHOLD: 'capture-other',
+      REMOVED: 'removed',
+    });
+    expect(HouseholdGeolocationWidget.FIELD_VALUES).to.deep.equal({
+      SKIPPED: 'skipped',
+      CAPTURED: 'captured',
+    });
+    expect(HouseholdGeolocationWidget.GEO_CONTEXT).to.deep.equal({
+      HOME: 'home',
+      OTHER: 'other',
+    });
+    expect(HouseholdGeolocationWidget.DATASET_TRUE).to.equal('true');
+  });
+
   describe('_init()', () => {
     beforeEach(() => {
       (window as any).CHTCore = {

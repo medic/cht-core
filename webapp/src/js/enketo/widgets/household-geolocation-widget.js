@@ -55,16 +55,34 @@ const GEO_CONTEXT = {
   OTHER: 'other',
 };
 
+const DATASET_TRUE = 'true';
+
 class HouseholdGeolocationWidget extends Widget {
   static get selector() {
     return '.or-appearance-geolocation-capture input';
+  }
+
+  static get RADIO_VALUES() {
+    return RADIO_VALUES;
+  }
+
+  static get FIELD_VALUES() {
+    return FIELD_VALUES;
+  }
+
+  static get GEO_CONTEXT() {
+    return GEO_CONTEXT;
+  }
+
+  static get DATASET_TRUE() {
+    return DATASET_TRUE;
   }
 
   _init() {
     $(this.element).hide();
     const $question = $(this.question);
 
-    if (this.element.dataset.geoHasLocation === 'true') {
+    if (this.element.dataset.geoHasLocation === DATASET_TRUE) {
       this._initEditMode($question);
       return;
     }
@@ -84,7 +102,7 @@ class HouseholdGeolocationWidget extends Widget {
 
     this._initCreateFlow($question);
 
-    if (this.element.dataset.geoIsEdit === 'true') {
+    if (this.element.dataset.geoIsEdit === DATASET_TRUE) {
       $('<p class="geolocation-no-location-msg">')
         .text(this._translate(TRANSLATION_KEYS.NO_LOCATION_RECORDED))
         .appendTo($question);
@@ -99,7 +117,7 @@ class HouseholdGeolocationWidget extends Widget {
     document.addEventListener('geolocationPermissionGranted', () => {
       $question.find(`.${CLASS_NAMES.PERMISSION_DENIED_MSG}, .${CLASS_NAMES.SAVE_WITHOUT_LABEL}`).remove();
       this._initCreateFlow($question);
-      if (this.element.dataset.geoIsEdit === 'true') {
+      if (this.element.dataset.geoIsEdit === DATASET_TRUE) {
         $('<p class="geolocation-no-location-msg">')
           .text(this._translate(TRANSLATION_KEYS.NO_LOCATION_RECORDED))
           .appendTo($question);

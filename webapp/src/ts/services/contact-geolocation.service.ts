@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { DbService } from '@mm-services/db.service';
 
 const HouseholdGeolocationWidget = require('../../js/enketo/widgets/household-geolocation-widget');
+const { RADIO_VALUES, FIELD_VALUES, GEO_CONTEXT, DATASET_TRUE } = HouseholdGeolocationWidget;
 
 export class GeolocationEditState {
   readonly hasLocation: boolean;
@@ -12,23 +13,23 @@ export class GeolocationEditState {
   readonly fieldName: string | undefined;
 
   constructor(captureInput?: HTMLInputElement | null) {
-    this.hasLocation = captureInput?.dataset?.geoHasLocation === 'true';
-    this.isEdit = captureInput?.dataset?.geoIsEdit === 'true';
+    this.hasLocation = captureInput?.dataset?.geoHasLocation === DATASET_TRUE;
+    this.isEdit = captureInput?.dataset?.geoIsEdit === DATASET_TRUE;
     this.context = captureInput?.dataset?.geoContext || undefined;
     this.captureValue = captureInput?.value || undefined;
     this.fieldName = captureInput?.getAttribute('name')?.split('/').pop() || undefined;
   }
 
   get isKept(): boolean {
-    return this.captureValue === 'kept';
+    return this.captureValue === RADIO_VALUES.KEPT;
   }
 
   get isCaptured(): boolean {
-    return this.captureValue === 'captured';
+    return this.captureValue === FIELD_VALUES.CAPTURED;
   }
 
   get isHome(): boolean {
-    return this.context === 'home';
+    return this.context === GEO_CONTEXT.HOME;
   }
 }
 
@@ -55,13 +56,13 @@ export class ContactGeolocationService {
       return;
     }
 
-    captureInput.dataset.geoIsEdit = 'true';
+    captureInput.dataset.geoIsEdit = DATASET_TRUE;
 
     if (typeof contact.geolocation?.latitude !== 'number') {
       return;
     }
 
-    captureInput.dataset.geoHasLocation = 'true';
+    captureInput.dataset.geoHasLocation = DATASET_TRUE;
   }
 
   recordCapture(geoHandle, docs: any[], state: GeolocationEditState) {
