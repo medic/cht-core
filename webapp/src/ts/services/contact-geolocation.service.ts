@@ -78,4 +78,14 @@ export class ContactGeolocationService {
       contactDoc.geolocation_log = originalDoc.geolocation_log;
     }
   }
+
+  stripCaptureField(doc: any, fieldName?: string) {
+    if (!fieldName) {
+      return;
+    }
+    delete doc[fieldName];
+    if (doc.fields) {
+      delete doc.fields[fieldName];
+    }
+  }
 }

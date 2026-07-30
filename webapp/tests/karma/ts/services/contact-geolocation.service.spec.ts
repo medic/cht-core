@@ -375,4 +375,36 @@ describe('ContactGeolocationService', () => {
       expect(docs[0].geolocation).to.equal('stale');
     });
   });
+
+  describe('stripCaptureField', () => {
+    it('does nothing when fieldName is undefined', () => {
+      const doc = { geo_capture: 'captured' };
+      service.stripCaptureField(doc, undefined);
+      expect(doc.geo_capture).to.equal('captured');
+    });
+
+    it('deletes the field directly on the doc (contact shape)', () => {
+      const doc: any = { geo_capture: 'captured' };
+      service.stripCaptureField(doc, 'geo_capture');
+      expect(doc).to.not.have.property('geo_capture');
+    });
+
+    it('deletes the field from doc.fields (report shape)', () => {
+      const doc: any = { fields: { geo_capture: 'captured' } };
+      service.stripCaptureField(doc, 'geo_capture');
+      expect(doc.fields).to.not.have.property('geo_capture');
+    });
+
+    it('deletes from both locations if both happen to be present', () => {
+      const doc: any = { geo_capture: 'captured', fields: { geo_capture: 'captured' } };
+      service.stripCaptureField(doc, 'geo_capture');
+      expect(doc).to.not.have.property('geo_capture');
+      expect(doc.fields).to.not.have.property('geo_capture');
+    });
+
+    it('does not throw when the field is absent from both locations', () => {
+      const doc: any = { fields: {} };
+      expect(() => service.stripCaptureField(doc, 'geo_capture')).to.not.throw();
+    });
+  });
 });
