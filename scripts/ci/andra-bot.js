@@ -7,7 +7,7 @@
  * - the PR author is assigned to the linked issue
  * and posts a single comment listing anything that needs fixing, replaced whenever its
  * content changes so the author is notified (comment edits are silent). The PR is
- * labelled with FAILURE_LABEL while checks fail and SUCCESS_LABEL once they all pass.
+ * labeled with FAILURE_LABEL while checks fail and SUCCESS_LABEL once they all pass.
  *
  * The message texts live in ./andra-bot-messages/ so they can be edited without touching this script.
  */
@@ -91,7 +91,8 @@ const matchesLicense = (prBody, template) => {
   }
 
   // missing section is already covered by the section check
-  const bodyLicenseSections = parseSections(prBody).filter(section => section.heading === templateLicenseSection.heading);
+  const bodyLicenseSections = parseSections(prBody)
+    .filter(section => section.heading === templateLicenseSection.heading);
   return bodyLicenseSections.every(section => normalize(section.content) === templateLicenseSection.content);
 };
 
@@ -130,7 +131,8 @@ const getLinkedIssueFailure = (pr, linkedIssues) => {
   if (!linkedIssues.length) {
     return getMessage('missing-linked-issue');
   }
-  const isAssigned = linkedIssues.find(issue => issue.assignees.nodes.find(assignee => assignee.login === pr.user.login));
+  const isAssigned = linkedIssues
+    .find(issue => issue.assignees.nodes.find(assignee => assignee.login === pr.user.login));
   if (isAssigned) {
     return null;
   }
