@@ -70,19 +70,7 @@ class HouseholdGeolocationWidget extends Widget {
     }
 
     if (this._isPermissionDenied()) {
-      $(`<p class="${CLASS_NAMES.PERMISSION_DENIED_MSG}">`)
-        .text(this._translate(TRANSLATION_KEYS.PERMISSION_DENIED))
-        .appendTo($question);
-      this._appendSaveWithoutCheckbox($question);
-      document.addEventListener('geolocationPermissionGranted', () => {
-        $question.find(`.${CLASS_NAMES.PERMISSION_DENIED_MSG}, .${CLASS_NAMES.SAVE_WITHOUT_LABEL}`).remove();
-        this._initCreateFlow($question);
-        if (this.element.dataset.geoIsEdit === 'true') {
-          $('<p class="geolocation-no-location-msg">')
-            .text(this._translate(TRANSLATION_KEYS.NO_LOCATION_RECORDED))
-            .appendTo($question);
-        }
-      }, { once: true });
+      this._handlePermissionDenied($question);
       return;
     }
 
@@ -101,6 +89,22 @@ class HouseholdGeolocationWidget extends Widget {
         .text(this._translate(TRANSLATION_KEYS.NO_LOCATION_RECORDED))
         .appendTo($question);
     }
+  }
+
+  _handlePermissionDenied($question) {
+    $(`<p class="${CLASS_NAMES.PERMISSION_DENIED_MSG}">`)
+      .text(this._translate(TRANSLATION_KEYS.PERMISSION_DENIED))
+      .appendTo($question);
+    this._appendSaveWithoutCheckbox($question);
+    document.addEventListener('geolocationPermissionGranted', () => {
+      $question.find(`.${CLASS_NAMES.PERMISSION_DENIED_MSG}, .${CLASS_NAMES.SAVE_WITHOUT_LABEL}`).remove();
+      this._initCreateFlow($question);
+      if (this.element.dataset.geoIsEdit === 'true') {
+        $('<p class="geolocation-no-location-msg">')
+          .text(this._translate(TRANSLATION_KEYS.NO_LOCATION_RECORDED))
+          .appendTo($question);
+      }
+    }, { once: true });
   }
 
   _initCreateFlow($question) {
