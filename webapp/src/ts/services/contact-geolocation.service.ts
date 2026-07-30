@@ -31,4 +31,27 @@ export class ContactGeolocationService {
 
     captureInput.dataset.geoHasLocation = 'true';
   }
+
+  recordCapture(geoHandle, docs: any[], state: GeolocationEditState) {
+    if (!geoHandle) {
+      return docs;
+    }
+
+    return geoHandle()
+      .catch(err => err)
+      .then(geoData => {
+        docs.forEach(doc => {
+          doc.geolocation_log = doc.geolocation_log || [];
+          const entry: any = { timestamp: Date.now(), recording: geoData };
+          if (state.context !== undefined) {
+            entry.is_home = state.isHome;
+          }
+          doc.geolocation_log.push(entry);
+          if (!geoData.code && state.isHome) {
+            doc.geolocation = geoData;
+          }
+        });
+        return docs;
+      });
+  }
 }

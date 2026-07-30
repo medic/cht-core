@@ -212,4 +212,82 @@ describe('ContactGeolocationService', () => {
       expect(captureInput.dataset.geoHasLocation).to.be.undefined;
     });
   });
+
+  describe('recordCapture', () => {
+    const stateFor = (context?: string) => service.readCaptureState(buildFormHtml({ context }).formHtml);
+
+    it('returns the docs unchanged when there is no geoHandle', async () => {
+      const docs = [{ _id: 'doc1' }];
+      const result = await service.recordCapture(undefined, docs, stateFor('home'));
+      expect(result).to.equal(docs);
+    });
+
+    it('sets is_home: true and writes geolocation when context is home and capture succeeds', async () => {
+      const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
+      const geoHandle = () => Promise.resolve(geoData);
+      const docs: any[] = [{ _id: 'doc1' }];
+
+      await service.recordCapture(geoHandle, docs, stateFor('home'));
+
+      expect(docs[0].geolocation_log).to.have.lengthOf(1);
+      expect(docs[0].geolocation_log[0].is_home).to.be.true;
+      expect(docs[0].geolocation_log[0].recording).to.deep.equal(geoData);
+      expect(docs[0].geolocation).to.deep.equal(geoData);
+    });
+
+    it('sets is_home: false and does not write geolocation when context is other', async () => {
+      const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
+      const geoHandle = () => Promise.resolve(geoData);
+      const docs: any[] = [{ _id: 'doc1' }];
+
+      await service.recordCapture(geoHandle, docs, stateFor('other'));
+
+      expect(docs[0].geolocation_log[0].is_home).to.be.false;
+      expect(docs[0].geolocation).to.be.undefined;
+    });
+
+    it('omits is_home entirely when there is no context', async () => {
+      const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
+      const geoHandle = () => Promise.resolve(geoData);
+      const docs: any[] = [{ _id: 'doc1' }];
+
+      await service.recordCapture(geoHandle, docs, stateFor(undefined));
+
+      expect(docs[0].geolocation_log[0]).to.not.have.property('is_home');
+      expect(docs[0].geolocation).to.be.undefined;
+    });
+
+    it('does not write geolocation on a failed home capture, but still logs it', async () => {
+      const geoError = { code: 2, message: 'Position unavailable' };
+      const geoHandle = () => Promise.resolve(geoError);
+      const docs: any[] = [{ _id: 'doc1' }];
+
+      await service.recordCapture(geoHandle, docs, stateFor('home'));
+
+      expect(docs[0].geolocation_log[0].recording).to.deep.equal(geoError);
+      expect(docs[0].geolocation_log[0].is_home).to.be.true;
+      expect(docs[0].geolocation).to.be.undefined;
+    });
+
+    it('records the same capture onto every doc passed in', async () => {
+      const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
+      const geoHandle = () => Promise.resolve(geoData);
+      const docs: any[] = [{ _id: 'doc1' }, { _id: 'doc2' }];
+
+      await service.recordCapture(geoHandle, docs, stateFor('home'));
+
+      expect(docs[0].geolocation).to.deep.equal(geoData);
+      expect(docs[1].geolocation).to.deep.equal(geoData);
+    });
+
+    it('records a rejected geoHandle as the log entry recording', async () => {
+      const geoHandle = () => Promise.reject(new Error('boom'));
+      const docs: any[] = [{ _id: 'doc1' }];
+
+      await service.recordCapture(geoHandle, docs, stateFor('other'));
+
+      expect(docs[0].geolocation_log[0].recording).to.be.instanceOf(Error);
+      expect(docs[0].geolocation).to.be.undefined;
+    });
+  });
 });
