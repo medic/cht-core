@@ -41,7 +41,7 @@ describe('Archiving Schedule', () => {
     callback();
 
     expect(archiveLib.archive.callCount).to.equal(1);
-    expect(archiveLib.archive.args[0][0]).to.equal(null);
+    expect(archiveLib.archive.args[0][0]).to.be.null;
   });
 
   it('schedules an immediate run when the schedule expression is malformed', async () => {
@@ -85,7 +85,7 @@ describe('Archiving Schedule', () => {
     await scheduler.execute();
     setTimeoutSpy.args[0][0]();
 
-    expect(archiveLib.archive.args[0][0]).to.equal(null);
+    expect(archiveLib.archive.args[0][0]).to.be.null;
   });
 
   it('does not warn when archive.duration is simply missing', async () => {

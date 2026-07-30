@@ -319,7 +319,7 @@ describe('Sentinel archiving lib', () => {
     await lib.archive();
 
     expect(queue[0].error_count).to.equal(1);
-    expect(queue[0].errors).to.equal(undefined);
+    expect(queue[0].errors).to.be.undefined;
     expect(queue[0]._deleted).to.not.equal(true);
     expect(queue[0].cursor).to.equal(0);
     expect(logs['archive:1'].errors).to.deep.equal([{ date: 5000, message: 'disk full' }]);
