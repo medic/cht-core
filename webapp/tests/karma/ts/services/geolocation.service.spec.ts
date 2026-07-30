@@ -405,6 +405,63 @@ describe('Geolocation service', () => {
         const result = await service.currentPromise;
         expect(result).to.deep.equal({ code: -4, message: 'Geolocation cancelled' });
       });
+
+      it('ignores a late success callback that arrives after cancel(), so a later complete() call is not corrupted',
+        async () => {
+          let successFn;
+          // @ts-ignore
+          window.navigator.geolocation.watchPosition.callsFake(success => {
+            successFn = success;
+          });
+
+          const complete = service.init();
+          complete.cancel();
+          expect(await service.currentPromise).to.deep.equal({ code: -4, message: 'Geolocation cancelled' });
+
+          const position = {
+            latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7,
+          };
+          successFn({ coords: position });
+
+          const result = await complete();
+          expect(result).to.deep.equal({ code: -4, message: 'Geolocation cancelled' });
+        });
+
+      it('ignores a late failure callback that arrives after cancel(), so a later complete() call is not corrupted',
+        async () => {
+          let failureFn;
+          // @ts-ignore
+          window.navigator.geolocation.watchPosition.callsFake((_, failure) => {
+            failureFn = failure;
+          });
+
+          const complete = service.init();
+          complete.cancel();
+          expect(await service.currentPromise).to.deep.equal({ code: -4, message: 'Geolocation cancelled' });
+
+          failureFn({ code: 2, message: 'Position unavailable' });
+
+          const result = await complete();
+          expect(result).to.deep.equal({ code: -4, message: 'Geolocation cancelled' });
+        });
+
+      it('stops the watcher when a late success callback arrives after cancel()', () => {
+        let successFn;
+        // @ts-ignore
+        window.navigator.geolocation.watchPosition.callsFake(success => {
+          successFn = success;
+        });
+
+        const complete = service.init();
+        complete.cancel();
+        (<any>window.navigator.geolocation.clearWatch).resetHistory();
+
+        successFn({
+          coords: { latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7 },
+        });
+
+        expect((<any>window.navigator.geolocation.clearWatch).callCount).to.equal(1);
+      });
     });
 
     describe('android api', () => {

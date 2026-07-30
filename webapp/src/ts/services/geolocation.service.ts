@@ -69,18 +69,22 @@ export class GeolocationService {
 
   private success(position) {
     console.debug('Geolocation success', position);
-    this.geo = position;
-    if (this.deferred) {
-      this.finalise();
+    if (!this.deferred) {
+      this.stopWatching();
+      return;
     }
+    this.geo = position;
+    this.finalise();
   }
 
   private failure(err) {
     console.debug('Geolocation error', err);
-    this.geoError = err;
-    if (this.deferred) {
-      this.finalise();
+    if (!this.deferred) {
+      this.stopWatching();
+      return;
     }
+    this.geoError = err;
+    this.finalise();
   }
 
   private startWatching() {
