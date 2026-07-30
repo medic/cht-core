@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 
+import { DbService } from '@mm-services/db.service';
 import { GeolocationEditState } from '@mm-services/geolocation-edit-state';
 
 const HouseholdGeolocationWidget = require('../../js/enketo/widgets/household-geolocation-widget');
@@ -8,6 +9,10 @@ const HouseholdGeolocationWidget = require('../../js/enketo/widgets/household-ge
   providedIn: 'root'
 })
 export class ContactGeolocationService {
+
+  constructor(
+    private readonly dbService: DbService,
+  ) {}
 
   private getCaptureInput(formHtml?: Element): HTMLInputElement | null {
     return (formHtml?.querySelector(HouseholdGeolocationWidget.selector) as HTMLInputElement) || null;
@@ -53,5 +58,24 @@ export class ContactGeolocationService {
         });
         return docs;
       });
+  }
+
+  async restoreOriginalIfNeeded(docId: string | undefined, docs: any[], state: GeolocationEditState) {
+    const restoreLog = state.isKept;
+    const restoreGeoOnly = state.isCaptured && !state.isHome;
+    if (!docId || (!restoreLog && !restoreGeoOnly)) {
+      return;
+    }
+
+    const originalDoc = await this.dbService.get().get(docId);
+    const contactDoc = docs.find(doc => doc._id === docId);
+    if (!contactDoc || !originalDoc) {
+      return;
+    }
+
+    contactDoc.geolocation = originalDoc.geolocation;
+    if (restoreLog) {
+      contactDoc.geolocation_log = originalDoc.geolocation_log;
+    }
   }
 }
