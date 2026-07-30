@@ -5,7 +5,6 @@ import * as moment from 'moment';
 
 import * as enketoConstants from './../../js/enketo/constants';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
-const HouseholdGeolocationWidget = require('../../js/enketo/widgets/household-geolocation-widget');
 import { ContactGeolocationService } from '@mm-services/contact-geolocation.service';
 import { DbService } from '@mm-services/db.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
@@ -274,53 +273,6 @@ export class FormService {
     return Object.values(instanceData)[0];
   }
 
-  private getGeoContext(formHtml?: Element): string | undefined {
-    const captureInput = formHtml?.querySelector(HouseholdGeolocationWidget.selector) as HTMLInputElement;
-    return captureInput?.dataset?.geoContext || undefined;
-  }
-
-  private getGeoCaptureFieldName(formHtml?: Element): string | undefined {
-    const captureInput = formHtml?.querySelector(HouseholdGeolocationWidget.selector) as HTMLInputElement;
-    const name = captureInput?.getAttribute('name');
-    return name?.split('/').pop() || undefined;
-  }
-
-  // Contact docs have form fields flattened onto the doc itself; report docs nest them under
-  // "fields". Deleting from both is harmless since only one will ever be present on a given doc.
-  private stripGeoCaptureField(doc: any, fieldName?: string) {
-    if (!fieldName) {
-      return;
-    }
-    delete doc[fieldName];
-    if (doc.fields) {
-      delete doc.fields[fieldName];
-    }
-  }
-
-  private saveGeo(geoHandle, docs, contextValue?: string, restrictGeoToHomeCaptures = false) {
-    if (!geoHandle) {
-      return docs;
-    }
-
-    return geoHandle()
-      .catch(err => err)
-      .then(geoData => {
-        const isHome = contextValue === 'home';
-        docs.forEach(doc => {
-          doc.geolocation_log = doc.geolocation_log || [];
-          const entry: any = { timestamp: Date.now(), recording: geoData };
-          if (contextValue !== undefined) {
-            entry.is_home = isHome;
-          }
-          doc.geolocation_log.push(entry);
-          if (!restrictGeoToHomeCaptures || (!geoData.code && isHome)) {
-            doc.geolocation = geoData;
-          }
-        });
-        return docs;
-      });
-  }
-
   private attachGeoToReport(geoHandle, docs) {
     if (!geoHandle) {
       return docs;
@@ -382,18 +334,12 @@ export class FormService {
 
   async save(formInternalId, form, geoHandle, docId?) {
     const docs = await this.completeReport(formInternalId, form, docId);
-    const contextValue = this.getGeoContext(form?.view?.html);
-    const geoCaptureFieldName = this.getGeoCaptureFieldName(form?.view?.html);
-    return this.ngZone.runOutsideAngular(() => this._save(docs, geoHandle, contextValue, geoCaptureFieldName));
+    return this.ngZone.runOutsideAngular(() => this._save(docs, geoHandle));
   }
 
-  private _save(docs, geoHandle, contextValue?: string, geoCaptureFieldName?: string) {
+  private _save(docs, geoHandle) {
     return this.validateAttachments(docs)
-      .then((docs) => this.saveGeo(geoHandle, docs, contextValue))
-      .then((docs) => {
-        docs.forEach((doc: any) => this.stripGeoCaptureField(doc, geoCaptureFieldName));
-        return docs;
-      })
+      .then((docs) => this.attachGeoToReport(geoHandle, docs))
       .then((docs) => this.transitionsService.applyTransitions(docs))
       .then((docs) => this.saveDocs(docs))
       .then((docs) => {

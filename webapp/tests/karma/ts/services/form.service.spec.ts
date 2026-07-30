@@ -877,34 +877,6 @@ describe('Form service', () => {
         });
       });
 
-      it('removes the raw capture sentinel field from a report, even though reports nest form data under fields',
-        async () => {
-          form.validate.resolves(true);
-          const content = '<model><name>Sally</name><geo_capture>captured</geo_capture></model>';
-          form.getDataStr.returns(content);
-          dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
-          xmlFormGetWithAttachment.resolves({ doc: { _id: 'V' }, xml: '<form/>' });
-          UserContact.resolves({ _id: '123', phone: '555' });
-
-          const captureInput = document.createElement('input');
-          captureInput.type = 'hidden';
-          captureInput.name = '/data/geo_capture';
-          const captureWrapper = document.createElement('div');
-          captureWrapper.classList.add('or-appearance-geolocation-capture');
-          captureWrapper.appendChild(captureInput);
-          form.view.html.appendChild(captureWrapper);
-
-          const geoData = {
-            latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7
-          };
-
-          const actual = (await service.save('V', form, () => Promise.resolve(geoData)))[0];
-
-          expect(actual.geolocation).to.deep.equal(geoData);
-          expect(actual.fields.name).to.equal('Sally');
-          expect(actual.fields).to.not.have.property('geo_capture');
-        });
-
       it('saves a geolocation error into a new report', () => {
         form.validate.resolves(true);
         const content = loadXML('sally-lmp');
