@@ -6,6 +6,7 @@ import * as moment from 'moment';
 import * as enketoConstants from './../../js/enketo/constants';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
 const HouseholdGeolocationWidget = require('../../js/enketo/widgets/household-geolocation-widget');
+import { ContactGeolocationService } from '@mm-services/contact-geolocation.service';
 import { DbService } from '@mm-services/db.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
@@ -45,6 +46,7 @@ import { PerformanceService } from '@mm-services/performance.service';
 export class FormService {
   constructor(
     private store: Store,
+    private readonly contactGeolocationService: ContactGeolocationService,
     private contactSaveService: ContactSaveService,
     private contactSummaryService: ContactSummaryService,
     private contactTypesService: ContactTypesService,
@@ -210,7 +212,8 @@ export class FormService {
         throw { translationKey: 'error.loading.form.no_authorized' };
       }
       if (formContext.type === 'contact') {
-        this.injectGeoEditContext(doc.html.get(0), this.getContactFromInstanceData(instanceData));
+        const contact = this.getContactFromInstanceData(instanceData);
+        this.contactGeolocationService.injectEditContext(doc.html.get(0), contact);
       }
       return await this.enketoService.renderForm(formContext, doc, userSettings);
     } catch (error) {
@@ -269,21 +272,6 @@ export class FormService {
       return undefined;
     }
     return Object.values(instanceData)[0];
-  }
-
-  private injectGeoEditContext(formHtml: Element | undefined, contact: any) {
-    const captureInput = formHtml?.querySelector(HouseholdGeolocationWidget.selector) as HTMLInputElement | null;
-    if (!captureInput || !contact?._id) {
-      return;
-    }
-
-    captureInput.dataset.geoIsEdit = 'true';
-
-    if (typeof contact.geolocation?.latitude !== 'number') {
-      return;
-    }
-
-    captureInput.dataset.geoHasLocation = 'true';
   }
 
   private getGeoContext(formHtml?: Element): string | undefined {
