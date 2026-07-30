@@ -85,7 +85,7 @@ export const byIds = (ids: string[]): IdsQualifier => {
   if (!isIdsQualifier(qualifier)) {
     throw new InvalidArgumentError(`Invalid identifiers [${JSON.stringify(ids)}].`);
   }
-  return qualifier;
+  return { ids: [...new Set(ids)] };
 };
 
 /**

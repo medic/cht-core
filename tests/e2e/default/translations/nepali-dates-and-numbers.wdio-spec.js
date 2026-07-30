@@ -421,6 +421,10 @@ describe('Bikram Sambat date display', () => {
     await activeDays[0].scrollIntoView();
     await safeClick(activeDays[0], { waitTimeout: 20000 });
 
+    // Click close button explicitly because selection no longer automatically closes the picker
+    const finalCloseBtn = activePopup.$('.close-btn');
+    await safeClick(finalCloseBtn, { waitTimeout: 20000 });
+
     await waitForClosed(popupIndex);
     await overlay.waitForDisplayed({ reverse: true, timeout: 20000 });
 
