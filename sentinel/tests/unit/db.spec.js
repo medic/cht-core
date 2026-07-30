@@ -1,5 +1,4 @@
 const sinon = require('sinon');
-const { expect } = require('chai');
 const rewire = require('rewire');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
@@ -188,12 +187,8 @@ describe('db', () => {
 
     it('throws request.post errors', async () => {
       sinon.stub(request, 'post').rejects(new Error('purge failed'));
-      try {
-        await db.purge({ name: 'host/db' }, [{ _id: 'x', _revs: ['1-x'] }]);
-        expect.fail('expected to reject');
-      } catch (err) {
-        expect(err.message).to.equal('purge failed');
-      }
+      await expect(db.purge({ name: 'host/db' }, [{ _id: 'x', _revs: ['1-x'] }]))
+        .to.be.rejectedWith('purge failed');
     });
   });
 });

@@ -5,12 +5,11 @@ const request = require('@medic/couch-request');
 const constants = require('@medic/constants');
 const environment = require('@medic/environment');
 const audit = require('@medic/audit');
-const archivingUtils = require('@medic/archiving-utils');
 const contactTypesUtils = require('@medic/contact-types-utils');
 
 const PURGE_BATCH_SIZE = 1000;
 const FETCH_BATCH_SIZE = 100;
-const MAX_JOB_ATTEMPTS = 20;
+const MAX_JOB_ATTEMPTS = 10;
 const FAILED_STATUS = 'failed';
 
 let currentlyArchiving = false;
@@ -38,8 +37,8 @@ const fetchNextJob = async (startkey) => {
  * @returns {Promise<string[]>}
  */
 const readIds = async (job) => {
-  const buffer = await db.sentinel.getAttachment(job._id, archivingUtils.ATTACHMENT_NAME);
-  return archivingUtils.decodeIds(buffer);
+  const buffer = await db.sentinel.getAttachment(job._id, constants.ARCHIVE_IDS_ATTACHMENT);
+  return buffer.toString('utf8').split('\n');
 };
 
 /**
@@ -228,6 +227,7 @@ const processQueue = async (deadline) => {
     }
     startkey = job._id;
     if (job.status === FAILED_STATUS) {
+      logger.warn(`Archiving: skipping quarantined job ${job._id} (failed ${job.error_count} times)`);
       continue;
     }
     await processJob(job, deadline);

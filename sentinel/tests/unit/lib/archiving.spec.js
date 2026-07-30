@@ -11,7 +11,7 @@ const logger = require('@medic/logger');
 // module — batch behavior is exercised with realistically sized jobs instead.
 const PURGE_BATCH_SIZE = 1000;
 const FETCH_BATCH_SIZE = 100;
-const MAX_JOB_ATTEMPTS = 20;
+const MAX_JOB_ATTEMPTS = 10;
 const MAX_ERRORS_KEPT = 5;
 
 const job = (props = {}) => Object.assign({
@@ -290,7 +290,7 @@ describe('Sentinel archiving lib', () => {
   });
 
   it('skips a quarantined job and processes the next healthy one', async () => {
-    const quarantined = job({ _id: 'archive:1', total: 1, status: 'failed', error_count: 20 });
+    const quarantined = job({ _id: 'archive:1', total: 1, status: 'failed', error_count: MAX_JOB_ATTEMPTS });
     const healthy = job({ _id: 'archive:2', total: 1 });
     const { queue } = stubQueue([quarantined, healthy]);
     stubAttachment({ 'archive:1': ['x1'], 'archive:2': ['x2'] });

@@ -422,6 +422,7 @@ describe('Initial Replication service', () => {
     it('should throw error on purgedDocs errors', async () => {
       sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
       sinon.stub(purgedDocs, 'getPurgedIds').rejects(new Error('boom'));
+      sinon.stub(db.archive, 'allDocs').resolves({ rows: [] });
 
       await expect(replication.getDocIdsToDelete(userCtx, [1])).to.be.rejectedWith(Error, 'boom');
     });

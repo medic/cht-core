@@ -21,11 +21,12 @@ describe('Archiving Schedule', () => {
     clock.restore();
   });
 
-  it('aborts when no archive configuration is present', async () => {
+  it('schedules an immediate run when no archive configuration is present', async () => {
     sinon.stub(config, 'get');
     sinon.stub(later.parse, 'text');
     sinon.stub(later.parse, 'cron');
-    sinon.stub(archiveLib, 'archive');
+    sinon.stub(archiveLib, 'archive').resolves();
+    const setTimeoutSpy = sinon.spy(clock, 'setTimeout');
 
     await scheduler.execute();
 
@@ -33,18 +34,31 @@ describe('Archiving Schedule', () => {
     expect(config.get.args[0]).to.deep.equal(['archive']);
     expect(later.parse.text.callCount).to.equal(0);
     expect(later.parse.cron.callCount).to.equal(0);
-    expect(archiveLib.archive.callCount).to.equal(0);
+    expect(setTimeoutSpy.callCount).to.equal(1);
+    const [callback, delay] = setTimeoutSpy.args[0];
+    expect(delay).to.equal(0);
+
+    callback();
+
+    expect(archiveLib.archive.callCount).to.equal(1);
+    expect(archiveLib.archive.args[0][0]).to.equal(null);
   });
 
-  it('aborts when the schedule expression is malformed', async () => {
+  it('schedules an immediate run when the schedule expression is malformed', async () => {
     sinon.stub(config, 'get').returns({ cron: '* * nope' });
     sinon.stub(later.parse, 'cron').returns(false);
-    sinon.stub(archiveLib, 'archive');
+    sinon.stub(archiveLib, 'archive').resolves();
+    const setTimeoutSpy = sinon.spy(clock, 'setTimeout');
 
     await scheduler.execute();
 
     expect(later.parse.cron.callCount).to.equal(1);
-    expect(archiveLib.archive.callCount).to.equal(0);
+    expect(setTimeoutSpy.callCount).to.equal(1);
+    expect(setTimeoutSpy.args[0][1]).to.equal(0);
+
+    setTimeoutSpy.args[0][0]();
+
+    expect(archiveLib.archive.callCount).to.equal(1);
   });
 
   it('schedules an archive run with the parsed duration', async () => {

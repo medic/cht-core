@@ -64,6 +64,9 @@ const DB_ADMIN_ROLES = [USER_ROLES.ADMIN, USER_ROLES.COUCHDB_ADMIN];
 // Maximum HTTP request body size in bytes, shared by the api body parsers and streaming routes.
 const MAX_REQUEST_SIZE = 32 * 1024 * 1024;
 
+// Name of the attachment on archive job docs carrying the newline-separated doc ids.
+const ARCHIVE_IDS_ATTACHMENT = 'ids';
+
 // Document ID prefixes used for _all_docs prefix range scans.
 const PREFIXES = {
   COUCH_USER: 'org.couchdb.user:',
@@ -84,4 +87,5 @@ module.exports = {
   STANDARD_HTTP_HEADERS,
   PREFIXES,
   MAX_REQUEST_SIZE,
+  ARCHIVE_IDS_ATTACHMENT,
 };

@@ -1,7 +1,6 @@
 const readline = require('node:readline');
 const { v7: uuid } = require('uuid');
 const logger = require('@medic/logger');
-const archivingUtils = require('@medic/archiving-utils');
 const constants = require('@medic/constants');
 
 const db = require('../db');
@@ -53,9 +52,9 @@ const persistJob = async (jobs, ids) => {
     total: ids.length,
     cursor: 0,
     _attachments: {
-      [archivingUtils.ATTACHMENT_NAME]: {
-        content_type: archivingUtils.ATTACHMENT_TYPE,
-        data: archivingUtils.encodeIds(ids),
+      [constants.ARCHIVE_IDS_ATTACHMENT]: {
+        content_type: 'text/plain',
+        data: Buffer.from(ids.join('\n'), 'utf8'),
       },
     },
   };
@@ -133,11 +132,13 @@ module.exports = {
    *     description: >
    *       Accepts a text/csv body of document ids — one id per line; surrounding double quotes are
    *       stripped and blank lines are ignored — and enqueues archive jobs that sentinel processes
-   *       on its configured schedule. Jobs are persisted while the payload streams in, so a
+   *       on its configured schedule, or immediately when no schedule is configured. Jobs are
+   *       persisted while the payload streams in, so a
    *       mid-payload failure leaves the already-created jobs queued even though the client
    *       receives an error. Retrying the full payload is safe because archiving is idempotent;
    *       duplicate jobs only cost redundant processing. Only allowed for database admins.
    *     tags: [Bulk]
+   *     x-since: 5.3.0
    *     requestBody:
    *       required: true
    *       content:
@@ -148,8 +149,8 @@ module.exports = {
    *             doc-id-1
    *             "doc-id-2"
    *     responses:
-   *       '201':
-   *         description: The created archive jobs, in payload order.
+   *       '202':
+   *         description: The queued archive jobs, in payload order.
    *         content:
    *           application/json:
    *             schema:
@@ -188,7 +189,7 @@ module.exports = {
 
     try {
       const jobs = await processPayload(req);
-      res.status(201).json({ jobs });
+      res.status(202).json({ jobs });
     } catch (err) {
       logger.error('Failed to create archive jobs: %o', err);
       return serverUtils.error(err, req, res);

@@ -400,14 +400,14 @@ describe('sentinel processes archive jobs', () => {
 
     // A poison job: no `ids` attachment, so readIds throws on every run. Its id sorts before any
     // uuid-v7 job id, so the loop hits it first. Seed error_count at the threshold-1 (the lib's
-    // MAX_JOB_ATTEMPTS is 20) so a single run trips the quarantine.
+    // MAX_JOB_ATTEMPTS is 10) so a single run trips the quarantine.
     const poisonId = `${PREFIXES.ARCHIVE_JOB}0000-poison`;
     await utils.sentinelDb.put({
       _id: poisonId,
       date: Date.now(),
       total: 1,
       cursor: 0,
-      error_count: 19,
+      error_count: 9,
     });
 
     const { jobs } = await postCsv(healthyId);
@@ -422,14 +422,13 @@ describe('sentinel processes archive jobs', () => {
     await utils.runSentinelTasks();
     const poison = await waitForJobStatus(poisonId, 'failed');
 
-    expect(poison.error_count).to.equal(20);
+    expect(poison.error_count).to.equal(10);
     expect(poison.status).to.equal('failed');
     // The job doc is kept (not deleted) for an admin to inspect.
     expect(poison._deleted).to.not.equal(true);
 
     // The healthy job behind the poison job was not blocked — it ran to completion and was deleted.
     const healthyJobRow = (await utils.sentinelDb.allDocs({ keys: [healthyJobId] })).rows[0];
-    console.warn(JSON.stringify(healthyJobRow, null, 2));
     expect(healthyJobRow.error || healthyJobRow.value.deleted).to.be.ok;
 
     const archived = await liveRows(archiveDb, { keys: [healthyId] });

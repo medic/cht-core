@@ -59,14 +59,14 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(auth.assertDbAdmin.callCount).to.equal(1);
-      chai.expect(auth.assertDbAdmin.args[0][0]).to.equal(req);
-      chai.expect(serverUtils.error.callCount).to.equal(1);
+      expect(auth.assertDbAdmin.callCount).to.equal(1);
+      expect(auth.assertDbAdmin.args[0][0]).to.equal(req);
+      expect(serverUtils.error.callCount).to.equal(1);
       const err = serverUtils.error.args[0][0];
-      chai.expect(err).to.be.an.instanceOf(errors.PermissionError);
-      chai.expect(err.code).to.equal(403);
-      chai.expect(err.message).to.equal('User is not an admin');
-      chai.expect(db.sentinel.put.callCount).to.equal(0);
+      expect(err).to.be.an.instanceOf(errors.PermissionError);
+      expect(err.code).to.equal(403);
+      expect(err.message).to.equal('User is not an admin');
+      expect(db.sentinel.put.callCount).to.equal(0);
     });
 
     it('writes one job containing every doc id from the body', async () => {
@@ -77,12 +77,12 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(db.sentinel.put.callCount).to.equal(1);
+      expect(db.sentinel.put.callCount).to.equal(1);
       const doc = db.sentinel.put.args[0][0];
-      chai.expect(doc._id).to.match(/^archive:/);
-      chai.expect(doc).excluding('_id').to.deep.equal(expectedJob(['doc-1', 'doc-2', 'doc-3']));
-      chai.expect(res.status.calledWith(201)).to.equal(true);
-      chai.expect(res.json.args).to.deep.equal([[{ jobs: [{ id: doc._id, count: 3 }] }]]);
+      expect(doc._id).to.match(/^archive:/);
+      expect(doc).excluding('_id').to.deep.equal(expectedJob(['doc-1', 'doc-2', 'doc-3']));
+      expect(res.status.calledWith(202)).to.equal(true);
+      expect(res.json.args).to.deep.equal([[{ jobs: [{ id: doc._id, count: 3 }] }]]);
     });
 
     it('strips surrounding quotes and skips blank lines', async () => {
@@ -94,7 +94,7 @@ describe('Archive controller', () => {
       await controller.create(req, res);
 
       const doc = db.sentinel.put.args[0][0];
-      chai.expect(doc).excluding('_id').to.deep.equal(expectedJob(['doc-1', 'doc-2']));
+      expect(doc).excluding('_id').to.deep.equal(expectedJob(['doc-1', 'doc-2']));
     });
 
     it('splits ids into multiple job docs at MAX_IDS_PER_JOB', async () => {
@@ -114,7 +114,7 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(db.sentinel.put.callCount).to.equal(3);
+      expect(db.sentinel.put.callCount).to.equal(3);
       const docs = db.sentinel.put.args.map(([doc]) => doc);
       const expectedSlices = [
         allIds.slice(0, MAX_IDS_PER_JOB),
@@ -122,16 +122,16 @@ describe('Archive controller', () => {
         allIds.slice(MAX_IDS_PER_JOB * 2),
       ];
       docs.forEach((doc, i) => {
-        chai.expect(doc).excluding(['_id', '_attachments']).to.deep.equal({
+        expect(doc).excluding(['_id', '_attachments']).to.deep.equal({
           date: NOW,
           total: expectedSlices[i].length,
           cursor: 0,
         });
-        chai.expect(doc._attachments.ids.content_type).to.equal('text/plain');
-        chai.expect(doc._attachments.ids.data.toString('utf8')).to.equal(expectedSlices[i].join('\n'));
+        expect(doc._attachments.ids.content_type).to.equal('text/plain');
+        expect(doc._attachments.ids.data.toString('utf8')).to.equal(expectedSlices[i].join('\n'));
       });
       const ids = docs.map(doc => doc._id);
-      chai.expect(res.json.args).to.deep.equal([[{
+      expect(res.json.args).to.deep.equal([[{
         jobs: [
           { id: ids[0], count: MAX_IDS_PER_JOB },
           { id: ids[1], count: MAX_IDS_PER_JOB },
@@ -149,12 +149,12 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(db.sentinel.put.callCount).to.equal(0);
-      chai.expect(serverUtils.error.callCount).to.equal(1);
+      expect(db.sentinel.put.callCount).to.equal(0);
+      expect(serverUtils.error.callCount).to.equal(1);
       const err = serverUtils.error.args[0][0];
-      chai.expect(err).to.be.an.instanceOf(errors.ContentTypeError);
-      chai.expect(err.code).to.equal(415);
-      chai.expect(err.message).to.equal('Content-Type must be text/csv');
+      expect(err).to.be.an.instanceOf(errors.ContentTypeError);
+      expect(err.code).to.equal(415);
+      expect(err.message).to.equal('Content-Type must be text/csv');
     });
 
     it('accepts text/csv with charset parameters', async () => {
@@ -165,8 +165,8 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(db.sentinel.put.callCount).to.equal(1);
-      chai.expect(res.status.calledWith(201)).to.equal(true);
+      expect(db.sentinel.put.callCount).to.equal(1);
+      expect(res.status.calledWith(202)).to.equal(true);
     });
 
     it('rejects an empty body with 400', async () => {
@@ -178,13 +178,13 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(db.sentinel.put.callCount).to.equal(0);
-      chai.expect(res.json.callCount).to.equal(0);
-      chai.expect(serverUtils.error.callCount).to.equal(1);
+      expect(db.sentinel.put.callCount).to.equal(0);
+      expect(res.json.callCount).to.equal(0);
+      expect(serverUtils.error.callCount).to.equal(1);
       const err = serverUtils.error.args[0][0];
-      chai.expect(err).to.be.an.instanceOf(errors.BadRequestError);
-      chai.expect(err.code).to.equal(400);
-      chai.expect(err.message).to.equal('No valid doc IDs found in request body');
+      expect(err).to.be.an.instanceOf(errors.BadRequestError);
+      expect(err.code).to.equal(400);
+      expect(err.message).to.equal('No valid doc IDs found in request body');
     });
 
     it('rejects a body of only blank lines with 400', async () => {
@@ -196,9 +196,9 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(db.sentinel.put.callCount).to.equal(0);
-      chai.expect(serverUtils.error.callCount).to.equal(1);
-      chai.expect(serverUtils.error.args[0][0].code).to.equal(400);
+      expect(db.sentinel.put.callCount).to.equal(0);
+      expect(serverUtils.error.callCount).to.equal(1);
+      expect(serverUtils.error.args[0][0].code).to.equal(400);
     });
 
     it('rejects a streamed body that exceeds the size limit with 413, even without newlines', async () => {
@@ -218,12 +218,12 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(db.sentinel.put.callCount).to.equal(0);
-      chai.expect(res.json.callCount).to.equal(0);
-      chai.expect(serverUtils.error.callCount).to.equal(1);
+      expect(db.sentinel.put.callCount).to.equal(0);
+      expect(res.json.callCount).to.equal(0);
+      expect(serverUtils.error.callCount).to.equal(1);
       const err = serverUtils.error.args[0][0];
-      chai.expect(err).to.be.an.instanceOf(errors.PayloadTooLargeError);
-      chai.expect(err.code).to.equal(413);
+      expect(err).to.be.an.instanceOf(errors.PayloadTooLargeError);
+      expect(err.code).to.equal(413);
     });
 
     it('rejects an oversized declared Content-Length with 413 before reading the body', async () => {
@@ -236,13 +236,13 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(db.sentinel.put.callCount).to.equal(0);
+      expect(db.sentinel.put.callCount).to.equal(0);
       // processPayload was never entered: no readline/byte-counter listeners were attached.
-      chai.expect(req.listenerCount('data')).to.equal(0);
-      chai.expect(serverUtils.error.callCount).to.equal(1);
+      expect(req.listenerCount('data')).to.equal(0);
+      expect(serverUtils.error.callCount).to.equal(1);
       const err = serverUtils.error.args[0][0];
-      chai.expect(err).to.be.an.instanceOf(errors.PayloadTooLargeError);
-      chai.expect(err.code).to.equal(413);
+      expect(err).to.be.an.instanceOf(errors.PayloadTooLargeError);
+      expect(err.code).to.equal(413);
     });
 
     it('accepts an honest Content-Length within the limit', async () => {
@@ -254,8 +254,8 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(db.sentinel.put.callCount).to.equal(1);
-      chai.expect(res.status.calledWith(201)).to.equal(true);
+      expect(db.sentinel.put.callCount).to.equal(1);
+      expect(res.status.calledWith(202)).to.equal(true);
     });
 
     it('surfaces errors emitted by the request stream', async () => {
@@ -273,8 +273,8 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(serverUtils.error.callCount).to.equal(1);
-      chai.expect(serverUtils.error.args[0][0].message).to.equal('client aborted');
+      expect(serverUtils.error.callCount).to.equal(1);
+      expect(serverUtils.error.args[0][0].message).to.equal('client aborted');
     });
 
     it('surfaces db errors via serverUtils.error', async () => {
@@ -286,8 +286,8 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(serverUtils.error.callCount).to.equal(1);
-      chai.expect(serverUtils.error.args[0][0]).to.deep.include({ status: 500 });
+      expect(serverUtils.error.callCount).to.equal(1);
+      expect(serverUtils.error.args[0][0]).to.deep.include({ status: 500 });
     });
   });
 

@@ -55,11 +55,11 @@ const getDocIdsToDelete = async (userCtx, docIds) => {
     .filter(row => row.error === 'deleted' || row?.value?.deleted)
     .map(row => row.key);
 
-  const toPurge = await purgedDocs.getPurgedIds(userCtx, docIds, false);
-  toDelete.push(...toPurge);
-
-  const toArchive = await getArchivedDocs(docIds);
-  toDelete.push(...toArchive);
+  const [toPurge, toArchive] = await Promise.all([
+    purgedDocs.getPurgedIds(userCtx, docIds, false),
+    getArchivedDocs(docIds),
+  ]);
+  toDelete.push(...toPurge, ...toArchive);
 
   return toDelete;
 };
