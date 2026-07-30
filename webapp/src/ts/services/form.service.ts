@@ -436,38 +436,6 @@ export class FormService {
     }
   }
 
-  private async restoreGeoFieldsIfKept(
-    geoCaptureValue: string | undefined,
-    docId: string | undefined,
-    preparedDocs: any[]
-  ) {
-    if (geoCaptureValue !== 'kept' || !docId) {
-      return;
-    }
-    const originalDoc = await this.dbService.get().get(docId);
-    const contactDoc = preparedDocs.find(doc => doc._id === docId);
-    if (contactDoc && originalDoc) {
-      contactDoc.geolocation = originalDoc.geolocation;
-      contactDoc.geolocation_log = originalDoc.geolocation_log;
-    }
-  }
-
-  private async preserveHomeGeoIfNonHomeCapture(
-    geoCaptureValue: string | undefined,
-    contextValue: string | undefined,
-    docId: string | undefined,
-    docs: any[]
-  ) {
-    if (geoCaptureValue !== 'captured' || contextValue === 'home' || !docId) {
-      return;
-    }
-    const originalDoc = await this.dbService.get().get(docId);
-    const contactDoc = docs.find(doc => doc._id === docId);
-    if (contactDoc && originalDoc) {
-      contactDoc.geolocation = originalDoc.geolocation;
-    }
-  }
-
   async saveContact(
     contactInfo: {
       docId: string | undefined;
@@ -502,21 +470,19 @@ export class FormService {
       throw new DuplicatesFoundError('Duplicates found', duplicates);
     }
 
-    const contextValue = this.getGeoContext(form?.view?.html);
-    const geoCaptureValue = this.getGeoCaptureValue(form?.view?.html);
+    const geoState = this.contactGeolocationService.readCaptureState(form?.view?.html);
 
-    await this.restoreGeoFieldsIfKept(geoCaptureValue, docId, preparedDocs.preparedDocs);
-
-    if (geoCaptureValue !== 'kept') {
+    if (!geoState.isKept) {
       // Only the doc that owns the geolocation-capture field should receive the captured location -
       // sibling/repeated docs created in the same submission (e.g. a new primary contact for a new
       // household) must not be stamped with it too.
-      await this.saveGeo(geoHandle, [primaryDoc ?? preparedDocs.preparedDocs[0]], contextValue, true);
+      await this.contactGeolocationService.recordCapture(
+        geoHandle, [primaryDoc ?? preparedDocs.preparedDocs[0]], geoState
+      );
     }
     const docsWithGeo = preparedDocs.preparedDocs;
-    await this.preserveHomeGeoIfNonHomeCapture(geoCaptureValue, contextValue, docId, docsWithGeo);
-    const geoCaptureFieldName = this.getGeoCaptureFieldName(form?.view?.html);
-    docsWithGeo.forEach((doc: any) => this.stripGeoCaptureField(doc, geoCaptureFieldName));
+    await this.contactGeolocationService.restoreOriginalIfNeeded(docId, docsWithGeo, geoState);
+    docsWithGeo.forEach((doc: any) => this.contactGeolocationService.stripCaptureField(doc, geoState.fieldName));
     this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
     const bulkDocsResult = await this.dbService.get().bulkDocs(docsWithGeo);
     const failureMessage = this.generateFailureMessage(bulkDocsResult);
