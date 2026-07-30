@@ -70,12 +70,8 @@ const matchesTemplate = (prBody, template) => {
   let bodySectionIndex = 0;
   for (const templateSection of templateSections) {
     const index = bodySections.findIndex(section => section.heading === templateSection.heading);
-    if (index < bodySectionIndex) {
-      // section isn't found, or is out of template order
-      return false;
-    }
-
-    if (!bodySections[index].content.length) {
+    // the section isn't found, is out of template order, or has no content
+    if (index < bodySectionIndex || !bodySections[index].content.length) {
       return false;
     }
 
@@ -132,7 +128,7 @@ const getLinkedIssueFailure = (pr, linkedIssues) => {
     return getMessage('missing-linked-issue');
   }
   const isAssigned = linkedIssues
-    .find(issue => issue.assignees.nodes.find(assignee => assignee.login === pr.user.login));
+    .some(issue => issue.assignees.nodes.some(assignee => assignee.login === pr.user.login));
   if (isAssigned) {
     return null;
   }
