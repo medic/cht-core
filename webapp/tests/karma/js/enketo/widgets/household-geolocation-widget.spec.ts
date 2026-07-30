@@ -555,6 +555,44 @@ describe('Enketo: Household Geolocation Widget', () => {
         });
       });
 
+      describe('when Retry is clicked while "save without location" is checked', () => {
+        const initWidgetCheckedThenRetried = async () => {
+          const failurePromise = Promise.resolve(GPS_FAILURE);
+          (window as any).CHTCore.Geolocation.currentPromise = failurePromise;
+          const result = initWidget();
+          await failurePromise;
+
+          const checkbox = result.container.querySelector(SELECTORS.SAVE_WITHOUT_CHECKBOX) as HTMLInputElement;
+          checkbox.checked = true;
+          $(checkbox).trigger('change');
+
+          const retryPromise = Promise.resolve(GPS_SUCCESS);
+          (window as any).CHTCore.Geolocation.retry = sinon.stub().callsFake(() => {
+            (window as any).CHTCore.Geolocation.currentPromise = retryPromise;
+          });
+          (result.container.querySelector(SELECTORS.RETRY_BTN) as HTMLElement).click();
+          await retryPromise;
+
+          return result;
+        };
+
+        it('should clear the stale "skipped" value so the retried capture is not ignored', async () => {
+          const { widget } = await initWidgetCheckedThenRetried();
+          expect((widget.element as HTMLInputElement).value).to.not.equal('skipped');
+        });
+
+        it('should show the success message once the retried capture resolves', async () => {
+          const { container } = await initWidgetCheckedThenRetried();
+          expect(container.querySelector(SELECTORS.SUCCESS_MSG)).to.not.be.null;
+        });
+
+        it('should hide the progress row once the retried capture resolves', async () => {
+          const { container } = await initWidgetCheckedThenRetried();
+          const progressRow = container.querySelector(SELECTORS.PROGRESS_ROW) as HTMLElement;
+          expect(progressRow.style.display).to.equal('none');
+        });
+      });
+
       describe('when GPS fails with a real permission-denied error code', () => {
         const initWidgetAfterPermissionDeniedFailure = async () => {
           const promise = Promise.resolve(GPS_PERMISSION_DENIED);

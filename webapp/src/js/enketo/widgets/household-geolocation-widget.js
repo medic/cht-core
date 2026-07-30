@@ -233,6 +233,7 @@ class HouseholdGeolocationWidget extends Widget {
       $status.find(`.${CLASS_NAMES.RESULT_ROW}, .${CLASS_NAMES.WEAK_SIGNAL_MSG}`).remove();
       $retryBtn.remove();
       $(this.question).find(`.${CLASS_NAMES.SAVE_WITHOUT_LABEL}`).remove();
+      $(this.element).val('').trigger('change');
       this._waitForCapture($status, $bar);
     });
 
