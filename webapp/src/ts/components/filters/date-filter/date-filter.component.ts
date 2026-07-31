@@ -134,9 +134,14 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
 
     setupNepaliDatePicker($hiddenDateInput, {
       onDateSelect: (data: any) => {
-        const maxDays = daysInMonth(data.bsYear, data.bsMonth);
-        if (data.bsDate > maxDays) {
-          return;
+        // Clicks on non-existent/phantom days are ignored intentionally (see #11252)
+        try {
+          const maxDays = daysInMonth(data.bsYear, data.bsMonth);
+          if (data.bsDate > maxDays) {
+            return;
+          }
+        } catch (e) {
+          return; // Ignore if the library throws for out-of-range years/months
         }
         const gregDateStr = toGreg_text(data.bsYear, data.bsMonth, data.bsDate);
         const gregMoment = moment(gregDateStr);

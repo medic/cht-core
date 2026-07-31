@@ -108,9 +108,16 @@ class Bikramsambatdatepicker extends Widget {
           const year = Number(fromDevanagari(yearDev));
 
           if (!Number.isNaN(day) && !Number.isNaN(month) && !Number.isNaN(year)) {
-            const maxDays = BikramSambat.daysInMonth(year, month);
-            // Guard against invalid day values on manual entry (see #11252)
-            if (day < 1 || day > maxDays) {
+            try {
+              const maxDays = BikramSambat.daysInMonth(year, month);
+              // Guard against invalid day values on manual entry (see #11252)
+              if (day < 1 || day > maxDays) {
+                $realDateInput.val( '' );
+                $realDateInput.trigger( 'change' );
+                $parent.find( 'input[name="day"]' ).val( '' );
+              }
+            } catch ( e ) {
+              // If the library throws for out-of-range years, treat as invalid and clear (see #11252)
               $realDateInput.val( '' );
               $realDateInput.trigger( 'change' );
               $parent.find( 'input[name="day"]' ).val( '' );
@@ -172,22 +179,38 @@ const setupCalendarPicker = ($parent, widget) => {
 
       // Guard against invalid days (e.g. Mansir 30, 2082)
       // Clicks on non-existent/phantom days are ignored intentionally (see #11252)
-      if (day > BikramSambat.daysInMonth(year, monthNum)) {
-        return;
+      try {
+        if (day > BikramSambat.daysInMonth(year, monthNum)) {
+          return;
+        }
+      } catch ( e ) {
+        return; // Ignore if the library throws for out-of-range years/months
       }
       const monthName = NEPALI_MONTH_NAMES[monthNum - 1];
       if (monthName) {
-        // Update the input fields with Devanagari digits and trigger change
-        $parent.find('input[name="day"]').val(toDevanagari(day.toString())).trigger('change');
-        $parent.find('input[name="month"]').val(toDevanagari(monthNum.toString())).trigger('change');
-        $parent.find('input[name="year"]').val(toDevanagari(year.toString())).trigger('change').trigger('blur');
+        // Set all values first to prevent validation checks against stale/intermediate DOM states (see #11252)
+        $parent.find('input[name="day"]').val(toDevanagari(day.toString()));
+        $parent.find('input[name="month"]').val(toDevanagari(monthNum.toString()));
+        $parent.find('input[name="year"]').val(toDevanagari(year.toString()));
+
+        // Then trigger change and blur events so validation runs on the complete set of values
+        $parent.find('input[name="day"]').trigger('change');
+        $parent.find('input[name="month"]').trigger('change');
+        $parent.find('input[name="year"]').trigger('change').trigger('blur');
         $group.find('.month-dropdown button').html(monthName + ' <span class="caret"></span>');
       }
     },
     onClear: () => {
-      $parent.find('input[name="day"]').val('').trigger('change');
-      $parent.find('input[name="month"]').val('').trigger('change');
-      $parent.find('input[name="year"]').val('').trigger('change').trigger('blur');
+      // Set all values first to prevent validation checks against stale/intermediate DOM states
+      $parent.find('input[name="day"]').val('');
+      $parent.find('input[name="month"]').val('');
+      $parent.find('input[name="year"]').val('');
+
+      // Then trigger change and blur events so validation runs on the complete set of values
+      $parent.find('input[name="day"]').trigger('change');
+      $parent.find('input[name="month"]').trigger('change');
+      $parent.find('input[name="year"]').trigger('change').trigger('blur');
+
       $group.find('.month-dropdown button').html(`${MONTH_PLACEHOLDER} <span class="caret"></span>`);
       $hiddenDateInput.val('');
       const $picker = $hiddenDateInput.data('picker');
