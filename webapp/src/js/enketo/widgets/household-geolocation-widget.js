@@ -159,6 +159,7 @@ class HouseholdGeolocationWidget extends Widget {
       $(this.question)
         .find(CAPTURE_RADIOS_SELECTOR)
         .prop('disabled', false);
+      this._syncFieldToCheckedEditRadio();
     }
 
     const $resultRow = $(`<div class="${CLASS_NAMES.RESULT_ROW}">`);
@@ -205,6 +206,7 @@ class HouseholdGeolocationWidget extends Widget {
       $(this.question)
         .find(CAPTURE_RADIOS_SELECTOR)
         .prop('disabled', true);
+      this._syncFieldToCheckedEditRadio();
     }
 
     if (errorCode === GEOLOCATION_PERMISSION_DENIED) {
@@ -342,21 +344,31 @@ class HouseholdGeolocationWidget extends Widget {
 
     $choices.on('change', 'input[type="radio"]', event => {
       event.stopPropagation();
-      const value = event.target.value;
-      if (value === RADIO_VALUES.KEPT) {
-        $(this.element).val(RADIO_VALUES.KEPT).trigger('change');
-      } else if (value === RADIO_VALUES.REMOVED) {
-        $(this.element).val(FIELD_VALUES.SKIPPED).trigger('change');
-      } else if (value === RADIO_VALUES.CHANGE_LOCATION) {
-        this.element.dataset.geoContext = GEO_CONTEXT.HOME;
-        $(this.element).val(FIELD_VALUES.CAPTURED).trigger('change');
-      } else if (value === RADIO_VALUES.NOT_AT_HOUSEHOLD) {
-        this.element.dataset.geoContext = GEO_CONTEXT.OTHER;
-        $(this.element).val(FIELD_VALUES.CAPTURED).trigger('change');
-      }
+      this._applyEditRadioValue(event.target.value);
     });
 
     return $choices;
+  }
+
+  _applyEditRadioValue(value) {
+    if (value === RADIO_VALUES.KEPT) {
+      $(this.element).val(RADIO_VALUES.KEPT).trigger('change');
+    } else if (value === RADIO_VALUES.REMOVED) {
+      $(this.element).val(FIELD_VALUES.SKIPPED).trigger('change');
+    } else if (value === RADIO_VALUES.CHANGE_LOCATION) {
+      this.element.dataset.geoContext = GEO_CONTEXT.HOME;
+      $(this.element).val(FIELD_VALUES.CAPTURED).trigger('change');
+    } else if (value === RADIO_VALUES.NOT_AT_HOUSEHOLD) {
+      this.element.dataset.geoContext = GEO_CONTEXT.OTHER;
+      $(this.element).val(FIELD_VALUES.CAPTURED).trigger('change');
+    }
+  }
+
+  _syncFieldToCheckedEditRadio() {
+    const checkedValue = $(this.question).find('.geolocation-edit-choices input[type="radio"]:checked').val();
+    if (checkedValue) {
+      this._applyEditRadioValue(checkedValue);
+    }
   }
 
   _translate(key) {

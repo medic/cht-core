@@ -1054,6 +1054,44 @@ describe('Enketo: Household Geolocation Widget', () => {
         });
       });
 
+      describe('when Retry is clicked with "Keep saved location" still selected', () => {
+        it('should restore value to "kept" once the retried capture succeeds', async () => {
+          const failurePromise = Promise.resolve(GPS_FAILURE);
+          (window as any).CHTCore.Geolocation.currentPromise = failurePromise;
+          const { widget, container } = initEditWithLocationWidget();
+          await failurePromise;
+
+          const retryPromise = Promise.resolve(GPS_SUCCESS);
+          (window as any).CHTCore.Geolocation.retry = sinon.stub().callsFake(() => {
+            (window as any).CHTCore.Geolocation.currentPromise = retryPromise;
+          });
+          (container.querySelector(SELECTORS.RETRY_BTN) as HTMLElement).click();
+          await retryPromise;
+
+          const keepRadio = container.querySelector(SELECTORS.KEEP_RADIO) as HTMLInputElement;
+          expect(keepRadio.checked).to.be.true;
+          expect((widget.element as HTMLInputElement).value).to.equal('kept');
+        });
+
+        it('should restore value to "kept" once the retried capture fails again', async () => {
+          const failurePromise = Promise.resolve(GPS_FAILURE);
+          (window as any).CHTCore.Geolocation.currentPromise = failurePromise;
+          const { widget, container } = initEditWithLocationWidget();
+          await failurePromise;
+
+          const retryFailurePromise = Promise.resolve(GPS_FAILURE);
+          (window as any).CHTCore.Geolocation.retry = sinon.stub().callsFake(() => {
+            (window as any).CHTCore.Geolocation.currentPromise = retryFailurePromise;
+          });
+          (container.querySelector(SELECTORS.RETRY_BTN) as HTMLElement).click();
+          await retryFailurePromise;
+
+          const keepRadio = container.querySelector(SELECTORS.KEEP_RADIO) as HTMLInputElement;
+          expect(keepRadio.checked).to.be.true;
+          expect((widget.element as HTMLInputElement).value).to.equal('kept');
+        });
+      });
+
       describe('when permission is already denied at mount time', () => {
         const initWithPermissionDeniedAtMount = () => {
           (window as any).CHTCore.Geolocation.isPermissionDenied = sinon.stub().returns(true);
