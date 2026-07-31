@@ -18,12 +18,13 @@ import { MatAccordion } from '@angular/material/expansion';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { DuplicateContactsComponent } from '@mm-components/duplicate-contacts/duplicate-contacts.component';
-import { DuplicateCheck } from '@mm-services/deduplicate.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
-import events from 'enketo-core/src/js/event';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { FormType } from '@mm-services/form/form-config';
+import { FormValidationError } from '@mm-services/enketo.service';
 
 @Component({
   templateUrl: './contacts-edit.component.html',
@@ -38,6 +39,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly formService: FormService,
     private readonly contactTypesService: ContactTypesService,
     private readonly dbService: DbService,
+    private readonly xmlFormsService: XmlFormsService,
     private readonly performanceService: PerformanceService,
     private readonly telemetryService: TelemetryService,
     readonly chtDatasourceService: CHTDatasourceService,
@@ -52,8 +54,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
   subscription = new Subscription();
   translationsLoadedSubscription;
-  private globalActions;
-  private xmlVersion;
+  private readonly globalActions;
   private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
   enketoStatus;
@@ -73,9 +74,8 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private trackRender;
   private trackEditDuration;
   private trackSave;
-  private trackMetadata = { action: '', form: '' };
+  private readonly trackMetadata = { action: '', form: '' };
 
-  private duplicateCheck?: DuplicateCheck;
   duplicatesAcknowledged = false;
 
   duplicates: Contact.v1.Contact[] = [];
@@ -329,13 +329,10 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private async renderForm(formId: string, titleKey: string) {
-    const formDoc = await this.dbService.get().get(formId);
-    this.xmlVersion = formDoc.xmlVersion;
-    this.duplicateCheck = formDoc.duplicate_check;
-
+    const formConfig = await this.xmlFormsService.getFormConfig(FormType.Contact, formId);
     this.globalActions.setEnketoEditedStatus(false);
 
-    const formContext = new WebappEnketoFormContext('#contact-form', 'contact', formDoc, this.getFormInstanceData());
+    const formContext = new WebappEnketoFormContext('#contact-form', formConfig, this.getFormInstanceData());
     formContext.editedListener = this.markFormEdited.bind(this);
     formContext.valuechangeListener = this.resetFormError.bind(this);
     formContext.titleKey = titleKey;
@@ -424,7 +421,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     };
   }
 
-  save() {
+  async save() {
     if (this.enketoSaving) {
       console.debug('Attempted to call contacts-edit:save more than once');
       return;
@@ -440,66 +437,63 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     this.globalActions.setEnketoSavingStatus(true);
     this.globalActions.setEnketoError(null);
 
-    return Promise
-      .resolve(form.validate())
-      .then((valid) => {
-        if (!valid) {
-          throw new Error('Validation failed.');
-        }
+    this.recordDuplicatesAcknowledgedTelemetry();
 
-        // Updating fields before save. Ref: #6670.
-        form.view.html.dispatchEvent(events.BeforeSave());
+    try {
+      const result = await this.formService.saveContact(
+        { docId, type: this.enketoContact.type },
+        form,
+        this.duplicatesAcknowledged,
+        this.geoHandle,
+      );
 
-        if (this.duplicatesAcknowledged && this.duplicates.length) {
-          this.telemetryService.record(
-            ['enketo', 'contacts', this.enketoContact.type, 'duplicates_acknowledged'].join(':')
-          );
-        }
+      console.debug('saved contact', result);
 
-        return this.formService
-          .saveContact(
-            { docId, type: this.enketoContact.type },
-            { form, xmlVersion: this.xmlVersion, duplicateCheck: this.duplicateCheck },
-            this.duplicatesAcknowledged,
-            this.geoHandle,
-          )
-          .then((result) => {
-            console.debug('saved contact', result);
+      this.globalActions.setEnketoSavingStatus(false);
+      this.globalActions.setEnketoEditedStatus(false);
 
-            this.globalActions.setEnketoSavingStatus(false);
-            this.globalActions.setEnketoEditedStatus(false);
+      this.trackSave?.stop({
+        name: ['enketo', 'contacts', this.trackMetadata.form, this.trackMetadata.action, 'save'].join(':'),
+        recordApdex: true,
+      });
 
-            this.trackSave?.stop({
-              name: ['enketo', 'contacts', this.trackMetadata.form, this.trackMetadata.action, 'save'].join(':'),
-              recordApdex: true,
-            });
+      this.translateService
+        .get(docId ? 'contact.updated' : 'contact.created')
+        .then(snackBarContent => this.globalActions.setSnackbarContent(snackBarContent));
 
-            this.translateService
-              .get(docId ? 'contact.updated' : 'contact.created')
-              .then(snackBarContent => this.globalActions.setSnackbarContent(snackBarContent));
+      this.router.navigate(['/contacts', result.docId]);
+    } catch (err) {
+      this.globalActions.setEnketoSavingStatus(false);
 
-            this.router.navigate(['/contacts', result.docId]);
-          })
-          .catch((err) => {
-            if (err instanceof DuplicatesFoundError) {
-              this.duplicates = err.duplicates;
-            } else {
-              this.duplicates = [];
-            }
-
-            console.error('Error submitting form data', err);
-
-            this.globalActions.setEnketoSavingStatus(false);
-            return this.translateService
-              .get('Error updating contact')
-              .then(error => this.globalActions.setEnketoError(error));
-          });
-      })
-      .catch(() => {
+      if (err instanceof FormValidationError) {
         // validation messages will be displayed for individual fields.
         // That's all we want, really.
-        this.globalActions.setEnketoSavingStatus(false);
-      });
+        return;
+      }
+
+      this.populateErrorDuplicates(err);
+      console.error('Error submitting form data', err);
+
+      return this.translateService
+        .get('Error updating contact')
+        .then(error => this.globalActions.setEnketoError(error));
+    }
+  }
+
+  private recordDuplicatesAcknowledgedTelemetry() {
+    if (this.duplicatesAcknowledged && this.duplicates.length) {
+      this.telemetryService.record(
+        ['enketo', 'contacts', this.enketoContact.type, 'duplicates_acknowledged'].join(':')
+      );
+    }
+  }
+
+  private populateErrorDuplicates(err) {
+    if (err instanceof DuplicatesFoundError) {
+      this.duplicates = err.duplicates;
+    } else {
+      this.duplicates = [];
+    }
   }
 
   navigationCancel() {

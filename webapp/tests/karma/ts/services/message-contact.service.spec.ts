@@ -17,7 +17,7 @@ describe('Message Contacts Service', () => {
 
   beforeEach(() => {
     dbService = { get: () => ({ query: sinon.stub() }) };
-    getDataRecordsService = { get: sinon.stub() };
+    getDataRecordsService = { getReports: sinon.stub() };
     hydrateMessagesService = { hydrate: sinon.stub() };
     addReadStatusService = { updateMessages: sinon.stub().returnsArg(0) };
 
@@ -55,7 +55,7 @@ describe('Message Contacts Service', () => {
         query: sinon.stub().resolves(dbRows),
         allDocs: sinon.stub().resolves(dbRows)
       });
-      getDataRecordsService.get.resolves([
+      getDataRecordsService.getReports.resolves([
         { _id: 'id1' },
         { _id: 'id2' },
         { _id: 'id3' },
@@ -72,8 +72,8 @@ describe('Message Contacts Service', () => {
         .getList()
         .then(list => {
           expect(addReadStatusService.updateMessages.callCount).to.equal(1);
-          expect(getDataRecordsService.get.callCount).to.equal(1);
-          expect(getDataRecordsService.get.args[0]).to.deep.equal([
+          expect(getDataRecordsService.getReports.callCount).to.equal(1);
+          expect(getDataRecordsService.getReports.args[0]).to.deep.equal([
             ['id1', 'id2', 'id3', 'id4'], { include_docs: true }
           ]);
           expect(hydrateMessagesService.hydrate.callCount).to.equal(1);
@@ -144,7 +144,7 @@ describe('Message Contacts Service', () => {
         .then(result => {
           expect(query.args[0][1]).to.deep.equal(expectedQueryParams);
           expect(addReadStatusService.updateMessages.callCount).to.equal(1);
-          expect(getDataRecordsService.get.callCount).to.equal(0);
+          expect(getDataRecordsService.getReports.callCount).to.equal(0);
           expect(hydrateMessagesService.hydrate.callCount).to.equal(1);
           expect(hydrateMessagesService.hydrate.args[0]).to.deep.equal([[
             { id: 'some_id1', value: { id: 'id1' }, doc: { _id: 'some_id1' } },
@@ -182,7 +182,7 @@ describe('Message Contacts Service', () => {
         .getConversation('abc', 45)
         .then(result => {
           expect(query.args[0][1]).to.deep.equal(expectedQueryParams);
-          expect(getDataRecordsService.get.callCount).to.deep.equal(0);
+          expect(getDataRecordsService.getReports.callCount).to.deep.equal(0);
           expect(hydrateMessagesService.hydrate.callCount).to.equal(1);
           expect(hydrateMessagesService.hydrate.args[0]).to.deep.equal([[]]);
           expect(result).to.deep.equal([]);
@@ -210,7 +210,7 @@ describe('Message Contacts Service', () => {
         .getConversation('abc', 45, 120)
         .then(result => {
           expect(query.args[0][1]).to.deep.equal(expectedQueryParams);
-          expect(getDataRecordsService.get.callCount).to.deep.equal(0);
+          expect(getDataRecordsService.getReports.callCount).to.deep.equal(0);
           expect(hydrateMessagesService.hydrate.callCount).to.equal(1);
           expect(hydrateMessagesService.hydrate.args[0]).to.deep.equal([[]]);
           expect(result).to.deep.equal([]);
@@ -238,7 +238,7 @@ describe('Message Contacts Service', () => {
         .getConversation('abc', 45, 45)
         .then(result => {
           expect(query.args[0][1]).to.deep.equal(expectedQueryParams);
-          expect(getDataRecordsService.get.callCount).to.deep.equal(0);
+          expect(getDataRecordsService.getReports.callCount).to.deep.equal(0);
           expect(hydrateMessagesService.hydrate.callCount).to.equal(1);
           expect(hydrateMessagesService.hydrate.args[0]).to.deep.equal([[]]);
           expect(result).to.deep.equal([]);

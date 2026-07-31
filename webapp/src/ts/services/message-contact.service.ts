@@ -51,7 +51,7 @@ export class MessageContactService {
         const ids = response.rows.map(row => row.value && row.value.id);
 
         return this.getDataRecordsService
-          .get(ids, {include_docs: true})
+          .getReports(ids, {include_docs: true})
           .then(docs => {
             response.rows.forEach((row, idx) => row.doc = docs[idx]);
             return response.rows;
