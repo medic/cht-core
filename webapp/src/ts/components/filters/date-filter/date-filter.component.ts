@@ -140,7 +140,8 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
           if (data.bsDate > maxDays) {
             return;
           }
-        } catch (e) {
+        } catch (_e) {
+          console.warn('BikramSambat date limit check error:', _e);
           return; // Ignore if the library throws for out-of-range years/months
         }
         const gregDateStr = toGreg_text(data.bsYear, data.bsMonth, data.bsDate);

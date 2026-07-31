@@ -516,7 +516,7 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
     expect(realDateInput().val()).to.not.equal('');
   });
 
-  it('successfully updates date on sequential selections in different months without swallowing the second pick', async () => {
+  it('updates date on sequential selections without swallowing second pick', async () => {
     await initWidget();
     const hiddenInput = $('.nepali-datepicker-input');
 

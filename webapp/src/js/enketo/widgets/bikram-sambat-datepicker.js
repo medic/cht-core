@@ -37,6 +37,15 @@ const NEPALI_MONTH_NAMES = [
 
 const MONTH_PLACEHOLDER = 'महिना';
 
+const isDayValid = (day, month, year) => {
+  try {
+    return day >= 1 && day <= BikramSambat.daysInMonth(year, month);
+  } catch (_e) {
+    console.warn('BikramSambat validation error:', _e);
+    return false;
+  }
+};
+
 class Bikramsambatdatepicker extends Widget {
   static get selector() {
     return 'input[type=date]';
@@ -107,21 +116,10 @@ class Bikramsambatdatepicker extends Widget {
           const month = Number(fromDevanagari(monthDev));
           const year = Number(fromDevanagari(yearDev));
 
-          if (!Number.isNaN(day) && !Number.isNaN(month) && !Number.isNaN(year)) {
-            try {
-              const maxDays = BikramSambat.daysInMonth(year, month);
-              // Guard against invalid day values on manual entry (see #11252)
-              if (day < 1 || day > maxDays) {
-                $realDateInput.val( '' );
-                $realDateInput.trigger( 'change' );
-                $parent.find( 'input[name="day"]' ).val( '' );
-              }
-            } catch ( e ) {
-              // If the library throws for out-of-range years, treat as invalid and clear (see #11252)
-              $realDateInput.val( '' );
-              $realDateInput.trigger( 'change' );
-              $parent.find( 'input[name="day"]' ).val( '' );
-            }
+          if (Number.isNaN(day) || Number.isNaN(month) || Number.isNaN(year) || !isDayValid(day, month, year)) {
+            $realDateInput.val( '' );
+            $realDateInput.trigger( 'change' );
+            $parent.find( 'input[name="day"]' ).val( '' );
           }
         };
 
@@ -183,7 +181,8 @@ const setupCalendarPicker = ($parent, widget) => {
         if (day > BikramSambat.daysInMonth(year, monthNum)) {
           return;
         }
-      } catch ( e ) {
+      } catch ( _e ) {
+        console.warn('BikramSambat date limit check error:', _e);
         return; // Ignore if the library throws for out-of-range years/months
       }
       const monthName = NEPALI_MONTH_NAMES[monthNum - 1];
