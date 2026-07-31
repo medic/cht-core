@@ -637,7 +637,7 @@ describe('GenerateSearchRequests service', () => {
       chai.expect(keys).to.include('+9779841234567');
     });
 
-    it('contacts multi-word search containing a phone number generates union request for the phone and standard request for the other word', () => {
+    it('contacts multi-word search containing a phone number generates union request', () => {
       const settings = { default_country_code: '977' };
       const result = service('contacts', { search: 'ram 9841234567', settings });
       chai.expect(result.length).to.equal(2);
