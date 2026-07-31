@@ -6,7 +6,8 @@ import {
   findUploadNodeByFilename,
   indexedFieldPath,
 } from '@mm-providers/attachment-routing.provider';
-import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
+import { FormConfig } from '@mm-services/form/form-config';
+import { EnketoReportFormData } from '@mm-services/form/form-data';
 
 describe('attachment-routing', () => {
   const parse = (xml: string): Element => new DOMParser().parseFromString(xml, 'text/xml').documentElement;
@@ -86,18 +87,22 @@ describe('attachment-routing', () => {
   describe('indexedFieldPath (report repeat-index reconstruction)', () => {
     const RECORD = require('../services/enketo-xml/plain-repeat-binary.xml').default;
     const FORM = require('../services/enketo-xml/plain-repeat-binary-form.xml').default;
-    const translation = new EnketoTranslationService();
+    const formConfig = new FormConfig({}, 'report', FORM, '', '');
+    const deserialize = (record: string): any => {
+      const xmlDoc = new DOMParser().parseFromString(record, 'text/xml');
+      return new EnketoReportFormData(xmlDoc, 'id').deserialize(formConfig);
+    };
 
-    it('reportRecordToJs array-ifies a plain repeat', () => {
-      const fields: any = translation.reportRecordToJs(RECORD, FORM);
-      expect(translation.getRepeatPaths(FORM)).to.deep.equal(['/my-form/my_repeat']);
+    it('report deserialize array-ifies a plain repeat', () => {
+      const fields: any = deserialize(RECORD);
+      expect(formConfig.repeatPaths).to.deep.equal(['/my-form/my_repeat']);
       expect(Array.isArray(fields.my_repeat)).to.equal(true);
       expect(fields.my_repeat).to.have.lengthOf(2);
     });
 
     it('reconstructs the array-index path and objectPath.set preserves the array', () => {
       const root = parse(RECORD);
-      const repeatPaths = translation.getRepeatPaths(FORM);
+      const repeatPaths = formConfig.repeatPaths;
       const photos = Array.from(root.getElementsByTagName('photo'));
       expect(photos).to.have.lengthOf(2);
 
@@ -111,7 +116,7 @@ describe('attachment-routing', () => {
       expect(computeAttachmentReference(photos[1], root)).to.equal('my_repeat[2]/photo');
 
       // route the references into the parsed fields, as the report strategy does
-      const fields: any = translation.reportRecordToJs(RECORD, FORM);
+      const fields: any = deserialize(RECORD);
       photos.forEach((photo) => {
         const segments = indexedFieldPath(photo, root, repeatPaths);
         objectPath.set(fields, segments, computeAttachmentReference(photo, root));
@@ -127,7 +132,7 @@ describe('attachment-routing', () => {
     it('emits a plain (non-indexed) path for a main-doc field outside any repeat', () => {
       const root = parse(RECORD);
       const name = root.getElementsByTagName('name')[0];
-      expect(indexedFieldPath(name, root, translation.getRepeatPaths(FORM))).to.deep.equal(['name']);
+      expect(indexedFieldPath(name, root, formConfig.repeatPaths)).to.deep.equal(['name']);
     });
   });
 });

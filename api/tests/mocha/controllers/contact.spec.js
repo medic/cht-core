@@ -10,6 +10,7 @@ describe('Contact Controller', () => {
   const contactGet = sandbox.stub();
   const contactGetWithLineage = sandbox.stub();
   const contactGetUuidsPage = sandbox.stub();
+  const contactGetPage = sandbox.stub();
   const contactGetSummaries = sandbox.stub();
 
   let assertPermissions;
@@ -23,6 +24,7 @@ describe('Contact Controller', () => {
     bind.withArgs(Contact.v1.get).returns(contactGet);
     bind.withArgs(Contact.v1.getWithLineage).returns(contactGetWithLineage);
     bind.withArgs(Contact.v1.getUuidsPage).returns(contactGetUuidsPage);
+    bind.withArgs(Contact.v1.getPage).returns(contactGetPage);
     bind.withArgs(Contact.v1.getSummaries).returns(contactGetSummaries);
     controller = require('../../../src/controllers/contact');
   });
@@ -253,6 +255,82 @@ describe('Contact Controller', () => {
         expect(contactGetUuidsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+      });
+    });
+
+    describe('getAll', () => {
+      const limit = 100;
+      const cursor = null;
+      const contacts = { data: [{ type: 'person' }], cursor: null };
+
+      it('returns a page of contacts for the given comma-separated ids', async () => {
+        req = { query: { ids: 'a,b,c', cursor, limit } };
+        const idsQualifier = { ids: ['a', 'b', 'c'] };
+        const qualifierByIds = sinon.stub(Qualifier, 'byIds').returns(idsQualifier);
+        contactGetPage.resolves(contacts);
+
+        await controller.v1.getAll(req, res);
+
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
+        expect(qualifierByIds.calledOnceWithExactly(['a', 'b', 'c'])).to.be.true;
+        expect(contactGetPage.calledOnceWithExactly(idsQualifier, cursor, limit)).to.be.true;
+        expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('returns a page of contacts for the given type', async () => {
+        req = { query: { type: 'person', cursor, limit } };
+        const typeQualifier = { contactType: 'person' };
+        const qualifierByContactType = sinon.stub(Qualifier, 'byContactType').returns(typeQualifier);
+        contactGetPage.resolves(contacts);
+
+        await controller.v1.getAll(req, res);
+
+        expect(qualifierByContactType.calledOnceWithExactly('person')).to.be.true;
+        expect(contactGetPage.calledOnceWithExactly(typeQualifier, cursor, limit)).to.be.true;
+        expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('prefers ids over type when both are provided', async () => {
+        req = { query: { ids: 'a,b', type: 'person', cursor, limit } };
+        const idsQualifier = { ids: ['a', 'b'] };
+        const qualifierByIds = sinon.stub(Qualifier, 'byIds').returns(idsQualifier);
+        const qualifierByContactType = sinon.stub(Qualifier, 'byContactType');
+        contactGetPage.resolves(contacts);
+
+        await controller.v1.getAll(req, res);
+
+        expect(qualifierByIds.calledOnceWithExactly(['a', 'b'])).to.be.true;
+        expect(qualifierByContactType.notCalled).to.be.true;
+        expect(contactGetPage.calledOnceWithExactly(idsQualifier, cursor, limit)).to.be.true;
+      });
+
+      it('returns a 400 error when neither ids nor type is provided', async () => {
+        req = { query: { cursor, limit } };
+
+        await controller.v1.getAll(req, res);
+
+        expect(contactGetPage.notCalled).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(
+          { status: 400, message: 'Either query param ids or type is required' },
+          req,
+          res
+        )).to.be.true;
+      });
+
+      it('returns an error when the ids param resolves to an empty list', async () => {
+        req = { query: { ids: ',', cursor, limit } };
+
+        await controller.v1.getAll(req, res);
+
+        expect(contactGetPage.notCalled).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.called).to.be.true;
       });
     });
 

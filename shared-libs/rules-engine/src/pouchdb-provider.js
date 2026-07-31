@@ -39,7 +39,7 @@ const medicPouchProvider = db => {
     // For users with ~1000 contacts it is ~50x faster to provider a start/end key instead of specifying all ids
     allTasks: prefix => {
       const options = { startkey: `${prefix}-`, endkey: `${prefix}-\ufff0`, include_docs: true };
-      return docsOf(dbQuery('medic-client/tasks_by_contact', options));
+      return docsOf(dbQuery('medic-offline-tasks/tasks_by_contact', options));
     },
 
     allTaskData: userSettingsDoc => {
@@ -108,12 +108,12 @@ const medicPouchProvider = db => {
 
     tasksByRelation: (contactIds, prefix) => {
       const keys = contactIds.map(contactId => `${prefix}-${contactId}`);
-      return docsOf(dbQuery( 'medic-client/tasks_by_contact', { keys, include_docs: true }));
+      return docsOf(dbQuery( 'medic-offline-tasks/tasks_by_contact', { keys, include_docs: true }));
     },
 
     allTaskRowsByOwner: (contactIds) => {
       const keys = contactIds.map(contactId => (['owner', 'all', contactId]));
-      return rowsOf(dbQuery( 'medic-client/tasks_by_contact', { keys }));
+      return rowsOf(dbQuery( 'medic-offline-tasks/tasks_by_contact', { keys }));
     },
 
     allTaskRows: () => {
@@ -122,7 +122,7 @@ const medicPouchProvider = db => {
         endkey: ['owner', 'all', '\ufff0'],
       };
 
-      return rowsOf(dbQuery( 'medic-client/tasks_by_contact', options));
+      return rowsOf(dbQuery( 'medic-offline-tasks/tasks_by_contact', options));
     },
 
     taskDataFor: async (contactIds, userSettingsDoc) => {

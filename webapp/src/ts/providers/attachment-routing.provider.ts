@@ -1,7 +1,7 @@
 /**
- * Pure routing primitives shared by the report (`EnketoService`) and contact
- * (`ContactSaveService`) attachment pipelines. The model-specific parts (owner
- * resolution, field write-back, container source) stay in each service.
+ * Pure routing primitives shared by the report and contact attachment pipelines
+ * (both driven from `EnketoService`). The model-specific parts (owner resolution,
+ * field write-back, container source) stay with each pipeline's strategy.
  */
 
 /**

@@ -11,6 +11,7 @@ describe('Report Controller Tests', () => {
   const reportGet = sandbox.stub();
   const reportGetWithLineage = sandbox.stub();
   const reportGetIdsPage = sandbox.stub();
+  const reportGetPage = sandbox.stub();
   const reportGetSummaries = sandbox.stub();
   const createReport = sandbox.stub();
   const updateReport = sandbox.stub();
@@ -26,6 +27,7 @@ describe('Report Controller Tests', () => {
     bind.withArgs(Report.v1.get).returns(reportGet);
     bind.withArgs(Report.v1.getWithLineage).returns(reportGetWithLineage);
     bind.withArgs(Report.v1.getUuidsPage).returns(reportGetIdsPage);
+    bind.withArgs(Report.v1.getPage).returns(reportGetPage);
     bind.withArgs(Report.v1.getSummaries).returns(reportGetSummaries);
     bind.withArgs(Report.v1.create).returns(createReport);
     bind.withArgs(Report.v1.update).returns(updateReport);
@@ -178,6 +180,54 @@ describe('Report Controller Tests', () => {
         expect(reportGetIdsPage.calledOnceWithExactly(freetexQualifier, cursor, undefined)).to.be.true;
         expect(res.json.calledOnceWithExactly(reports)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
+      });
+    });
+
+    describe('getAll', () => {
+      const limit = 100;
+      const cursor = null;
+      const reports = { data: [{ type: DOC_TYPES.DATA_RECORD, form: 'yes' }], cursor: null };
+
+      it('returns a page of reports for the given comma-separated ids', async () => {
+        req = { query: { ids: 'a,b,c', cursor, limit } };
+        const idsQualifier = { ids: ['a', 'b', 'c'] };
+        const qualifierByIds = sinon.stub(Qualifier, 'byIds').returns(idsQualifier);
+        reportGetPage.resolves(reports);
+
+        await controller.v1.getAll(req, res);
+
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_reports'] }
+        )).to.be.true;
+        expect(qualifierByIds.calledOnceWithExactly(['a', 'b', 'c'])).to.be.true;
+        expect(reportGetPage.calledOnceWithExactly(idsQualifier, cursor, limit)).to.be.true;
+        expect(res.json.calledOnceWithExactly(reports)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('returns a 400 error when the ids param is not provided', async () => {
+        req = { query: { cursor, limit } };
+
+        await controller.v1.getAll(req, res);
+
+        expect(reportGetPage.notCalled).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(
+          { status: 400, message: 'Query param ids is required' },
+          req,
+          res
+        )).to.be.true;
+      });
+
+      it('returns an error when the ids param resolves to an empty list', async () => {
+        req = { query: { ids: ',', cursor, limit } };
+
+        await controller.v1.getAll(req, res);
+
+        expect(reportGetPage.notCalled).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.called).to.be.true;
       });
     });
 
