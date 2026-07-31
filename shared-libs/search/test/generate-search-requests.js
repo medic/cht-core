@@ -517,7 +517,7 @@ describe('GenerateSearchRequests service', () => {
       chai.expect(result[0].params.key).to.equal('9841234567');
     });
 
-    it('contacts search with local phone that normalizes to same value does not duplicate', () => {
+    it('contacts search with local phone that normalizes to different value generates union request', () => {
       const settings = { default_country_code: '1' };
       const result = service('contacts', { search: '2025551234', settings });
       chai.expect(result.length).to.equal(1);
@@ -581,7 +581,7 @@ describe('GenerateSearchRequests service', () => {
       chai.expect(keyTypes).to.include('clinic:+9779841234567');
     });
 
-    it('contacts freetext with type and startkey/endkey params (range query path)', () => {
+    it('contacts freetext with type and single-word params', () => {
       const filters = {
         search: 'som',
         types: {
@@ -594,6 +594,80 @@ describe('GenerateSearchRequests service', () => {
       chai.expect(result[0].view).to.equal('contacts_by_type_freetext');
       chai.expect(result[0].params.key).to.equal('som');
       chai.expect(result[0].params.type).to.equal('clinic');
+    });
+
+    it('normalizes Devanagari numerals in search terms', () => {
+      const result = service('contacts', { search: '१२३४५६' });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].params.key).to.equal('123456');
+    });
+
+    it('normalizes Devanagari numerals in multi-word search', () => {
+      const result = service('contacts', { search: 'patient १२३४' });
+      chai.expect(result.length).to.equal(2);
+      chai.expect(result[0].params.key).to.equal('patient');
+      chai.expect(result[1].params.key).to.equal('1234');
+    });
+
+    it('normalizes Devanagari numerals in reports search', () => {
+      const result = service('reports', { search: 'patient_id:१२३४५' });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].params.key).to.equal('patient_id:12345');
+    });
+
+    it('contacts search with Devanagari numerals local phone number searches normalized international format', () => {
+      const settings = { default_country_code: '977' };
+      const result = service('contacts', { search: '९८४१२३४५६७', settings });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('contacts_by_freetext');
+      chai.expect(result[0].union).to.equal(true);
+      const keys = result[0].paramSets.map(p => p.key);
+      chai.expect(keys).to.include('9841234567');
+      chai.expect(keys).to.include('+9779841234567');
+    });
+
+    it('reports search by local phone number searches normalized international format', () => {
+      const settings = { default_country_code: '977' };
+      const result = service('reports', { search: '9841234567', settings });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('reports_by_freetext');
+      chai.expect(result[0].union).to.equal(true);
+      const keys = result[0].paramSets.map(p => p.key);
+      chai.expect(keys).to.include('9841234567');
+      chai.expect(keys).to.include('+9779841234567');
+    });
+
+    it('contacts multi-word search containing a phone number generates union request for the phone and standard request for the other word', () => {
+      const settings = { default_country_code: '977' };
+      const result = service('contacts', { search: 'ram 9841234567', settings });
+      chai.expect(result.length).to.equal(2);
+      // Word 'ram'
+      chai.expect(result[0].view).to.equal('contacts_by_freetext');
+      chai.expect(result[0].params.key).to.equal('ram');
+      chai.expect(result[0].union).to.be.undefined;
+      // Word '9841234567'
+      chai.expect(result[1].view).to.equal('contacts_by_freetext');
+      chai.expect(result[1].union).to.equal(true);
+      const keys = result[1].paramSets.map(p => p.key);
+      chai.expect(keys).to.include('9841234567');
+      chai.expect(keys).to.include('+9779841234567');
+    });
+
+    it('contacts search with numeric default_country_code normalizes correctly', () => {
+      const settings = { default_country_code: 1 };
+      const result = service('contacts', { search: '2025551234', settings });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].union).to.equal(true);
+      const keys = result[0].paramSets.map(p => p.key);
+      chai.expect(keys).to.include('2025551234');
+      chai.expect(keys).to.include('+12025551234');
+    });
+
+    it('contacts search with settings but short numeric word does not normalize phone', () => {
+      const settings = { default_country_code: '977', phone_validation: 'none' };
+      const result = service('contacts', { search: '12', settings });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('medic-client/contacts_by_type');
     });
   });
 
