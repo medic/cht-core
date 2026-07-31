@@ -58,43 +58,40 @@ const isMidWriteStale = infoDoc => {
 };
 
 const getConsistentInfoDoc = async (change, retriesLeft) => {
-  const infoDoc = await infodoc.get(change);
-  if (!isInfoDocMidWrite(infoDoc) || isMidWriteStale(infoDoc) || retriesLeft <= 0) {
-    return infoDoc;
+  const infoDocForChange = await infodoc.get(change);
+  if (!isInfoDocMidWrite(infoDocForChange) || isMidWriteStale(infoDocForChange) || retriesLeft <= 0) {
+    return infoDocForChange;
   }
   await new Promise(resolve => setTimeout(resolve, INFODOC_WAIT_INTERVAL));
   return getConsistentInfoDoc(change, retriesLeft - 1);
 };
 
 // applies all loaded transitions over a change
-const processChange = (change, callback) => {
-  lineage
-    .fetchHydratedDoc(change.id)
-    .then(doc => {
-      change.doc = doc;
-      return getConsistentInfoDoc(change, MAX_INFODOC_WAIT).then(async infoDoc => {
-        if (isMidWriteStale(infoDoc)) {
-          // if the transistions_started marker is stale, clear it and process the doc anyway
-          logger.warn(`transitions: clearing stale transitions_started marker on infodoc for ${change.id}`);
-          await infodoc
-            .clearTransitionsStarted(change.id)
-            .catch(err => logger.error(`transitions: error clearing stale marker on doc ${change.id}: %o`, err));
-          delete infoDoc.transitions_started;
-        } else if (isInfoDocMidWrite(infoDoc)) {
-          logger.warn(
-            `transitions: infodoc for ${change.id} still mid-write after ${MAX_INFODOC_WAIT} retries, skipping`
-          );
-          return callback();
-        }
-        change.info = infoDoc;
-        change.initialProcessing = !infoDoc.transitions;
-        module.exports.applyTransitions(change, callback);
-      });
-    })
-    .catch(err => {
-      logger.error('transitions: processChange failed for %s : %o', change.id, err);
-      return callback(err);
-    });
+const processChange = async (change, callback) => {
+  try {
+    change.doc = await lineage.fetchHydratedDoc(change.id);
+    const infoDocForChange = await getConsistentInfoDoc(change, MAX_INFODOC_WAIT);
+
+    if (isInfoDocMidWrite(infoDocForChange)) {
+      if (!isMidWriteStale(infoDocForChange)) {
+        logger.warn(
+          `transitions: infodoc for ${change.id} still mid-write after ${MAX_INFODOC_WAIT} retries, skipping`
+        );
+        return callback();
+      }
+      // the transitions_started marker is stale, so clear it and process the doc anyway
+      logger.warn(`transitions: clearing stale transitions_started marker on infodoc for ${change.id}`);
+      await infodoc.clearTransitionsStarted(change.id);
+      delete infoDocForChange.transitions_started;
+    }
+
+    change.info = infoDocForChange;
+    change.initialProcessing = !infoDocForChange.transitions;
+    return module.exports.applyTransitions(change, callback);
+  } catch (err) {
+    logger.error('transitions: processChange failed for %s : %o', change.id, err);
+    return callback(err);
+  }
 };
 
 // given a collection of docs this function will:
@@ -129,7 +126,7 @@ const processDocs = docs => {
     .then(() => {
       return new Promise((resolve, reject) => {
         const operations = changes.map(change => callback => {
-          applyTransitions(change, (err, result) => {
+          const onTransitionsApplied = (err, result) => {
             if (err || result) {
               return callback(null, err || result);
             }
@@ -140,7 +137,8 @@ const processDocs = docs => {
               result => callback(null, result),
               err => callback(null, err)
             );
-          }, { markStarted: true });
+          };
+          applyTransitions(change, onTransitionsApplied, { markStarted: true });
         });
         async.series(operations, (err, results) => {
           return err ? reject(err) : resolve(results);

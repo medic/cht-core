@@ -423,6 +423,7 @@ describe('functional transitions', () => {
       sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
 
       transitions.loadTransitions();
+      const applyTransitions = sinon.spy(transitions, 'applyTransitions');
       const { clock, processed } = startProcessChange({ id: doc._id });
 
       // initial read happens before any retry timer fires
@@ -438,7 +439,8 @@ describe('functional transitions', () => {
       assert.isUndefined(result);
       // marker cleared on the 3rd read, so no further retries
       assert.equal(get.callCount, 3);
-      // no transition matched, so nothing is saved, but the change was processed (not skipped)
+      // the change was processed, not skipped, but no transition matched, so nothing is saved
+      assert.equal(applyTransitions.callCount, 1);
       assert.equal(saveTransitions.callCount, 0);
       assert.equal(put.callCount, 0);
     });
@@ -459,6 +461,7 @@ describe('functional transitions', () => {
       transitions.loadTransitions();
       // stub after loadTransitions so we only capture the skip warning, not the "disabled transition" ones
       const warn = sinon.stub(logger, 'warn');
+      const applyTransitions = sinon.spy(transitions, 'applyTransitions');
       const { clock, processed } = startProcessChange({ id: doc._id });
 
       // initial read happens before any retry timer fires
@@ -475,6 +478,7 @@ describe('functional transitions', () => {
       // initial read + 5 retries, then it gives up
       assert.equal(get.callCount, 6);
       // the change is skipped: no transitions run and nothing is saved
+      assert.equal(applyTransitions.callCount, 0);
       assert.equal(saveTransitions.callCount, 0);
       assert.equal(put.callCount, 0);
       assert.equal(warn.callCount, 1);
@@ -496,6 +500,7 @@ describe('functional transitions', () => {
       sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
 
       transitions.loadTransitions();
+      const applyTransitions = sinon.spy(transitions, 'applyTransitions');
       const { clock, processed } = startProcessChange({ id: doc._id });
 
       // stale marker short-circuits the wait: a single read, no retries
@@ -509,6 +514,7 @@ describe('functional transitions', () => {
       // the marker is cleared and the change is processed (not skipped)
       assert.equal(clearTransitionsStarted.callCount, 1);
       assert.deepEqual(clearTransitionsStarted.args[0], ['my_id']);
+      assert.equal(applyTransitions.callCount, 1);
       assert.equal(saveTransitions.callCount, 0);
       assert.equal(put.callCount, 0);
     });
@@ -682,6 +688,10 @@ describe('functional transitions', () => {
         }
       });
 
+      // fake the clock so the transitions_started marker has a known value
+      const transitionsStarted = new Date('2026-06-30T12:00:00.000Z').toISOString();
+      sinon.useFakeTimers({ now: new Date(transitionsStarted), toFake: ['Date'] });
+
       transitions.loadTransitions(true);
       let infodocSaves;
 
@@ -705,11 +715,11 @@ describe('functional transitions', () => {
         assert.equal(infodocSaves.length, 2);
         // the first write only marks the infodoc as mid-write, with no transitions yet
         let startedSave = infodocSaves.find(args => args[0].transitions_started)[0];
-        assert.isString(startedSave.transitions_started);
-        assert.deepEqualExcluding(startedSave, {
+        assert.deepEqual(startedSave, {
           id: `${savedDocs[0]._id}-info`,
           doc_id: savedDocs[0]._id,
-        }, 'transitions_started');
+          transitions_started: transitionsStarted,
+        });
         // the second write commits the transitions and removes the mid-write marker
         let txnSave = infodocSaves.find(args => args[0].transitions)[0];
         assert.isUndefined(txnSave.transitions_started);
@@ -731,11 +741,11 @@ describe('functional transitions', () => {
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[1]._id);
         assert.equal(infodocSaves.length, 2);
         startedSave = infodocSaves.find(args => args[0].transitions_started)[0];
-        assert.isString(startedSave.transitions_started);
-        assert.deepEqualExcluding(startedSave, {
+        assert.deepEqual(startedSave, {
           id: `${savedDocs[1]._id}-info`,
           doc_id: savedDocs[1]._id,
-        }, 'transitions_started');
+          transitions_started: transitionsStarted,
+        });
         txnSave = infodocSaves.find(args => args[0].transitions)[0];
         assert.isUndefined(txnSave.transitions_started);
         assert.sameMembers(Object.keys(txnSave.transitions), ['default_responses', 'update_clinics']);
@@ -754,11 +764,11 @@ describe('functional transitions', () => {
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[3]._id);
         assert.equal(infodocSaves.length, 2);
         startedSave = infodocSaves.find(args => args[0].transitions_started)[0];
-        assert.isString(startedSave.transitions_started);
-        assert.deepEqualExcluding(startedSave, {
+        assert.deepEqual(startedSave, {
           id: `${savedDocs[3]._id}-info`,
           doc_id: savedDocs[3]._id,
-        }, 'transitions_started');
+          transitions_started: transitionsStarted,
+        });
         txnSave = infodocSaves.find(args => args[0].transitions)[0];
         assert.isUndefined(txnSave.transitions_started);
         assert.sameMembers(Object.keys(txnSave.transitions), ['default_responses', 'update_sent_by']);
@@ -779,11 +789,11 @@ describe('functional transitions', () => {
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[4]._id);
         assert.equal(infodocSaves.length, 2);
         startedSave = infodocSaves.find(args => args[0].transitions_started)[0];
-        assert.isString(startedSave.transitions_started);
-        assert.deepEqualExcluding(startedSave, {
+        assert.deepEqual(startedSave, {
           id: `${savedDocs[4]._id}-info`,
           doc_id: savedDocs[4]._id,
-        }, 'transitions_started');
+          transitions_started: transitionsStarted,
+        });
         txnSave = infodocSaves.find(args => args[0].transitions)[0];
         assert.isUndefined(txnSave.transitions_started);
         assert.sameMembers(
