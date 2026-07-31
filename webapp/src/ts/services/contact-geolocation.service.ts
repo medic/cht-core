@@ -5,6 +5,18 @@ import { DbService } from '@mm-services/db.service';
 const HouseholdGeolocationWidget = require('../../js/enketo/widgets/household-geolocation-widget');
 const { RADIO_VALUES, FIELD_VALUES, GEO_CONTEXT, DATASET_TRUE } = HouseholdGeolocationWidget;
 
+const MAX_LATITUDE = 90;
+const MAX_LONGITUDE = 180;
+
+const isValidCoordinate = (value: unknown, maxAbsValue: number): boolean => {
+  return typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= maxAbsValue;
+};
+
+export const isValidGeolocation = (geolocation: any): boolean => {
+  return isValidCoordinate(geolocation?.latitude, MAX_LATITUDE) &&
+    isValidCoordinate(geolocation?.longitude, MAX_LONGITUDE);
+};
+
 export class GeolocationEditState {
   readonly hasLocation: boolean;
   readonly isEdit: boolean;
@@ -58,7 +70,7 @@ export class ContactGeolocationService {
 
     captureInput.dataset.geoIsEdit = DATASET_TRUE;
 
-    if (typeof contact.geolocation?.latitude !== 'number') {
+    if (!isValidGeolocation(contact.geolocation)) {
       return;
     }
 

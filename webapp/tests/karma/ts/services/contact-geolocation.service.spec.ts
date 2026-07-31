@@ -186,6 +186,69 @@ describe('ContactGeolocationService', () => {
       expect(captureInput.dataset.geoHasLocation).to.equal('true');
     });
 
+    it('sets data-geo-has-location when latitude and longitude are at the extreme valid bounds', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      service.injectEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation: { latitude: 90, longitude: -180 },
+      });
+      expect(captureInput.dataset.geoHasLocation).to.equal('true');
+    });
+
+    it('does not set data-geo-has-location when longitude is missing', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      service.injectEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation: { latitude: 1.23 },
+      });
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+    });
+
+    it('does not set data-geo-has-location when longitude is not a number', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      service.injectEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation: { latitude: 1.23, longitude: 'not-a-number' },
+      });
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+    });
+
+    it('does not set data-geo-has-location when latitude is out of range', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      service.injectEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation: { latitude: 200, longitude: 36.8 },
+      });
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+    });
+
+    it('does not set data-geo-has-location when longitude is out of range', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      service.injectEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation: { latitude: 1.23, longitude: -200 },
+      });
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+    });
+
+    it('does not set data-geo-has-location when latitude is NaN', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      service.injectEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation: { latitude: NaN, longitude: 36.8 },
+      });
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+    });
+
+    it('does not set data-geo-has-location when longitude is Infinity', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      service.injectEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation: { latitude: 1.23, longitude: Infinity },
+      });
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+    });
+
     it('does not set data-geo-has-location when only non-home log entries exist and geolocation field is absent',
       () => {
         const { formHtml, captureInput } = buildFormHtml();
