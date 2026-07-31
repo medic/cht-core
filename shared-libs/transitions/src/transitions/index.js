@@ -57,11 +57,32 @@ const isMidWriteStale = infoDoc => {
     Date.now() - Date.parse(infoDoc.transitions_started) >= MID_WRITE_STALE_INTERVAL;
 };
 
+// the transitions_started marker is stale, so clear it and process the doc anyway
+const clearStaleMarker = async (change, infoDocForChange) => {
+  logger.warn(`transitions: clearing stale transitions_started marker on infodoc for ${change.id}`);
+  await infodoc.clearTransitionsStarted(change.id);
+  delete infoDocForChange.transitions_started;
+};
+
+// waits for an in-progress API write to clear the transitions_started marker, retrying every
+// INFODOC_WAIT_INTERVAL. A stale marker is cleared instead of waited on. Returns an infodoc that is
+// still mid-write when the retries run out, so the caller can skip the change.
 const getConsistentInfoDoc = async (change, retriesLeft) => {
   const infoDocForChange = await infodoc.get(change);
-  if (!isInfoDocMidWrite(infoDocForChange) || isMidWriteStale(infoDocForChange) || retriesLeft <= 0) {
+
+  if (!isInfoDocMidWrite(infoDocForChange)) {
     return infoDocForChange;
   }
+
+  if (isMidWriteStale(infoDocForChange)) {
+    await clearStaleMarker(change, infoDocForChange);
+    return infoDocForChange;
+  }
+
+  if (retriesLeft <= 0) {
+    return infoDocForChange;
+  }
+
   await new Promise(resolve => setTimeout(resolve, INFODOC_WAIT_INTERVAL));
   return getConsistentInfoDoc(change, retriesLeft - 1);
 };
@@ -73,16 +94,10 @@ const processChange = async (change, callback) => {
     const infoDocForChange = await getConsistentInfoDoc(change, MAX_INFODOC_WAIT);
 
     if (isInfoDocMidWrite(infoDocForChange)) {
-      if (!isMidWriteStale(infoDocForChange)) {
-        logger.warn(
-          `transitions: infodoc for ${change.id} still mid-write after ${MAX_INFODOC_WAIT} retries, skipping`
-        );
-        return callback();
-      }
-      // the transitions_started marker is stale, so clear it and process the doc anyway
-      logger.warn(`transitions: clearing stale transitions_started marker on infodoc for ${change.id}`);
-      await infodoc.clearTransitionsStarted(change.id);
-      delete infoDocForChange.transitions_started;
+      logger.warn(
+        `transitions: infodoc for ${change.id} still mid-write after ${MAX_INFODOC_WAIT} retries, skipping`
+      );
+      return callback();
     }
 
     change.info = infoDocForChange;
