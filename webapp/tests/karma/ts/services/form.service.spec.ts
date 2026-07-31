@@ -591,7 +591,7 @@ describe('Form service', () => {
         await service.render(formContext);
 
         expect(enketoService.renderForm.calledOnce).to.be.true;
-        expect(enketoService.renderForm.args[0].length).to.equal(2);
+        expect(enketoService.renderForm.args[0]).to.have.lengthOf(2);
       });
     });
   });
