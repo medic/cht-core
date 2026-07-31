@@ -45,11 +45,10 @@ const AVAILABLE_TRANSITIONS = [
 const transitions = [];
 let loadErrors = false;
 
-// Sentinel waits 30s for an in-progress API write to clear its transitions_started marker; a marker
-// older than that window is treated as abandoned, and the change processed anyway.
-const MAX_INFODOC_WAIT = 30;
-const INFODOC_WAIT_INTERVAL = 1000;
-const MID_WRITE_STALE_INTERVAL = MAX_INFODOC_WAIT * INFODOC_WAIT_INTERVAL;
+const MAX_INFODOC_WAIT = 5;
+const INFODOC_WAIT_INTERVAL = 100;
+// time to wait before a transitions_started marker is considered stale
+const MID_WRITE_STALE_INTERVAL = 2 * 60 * 1000; // 2 minutes
 
 const isInfoDocMidWrite = infoDoc => infoDoc?.transitions_started !== undefined;
 
@@ -58,36 +57,44 @@ const isMidWriteStale = infoDoc => {
     Date.now() - Date.parse(infoDoc.transitions_started) >= MID_WRITE_STALE_INTERVAL;
 };
 
-// Wait for the transitions_started marker to absent from an infoDoc
-// after MID_WRITE_STALE_INTERVAL, return the infoDoc anyway
 const getConsistentInfoDoc = async (change, retriesLeft) => {
-  const infoDocForChange = await infodoc.get(change);
-
-  if (!isInfoDocMidWrite(infoDocForChange)) {
-    return infoDocForChange;
+  const infoDoc = await infodoc.get(change);
+  if (!isInfoDocMidWrite(infoDoc) || isMidWriteStale(infoDoc) || retriesLeft <= 0) {
+    return infoDoc;
   }
-
-  if (isMidWriteStale(infoDocForChange) || retriesLeft <= 0) {
-    await infodoc.clearTransitionsStarted(change.id);
-    delete infoDocForChange.transitions_started;
-    return infoDocForChange;
-  }
-
   await new Promise(resolve => setTimeout(resolve, INFODOC_WAIT_INTERVAL));
   return getConsistentInfoDoc(change, retriesLeft - 1);
 };
 
 // applies all loaded transitions over a change
-const processChange = async (change, callback) => {
-  try {
-    change.doc = await lineage.fetchHydratedDoc(change.id);
-    change.info = await getConsistentInfoDoc(change, MAX_INFODOC_WAIT);
-    change.initialProcessing = !change.info.transitions;
-    return module.exports.applyTransitions(change, callback);
-  } catch (err) {
-    logger.error('transitions: processChange failed for %s : %o', change.id, err);
-    return callback(err);
-  }
+const processChange = (change, callback) => {
+  lineage
+    .fetchHydratedDoc(change.id)
+    .then(doc => {
+      change.doc = doc;
+      return getConsistentInfoDoc(change, MAX_INFODOC_WAIT).then(async infoDoc => {
+        if (isMidWriteStale(infoDoc)) {
+          // if the transistions_started marker is stale, clear it and process the doc anyway
+          logger.warn(`transitions: clearing stale transitions_started marker on infodoc for ${change.id}`);
+          await infodoc
+            .clearTransitionsStarted(change.id)
+            .catch(err => logger.error(`transitions: error clearing stale marker on doc ${change.id}: %o`, err));
+          delete infoDoc.transitions_started;
+        } else if (isInfoDocMidWrite(infoDoc)) {
+          logger.warn(
+            `transitions: infodoc for ${change.id} still mid-write after ${MAX_INFODOC_WAIT} retries, skipping`
+          );
+          return callback();
+        }
+        change.info = infoDoc;
+        change.initialProcessing = !infoDoc.transitions;
+        module.exports.applyTransitions(change, callback);
+      });
+    })
+    .catch(err => {
+      logger.error('transitions: processChange failed for %s : %o', change.id, err);
+      return callback(err);
+    });
 };
 
 // given a collection of docs this function will:
@@ -122,7 +129,7 @@ const processDocs = docs => {
     .then(() => {
       return new Promise((resolve, reject) => {
         const operations = changes.map(change => callback => {
-          const onTransitionsApplied = (err, result) => {
+          applyTransitions(change, (err, result) => {
             if (err || result) {
               return callback(null, err || result);
             }
@@ -133,8 +140,7 @@ const processDocs = docs => {
               result => callback(null, result),
               err => callback(null, err)
             );
-          };
-          applyTransitions(change, onTransitionsApplied, { markStarted: true });
+          }, { markStarted: true });
         });
         async.series(operations, (err, results) => {
           return err ? reject(err) : resolve(results);
@@ -284,7 +290,8 @@ const finalizeChange = async ({ change, results, markStarted }) => {
   return markStarted ? saveForApi(change) : saveForSentinel(change);
 };
 
-// For transitions run by sentinel, do not set transitions_started
+// Sentinel processing: save the doc, then record transitions. Sentinel never writes the
+// transitions_started marker; it only reads it (see getConsistentInfoDoc) to skip docs API is writing.
 const saveForSentinel = async change => {
   const result = await saveDoc(change);
   logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
@@ -292,9 +299,9 @@ const saveForSentinel = async change => {
   return result;
 };
 
-// For synchrnonous transitions run by API, set transitions_started, so that sentinel
-// waits until the API process is done.
-// saveTransitions clears it on success; clear it explicitly on failure.
+// API processing: mark the infodoc mid-write (transitions_started) around the doc write so a concurrent
+// sentinel read detects it and waits. The marker is cleared as part of the transitions write on
+// success, or rolled back on any failure after it's set.
 const saveForApi = async change => {
   await infodoc.markTransitionsStarted(change.id);
   try {
