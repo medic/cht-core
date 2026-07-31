@@ -585,7 +585,7 @@ describe('MessageQueue service', function() {
           ],
         });
 
-      query.withArgs('medic-client/registered_patients').resolves({ rows: [] });
+      query.withArgs('medic-client/reports_by_subject').resolves({ rows: [] });
 
       utils.lineage.fetchLineageByIds.resolves([
         [{ _id: 'patient1', patient_id: '1111', name: 'patient one' }],
@@ -620,7 +620,7 @@ describe('MessageQueue service', function() {
           },
         ]);
         chai.expect(query.args[3]).to.deep.equal([
-          'medic-client/registered_patients',
+          'medic-client/reports_by_subject',
           {
             keys: ['1111', '2222', '3333', 'place1111', 'place2222', 'place3333', 'place4444'],
             include_docs: true
@@ -730,20 +730,20 @@ describe('MessageQueue service', function() {
           ]
         });
 
-      query.withArgs('medic-client/registered_patients').resolves({ rows: [
-        { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
-        { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
-        { key: '1111', doc: { type: 'invalid', patient_id: '1111' } },
-        { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
-        { key: '2222', doc: { type: 'valid', patient_id: '2222' } },
-        { key: '2222', doc: { type: 'invalid', patient_id: '2222' } },
-        { key: '3333', doc: { type: 'invalid', patient_id: '3333' } },
-        { key: '3333', doc: { type: 'invalid', patient_id: '3333' } },
-        { key: 'place1111', doc: { type: 'invalid', place_id: 'place1111' } },
-        { key: 'place1111', doc: { type: 'valid', place_id: 'place1111' } },
-        { key: 'place2222', doc: { type: 'valid', place_id: 'place2222' } },
-        { key: 'place2222', doc: { type: 'valid', place_id: 'place2222' } },
-        { key: 'place2222', doc: { type: 'invalid', place_id: 'place2222' } },
+      query.withArgs('medic-client/reports_by_subject').resolves({ rows: [
+        { key: '1111', doc: { _id: 'reg_a1', type: 'valid', patient_id: '1111' } },
+        { key: '1111', doc: { _id: 'reg_a2', type: 'valid', patient_id: '1111' } },
+        { key: '1111', doc: { _id: 'reg_a3', type: 'invalid', patient_id: '1111' } },
+        { key: '1111', doc: { _id: 'reg_a4', type: 'valid', patient_id: '1111' } },
+        { key: '2222', doc: { _id: 'reg_b1', type: 'valid', patient_id: '2222' } },
+        { key: '2222', doc: { _id: 'reg_b2', type: 'invalid', patient_id: '2222' } },
+        { key: '3333', doc: { _id: 'reg_c1', type: 'invalid', patient_id: '3333' } },
+        { key: '3333', doc: { _id: 'reg_c2', type: 'invalid', patient_id: '3333' } },
+        { key: 'place1111', doc: { _id: 'reg_p1', type: 'invalid', place_id: 'place1111' } },
+        { key: 'place1111', doc: { _id: 'reg_p2', type: 'valid', place_id: 'place1111' } },
+        { key: 'place2222', doc: { _id: 'reg_p3', type: 'valid', place_id: 'place2222' } },
+        { key: 'place2222', doc: { _id: 'reg_p4', type: 'valid', place_id: 'place2222' } },
+        { key: 'place2222', doc: { _id: 'reg_p5', type: 'invalid', place_id: 'place2222' } },
       ]});
 
       utils.lineage.fetchLineageByIds.resolves([
@@ -804,9 +804,9 @@ describe('MessageQueue service', function() {
             patient: { _id: 'patient1', patient_id: '1111', name: 'patient one' },
             patient_uuid: 'patient1',
             registrations: [
-              { type: 'valid', patient_id: '1111' },
-              { type: 'valid', patient_id: '1111' },
-              { type: 'valid', patient_id: '1111' }
+              { _id: 'reg_a1', type: 'valid', patient_id: '1111' },
+              { _id: 'reg_a2', type: 'valid', patient_id: '1111' },
+              { _id: 'reg_a4', type: 'valid', patient_id: '1111' }
             ],
             place_id: undefined,
             place_uuid: undefined,
@@ -831,7 +831,7 @@ describe('MessageQueue service', function() {
             patient_id: '2222',
             patient: { _id: 'patient2', patient_id: '2222', name: 'patient two' },
             patient_uuid: 'patient2',
-            registrations: [{ type: 'valid', patient_id: '2222' }],
+            registrations: [{ _id: 'reg_b1', type: 'valid', patient_id: '2222' }],
             place_id: undefined,
             place_uuid: undefined,
             placeRegistrations: [],
@@ -884,7 +884,7 @@ describe('MessageQueue service', function() {
             place_uuid: 'place1',
             registrations: [],
             placeRegistrations: [
-              { type: 'valid', place_id: 'place1111' },
+              { _id: 'reg_p2', type: 'valid', place_id: 'place1111' },
             ],
           }
         ]);
@@ -909,11 +909,11 @@ describe('MessageQueue service', function() {
             place: { _id: 'place2', place_id: 'place2222', name: 'place two' },
             place_uuid: 'place2',
             registrations: [
-              { type: 'valid', patient_id: '2222' },
+              { _id: 'reg_b1', type: 'valid', patient_id: '2222' },
             ],
             placeRegistrations: [
-              { type: 'valid', place_id: 'place2222' },
-              { type: 'valid', place_id: 'place2222' },
+              { _id: 'reg_p3', type: 'valid', place_id: 'place2222' },
+              { _id: 'reg_p4', type: 'valid', place_id: 'place2222' },
             ],
           }
         ]);
@@ -939,8 +939,8 @@ describe('MessageQueue service', function() {
             place_uuid: 'place2',
             registrations: [],
             placeRegistrations: [
-              { type: 'valid', place_id: 'place2222' },
-              { type: 'valid', place_id: 'place2222' },
+              { _id: 'reg_p3', type: 'valid', place_id: 'place2222' },
+              { _id: 'reg_p4', type: 'valid', place_id: 'place2222' },
             ],
           }
         ]);
@@ -1065,11 +1065,11 @@ describe('MessageQueue service', function() {
           { key: ['shortcode', '2222'], id: 'patient2' }
         ] });
 
-      query.withArgs('medic-client/registered_patients').resolves({ rows: [
-        { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
-        { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
-        { key: '2222', doc: { type: 'valid', patient_id: '2222' } },
-        { key: '2222', doc: { type: 'invalid', patient_id: '2222' } }
+      query.withArgs('medic-client/reports_by_subject').resolves({ rows: [
+        { key: '1111', doc: { _id: 'reg_x1', type: 'valid', patient_id: '1111' } },
+        { key: '1111', doc: { _id: 'reg_x2', type: 'valid', patient_id: '1111' } },
+        { key: '2222', doc: { _id: 'reg_y1', type: 'valid', patient_id: '2222' } },
+        { key: '2222', doc: { _id: 'reg_y2', type: 'invalid', patient_id: '2222' } }
       ]});
 
       utils.lineage.fetchLineageByIds.resolves([
