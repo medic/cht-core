@@ -264,23 +264,24 @@ const recordError = async (job, err) => {
  * errors are swallowed so the queue moves on, and the errored job is retried on the next run.
  * @param {Object} job - the archive job doc
  * @param {number} deadline - epoch ms after which no further batch is started
+ * @param {{ batches: number }} indexCounter - run-wide batch counter deciding when to warm
+ *   indexes; shared across jobs so many small jobs warm them as reliably as one large job
  * @returns {Promise<void>}
  */
-const processJob = async (job, deadline) => {
+const processJob = async (job, deadline, indexCounter) => {
   logger.info(`Archiving: processing job ${job._id} (${job.cursor}/${job.total})`);
 
   try {
     const ids = await readIds(job);
     job.total = ids.length; // account for possible doc tampering
     await setLogRunning(job);
-    let batches = 0;
 
     do {
       const batch = ids.slice(job.cursor, job.cursor + PURGE_BATCH_SIZE);
       await archiveBatch(batch);
       await saveJob(job, batch.length);
       await updateLogCursor(job);
-      if (++batches % 10 === 0) {
+      if (++indexCounter.batches % 10 === 0) {
         await indexViews();
       }
     } while (job.cursor < job.total && Date.now() < deadline);
@@ -298,13 +299,14 @@ const processJob = async (job, deadline) => {
  */
 const processQueue = async (deadline) => {
   let startkey;
+  const indexCounter = { batches: 0 };
   do {
     const job = await fetchNextJob(startkey);
     if (!job) {
       break;
     }
     startkey = job._id;
-    await processJob(job, deadline);
+    await processJob(job, deadline, indexCounter);
   } while (Date.now() < deadline);
 };
 

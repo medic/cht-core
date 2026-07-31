@@ -486,6 +486,40 @@ describe('Sentinel archiving lib', () => {
     expect(indexViews.callCount).to.equal(2);
   });
 
+  it('counts batches across jobs when deciding to warm the indexes', async () => {
+    // Neither job reaches 10 batches on its own, but the run as a whole does.
+    const ids1 = makeIds(PURGE_BATCH_SIZE * 6);
+    const ids2 = makeIds(PURGE_BATCH_SIZE * 6);
+    stubQueue([job({ _id: 'archive:1', total: ids1.length }), job({ _id: 'archive:2', total: ids2.length })]);
+    stubAttachment({ 'archive:1': ids1, 'archive:2': ids2 });
+
+    const indexViews = sinon.stub().resolves();
+    lib.__set__('indexViews', indexViews);
+
+    await lib.archive();
+
+    // 6 + 6 batches → the counter crosses 10 mid-second-job → one warm-up.
+    expect(indexViews.callCount).to.equal(1);
+  });
+
+  it('keeps warming the indexes after a job fails mid-run', async () => {
+    const ids2 = makeIds(PURGE_BATCH_SIZE * 10);
+    stubQueue([job({ _id: 'archive:1', total: 1 }), job({ _id: 'archive:2', total: ids2.length })]);
+    stubAttachment({ 'archive:1': ['x1'], 'archive:2': ids2 });
+
+    const archiveBatch = sinon.stub().resolves();
+    archiveBatch.onCall(0).rejects(new Error('boom'));
+    lib.__set__('archiveBatch', archiveBatch);
+    const indexViews = sinon.stub().resolves();
+    lib.__set__('indexViews', indexViews);
+
+    await lib.archive();
+
+    // The first job's failure must not derail the run-wide counter: the second
+    // job's 10 batches still trigger a warm-up.
+    expect(indexViews.callCount).to.equal(1);
+  });
+
   it('refetches the doc before each put so a stale _rev does not crash the run', async () => {
     const ids = makeIds(PURGE_BATCH_SIZE + 500);
     const pending = job({ _id: 'archive:1', total: ids.length, _rev: '1-stale' });

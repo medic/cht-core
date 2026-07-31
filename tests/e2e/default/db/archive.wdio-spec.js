@@ -54,10 +54,18 @@ describe('archive', function () {
     await sentinelUtils.waitForArchiveCompletion();
   };
 
+  // revertDb only covers medic — archived copies would leak between tests otherwise.
+  const cleanArchiveDb = async () => {
+    const { rows } = await utils.archiveDb.allDocs();
+    const deletes = rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
+    await utils.archiveDb.bulkDocs(deletes);
+  };
+
   afterEach(async () => {
     await utils.revertSettings(true);
     await utils.deleteUsers([user]);
     await utils.revertDb([/^form:/], true);
+    await cleanArchiveDb();
     await commonElements.reloadSession();
   });
 

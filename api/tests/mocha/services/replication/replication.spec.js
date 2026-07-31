@@ -390,7 +390,7 @@ describe('Initial Replication service', () => {
       expect(result).to.have.members(['doc2']);
     });
 
-    it('should combine deleted, purged and archived docs without duplicates', async () => {
+    it('should combine deleted, purged and archived docs', async () => {
       sinon.stub(db.medic, 'allDocs').resolves({
         rows: [
           { key: 'doc1', id: 'doc1', value: { rev: 1 } },
@@ -412,6 +412,26 @@ describe('Initial Replication service', () => {
       const result = await replication.getDocIdsToDelete(userCtx, ['doc1', 'doc2', 'doc3', 'doc4']);
       // doc2 (deleted), doc3 (purged), doc1 (archived) — doc4 stays.
       expect(result).to.have.members(['doc1', 'doc2', 'doc3']);
+    });
+
+    it('should return an id only once even when it is deleted, purged and archived at the same time', async () => {
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { key: 'doc1', error: 'deleted' },
+          { key: 'doc2', id: 'doc2', value: { rev: 1 } },
+        ]
+      });
+      sinon.stub(purgedDocs, 'getPurgedIds').resolves(['doc1']);
+      sinon.stub(db.archive, 'allDocs').resolves({
+        rows: [
+          { key: 'doc1', id: 'doc1', value: { rev: '1-a' } },
+          { key: 'doc2', error: 'not_found' },
+        ]
+      });
+
+      const result = await replication.getDocIdsToDelete(userCtx, ['doc1', 'doc2']);
+
+      expect(result).to.deep.equal(['doc1']);
     });
 
     it('should throw error on db errors', async () => {

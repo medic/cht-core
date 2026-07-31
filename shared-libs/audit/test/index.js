@@ -534,8 +534,18 @@ describe('Audit', () => {
 
       expect(db.allDocs.callCount).to.equal(1);
       expect(db.allDocs.args[0]).to.deep.equal([{ keys: [], include_docs: true }]);
-      expect(db.bulkDocs.callCount).to.equal(1);
-      expect(db.bulkDocs.args[0][0]).to.deep.equal([]);
+      expect(db.bulkDocs.callCount).to.equal(0);
+    });
+
+    it('skips the write entirely when every doc is already recorded as archived', async () => {
+      db.allDocs.resolves({ rows: [
+        { id: 'doc-a', doc: { _id: 'doc-a', _rev: '2-b', history: [{ date: 100, archived: true }] } },
+        { id: 'doc-b', doc: { _id: 'doc-b', _rev: '3-c', history: [{ date: 200, archived: true }] } },
+      ] });
+
+      await lib.recordArchiving(['doc-a', 'doc-b'], 300);
+
+      expect(db.bulkDocs.callCount).to.equal(0);
     });
 
     it('preserves the prior history when appending the archive entry', async () => {

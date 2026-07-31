@@ -172,6 +172,9 @@ const recordArchiving = async (ids, date) => {
     auditDoc.history.push({ date: new Date(date), archived: true });
     newAuditDocs.push(auditDoc);
   });
+  if (!newAuditDocs.length) {
+    return;
+  }
   const results = await db.bulkDocs(newAuditDocs);
   const errors = results.filter(result => result.error);
   if (errors.length) {
