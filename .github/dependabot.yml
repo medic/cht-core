@@ -56,6 +56,10 @@ updates:
       day: "saturday"
     commit-message:
       prefix: "chore"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
     cooldown:
       default-days: 7
       semver-major-days: 14
