@@ -46,6 +46,7 @@ const { people, places } = require('@medic/contacts')(config, db, dataContext);
 const upgrade = require('./controllers/upgrade');
 const settings = require('./controllers/settings');
 const bulkDocs = require('./controllers/bulk-docs');
+const bulkOperations = require('./controllers/bulk-operations');
 const monitoring = require('./controllers/monitoring');
 const africasTalking = require('./controllers/africas-talking');
 const rapidPro = require('./controllers/rapidpro');
@@ -53,6 +54,7 @@ const infodoc = require('./controllers/infodoc');
 const impact = require('./controllers/impact');
 const targetController = require('./controllers/target');
 const credentials = require('./controllers/credentials');
+const archive = require('./controllers/archive');
 const authorization = require('./middleware/authorization');
 const deprecation = require('./middleware/deprecation');
 const hydration = require('./controllers/hydration');
@@ -63,6 +65,7 @@ const couchConfigController = require('./controllers/couch-config');
 const faviconController = require('./controllers/favicon');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
 const replicationFailureLogController = require('./controllers/replication-failure-log');
+const replicationHealthController = require('./controllers/replication-health');
 const wellKnownController = require('./controllers/well-known');
 const connectedUserLog = require('./middleware/connected-user-log').log;
 const getLocale = require('./middleware/locale').getLocale;
@@ -79,7 +82,6 @@ const compression = require('compression');
 const cookie = require('./services/cookie');
 const deployInfo = require('./services/deploy-info');
 const dbDocHandler = require('./controllers/db-doc');
-const extensionLibs = require('./controllers/extension-libs');
 const replication = require('./controllers/replication');
 const app = express.Router({ strict: true });
 const asyncLocalStorage = require('./services/async-storage');
@@ -319,8 +321,6 @@ app.all('/admin{/{*thing}}', authorization.handleAuthErrors, authorization.offli
 
 app.use(express.static(resources.staticPath));
 app.use(express.static(resources.webappPath));
-app.get('/extension-libs', extensionLibs.list);
-app.get('/extension-libs/:name', extensionLibs.get);
 app.get(`${routePrefix}login`, login.get);
 app.get(`${routePrefix}login/identity`, login.getIdentity);
 app.postJson(`${routePrefix}login`, login.post);
@@ -477,6 +477,8 @@ app.get('/api/deploy-info', async (req, res) => {
 app.get('/api/v1/monitoring', deprecation.deprecate('/api/v2/monitoring'), monitoring.getV1);
 app.get('/api/v2/monitoring', monitoring.getV2);
 app.get('/api/v1/impact', impact.v1.get);
+
+app.get('/api/v1/bulk-operations/:id', bulkOperations.v1.get);
 
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);
@@ -661,6 +663,7 @@ app.get('/api/v1/place', place.v1.getAll);
 app.get('/api/v1/place/:uuid', place.v1.get);
 app.postJson('/api/v1/place', place.v1.create);
 app.putJson('/api/v1/place/:uuid', place.v1.update);
+app.delete('/api/v1/place/:uuid', place.v1.delete);
 
 /**
  * @openapi
@@ -736,11 +739,16 @@ app.get('/api/v1/person', person.v1.getAll);
 app.get('/api/v1/person/:uuid', person.v1.get);
 app.postJson('/api/v1/person', person.v1.create);
 app.putJson('/api/v1/person/:uuid', person.v1.update);
+app.delete('/api/v1/person/:uuid', person.v1.delete);
 
+app.get('/api/v1/contact', contact.v1.getAll);
 app.get('/api/v1/contact/uuid', contact.v1.getUuids);
+app.postJson('/api/v1/contact/summary', contact.v1.getSummaries);
 app.get('/api/v1/contact/:uuid', contact.v1.get);
 
+app.get('/api/v1/report', report.v1.getAll);
 app.get('/api/v1/report/uuid', report.v1.getUuids);
+app.postJson('/api/v1/report/summary', report.v1.getSummaries);
 app.get('/api/v1/report/:uuid', report.v1.get);
 app.postJson('/api/v1/report', report.v1.create);
 app.putJson('/api/v1/report/:uuid', report.v1.update);
@@ -794,8 +802,16 @@ app.put(
   credentials.put
 );
 
+app.post(
+  '/api/v1/archive',
+  authorization.handleAuthErrors,
+  authorization.offlineUserFirewall,
+  archive.create
+);
+
 app.get('/api/v1/users-doc-count', replicationLimitLogController.get);
 app.get('/api/v1/replication-failure-logs', replicationFailureLogController.get);
+app.get('/api/v1/replication-health/failed', replicationHealthController.failed);
 
 // authorization middleware to proxy online users requests directly to CouchDB
 // reads offline users `user-settings` and saves it as `req.userCtx`

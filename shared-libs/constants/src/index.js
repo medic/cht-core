@@ -26,6 +26,7 @@ const DOC_TYPES = {
   TOKEN_LOGIN: 'token_login',
   TRANSLATIONS: 'translations',
   DATA_RECORD: 'data_record',
+  UI_EXTENSION: 'ui-extension'
 };
 
 // HTTP Headers
@@ -60,10 +61,30 @@ const USER_ROLES = {
 
 const DB_ADMIN_ROLES = [USER_ROLES.ADMIN, USER_ROLES.COUCHDB_ADMIN];
 
-// Prefixes
+// Document ID prefixes used for _all_docs prefix range scans.
 const PREFIXES = {
   COUCH_USER: 'org.couchdb.user:',
   TRANSLATIONS: 'messages-',
+  UI_EXTENSION: `${DOC_TYPES.UI_EXTENSION}:`,
+  FORM: 'form:',
+  ARCHIVE_JOB: 'archive:',
+  BULK_OPERATION_LOG: 'bulk-operation:',
+  BULK_OPERATION_ACTION: 'bulk-operation-action:',
+};
+
+// Bulk operation framework (delete, move, merge) shared between the api and sentinel.
+const BULK_OPERATIONS = {
+  OPERATIONS_ATTACHMENT: 'operations',
+  ACTIONS: {
+    ARCHIVE: 'archive',
+    SET_CONTACT: 'set-contact',
+    DELETE_USER: 'delete-user',
+  },
+  STATUSES: {
+    QUEUED: 'queued',
+    COMPLETED: 'completed',
+    FAILED: 'failed',
+  },
 };
 
 module.exports = {
@@ -76,4 +97,5 @@ module.exports = {
   CONTACT_TYPES,
   STANDARD_HTTP_HEADERS,
   PREFIXES,
+  BULK_OPERATIONS,
 };

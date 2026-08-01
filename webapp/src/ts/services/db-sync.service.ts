@@ -16,14 +16,15 @@ import { ReplicationService } from '@mm-services/replication.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { DOC_IDS, DOC_TYPES } from '@medic/constants';
 
-const READ_ONLY_TYPES = ['form', DOC_TYPES.TRANSLATIONS];
+const READ_ONLY_TYPES = ['form', DOC_TYPES.TRANSLATIONS, DOC_TYPES.UI_EXTENSION];
 const READ_ONLY_IDS = [
   DOC_IDS.RESOURCES,
   DOC_IDS.BRANDING,
   DOC_IDS.SERVICE_WORKER_META,
   DOC_IDS.ZSCORE_CHARTS,
   DOC_IDS.SETTINGS,
-  DOC_IDS.PARTNERS
+  DOC_IDS.PARTNERS,
+  DOC_IDS.EXTENSION_LIBS
 ];
 const DDOC_PREFIX = ['_design/'];
 const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';

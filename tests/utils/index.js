@@ -70,6 +70,7 @@ const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-senti
 const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 const auditDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-audit`, { auth });
+const archiveDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-archive`, { auth });
 const existingFeedbackDocIds = [];
 const MINIMUM_BROWSER_VERSION = '107';
 const KUBECTL_CONTEXT = `-n ${PROJECT_NAME} --context k3d-${PROJECT_NAME}`;
@@ -715,7 +716,10 @@ const getDefaultForms = async () => {
     const doc = await db.get(docName);
     PROTECTED_DOCS.push(...doc.forms);
   } catch {
-    const result = await db.allDocs({ startkey: 'form:', endkey: 'form:\ufff0' });
+    const result = await db.allDocs({
+      startkey: PREFIXES.FORM,
+      endkey: PREFIXES.FORM + '\ufff0',
+    });
     const doc = {
       _id: docName,
       forms: result.rows.map(row => row.id),
@@ -789,17 +793,16 @@ const revertDb = async (except = [], ignoreRefresh = true) => { //NOSONAR
   await setUserContactDoc();
 };
 
-const clearReplicationFailureLogs = async () => {
-  const result = await logsDb.allDocs({
-    startkey: 'replication-fail-',
-    endkey: 'replication-fail-\ufff0',
-  });
+const deleteLogsByPrefix = async (prefix) => {
+  const result = await logsDb.allDocs({ startkey: prefix, endkey: `${prefix}\ufff0` });
   if (!result.rows.length) {
     return;
   }
   const docs = result.rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
   await logsDb.bulkDocs(docs);
 };
+
+const clearReplicationFailureLogs = () => deleteLogsByPrefix('replication-fail-');
 
 const getOrigin = () => `${constants.BASE_URL}`;
 
@@ -915,7 +918,11 @@ const createUsers = async (users, meta = false, password_change_required = false
 };
 
 const getAllUserSettings = () => db
-  .query('medic-client/doc_by_type', { include_docs: true, key: ['user-settings'] })
+  .allDocs({
+    include_docs: true,
+    start_key: PREFIXES.COUCH_USER,
+    end_key: PREFIXES.COUCH_USER + '\ufff0',
+  })
   .then(response => response.rows.map(row => row.doc));
 
 /**
@@ -1204,7 +1211,17 @@ const waitForAuditCount = async (docId, expectedCount, retries = 15) => {
   return waitForAuditCount(docId, expectedCount, retries - 1);
 };
 
-
+const waitForBulkOperation = async (id, tries = 30) => {
+  for (let i = 0; i < tries; i++) {
+    const log = await request({ path: `/api/v1/bulk-operations/${id}` });
+    const actions = Object.values(log.actions || {});
+    if (actions.every(action => action.status !== 'queued')) {
+      return log;
+    }
+    await delayPromise(100);
+  }
+  throw new Error(`bulk operation ${id} did not complete`);
+};
 
 const getDefaultSettings = () => {
   const pathToDefaultAppSettings = path.join(__dirname, '../config.default.json');
@@ -1726,7 +1743,7 @@ const collectLogs = (container, ...regex) => {
 
   const collect = async () => {
     if (isK3D()) {
-      await delayPromise(500);
+      await delayPromise(1000);
     }
     clearTimeout(timeout);
     if (errors.length) {
@@ -1734,6 +1751,10 @@ const collectLogs = (container, ...regex) => {
       error.errors = errors;
       error.logs = logs;
       throw error;
+    }
+
+    if (!matches.length) {
+      console.warn('No logs matched', logs);
     }
 
     return matches;
@@ -1773,6 +1794,9 @@ const updateContainerNames = (project = PROJECT_NAME) => {
 };
 
 const getContainerName = (service, project = PROJECT_NAME) => {
+  if (service.includes('nouveau')) {
+    service = 'nouveau'; // naming here is inconsistent between container and repository.
+  }
   return isDocker() ? `${project}-${service}-1` : `deployment/cht-${service}`;
 };
 
@@ -1857,6 +1881,7 @@ module.exports = {
   logsDb,
   usersDb,
   auditDb,
+  archiveDb,
 
   SW_SUCCESSFUL_REGEX,
   ONE_YEAR_IN_S,
@@ -1885,6 +1910,7 @@ module.exports = {
   revertSettings,
   revertDb,
   clearReplicationFailureLogs,
+  deleteLogsByPrefix,
   getOrigin,
   getBaseUrl,
   getAdminBaseUrl,
@@ -1905,8 +1931,8 @@ module.exports = {
   setTransitionSeqToNow,
   waitForDocRev,
   waitForAuditCount,
+  waitForBulkOperation,
   getDefaultSettings,
-
   addTranslations,
   enableLanguage,
   enableLanguages,

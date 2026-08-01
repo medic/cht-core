@@ -11,6 +11,7 @@ import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TasksActions } from '@mm-actions/tasks';
+import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
@@ -117,6 +118,14 @@ describe('TasksComponent', () => {
     expect(setTasksLoaded.callCount).to.equal(1);
     expect(setTasksLoaded.args[0]).to.deep.equal([false]);
     expect(clearTaskGroup.callCount).to.equal(1);
+  });
+
+  it('should clear global filters on init so a search from another tab does not leak in', async () => {
+    const clearFilters = sinon.stub(GlobalActions.prototype, 'clearFilters');
+
+    await getComponent(); // triggers ngOnInit via detectChanges
+
+    expect(clearFilters.calledOnceWithExactly()).to.be.true;
   });
 
   it('initial state before resolving tasks', async () => {

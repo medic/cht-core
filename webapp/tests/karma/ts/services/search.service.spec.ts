@@ -34,7 +34,7 @@ describe('Search service', () => {
       providers: [
         { provide: CHTDatasourceService, useValue: { } },
         { provide: DbService, useValue: { get: () => db } },
-        { provide: GetDataRecordsService, useValue: { get: GetDataRecords } },
+        { provide: GetDataRecordsService, useValue: { getContacts: GetDataRecords, getReports: GetDataRecords } },
         { provide: SessionService, useValue: session },
         { provide: SearchFactoryService, useValue: { get: sinon.stub().resolves(searchStub) } },
         { provide: PerformanceService, useValue: performanceService },
