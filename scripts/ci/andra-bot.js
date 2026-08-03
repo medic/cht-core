@@ -175,7 +175,7 @@ const sameContent = (a, b) => a.replaceAll('\r\n', '\n').trim() === b.replaceAll
 
 // Editing a comment does not notify the PR author, so when the content changes the old
 // comment is deleted and a new one is posted instead. Identical content is left alone.
-const syncComment = async (github, context, core, existingComment, body) => {
+const syncComment = async (github, context, core, { existingComment, body }) => {
   if (existingComment && sameContent(existingComment.body, body)) {
     return;
   }
@@ -266,14 +266,14 @@ const runAndraBot = async ({ github, context, core }) => {
   if (!failures.length) {
     if (existingComment) {
       const body = `${COMMENT_MARKER}\n${getMessage('success', { author: pr.user.login })}`;
-      await syncComment(github, context, core, existingComment, body);
+      await syncComment(github, context, core, { existingComment, body });
     }
     await swapLabels(github, context, core, { add: SUCCESS_LABEL, remove: FAILURE_LABEL });
     core.info('All AndraBot checks passed.');
     return;
   }
 
-  await syncComment(github, context, core, existingComment, buildCommentBody(pr, failures));
+  await syncComment(github, context, core, { existingComment, body: buildCommentBody(pr, failures) });
   await swapLabels(github, context, core, { add: FAILURE_LABEL, remove: SUCCESS_LABEL });
   core.setFailed(`AndraBot checks failed:\n- ${failures.join('\n- ')}`);
 };
