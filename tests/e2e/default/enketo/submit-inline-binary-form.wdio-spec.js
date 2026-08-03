@@ -6,10 +6,10 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const utils = require('@utils');
 const uuid = require('uuid').v7;
 
-// Relative, prefix-less naming: `badge` sits directly under the report root, so
-// the reference is the bare field name and the attachment is `user-file-badge`.
-const BADGE_ATTACHMENT = 'user-file-badge';
-const BADGE_REFERENCE = 'badge';
+// An inline binary is attached under `user-file/<form internalId>/<field path relative to the owning doc>`,
+// and its field value is cleared on save (the base64 lives only in the attachment).
+const FORM_ID = 'inline-binary-report';
+const BADGE_ATTACHMENT = `user-file/${FORM_ID}/badge`;
 const BADGE_BASE64 =
   'iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8z8BQz0AEYBxVSF+FABJADveWkH6oAAAAAElFTkSuQmCC';
 
@@ -17,14 +17,15 @@ const seedReport = () => {
   const id = uuid();
   return {
     _id: id,
-    form: 'inline-binary-report',
+    form: FORM_ID,
     type: 'data_record',
     content_type: 'xml',
     reported_date: Date.now(),
     hidden_fields: ['meta'],
     fields: {
       patient_name: 'Ada',
-      badge: BADGE_REFERENCE,
+      // Cleared on save - the field path in the attachment name is what identifies the binary
+      badge: '',
       meta: { instanceID: `uuid:${id}` },
     },
     _attachments: {
@@ -45,9 +46,8 @@ describe('Submit inline-binary report form', () => {
   });
 
   it('preserves an untouched inline-binary field and its attachment on edit', async () => {
-    // Seed report directly rather than creating one through the form
-    // so the edit starts from a node that is empty in the form but
-    // whose reference + attachment already exist on the doc.
+    // Seed the report directly rather than creating one through the form, so the edit starts from a
+    // node that is empty in the form but whose attachment already exists on the doc.
     const report = seedReport();
     await utils.saveDoc(report);
     const seeded = await utils.getDoc(report._id);
@@ -58,9 +58,9 @@ describe('Submit inline-binary report form', () => {
     await reportsPage.openReport(report._id);
     await commonPage.accessEditOption();
 
-    // Guard: the inline-binary field must load EMPTY (the form has no default/calculate),
-    // so the sidecar — not a re-supplied value — is what preserves it on save.
-    const badgeInput = await $('input[name="/inline-binary-report/badge"]');
+    // Guard: the inline-binary field loads EMPTY (binary data is never loaded back into a form), so the
+    // existing attachment - looked up by the field's own path - is the only thing preserving it on save.
+    const badgeInput = await $(`input[name="/${FORM_ID}/badge"]`);
     expect(await badgeInput.getValue()).to.equal('');
 
     await commonEnketoPage.setInputValue('Patient Name', 'Ada Lovelace');
@@ -70,8 +70,8 @@ describe('Submit inline-binary report form', () => {
     const updated = await utils.getDoc(report._id, '', '?attachments=true');
     // The visible field changed...
     expect(updated.fields.patient_name).to.equal('Ada Lovelace');
-    // ...but the untouched inline-binary field keeps its reference value...
-    expect(updated.fields.badge).to.equal(BADGE_REFERENCE);
+    // ...the untouched inline-binary field stays cleared...
+    expect(updated.fields.badge).to.equal('');
 
     const updatedBadge = updated._attachments[BADGE_ATTACHMENT];
     // ...and the attachment is still there, byte-for-byte.

@@ -565,10 +565,18 @@ describe('Enketo service', () => {
       expect(report._id).to.not.be.empty;
       expect(report.reported_date).to.be.a('number');
 
-      expect(thing1).excluding(['_id', 'reported_date']).to.deep.equal({ ...doc1, form_version: undefined });
+      expect(thing1).excluding(['_id', 'reported_date']).to.deep.equal({
+        ...doc1,
+        form_version: undefined,
+        _attachments: undefined,
+      });
       expect(thing1._id).to.not.be.empty;
       expect(thing1.reported_date).to.be.a('number');
-      expect(thing2).excluding(['_id', 'reported_date']).to.deep.equal({ ...doc2, form_version: undefined });
+      expect(thing2).excluding(['_id', 'reported_date']).to.deep.equal({
+        ...doc2,
+        form_version: undefined,
+        _attachments: undefined,
+      });
       expect(thing2._id).to.not.be.empty;
       expect(thing2.reported_date).to.be.a('number');
     });
@@ -622,12 +630,12 @@ describe('Enketo service', () => {
       expect(report.reported_date).to.be.a('number');
 
       expect(thing1).excluding(['reported_date']).to.deep.equal({
-        ...doc1, _id: report.fields.my_child_01, form_version: undefined
+        ...doc1, _id: report.fields.my_child_01, form_version: undefined, _attachments: undefined
       });
       expect(thing1._id).to.not.be.empty;
       expect(thing1.reported_date).to.be.a('number');
       expect(thing2).excluding(['reported_date']).to.deep.equal({
-        ...doc2, _id: report.fields.my_child_02, form_version: undefined
+        ...doc2, _id: report.fields.my_child_02, form_version: undefined, _attachments: undefined
       });
       expect(thing2._id).to.not.be.empty;
       expect(thing2.reported_date).to.be.a('number');
@@ -683,17 +691,17 @@ describe('Enketo service', () => {
       expect(report.reported_date).to.be.a('number');
 
       expect(thing1).excluding(['reported_date']).to.deep.equal({
-        ...doc1, _id: report.fields.repeat_section[0].repeat_doc_ref, form_version: undefined
+        ...doc1, _id: report.fields.repeat_section[0].repeat_doc_ref, form_version: undefined, _attachments: undefined
       });
       expect(thing1._id).to.not.be.empty;
       expect(thing1.reported_date).to.be.a('number');
       expect(thing2).excluding(['reported_date']).to.deep.equal({
-        ...doc2, _id: report.fields.repeat_section[1].repeat_doc_ref, form_version: undefined
+        ...doc2, _id: report.fields.repeat_section[1].repeat_doc_ref, form_version: undefined, _attachments: undefined
       });
       expect(thing2._id).to.not.be.empty;
       expect(thing2.reported_date).to.be.a('number');
       expect(thing3).excluding(['reported_date']).to.deep.equal({
-        ...doc3, _id: report.fields.repeat_section[2].repeat_doc_ref, form_version: undefined
+        ...doc3, _id: report.fields.repeat_section[2].repeat_doc_ref, form_version: undefined, _attachments: undefined
       });
       expect(thing3._id).to.not.be.empty;
       expect(thing3.reported_date).to.be.a('number');
@@ -731,9 +739,24 @@ describe('Enketo service', () => {
         type: DOC_TYPES.DATA_RECORD,
         _attachments: undefined,
       });
-      expect(thing1).excluding(['reported_date']).to.deep.equal({ ...doc1, _id: thing1._id, form_version: undefined });
-      expect(thing2).excluding(['reported_date']).to.deep.equal({ ...doc2, _id: thing2._id, form_version: undefined });
-      expect(thing3).excluding(['reported_date']).to.deep.equal({ ...doc3, _id: thing3._id, form_version: undefined });
+      expect(thing1).excluding(['reported_date']).to.deep.equal({
+        ...doc1,
+        _id: thing1._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
+      expect(thing2).excluding(['reported_date']).to.deep.equal({
+        ...doc2,
+        _id: thing2._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
+      expect(thing3).excluding(['reported_date']).to.deep.equal({
+        ...doc3,
+        _id: thing3._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
     });
 
     it('populates db-doc-ref elements inside deeply-nested repeats', async () => {
@@ -782,9 +805,24 @@ describe('Enketo service', () => {
         type: DOC_TYPES.DATA_RECORD,
         _attachments: undefined,
       });
-      expect(thing1).excluding(['reported_date']).to.deep.equal({ ...doc1, _id: thing1._id, form_version: undefined });
-      expect(thing2).excluding(['reported_date']).to.deep.equal({ ...doc2, _id: thing2._id, form_version: undefined });
-      expect(thing3).excluding(['reported_date']).to.deep.equal({ ...doc3, _id: thing3._id, form_version: undefined });
+      expect(thing1).excluding(['reported_date']).to.deep.equal({
+        ...doc1,
+        _id: thing1._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
+      expect(thing2).excluding(['reported_date']).to.deep.equal({
+        ...doc2,
+        _id: thing2._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
+      expect(thing3).excluding(['reported_date']).to.deep.equal({
+        ...doc3,
+        _id: thing3._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
     });
 
     it('populates db-doc-ref elements that reference a db-doc outside the repeat', async () => {
@@ -822,7 +860,7 @@ describe('Enketo service', () => {
         _attachments: undefined,
       });
       expect(separateDoc).excluding(['reported_date'])
-        .to.deep.equal({ ...separate, _id: separateDoc._id, form_version: undefined });
+        .to.deep.equal({ ...separate, _id: separateDoc._id, form_version: undefined, _attachments: undefined });
     });
 
     it('creates a db-doc from each repeat instance when the repeat itself is the db-doc', async () => {
@@ -866,9 +904,24 @@ describe('Enketo service', () => {
         type: DOC_TYPES.DATA_RECORD,
         _attachments: undefined,
       });
-      expect(doc1).excluding(['reported_date']).to.deep.equal({ ...repeat1, _id: doc1._id, form_version: undefined });
-      expect(doc2).excluding(['reported_date']).to.deep.equal({ ...repeat2, _id: doc2._id, form_version: undefined });
-      expect(doc3).excluding(['reported_date']).to.deep.equal({ ...repeat3, _id: doc3._id, form_version: undefined });
+      expect(doc1).excluding(['reported_date']).to.deep.equal({
+        ...repeat1,
+        _id: doc1._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
+      expect(doc2).excluding(['reported_date']).to.deep.equal({
+        ...repeat2,
+        _id: doc2._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
+      expect(doc3).excluding(['reported_date']).to.deep.equal({
+        ...repeat3,
+        _id: doc3._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
     });
 
     it('leaves db-doc-ref elements with unresolvable references untouched', async () => {
@@ -911,9 +964,24 @@ describe('Enketo service', () => {
         type: DOC_TYPES.DATA_RECORD,
         _attachments: undefined,
       });
-      expect(doc1).excluding(['reported_date']).to.deep.equal({ ...repeat1, _id: doc1._id, form_version: undefined });
-      expect(doc2).excluding(['reported_date']).to.deep.equal({ ...repeat2, _id: doc2._id, form_version: undefined });
-      expect(doc3).excluding(['reported_date']).to.deep.equal({ ...repeat3, _id: doc3._id, form_version: undefined });
+      expect(doc1).excluding(['reported_date']).to.deep.equal({
+        ...repeat1,
+        _id: doc1._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
+      expect(doc2).excluding(['reported_date']).to.deep.equal({
+        ...repeat2,
+        _id: doc2._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
+      expect(doc3).excluding(['reported_date']).to.deep.equal({
+        ...repeat3,
+        _id: doc3._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
     });
 
     it('populates a local (./) db-doc-ref with the sibling db-doc in the same repeat', async () => {
@@ -950,9 +1018,24 @@ describe('Enketo service', () => {
         type: DOC_TYPES.DATA_RECORD,
         _attachments: undefined,
       });
-      expect(thing1).excluding(['reported_date']).to.deep.equal({ ...doc1, _id: thing1._id, form_version: undefined });
-      expect(thing2).excluding(['reported_date']).to.deep.equal({ ...doc2, _id: thing2._id, form_version: undefined });
-      expect(thing3).excluding(['reported_date']).to.deep.equal({ ...doc3, _id: thing3._id, form_version: undefined });
+      expect(thing1).excluding(['reported_date']).to.deep.equal({
+        ...doc1,
+        _id: thing1._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
+      expect(thing2).excluding(['reported_date']).to.deep.equal({
+        ...doc2,
+        _id: thing2._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
+      expect(thing3).excluding(['reported_date']).to.deep.equal({
+        ...doc3,
+        _id: thing3._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
     });
 
     it('resolves a db-doc-ref to the db-doc when a non-db-doc sibling shares the element name', async () => {
@@ -992,9 +1075,24 @@ describe('Enketo service', () => {
         type: DOC_TYPES.DATA_RECORD,
         _attachments: undefined,
       });
-      expect(thing1).excluding(['reported_date']).to.deep.equal({ ...doc, _id: thing1._id, form_version: undefined });
-      expect(thing2).excluding(['reported_date']).to.deep.equal({ ...doc, _id: thing2._id, form_version: undefined });
-      expect(thing3).excluding(['reported_date']).to.deep.equal({ ...doc, _id: thing3._id, form_version: undefined });
+      expect(thing1).excluding(['reported_date']).to.deep.equal({
+        ...doc,
+        _id: thing1._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
+      expect(thing2).excluding(['reported_date']).to.deep.equal({
+        ...doc,
+        _id: thing2._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
+      expect(thing3).excluding(['reported_date']).to.deep.equal({
+        ...doc,
+        _id: thing3._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
     });
 
     it('populates a deeply-nested local db-doc-ref, skipping the non-db-doc sibling', async () => {
@@ -1034,9 +1132,24 @@ describe('Enketo service', () => {
         type: DOC_TYPES.DATA_RECORD,
         _attachments: undefined,
       });
-      expect(thing1).excluding(['reported_date']).to.deep.equal({ ...doc, _id: thing1._id, form_version: undefined });
-      expect(thing2).excluding(['reported_date']).to.deep.equal({ ...doc, _id: thing2._id, form_version: undefined });
-      expect(thing3).excluding(['reported_date']).to.deep.equal({ ...doc, _id: thing3._id, form_version: undefined });
+      expect(thing1).excluding(['reported_date']).to.deep.equal({
+        ...doc,
+        _id: thing1._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
+      expect(thing2).excluding(['reported_date']).to.deep.equal({
+        ...doc,
+        _id: thing2._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
+      expect(thing3).excluding(['reported_date']).to.deep.equal({
+        ...doc,
+        _id: thing3._id,
+        form_version: undefined,
+        _attachments: undefined,
+      });
     });
 
     describe('attachments', () => {
@@ -1046,11 +1159,12 @@ describe('Enketo service', () => {
         getCurrentFiles = FileManager.getCurrentFiles as sinon.SinonStub;
       });
 
-      it('builds file attachments from the current files', async () => {
+      it('builds file attachments from the current files referenced by a field', async () => {
         form.validate.resolves(true);
         form.getDataStr.returns(loadXML('file-field'));
-        const file0 = { name: 'my_image', type: 'image' };
-        const file1 = { name: 'my_file', type: 'file' };
+        // Only "some image name.png" is referenced by the <my_file> field
+        const file0 = { name: 'some image name.png', type: 'image' };
+        const file1 = { name: 'not_referenced', type: 'file' };
         getCurrentFiles.returns([file0, file1]);
 
         const [report] = await saveReport(
@@ -1058,15 +1172,13 @@ describe('Enketo service', () => {
           { doc: { internalId: 'my-form' } }
         );
 
-        const imageAttachment = report._attachments['user-file-my_image'];
+        expect(Object.keys(report._attachments)).to.deep.equal(['user-file-some image name.png']);
+        const imageAttachment = report._attachments['user-file-some image name.png'];
         expect(imageAttachment.content_type).to.equal('image');
         expect(imageAttachment.data).to.be.an.instanceof(Blob);
-        const fileAttachment = report._attachments['user-file-my_file'];
-        expect(fileAttachment.content_type).to.equal('file');
-        expect(fileAttachment.data).to.be.an.instanceof(Blob);
       });
 
-      it('rewrites the binary field value to its owner-relative attachment reference', async () => {
+      it('builds binary attachments and clears the binary field value', async () => {
         form.validate.resolves(true);
         form.getDataStr.returns(loadXML('binary-field'));
 
@@ -1075,21 +1187,19 @@ describe('Enketo service', () => {
           { doc: { internalId: 'my-form' } }
         );
 
-        // The binary loop attaches the base64 under its owner-relative name and rewrites
-        // the field to the bare reference, resolved by the renderer via `user-file-` + value.
         expect(report.fields).to.deep.equal({
           name: 'Mary',
           age: '10',
           gender: 'f',
-          my_file: 'my_file',
+          my_file: '',
         });
-        expect(report._attachments['user-file-my_file']).to.deep.equal({
+        expect(report._attachments['user-file/my-form/my_file']).to.deep.equal({
           data: 'some image data',
           content_type: 'image/png',
         });
       });
 
-      it('names binary attachments by the field path relative to the form root, with no form-id prefix', async () => {
+      it('names binary attachments by the form internalId and full field path, not the root node name', async () => {
         form.validate.resolves(true);
         form.getDataStr.returns(loadXML('deep-file-fields'));
 
@@ -1102,23 +1212,145 @@ describe('Enketo service', () => {
           name: 'Mary',
           age: '10',
           gender: 'f',
-          my_file: 'my_file',
-          sub_element: { sub_sub_element: { other_file: 'sub_element/sub_sub_element/other_file' } },
+          my_file: '',
+          sub_element: { sub_sub_element: { other_file: '' } },
         });
-        // Attachment names use the field's path relative to the form-instance root - no form internalId
-        // prefix and not the root node name ("my-root-element") - even for a deeply-nested field.
+        // Attachment names use the form internalId ("my-form") and the field's path relative to the owning
+        // doc - not the root node name ("my-root-element") - even for a deeply-nested field.
         expect(Object.keys(report._attachments)).to.have.members([
-          'user-file-my_file',
-          'user-file-sub_element/sub_sub_element/other_file',
+          'user-file/my-form/my_file',
+          'user-file/my-form/sub_element/sub_sub_element/other_file',
         ]);
-        expect(report._attachments['user-file-my_file']).to.deep.equal({
+        expect(report._attachments['user-file/my-form/my_file']).to.deep.equal({
           data: 'some image data',
           content_type: 'image/png',
         });
-        expect(report._attachments['user-file-sub_element/sub_sub_element/other_file']).to.deep.equal({
+        expect(report._attachments['user-file/my-form/sub_element/sub_sub_element/other_file']).to.deep.equal({
           data: 'some other data',
           content_type: 'image/png',
         });
+      });
+
+      it('includes the repeat index in binary attachment names', async () => {
+        form.validate.resolves(true);
+        form.getDataStr.returns(loadXML('plain-repeat-binary'));
+
+        const [report, ...additional] = await saveReport(
+          { contact: { _id: 'my-user', phone: '8989' } },
+          { xml: loadXML('plain-repeat-binary-form'), doc: { internalId: 'my-form' } }
+        );
+
+        expect(additional).to.be.empty;
+        expect(report.fields).to.deep.equal({
+          name: 'Sally',
+          my_repeat: [{ photo: '' }, { photo: '' }],
+        });
+        expect(report._attachments).to.deep.equal({
+          'user-file/my-form/my_repeat[1]/photo': { data: 'repeat_photo_data_0', content_type: 'image/png' },
+          'user-file/my-form/my_repeat[2]/photo': { data: 'repeat_photo_data_1', content_type: 'image/png' },
+        });
+      });
+
+      it('routes binary attachments to the db-doc that owns the field', async () => {
+        form.validate.resolves(true);
+        form.getDataStr.returns(loadXML('db-doc-with-binary'));
+
+        const [report, doc1, doc2, ...additional] = await saveReport(
+          { contact: { _id: 'my-user', phone: '8989' } },
+          { doc: { internalId: 'my-form' } }
+        );
+
+        expect(additional).to.be.empty;
+        // Only the main doc's own binary field is attached to the main doc
+        expect(report._attachments).to.deep.equal({
+          'user-file/my-form/main_photo': { data: 'main_photo_data', content_type: 'image/png' },
+        });
+        expect(report.fields.main_photo).to.equal('');
+        expect(report.fields.doc1.photo1).to.equal('');
+        expect(report.fields.doc2.photo2).to.equal('');
+        // Each sub-doc gets the binary attachment for the field it contains
+        expect(doc1._attachments).to.deep.equal({
+          'user-file/my-form/photo1': { data: 'sub_photo_data_1', content_type: 'image/png' },
+        });
+        expect(doc1.photo1).to.equal('');
+        expect(doc2._attachments).to.deep.equal({
+          'user-file/my-form/photo2': { data: 'sub_photo_data_2', content_type: 'image/png' },
+        });
+        expect(doc2.photo2).to.equal('');
+      });
+
+      it('routes file attachments to the db-doc that references the file', async () => {
+        form.validate.resolves(true);
+        form.getDataStr.returns(loadXML('db-doc-with-file-field'));
+        getCurrentFiles.returns([
+          { name: 'main_upload.png', type: 'image/png' },
+          { name: 'sub_upload.png', type: 'image/png' },
+        ]);
+
+        const [report, doc1, ...additional] = await saveReport(
+          { contact: { _id: 'my-user', phone: '8989' } },
+          { doc: { internalId: 'my-form' } }
+        );
+
+        expect(additional).to.be.empty;
+        expect(Object.keys(report._attachments)).to.deep.equal(['user-file-main_upload.png']);
+        expect(Object.keys(doc1._attachments)).to.deep.equal(['user-file-sub_upload.png']);
+      });
+
+      it('routes file attachments to the db-doc instance inside each repeat', async () => {
+        form.validate.resolves(true);
+        form.getDataStr.returns(loadXML('db-doc-in-repeat-with-files'));
+        getCurrentFiles.returns([
+          { name: 'repeat_upload_1.png', type: 'image/png' },
+          { name: 'repeat_upload_2.png', type: 'image/png' },
+        ]);
+
+        const [report, repeatDoc1, repeatDoc2, ...additional] = await saveReport(
+          { contact: { _id: 'my-user', phone: '8989' } },
+          {
+            xml: '<data><repeat nodeset="/my-form/repeat_section"></repeat></data>',
+            doc: { internalId: 'my-form' },
+          }
+        );
+
+        expect(additional).to.be.empty;
+        // Neither upload is referenced outside of a db-doc, so the main report gets no attachments
+        expect(report._attachments).to.be.undefined;
+        expect(Object.keys(repeatDoc1._attachments)).to.deep.equal(['user-file-repeat_upload_1.png']);
+        expect(Object.keys(repeatDoc2._attachments)).to.deep.equal(['user-file-repeat_upload_2.png']);
+      });
+
+      it('drops a file attachment when the db-doc field referencing it has been cleared', async () => {
+        form.validate.resolves(true);
+        form.getDataStr.returns(loadXML('db-doc-with-file-field-cleared'));
+        getCurrentFiles.returns([{ name: 'main_upload.png', type: 'image/png' }]);
+
+        const [report, doc1, ...additional] = await saveReport(
+          {
+            contact: { _id: 'my-user', phone: '8989' },
+            _attachments: { 'user-file-sub_upload.png': { content_type: 'image/png', data: 'old' } },
+          },
+          { doc: { internalId: 'my-form' } }
+        );
+
+        expect(additional).to.be.empty;
+        expect(Object.keys(report._attachments)).to.deep.equal(['user-file-main_upload.png']);
+        expect(doc1._attachments).to.be.undefined;
+      });
+
+      it('does not attach an upload to the main report when only a db-doc field references it', async () => {
+        form.validate.resolves(true);
+        form.getDataStr.returns(loadXML('db-doc-orphan-file'));
+        getCurrentFiles.returns([{ name: 'known_upload.png', type: 'image/png' }]);
+
+        const [report, doc1, ...additional] = await saveReport(
+          { contact: { _id: 'my-user', phone: '8989' } },
+          { doc: { internalId: 'my-form' } }
+        );
+
+        expect(additional).to.be.empty;
+        expect(report._attachments).to.be.undefined;
+        expect(Object.keys(doc1._attachments)).to.deep.equal(['user-file-known_upload.png']);
       });
 
       it('retains custom attachments and referenced file attachments, dropping unreferenced ones', async () => {
@@ -1250,6 +1482,7 @@ describe('Enketo service', () => {
         form_version: '1',
         contact: undefined,
         parent: undefined,
+        _attachments: undefined,
       });
       expect(districtHospital._id).to.not.be.empty;
       expect(districtHospital.reported_date).to.be.a('number');
@@ -1313,6 +1546,7 @@ describe('Enketo service', () => {
         form_version: '1',
         parent: { _id: docId },
         contact: undefined,
+        _attachments: undefined,
       });
       expect(getContact.callCount).to.equal(0);
     });
@@ -1341,6 +1575,7 @@ describe('Enketo service', () => {
         form_version: '1',
         parent: { _id: clinic._id },
         contact: undefined,
+        _attachments: undefined,
       });
     });
 
@@ -1395,7 +1630,12 @@ describe('Enketo service', () => {
         _attachments: undefined,
       });
       expect(parent).excluding(['reported_date', '_id']).to.deep.equal({
-        name: 'New Parent', type: 'district_hospital', form_version: '1', parent: undefined, contact: undefined,
+        name: 'New Parent',
+        type: 'district_hospital',
+        form_version: '1',
+        parent: undefined,
+        contact: undefined,
+        _attachments: undefined,
       });
       expect(contact).excluding(['reported_date', '_id']).to.deep.equal({
         name: 'New Contact',
@@ -1403,6 +1643,7 @@ describe('Enketo service', () => {
         form_version: '1',
         parent: { _id: docId, parent: { _id: parent._id } },
         contact: undefined,
+        _attachments: undefined,
       });
       expect(childA).excluding(['reported_date', '_id']).to.deep.equal({
         name: 'Child A',
@@ -1410,6 +1651,7 @@ describe('Enketo service', () => {
         form_version: '1',
         parent: { _id: clinic._id, parent: { _id: parent._id } },
         contact: undefined,
+        _attachments: undefined,
       });
       expect(childB).excluding(['reported_date', '_id']).to.deep.equal({
         name: 'Child B',
@@ -1417,6 +1659,7 @@ describe('Enketo service', () => {
         form_version: '1',
         parent: { _id: clinic._id, parent: { _id: parent._id } },
         contact: undefined,
+        _attachments: undefined,
       });
       expect(getContact.callCount).to.equal(0);
     });
@@ -1489,35 +1732,70 @@ describe('Enketo service', () => {
 
       beforeEach(() => getCurrentFiles = FileManager.getCurrentFiles as sinon.SinonStub);
 
-      it('builds file attachments from the current files', async () => {
-        form.getDataStr.returns('<data><clinic><name>Clinic</name></clinic></data>');
+      it('builds file attachments from the current files referenced by a field', async () => {
+        form.getDataStr.returns(`
+          <data>
+            <clinic>
+              <name>Clinic</name>
+              <my_image type="file">my_image.png</my_image>
+            </clinic>
+          </data>`);
         getCurrentFiles.returns([
-          { name: 'my_image', type: 'image' },
-          { name: 'my_file', type: 'file' },
+          { name: 'my_image.png', type: 'image' },
+          { name: 'not_referenced.pdf', type: 'file' },
         ]);
 
         const { preparedDocs: [clinic] } = await saveContact({ type: 'clinic' });
 
-        const imageAttachment = clinic._attachments['user-file-my_image'];
+        expect(Object.keys(clinic._attachments)).to.deep.equal(['user-file-my_image.png']);
+        const imageAttachment = clinic._attachments['user-file-my_image.png'];
         expect(imageAttachment.content_type).to.equal('image');
         expect(imageAttachment.data).to.be.an.instanceof(Blob);
-        const fileAttachment = clinic._attachments['user-file-my_file'];
-        expect(fileAttachment.content_type).to.equal('file');
-        expect(fileAttachment.data).to.be.an.instanceof(Blob);
       });
 
-      it('rewrites the binary field value to its owner-relative attachment reference', async () => {
+      it('builds binary attachments named relative to the contact type group', async () => {
         form.getDataStr.returns(
           '<data><clinic><name>Clinic</name><my_file type="binary">some image data</my_file></clinic></data>'
         );
 
         const { preparedDocs: [clinic] } = await saveContact({ type: 'clinic' });
 
-        expect(clinic.my_file).to.equal('my_file');
-        expect(clinic._attachments['user-file-my_file']).to.deep.equal({
+        expect(clinic.my_file).to.equal('');
+        expect(clinic._attachments['user-file/contact-form/my_file']).to.deep.equal({
           data: 'some image data',
           content_type: 'image/png',
         });
+      });
+
+      it('routes attachments to the sibling doc that owns the field', async () => {
+        form.getDataStr.returns(`
+          <data>
+            <clinic>
+              <name>Clinic</name>
+              <parent>NEW</parent>
+              <clinic_photo type="binary">clinic image data</clinic_photo>
+            </clinic>
+            <parent>
+              <name>New Parent</name>
+              <parent_photo type="binary">parent image data</parent_photo>
+              <parent_file type="file">parent_upload.png</parent_file>
+            </parent>
+          </data>`);
+        getCurrentFiles.returns([{ name: 'parent_upload.png', type: 'image/png' }]);
+
+        const { preparedDocs: [clinic, parent, ...additional] } = await saveContact({ type: 'clinic' });
+
+        expect(additional).to.be.empty;
+        expect(clinic.clinic_photo).to.equal('');
+        expect(clinic._attachments).to.deep.equal({
+          'user-file/contact-form/clinic_photo': { data: 'clinic image data', content_type: 'image/png' },
+        });
+        expect(parent.parent_photo).to.equal('');
+        expect(parent._attachments['user-file/contact-form/parent_photo']).to.deep.equal({
+          data: 'parent image data',
+          content_type: 'image/png',
+        });
+        expect(parent._attachments['user-file-parent_upload.png'].data).to.be.an.instanceof(Blob);
       });
 
       it('retains custom attachments and referenced file attachments, dropping unreferenced ones', async () => {

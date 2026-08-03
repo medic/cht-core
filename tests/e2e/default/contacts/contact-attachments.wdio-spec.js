@@ -15,10 +15,10 @@ describe('Contact form attachments', () => {
   const photoPngPath = path.join(__dirname, '../enketo/images/photo-for-upload-form.png');
   const layersPngPath = path.join(__dirname, '../../../../webapp/src/img/layers.png');
 
-  // Relative, prefix-less naming: `badge` sits directly under its section, so the
-  // reference is the bare field name and the attachment is `user-file-badge`.
-  const BADGE_REFERENCE = 'badge';
-  const BADGE_ATTACHMENT = `user-file-${BADGE_REFERENCE}`;
+  // An inline binary is attached under `user-file/<form internalId>/<field path relative to the owning doc>`.
+  // The contact group is the owning doc here, so the path is just the field name. Note that contacts use
+  // separate create and edit forms, so a binary saved by the create form has a different attachment name.
+  const BADGE_EDIT_ATTACHMENT = 'user-file/contact:person_with_attachments:edit/badge';
   const BADGE_BASE64 =
     'iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8z8BQz0AEYBxVSF+FABJADveWkH6oAAAAAElFTkSuQmCC';
 
@@ -251,27 +251,27 @@ describe('Contact form attachments', () => {
   });
 
   it('preserves an untouched inline-binary field and its attachment on edit', async () => {
-    // Seed directly: the inline-binary node loads empty on edit, so only the
-    // data-attachment-ref sidecar carries the reference into the save.
+    // Seed directly so the attachment is already named the way the edit form derives it. The inline-binary
+    // node loads empty on edit, so that stored name is the only thing that can carry it into the save.
     const contact = personFactory.build({
       name: 'Person With Badge',
       parent: { _id: healthCenter._id, parent: healthCenter.parent },
       type: 'contact',
       contact_type: 'person_with_attachments',
-      badge: BADGE_REFERENCE,
+      badge: '',
       _attachments: {
-        [BADGE_ATTACHMENT]: { content_type: 'image/png', data: BADGE_BASE64 },
+        [BADGE_EDIT_ATTACHMENT]: { content_type: 'image/png', data: BADGE_BASE64 },
       },
     });
     await utils.saveDocs([contact]);
-    const seededBadge = (await utils.getDoc(contact._id, '', '?attachments=true'))._attachments[BADGE_ATTACHMENT];
+    const seededBadge = (await utils.getDoc(contact._id, '', '?attachments=true'))._attachments[BADGE_EDIT_ATTACHMENT];
     expect(seededBadge, 'seed should have the badge attachment').to.exist;
 
     await browser.url(`#/contacts/${contact._id}/edit`);
     await commonPage.waitForPageLoaded();
 
-    // Guard: the inline-binary field must load EMPTY (the form has no default/calculate),
-    // so the sidecar — not a re-supplied value — is what preserves it on save.
+    // Guard: the inline-binary field loads EMPTY (binary data is never loaded back into a form), so the
+    // existing attachment - looked up by the field's own path - is the only thing preserving it on save.
     const badgeInput = await $('input[name="/data/person_with_attachments/badge"]');
     expect(await badgeInput.getValue()).to.equal('');
 
@@ -282,9 +282,9 @@ describe('Contact form attachments', () => {
 
     const updated = await utils.getDoc(contact._id, '', '?attachments=true');
     expect(updated.name).to.equal('Person With Badge Edited');
-    expect(updated.badge, 'untouched inline-binary value retained').to.equal(BADGE_REFERENCE);
+    expect(updated.badge, 'untouched inline-binary value stays cleared').to.equal('');
 
-    const updatedBadge = updated._attachments[BADGE_ATTACHMENT];
+    const updatedBadge = updated._attachments[BADGE_EDIT_ATTACHMENT];
     expect(updatedBadge, 'badge attachment should survive the edit').to.exist;
     expect(updatedBadge.content_type).to.equal('image/png');
     expect(updatedBadge.data, 'attachment content unchanged').to.equal(BADGE_BASE64);

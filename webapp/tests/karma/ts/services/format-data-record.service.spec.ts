@@ -243,76 +243,42 @@ describe('FormatDataRecord service', () => {
       ]);
     });
 
-    it('resolves an inline-binary field via user-file- + bare reference value', async () => {
-      // Inline-binary fields store the owner-relative xpath as the value, attached
-      // under `user-file-<reference>`, resolved via `user-file-` + value.
+    it('returns the path-based image path for an inline-binary field, whose value is cleared on save', async () => {
+      // Saving an inline binary moves the data into `user-file/<form>/<field path>` and clears the field
+      // value, so the field path is the only thing left that identifies the attachment.
       const report = {
         _id: 'my-report',
         form: 'my-form',
         content_type: 'xml',
         fields: {
-          photo: 'photo',
+          photo: '',
+          group: { nested_photo: '' },
         },
         _attachments: {
-          'user-file-photo': { content_type: 'image/png' },
+          'user-file/my-form/photo': { content_type: 'image/png' },
+          'user-file/my-form/group/nested_photo': { content_type: 'image/png' },
         },
       };
 
       const result = await service.format(report);
+
       expect(result.fields).to.deep.equal([
         {
           label: 'report.my-form.photo',
-          value: 'photo',
+          value: '',
           depth: 0,
-          imagePath: 'user-file-photo',
+          imagePath: 'user-file/my-form/photo',
           target: undefined,
         },
-      ]);
-    });
-
-    it('resolves a nested owner-relative reference via user-file- + the slashed value', async () => {
-      // A sub-report rendered on the Reports tab stores a nested media field's value
-      // as the owner-relative xpath (group/photo), attached under user-file-<ref>.
-      const report = {
-        _id: 'my-sub-report',
-        form: 'my-form',
-        content_type: 'xml',
-        fields: {
-          group: { photo: 'group/photo' },
-        },
-        _attachments: {
-          'user-file-group/photo': { content_type: 'image/png' },
-        },
-      };
-
-      const result = await service.format(report);
-      expect(result.fields).to.deep.equal([
         { label: 'report.my-form.group', depth: 0 },
         {
-          label: 'report.my-form.group.photo',
-          value: 'group/photo',
+          label: 'report.my-form.group.nested_photo',
+          value: '',
           depth: 1,
-          imagePath: 'user-file-group/photo',
+          imagePath: 'user-file/my-form/group/nested_photo',
           target: undefined,
         },
       ]);
-    });
-
-    it('returns no image path when neither the value nor the legacy fallback resolves', async () => {
-      // A value must resolve to an existing image attachment, via either
-      // `user-file-` + value or the legacy `user-file/<label-path>`.
-      const report = {
-        _id: 'my-report',
-        form: 'my-form',
-        content_type: 'xml',
-        fields: {
-          photo: 'my-form/photo',
-        },
-        _attachments: {},
-      };
-
-      const result = await service.format(report);
-      expect((result.fields as any[])[0].imagePath).to.be.undefined;
     });
 
     it('returns empty image path if attachment does not exist for image name', async () => {

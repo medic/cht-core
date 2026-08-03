@@ -5,13 +5,6 @@ import type JQuery from 'jquery';
 import events from 'enketo-core/src/js/event';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
-import {
-  AttachmentRoutingStrategy,
-  FieldPath,
-  computeFieldPath,
-  indexedFieldPath,
-} from '@mm-providers/attachment-routing.provider';
-import { AttachmentRoutingService } from '@mm-services/attachment-routing.service';
 import { DbService } from '@mm-services/db.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
@@ -40,7 +33,6 @@ import { REPORT_ATTACHMENT_NAME } from '@mm-services/get-report-content.service'
 })
 export class EnketoService {
   constructor(
-    private readonly attachmentRoutingService: AttachmentRoutingService,
     private readonly dbService: DbService,
     private readonly enketoPrepopulationDataService: EnketoPrepopulationDataService,
     private readonly extractLineageService: ExtractLineageService,
@@ -414,53 +406,26 @@ export class EnketoService {
         contactDoc._id,
         isHardcodedType(contactDoc.type) ? contactDoc.type : contactDoc.contact_type
       );
+      const contactData = formData.getContactData();
 
       const reportedDate = Date.now();
       const rootOutputDoc: Record<string, any> = {
-        ...contactDoc,
-        ...formData.deserializeDoc(config),
-        _id: contactDoc._id,
+        ...contactData.deserializeDoc(config, reportedDate, contactDoc),
         type: contactDoc.type,
         contact_type: contactDoc.contact_type,
-        reported_date: contactDoc.reported_date || reportedDate,
-        _attachments: contactDoc._attachments
       };
-      const siblings = await this.processContactSiblings(formData, config, rootOutputDoc, defaultData);
-      siblings.forEach(({ fieldName, fieldValue }) => rootOutputDoc[fieldName] = fieldValue);
+      const siblings = this.initializeContactSiblings(formData, config, rootOutputDoc, reportedDate);
+      await this.setSiblingValuesOnRoot(siblings, rootOutputDoc, defaultData);
       const outputSiblings = siblings
         .filter(({ fieldName, doc }) => doc && rootOutputDoc[fieldName] === doc)
-        .map(({ doc, element }) => ({ doc: { ...doc, reported_date: reportedDate }, element }));
-
-      const childData = formData.getChildData();
-      const childDocs = childData
-        .map(data => data.deserializeDoc(config))
-        .map(doc => ({ ...doc, reported_date: reportedDate, parent: rootOutputDoc }));
-
-      // Minify lineage before routing: this replaces the parent/contact references with
-      // lineage stubs, breaking the main-contact <-> sibling object cycle so the attachment
-      // router can safely traverse each prepared doc.
-      const mainDoc = this.minifyContactLineage(rootOutputDoc);
-      const siblingEntries = outputSiblings
-        .map(({ doc, element }) => ({ doc: this.minifyContactLineage(doc), element }));
-      const childEntries = childData
-        .map((data, index) => ({ doc: this.minifyContactLineage(childDocs[index]), element: data.rootElement }));
-      const preparedDocs = [ mainDoc, ...siblingEntries.map(({ doc }) => doc), ...childEntries.map(({ doc }) => doc) ];
-
-      // Route each uploaded file / inline binary to its owning sub-doc (main contact,
-      // sibling, or repeat-child) rather than defaulting everything onto the main contact.
-      const ownerByElement = new Map<Element, Record<string, any>>();
-      ownerByElement.set(formData.getMainData().rootElement, mainDoc);
-      siblingEntries.forEach(({ doc, element }) => element && ownerByElement.set(element, doc));
-      childEntries.forEach(({ doc, element }) => ownerByElement.set(element, doc));
-      this.attachmentRoutingService.route(this.contactRoutingStrategy({
-        mainDoc,
-        docs: preparedDocs,
-        root: formData.rootElement,
-        ownerByElement,
-      }));
-      preparedDocs.forEach(doc => this.dropEmptyAttachments(doc));
-
-      return { docId: mainDoc._id, preparedDocs };
+        .map(({ doc }) => doc!);
+      const childDocs = formData
+        .getChildData()
+        .map(data => ({ ...data.deserializeDoc(config, reportedDate), parent: rootOutputDoc }));
+      return {
+        docId: rootOutputDoc._id,
+        preparedDocs: [rootOutputDoc, ...outputSiblings, ...childDocs].map(doc => this.minifyContactLineage(doc))
+      };
     });
   }
 
@@ -479,40 +444,19 @@ export class EnketoService {
       delete reportDoc[REPORT_ATTACHMENT_NAME];
       delete reportDoc._attachments?.[REPORT_ATTACHMENT_NAME];
 
-      this.populateDbDocRefElements(formData, [formData, ...subDocsData]);
       const hiddenFields = this.getHiddenFields([
         ...formData.hiddenElements,
         ...subDocsData.map(({ rootElement }) => rootElement)
       ]);
 
       const reportedDate = Date.now();
+      const dbDocObjects = subDocsData.map(docData => docData.deserializeDoc(config, reportedDate));
       const rootOutputDoc: Record<string, any> = {
-        ...reportDoc,
+        ...formData.deserializeDoc(config, reportedDate, reportDoc),
         hidden_fields: hiddenFields,
-        fields: formData.deserialize(config),
-        reported_date: reportDoc.reported_date || reportedDate,
-        _attachments: reportDoc._attachments
       };
 
-      const dbDocObjects = subDocsData
-        .map(docData => docData.deserializeDoc(config))
-        .map(doc => ({ ...doc, reported_date: reportedDate }));
-
-      // Route each uploaded file / inline binary to its owning `[db-doc=true]` sub-report
-      // rather than defaulting everything onto the main report doc.
-      const ownerByElement = new Map<Element, Record<string, any>>();
-      subDocsData.forEach(({ rootElement }, index) => ownerByElement.set(rootElement, dbDocObjects[index]));
-      const preparedDocs = [rootOutputDoc, ...dbDocObjects];
-      this.attachmentRoutingService.route(this.reportRoutingStrategy({
-        mainDoc: rootOutputDoc,
-        docs: preparedDocs,
-        root: formData.rootElement,
-        ownerByElement,
-        repeatPaths: config.repeatPaths,
-      }));
-      preparedDocs.forEach(doc => this.dropEmptyAttachments(doc));
-
-      return preparedDocs;
+      return [rootOutputDoc, ...dbDocObjects];
     });
   }
 
@@ -529,22 +473,40 @@ export class EnketoService {
     return new DOMParser().parseFromString(formString, 'text/xml');
   }
 
-  private async processContactSiblings(
+  private initializeContactSiblings(
     formData: EnketoContactFormData,
     config: FormConfig,
     rootOutputDoc: Record<string, any>,
-    defaultData: Record<string, any>
+    reportedDate: number,
   ) {
-    return Promise.all(EnketoContactFormData.SIBLING_FIELD_NAMES.map(async (fieldName) => {
+    return EnketoContactFormData.SIBLING_FIELD_NAMES.map((fieldName) => {
       const siblingData = formData.getSiblingData(fieldName);
-      const sibling = siblingData?.deserializeDoc(config);
-      const doc = this.initializeContactSibling(rootOutputDoc, sibling);
-      const fieldValue = await this.getContactSiblingValue(doc, rootOutputDoc[fieldName], defaultData[fieldName]);
-      return { fieldName, fieldValue, doc, element: siblingData?.rootElement };
+      const doc = this.initializeContactSibling(config, rootOutputDoc, reportedDate, siblingData);
+      return { fieldName, doc, };
+    });
+  }
+
+  private async setSiblingValuesOnRoot(
+    siblings: { fieldName: typeof EnketoContactFormData.SIBLING_FIELD_NAMES[number], doc?: Record<string, any>}[],
+    rootOutputDoc: Record<string, any>,
+    defaultData: Record<string, any>,
+  ) {
+    return Promise.all(siblings.map(async ({ fieldName, doc }) => {
+      rootOutputDoc[fieldName] = await this.getContactSiblingValue(
+        doc,
+        rootOutputDoc[fieldName],
+        defaultData[fieldName]
+      );
     }));
   }
 
-  private initializeContactSibling(rootContactDoc: Record<string, any>, rawSibling?: Record<string, any>) {
+  private initializeContactSibling(
+    config: FormConfig,
+    rootContactDoc: Record<string, any>,
+    reportedDate: number,
+    siblingData: EnketoFormData | null
+  ) {
+    const rawSibling = siblingData?.deserializeDoc(config, reportedDate);
     if (!rawSibling) {
       return;
     }
@@ -573,19 +535,12 @@ export class EnketoService {
     return await this.getContactFromDatasource(Qualifier.byUuid(currentValue._id));
   }
 
-  private minifyContactLineage(contactDoc: Record<string, any>): Record<string, any> {
+  private minifyContactLineage(contactDoc: Record<string, any>) {
     return {
       ...contactDoc,
       parent: this.extractLineageService.extract(contactDoc.parent),
       contact: this.extractLineageService.extract(contactDoc.contact)
     };
-  }
-
-  /** Omit an empty `_attachments` map so a doc without attachments has none, not `{}`. */
-  private dropEmptyAttachments(doc: Record<string, any>) {
-    if (doc._attachments && !Object.keys(doc._attachments).length) {
-      delete doc._attachments;
-    }
   }
 
   private getHiddenFields(elements: Element[]) {
@@ -612,89 +567,6 @@ export class EnketoService {
       ...defaultData,
       contact: this.extractLineageService.extract(defaultData.contact),
       form_version: formVersion
-    };
-  }
-
-  private findReferencedDoc(refElement: Element, reference: string | null, allData: EnketoFormData[]) {
-    const target = reference?.trim().replace(/^\.?\//, ''); // strip leading "./" or "/"
-    if (!target) {
-      return;
-    }
-    const matches = allData.filter(({ rootElement }) => {
-      const path = Xpath.getElementRawXPath(rootElement).replace(/^\//, ''); // strip leading "/"
-      return path === target || path.endsWith(`/${target}`);
-    });
-
-    // For the docs that match the path tail, find the one with the closest ancestor node to the refElement.
-    for (let ancestor: Element | null = refElement; ancestor; ancestor = ancestor.parentElement) {
-      const match = matches.find(({ rootElement }) => ancestor?.contains(rootElement));
-      if (match) {
-        return match;
-      }
-    }
-  }
-
-  private populateDbDocRefElements(formData: EnketoReportFormData, allData: EnketoFormData[]) {
-    formData.dbDocRefElements.forEach(element => {
-      const referencedDoc = this.findReferencedDoc(element, element.getAttribute('db-doc-ref'), allData);
-      if (referencedDoc) {
-        element.textContent = referencedDoc.id;
-      }
-    });
-  }
-
-  /** Nearest ancestor (inclusive) that owns a prepared doc, or null when none does. */
-  private nearestOwnerElement(element: Element, ownerByElement: Map<Element, Record<string, any>>): Element | null {
-    for (let node: Element | null = element; node; node = node.parentElement) {
-      if (ownerByElement.has(node)) {
-        return node;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Contact pipeline's attachment-routing strategy: owner is the nearest main /
-   * sibling / repeat-child group (else the main contact); the field container is that
-   * same owning group, so field paths are relative to the owner doc.
-   */
-  private contactRoutingStrategy(ctx: AttachmentRoutingContext): AttachmentRoutingStrategy {
-    const ownerElementFor = (element: Element) => this.nearestOwnerElement(element, ctx.ownerByElement);
-    return {
-      root: ctx.root,
-      docs: ctx.docs,
-      mainDoc: ctx.mainDoc,
-      resolveOwnerForNode: (element) => ctx.ownerByElement.get(ownerElementFor(element)!) ?? ctx.mainDoc,
-      containerFor: (element) => ownerElementFor(element),
-      fieldPathFor: (element): FieldPath | null => {
-        const container = ownerElementFor(element);
-        return container ? computeFieldPath(element, container) : null;
-      },
-    };
-  }
-
-  /**
-   * Report pipeline's attachment-routing strategy: owner is the nearest
-   * `[db-doc=true]` group (else the main doc); the reference container is the
-   * form-instance root for the main doc or the db-doc group for a sub-report; field
-   * paths route to repeat-index-aware `doc.fields` for the main doc, or top-level
-   * fields for db-doc sub-reports.
-   */
-  private reportRoutingStrategy(ctx: AttachmentRoutingContext): AttachmentRoutingStrategy {
-    const ownerElementFor = (element: Element) => this.nearestOwnerElement(element, ctx.ownerByElement);
-    return {
-      root: ctx.root,
-      docs: ctx.docs,
-      mainDoc: ctx.mainDoc,
-      resolveOwnerForNode: (element) => ctx.ownerByElement.get(ownerElementFor(element)!) ?? ctx.mainDoc,
-      containerFor: (element, ownerDoc) => ownerDoc === ctx.mainDoc ? ctx.root : ownerElementFor(element),
-      fieldPathFor: (element, ownerDoc): FieldPath | null => {
-        if (ownerDoc === ctx.mainDoc) {
-          return [ 'fields', ...indexedFieldPath(element, ctx.root, ctx.repeatPaths ?? []) ];
-        }
-        const container = ownerElementFor(element);
-        return container ? computeFieldPath(element, container) : null;
-      },
     };
   }
 
@@ -742,21 +614,6 @@ interface XmlFormContext {
   contactSummary?: ContactSummary;
   userContactSummary?: ContactSummary;
   externalInstances?: ExternalInstance[];
-}
-
-/**
- * Shared context for routing form attachments to their owner docs. `ownerByElement`
- * maps each owning DOM element (a report `[db-doc=true]` group, or a contact's main /
- * sibling / repeat-child group) to its prepared doc; any node without an owning
- * ancestor falls back to `mainDoc`. `repeatPaths` is only used by the report main doc
- * to reconstruct array indices for repeat-nested `fields`.
- */
-interface AttachmentRoutingContext {
-  mainDoc: Record<string, any>;
-  docs: Record<string, any>[];
-  root: Element;
-  ownerByElement: Map<Element, Record<string, any>>;
-  repeatPaths?: string[];
 }
 
 export interface EnketoFormContext {
