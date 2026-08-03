@@ -495,6 +495,82 @@ describe('Person API', () => {
     });
   });
 
+  describe('POST /api/v1/person/:uuid/move', () => {
+    const endpoint = '/api/v1/person';
+
+    const districtId = uuid();
+    const clinicAId = uuid();
+    const clinicBId = uuid();
+
+    const district = utils.deepFreeze(placeFactory.place().build({
+      _id: districtId,
+      name: 'person-move-district',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+      contact: {},
+    }));
+    const clinicA = utils.deepFreeze(placeFactory.place().build({
+      _id: clinicAId,
+      name: 'person-move-clinic-a',
+      type: CONTACT_TYPES.CLINIC,
+      contact: {},
+      parent: district,
+    }));
+    const clinicB = utils.deepFreeze(placeFactory.place().build({
+      _id: clinicBId,
+      name: 'person-move-clinic-b',
+      type: CONTACT_TYPES.CLINIC,
+      contact: {},
+      parent: district,
+    }));
+    const patient = utils.deepFreeze(personFactory.build({
+      name: 'moving-patient',
+      role: 'patient',
+      parent: { _id: clinicAId, parent: { _id: districtId } },
+    }));
+    // Authored by the person being moved, so its cached author lineage must follow.
+    const report = utils.deepFreeze(
+      reportFactory.report().build({ form: 'person-move-report' }, { patient, submitter: patient })
+    );
+
+    before(async () => {
+      await utils.saveDocs([district, clinicA, clinicB, patient, report]);
+    });
+
+    it('throws 404 when the id is not a person', async () => {
+      await expect(utils.request({
+        path: `${endpoint}/${clinicAId}/move`,
+        method: 'POST',
+        body: { parent_id: clinicBId },
+      })).to.be.rejectedWith('404 - {"code":404,"error":"Person not found"}');
+    });
+
+    it('throws 400 when the person already has that parent', async () => {
+      await expect(utils.request({
+        path: `${endpoint}/${patient._id}/move`,
+        method: 'POST',
+        body: { parent_id: clinicAId },
+      })).to.be.rejectedWith(/already has that parent/);
+    });
+
+    it('moves a person and the lineage cached on the reports they authored', async () => {
+      const { id, summary } = await utils.request({
+        path: `${endpoint}/${patient._id}/move`,
+        method: 'POST',
+        body: { parent_id: clinicBId },
+      });
+      await utils.waitForBulkOperation(id);
+
+      expect(summary).to.deep.equal({ 'set-parent': 1, 'set-contact': { reports: 1, places: 0 } });
+
+      const moved = await utils.getDoc(patient._id);
+      expect(moved.parent).to.deep.equal({ _id: clinicBId, parent: { _id: districtId } });
+
+      const movedReport = await utils.getDoc(report._id);
+      expect(movedReport.contact._id).to.equal(patient._id);
+      expect(movedReport.contact.parent).to.deep.equal({ _id: clinicBId, parent: { _id: districtId } });
+    });
+  });
+
   describe('DELETE /api/v1/person/:uuid', () => {
     const endpoint = '/api/v1/person';
 

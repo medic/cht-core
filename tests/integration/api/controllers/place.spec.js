@@ -594,6 +594,151 @@ describe('Place API', () => {
     });
   });
 
+  describe('POST /api/v1/place/:uuid/move', () => {
+    const endpoint = '/api/v1/place';
+
+    const districtId = uuid();
+    const hcAId = uuid();
+    const hcBId = uuid();
+    const clinicId = uuid();
+
+    const chw = utils.deepFreeze(personFactory.build({
+      name: 'moving-chw',
+      role: 'chw',
+      parent: { _id: clinicId, parent: { _id: hcAId, parent: { _id: districtId } } },
+    }));
+    const district = utils.deepFreeze(placeFactory.place().build({
+      _id: districtId,
+      name: 'move-district',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+      contact: {},
+    }));
+    const healthCenterA = utils.deepFreeze(placeFactory.place().build({
+      _id: hcAId,
+      name: 'move-hc-a',
+      type: CONTACT_TYPES.HEALTH_CENTER,
+      contact: {},
+      parent: district,
+    }));
+    const healthCenterB = utils.deepFreeze(placeFactory.place().build({
+      _id: hcBId,
+      name: 'move-hc-b',
+      type: CONTACT_TYPES.HEALTH_CENTER,
+      contact: {},
+      parent: district,
+    }));
+    // The clinic being moved, with the chw inside it.
+    const clinic = utils.deepFreeze(placeFactory.place().build({
+      _id: clinicId,
+      name: 'move-clinic',
+      type: CONTACT_TYPES.CLINIC,
+      contact: { _id: chw._id },
+      parent: healthCenterA,
+    }));
+    // Authored by the chw, so its cached author lineage must be refreshed by the move.
+    const report = utils.deepFreeze(
+      reportFactory.report().build({ form: 'move-report' }, { patient: chw, submitter: chw })
+    );
+
+    before(async () => {
+      await utils.saveDocs([district, healthCenterA, healthCenterB, clinic, chw, report]);
+    });
+
+    it('returns a dry-run summary and moves nothing when passing dry_run', async () => {
+      const response = await utils.request({
+        path: `${endpoint}/${clinicId}/move`,
+        method: 'POST',
+        qs: { dry_run: true },
+        body: { parent_id: hcBId },
+      });
+
+      expect(response).to.deep.equal({
+        summary: { 'set-parent': 2, 'set-contact': { reports: 1, places: 0 } },
+      });
+      const unchanged = await utils.getDoc(clinicId);
+      expect(unchanged.parent._id).to.equal(hcAId);
+    });
+
+    it('throws 400 when parent_id is missing', async () => {
+      await expect(utils.request({
+        path: `${endpoint}/${clinicId}/move`,
+        method: 'POST',
+        body: {},
+      })).to.be.rejectedWith(/parent_id is required/);
+    });
+
+    it('throws 400 when the move would create a circular hierarchy', async () => {
+      await expect(utils.request({
+        path: `${endpoint}/${hcAId}/move`,
+        method: 'POST',
+        body: { parent_id: clinicId },
+      })).to.be.rejectedWith(/circular hierarchy/);
+    });
+
+    it('throws 400 when the destination is not an allowed parent type', async () => {
+      await expect(utils.request({
+        path: `${endpoint}/${hcAId}/move`,
+        method: 'POST',
+        body: { parent_id: hcBId },
+      })).to.be.rejectedWith(/cannot have parent of type/);
+    });
+
+    it('throws 404 when the id is not a place', async () => {
+      await expect(utils.request({
+        path: `${endpoint}/${chw._id}/move`,
+        method: 'POST',
+        body: { parent_id: hcBId },
+      })).to.be.rejectedWith('404 - {"code":404,"error":"Place not found"}');
+    });
+
+    [
+      ['does not have can_move_contact_hierarchy permission', userNoPerms],
+      ['is not an online user', offlineUser]
+    ].forEach(([description, user]) => {
+      it(`throws 403 when user ${description}`, async () => {
+        await expect(utils.request({
+          path: `${endpoint}/${clinicId}/move`,
+          method: 'POST',
+          body: { parent_id: hcBId },
+          auth: { username: user.username, password: user.password },
+        })).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
+    });
+
+    it('moves the subtree and refreshes the lineage cached on its reports', async () => {
+      const { id, summary } = await utils.request({
+        path: `${endpoint}/${clinicId}/move`,
+        method: 'POST',
+        body: { parent_id: hcBId },
+      });
+      await utils.waitForBulkOperation(id);
+
+      expect(summary).to.deep.equal({ 'set-parent': 2, 'set-contact': { reports: 1, places: 0 } });
+
+      // the moved place now sits under the destination
+      const movedClinic = await utils.getDoc(clinicId);
+      expect(movedClinic.parent).to.deep.equal({ _id: hcBId, parent: { _id: districtId } });
+
+      // the descendant keeps its own parent, with the chain above it rewritten
+      const movedChw = await utils.getDoc(chw._id);
+      expect(movedChw.parent).to.deep.equal({
+        _id: clinicId,
+        parent: { _id: hcBId, parent: { _id: districtId } },
+      });
+
+      // the report's cached author lineage follows, and still names the same author
+      const movedReport = await utils.getDoc(report._id);
+      expect(movedReport.contact._id).to.equal(chw._id);
+      expect(movedReport.contact.parent).to.deep.equal({
+        _id: clinicId,
+        parent: { _id: hcBId, parent: { _id: districtId } },
+      });
+
+      // nothing was removed
+      await expect(utils.getDoc(hcAId)).to.be.fulfilled;
+    });
+  });
+
   describe('DELETE /api/v1/place/:uuid', () => {
     const endpoint = '/api/v1/place';
 
