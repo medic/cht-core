@@ -3,6 +3,7 @@ const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
 const deleteContactService = require('../services/delete-contact');
+const moveContactService = require('../services/move-contact');
 
 const getPerson = ctx.bind(Person.v1.get);
 const getPersonWithLineage = ctx.bind(Person.v1.getWithLineage);
@@ -252,5 +253,60 @@ module.exports = {
       get: (uuid) => getPerson(Qualifier.byUuid(uuid)),
       type: 'Person',
     }),
+
+    /**
+     * @openapi
+     * /api/v1/person/{id}/move:
+     *   post:
+     *     summary: Move a person to a new parent
+     *     operationId: v1PersonIdMovePost
+     *     description: >
+     *       Queues an asynchronous bulk operation that moves the person and its whole subtree under a
+     *       new parent, rewriting the parent lineage on every descendant and refreshing the cached
+     *       lineage on their reports and on any place whose primary contact moved. Returns a summary
+     *       of the changes and the bulk operation id to poll.
+     *     tags: [Person]
+     *     x-since: 5.3.0
+     *     x-permissions:
+     *       hasAll: [can_move_contact_hierarchy]
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: The id of the person to move
+     *       - $ref: '#/components/parameters/dryRun'
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required: [parent_id]
+     *             properties:
+     *               parent_id:
+     *                 type: string
+     *                 description: >
+     *                   The id of the destination parent, or `root` to move the contact to the top level.
+     *     responses:
+     *       '202':
+     *         $ref: '#/components/responses/BulkOperationQueued'
+     *       '200':
+     *         $ref: '#/components/responses/BulkOperationDryRun'
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     */
+    move: moveContactService.handleMove({
+      get: (uuid) => getPerson(Qualifier.byUuid(uuid)),
+      type: 'Person',
+    }),
+
   },
 };
