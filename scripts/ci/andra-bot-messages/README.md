@@ -23,5 +23,5 @@ Guidelines:
   - `{{author}}` — the GitHub username of the PR author (without the `@`)
   - `{{issueList}}` — the linked issue number(s), e.g. `#1234, #5678`
   - `{{sections}}` — the section names required by the PR template, e.g.
-    `` `Description`, `Code review checklist`, `License` `` (read from the
-    template itself, so it stays current when the template changes)
+    `Description, Code review checklist, License` (read from the template
+    itself, so it stays current when the template changes)

@@ -89,7 +89,7 @@ const matchesLicense = (prBody, template) => {
   // missing section is already covered by the section check
   const bodyLicenseSections = parseSections(prBody)
     .filter(section => section.heading === templateLicenseSection.heading);
-  return bodyLicenseSections.every(section => normalize(section.content) === templateLicenseSection.content);
+  return bodyLicenseSections.every(section => section.content === templateLicenseSection.content);
 };
 
 const getLinkedIssues = async (github, context) => {

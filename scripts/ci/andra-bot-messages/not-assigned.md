@@ -1,1 +1,1 @@
-You are not assigned to the linked issue ({{issueList}}). Please comment on the issue asking to be assigned to it, so we know the work is not being duplicated.
+You are not assigned to the linked issue ({{issueList}}). Please comment on the issue asking to be assigned to it, so we know the work is not being duplicated. Being assigned does not re-run the checks by itself — once you are assigned, push a commit or edit the PR description to re-run them.

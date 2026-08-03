@@ -2,8 +2,9 @@ name: AndraBot
 
 # pull_request_target is required so the workflow has a write token to comment
 # on PRs from forks. It is safe here because the workflow never checks out or
-# executes code from the PR — only the base branch is checked out, and the
-# checks operate purely on API data.
+# executes code from the PR — only the default branch is checked out (since
+# 2025-12-08 pull_request_target resolves the workflow file and checkout to the
+# default branch), and the checks operate purely on API data.
 on:
   pull_request_target:
     types:
@@ -28,7 +29,7 @@ jobs:
       issues: read
       pull-requests: write
     steps:
-      - name: Checkout base branch
+      - name: Checkout default branch
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           persist-credentials: false
