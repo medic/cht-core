@@ -143,7 +143,7 @@ describe('move-contact service', () => {
     await handler(buildReq(), buildRes());
 
     expect(request.post.callCount).to.equal(2);
-    expect(request.post.args[0][0].body.bookmark).to.equal(null);
+    expect(request.post.args[0][0].body.bookmark).to.be.null;
     expect(request.post.args[1][0].body.bookmark).to.equal('page-2');
   });
 

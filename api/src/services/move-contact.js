@@ -27,7 +27,7 @@ const DOC_PAGE_SIZE = 100;
 // The id is embedded in a quoted nouveau phrase, so only the characters that can terminate or escape
 // that phrase matter. `nouveau.escapeKeys` is for unquoted terms and would escape the hyphens in a
 // uuid, which would stop it matching.
-const escapePhrase = (value) => value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+const escapePhrase = (value) => value.replaceAll(/[\\"]/g, String.raw`\$&`);
 
 // contacts_by_depth emits a row for every contact beneath the key, so this is the subtree's ids.
 const getSubtreeIds = async (id) => {
@@ -55,28 +55,31 @@ const buildOperationsInPages = async (ids, buildPage) => {
  * every report and is standard in cht-core, so there is no view fallback to maintain. Results are
  * paged with the bookmark rather than capped, so a prolific author is not silently truncated.
  */
+const addReportIdsForChunk = async (chunk, ids) => {
+  const terms = chunk.map(id => `"contact:${escapePhrase(id.toLowerCase())}"`);
+  const q = `exact_match:(${terms.join(' OR ')})`;
+  let bookmark = null;
+
+  do {
+    const response = await request.post({
+      uri: `${environment.couchUrl}/_design/medic/_nouveau/reports_by_freetext`,
+      body: { q, limit: nouveau.BATCH_LIMIT, bookmark },
+    });
+    const hits = response.hits ?? [];
+    hits.forEach(hit => ids.add(hit.id));
+    // A bookmark that does not advance means the index has no more to give; without this the loop
+    // would spin forever inside the request.
+    const exhausted = hits.length < nouveau.BATCH_LIMIT || response.bookmark === bookmark;
+    bookmark = exhausted ? null : response.bookmark;
+  } while (bookmark);
+};
+
 const getReportIdsByCreator = async (contactIds) => {
   const remaining = [ ...contactIds ];
   const ids = new Set();
 
   while (remaining.length) {
-    const chunk = remaining.splice(0, nouveau.BATCH_LIMIT);
-    const terms = chunk.map(id => `"contact:${escapePhrase(id.toLowerCase())}"`);
-    const q = `exact_match:(${terms.join(' OR ')})`;
-    let bookmark = null;
-
-    do {
-      const response = await request.post({
-        uri: `${environment.couchUrl}/_design/medic/_nouveau/reports_by_freetext`,
-        body: { q, limit: nouveau.BATCH_LIMIT, bookmark },
-      });
-      const hits = response.hits || [];
-      hits.forEach(hit => ids.add(hit.id));
-      // A bookmark that does not advance means the index has no more to give; without this the loop
-      // would spin forever inside the request.
-      const exhausted = hits.length < nouveau.BATCH_LIMIT || response.bookmark === bookmark;
-      bookmark = exhausted ? null : response.bookmark;
-    } while (bookmark);
+    await addReportIdsForChunk(remaining.splice(0, nouveau.BATCH_LIMIT), ids);
   }
 
   return [ ...ids ];

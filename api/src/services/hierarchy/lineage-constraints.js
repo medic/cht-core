@@ -20,6 +20,12 @@ const getPrimaryContactId = (doc) => typeof doc?.contact === 'string' ? doc.cont
  * A contact may only be placed under a parent its configured type permits, and a type with no
  * configured parents may only sit at the root.
  */
+const assertRootIsAllowed = (sourceType) => {
+  if (contactTypesUtils.hasParents(sourceType)) {
+    throw new BadRequestError(`contacts of type '${sourceType.id}' cannot be moved to the root`);
+  }
+};
+
 const assertParentTypeIsAllowed = (settings, sourceDoc, destinationDoc) => {
   const sourceType = contactTypesUtils.getContactType(settings, sourceDoc);
   if (!sourceType) {
@@ -27,10 +33,7 @@ const assertParentTypeIsAllowed = (settings, sourceDoc, destinationDoc) => {
   }
 
   if (!destinationDoc) {
-    if (contactTypesUtils.hasParents(sourceType)) {
-      throw new BadRequestError(`contacts of type '${sourceType.id}' cannot be moved to the root`);
-    }
-    return;
+    return assertRootIsAllowed(sourceType);
   }
 
   const destinationType = contactTypesUtils.getContactType(settings, destinationDoc);

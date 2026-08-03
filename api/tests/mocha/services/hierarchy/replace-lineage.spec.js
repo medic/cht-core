@@ -46,7 +46,7 @@ describe('hierarchy/replace-lineage', () => {
       const changed = replaceParentLineage(doc, { replaceWith: undefined });
 
       expect(changed).to.equal(true);
-      expect(doc.parent).to.equal(undefined);
+      expect(doc.parent).to.be.undefined;
     });
   });
 

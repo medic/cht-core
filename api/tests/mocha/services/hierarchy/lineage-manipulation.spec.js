@@ -9,8 +9,8 @@ const {
 describe('hierarchy/lineage-manipulation', () => {
   describe('createLineageFromDoc', () => {
     it('returns undefined for a falsy doc', () => {
-      expect(createLineageFromDoc(undefined)).to.equal(undefined);
-      expect(createLineageFromDoc(null)).to.equal(undefined);
+      expect(createLineageFromDoc(undefined)).to.be.undefined;
+      expect(createLineageFromDoc(null)).to.be.undefined;
     });
 
     it('builds a lineage stub carrying the id and the existing parent chain', () => {
