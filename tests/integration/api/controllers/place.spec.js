@@ -602,9 +602,13 @@ describe('Place API', () => {
     const hcBId = uuid();
     const clinicId = uuid();
 
+    // An explicit shortcode: personFactory defaults every person to `test_woman_1`, and a report
+    // records its subject's shortcode, so sharing the default would make this report a subject match
+    // for any other spec that deletes a person.
     const chw = utils.deepFreeze(personFactory.build({
       name: 'moving-chw',
       role: 'chw',
+      patient_id: 'move-chw',
       parent: { _id: clinicId, parent: { _id: hcAId, parent: { _id: districtId } } },
     }));
     const district = utils.deepFreeze(placeFactory.place().build({

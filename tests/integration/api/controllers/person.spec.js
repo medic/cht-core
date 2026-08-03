@@ -522,9 +522,12 @@ describe('Person API', () => {
       contact: {},
       parent: district,
     }));
+    // An explicit shortcode, for the same reason the delete fixture below sets one: personFactory
+    // defaults every person to `test_woman_1`, and a report records its subject's shortcode.
     const patient = utils.deepFreeze(personFactory.build({
       name: 'moving-patient',
       role: 'patient',
+      patient_id: 'person-move-patient',
       parent: { _id: clinicAId, parent: { _id: districtId } },
     }));
     // Authored by the person being moved, so its cached author lineage must follow.
