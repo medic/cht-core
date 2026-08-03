@@ -453,4 +453,102 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
     ($.fn as any).nepaliDatePicker = originalPlugin;
     expect(errorThrown).to.be.false;
   });
+
+  it('ignores dateSelect event with an invalid/non-existent day', async () => {
+    await initWidget();
+    const hiddenInput = $('.nepali-datepicker-input');
+
+    // Seed a valid date first to verify it survives the invalid event
+    dayInput().val('१५');
+    monthInput().val('३');
+    yearInput().val('२०८१');
+
+    const event: any = $.Event('dateSelect');
+    event.datePickerData = {
+      bsYear: 2082,
+      bsMonth: 8, // Mansir
+      bsDate: 30  // Invalid day (Mansir 2082 only has 29 days)
+    };
+    
+    let threwError = false;
+    try {
+      hiddenInput.trigger(event);
+    } catch (_e) {
+      threwError = true;
+    }
+
+    expect(threwError).to.be.false;
+    // Verify that the valid date is NOT cleared because the event was ignored
+    expect(dayInput().val()).to.equal('१५');
+    expect(monthInput().val()).to.equal('३');
+    expect(yearInput().val()).to.equal('२०८१');
+  });
+
+  it('clears invalid day input on manual entry of non-existent day', async () => {
+    await initWidget();
+
+    dayInput().val('३०').trigger('change');
+    monthInput().val('८').trigger('change');
+    yearInput().val('२०८२').trigger('change').trigger('blur');
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(dayInput().val()).to.equal('');
+    expect(realDateInput().val()).to.equal('');
+  });
+
+  it('accepts dateSelect event on month boundary (day === daysInMonth)', async () => {
+    await initWidget();
+    const hiddenInput = $('.nepali-datepicker-input');
+
+    const event: any = $.Event('dateSelect');
+    event.datePickerData = {
+      bsYear: 2082,
+      bsMonth: 8, // Mansir
+      bsDate: 29  // Valid day (Mansir 2082 has exactly 29 days)
+    };
+
+    hiddenInput.trigger(event);
+
+    expect(dayInput().val()).to.equal('२९');
+    expect(monthInput().val()).to.equal('८');
+    expect(yearInput().val()).to.equal('२०८२');
+    expect(realDateInput().val()).to.not.equal('');
+  });
+
+  it('updates date on sequential selections without swallowing second pick', async () => {
+    await initWidget();
+    const hiddenInput = $('.nepali-datepicker-input');
+
+    // First selection: Mansir 8, 2082
+    const firstEvent: any = $.Event('dateSelect');
+    firstEvent.datePickerData = {
+      bsYear: 2082,
+      bsMonth: 8,
+      bsDate: 8
+    };
+    hiddenInput.trigger(firstEvent);
+
+    expect(dayInput().val()).to.equal('८');
+    expect(monthInput().val()).to.equal('८');
+    expect(yearInput().val()).to.equal('२०८२');
+
+    // Second selection: Baisakh 31, 2082 (Baisakh has 31 days)
+    const secondEvent: any = $.Event('dateSelect');
+    secondEvent.datePickerData = {
+      bsYear: 2082,
+      bsMonth: 1,
+      bsDate: 31
+    };
+    hiddenInput.trigger(secondEvent);
+
+    // Allow the guard's deferred checks to run
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(dayInput().val()).to.equal('३१');
+    expect(monthInput().val()).to.equal('१');
+    expect(yearInput().val()).to.equal('२०८२');
+    expect(realDateInput().val()).to.not.equal('');
+  });
 });
+
