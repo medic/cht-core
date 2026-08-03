@@ -20,9 +20,10 @@ describe('archive', function () {
   const contact = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
   const patient = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
   const user = userFactory.build({ username: 'offlineuser-archive', place: healthCenter._id });
-  const reportToArchive = genericReportFactory
-    .report()
-    .build({ form: 'home_visit' }, { patient, submitter: contact });
+  // Built per test: re-archiving an id the archive db has already seen (and cleanup deleted)
+  // would be a silent new_edits:false no-op against the deletion tombstone, since identical
+  // content re-mints the identical rev. A fresh report id per test avoids the collision.
+  let reportToArchive;
 
   const postCsv = (csv) => utils.request({
     path: '/api/v1/archive',
@@ -40,6 +41,9 @@ describe('archive', function () {
   }, id);
 
   beforeEach(async () => {
+    reportToArchive = genericReportFactory
+      .report()
+      .build({ form: 'home_visit' }, { patient, submitter: contact });
     await utils.saveDocs([...places.values(), contact, patient]);
     await utils.createUsers([user]);
     await utils.saveDocs([reportToArchive]);
@@ -55,8 +59,12 @@ describe('archive', function () {
   };
 
   // revertDb only covers medic — archived copies would leak between tests otherwise.
+  // Deleting leaves tombstones behind, which is safe only because every test archives a
+  // freshly built report id (see reportToArchive) and never re-archives a tombstoned rev.
   const cleanArchiveDb = async () => {
-    await utils.archiveDb.destroy();
+    const { rows } = await utils.archiveDb.allDocs();
+    const deletes = rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
+    await utils.archiveDb.bulkDocs(deletes);
   };
 
   afterEach(async () => {
