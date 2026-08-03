@@ -62,7 +62,7 @@ const getDocIdsToDelete = async (userCtx, docIds) => {
   toDelete.push(...toPurge, ...toArchive);
 
   // a doc can be flagged by more than one source (e.g. deleted after being purged or archived)
-  return _.uniq(toDelete);
+  return [...new Set(toDelete)];
 };
 
 module.exports = {

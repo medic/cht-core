@@ -57,8 +57,8 @@ describe('archive', function () {
   // revertDb only covers medic — archived copies would leak between tests otherwise.
   const cleanArchiveDb = async () => {
     const { rows } = await utils.archiveDb.allDocs();
-    const deletes = rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
-    await utils.archiveDb.bulkDocs(deletes);
+    const purgeBody = Object.fromEntries(rows.map(row => [row.id, [row.value.rev]]));
+    await utils.request({ path: '/medic-archive/_purge', method: 'POST', body: purgeBody });
   };
 
   afterEach(async () => {
