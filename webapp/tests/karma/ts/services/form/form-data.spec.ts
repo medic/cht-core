@@ -329,15 +329,45 @@ describe('form-data', () => {
         expect(result._attachments).to.be.undefined;
       });
 
-      it('drops an existing binary attachment when its field is gone from the form', () => {
+      it('keeps an existing binary attachment when the form has no binary field for it', () => {
+        // A contact's edit form need not contain every field its create form has, and binary data is never
+        // loaded back into a form, so the attachment has to be kept regardless of the form's shape.
         const doc = parseXml('<data><name>Sally</name></data>');
+        const formData = new EnketoFormData(doc.documentElement, 'the-id');
+        const existing = { data: 'saved by another form', content_type: 'image/png' };
+
+        const result = formData.deserializeDoc(buildFormConfig(), REPORTED_DATE, {
+          _attachments: { 'user-file/my_file': existing },
+        });
+
+        expect(result._attachments).to.deep.equal({ 'user-file/my_file': existing });
+      });
+
+      it('keeps an existing binary attachment stored under the legacy form-prefixed name', () => {
+        // Docs saved before the name dropped the form id carry `user-file/<form>/<path>`, which no longer
+        // matches the derived name - it must still be kept rather than deleted on the next save.
+        const doc = parseXml('<data><my_file type="binary"></my_file></data>');
+        const formData = new EnketoFormData(doc.documentElement, 'the-id');
+        const legacy = { data: 'previously saved', content_type: 'image/png' };
+
+        const result = formData.deserializeDoc(buildFormConfig(), REPORTED_DATE, {
+          _attachments: { 'user-file/my-form/my_file': legacy },
+        });
+
+        expect(result._attachments).to.deep.equal({ 'user-file/my-form/my_file': legacy });
+      });
+
+      it('replaces an existing binary attachment when the field has a new value', () => {
+        const doc = parseXml('<data><my_file type="binary">new image data</my_file></data>');
         const formData = new EnketoFormData(doc.documentElement, 'the-id');
 
         const result = formData.deserializeDoc(buildFormConfig(), REPORTED_DATE, {
-          _attachments: { 'user-file/my_file': { data: 'orphan', content_type: 'image/png' } },
+          _attachments: { 'user-file/my_file': { data: 'previously saved', content_type: 'image/png' } },
         });
 
-        expect(result._attachments).to.be.undefined;
+        expect(result._attachments).to.deep.equal({
+          'user-file/my_file': { data: 'new image data', content_type: 'image/png' },
+        });
       });
 
       it('builds file attachments for the uploaded files referenced by a field', () => {

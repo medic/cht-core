@@ -225,8 +225,8 @@ describe('Sub-contact attachment routing', () => {
 
     const after = await fetchFamilyAndChildren(familyId);
 
-    // The family doc is re-saved by this edit. Its badge attachment survives because the edit form derives
-    // the same `user-file/badge` name that the create form stored it under.
+    // The family doc is re-saved by this edit, and the edit form has no <badge> field at all - existing
+    // binary attachments are kept regardless of whether the form still contains the field.
     expect(snapshotAttachments(after.family)).to.deep.equal(beforeFamily);
     expect(Object.keys(after.family._attachments), 'family badge survives the edit').to.include(BADGE_ATTACHMENT);
     // The primary contact is not re-saved by this edit (the edit form has no <contact> group and the

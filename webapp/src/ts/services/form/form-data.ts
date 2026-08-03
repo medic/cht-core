@@ -94,8 +94,6 @@ export class EnketoFormData {
   }
 
   protected getDocAttachments(originalAttachments: Record<string, any> = {}) {
-    const hasCustomAttachmentName = (fileName: string) => !fileName.startsWith(USER_FILE_ATTACHMENT_PREFIX)
-      && !fileName.startsWith(`${USER_BINARY_ATTACHMENT_PREFIX}/`);
     const isExistingFileAttachment = (fileName: string) => fileName.startsWith(USER_FILE_ATTACHMENT_PREFIX)
       && this.findNodeWithTextContent(fileName.slice(USER_FILE_ATTACHMENT_PREFIX.length));
     const binaryAttachments = this.binaryTypeElements
@@ -113,8 +111,8 @@ export class EnketoFormData {
       .reduce((attachments, { name, content_type, data }) => ({ ...attachments, [name]: { content_type, data } }), {});
     const existingAttachments = Object
       .entries(originalAttachments)
-      // Keep custom attachments and existing file attachments still referenced by a field
-      .filter(([key]) => hasCustomAttachmentName(key) || isExistingFileAttachment(key))
+      // Keep custom/binary attachments and existing file attachments still referenced by a field
+      .filter(([key]) => !key.startsWith(USER_FILE_ATTACHMENT_PREFIX) || isExistingFileAttachment(key))
       .reduce((existingAttachments, [key, attachment]) => ({ ...existingAttachments, [key]: attachment }), {});
 
     const attachments = {

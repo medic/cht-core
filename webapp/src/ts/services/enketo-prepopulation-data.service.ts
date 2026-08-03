@@ -75,7 +75,7 @@ export class EnketoPrepopulationDataService {
     }
 
     // Match by node name in JS rather than passing `name` to the jQuery selector: data keys can be `_attachments`
-    // names containing '/' or ':' (they are derived from the form id and the field xpath), which jQuery rejects as
+    // names containing '/' (a binary's field path) or ' ' and '(' (an uploaded filename), which jQuery rejects as
     // an invalid selector - and it throws while tokenizing, even when the set being filtered is empty.
     return elem.children().filter((_idx, child) => child.nodeName === name);
   }

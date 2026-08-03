@@ -1363,6 +1363,7 @@ describe('Enketo service', () => {
             contact: { _id: '123', phone: '555' },
             _attachments: {
               'some-custom-attachment': { content_type: 'text/plain', data: 'c' },
+              'user-file/gone_from_the_form': { content_type: 'image/png', data: 'd' },
               'user-file-referenced.png': { content_type: 'image/png', data: 'a' },
               'user-file-orphan.png': { content_type: 'image/png', data: 'b' },
             },
@@ -1372,6 +1373,9 @@ describe('Enketo service', () => {
 
         // Custom (non user-file) attachments are kept
         expect(report._attachments['some-custom-attachment']).to.deep.equal({ content_type: 'text/plain', data: 'c' });
+        // Binary attachments are kept even when the form has no binary field for them
+        expect(report._attachments['user-file/gone_from_the_form'])
+          .to.deep.equal({ content_type: 'image/png', data: 'd' });
         // user-file attachments still referenced by a field are kept
         expect(report._attachments['user-file-referenced.png']).to.deep.equal({ content_type: 'image/png', data: 'a' });
         // user-file attachments no longer referenced by any field are dropped
@@ -1765,6 +1769,30 @@ describe('Enketo service', () => {
           data: 'some image data',
           content_type: 'image/png',
         });
+      });
+
+      it('keeps a binary attachment saved by the create form when the edit form omits the field', async () => {
+        // Contacts are created and edited by two different forms, and the edit form need not contain every
+        // field the create form has. Binary data is never loaded back into a form, so the stored attachment
+        // is all there is - it must survive the edit either way.
+        const existing = { content_type: 'image/png', data: 'saved by the create form' };
+        const editForm = { internalId: 'contact:clinic:edit', xmlVersion: '1' };
+
+        form.getDataStr.returns('<data><clinic><name>Clinic</name></clinic></data>');
+        const { preparedDocs: [withoutField] } = await saveContact(
+          { type: 'clinic', _attachments: { 'user-file/my_file': existing } },
+          editForm
+        );
+        expect(withoutField._attachments).to.deep.equal({ 'user-file/my_file': existing });
+
+        form.getDataStr.returns(
+          '<data><clinic><name>Clinic</name><my_file type="binary"></my_file></clinic></data>'
+        );
+        const { preparedDocs: [withField] } = await saveContact(
+          { type: 'clinic', _attachments: { 'user-file/my_file': existing } },
+          editForm
+        );
+        expect(withField._attachments).to.deep.equal({ 'user-file/my_file': existing });
       });
 
       it('routes attachments to the sibling doc that owns the field', async () => {

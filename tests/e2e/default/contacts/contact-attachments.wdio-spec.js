@@ -288,6 +288,36 @@ describe('Contact form attachments', () => {
     expect(updatedBadge.revpos, 'attachment revision unchanged').to.equal(seededBadge.revpos);
   });
 
+  it('preserves an inline-binary attachment stored under the legacy form-prefixed name', async () => {
+    // Docs saved before the name dropped the form id carry `user-file/<form>/<path>`, which no longer matches
+    // the name the form derives. Editing such a contact must not delete the image.
+    const legacyAttachment = 'user-file/contact:person_with_attachments:create/badge';
+    const contact = personFactory.build({
+      name: 'Person With Legacy Badge',
+      parent: { _id: healthCenter._id, parent: healthCenter.parent },
+      type: 'contact',
+      contact_type: 'person_with_attachments',
+      badge: '',
+      _attachments: {
+        [legacyAttachment]: { content_type: 'image/png', data: BADGE_BASE64 },
+      },
+    });
+    await utils.saveDocs([contact]);
+
+    await browser.url(`#/contacts/${contact._id}/edit`);
+    await commonPage.waitForPageLoaded();
+
+    await commonEnketoPage.setInputValue('Full name', 'Person With Legacy Badge Edited');
+    await genericForm.submitForm();
+    await commonPage.waitForPageLoaded();
+    await contactPage.waitForContactLoaded();
+
+    const updated = await utils.getDoc(contact._id, '', '?attachments=true');
+    expect(updated.name).to.equal('Person With Legacy Badge Edited');
+    expect(Object.keys(updated._attachments)).to.deep.equal([legacyAttachment]);
+    expect(updated._attachments[legacyAttachment].data).to.equal(BADGE_BASE64);
+  });
+
   it('should remove attachment when editing contact', async () => {
     const contact = createContactWithAttachment('Person With Photo To Remove');
     await utils.saveDocs([contact]);
