@@ -10,6 +10,8 @@ const TEMPLATE = fs.readFileSync(
   'utf8'
 );
 const COMMENT_MARKER = '<!-- andra-bot -->';
+const FAILURE_LABEL = 'Waiting for contributor';
+const SUCCESS_LABEL = 'Ready for review';
 const MESSAGES_DIR = path.resolve(__dirname, '../../../../../scripts/ci/andra-bot-messages');
 
 // Mirrors the message rendering in andra-bot.js so assertions track the message
@@ -324,9 +326,6 @@ describe('AndraBot', () => {
   });
 
   describe('labelling', () => {
-    const FAILURE_LABEL = 'Waiting for contributor';
-    const SUCCESS_LABEL = 'Ready for review';
-
     it('should add the failure label when checks fail', async () => {
       await run(getPr());
 
@@ -520,6 +519,42 @@ describe('AndraBot', () => {
       expect(github.rest.issues.createComment.called).to.be.false;
       expect(github.rest.issues.deleteComment.called).to.be.false;
       expect(core.setFailed.called).to.be.false;
+    });
+
+    it('should warn but still label and fail the check when posting the comment fails', async () => {
+      github.rest.issues.createComment.rejects(new Error('boom'));
+      await run(getPr());
+
+      expect(core.warning.calledOnce).to.be.true;
+      expect(core.warning.args[0][0]).to.contain('boom');
+      expect(github.rest.issues.addLabels.calledOnce).to.be.true;
+      expect(core.setFailed.calledOnce).to.be.true;
+    });
+
+    it('should not post a comment when deleting the old one fails', async () => {
+      github.paginate.resolves([
+        { id: 8, body: `${COMMENT_MARKER}\nold bot comment`, user: { login: 'github-actions[bot]', type: 'Bot' } },
+      ]);
+      github.rest.issues.deleteComment.rejects(new Error('boom'));
+      await run(getPr());
+
+      expect(core.warning.calledOnce).to.be.true;
+      expect(github.rest.issues.createComment.called).to.be.false;
+      expect(core.setFailed.calledOnce).to.be.true;
+    });
+
+    it('should keep a passing PR green when replacing the comment with the success message fails', async () => {
+      github.paginate.resolves([
+        { id: 8, body: `${COMMENT_MARKER}\nold bot comment`, user: { login: 'github-actions[bot]', type: 'Bot' } },
+      ]);
+      github.rest.issues.createComment.rejects(new Error('boom'));
+      setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
+      await run(getPr({ body: filledTemplate, labels: [{ name: FAILURE_LABEL }] }));
+
+      expect(core.warning.calledOnce).to.be.true;
+      expect(core.setFailed.called).to.be.false;
+      expect(github.rest.issues.addLabels.args[0][0].labels).to.deep.equal([SUCCESS_LABEL]);
+      expect(github.rest.issues.removeLabel.args[0][0].name).to.equal(FAILURE_LABEL);
     });
   });
 });

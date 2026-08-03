@@ -175,21 +175,25 @@ const sameContent = (a, b) => a.replaceAll('\r\n', '\n').trim() === b.replaceAll
 
 // Editing a comment does not notify the PR author, so when the content changes the old
 // comment is deleted and a new one is posted instead. Identical content is left alone.
-const syncComment = async (github, context, existingComment, body) => {
+const syncComment = async (github, context, core, existingComment, body) => {
   if (existingComment && sameContent(existingComment.body, body)) {
     return;
   }
-  if (existingComment) {
-    await github.rest.issues.deleteComment({
+  try {
+    if (existingComment) {
+      await github.rest.issues.deleteComment({
+        ...context.repo,
+        comment_id: existingComment.id,
+      });
+    }
+    await github.rest.issues.createComment({
       ...context.repo,
-      comment_id: existingComment.id,
+      issue_number: context.payload.pull_request.number,
+      body,
     });
+  } catch (err) {
+    core.warning(`Could not update the AndraBot comment: ${err.message}`);
   }
-  await github.rest.issues.createComment({
-    ...context.repo,
-    issue_number: context.payload.pull_request.number,
-    body,
-  });
 };
 
 const hasLabel = (pr, name) => pr.labels.some(label => label.name === name);
@@ -262,14 +266,14 @@ const runAndraBot = async ({ github, context, core }) => {
   if (!failures.length) {
     if (existingComment) {
       const body = `${COMMENT_MARKER}\n${getMessage('success', { author: pr.user.login })}`;
-      await syncComment(github, context, existingComment, body);
+      await syncComment(github, context, core, existingComment, body);
     }
     await swapLabels(github, context, core, { add: SUCCESS_LABEL, remove: FAILURE_LABEL });
     core.info('All AndraBot checks passed.');
     return;
   }
 
-  await syncComment(github, context, existingComment, buildCommentBody(pr, failures));
+  await syncComment(github, context, core, existingComment, buildCommentBody(pr, failures));
   await swapLabels(github, context, core, { add: FAILURE_LABEL, remove: SUCCESS_LABEL });
   core.setFailed(`AndraBot checks failed:\n- ${failures.join('\n- ')}`);
 };
