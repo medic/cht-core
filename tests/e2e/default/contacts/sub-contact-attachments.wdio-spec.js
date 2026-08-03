@@ -11,10 +11,10 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
 const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Sub-contact attachment routing', () => {
-  // An inline binary is attached under `user-file/<form internalId>/<field path relative to the owning doc>`.
-  // Every `badge` sits directly under its own owning group, so all three owner docs end up with the same
-  // attachment name - uniqueness is per-doc, not global.
-  const BADGE_ATTACHMENT = 'user-file/contact:family_with_attachments:create/badge';
+  // An inline binary is attached under `user-file/<field path relative to the owning doc>`. Every `badge`
+  // sits directly under its own owning group, so all three owner docs end up with the same attachment
+  // name - uniqueness is per-doc, not global.
+  const BADGE_ATTACHMENT = 'user-file/badge';
 
   const familyPhotoPath = path.join(__dirname, '../enketo/images/photo-for-upload-form.png');
   const primaryContactPhotoPath = path.join(__dirname, '../../../../webapp/src/img/layers.png');
@@ -207,12 +207,7 @@ describe('Sub-contact attachment routing', () => {
     const snapshotAttachments = (doc) => Object.fromEntries(
       Object.entries(doc._attachments || {}).map(([key, value]) => [key, value.length])
     );
-    // The family doc is the only one re-saved by this edit, and its inline-binary `badge` cannot survive it
-    // (see the skipped test below), so compare only its file-widget uploads.
-    const snapshotUploads = (doc) => Object.fromEntries(
-      Object.entries(snapshotAttachments(doc)).filter(([key]) => key.startsWith('user-file-'))
-    );
-    const beforeFamilyUploads = snapshotUploads(before.family);
+    const beforeFamily = snapshotAttachments(before.family);
     const beforePrimary = snapshotAttachments(before.primaryContact);
     expect(before.repeatChildren).to.have.lengthOf(1);
     const beforeKidOne = snapshotAttachments(before.repeatChildren[0]);
@@ -230,12 +225,14 @@ describe('Sub-contact attachment routing', () => {
 
     const after = await fetchFamilyAndChildren(familyId);
 
-    expect(snapshotUploads(after.family)).to.deep.equal(beforeFamilyUploads);
+    // The family doc is re-saved by this edit. Its badge attachment survives because the edit form derives
+    // the same `user-file/badge` name that the create form stored it under.
+    expect(snapshotAttachments(after.family)).to.deep.equal(beforeFamily);
+    expect(Object.keys(after.family._attachments), 'family badge survives the edit').to.include(BADGE_ATTACHMENT);
     // The primary contact is not re-saved by this edit (the edit form has no <contact> group and the
     // family's contact field still points at it), so all of its attachments are untouched.
     expect(snapshotAttachments(after.primaryContact)).to.deep.equal(beforePrimary);
 
-    // The edit form has no <badge>, so the field is not re-deserialized and its value carries over.
     expect(after.family.badge).to.equal(before.family.badge);
     expect(after.primaryContact.badge).to.equal(before.primaryContact.badge);
 
@@ -255,37 +252,5 @@ describe('Sub-contact attachment routing', () => {
     const kidTwoAttachmentNames = Object.keys(kidTwoAfter._attachments);
     expect(kidTwoAttachmentNames).to.have.lengthOf(1);
     expect(kidTwoAttachmentNames[0]).to.match(/^user-file-photo-for-upload-form.*\.png$/);
-  });
-
-  // Skipped: an inline binary's attachment name embeds the internalId of the form that saved it, and contacts
-  // use separate create and edit forms. The create form stores
-  // `user-file/contact:family_with_attachments:create/badge`; on edit the same field resolves to
-  // `...:edit/badge`, so the stored attachment matches nothing and is dropped — an unrelated edit silently
-  // deletes the badge image. Unskip once binary attachment names no longer embed the form id.
-  it.skip('should keep an inline-binary attachment saved by the create form when editing', async () => {
-    await commonPage.goToPeople(healthCenter._id);
-    await commonPage.clickFastActionFAB({ actionId: familyType.id });
-
-    await submitFamilyForm({
-      familyName: 'Badge Family',
-      primaryContactName: 'Chidi',
-      repeatChildren: [{ name: 'Kid Badge', photoPath: childPhotoPath }],
-    });
-
-    const familyId = await contactPage.getCurrentContactId();
-    const before = await utils.getDoc(familyId);
-    expect(Object.keys(before._attachments)).to.include(BADGE_ATTACHMENT);
-
-    await commonPage.accessEditOption();
-    await commonPage.waitForPageLoaded();
-    await commonEnketoPage.setInputValue('Family Name', 'Badge Family Edited');
-    await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
-    await contactPage.waitForContactLoaded();
-
-    const after = await utils.getDoc(familyId);
-    expect(after.name).to.equal('Badge Family Edited');
-    expect(Object.keys(after._attachments), 'badge attachment survives an unrelated edit')
-      .to.include(BADGE_ATTACHMENT);
   });
 });

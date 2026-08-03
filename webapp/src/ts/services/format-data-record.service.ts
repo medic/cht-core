@@ -465,6 +465,10 @@ export class FormatDataRecordService {
     if (isImagePath(filePath)) {
       return filePath;
     }
+    const binaryFilePath = 'user-file/' + label.split('.').slice(2).join('/');
+    if (isImagePath(binaryFilePath)) {
+      return binaryFilePath;
+    }
     // Fall back to the old style of naming image attachments
     const legacyFilePath = 'user-file/' + label.split('.').slice(1).join('/');
     if (isImagePath(legacyFilePath)) {

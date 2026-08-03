@@ -281,8 +281,8 @@ describe('form-data', () => {
         const result = formData.deserializeDoc(buildFormConfig(), REPORTED_DATE);
 
         expect(result._attachments).to.deep.equal({
-          'user-file/my-form/my_file': { data: 'some image data', content_type: 'image/png' },
-          'user-file/my-form/sub_element/sub_sub_element/other_file': {
+          'user-file/my_file': { data: 'some image data', content_type: 'image/png' },
+          'user-file/sub_element/sub_sub_element/other_file': {
             data: 'other data',
             content_type: 'image/png',
           },
@@ -303,8 +303,8 @@ describe('form-data', () => {
         const result = formData.deserializeDoc(buildFormConfig(['/data/my_repeat']), REPORTED_DATE);
 
         expect(result._attachments).to.deep.equal({
-          'user-file/my-form/my_repeat[1]/photo': { data: 'data 0', content_type: 'image/png' },
-          'user-file/my-form/my_repeat[2]/photo': { data: 'data 1', content_type: 'image/png' },
+          'user-file/my_repeat[1]/photo': { data: 'data 0', content_type: 'image/png' },
+          'user-file/my_repeat[2]/photo': { data: 'data 1', content_type: 'image/png' },
         });
       });
 
@@ -314,10 +314,10 @@ describe('form-data', () => {
         const existing = { data: 'previously saved', content_type: 'image/png' };
 
         const result = formData.deserializeDoc(buildFormConfig(), REPORTED_DATE, {
-          _attachments: { 'user-file/my-form/my_file': existing },
+          _attachments: { 'user-file/my_file': existing },
         });
 
-        expect(result._attachments).to.deep.equal({ 'user-file/my-form/my_file': existing });
+        expect(result._attachments).to.deep.equal({ 'user-file/my_file': existing });
       });
 
       it('does not build a binary attachment when there is no value and no existing attachment', () => {
@@ -334,7 +334,7 @@ describe('form-data', () => {
         const formData = new EnketoFormData(doc.documentElement, 'the-id');
 
         const result = formData.deserializeDoc(buildFormConfig(), REPORTED_DATE, {
-          _attachments: { 'user-file/my-form/my_file': { data: 'orphan', content_type: 'image/png' } },
+          _attachments: { 'user-file/my_file': { data: 'orphan', content_type: 'image/png' } },
         });
 
         expect(result._attachments).to.be.undefined;
@@ -516,7 +516,7 @@ describe('form-data', () => {
 
         expect(result.my_file).to.equal('');
         expect(result._attachments).to.deep.equal({
-          'user-file/contact-form/my_file': { data: 'some image data', content_type: 'image/png' },
+          'user-file/my_file': { data: 'some image data', content_type: 'image/png' },
         });
       });
     });
@@ -791,11 +791,11 @@ describe('form-data', () => {
         const rootResult = reportData.deserializeDoc(buildFormConfig(), REPORTED_DATE);
 
         expect(subResult._attachments).to.deep.equal({
-          'user-file/my-form/photo1': { data: 'sub data', content_type: 'image/png' },
+          'user-file/photo1': { data: 'sub data', content_type: 'image/png' },
         });
         expect(subResult.photo1).to.equal('');
         expect(rootResult._attachments).to.deep.equal({
-          'user-file/my-form/main_photo': { data: 'main data', content_type: 'image/png' },
+          'user-file/main_photo': { data: 'main data', content_type: 'image/png' },
         });
         expect(rootResult.fields).to.deep.equal({
           main_photo: '',

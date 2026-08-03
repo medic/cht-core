@@ -15,10 +15,8 @@ describe('Contact form attachments', () => {
   const photoPngPath = path.join(__dirname, '../enketo/images/photo-for-upload-form.png');
   const layersPngPath = path.join(__dirname, '../../../../webapp/src/img/layers.png');
 
-  // An inline binary is attached under `user-file/<form internalId>/<field path relative to the owning doc>`.
-  // The contact group is the owning doc here, so the path is just the field name. Note that contacts use
-  // separate create and edit forms, so a binary saved by the create form has a different attachment name.
-  const BADGE_EDIT_ATTACHMENT = 'user-file/contact:person_with_attachments:edit/badge';
+  // An inline binary is attached under `user-file/<field path relative to the owning doc>`.
+  const BADGE_ATTACHMENT = 'user-file/badge';
   const BADGE_BASE64 =
     'iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8z8BQz0AEYBxVSF+FABJADveWkH6oAAAAAElFTkSuQmCC';
 
@@ -251,8 +249,6 @@ describe('Contact form attachments', () => {
   });
 
   it('preserves an untouched inline-binary field and its attachment on edit', async () => {
-    // Seed directly so the attachment is already named the way the edit form derives it. The inline-binary
-    // node loads empty on edit, so that stored name is the only thing that can carry it into the save.
     const contact = personFactory.build({
       name: 'Person With Badge',
       parent: { _id: healthCenter._id, parent: healthCenter.parent },
@@ -260,11 +256,11 @@ describe('Contact form attachments', () => {
       contact_type: 'person_with_attachments',
       badge: '',
       _attachments: {
-        [BADGE_EDIT_ATTACHMENT]: { content_type: 'image/png', data: BADGE_BASE64 },
+        [BADGE_ATTACHMENT]: { content_type: 'image/png', data: BADGE_BASE64 },
       },
     });
     await utils.saveDocs([contact]);
-    const seededBadge = (await utils.getDoc(contact._id, '', '?attachments=true'))._attachments[BADGE_EDIT_ATTACHMENT];
+    const seededBadge = (await utils.getDoc(contact._id, '', '?attachments=true'))._attachments[BADGE_ATTACHMENT];
     expect(seededBadge, 'seed should have the badge attachment').to.exist;
 
     await browser.url(`#/contacts/${contact._id}/edit`);
@@ -284,7 +280,7 @@ describe('Contact form attachments', () => {
     expect(updated.name).to.equal('Person With Badge Edited');
     expect(updated.badge, 'untouched inline-binary value stays cleared').to.equal('');
 
-    const updatedBadge = updated._attachments[BADGE_EDIT_ATTACHMENT];
+    const updatedBadge = updated._attachments[BADGE_ATTACHMENT];
     expect(updatedBadge, 'badge attachment should survive the edit').to.exist;
     expect(updatedBadge.content_type).to.equal('image/png');
     expect(updatedBadge.data, 'attachment content unchanged').to.equal(BADGE_BASE64);

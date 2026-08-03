@@ -6,10 +6,10 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const utils = require('@utils');
 const uuid = require('uuid').v7;
 
-// An inline binary is attached under `user-file/<form internalId>/<field path relative to the owning doc>`,
-// and its field value is cleared on save (the base64 lives only in the attachment).
+// An inline binary is attached under `user-file/<field path relative to the owning doc>`, and its field
+// value is cleared on save (the base64 lives only in the attachment).
 const FORM_ID = 'inline-binary-report';
-const BADGE_ATTACHMENT = `user-file/${FORM_ID}/badge`;
+const BADGE_ATTACHMENT = 'user-file/badge';
 const BADGE_BASE64 =
   'iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8z8BQz0AEYBxVSF+FABJADveWkH6oAAAAAElFTkSuQmCC';
 

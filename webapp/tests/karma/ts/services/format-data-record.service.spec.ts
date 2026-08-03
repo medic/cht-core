@@ -244,8 +244,8 @@ describe('FormatDataRecord service', () => {
     });
 
     it('returns the path-based image path for an inline-binary field, whose value is cleared on save', async () => {
-      // Saving an inline binary moves the data into `user-file/<form>/<field path>` and clears the field
-      // value, so the field path is the only thing left that identifies the attachment.
+      // Saving an inline binary moves the data into `user-file/<field path>` and clears the field value,
+      // so the field path is the only thing left that identifies the attachment.
       const report = {
         _id: 'my-report',
         form: 'my-form',
@@ -255,8 +255,8 @@ describe('FormatDataRecord service', () => {
           group: { nested_photo: '' },
         },
         _attachments: {
-          'user-file/my-form/photo': { content_type: 'image/png' },
-          'user-file/my-form/group/nested_photo': { content_type: 'image/png' },
+          'user-file/photo': { content_type: 'image/png' },
+          'user-file/group/nested_photo': { content_type: 'image/png' },
         },
       };
 
@@ -267,7 +267,7 @@ describe('FormatDataRecord service', () => {
           label: 'report.my-form.photo',
           value: '',
           depth: 0,
-          imagePath: 'user-file/my-form/photo',
+          imagePath: 'user-file/photo',
           target: undefined,
         },
         { label: 'report.my-form.group', depth: 0 },
@@ -275,10 +275,27 @@ describe('FormatDataRecord service', () => {
           label: 'report.my-form.group.nested_photo',
           value: '',
           depth: 1,
-          imagePath: 'user-file/my-form/group/nested_photo',
+          imagePath: 'user-file/group/nested_photo',
           target: undefined,
         },
       ]);
+    });
+
+    it('prefers the path-based name over the legacy form-prefixed name', async () => {
+      const report = {
+        _id: 'my-report',
+        form: 'my-form',
+        content_type: 'xml',
+        fields: { photo: '' },
+        _attachments: {
+          'user-file/photo': { content_type: 'image/png' },
+          'user-file/my-form/photo': { content_type: 'image/gif' },
+        },
+      };
+
+      const result = await service.format(report);
+
+      expect((result.fields as any[])[0].imagePath).to.equal('user-file/photo');
     });
 
     it('returns empty image path if attachment does not exist for image name', async () => {

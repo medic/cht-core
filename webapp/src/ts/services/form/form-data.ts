@@ -26,7 +26,7 @@ export class EnketoFormData {
     originalDoc?: Record<string, any>
   ): Record<string, any> {
     // Resolve the attachments first because moving a binary value into an attachment clears the field value.
-    const attachments = this.getDocAttachments(formConfig.doc.internalId, originalDoc?._attachments);
+    const attachments = this.getDocAttachments(originalDoc?._attachments);
     return {
       ...originalDoc,
       ...this.deserialize(formConfig),
@@ -93,16 +93,13 @@ export class EnketoFormData {
     return this.findChildNode(element, '_id')?.textContent || uuid();
   }
 
-  protected getDocAttachments(
-    form: string,
-    originalAttachments: Record<string, any> = {}
-  ) {
+  protected getDocAttachments(originalAttachments: Record<string, any> = {}) {
     const hasCustomAttachmentName = (fileName: string) => !fileName.startsWith(USER_FILE_ATTACHMENT_PREFIX)
       && !fileName.startsWith(`${USER_BINARY_ATTACHMENT_PREFIX}/`);
     const isExistingFileAttachment = (fileName: string) => fileName.startsWith(USER_FILE_ATTACHMENT_PREFIX)
       && this.findNodeWithTextContent(fileName.slice(USER_FILE_ATTACHMENT_PREFIX.length));
     const binaryAttachments = this.binaryTypeElements
-      .map(element => this.buildBinaryAttachmentData(form, originalAttachments, element))
+      .map(element => this.buildBinaryAttachmentData(originalAttachments, element))
       .filter(({ attachment }) => attachment)
       .reduce((binaryAttachments, { filename, attachment }) => ({ ...binaryAttachments, [filename]: attachment }), {});
     const newFileAttachments = FileManager
@@ -133,15 +130,11 @@ export class EnketoFormData {
     return !!nearestDbDoc && nearestDbDoc !== this.rootElement && this.rootElement.contains(nearestDbDoc);
   }
 
-  private buildBinaryAttachmentData(
-    form: string,
-    originalAttachments: Record<string, any>,
-    element: Element
-  ) {
+  private buildBinaryAttachmentData(originalAttachments: Record<string, any>, element: Element) {
     const rootXpath = Xpath.getElementTreeXPath(this.rootElement);
     const xpath = Xpath.getElementTreeXPath(element);
-    const formXpath = `/${form}${xpath.slice(rootXpath.length)}`;
-    const filename = `${USER_BINARY_ATTACHMENT_PREFIX}${formXpath}`;
+    const relativeXpath = xpath.slice(rootXpath.length);
+    const filename = `${USER_BINARY_ATTACHMENT_PREFIX}${relativeXpath}`;
     const data = element.textContent;
     element.textContent = '';
     return {
@@ -218,7 +211,7 @@ export class EnketoReportFormData extends EnketoFormData {
     originalDoc?: Record<string, any>
   ): Record<string, any> {
     // Resolve the attachments first because moving a binary value into an attachment clears the field value.
-    const attachments = this.getDocAttachments(formConfig.doc.internalId, originalDoc?._attachments);
+    const attachments = this.getDocAttachments(originalDoc?._attachments);
     return {
       ...originalDoc,
       _id: this.id,

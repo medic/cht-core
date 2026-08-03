@@ -1193,13 +1193,13 @@ describe('Enketo service', () => {
           gender: 'f',
           my_file: '',
         });
-        expect(report._attachments['user-file/my-form/my_file']).to.deep.equal({
+        expect(report._attachments['user-file/my_file']).to.deep.equal({
           data: 'some image data',
           content_type: 'image/png',
         });
       });
 
-      it('names binary attachments by the form internalId and full field path, not the root node name', async () => {
+      it('names binary attachments by the full field path, not the root node name', async () => {
         form.validate.resolves(true);
         form.getDataStr.returns(loadXML('deep-file-fields'));
 
@@ -1215,17 +1215,17 @@ describe('Enketo service', () => {
           my_file: '',
           sub_element: { sub_sub_element: { other_file: '' } },
         });
-        // Attachment names use the form internalId ("my-form") and the field's path relative to the owning
-        // doc - not the root node name ("my-root-element") - even for a deeply-nested field.
+        // Attachment names use the field's path relative to the owning doc - not the root node name
+        // ("my-root-element") and not the form internalId ("my-form") - even for a deeply-nested field.
         expect(Object.keys(report._attachments)).to.have.members([
-          'user-file/my-form/my_file',
-          'user-file/my-form/sub_element/sub_sub_element/other_file',
+          'user-file/my_file',
+          'user-file/sub_element/sub_sub_element/other_file',
         ]);
-        expect(report._attachments['user-file/my-form/my_file']).to.deep.equal({
+        expect(report._attachments['user-file/my_file']).to.deep.equal({
           data: 'some image data',
           content_type: 'image/png',
         });
-        expect(report._attachments['user-file/my-form/sub_element/sub_sub_element/other_file']).to.deep.equal({
+        expect(report._attachments['user-file/sub_element/sub_sub_element/other_file']).to.deep.equal({
           data: 'some other data',
           content_type: 'image/png',
         });
@@ -1246,8 +1246,8 @@ describe('Enketo service', () => {
           my_repeat: [{ photo: '' }, { photo: '' }],
         });
         expect(report._attachments).to.deep.equal({
-          'user-file/my-form/my_repeat[1]/photo': { data: 'repeat_photo_data_0', content_type: 'image/png' },
-          'user-file/my-form/my_repeat[2]/photo': { data: 'repeat_photo_data_1', content_type: 'image/png' },
+          'user-file/my_repeat[1]/photo': { data: 'repeat_photo_data_0', content_type: 'image/png' },
+          'user-file/my_repeat[2]/photo': { data: 'repeat_photo_data_1', content_type: 'image/png' },
         });
       });
 
@@ -1263,18 +1263,18 @@ describe('Enketo service', () => {
         expect(additional).to.be.empty;
         // Only the main doc's own binary field is attached to the main doc
         expect(report._attachments).to.deep.equal({
-          'user-file/my-form/main_photo': { data: 'main_photo_data', content_type: 'image/png' },
+          'user-file/main_photo': { data: 'main_photo_data', content_type: 'image/png' },
         });
         expect(report.fields.main_photo).to.equal('');
         expect(report.fields.doc1.photo1).to.equal('');
         expect(report.fields.doc2.photo2).to.equal('');
         // Each sub-doc gets the binary attachment for the field it contains
         expect(doc1._attachments).to.deep.equal({
-          'user-file/my-form/photo1': { data: 'sub_photo_data_1', content_type: 'image/png' },
+          'user-file/photo1': { data: 'sub_photo_data_1', content_type: 'image/png' },
         });
         expect(doc1.photo1).to.equal('');
         expect(doc2._attachments).to.deep.equal({
-          'user-file/my-form/photo2': { data: 'sub_photo_data_2', content_type: 'image/png' },
+          'user-file/photo2': { data: 'sub_photo_data_2', content_type: 'image/png' },
         });
         expect(doc2.photo2).to.equal('');
       });
@@ -1761,7 +1761,7 @@ describe('Enketo service', () => {
         const { preparedDocs: [clinic] } = await saveContact({ type: 'clinic' });
 
         expect(clinic.my_file).to.equal('');
-        expect(clinic._attachments['user-file/contact-form/my_file']).to.deep.equal({
+        expect(clinic._attachments['user-file/my_file']).to.deep.equal({
           data: 'some image data',
           content_type: 'image/png',
         });
@@ -1788,10 +1788,10 @@ describe('Enketo service', () => {
         expect(additional).to.be.empty;
         expect(clinic.clinic_photo).to.equal('');
         expect(clinic._attachments).to.deep.equal({
-          'user-file/contact-form/clinic_photo': { data: 'clinic image data', content_type: 'image/png' },
+          'user-file/clinic_photo': { data: 'clinic image data', content_type: 'image/png' },
         });
         expect(parent.parent_photo).to.equal('');
-        expect(parent._attachments['user-file/contact-form/parent_photo']).to.deep.equal({
+        expect(parent._attachments['user-file/parent_photo']).to.deep.equal({
           data: 'parent image data',
           content_type: 'image/png',
         });
