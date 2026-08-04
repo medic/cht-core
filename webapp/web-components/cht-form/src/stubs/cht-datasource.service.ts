@@ -13,6 +13,22 @@ export class CHTDatasourceService {
     } };
   }
 
+  async get() {
+    return {
+      v1: {
+        contact: {
+          // No contacts are available in the standalone cht-form, so nothing matches a phone number.
+          // Used by phone-widget to look for contacts with the same phone number.
+          getUuidsByPhone: (_phone: string): AsyncIterable<string> => ({
+            [Symbol.asyncIterator]: () => ({
+              next: () => Promise.resolve({ done: true as const, value: undefined })
+            })
+          })
+        }
+      }
+    };
+  }
+
   bind<R, F extends (arg?: unknown) => Promise<R>>(
     _: (ctx: DataContext) => F
   ): (...p: Parameters<F>) => ReturnType<F> {

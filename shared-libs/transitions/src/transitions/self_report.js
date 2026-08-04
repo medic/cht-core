@@ -1,6 +1,5 @@
 const transitionUtils = require('./utils');
 const config = require('../config');
-const db = require('../db');
 const NAME = 'self_report';
 const { Contact, Qualifier } = require('@medic/cht-datasource');
 const dataContext = require('../data-context');
@@ -26,17 +25,17 @@ module.exports = {
   onMatch: change => {
     const doc = change.doc;
     const formConfig = getConfiguredForm(doc.form);
+    const getContactUuids = dataContext.bind(Contact.v1.getUuidsPage);
     const getContactWithLineage = dataContext.bind(Contact.v1.getWithLineage);
 
-    return db.medic
-      .query('medic-client/contacts_by_phone', { key: String(doc.from) })
-      .then(result => {
-        if (!result.rows || !result.rows.length || !result.rows[0].id) {
+    return getContactUuids(Qualifier.byPhone(String(doc.from)), null, 1)
+      .then(page => {
+        if (!page.data.length) {
           transitionUtils.addRejectionMessage(doc, formConfig, 'sender_not_found');
           return true;
         }
 
-        return getContactWithLineage(Qualifier.byUuid(result.rows[0].id)).then(patient => {
+        return getContactWithLineage(Qualifier.byUuid(page.data[0])).then(patient => {
           doc.patient = patient;
 
           if (!doc.fields) {

@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const validation = require('../src/validation');
 const logger = require('@medic/logger');
-const { Qualifier, Report } = require('@medic/cht-datasource');
+const { Contact, Qualifier, Report } = require('@medic/cht-datasource');
 
 moment.suppressDeprecationWarnings = true;
 
@@ -303,15 +303,11 @@ describe('validations', () => {
     });
   });
 
-  it('unique phone validation should fail if db query for phone returns doc', () => {
-    sinon.stub(db.medic, 'query').resolves({
-      rows: [
-        {
-          id: 'original',
-          phone: '+9779841111111'
-        }
-      ]
-    });
+  it('unique phone validation should fail if a contact with the phone exists', () => {
+    const contactGetUuids = sinon.stub().returns((async function* () {
+      yield 'original';
+    })());
+    dataContext.bind.withArgs(Contact.v1.getUuids).returns(contactGetUuids);
     const validations = [
       {
         property: 'phone_number',
@@ -326,10 +322,11 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'duplicate',
-      xyz: '+9779841111111',
+      phone_number: '+9779841111111',
     };
     return validation.validate(doc, validations).then(errors => {
       assert.equal(errors.length, 1);
+      assert.deepEqual(contactGetUuids.args[0], [Qualifier.byPhone('+9779841111111')]);
     });
   });
 
@@ -458,8 +455,10 @@ describe('validations', () => {
     });
   });
 
-  it('unique phone validation should pass if db query for phone does not return any doc', () => {
-    sinon.stub(db.medic, 'query').resolves({ undefined });
+  it('unique phone validation should pass if no contact with the phone exists', () => {
+    
+    const contactGetUuids = sinon.stub().returns((async function* () {})());
+    dataContext.bind.withArgs(Contact.v1.getUuids).returns(contactGetUuids);
     const validations = [
       {
         property: 'phone_number',
@@ -474,10 +473,11 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'unique',
-      xyz: '+9779841111111',
+      phone_number: '+9779841111111',
     };
     return validation.validate(doc, validations).then(errors => {
       assert.equal(errors.length, 0);
+      assert.deepEqual(contactGetUuids.args[0], [Qualifier.byPhone('+9779841111111')]);
     });
   });
 

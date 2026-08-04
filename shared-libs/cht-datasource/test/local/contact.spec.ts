@@ -263,6 +263,7 @@ describe('local contact', () => {
       const contactType = 'person';
       const expectedResult = { cursor: 'bookmark', data: ['1', '2', '3'] };
       let queryViewByType: SinonStub;
+      let queryViewByPhone: SinonStub;
       let queryViewFreetextByKey: SinonStub;
       let queryViewFreetextByRange: SinonStub;
       let queryViewTypeFreetextByKey: SinonStub;
@@ -277,12 +278,16 @@ describe('local contact', () => {
         getContactTypeIds = sinon.stub(contactTypeUtils, 'getContactTypeIds').returns([contactType]);
 
         queryViewByType = sinon.stub();
+        queryViewByPhone = sinon.stub();
         queryViewFreetextByKey = sinon.stub();
         queryViewTypeFreetextByKey = sinon.stub();
         const queryDocIdsByKeyStub = sinon.stub(LocalDoc, 'queryDocIdsByKey');
         queryDocIdsByKeyStub
           .withArgs(localContext.medicDb, 'medic-client/contacts_by_type')
           .returns(queryViewByType);
+        queryDocIdsByKeyStub
+          .withArgs(localContext.medicDb, 'medic-client/contacts_by_phone')
+          .returns(queryViewByPhone);
         queryDocIdsByKeyStub
           .withArgs(localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext')
           .returns(queryViewFreetextByKey);
@@ -383,6 +388,58 @@ describe('local contact', () => {
           expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
           expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
           expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+          expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
+          expect(fetchAndFilterIdsInner.notCalled).to.be.true;
+        });
+      });
+
+      describe('phone qualifier', () => {
+        beforeEach(() => {
+          useNouveauIndexes.resolves(false);
+          fetchAndFilterIdsInner.resolves(expectedResult);
+        });
+
+        ([
+          [null, 0],
+          ['1', 1]
+        ] as [string | null, number][]).forEach(([cursor, skip]) => {
+          it(`returns page of UUIDs for phone qualifier with cursor [${cursor}]`, async () => {
+            const phone = '+254712345678';
+            const qualifier = Qualifier.byPhone(phone);
+
+            const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
+
+            expect(res).to.deep.equal(expectedResult);
+            // the phone dispatch does not validate the contact type nor consult freetext/nouveau views
+            expect(getContactTypeIds.notCalled).to.be.true;
+            expect(queryNouveauFreetext.notCalled).to.be.true;
+            expect(queryViewByType.notCalled).to.be.true;
+            expect(queryViewFreetextByKey.notCalled).to.be.true;
+            expect(queryViewFreetextByRange.notCalled).to.be.true;
+            expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
+            expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
+            expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
+            expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
+            expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
+            // Verify the page function uses the contacts_by_phone view keyed by the phone (verbatim, no array wrap)
+            const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+            pageFn(limit, skip);
+
+            expect(queryViewByPhone.calledWithExactly(phone, limit, skip)).to.be.true;
+          });
+        });
+
+        it('throws for invalid cursor', async () => {
+          const qualifier = Qualifier.byPhone('+254712345678');
+          const cursor = 'not a number';
+
+          await expect(Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit))
+            .to.be.rejectedWith(
+              InvalidArgumentError,
+              `The cursor must be a string or null for first page: [${JSON.stringify(cursor)}]`
+            );
+
+          expect(queryViewByPhone.notCalled).to.be.true;
           expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
           expect(fetchAndFilterIdsInner.notCalled).to.be.true;
         });
@@ -694,7 +751,7 @@ describe('local contact', () => {
 
         expect(res).to.deep.equal(expectedResult);
         expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
-        expect(queryDocsByKeyOuter.calledOnceWithExactly(
+        expect(queryDocsByKeyOuter.calledWithExactly(
           localContext.medicDb, 'medic-client/contacts_by_type'
         )).to.be.true;
         expect(fetchAndFilterOuter.calledOnce).to.be.true;
@@ -707,6 +764,31 @@ describe('local contact', () => {
         // The page function queries the contacts_by_type view keyed by the contact type.
         await getPageFn(limit, 0);
         expect(queryDocsByKeyInner.calledOnceWithExactly([contactType], limit, 0)).to.be.true;
+        expect(getDocsByIdsInner.notCalled).to.be.true;
+      });
+
+      it('returns a page of contacts for the given phone number', async () => {
+        const phone = '+254712345678';
+        const qualifier = Qualifier.byPhone(phone);
+        const expectedResult = { cursor: '2', data: [{ type: 'person' }] };
+        fetchAndFilterInner.resolves(expectedResult);
+
+        const res = await Contact.v1.getPage(localContext)(qualifier, cursor, limit);
+
+        expect(res).to.deep.equal(expectedResult);
+        // the phone arm does not validate the contact type
+        expect(getContactTypeIds.notCalled).to.be.true;
+        expect(queryDocsByKeyOuter.calledWithExactly(
+          localContext.medicDb, 'medic-client/contacts_by_phone'
+        )).to.be.true;
+        expect(fetchAndFilterOuter.calledOnce).to.be.true;
+        const getPageFn = fetchAndFilterOuter.firstCall.args[0];
+        expect(getPageFn).to.be.a('function');
+        expect(fetchAndFilterInner.calledOnceWithExactly(limit, 0)).to.be.true;
+
+        // The page function queries the contacts_by_phone view keyed by the phone (verbatim, no array wrap).
+        await getPageFn(limit, 0);
+        expect(queryDocsByKeyInner.calledOnceWithExactly(phone, limit, 0)).to.be.true;
         expect(getDocsByIdsInner.notCalled).to.be.true;
       });
 

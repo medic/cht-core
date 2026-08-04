@@ -117,6 +117,34 @@ export const isContactTypeQualifier = (contactType: unknown): contactType is Con
 };
 
 /**
+ * A qualifier that identifies contacts by their phone number.
+ */
+export type PhoneQualifier = Readonly<{ phone: string }>;
+
+/**
+ * Builds a qualifier that identifies contacts by their phone number. The phone number is used verbatim: no
+ * normalisation (trimming, country-code handling, etc.) is performed, to preserve parity with the underlying view.
+ * @param phone the phone number of the contacts
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the phone number is not a non-empty string
+ */
+export const byPhone = (phone: string): PhoneQualifier => {
+  if (!isString(phone) || phone.length === 0) {
+    throw new InvalidArgumentError(`Invalid phone [${JSON.stringify(phone)}].`);
+  }
+  return { phone };
+};
+
+/**
+ * Returns `true` if the given qualifier is a {@link PhoneQualifier}, otherwise `false`.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link PhoneQualifier}, otherwise `false`
+ */
+export const isPhoneQualifier = (qualifier: unknown): qualifier is PhoneQualifier => {
+  return isRecord(qualifier) && hasField(qualifier, { name: 'phone', type: 'string' });
+};
+
+/**
  * A qualifier that identifies entities based on a freetext search string.
  */
 export type FreetextQualifier = Readonly<{ freetext: string }>;

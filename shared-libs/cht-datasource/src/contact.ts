@@ -9,10 +9,12 @@ import {
   byContactType,
   byFreetext,
   byIds,
+  byPhone,
   byUuid,
   ContactTypeQualifier,
   FreetextQualifier,
   IdsQualifier,
+  PhoneQualifier,
   UuidQualifier
 } from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
@@ -175,7 +177,8 @@ export namespace v1 {
 
     /**
      * Returns an array of contact identifiers for the provided page specifications.
-     * @param qualifier the limiter defining which identifiers to return
+     * @param qualifier the limiter defining which identifiers to return (a contact type and/or freetext qualifier,
+     * or a phone qualifier - e.g. `{ phone: '+1234' }`)
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of identifiers to return. Default is 10000.
@@ -185,7 +188,7 @@ export namespace v1 {
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
     const curriedFn = async (
-      qualifier: ContactTypeQualifier | FreetextQualifier,
+      qualifier: ContactTypeQualifier | FreetextQualifier | PhoneQualifier,
       cursor: Nullable<string> = null,
       limit: number | `${number}` = DEFAULT_IDS_PAGE_LIMIT
     ): Promise<Page<string>> => {
@@ -215,7 +218,7 @@ export namespace v1 {
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      */
     const curriedGen = (
-      qualifier: ContactTypeQualifier | FreetextQualifier
+      qualifier: ContactTypeQualifier | FreetextQualifier | PhoneQualifier
     ): AsyncGenerator<string, null> => {
       assertContactTypeFreetextQualifier(qualifier);
 
@@ -237,7 +240,8 @@ export namespace v1 {
 
     /**
      * Returns an array of contacts for the provided page specifications.
-     * @param qualifier the limiter defining which contacts to return (a contact type or a set of UUIDs)
+     * @param qualifier the limiter defining which contacts to return (a contact type, a set of UUIDs, or a phone
+     * qualifier - e.g. `{ phone: '+1234' }`)
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of contacts to return. Default is 100.
@@ -247,7 +251,7 @@ export namespace v1 {
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
     const curriedFn = async (
-      qualifier: ContactTypeQualifier | IdsQualifier,
+      qualifier: ContactTypeQualifier | IdsQualifier | PhoneQualifier,
       cursor: Nullable<string> = null,
       limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
     ): Promise<Page<v1.Contact>> => {
@@ -272,12 +276,13 @@ export namespace v1 {
 
     /**
      * Returns a generator for fetching all contacts that match the given qualifier.
-     * @param qualifier the limiter defining which contacts to return (a contact type or a set of UUIDs)
+     * @param qualifier the limiter defining which contacts to return (a contact type, a set of UUIDs, or a phone
+     * qualifier - e.g. `{ phone: '+1234' }`)
      * @returns a generator for fetching all contacts that match the given qualifier
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      */
     const curriedGen = (
-      qualifier: ContactTypeQualifier | IdsQualifier
+      qualifier: ContactTypeQualifier | IdsQualifier | PhoneQualifier
     ): AsyncGenerator<v1.Contact, null> => {
       assertContactTypeIdsQualifier(qualifier);
 
@@ -418,6 +423,60 @@ export namespace v1 {
     getUuidsByFreetext: (freetext: string) => AsyncGenerator<string, null>;
 
     /**
+     * Returns a page of contact identifiers for the given phone number. The phone number is matched verbatim (no
+     * normalisation is performed).
+     * @param phone the phone number of the contacts to fetch
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of identifiers to return. Default is 10000.
+     * @returns a page of contact identifiers for the provided phone number
+     * @throws InvalidArgumentError if `phone` is not a non-empty string
+     * @throws InvalidArgumentError if the provided limit is `<= 0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    getUuidsPageByPhone: (
+      phone: string,
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<string>>;
+
+    /**
+     * Returns a generator for fetching all the contact identifiers for the given phone number. The phone number is
+     * matched verbatim (no normalisation is performed).
+     * @param phone the phone number of the contacts to fetch
+     * @returns a generator for fetching all the contact identifiers matching the given phone number
+     * @throws InvalidArgumentError if `phone` is not a non-empty string
+     */
+    getUuidsByPhone: (phone: string) => AsyncGenerator<string, null>;
+
+    /**
+     * Returns a page of contacts for the given phone number. The phone number is matched verbatim (no normalisation
+     * is performed).
+     * @param phone the phone number of the contacts to fetch
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of contacts to return. Default is 100.
+     * @returns a page of contacts for the provided phone number
+     * @throws InvalidArgumentError if `phone` is not a non-empty string
+     * @throws InvalidArgumentError if the provided limit is `<= 0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    getPageByPhone: (
+      phone: string,
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<v1.Contact>>;
+
+    /**
+     * Returns a generator for fetching all contacts with the given phone number. The phone number is matched
+     * verbatim (no normalisation is performed).
+     * @param phone the phone number of the contacts to fetch
+     * @returns a generator for fetching all contacts matching the given phone number
+     * @throws InvalidArgumentError if `phone` is not a non-empty string
+     */
+    getByPhone: (phone: string) => AsyncGenerator<v1.Contact, null>;
+
+    /**
      * Returns a page of contacts for the given type.
      * @param type the type of contacts to return
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
@@ -500,6 +559,18 @@ export namespace v1 {
       ),
       getUuidsByType: (type) => ctx.bind(v1.getUuids)(byContactType(type)),
       getUuidsByFreetext: (freetext) => ctx.bind(v1.getUuids)(byFreetext(freetext)),
+      getUuidsPageByPhone: (
+        phone,
+        cursor = null,
+        limit = DEFAULT_IDS_PAGE_LIMIT
+      ) => ctx.bind(v1.getUuidsPage)(byPhone(phone), cursor, limit),
+      getUuidsByPhone: (phone) => ctx.bind(v1.getUuids)(byPhone(phone)),
+      getPageByPhone: (
+        phone,
+        cursor = null,
+        limit = DEFAULT_DOCS_PAGE_LIMIT
+      ) => ctx.bind(v1.getPage)(byPhone(phone), cursor, limit),
+      getByPhone: (phone) => ctx.bind(v1.getAll)(byPhone(phone)),
       getPageByType: (
         type,
         cursor = null,
