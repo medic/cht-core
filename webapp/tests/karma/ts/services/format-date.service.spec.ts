@@ -268,7 +268,7 @@ describe('FormatDate service', () => {
       const time = now.format('hh:mm:ss A');
       expect(service.datetime(now)).to.equal('bk date, ' + time);
       expect(BikramSambat.toBik_text.callCount).to.equal(1);
-      expect(BikramSambat.toBik_text.args[0]).to.deep.equal([now]);
+      expect(BikramSambat.toBik_text.args[0]).to.deep.equal([now.format('YYYY-MM-DD')]);
     });
   });
 
@@ -296,7 +296,50 @@ describe('FormatDate service', () => {
       const now = moment();
       expect(service.date(now)).to.equal('bk converted date');
       expect(BikramSambat.toBik_text.callCount).to.equal(1);
-      expect(BikramSambat.toBik_text.args[0]).to.deep.equal([now]);
+      expect(BikramSambat.toBik_text.args[0]).to.deep.equal([now.format('YYYY-MM-DD')]);
+    });
+
+    it('should convert using the local calendar date, not the timestamp (#11241)', () => {
+      // bikram-sambat expects an ISO date string (YYYY-MM-DD); given a moment it Date.parses the
+      // whole timestamp, so an evening time-of-day rolls the day over early in timezones ahead of
+      // UTC. The service must pass the local date string so the date is pinned to the local day.
+      languageService.useDevanagariScript.returns(true);
+      sinon.stub(BikramSambat, 'toBik_text').returns('bk converted date');
+
+      const startOfDay = moment().startOf('day');
+      const endOfDay = moment().endOf('day');
+      const localDate = moment().format('YYYY-MM-DD');
+
+      service.date(startOfDay);
+      service.date(endOfDay);
+
+      expect(BikramSambat.toBik_text.callCount).to.equal(2);
+      // Same local day in, same date string out - regardless of time-of-day.
+      expect(BikramSambat.toBik_text.args[0]).to.deep.equal([localDate]);
+      expect(BikramSambat.toBik_text.args[1]).to.deep.equal([localDate]);
+    });
+
+    it('should pass ASCII digits to the library even when the locale renders Devanagari (#11241)', () => {
+      // The Nepali locale formats numbers as Devanagari digits; the date string handed to the
+      // library must still use ASCII digits, otherwise its Date.parse fails with
+      // "Date outside supported range". Simulate that locale with a Devanagari postformat.
+      const previousLocale = moment.locale();
+      if (!moment.locales().includes('test-devanagari')) {
+        moment.defineLocale('test-devanagari', {
+          postformat: (num: string) => num.replace(/[0-9]/g, (digit: string) => '०१२३४५६७८९'[Number(digit)]),
+        });
+      }
+      moment.locale('test-devanagari');
+      try {
+        languageService.useDevanagariScript.returns(true);
+        sinon.stub(BikramSambat, 'toBik_text').returns('bk converted date');
+
+        service.date(moment('2026-03-28'));
+
+        expect(BikramSambat.toBik_text.args[0]).to.deep.equal(['2026-03-28']);
+      } finally {
+        moment.locale(previousLocale);
+      }
     });
   });
 
@@ -315,7 +358,7 @@ describe('FormatDate service', () => {
       const now = moment();
       expect(service.dayMonth(now)).to.equal('devday devmonth');
       expect(BikramSambat.toBik.callCount).to.equal(1);
-      expect(BikramSambat.toBik.args[0]).to.deep.equal([now]);
+      expect(BikramSambat.toBik.args[0]).to.deep.equal([now.format('YYYY-MM-DD')]);
       expect(BikramSambat.toDev.callCount).to.equal(1);
       expect(BikramSambat.toDev.args[0]).to.deep.equal(['bkyear', 'bkmonth', 'bkday']);
     });
