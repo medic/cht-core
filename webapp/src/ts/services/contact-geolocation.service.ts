@@ -110,7 +110,18 @@ export class ContactGeolocationService {
     }
 
     if (state.isSkipped) {
-      docs.forEach(doc => delete doc.geolocation);
+      const geoData = (!state.hasLocation && geoHandle) ? await geoHandle().catch(err => err) : undefined;
+      docs.forEach(doc => {
+        if (geoData !== undefined) {
+          doc.geolocation_log = doc.geolocation_log || [];
+          const entry: any = { timestamp: Date.now(), recording: geoData };
+          if (state.context !== undefined) {
+            entry.is_home = state.isHome;
+          }
+          doc.geolocation_log.push(entry);
+        }
+        delete doc.geolocation;
+      });
       return docs;
     }
 

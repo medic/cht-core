@@ -13,7 +13,7 @@ describe('ContactGeolocationService', () => {
   });
 
   const buildFormHtml = (attrs: {
-    value?: string; context?: string; name?: string; original?: any; originalLog?: any;
+    value?: string; context?: string; name?: string; original?: any; originalLog?: any; hasLocation?: boolean;
   } = {}) => {
     const captureInput = document.createElement('input');
     captureInput.type = 'hidden';
@@ -31,6 +31,9 @@ describe('ContactGeolocationService', () => {
     }
     if (attrs.originalLog !== undefined) {
       captureInput.dataset.geoOriginalLog = JSON.stringify(attrs.originalLog);
+    }
+    if (attrs.hasLocation) {
+      captureInput.dataset.geoHasLocation = 'true';
     }
     const captureWrapper = document.createElement('div');
     captureWrapper.classList.add('or-appearance-geolocation-capture');
@@ -367,31 +370,95 @@ describe('ContactGeolocationService', () => {
     });
 
     describe('when skipped', () => {
-      it('deletes geolocation without calling geoHandle', async () => {
-        const geoHandle = sinon.stub();
-        const docs: any[] = [{ _id: 'doc1', geolocation: 'stale' }];
+      const stateForSkipped = (hasLocation: boolean) => service.readCaptureState(
+        buildFormHtml({ value: 'skipped', hasLocation }).formHtml
+      );
 
-        await service.applyGeolocation(geoHandle, docs, stateFor(undefined, 'skipped'));
+      describe('and a location already exists ("Remove household location")', () => {
+        it('deletes geolocation without calling geoHandle', async () => {
+          const geoHandle = sinon.stub();
+          const docs: any[] = [{ _id: 'doc1', geolocation: 'stale' }];
 
-        expect(geoHandle.callCount).to.equal(0);
-        expect(docs[0]).to.not.have.property('geolocation');
+          await service.applyGeolocation(geoHandle, docs, stateForSkipped(true));
+
+          expect(geoHandle.callCount).to.equal(0);
+          expect(docs[0]).to.not.have.property('geolocation');
+        });
+
+        it('does not touch geolocation_log', async () => {
+          const geoHandle = sinon.stub();
+          const docs: any[] = [{ _id: 'doc1', geolocation_log: ['untouched'] }];
+
+          await service.applyGeolocation(geoHandle, docs, stateForSkipped(true));
+
+          expect(docs[0].geolocation_log).to.deep.equal(['untouched']);
+        });
+
+        it('applies to every doc passed in', async () => {
+          const docs: any[] = [{ _id: 'doc1', geolocation: 'stale' }, { _id: 'doc2', geolocation: 'stale' }];
+
+          await service.applyGeolocation(undefined, docs, stateForSkipped(true));
+
+          expect(docs[0]).to.not.have.property('geolocation');
+          expect(docs[1]).to.not.have.property('geolocation');
+        });
       });
 
-      it('does not touch geolocation_log', async () => {
-        const docs: any[] = [{ _id: 'doc1', geolocation_log: ['untouched'] }];
+      describe('and no location exists yet ("save without location")', () => {
+        it('still logs a successful late capture even though geolocation is not recorded', async () => {
+          const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
+          const geoHandle = () => Promise.resolve(geoData);
+          const docs: any[] = [{ _id: 'doc1' }];
 
-        await service.applyGeolocation(undefined, docs, stateFor(undefined, 'skipped'));
+          await service.applyGeolocation(geoHandle, docs, stateForSkipped(false));
 
-        expect(docs[0].geolocation_log).to.deep.equal(['untouched']);
-      });
+          expect(docs[0]).to.not.have.property('geolocation');
+          expect(docs[0].geolocation_log).to.have.lengthOf(1);
+          expect(docs[0].geolocation_log[0].recording).to.deep.equal(geoData);
+          expect(docs[0].geolocation_log[0]).to.not.have.property('is_home');
+        });
 
-      it('applies to every doc passed in', async () => {
-        const docs: any[] = [{ _id: 'doc1', geolocation: 'stale' }, { _id: 'doc2', geolocation: 'stale' }];
+        it('logs a permission-denied/failed capture the same way', async () => {
+          const geoError = { code: 1, message: 'User denied Geolocation' };
+          const geoHandle = () => Promise.resolve(geoError);
+          const docs: any[] = [{ _id: 'doc1' }];
 
-        await service.applyGeolocation(undefined, docs, stateFor(undefined, 'skipped'));
+          await service.applyGeolocation(geoHandle, docs, stateForSkipped(false));
 
-        expect(docs[0]).to.not.have.property('geolocation');
-        expect(docs[1]).to.not.have.property('geolocation');
+          expect(docs[0]).to.not.have.property('geolocation');
+          expect(docs[0].geolocation_log[0].recording).to.deep.equal(geoError);
+        });
+
+        it('appends to an existing geolocation_log rather than replacing it', async () => {
+          const geoData = { latitude: 1, longitude: 2 };
+          const geoHandle = () => Promise.resolve(geoData);
+          const docs: any[] = [{ _id: 'doc1', geolocation_log: ['existing-entry'] }];
+
+          await service.applyGeolocation(geoHandle, docs, stateForSkipped(false));
+
+          expect(docs[0].geolocation_log).to.have.lengthOf(2);
+          expect(docs[0].geolocation_log[0]).to.equal('existing-entry');
+        });
+
+        it('does not call geoHandle when none is provided, and still deletes geolocation', async () => {
+          const docs: any[] = [{ _id: 'doc1', geolocation: 'stale' }];
+
+          await service.applyGeolocation(undefined, docs, stateForSkipped(false));
+
+          expect(docs[0]).to.not.have.property('geolocation');
+          expect(docs[0]).to.not.have.property('geolocation_log');
+        });
+
+        it('applies to every doc passed in', async () => {
+          const geoData = { latitude: 1, longitude: 2 };
+          const geoHandle = () => Promise.resolve(geoData);
+          const docs: any[] = [{ _id: 'doc1' }, { _id: 'doc2' }];
+
+          await service.applyGeolocation(geoHandle, docs, stateForSkipped(false));
+
+          expect(docs[0].geolocation_log).to.have.lengthOf(1);
+          expect(docs[1].geolocation_log).to.have.lengthOf(1);
+        });
       });
     });
 
