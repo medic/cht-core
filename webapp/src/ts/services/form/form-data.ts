@@ -37,14 +37,6 @@ export class EnketoFormData {
     };
   }
 
-  public findNodeWithTextContent(textContent: string) {
-    // XPath query is not viable here because attachment filenames can contain chars that break the XPath (e.g. ")
-    return Array
-      .from(this.rootElement.querySelectorAll('*'))
-      .filter(node => node.textContent === textContent)
-      .find(element => !this.isInSubDbDoc(element)) ?? null;
-  }
-
   protected deserialize(formConfig: FormConfig): Record<string, any> {
     return this.nodesToJs(
       this.getChildElements(this.rootElement),
@@ -78,11 +70,6 @@ export class EnketoFormData {
       }, {});
   }
 
-  private getJsValueForNode(node: Element, repeatPaths: string[], nodePath: string) {
-    const elements = this.getChildElements(node);
-    return elements.length ? this.nodesToJs(elements, repeatPaths, nodePath) : node.textContent;
-  }
-
   protected findChildNode(element: Element, tagName: string) {
     return Array
       .from(element.children)
@@ -94,10 +81,10 @@ export class EnketoFormData {
   }
 
   protected getDocAttachments(originalAttachments: Record<string, any> = {}) {
-    const isExistingFileAttachment = (fileName: string) => fileName.startsWith(USER_FILE_ATTACHMENT_PREFIX)
-      && this.findNodeWithTextContent(fileName.slice(USER_FILE_ATTACHMENT_PREFIX.length));
+    const isOrphanedFileAttachment = (fileName: string) => fileName.startsWith(USER_FILE_ATTACHMENT_PREFIX)
+      && !this.findNodeWithTextContent(fileName.slice(USER_FILE_ATTACHMENT_PREFIX.length));
     const binaryAttachments = this.binaryTypeElements
-      .map(element => this.buildBinaryAttachmentData(originalAttachments, element))
+      .map(element => this.buildBinaryAttachmentData(element))
       .filter(({ attachment }) => attachment)
       .reduce((binaryAttachments, { filename, attachment }) => ({ ...binaryAttachments, [filename]: attachment }), {});
     const newFileAttachments = FileManager
@@ -112,7 +99,7 @@ export class EnketoFormData {
     const existingAttachments = Object
       .entries(originalAttachments)
       // Keep custom/binary attachments and existing file attachments still referenced by a field
-      .filter(([key]) => !key.startsWith(USER_FILE_ATTACHMENT_PREFIX) || isExistingFileAttachment(key))
+      .filter(([key]) => !isOrphanedFileAttachment(key))
       .reduce((existingAttachments, [key, attachment]) => ({ ...existingAttachments, [key]: attachment }), {});
 
     const attachments = {
@@ -123,12 +110,25 @@ export class EnketoFormData {
     return Object.keys(attachments).length ? attachments : undefined;
   }
 
+  private findNodeWithTextContent(textContent: string) {
+    // XPath query is not viable here because attachment filenames can contain chars that break the XPath (e.g. ")
+    return Array
+      .from(this.rootElement.querySelectorAll('*'))
+      .filter(node => node.textContent === textContent)
+      .find(element => !this.isInSubDbDoc(element)) ?? null;
+  }
+
+  private getJsValueForNode(node: Element, repeatPaths: string[], nodePath: string) {
+    const elements = this.getChildElements(node);
+    return elements.length ? this.nodesToJs(elements, repeatPaths, nodePath) : node.textContent;
+  }
+
   private isInSubDbDoc(element: Element) {
     const nearestDbDoc = element.closest(DB_DOC_SELECTOR);
     return !!nearestDbDoc && nearestDbDoc !== this.rootElement && this.rootElement.contains(nearestDbDoc);
   }
 
-  private buildBinaryAttachmentData(originalAttachments: Record<string, any>, element: Element) {
+  private buildBinaryAttachmentData(element: Element) {
     const rootXpath = Xpath.getElementTreeXPath(this.rootElement);
     const xpath = Xpath.getElementTreeXPath(element);
     const relativeXpath = xpath.slice(rootXpath.length);
@@ -137,9 +137,51 @@ export class EnketoFormData {
     element.textContent = '';
     return {
       filename,
-      // Currently do not support loading binary attachment data into edit form. So, keep existing value.
-      attachment: data ? { data, content_type: 'image/png' } : originalAttachments[filename]
+      attachment: data ? { data, content_type: 'image/png' } : null
     };
+  }
+}
+
+/**
+ * Custom logic for the root contact in a contact form.
+ */
+class EnketoRootContactData extends EnketoFormData {
+  public override deserializeDoc(
+    formConfig: FormConfig,
+    reportedDate: number,
+    originalDoc?: Record<string, any>
+  ): Record<string, any> {
+    // Need to double-check existing file attachments since contact edit forms might only have a subset of fields.
+    // The default deserialize logic could drop attachments associated with properties not included in edit form.
+    const originalFileAttachmentEntries = Object
+      .entries(originalDoc?._attachments || {})
+      .filter(([key]) => key.startsWith(USER_FILE_ATTACHMENT_PREFIX));
+    const doc = super.deserializeDoc(formConfig, reportedDate, originalDoc);
+    const existingFileAttachments = originalFileAttachmentEntries
+      .filter(([key]) => this.hasPropertyWithValue(key.slice(USER_FILE_ATTACHMENT_PREFIX.length), doc))
+      .reduce((existingAttachments, [key, attachment]) => ({ ...existingAttachments, [key]: attachment }), {});
+    const attachments = {
+      ...existingFileAttachments,
+      ...doc._attachments
+    };
+    return {
+      ...doc,
+      parent: this.liftIdValue(doc.parent),
+      contact: this.liftIdValue(doc.contact),
+      _attachments: Object.keys(attachments).length ? attachments : undefined
+    };
+  }
+
+  private liftIdValue(idValue: unknown) {
+    return typeof idValue === 'string' ? { _id: idValue } : idValue;
+  }
+
+  private hasPropertyWithValue(value: string, obj: Record<string, any>): boolean {
+    return Object
+      .values(obj)
+      .some(propertyValue => propertyValue && typeof propertyValue === 'object'
+        ? this.hasPropertyWithValue(value, propertyValue)
+        : propertyValue === value);
   }
 }
 
@@ -164,21 +206,7 @@ export class EnketoContactFormData extends EnketoFormData {
   }
 
   public getContactData() {
-    const liftIdValue = (idValue: unknown) => typeof idValue === 'string' ? { _id: idValue } : idValue;
-    return new (class extends EnketoFormData {
-      public override deserializeDoc(
-        formConfig: FormConfig,
-        reportedDate: number,
-        originalDoc?: Record<string, any>
-      ): Record<string, any> {
-        const doc = super.deserializeDoc(formConfig, reportedDate, originalDoc);
-        return {
-          ...doc,
-          parent: liftIdValue(doc.parent),
-          contact: liftIdValue(doc.contact)
-        };
-      }
-    })(this.rootContactElement, this.id);
+    return new EnketoRootContactData(this.rootContactElement, this.id);
   }
 
   public getChildData() {

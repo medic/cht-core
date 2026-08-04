@@ -197,50 +197,6 @@ describe('form-data', () => {
       });
     });
 
-    describe('findNodeWithTextContent', () => {
-      it('finds the first node with the given text content', () => {
-        const doc = parseXml(`
-          <data>
-            <name>Sally</name>
-            <secret>hunter2</secret>
-            <type>hunter2</type>
-          </data>`);
-        const formData = new EnketoFormData(doc.documentElement, 'the-id');
-
-        const node = formData.findNodeWithTextContent('hunter2');
-
-        expect(node!.nodeName).to.equal('secret');
-      });
-
-      it('returns null when no node has the given text content', () => {
-        const doc = parseXml('<data><name>Sally</name></data>');
-        const formData = new EnketoFormData(doc.documentElement, 'the-id');
-
-        expect(formData.findNodeWithTextContent('nope')).to.be.null;
-      });
-
-      it('ignores nodes contained in a nested db-doc', () => {
-        const doc = parseXml(`
-          <data>
-            <sub db-doc="true"><file>photo.png</file></sub>
-          </data>`);
-        const formData = new EnketoFormData(doc.documentElement, 'the-id');
-
-        expect(formData.findNodeWithTextContent('photo.png')).to.be.null;
-      });
-
-      it('finds nodes in its own db-doc when the root element is the db-doc', () => {
-        const doc = parseXml(`
-          <data>
-            <sub db-doc="true"><file>photo.png</file></sub>
-          </data>`);
-        const subElement = doc.querySelector('sub')!;
-        const formData = new EnketoFormData(subElement, 'the-id');
-
-        expect(formData.findNodeWithTextContent('photo.png')!.nodeName).to.equal('file');
-      });
-    });
-
     describe('binaryTypeElements', () => {
       it('collects the type=binary elements', () => {
         const doc = parseXml(`
@@ -439,6 +395,22 @@ describe('form-data', () => {
 
         expect(result._attachments['user-file-referenced.png'].data).to.be.an.instanceof(Blob);
       });
+
+      it('drops a file attachment referenced only by the original doc, not by the form', () => {
+        // Deliberate asymmetry: liveness here is decided from the form alone. Report forms are used for both
+        // create and edit, so the form always holds every field the doc has. Only contact forms, whose edit
+        // form may omit fields, additionally consult the doc data - see EnketoContactFormData.getContactData.
+        const doc = parseXml('<data><name>Sally</name></data>');
+        const formData = new EnketoFormData(doc.documentElement, 'the-id');
+
+        const result = formData.deserializeDoc(buildFormConfig(), REPORTED_DATE, {
+          photo: 'p.png',
+          _attachments: { 'user-file-p.png': { content_type: 'image/png', data: 'blob' } },
+        });
+
+        expect(result.photo, 'the value itself carries over from the original doc').to.equal('p.png');
+        expect(result._attachments).to.be.undefined;
+      });
     });
   });
 
@@ -547,6 +519,78 @@ describe('form-data', () => {
         expect(result.my_file).to.equal('');
         expect(result._attachments).to.deep.equal({
           'user-file/my_file': { data: 'some image data', content_type: 'image/png' },
+        });
+      });
+
+      it('keeps a file attachment whose field is absent from the form', () => {
+        // A contact's edit form may hold only a subset of its fields. The value carries over from the doc, so
+        // the attachment has to be kept even though no node in the form references it.
+        const doc = parseXml('<data><clinic><name>A Clinic</name></clinic></data>');
+        const contactData = new EnketoContactFormData(doc, 'the-id', 'clinic');
+        const photo = { content_type: 'image/png', data: 'blob' };
+
+        const result = contactData
+          .getContactData()
+          .deserializeDoc(buildFormConfig(), REPORTED_DATE, {
+            photo: 'p.png',
+            _attachments: { 'user-file-p.png': photo },
+          });
+
+        expect(result.photo).to.equal('p.png');
+        expect(result._attachments).to.deep.equal({ 'user-file-p.png': photo });
+      });
+
+      it('keeps a file attachment referenced from a nested property of the doc', () => {
+        const doc = parseXml('<data><clinic><name>A Clinic</name></clinic></data>');
+        const contactData = new EnketoContactFormData(doc, 'the-id', 'clinic');
+        const photo = { content_type: 'image/png', data: 'blob' };
+
+        const result = contactData
+          .getContactData()
+          .deserializeDoc(buildFormConfig(), REPORTED_DATE, {
+            group: { photos: [{ photo: 'p.png' }] },
+            _attachments: { 'user-file-p.png': photo },
+          });
+
+        expect(result._attachments).to.deep.equal({ 'user-file-p.png': photo });
+      });
+
+      it('drops a file attachment when the form clears its field', () => {
+        // The form does have the field, so its empty value is authoritative - the upload was removed.
+        const doc = parseXml('<data><clinic><name>A Clinic</name><photo type="file"></photo></clinic></data>');
+        const contactData = new EnketoContactFormData(doc, 'the-id', 'clinic');
+
+        const result = contactData
+          .getContactData()
+          .deserializeDoc(buildFormConfig(), REPORTED_DATE, {
+            photo: 'p.png',
+            _attachments: { 'user-file-p.png': { content_type: 'image/png', data: 'blob' } },
+          });
+
+        expect(result.photo).to.equal('');
+        expect(result._attachments).to.be.undefined;
+      });
+
+      it('keeps binary and custom attachments alongside a recovered file attachment', () => {
+        const doc = parseXml('<data><clinic><name>A Clinic</name></clinic></data>');
+        const contactData = new EnketoContactFormData(doc, 'the-id', 'clinic');
+
+        const result = contactData
+          .getContactData()
+          .deserializeDoc(buildFormConfig(), REPORTED_DATE, {
+            photo: 'p.png',
+            _attachments: {
+              'user-file-p.png': { content_type: 'image/png', data: 'blob' },
+              'user-file-orphan.png': { content_type: 'image/png', data: 'gone' },
+              'user-file/badge': { content_type: 'image/png', data: 'binary' },
+              'some-custom-attachment': { content_type: 'text/plain', data: 'c' },
+            },
+          });
+
+        expect(result._attachments).to.deep.equal({
+          'user-file-p.png': { content_type: 'image/png', data: 'blob' },
+          'user-file/badge': { content_type: 'image/png', data: 'binary' },
+          'some-custom-attachment': { content_type: 'text/plain', data: 'c' },
         });
       });
     });

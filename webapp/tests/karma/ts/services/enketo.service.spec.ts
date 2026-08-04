@@ -1795,6 +1795,21 @@ describe('Enketo service', () => {
         expect(withField._attachments).to.deep.equal({ 'user-file/my_file': existing });
       });
 
+      it('keeps a file attachment whose field is absent from the edit form', async () => {
+        // A contact type's edit form may hold only a subset of its create form's fields. The photo value
+        // carries over from the existing doc, so its upload must not be treated as orphaned.
+        form.getDataStr.returns('<data><clinic><name>Clinic</name></clinic></data>');
+        const photo = { content_type: 'image/png', data: 'blob' };
+
+        const { preparedDocs: [clinic] } = await saveContact(
+          { type: 'clinic', photo: 'p.png', _attachments: { 'user-file-p.png': photo } },
+          { internalId: 'contact:clinic:edit', xmlVersion: '1' }
+        );
+
+        expect(clinic.photo).to.equal('p.png');
+        expect(clinic._attachments).to.deep.equal({ 'user-file-p.png': photo });
+      });
+
       it('routes attachments to the sibling doc that owns the field', async () => {
         form.getDataStr.returns(`
           <data>
