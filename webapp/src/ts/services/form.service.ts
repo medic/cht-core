@@ -455,7 +455,7 @@ export class FormService {
       }
       const docsWithGeo = preparedDocs.preparedDocs;
       await this.contactGeolocationService.restoreOriginalIfNeeded(docId, docsWithGeo, geoState);
-      docsWithGeo.forEach((doc: any) => this.contactGeolocationService.stripCaptureField(doc, geoState.fieldName));
+      docsWithGeo.forEach((doc: any) => this.contactGeolocationService.stripCaptureField(doc, geoState));
 
       this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
       const bulkDocsResult = await this.dbService.get().bulkDocs(docsWithGeo);

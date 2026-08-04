@@ -119,13 +119,13 @@ export class ContactGeolocationService {
     }
   }
 
-  stripCaptureField(doc: any, fieldName?: string) {
-    if (!fieldName) {
+  stripCaptureField(doc: any, state: GeolocationEditState) {
+    if (!state.fieldName) {
       return;
     }
-    delete doc[fieldName];
+    delete doc[state.fieldName];
     if (doc.fields) {
-      delete doc.fields[fieldName];
+      delete doc.fields[state.fieldName];
     }
   }
 }
