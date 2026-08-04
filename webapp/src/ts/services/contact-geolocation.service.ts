@@ -100,45 +100,53 @@ export class ContactGeolocationService {
     }
   }
 
-  async applyGeolocation(geoHandle, docs: any[], state: GeolocationEditState) {
-    if (state.isKept) {
-      docs.forEach(doc => {
-        this.setGeolocation(doc, state.originalGeolocation);
-        doc.geolocation_log = state.originalGeolocationLog;
-      });
-      return docs;
+  private appendLogEntry(doc: any, geoData: any, state: GeolocationEditState) {
+    doc.geolocation_log = doc.geolocation_log || [];
+    const entry: any = { timestamp: Date.now(), recording: geoData };
+    if (state.context !== undefined) {
+      entry.is_home = state.isHome;
     }
+    doc.geolocation_log.push(entry);
+  }
 
-    if (state.isSkipped) {
-      const geoData = (!state.hasLocation && geoHandle) ? await geoHandle().catch(err => err) : undefined;
-      docs.forEach(doc => {
-        if (geoData !== undefined) {
-          doc.geolocation_log = doc.geolocation_log || [];
-          const entry: any = { timestamp: Date.now(), recording: geoData };
-          if (state.context !== undefined) {
-            entry.is_home = state.isHome;
-          }
-          doc.geolocation_log.push(entry);
-        }
-        delete doc.geolocation;
-      });
-      return docs;
-    }
+  private applyKept(docs: any[], state: GeolocationEditState) {
+    docs.forEach(doc => {
+      this.setGeolocation(doc, state.originalGeolocation);
+      doc.geolocation_log = state.originalGeolocationLog;
+    });
+    return docs;
+  }
 
-    if (!state.isCaptured || !geoHandle) {
-      return docs;
-    }
+  private async applySkipped(geoHandle, docs: any[], state: GeolocationEditState) {
+    const geoData = (!state.hasLocation && geoHandle) ? await geoHandle().catch(err => err) : undefined;
+    docs.forEach(doc => {
+      if (geoData !== undefined) {
+        this.appendLogEntry(doc, geoData, state);
+      }
+      delete doc.geolocation;
+    });
+    return docs;
+  }
 
+  private async applyCaptured(geoHandle, docs: any[], state: GeolocationEditState) {
     const geoData = await geoHandle().catch(err => err);
     docs.forEach(doc => {
-      doc.geolocation_log = doc.geolocation_log || [];
-      const entry: any = { timestamp: Date.now(), recording: geoData };
-      if (state.context !== undefined) {
-        entry.is_home = state.isHome;
-      }
-      doc.geolocation_log.push(entry);
+      this.appendLogEntry(doc, geoData, state);
       this.setGeolocation(doc, (!geoData.code && state.isHome) ? geoData : state.originalGeolocation);
     });
+    return docs;
+  }
+
+  async applyGeolocation(geoHandle, docs: any[], state: GeolocationEditState) {
+    if (state.isKept) {
+      return this.applyKept(docs, state);
+    }
+    if (state.isSkipped) {
+      return this.applySkipped(geoHandle, docs, state);
+    }
+    if (state.isCaptured && geoHandle) {
+      return this.applyCaptured(geoHandle, docs, state);
+    }
     return docs;
   }
 
