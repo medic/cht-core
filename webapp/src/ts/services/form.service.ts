@@ -445,9 +445,6 @@ export class FormService {
 
       const geoState = this.contactGeolocationService.readCaptureState(enketoForm.form?.view?.html);
 
-      // Only the doc that owns the geolocation-capture field should receive geolocation changes -
-      // sibling/repeated docs created in the same submission (e.g. a new primary contact for a new
-      // household) must not be stamped with it too.
       await this.contactGeolocationService.applyGeolocation(
         geoHandle, [primaryDoc ?? preparedDocs.preparedDocs[0]], geoState
       );
