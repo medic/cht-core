@@ -17,12 +17,24 @@ export const isValidGeolocation = (geolocation: any): boolean => {
     isValidCoordinate(geolocation?.longitude, MAX_LONGITUDE);
 };
 
+const parseOriginalGeolocation = (value: string | undefined): any => {
+  if (!value) {
+    return undefined;
+  }
+  try {
+    return JSON.parse(value);
+  } catch {
+    return undefined;
+  }
+};
+
 export class GeolocationEditState {
   readonly hasLocation: boolean;
   readonly isEdit: boolean;
   readonly context: string | undefined;
   readonly captureValue: string | undefined;
   readonly fieldName: string | undefined;
+  readonly originalGeolocation: any;
 
   constructor(captureInput?: HTMLInputElement | null) {
     this.hasLocation = captureInput?.dataset?.geoHasLocation === DATASET_TRUE;
@@ -30,6 +42,7 @@ export class GeolocationEditState {
     this.context = captureInput?.dataset?.geoContext || undefined;
     this.captureValue = captureInput?.value || undefined;
     this.fieldName = captureInput?.getAttribute('name')?.split('/').pop() || undefined;
+    this.originalGeolocation = parseOriginalGeolocation(captureInput?.dataset?.geoOriginal);
   }
 
   get isKept(): boolean {
@@ -75,6 +88,7 @@ export class ContactGeolocationService {
     }
 
     captureInput.dataset.geoHasLocation = DATASET_TRUE;
+    captureInput.dataset.geoOriginal = JSON.stringify(contact.geolocation);
   }
 
   recordCapture(geoHandle, docs: any[], state: GeolocationEditState) {

@@ -286,6 +286,27 @@ describe('ContactGeolocationService', () => {
       });
       expect(captureInput.dataset.geoHasLocation).to.be.undefined;
     });
+
+    it('sets data-geo-original to the JSON-stringified original geolocation when a valid location exists', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      service.injectEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation: { latitude: 1.23, longitude: 36.8 },
+      });
+      expect(JSON.parse(captureInput.dataset.geoOriginal!)).to.deep.equal({ latitude: 1.23, longitude: 36.8 });
+    });
+
+    it('does not set data-geo-original when geolocation is invalid', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      service.injectEditContext(formHtml, { _id: 'contact1' });
+      expect(captureInput.dataset.geoOriginal).to.be.undefined;
+    });
+
+    it('does not set data-geo-original when contact is undefined', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      service.injectEditContext(formHtml, undefined);
+      expect(captureInput.dataset.geoOriginal).to.be.undefined;
+    });
   });
 
   describe('recordCapture', () => {
@@ -481,6 +502,7 @@ describe('GeolocationEditState', () => {
     context?: string;
     value?: string;
     name?: string;
+    original?: string;
   } = {}) => {
     const input = document.createElement('input');
     if (attrs.hasLocation !== undefined) {
@@ -498,6 +520,9 @@ describe('GeolocationEditState', () => {
     if (attrs.name !== undefined) {
       input.setAttribute('name', attrs.name);
     }
+    if (attrs.original !== undefined) {
+      input.dataset.geoOriginal = attrs.original;
+    }
     return input;
   };
 
@@ -508,11 +533,12 @@ describe('GeolocationEditState', () => {
       expect(state.isEdit).to.be.false;
     });
 
-    it('defaults context, captureValue, and fieldName to undefined', () => {
+    it('defaults context, captureValue, fieldName, and originalGeolocation to undefined', () => {
       const state = new GeolocationEditState();
       expect(state.context).to.be.undefined;
       expect(state.captureValue).to.be.undefined;
       expect(state.fieldName).to.be.undefined;
+      expect(state.originalGeolocation).to.be.undefined;
     });
 
     it('does not throw when given null', () => {
@@ -577,6 +603,24 @@ describe('GeolocationEditState', () => {
     it('is undefined when the name attribute is absent', () => {
       const state = new GeolocationEditState(buildCaptureInput());
       expect(state.fieldName).to.be.undefined;
+    });
+  });
+
+  describe('originalGeolocation', () => {
+    it('parses data-geo-original as JSON when present', () => {
+      const original = JSON.stringify({ latitude: 1.23, longitude: 36.8 });
+      const state = new GeolocationEditState(buildCaptureInput({ original }));
+      expect(state.originalGeolocation).to.deep.equal({ latitude: 1.23, longitude: 36.8 });
+    });
+
+    it('is undefined when data-geo-original is absent', () => {
+      const state = new GeolocationEditState(buildCaptureInput());
+      expect(state.originalGeolocation).to.be.undefined;
+    });
+
+    it('is undefined when data-geo-original is not valid JSON', () => {
+      const state = new GeolocationEditState(buildCaptureInput({ original: 'not-json' }));
+      expect(state.originalGeolocation).to.be.undefined;
     });
   });
 
