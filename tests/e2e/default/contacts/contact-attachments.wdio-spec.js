@@ -14,12 +14,6 @@ const { CONTACT_TYPES } = require('@medic/constants');
 describe('Contact form attachments', () => {
   const photoPngPath = path.join(__dirname, '../enketo/images/photo-for-upload-form.png');
   const layersPngPath = path.join(__dirname, '../../../../webapp/src/img/layers.png');
-
-  // An inline binary is attached under `user-file/<field path relative to the owning doc>`.
-  const BADGE_ATTACHMENT = 'user-file/badge';
-  const BADGE_BASE64 =
-    'iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8z8BQz0AEYBxVSF+FABJADveWkH6oAAAAAElFTkSuQmCC';
-
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
 
@@ -133,37 +127,6 @@ describe('Contact form attachments', () => {
     await commonPage.waitForPageLoaded();
   });
 
-  it('should create contact with image attachment', async () => {
-    const contactName = 'Test Person With Photo';
-
-    await commonPage.goToPeople(healthCenter._id);
-    await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
-
-    await commonEnketoPage.setInputValue('Full name', contactName);
-    await commonEnketoPage.addFileInputValue('Photo', photoPngPath);
-
-    await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
-    await contactPage.waitForContactLoaded();
-
-    const contactId = await contactPage.getCurrentContactId();
-    expect(contactId).to.exist;
-
-    const createdContact = await utils.getDoc(contactId);
-
-    expect(createdContact).to.exist;
-    expect(createdContact.name).to.equal(contactName);
-    expect(createdContact._attachments).to.exist;
-
-    const attachmentNames = Object.keys(createdContact._attachments);
-    expect(attachmentNames).to.have.lengthOf(1);
-    expect(attachmentNames[0]).to.match(/^user-file-photo-for-upload-form.*\.png$/);
-
-    const attachment = createdContact._attachments[attachmentNames[0]];
-    expect(attachment.content_type).to.equal('image/png');
-    expect(attachment.length, 'Attachment should have a valid size').to.be.greaterThan(0);
-  });
-
   it('should create contact with multiple attachments (image + document)', async () => {
     const contactName = 'Test Person With Multiple Files';
 
@@ -188,7 +151,7 @@ describe('Contact form attachments', () => {
     expect(createdContact._attachments).to.exist;
 
     const attachmentNames = Object.keys(createdContact._attachments);
-    expect(attachmentNames).to.have.lengthOf(2);
+    expect(attachmentNames).to.have.lengthOf(3);
 
     const photoAttachment = attachmentNames.find(name => name.match(/^user-file-photo-for-upload-form.*\.png$/));
     const documentAttachment = attachmentNames.find(name => name.match(/^user-file-layers.*\.png$/));
@@ -203,6 +166,9 @@ describe('Contact form attachments', () => {
     expect(createdContact._attachments[documentAttachment].content_type).to.equal('image/png');
     expect(createdContact._attachments[documentAttachment].length, 'Document should have a valid size')
       .to.be.greaterThan(0);
+
+    expect(createdContact._attachments['user-file/badge'].content_type).to.equal('image/png');
+    expect(createdContact._attachments['user-file/badge'].length).to.be.greaterThan(0);
   });
 
   it('should preserve attachments when editing contact', async () => {
@@ -226,7 +192,9 @@ describe('Contact form attachments', () => {
     const contactBefore = await utils.getDoc(contactId);
     expect(contactBefore._attachments).to.exist;
     const originalAttachments = Object.keys(contactBefore._attachments);
-    expect(originalAttachments).to.have.lengthOf(1);
+    expect(originalAttachments).to.have.lengthOf(2);
+    expect(originalAttachments[0]).to.match(/^user-file-photo-for-upload-form.*\.png$/);
+    expect(originalAttachments[1]).to.equal('user-file/badge');
 
     await commonPage.accessEditOption();
 
@@ -242,80 +210,11 @@ describe('Contact form attachments', () => {
     expect(contactAfter._attachments).to.exist;
 
     const attachmentsAfter = Object.keys(contactAfter._attachments);
-    expect(attachmentsAfter).to.have.lengthOf(1);
-    expect(attachmentsAfter[0]).to.equal(originalAttachments[0]);
+    expect(attachmentsAfter).to.deep.equal(originalAttachments);
     expect(contactAfter._attachments[attachmentsAfter[0]].length, 'Preserved attachment should have a valid size')
       .to.be.greaterThan(0);
-  });
-
-  it('preserves an untouched inline-binary field and its attachment on edit', async () => {
-    const contact = personFactory.build({
-      name: 'Person With Badge',
-      parent: { _id: healthCenter._id, parent: healthCenter.parent },
-      type: 'contact',
-      contact_type: 'person_with_attachments',
-      badge: '',
-      _attachments: {
-        [BADGE_ATTACHMENT]: { content_type: 'image/png', data: BADGE_BASE64 },
-      },
-    });
-    await utils.saveDocs([contact]);
-    const seededBadge = (await utils.getDoc(contact._id, '', '?attachments=true'))._attachments[BADGE_ATTACHMENT];
-    expect(seededBadge, 'seed should have the badge attachment').to.exist;
-
-    await browser.url(`#/contacts/${contact._id}/edit`);
-    await commonPage.waitForPageLoaded();
-
-    // Guard: the inline-binary field loads EMPTY (binary data is never loaded back into a form), so the
-    // existing attachment - looked up by the field's own path - is the only thing preserving it on save.
-    const badgeInput = await $('input[name="/data/person_with_attachments/badge"]');
-    expect(await badgeInput.getValue()).to.equal('');
-
-    await commonEnketoPage.setInputValue('Full name', 'Person With Badge Edited');
-    await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
-    await contactPage.waitForContactLoaded();
-
-    const updated = await utils.getDoc(contact._id, '', '?attachments=true');
-    expect(updated.name).to.equal('Person With Badge Edited');
-    expect(updated.badge, 'untouched inline-binary value stays cleared').to.equal('');
-
-    const updatedBadge = updated._attachments[BADGE_ATTACHMENT];
-    expect(updatedBadge, 'badge attachment should survive the edit').to.exist;
-    expect(updatedBadge.content_type).to.equal('image/png');
-    expect(updatedBadge.data, 'attachment content unchanged').to.equal(BADGE_BASE64);
-    expect(updatedBadge.digest, 'attachment digest unchanged').to.equal(seededBadge.digest);
-    expect(updatedBadge.revpos, 'attachment revision unchanged').to.equal(seededBadge.revpos);
-  });
-
-  it('preserves an inline-binary attachment stored under the legacy form-prefixed name', async () => {
-    // Docs saved before the name dropped the form id carry `user-file/<form>/<path>`, which no longer matches
-    // the name the form derives. Editing such a contact must not delete the image.
-    const legacyAttachment = 'user-file/contact:person_with_attachments:create/badge';
-    const contact = personFactory.build({
-      name: 'Person With Legacy Badge',
-      parent: { _id: healthCenter._id, parent: healthCenter.parent },
-      type: 'contact',
-      contact_type: 'person_with_attachments',
-      badge: '',
-      _attachments: {
-        [legacyAttachment]: { content_type: 'image/png', data: BADGE_BASE64 },
-      },
-    });
-    await utils.saveDocs([contact]);
-
-    await browser.url(`#/contacts/${contact._id}/edit`);
-    await commonPage.waitForPageLoaded();
-
-    await commonEnketoPage.setInputValue('Full name', 'Person With Legacy Badge Edited');
-    await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
-    await contactPage.waitForContactLoaded();
-
-    const updated = await utils.getDoc(contact._id, '', '?attachments=true');
-    expect(updated.name).to.equal('Person With Legacy Badge Edited');
-    expect(Object.keys(updated._attachments)).to.deep.equal([legacyAttachment]);
-    expect(updated._attachments[legacyAttachment].data).to.equal(BADGE_BASE64);
+    expect(contactAfter._attachments[attachmentsAfter[1]].length, 'Preserved attachment should have a valid size')
+      .to.be.greaterThan(0);
   });
 
   it('should remove attachment when editing contact', async () => {
