@@ -17,7 +17,7 @@ export const isValidGeolocation = (geolocation: any): boolean => {
     isValidCoordinate(geolocation?.longitude, MAX_LONGITUDE);
 };
 
-const parseOriginalGeolocation = (value: string | undefined): any => {
+const parseJsonDataset = (value: string | undefined): any => {
   if (!value) {
     return undefined;
   }
@@ -35,6 +35,7 @@ export class GeolocationEditState {
   readonly captureValue: string | undefined;
   readonly fieldName: string | undefined;
   readonly originalGeolocation: any;
+  readonly originalGeolocationLog: any;
 
   constructor(captureInput?: HTMLInputElement | null) {
     this.hasLocation = captureInput?.dataset?.geoHasLocation === DATASET_TRUE;
@@ -42,7 +43,8 @@ export class GeolocationEditState {
     this.context = captureInput?.dataset?.geoContext || undefined;
     this.captureValue = captureInput?.value || undefined;
     this.fieldName = captureInput?.getAttribute('name')?.split('/').pop() || undefined;
-    this.originalGeolocation = parseOriginalGeolocation(captureInput?.dataset?.geoOriginal);
+    this.originalGeolocation = parseJsonDataset(captureInput?.dataset?.geoOriginal);
+    this.originalGeolocationLog = parseJsonDataset(captureInput?.dataset?.geoOriginalLog);
   }
 
   get isKept(): boolean {
@@ -51,6 +53,10 @@ export class GeolocationEditState {
 
   get isCaptured(): boolean {
     return this.captureValue === FIELD_VALUES.CAPTURED;
+  }
+
+  get isSkipped(): boolean {
+    return this.captureValue === FIELD_VALUES.SKIPPED;
   }
 
   get isHome(): boolean {
@@ -89,6 +95,7 @@ export class ContactGeolocationService {
 
     captureInput.dataset.geoHasLocation = DATASET_TRUE;
     captureInput.dataset.geoOriginal = JSON.stringify(contact.geolocation);
+    captureInput.dataset.geoOriginalLog = JSON.stringify(contact.geolocation_log ?? null);
   }
 
   recordCapture(geoHandle, docs: any[], state: GeolocationEditState) {
@@ -131,6 +138,37 @@ export class ContactGeolocationService {
     if (restoreLog) {
       contactDoc.geolocation_log = originalDoc.geolocation_log;
     }
+  }
+
+  async applyGeolocation(geoHandle, docs: any[], state: GeolocationEditState) {
+    if (state.isKept) {
+      docs.forEach(doc => {
+        doc.geolocation = state.originalGeolocation;
+        doc.geolocation_log = state.originalGeolocationLog;
+      });
+      return docs;
+    }
+
+    if (state.isSkipped) {
+      docs.forEach(doc => delete doc.geolocation);
+      return docs;
+    }
+
+    if (!state.isCaptured || !geoHandle) {
+      return docs;
+    }
+
+    const geoData = await geoHandle().catch(err => err);
+    docs.forEach(doc => {
+      doc.geolocation_log = doc.geolocation_log || [];
+      const entry: any = { timestamp: Date.now(), recording: geoData };
+      if (state.context !== undefined) {
+        entry.is_home = state.isHome;
+      }
+      doc.geolocation_log.push(entry);
+      doc.geolocation = (!geoData.code && state.isHome) ? geoData : state.originalGeolocation;
+    });
+    return docs;
   }
 
   stripCaptureField(doc: any, state: GeolocationEditState) {

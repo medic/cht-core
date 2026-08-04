@@ -19,7 +19,9 @@ describe('ContactGeolocationService', () => {
     service = TestBed.inject(ContactGeolocationService);
   });
 
-  const buildFormHtml = (attrs: { value?: string; context?: string; name?: string } = {}) => {
+  const buildFormHtml = (attrs: {
+    value?: string; context?: string; name?: string; original?: any; originalLog?: any;
+  } = {}) => {
     const captureInput = document.createElement('input');
     captureInput.type = 'hidden';
     if (attrs.value !== undefined) {
@@ -31,6 +33,12 @@ describe('ContactGeolocationService', () => {
     if (attrs.name !== undefined) {
       captureInput.setAttribute('name', attrs.name);
     }
+    if (attrs.original !== undefined) {
+      captureInput.dataset.geoOriginal = JSON.stringify(attrs.original);
+    }
+    if (attrs.originalLog !== undefined) {
+      captureInput.dataset.geoOriginalLog = JSON.stringify(attrs.originalLog);
+    }
     const captureWrapper = document.createElement('div');
     captureWrapper.classList.add('or-appearance-geolocation-capture');
     captureWrapper.appendChild(captureInput);
@@ -39,8 +47,8 @@ describe('ContactGeolocationService', () => {
     return { formHtml, captureInput };
   };
 
-  const stateFor = (context?: string, value?: string) => service.readCaptureState(
-    buildFormHtml({ context, value }).formHtml
+  const stateFor = (context?: string, value?: string, original?: any, originalLog?: any) => service.readCaptureState(
+    buildFormHtml({ context, value, original, originalLog }).formHtml
   );
 
   describe('readCaptureState', () => {
@@ -307,6 +315,36 @@ describe('ContactGeolocationService', () => {
       service.injectEditContext(formHtml, undefined);
       expect(captureInput.dataset.geoOriginal).to.be.undefined;
     });
+
+    it('sets data-geo-original-log to the JSON-stringified original geolocation_log when a valid location exists',
+      () => {
+        const { formHtml, captureInput } = buildFormHtml();
+        service.injectEditContext(formHtml, {
+          _id: 'contact1',
+          geolocation: { latitude: 1.23, longitude: 36.8 },
+          geolocation_log: [
+            { timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: true }
+          ],
+        });
+        expect(JSON.parse(captureInput.dataset.geoOriginalLog!)).to.deep.equal([
+          { timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: true }
+        ]);
+      });
+
+    it('sets data-geo-original-log to "null" when geolocation_log is absent but geolocation is valid', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      service.injectEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation: { latitude: 1.23, longitude: 36.8 },
+      });
+      expect(JSON.parse(captureInput.dataset.geoOriginalLog!)).to.be.null;
+    });
+
+    it('does not set data-geo-original-log when geolocation is invalid', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      service.injectEditContext(formHtml, { _id: 'contact1' });
+      expect(captureInput.dataset.geoOriginalLog).to.be.undefined;
+    });
   });
 
   describe('recordCapture', () => {
@@ -460,6 +498,147 @@ describe('ContactGeolocationService', () => {
     });
   });
 
+  describe('applyGeolocation', () => {
+    const original = { latitude: 1, longitude: 2 };
+    const originalLog = [{ timestamp: 111, recording: original, is_home: true }];
+
+    describe('when kept', () => {
+      it('restores geolocation and geolocation_log from the state, without calling geoHandle', async () => {
+        const geoHandle = sinon.stub();
+        const docs: any[] = [{ _id: 'doc1', geolocation: 'stale', geolocation_log: ['stale-log'] }];
+
+        await service.applyGeolocation(geoHandle, docs, stateFor('home', 'kept', original, originalLog));
+
+        expect(geoHandle.callCount).to.equal(0);
+        expect(docs[0].geolocation).to.deep.equal(original);
+        expect(docs[0].geolocation_log).to.deep.equal(originalLog);
+      });
+
+      it('applies to every doc passed in', async () => {
+        const docs: any[] = [{ _id: 'doc1' }, { _id: 'doc2' }];
+
+        await service.applyGeolocation(undefined, docs, stateFor('home', 'kept', original, originalLog));
+
+        expect(docs[0].geolocation).to.deep.equal(original);
+        expect(docs[1].geolocation).to.deep.equal(original);
+      });
+    });
+
+    describe('when skipped', () => {
+      it('deletes geolocation without calling geoHandle', async () => {
+        const geoHandle = sinon.stub();
+        const docs: any[] = [{ _id: 'doc1', geolocation: 'stale' }];
+
+        await service.applyGeolocation(geoHandle, docs, stateFor(undefined, 'skipped'));
+
+        expect(geoHandle.callCount).to.equal(0);
+        expect(docs[0]).to.not.have.property('geolocation');
+      });
+
+      it('does not touch geolocation_log', async () => {
+        const docs: any[] = [{ _id: 'doc1', geolocation_log: ['untouched'] }];
+
+        await service.applyGeolocation(undefined, docs, stateFor(undefined, 'skipped'));
+
+        expect(docs[0].geolocation_log).to.deep.equal(['untouched']);
+      });
+
+      it('applies to every doc passed in', async () => {
+        const docs: any[] = [{ _id: 'doc1', geolocation: 'stale' }, { _id: 'doc2', geolocation: 'stale' }];
+
+        await service.applyGeolocation(undefined, docs, stateFor(undefined, 'skipped'));
+
+        expect(docs[0]).to.not.have.property('geolocation');
+        expect(docs[1]).to.not.have.property('geolocation');
+      });
+    });
+
+    describe('when captured and home', () => {
+      it('writes the captured geolocation and logs it with is_home: true on success', async () => {
+        const geoData = { latitude: 5, longitude: 6, accuracy: 4 };
+        const geoHandle = () => Promise.resolve(geoData);
+        const docs: any[] = [{ _id: 'doc1' }];
+
+        await service.applyGeolocation(geoHandle, docs, stateFor('home', 'captured', original, originalLog));
+
+        expect(docs[0].geolocation).to.deep.equal(geoData);
+        expect(docs[0].geolocation_log).to.have.lengthOf(1);
+        expect(docs[0].geolocation_log[0].is_home).to.be.true;
+        expect(docs[0].geolocation_log[0].recording).to.deep.equal(geoData);
+      });
+
+      it('falls back to the original geolocation and still logs the failure when capture fails', async () => {
+        const geoError = { code: 2, message: 'Position unavailable' };
+        const geoHandle = () => Promise.resolve(geoError);
+        const docs: any[] = [{ _id: 'doc1' }];
+
+        await service.applyGeolocation(geoHandle, docs, stateFor('home', 'captured', original, originalLog));
+
+        expect(docs[0].geolocation).to.deep.equal(original);
+        expect(docs[0].geolocation_log[0].recording).to.deep.equal(geoError);
+        expect(docs[0].geolocation_log[0].is_home).to.be.true;
+      });
+    });
+
+    describe('when captured and not home', () => {
+      it('leaves geolocation as the original regardless of capture outcome, but still logs the attempt',
+        async () => {
+          const geoData = { latitude: 5, longitude: 6, accuracy: 4 };
+          const geoHandle = () => Promise.resolve(geoData);
+          const docs: any[] = [{ _id: 'doc1' }];
+
+          await service.applyGeolocation(geoHandle, docs, stateFor('other', 'captured', original, originalLog));
+
+          expect(docs[0].geolocation).to.deep.equal(original);
+          expect(docs[0].geolocation_log[0].is_home).to.be.false;
+          expect(docs[0].geolocation_log[0].recording).to.deep.equal(geoData);
+        });
+    });
+
+    describe('when captured with no context', () => {
+      it('omits is_home from the log entry and treats it as not home', async () => {
+        const geoData = { latitude: 5, longitude: 6, accuracy: 4 };
+        const geoHandle = () => Promise.resolve(geoData);
+        const docs: any[] = [{ _id: 'doc1' }];
+
+        await service.applyGeolocation(geoHandle, docs, stateFor(undefined, 'captured', original, originalLog));
+
+        expect(docs[0].geolocation_log[0]).to.not.have.property('is_home');
+        expect(docs[0].geolocation).to.deep.equal(original);
+      });
+    });
+
+    it('records the same capture onto every doc passed in', async () => {
+      const geoData = { latitude: 5, longitude: 6, accuracy: 4 };
+      const geoHandle = () => Promise.resolve(geoData);
+      const docs: any[] = [{ _id: 'doc1' }, { _id: 'doc2' }];
+
+      await service.applyGeolocation(geoHandle, docs, stateFor('home', 'captured'));
+
+      expect(docs[0].geolocation).to.deep.equal(geoData);
+      expect(docs[1].geolocation).to.deep.equal(geoData);
+    });
+
+    it('records a rejected geoHandle as the log entry recording', async () => {
+      const geoHandle = () => Promise.reject(new Error('boom'));
+      const docs: any[] = [{ _id: 'doc1' }];
+
+      await service.applyGeolocation(geoHandle, docs, stateFor('other', 'captured', original, originalLog));
+
+      expect(docs[0].geolocation_log[0].recording).to.be.instanceOf(Error);
+      expect(docs[0].geolocation).to.deep.equal(original);
+    });
+
+    it('returns the docs unchanged when captured but there is no geoHandle', async () => {
+      const docs = [{ _id: 'doc1' }];
+
+      const result = await service.applyGeolocation(undefined, docs, stateFor('home', 'captured'));
+
+      expect(result).to.equal(docs);
+      expect(docs[0]).to.not.have.property('geolocation');
+    });
+  });
+
   describe('stripCaptureField', () => {
     const stateWithFieldName = (name?: string) => service.readCaptureState(buildFormHtml({ name }).formHtml);
 
@@ -503,6 +682,7 @@ describe('GeolocationEditState', () => {
     value?: string;
     name?: string;
     original?: string;
+    originalLog?: string;
   } = {}) => {
     const input = document.createElement('input');
     if (attrs.hasLocation !== undefined) {
@@ -523,6 +703,9 @@ describe('GeolocationEditState', () => {
     if (attrs.original !== undefined) {
       input.dataset.geoOriginal = attrs.original;
     }
+    if (attrs.originalLog !== undefined) {
+      input.dataset.geoOriginalLog = attrs.originalLog;
+    }
     return input;
   };
 
@@ -533,13 +716,15 @@ describe('GeolocationEditState', () => {
       expect(state.isEdit).to.be.false;
     });
 
-    it('defaults context, captureValue, fieldName, and originalGeolocation to undefined', () => {
-      const state = new GeolocationEditState();
-      expect(state.context).to.be.undefined;
-      expect(state.captureValue).to.be.undefined;
-      expect(state.fieldName).to.be.undefined;
-      expect(state.originalGeolocation).to.be.undefined;
-    });
+    it('defaults context, captureValue, fieldName, originalGeolocation, and originalGeolocationLog to undefined',
+      () => {
+        const state = new GeolocationEditState();
+        expect(state.context).to.be.undefined;
+        expect(state.captureValue).to.be.undefined;
+        expect(state.fieldName).to.be.undefined;
+        expect(state.originalGeolocation).to.be.undefined;
+        expect(state.originalGeolocationLog).to.be.undefined;
+      });
 
     it('does not throw when given null', () => {
       expect(() => new GeolocationEditState(null)).to.not.throw();
@@ -624,6 +809,26 @@ describe('GeolocationEditState', () => {
     });
   });
 
+  describe('originalGeolocationLog', () => {
+    it('parses data-geo-original-log as JSON when present', () => {
+      const originalLog = JSON.stringify([{ timestamp: 1, recording: { latitude: 1.23, longitude: 36.8 } }]);
+      const state = new GeolocationEditState(buildCaptureInput({ originalLog }));
+      expect(state.originalGeolocationLog).to.deep.equal([
+        { timestamp: 1, recording: { latitude: 1.23, longitude: 36.8 } }
+      ]);
+    });
+
+    it('is undefined when data-geo-original-log is absent', () => {
+      const state = new GeolocationEditState(buildCaptureInput());
+      expect(state.originalGeolocationLog).to.be.undefined;
+    });
+
+    it('is undefined when data-geo-original-log is not valid JSON', () => {
+      const state = new GeolocationEditState(buildCaptureInput({ originalLog: 'not-json' }));
+      expect(state.originalGeolocationLog).to.be.undefined;
+    });
+  });
+
   describe('isKept', () => {
     it('is true when captureValue is "kept"', () => {
       const state = new GeolocationEditState(buildCaptureInput({ value: 'kept' }));
@@ -645,6 +850,18 @@ describe('GeolocationEditState', () => {
     it('is false otherwise', () => {
       const state = new GeolocationEditState(buildCaptureInput({ value: 'skipped' }));
       expect(state.isCaptured).to.be.false;
+    });
+  });
+
+  describe('isSkipped', () => {
+    it('is true when captureValue is "skipped"', () => {
+      const state = new GeolocationEditState(buildCaptureInput({ value: 'skipped' }));
+      expect(state.isSkipped).to.be.true;
+    });
+
+    it('is false otherwise', () => {
+      const state = new GeolocationEditState(buildCaptureInput({ value: 'captured' }));
+      expect(state.isSkipped).to.be.false;
     });
   });
 
