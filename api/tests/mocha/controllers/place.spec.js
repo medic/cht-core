@@ -4,6 +4,7 @@ const { Place, Qualifier} = require('@medic/cht-datasource');
 const auth = require('../../../src/auth');
 const dataContext = require('../../../src/services/data-context');
 const serverUtils = require('../../../src/server-utils');
+const mutedParent = require('../../../src/services/muted-parent');
 
 describe('Place Controller', () => {
   const sandbox = sinon.createSandbox();
@@ -31,6 +32,7 @@ describe('Place Controller', () => {
 
   beforeEach(() => {
     assertPermissions = sinon.stub(auth, 'assertPermissions').resolves();
+    sinon.stub(mutedParent, 'assertCanCreateOnMutedParent').resolves();
     serverUtilsError = sinon.stub(serverUtils, 'error');
     res = {
       json: sinon.stub(),
@@ -168,6 +170,8 @@ describe('Place Controller', () => {
           _id: '1',
           _rev: '1-rev'
         };
+        const userCtx = { roles: ['chw'] };
+        assertPermissions.resolves(userCtx);
         placeCreate.resolves(expected_doc);
 
         await controller.v1.create(req, res);
@@ -176,8 +180,26 @@ describe('Place Controller', () => {
           req,
           { isOnline: true, hasAny: ['can_create_places', 'can_edit'] }
         )).to.be.true;
+        expect(mutedParent.assertCanCreateOnMutedParent.calledOnceWithExactly(userCtx, 'p1')).to.be.true;
         expect(placeCreate.calledOnceWithExactly(input)).to.be.true;
         expect(res.json.calledOnceWithExactly(expected_doc)).to.be.true;
+      });
+
+      it('rejects when parent is muted and user lacks can_create_contacts_under_muted_places', async () => {
+        const input = { name: 'p', type: 'place', parent: 'muted-hc' };
+        req = { body: input };
+        const userCtx = { roles: ['chw'] };
+        assertPermissions.resolves(userCtx);
+        const permError = new Error('Insufficient privileges to create contacts on muted places');
+        permError.code = 403;
+        mutedParent.assertCanCreateOnMutedParent.rejects(permError);
+
+        await controller.v1.create(req, res);
+
+        expect(mutedParent.assertCanCreateOnMutedParent.calledOnceWithExactly(userCtx, 'muted-hc')).to.be.true;
+        expect(placeCreate.notCalled).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(permError, req, res)).to.be.true;
       });
     });
 
