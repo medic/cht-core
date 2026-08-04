@@ -230,20 +230,23 @@ describe('Reports Sidebar Filter', () => {
     expect(await picker.isDisplayed()).to.be.false;
 
     // 4. Select From and To dates
-    await reportsPage.setSidebarFilterBikFromDate();
-    await reportsPage.setSidebarFilterBikToDate();
+    const fromDayText = await reportsPage.setSidebarFilterBikFromDate();
+    const toDayText = await reportsPage.setSidebarFilterBikToDate();
 
-    // Verify both From and To input fields have selected date values
-    expect(await reportsPage.getFromDateValue()).to.not.equal('');
-    expect(await reportsPage.getToDateValue()).to.not.equal('');
+    // Verify both From and To input fields have selected date values and match selection (B9)
+    const fromDateLabel = await reportsPage.getFromDateValue();
+    const toDateLabel = await reportsPage.getToDateValue();
+    expect(fromDateLabel).to.include(fromDayText);
+    expect(toDateLabel).to.include(toDayText);
 
     // Dismiss the open picker so we can test reopening it
     await browser.keys(['Escape']);
 
-    // 5. Reopen active selection verification
+    // 5. Reopen active selection verification (B4)
     await reportsPage.clickSidebarFilterToDate();
-    // Verify that the active selected date is highlighted correctly
+    // Verify that the active selected date is highlighted correctly and has the correct day text
     expect(await reportsPage.isNepaliDatePickerActiveCellDisplayed()).to.be.true;
+    expect(await reportsPage.getNepaliDatePickerActiveCellText()).to.equal(toDayText);
     
     // Dismiss it
     await browser.keys(['Escape']);
@@ -253,6 +256,19 @@ describe('Reports Sidebar Filter', () => {
     expect(await reportsPage.leftPanelSelectors.allReports().length).to.equal(2);
     expect(await reportsPage.leftPanelSelectors.reportByUUID(pregnancyDistrictHospital._id).isDisplayed()).to.be.true;
     expect(await reportsPage.leftPanelSelectors.reportByUUID(visitDistrictHospital._id).isDisplayed()).to.be.true;
+
+    // 6. Clear Nepali date filter leg (B11)
+    const clearDateFilterChip = await $('#date-filter-accordion mat-expansion-panel-header .chip .fa-times');
+    await clearDateFilterChip.waitForDisplayed();
+    await clearDateFilterChip.click();
+
+    await commonPage.waitForPageLoaded();
+
+    // Verify labels are reset, the filter chip is gone, and the report list goes back to original length
+    expect(await reportsPage.getFromDateValue()).to.not.include(fromDayText);
+    expect(await reportsPage.getToDateValue()).to.not.include(toDayText);
+    expect(await $('#date-filter-accordion mat-expansion-panel-header .chip').isExisting()).to.be.false;
+    expect(await reportsPage.leftPanelSelectors.allReports().length).to.equal(reports.length);
 
     await browser.setCookies({ name: 'locale', value: 'en' });
     await browser.refresh();
