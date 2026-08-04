@@ -10,17 +10,6 @@ set -eu -o pipefail
 # set CHT version from argument
 TAG_VERSION=$1
 
-# for manually running, nice to have. when we automate in CI, we can remove
-echo "
-Do you want to package helm chart for version ${TAG_VERSION} of the CHT?
-
-You must have this branch checked out already!  (y/N)"
-read -r -p " " yn
-case "${yn}" in
-  [yY] ) ;;
-  *) echo "aborted"; exit 1 ;;
-esac
-
 # update all values
 sed -i "s/ (CHT) v4/ (CHT)/" Chart.yaml
 sed -i "s/version: .*/version: $TAG_VERSION/" Chart.yaml

@@ -3,64 +3,54 @@ name: Release Helm Charts
 on:
   push:
     tags:
-      - 'v*'
+      - '*'
 
 permissions:
   contents: write  # Required to attach files to GitHub releases
 
 jobs:
-  package-helm-charts:
-    name: Package Helm Charts
+  build-helm-charts:
+    name: Package Helm Charts and save to GitHub
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
 
-      - name: Setup Helm
-        uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2  # v5.0.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0 # zizmor: ignore[cache-poisoning]
-        with:
-          node-version: '22.15'
-
-      - name: Install dependencies
-        run: npm ci
+      - name: Install dependencies # does this need to have keys/repos added? https://helm.sh/docs/intro/install/
+        run: |
+          sudo apt-get update
+          sudo apt-get install helm
 
       - name: Generate Helm Chart
         working-directory: scripts/build/helm
         run: |
           TAG_VERSION="${GITHUB_REF#refs/tags/}"
-          TAG_VERSION="${TAG_VERSION#v}"
-          sed -i "s/version: .*/version: $TAG_VERSION/" Chart.yaml
-          sed -i "s/appVersion: .*/appVersion: \"$TAG_VERSION\"/" Chart.yaml
-          sed -i "s/{{cht_version}}/$TAG_VERSION/g" values/base.yaml
-          sed -i "s/{{cht_image_tag}}/$TAG_VERSION/g" values/base.yaml
+          package-chart.sh $TAG_VERSION
 
-      - name: Package Helm Chart
-        working-directory: scripts/build/helm
+      - name: Commit and push new helm chart to GH
         run: |
-          mkdir -p ../../helm-packages
-          helm package . --destination ../../helm-packages
-          ls -la ../../helm-packages/
+          git config --global user.name "helm-chart-ci"
+          git config --global user.email "development+helm-chart-ci@medic.org"
+          git checkout -b "$TAG_VERSION-helm-chart"
+          git add .
+          git commit -am "$TAG_VERSION new helm chart (GH CI Helm Release Bot)"
+          git push 
+          gh pr create \
+            --title "$TAG_VERSION new helm chart (GH CI Helm Release Bot)" \
+            --body "$TAG_VERSION new helm chart"
 
-      - name: Create Release Assets
-        run: |
-          mkdir -p release-assets
-          cp helm-packages/*.tgz release-assets/
-          ls -la release-assets/
+jobs:
+  publish-helm-charts:
+    name: Publish Helm Charts to Docs Site
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
 
-      - name: Upload Release Assets
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
-        with:
-          name: helm-charts-${{ github.ref_name }}
-          path: release-assets/
-          retention-days: 30
-
+    steps:
       - name: Attach Helm Chart to Release
         run: gh release upload "$TAG_NAME" release-assets/* --clobber
         env:
