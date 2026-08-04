@@ -636,15 +636,13 @@ describe('CalendarInterval', () => {
 
     it('handles BS month length clamping correctly', () => {
       // 2026-07-05 is BS 2083-03-21.
-      // Jestha has 32 days, Ashadh has 31 days.
-      // If we ask for start day 32, on BS Ashadh 21, the previous month (Jestha) has day 32,
-      // but current month (Ashadh) only has 31.
-      // So start of interval (for reference date 2026-07-05) should clamp/be calculated correctly.
-      // Since Ashadh has 31 days, today is < 32. Start is previous month day 32 (BS 2083-02-32 = 2026-06-14).
-      // End is BS 2083-03-31 (Ashadh 31 = 2026-07-15) because Ashadh only has 31 days, and 32 - 1 = 31.
+      // Jestha has 31 days, Ashadh has 32 days.
+      // If we ask for start day 32, on BS Ashadh 21, the previous month (Jestha) has only 31 days,
+      // so the interval start date rolls over to Ashadh 1 (BS 2083-03-01 = 2026-06-15).
+      // End is BS 2083-03-31 (Ashadh 31 = 2026-07-15) because 32 - 1 = 31.
       const timestamp = moment('2026-07-05 12:00:00').valueOf();
       
-      const expectedStart = moment('2026-06-14 00:00:00').valueOf();
+      const expectedStart = moment('2026-06-15 00:00:00').valueOf();
       const expectedEnd = moment('2026-07-15 23:59:59.999').valueOf();
       
       chai.expect(service.getInterval(32, timestamp, true)).to.deep.equal({
@@ -738,6 +736,43 @@ describe('CalendarInterval', () => {
         start: expectedStart,
         end: expectedEnd
       });
+    });
+
+    it('asserts that consecutive BS intervals tile perfectly without overlapping for all start dates', () => {
+      // Test start dates from 1 to 32
+      const startDates = [1, 10, 15, 28, 29, 30, 31, 32];
+      // Sweeping a range of dates from BS 2082-01-01 (approx 2025-04-14) to BS 2084-01-01 (approx 2027-04-14)
+      const startDate = moment('2025-05-01');
+      const endDate = moment('2027-04-01');
+
+      for (const startDay of startDates) {
+        let currentRef = startDate.clone();
+        while (currentRef.isBefore(endDate)) {
+          const interval = service.getInterval(startDay, currentRef.valueOf(), true);
+          // Check that the next millisecond is in the next interval
+          const nextDayRef = moment(interval.end + 1);
+          const nextInterval = service.getInterval(startDay, nextDayRef.valueOf(), true);
+          
+          // The next interval must start exactly at the end of the current interval + 1ms
+          chai.expect(nextInterval.start).to.equal(interval.end + 1);
+          
+          // Advance currentRef to the start of the next interval to move forward
+          currentRef = nextDayRef;
+        }
+      }
+    });
+
+    it('handles out-of-range reference dates gracefully by falling back to Gregorian intervals', () => {
+      const pastDate = moment('1910-05-15 12:00:00').valueOf();
+      const futureDate = moment('2150-05-15 12:00:00').valueOf();
+      
+      const pastIntervalBS = service.getInterval(15, pastDate, true);
+      const pastIntervalGreg = service.getInterval(15, pastDate, false);
+      chai.expect(pastIntervalBS).to.deep.equal(pastIntervalGreg);
+
+      const futureIntervalBS = service.getInterval(15, futureDate, true);
+      const futureIntervalGreg = service.getInterval(15, futureDate, false);
+      chai.expect(futureIntervalBS).to.deep.equal(futureIntervalGreg);
     });
   });
 });

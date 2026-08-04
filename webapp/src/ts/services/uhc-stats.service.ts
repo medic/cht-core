@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import * as moment from 'moment';
 import { isObject as _isObject, uniq as _uniq } from 'lodash-es';
 import * as CalendarInterval from '@medic/calendar-interval';
+import { VisitCountSettings } from './uhc-settings.service';
 
 import { DbService } from '@mm-services/db.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -103,11 +104,6 @@ type DateRange = {
   end: number;
 };
 
-interface VisitCountSettings {
-  monthStartDate?: number; // Ex: 26
-  visitCountGoal?: number;
-  useBikramSambatMonths?: boolean;
-}
 
 interface VisitStats {
   lastVisitedDate: number; // Timestamp

@@ -4,6 +4,7 @@ import * as RulesEngineCore from '@medic/rules-engine';
 import { Subject, Subscription } from 'rxjs';
 import { debounce as _debounce, uniq as _uniq } from 'lodash-es';
 import * as moment from 'moment';
+import { toBik } from 'bikram-sambat';
 import { DOC_IDS, DOC_TYPES } from '@medic/constants';
 
 import { AuthService } from '@mm-services/auth.service';
@@ -72,6 +73,7 @@ export class RulesEngineService implements OnDestroy {
   private subscriptions: Subscription = new Subscription();
   private initialized;
   private uhcMonthStartDate;
+  private useBikramSambatMonths;
   private debounceActive: DebounceActive = {};
   private observable = new Subject();
   private readonly taskActions: TasksActions;
@@ -394,6 +396,7 @@ export class RulesEngineService implements OnDestroy {
 
   private assignMonthStartDate(settingsDoc) {
     this.uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settingsDoc);
+    this.useBikramSambatMonths = this.uhcSettingsService.getUseBikramSambatMonths(settingsDoc);
   }
 
   isEnabled() {
@@ -546,7 +549,10 @@ export class RulesEngineService implements OnDestroy {
     this.cancelDebounce(this.FRESHNESS_KEY);
     await this.waitForDebounce(this.CHANGE_WATCHER_KEY);
 
-    const relevantInterval = this.calendarIntervalService.getCurrent(this.uhcMonthStartDate);
+    const relevantInterval = this.calendarIntervalService.getCurrent(
+      this.uhcMonthStartDate,
+      this.useBikramSambatMonths
+    );
     const targets = await this.rulesEngineCore
       .fetchTargets(relevantInterval)
       .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
@@ -580,18 +586,30 @@ export class RulesEngineService implements OnDestroy {
     const currentInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate, useBikramSambatMonths);
 
     if (reportingPeriod === ReportingPeriod.CURRENT) {
+      if (useBikramSambatMonths) {
+        const bsEnd = toBik(moment(currentInterval.end).format('YYYY-MM-DD'));
+        return `${bsEnd.year}-${String(bsEnd.month).padStart(2, '0')}`;
+      }
       return moment(currentInterval.end)
         .locale('en')
         .format(this.INTERVAL_TAG_FORMAT);
     }
 
-    const previousMonthDate = moment(currentInterval.end).subtract(monthsAgo, 'months');
-    const previousInterval = this.calendarIntervalService.getInterval(
-      uhcMonthStartDate,
-      previousMonthDate.valueOf(),
-      useBikramSambatMonths
-    );
-    return moment(previousInterval.end)
+    let interval = currentInterval;
+    for (let i = 0; i < monthsAgo; i++) {
+      const previousDate = moment(interval.start).subtract(1, 'day');
+      interval = this.calendarIntervalService.getInterval(
+        uhcMonthStartDate,
+        previousDate.valueOf(),
+        useBikramSambatMonths
+      );
+    }
+
+    if (useBikramSambatMonths) {
+      const bsEnd = toBik(moment(interval.end).format('YYYY-MM-DD'));
+      return `${bsEnd.year}-${String(bsEnd.month).padStart(2, '0')}`;
+    }
+    return moment(interval.end)
       .locale('en')
       .format(this.INTERVAL_TAG_FORMAT);
   }

@@ -1372,6 +1372,32 @@ describe('RulesEngineService', () => {
       expect(tag).to.equal('2024-12');
       expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
     });
+
+    it('should return current interval tag in BS-YYYY-MM format for CURRENT period when BS is enabled', () => {
+      uhcSettingsService.getUseBikramSambatMonths.returns(true);
+      service = TestBed.inject(RulesEngineService);
+
+      const tag = service.getTargetIntervalTag(settingsDoc, ReportingPeriod.CURRENT);
+
+      // 2025-02-15 is BS 2081-11-04 (Fagun 4). Since monthStartDate is 1, BS interval is Fagun 1 to Fagun 30.
+      // End of interval is 2025-03-14 (Fagun 30).
+      // So the tag is Fagun (month 11) of year 2081 -> '2081-11'.
+      expect(tag).to.equal('2081-11');
+      expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
+
+    it('should return previous interval tag in BS-YYYY-MM format for PREVIOUS period when BS is enabled', () => {
+      uhcSettingsService.getUseBikramSambatMonths.returns(true);
+      service = TestBed.inject(RulesEngineService);
+
+      const tag = service.getTargetIntervalTag(settingsDoc, ReportingPeriod.PREVIOUS);
+
+      // 2025-02-15 is BS 2081-11-04.
+      // Previous interval is BS 2081 Fagun - 1 month = BS 2081 Magh (month 10).
+      // Tag is '2081-10'.
+      expect(tag).to.equal('2081-10');
+      expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
   });
 
   describe('getReportingMonth', () => {

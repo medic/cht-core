@@ -29,7 +29,7 @@ const getMinimumEndDate = (intervalStartDate, nextMonth, relativeDate) => {
     .valueOf();
 };
 
-const getBSMonthOffset = (bikramSambat, year, month, offset) => {
+const getBSMonthOffset = (year, month, offset) => {
   let y = year;
   let m = month + offset;
   while (m > 12) {
@@ -43,13 +43,19 @@ const getBSMonthOffset = (bikramSambat, year, month, offset) => {
   return { year: y, month: m };
 };
 
-const getValidBSDate = (bikramSambat, year, month, day) => {
+const getBSStart = (bikramSambat, year, month, intervalStartDate) => {
   const maxDays = bikramSambat.daysInMonth(year, month);
-  return {
-    year,
-    month,
-    day: Math.min(day, maxDays)
-  };
+  if (intervalStartDate > maxDays) {
+    const nextMonth = getBSMonthOffset(year, month, 1);
+    return { year: nextMonth.year, month: nextMonth.month, day: 1 };
+  }
+  return { year, month, day: intervalStartDate };
+};
+
+const getBSEnd = (bikramSambat, year, month, intervalStartDate) => {
+  const maxDays = bikramSambat.daysInMonth(year, month);
+  const day = intervalStartDate - 1;
+  return { year, month, day: Math.min(day, maxDays) };
 };
 
 const getBikramSambatInterval = (intervalStartDate, referenceDate) => {
@@ -63,13 +69,13 @@ const getBikramSambatInterval = (intervalStartDate, referenceDate) => {
     startBS = { year: bsRef.year, month: bsRef.month, day: 1 };
     endBS = { year: bsRef.year, month: bsRef.month, day: bikramSambat.daysInMonth(bsRef.year, bsRef.month) };
   } else if (bsRef.day >= intervalStartDate) {
-    const nextMonth = getBSMonthOffset(bikramSambat, bsRef.year, bsRef.month, 1);
-    startBS = getValidBSDate(bikramSambat, bsRef.year, bsRef.month, intervalStartDate);
-    endBS = getValidBSDate(bikramSambat, nextMonth.year, nextMonth.month, intervalStartDate - 1);
+    const nextMonth = getBSMonthOffset(bsRef.year, bsRef.month, 1);
+    startBS = getBSStart(bikramSambat, bsRef.year, bsRef.month, intervalStartDate);
+    endBS = getBSEnd(bikramSambat, nextMonth.year, nextMonth.month, intervalStartDate);
   } else {
-    const prevMonth = getBSMonthOffset(bikramSambat, bsRef.year, bsRef.month, -1);
-    startBS = getValidBSDate(bikramSambat, prevMonth.year, prevMonth.month, intervalStartDate);
-    endBS = getValidBSDate(bikramSambat, bsRef.year, bsRef.month, intervalStartDate - 1);
+    const prevMonth = getBSMonthOffset(bsRef.year, bsRef.month, -1);
+    startBS = getBSStart(bikramSambat, prevMonth.year, prevMonth.month, intervalStartDate);
+    endBS = getBSEnd(bikramSambat, bsRef.year, bsRef.month, intervalStartDate);
   }
 
   const gregStartText = bikramSambat.toGreg_text(startBS.year, startBS.month, startBS.day);
@@ -91,13 +97,8 @@ const getBikramSambatInterval = (intervalStartDate, referenceDate) => {
   };
 };
 
-const getInterval = (intervalStartDate, referenceDate, useBikramSambatMonths) => {
-  referenceDate = referenceDate || moment();
-  intervalStartDate = normalizeStartDate(intervalStartDate, useBikramSambatMonths);
-  if (useBikramSambatMonths) {
-    return getBikramSambatInterval(intervalStartDate, referenceDate);
-  }
-
+const getGregorianInterval = (intervalStartDate, referenceDate) => {
+  intervalStartDate = normalizeStartDate(intervalStartDate, false);
   if (intervalStartDate === 1) {
     return {
       start: referenceDate.startOf('month').valueOf(),
@@ -118,9 +119,24 @@ const getInterval = (intervalStartDate, referenceDate, useBikramSambatMonths) =>
   };
 };
 
+const getInterval = (intervalStartDate, referenceDate, useBikramSambatMonths) => {
+  referenceDate = referenceDate || moment();
+  if (useBikramSambatMonths) {
+    try {
+      return getBikramSambatInterval(normalizeStartDate(intervalStartDate, true), referenceDate);
+    } catch {
+      // Fallback gracefully to Gregorian calculation if date is out of range
+      return getGregorianInterval(intervalStartDate, referenceDate);
+    }
+  }
+  return getGregorianInterval(intervalStartDate, referenceDate);
+};
+
 const getPreviousInterval = (intervalStartDate, referenceDate, useBikramSambatMonths) => {
-  referenceDate = (referenceDate || moment()).clone().subtract(1, 'month');
-  return getInterval(intervalStartDate, referenceDate, useBikramSambatMonths);
+  referenceDate = referenceDate || moment();
+  const current = getInterval(intervalStartDate, referenceDate, useBikramSambatMonths);
+  const prevDate = moment(current.start).subtract(1, 'day');
+  return getInterval(intervalStartDate, prevDate, useBikramSambatMonths);
 };
 
 module.exports = {
