@@ -19,7 +19,7 @@ describe('ReportViewModelGeneratorService Service', () => {
   beforeEach(() => {
     formatDataRecordService = { format: sinon.stub() };
     getSubjectSummariesService = { get: sinon.stub() };
-    getSummariesService = { get: sinon.stub() };
+    getSummariesService = { getReports: sinon.stub() };
     lineageModelGeneratorService = { report: sinon.stub() };
     TestBed.configureTestingModule({
       providers: [
@@ -58,7 +58,7 @@ describe('ReportViewModelGeneratorService Service', () => {
     lineageModelGeneratorService.report.resolves({ doc: report });
     formatDataRecordService.format.resolves({ formatted1: 1, formatted2: 2 });
     getSubjectSummariesService.get.resolves([{ summary: true, subject: 'subject' }]);
-    getSummariesService.get.resolves([{ summary: true }]);
+    getSummariesService.getReports.resolves([{ summary: true }]);
 
     return service.get(report._id).then(result => {
       expect(lineageModelGeneratorService.report.callCount).to.equal(1);
@@ -67,8 +67,8 @@ describe('ReportViewModelGeneratorService Service', () => {
       expect(formatDataRecordService.format.callCount).to.equal(1);
       expect(formatDataRecordService.format.args[0]).to.deep.equal([report]);
 
-      expect(getSummariesService.get.callCount).to.equal(1);
-      expect(getSummariesService.get.args[0]).to.deep.equal([[ 'my-report' ]]);
+      expect(getSummariesService.getReports.callCount).to.equal(1);
+      expect(getSummariesService.getReports.args[0]).to.deep.equal([[ 'my-report' ]]);
 
       expect(getSubjectSummariesService.get.callCount).to.equal(1);
       expect(getSubjectSummariesService.get.args[0]).to.deep.equal([[{ summary: true }], true]);

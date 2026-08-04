@@ -6,6 +6,7 @@ const _ = require('lodash');
 const db = require('../../../src/db');
 const environment = require('@medic/environment');
 const deployInfo = require('../../../src/services/deploy-info');
+const replicationFailureLog = require('../../../src/services/replication/replication-failure-log');
 const service = require('../../../src/services/monitoring');
 const { getBundledDdocs } = require('../../../src/services/setup/utils');
 const { DATABASES } = require('../../../src/services/setup/databases');
@@ -245,6 +246,7 @@ const setUpMocks = () => {
     .resolves({ rows: [ { value: 1 } ] })
     .withArgs('logs/connected_users', { startkey: 0, reduce: true })
     .resolves({ rows: [ { value: 2 } ] });
+  sinon.stub(replicationFailureLog, 'getUsersWithFailuresCount').resolves(5);
 };
 
 const generateRows = (statusCounters) => {
@@ -568,6 +570,7 @@ describe('Monitoring service', () => {
       chai.expect(actual.conflict).to.deep.equal({ count: 40 });
       chai.expect(actual.date.current).to.equal(0);
       chai.expect(actual.replication_limit.count).to.equal(1);
+      chai.expect(actual.replication_failure).to.deep.equal({ count: 5 });
       chai.expect(actual.connected_users.count).to.equal(2);
       chai.expect(request.get.args).to.deep.equalInAnyOrder([
         [{ json: true, url: environment.serverUrl }],
@@ -600,6 +603,16 @@ describe('Monitoring service', () => {
           }
         }],
       ]);
+    });
+  });
+
+  it('v1 does not include replication_failure', () => {
+    setUpMocks();
+
+    return service.jsonV1().then(actual => {
+      chai.expect(actual).not.to.have.property('replication_failure');
+      // v1 must not even invoke the replication-failure service.
+      chai.expect(replicationFailureLog.getUsersWithFailuresCount.called).to.equal(false);
     });
   });
 
@@ -727,6 +740,7 @@ describe('Monitoring service', () => {
     sinon.stub(db.sentinel, 'query').rejects();
     sinon.stub(db.medicUsersMeta, 'query').rejects();
     sinon.stub(db.medicLogs, 'query').rejects();
+    sinon.stub(replicationFailureLog, 'getUsersWithFailuresCount').rejects();
 
     return service.jsonV2().then(actual => {
       chai.expect(actual.version).to.deep.equal({
@@ -829,6 +843,7 @@ describe('Monitoring service', () => {
       chai.expect(actual.outbound_push).to.deep.equal({ backlog: -1 });
       chai.expect(actual.feedback).to.deep.equal({ count: -1 });
       chai.expect(actual.replication_limit).to.deep.equal({ count: -1 });
+      chai.expect(actual.replication_failure).to.deep.equal({ count: -1 });
       chai.expect(actual.connected_users).to.deep.equal({ count: -1 });
       chai.expect(request.get.args).to.deep.equalInAnyOrder([
         [{ json: true, url: environment.serverUrl }],
