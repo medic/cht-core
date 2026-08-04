@@ -76,7 +76,6 @@ describe('Form service', () => {
   let getReport;
   let getContact;
   let dbBulkDocs;
-  let dbGet;
   let ContactSummary;
   let Form2Sms;
   let UserContact;
@@ -113,7 +112,6 @@ describe('Form service', () => {
     getReport = sinon.stub();
     getContact = sinon.stub();
     dbBulkDocs = sinon.stub();
-    dbGet = sinon.stub();
     ContactSummary = sinon.stub();
     Form2Sms = sinon.stub();
     UserContact = sinon.stub();
@@ -187,7 +185,7 @@ describe('Form service', () => {
         {
           provide: DbService,
           useValue: {
-            get: () => ({ getAttachment: dbGetAttachment, bulkDocs: dbBulkDocs, get: dbGet })
+            get: () => ({ getAttachment: dbGetAttachment, bulkDocs: dbBulkDocs })
           }
         },
         { provide: ContactSummaryService, useValue: { get: ContactSummary } },
@@ -1513,6 +1511,7 @@ describe('Form service', () => {
       const captureInput = document.createElement('input');
       captureInput.type = 'hidden';
       captureInput.name = '/data/geo_capture';
+      captureInput.value = 'captured';
       captureInput.dataset.geoContext = 'home';
       const captureWrapper = document.createElement('div');
       captureWrapper.classList.add('or-appearance-geolocation-capture');
@@ -1546,6 +1545,7 @@ describe('Form service', () => {
       const captureInput = document.createElement('input');
       captureInput.type = 'hidden';
       captureInput.name = '/data/location_capture';
+      captureInput.value = 'captured';
       captureInput.dataset.geoContext = 'home';
       const captureWrapper = document.createElement('div');
       captureWrapper.classList.add('or-appearance-geolocation-capture');
@@ -1577,6 +1577,7 @@ describe('Form service', () => {
 
       const captureInput = document.createElement('input');
       captureInput.type = 'hidden';
+      captureInput.value = 'captured';
       captureInput.dataset.geoContext = 'other';
       const captureWrapper = document.createElement('div');
       captureWrapper.classList.add('or-appearance-geolocation-capture');
@@ -1609,6 +1610,7 @@ describe('Form service', () => {
 
         const captureInput = document.createElement('input');
         captureInput.type = 'hidden';
+        captureInput.value = 'captured';
         captureInput.dataset.geoContext = 'home';
         const captureWrapper = document.createElement('div');
         captureWrapper.classList.add('or-appearance-geolocation-capture');
@@ -1656,6 +1658,8 @@ describe('Form service', () => {
       const captureInput = document.createElement('input');
       captureInput.type = 'hidden';
       captureInput.value = 'kept';
+      captureInput.dataset.geoOriginal = JSON.stringify(existingGeo);
+      captureInput.dataset.geoOriginalLog = JSON.stringify(existingLog);
       const captureWrapper = document.createElement('div');
       captureWrapper.classList.add('or-appearance-geolocation-capture');
       captureWrapper.appendChild(captureInput);
@@ -1687,6 +1691,7 @@ describe('Form service', () => {
       const captureInput = document.createElement('input');
       captureInput.type = 'hidden';
       captureInput.value = 'kept';
+      captureInput.dataset.geoOriginal = JSON.stringify(existingGeo);
       const captureWrapper = document.createElement('div');
       captureWrapper.classList.add('or-appearance-geolocation-capture');
       captureWrapper.appendChild(captureInput);
@@ -1721,6 +1726,8 @@ describe('Form service', () => {
       captureInput.type = 'hidden';
       captureInput.name = '/data/geo_capture';
       captureInput.value = 'kept';
+      captureInput.dataset.geoOriginal = JSON.stringify(originalGeo);
+      captureInput.dataset.geoOriginalLog = JSON.stringify(originalLog);
       const captureWrapper = document.createElement('div');
       captureWrapper.classList.add('or-appearance-geolocation-capture');
       captureWrapper.appendChild(captureInput);
@@ -1729,12 +1736,6 @@ describe('Form service', () => {
 
       enketoService.saveContact.resolves(<any>{
         docId, preparedDocs: [{ _id: docId, type, name: 'My Household', geolocation: '', geo_capture: 'kept' }]
-      });
-      dbGet.withArgs(docId).resolves({
-        _id: docId,
-        geolocation: originalGeo,
-        geo_capture: 'captured',
-        geolocation_log: originalLog
       });
       dbBulkDocs.resolves([]);
 
@@ -1745,7 +1746,6 @@ describe('Form service', () => {
         sinon.stub()
       );
 
-      assert.equal(dbGet.callCount, 1);
       assert.equal(dbBulkDocs.callCount, 1);
       const savedDocs = dbBulkDocs.args[0][0];
       assert.deepEqual(savedDocs[0].geolocation, originalGeo);
@@ -1765,6 +1765,8 @@ describe('Form service', () => {
       captureInput.type = 'hidden';
       captureInput.value = 'captured';
       captureInput.dataset.geoContext = 'other';
+      captureInput.dataset.geoOriginal = JSON.stringify(originalGeo);
+      captureInput.dataset.geoOriginalLog = JSON.stringify(originalLog);
       const captureWrapper = document.createElement('div');
       captureWrapper.classList.add('or-appearance-geolocation-capture');
       captureWrapper.appendChild(captureInput);
@@ -1773,11 +1775,6 @@ describe('Form service', () => {
 
       enketoService.saveContact.resolves(<any>{
         docId, preparedDocs: [{ _id: docId, type, name: 'My Household', geolocation: '', geo_capture: 'captured' }]
-      });
-      dbGet.withArgs(docId).resolves({
-        _id: docId,
-        geolocation: originalGeo,
-        geolocation_log: originalLog
       });
       dbBulkDocs.resolves([]);
 

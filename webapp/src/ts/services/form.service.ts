@@ -445,16 +445,13 @@ export class FormService {
 
       const geoState = this.contactGeolocationService.readCaptureState(enketoForm.form?.view?.html);
 
-      if (!geoState.isKept) {
-        // Only the doc that owns the geolocation-capture field should receive the captured location -
-        // sibling/repeated docs created in the same submission (e.g. a new primary contact for a new
-        // household) must not be stamped with it too.
-        await this.contactGeolocationService.recordCapture(
-          geoHandle, [primaryDoc ?? preparedDocs.preparedDocs[0]], geoState
-        );
-      }
+      // Only the doc that owns the geolocation-capture field should receive geolocation changes -
+      // sibling/repeated docs created in the same submission (e.g. a new primary contact for a new
+      // household) must not be stamped with it too.
+      await this.contactGeolocationService.applyGeolocation(
+        geoHandle, [primaryDoc ?? preparedDocs.preparedDocs[0]], geoState
+      );
       const docsWithGeo = preparedDocs.preparedDocs;
-      await this.contactGeolocationService.restoreOriginalIfNeeded(docId, docsWithGeo, geoState);
       docsWithGeo.forEach((doc: any) => this.contactGeolocationService.stripCaptureField(doc, geoState));
 
       this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);

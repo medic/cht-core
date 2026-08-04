@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
 
-import { DbService } from '@mm-services/db.service';
-
 const HouseholdGeolocationWidget = require('../../js/enketo/widgets/household-geolocation-widget');
 const { RADIO_VALUES, FIELD_VALUES, GEO_CONTEXT, DATASET_TRUE } = HouseholdGeolocationWidget;
 
@@ -69,10 +67,6 @@ export class GeolocationEditState {
 })
 export class ContactGeolocationService {
 
-  constructor(
-    private readonly dbService: DbService,
-  ) {}
-
   private getCaptureInput(formHtml?: Element): HTMLInputElement | null {
     return (formHtml?.querySelector(HouseholdGeolocationWidget.selector) as HTMLInputElement) || null;
   }
@@ -98,52 +92,18 @@ export class ContactGeolocationService {
     captureInput.dataset.geoOriginalLog = JSON.stringify(contact.geolocation_log ?? null);
   }
 
-  recordCapture(geoHandle, docs: any[], state: GeolocationEditState) {
-    if (!geoHandle) {
-      return docs;
-    }
-
-    return geoHandle()
-      .catch(err => err)
-      .then(geoData => {
-        docs.forEach(doc => {
-          doc.geolocation_log = doc.geolocation_log || [];
-          const entry: any = { timestamp: Date.now(), recording: geoData };
-          if (state.context !== undefined) {
-            entry.is_home = state.isHome;
-          }
-          doc.geolocation_log.push(entry);
-          if (!geoData.code && state.isHome) {
-            doc.geolocation = geoData;
-          }
-        });
-        return docs;
-      });
-  }
-
-  async restoreOriginalIfNeeded(docId: string | undefined, docs: any[], state: GeolocationEditState) {
-    const restoreLog = state.isKept;
-    const restoreGeoOnly = state.isCaptured && !state.isHome;
-    if (!docId || (!restoreLog && !restoreGeoOnly)) {
-      return;
-    }
-
-    const originalDoc = await this.dbService.get().get(docId);
-    const contactDoc = docs.find(doc => doc._id === docId);
-    if (!contactDoc || !originalDoc) {
-      return;
-    }
-
-    contactDoc.geolocation = originalDoc.geolocation;
-    if (restoreLog) {
-      contactDoc.geolocation_log = originalDoc.geolocation_log;
+  private setGeolocation(doc: any, value: any) {
+    if (value === undefined) {
+      delete doc.geolocation;
+    } else {
+      doc.geolocation = value;
     }
   }
 
   async applyGeolocation(geoHandle, docs: any[], state: GeolocationEditState) {
     if (state.isKept) {
       docs.forEach(doc => {
-        doc.geolocation = state.originalGeolocation;
+        this.setGeolocation(doc, state.originalGeolocation);
         doc.geolocation_log = state.originalGeolocationLog;
       });
       return docs;
@@ -166,7 +126,7 @@ export class ContactGeolocationService {
         entry.is_home = state.isHome;
       }
       doc.geolocation_log.push(entry);
-      doc.geolocation = (!geoData.code && state.isHome) ? geoData : state.originalGeolocation;
+      this.setGeolocation(doc, (!geoData.code && state.isHome) ? geoData : state.originalGeolocation);
     });
     return docs;
   }

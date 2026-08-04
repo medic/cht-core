@@ -3,19 +3,12 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import { ContactGeolocationService, GeolocationEditState } from '@mm-services/contact-geolocation.service';
-import { DbService } from '@mm-services/db.service';
 
 describe('ContactGeolocationService', () => {
   let service: ContactGeolocationService;
-  let dbGet;
 
   beforeEach(() => {
-    dbGet = sinon.stub();
-    TestBed.configureTestingModule({
-      providers: [
-        { provide: DbService, useValue: { get: () => ({ get: dbGet }) } },
-      ]
-    });
+    TestBed.configureTestingModule({});
     service = TestBed.inject(ContactGeolocationService);
   });
 
@@ -344,157 +337,6 @@ describe('ContactGeolocationService', () => {
       const { formHtml, captureInput } = buildFormHtml();
       service.injectEditContext(formHtml, { _id: 'contact1' });
       expect(captureInput.dataset.geoOriginalLog).to.be.undefined;
-    });
-  });
-
-  describe('recordCapture', () => {
-    it('returns the docs unchanged when there is no geoHandle', async () => {
-      const docs = [{ _id: 'doc1' }];
-      const result = await service.recordCapture(undefined, docs, stateFor('home'));
-      expect(result).to.equal(docs);
-    });
-
-    it('sets is_home: true and writes geolocation when context is home and capture succeeds', async () => {
-      const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
-      const geoHandle = () => Promise.resolve(geoData);
-      const docs: any[] = [{ _id: 'doc1' }];
-
-      await service.recordCapture(geoHandle, docs, stateFor('home'));
-
-      expect(docs[0].geolocation_log).to.have.lengthOf(1);
-      expect(docs[0].geolocation_log[0].is_home).to.be.true;
-      expect(docs[0].geolocation_log[0].recording).to.deep.equal(geoData);
-      expect(docs[0].geolocation).to.deep.equal(geoData);
-    });
-
-    it('sets is_home: false and does not write geolocation when context is other', async () => {
-      const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
-      const geoHandle = () => Promise.resolve(geoData);
-      const docs: any[] = [{ _id: 'doc1' }];
-
-      await service.recordCapture(geoHandle, docs, stateFor('other'));
-
-      expect(docs[0].geolocation_log[0].is_home).to.be.false;
-      expect(docs[0].geolocation).to.be.undefined;
-    });
-
-    it('omits is_home entirely when there is no context', async () => {
-      const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
-      const geoHandle = () => Promise.resolve(geoData);
-      const docs: any[] = [{ _id: 'doc1' }];
-
-      await service.recordCapture(geoHandle, docs, stateFor(undefined));
-
-      expect(docs[0].geolocation_log[0]).to.not.have.property('is_home');
-      expect(docs[0].geolocation).to.be.undefined;
-    });
-
-    it('does not write geolocation on a failed home capture, but still logs it', async () => {
-      const geoError = { code: 2, message: 'Position unavailable' };
-      const geoHandle = () => Promise.resolve(geoError);
-      const docs: any[] = [{ _id: 'doc1' }];
-
-      await service.recordCapture(geoHandle, docs, stateFor('home'));
-
-      expect(docs[0].geolocation_log[0].recording).to.deep.equal(geoError);
-      expect(docs[0].geolocation_log[0].is_home).to.be.true;
-      expect(docs[0].geolocation).to.be.undefined;
-    });
-
-    it('records the same capture onto every doc passed in', async () => {
-      const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
-      const geoHandle = () => Promise.resolve(geoData);
-      const docs: any[] = [{ _id: 'doc1' }, { _id: 'doc2' }];
-
-      await service.recordCapture(geoHandle, docs, stateFor('home'));
-
-      expect(docs[0].geolocation).to.deep.equal(geoData);
-      expect(docs[1].geolocation).to.deep.equal(geoData);
-    });
-
-    it('records a rejected geoHandle as the log entry recording', async () => {
-      const geoHandle = () => Promise.reject(new Error('boom'));
-      const docs: any[] = [{ _id: 'doc1' }];
-
-      await service.recordCapture(geoHandle, docs, stateFor('other'));
-
-      expect(docs[0].geolocation_log[0].recording).to.be.instanceOf(Error);
-      expect(docs[0].geolocation).to.be.undefined;
-    });
-  });
-
-  describe('restoreOriginalIfNeeded', () => {
-    const originalDoc = {
-      _id: 'contact1',
-      geolocation: { latitude: 1, longitude: 2 },
-      geolocation_log: [{ timestamp: 111, recording: { latitude: 1, longitude: 2 }, is_home: true }],
-    };
-
-    it('does nothing when there is no docId', async () => {
-      const docs: any[] = [{ _id: 'contact1', geolocation: 'stale' }];
-      await service.restoreOriginalIfNeeded(undefined, docs, stateFor('home', 'kept'));
-      expect(dbGet.callCount).to.equal(0);
-      expect(docs[0].geolocation).to.equal('stale');
-    });
-
-    it('does nothing when captureValue is "skipped"', async () => {
-      const docs: any[] = [{ _id: 'contact1', geolocation: 'stale' }];
-      await service.restoreOriginalIfNeeded('contact1', docs, stateFor(undefined, 'skipped'));
-      expect(dbGet.callCount).to.equal(0);
-      expect(docs[0].geolocation).to.equal('stale');
-    });
-
-    it('does nothing when captureValue is "captured" and context is home', async () => {
-      const docs: any[] = [{ _id: 'contact1', geolocation: 'stale' }];
-      await service.restoreOriginalIfNeeded('contact1', docs, stateFor('home', 'captured'));
-      expect(dbGet.callCount).to.equal(0);
-      expect(docs[0].geolocation).to.equal('stale');
-    });
-
-    it('restores geolocation and geolocation_log when captureValue is "kept"', async () => {
-      dbGet.withArgs('contact1').resolves(originalDoc);
-      const docs: any[] = [{ _id: 'contact1', geolocation: 'stale', geolocation_log: ['stale-log'] }];
-
-      await service.restoreOriginalIfNeeded('contact1', docs, stateFor('home', 'kept'));
-
-      expect(dbGet.callCount).to.equal(1);
-      expect(docs[0].geolocation).to.deep.equal(originalDoc.geolocation);
-      expect(docs[0].geolocation_log).to.deep.equal(originalDoc.geolocation_log);
-    });
-
-    it('restores only geolocation, not geolocation_log, when captured and context is not home', async () => {
-      dbGet.withArgs('contact1').resolves(originalDoc);
-      const docs: any[] = [{ _id: 'contact1', geolocation: 'stale', geolocation_log: ['fresh-log-entry'] }];
-
-      await service.restoreOriginalIfNeeded('contact1', docs, stateFor('other', 'captured'));
-
-      expect(docs[0].geolocation).to.deep.equal(originalDoc.geolocation);
-      expect(docs[0].geolocation_log).to.deep.equal(['fresh-log-entry']);
-    });
-
-    it('makes only one DB fetch regardless of which restore case applies', async () => {
-      dbGet.withArgs('contact1').resolves(originalDoc);
-      const docs: any[] = [{ _id: 'contact1' }];
-
-      await service.restoreOriginalIfNeeded('contact1', docs, stateFor('home', 'kept'));
-
-      expect(dbGet.callCount).to.equal(1);
-    });
-
-    it('does not throw when the doc is not found in the docs array', async () => {
-      dbGet.withArgs('contact1').resolves(originalDoc);
-      const docs: any[] = [{ _id: 'someone-else' }];
-
-      await expect(service.restoreOriginalIfNeeded('contact1', docs, stateFor('home', 'kept'))).to.not.be.rejected;
-    });
-
-    it('does not throw when the original doc is not found', async () => {
-      dbGet.withArgs('contact1').resolves(undefined);
-      const docs: any[] = [{ _id: 'contact1', geolocation: 'stale' }];
-
-      await service.restoreOriginalIfNeeded('contact1', docs, stateFor('home', 'kept'));
-
-      expect(docs[0].geolocation).to.equal('stale');
     });
   });
 
