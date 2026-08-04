@@ -242,5 +242,19 @@ describe('HouseholdGeolocation widget - contact save pipeline', () => {
       expect(savedDoc.geolocation.latitude).to.equal(GEO_SUCCESS.latitude);
     });
 
+    it('should clear geolocation data when "Remove household location" is selected and submitted', async () => {
+      await openEditForm();
+
+      await $(SELECTORS.REMOVE_RADIO).waitForExist();
+      await $(SELECTORS.REMOVE_RADIO).click();
+
+      await genericForm.submitForm();
+      await commonPage.waitForPageLoaded();
+      await contactPage.waitForContactLoaded();
+
+      const savedDoc = await utils.getDoc(contactWithGeo._id);
+      expect(savedDoc.geolocation).to.not.exist;
+    });
+
   });
 });
