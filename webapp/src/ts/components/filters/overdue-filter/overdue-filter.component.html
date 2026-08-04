@@ -4,9 +4,17 @@
       *ngFor="let status of statuses"
       [class.selected]="filter?.selected.has(status)"
       [class.disabled]="disabled">
-      <a role="menuitem" tabindex="-1" [attr.data-value]="status" (click)="!disabled && filter?.toggle(status)">
+      <label>
+        <input
+          type="radio"
+          name="overdue-filter"
+          [value]="status"
+          [checked]="filter?.selected.has(status)"
+          [disabled]="disabled"
+          (change)="toggle(status)"
+        />
         {{ 'tasks.sidebar.filter.overdue.' + status | translate }}
-      </a>
+      </label>
     </li>
   </ul>
 </div>

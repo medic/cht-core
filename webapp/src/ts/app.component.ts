@@ -12,7 +12,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
-import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { UpdateServiceWorkerService } from '@mm-services/update-service-worker.service';
 import { LocationService } from '@mm-services/location.service';
@@ -80,6 +80,13 @@ const SYNC_STATUS = {
   }
 };
 
+const DOC_IDS_TRIGGER_UPDATE = new Set([
+  '_design/medic',
+  '_design/medic-client',
+  DOC_IDS.SERVICE_WORKER_META,
+  DOC_IDS.SETTINGS,
+  DOC_IDS.EXTENSION_LIBS
+]);
 
 @Component({
   selector: 'app-root',
@@ -126,7 +133,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     private readonly setLanguageService:SetLanguageService,
     private readonly sessionService:SessionService,
     private readonly authService:AuthService,
-    private readonly resourceIconsService:ResourceIconsService,
+    private readonly customResourceService:CustomResourceService,
     private readonly changesService:ChangesService,
     private readonly updateServiceWorker:UpdateServiceWorkerService,
     private readonly locationService:LocationService,
@@ -404,17 +411,9 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   private watchDDocChanges() {
     this.updateServiceWorker.update(() => this.ngZone.run(() => this.showUpdateReady()));
-
     this.changesService.subscribe({
       key: 'ddoc',
-      filter: (change) => {
-        return (
-          change.id === '_design/medic' ||
-          change.id === '_design/medic-client' ||
-          change.id === DOC_IDS.SERVICE_WORKER_META ||
-          change.id === DOC_IDS.SETTINGS
-        );
-      },
+      filter: ({ id }) => DOC_IDS_TRIGGER_UPDATE.has(id) || id.startsWith(PREFIXES.UI_EXTENSION),
       callback: (change) => {
         if (change.id === DOC_IDS.SERVICE_WORKER_META) {
           this.updateServiceWorker.update(() => this.ngZone.run(() => this.showUpdateReady()));
@@ -479,7 +478,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.databaseConnectionMonitorService
       .listenForDatabaseClosed()
       .subscribe(() => {
-        this.modalService.show(DatabaseClosedComponent);
+        this.modalService.show(DatabaseClosedComponent, { closeOnNavigation: false });
         this.closeDropdowns();
       });
   }
@@ -583,7 +582,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private setAppTitle() {
-    this.resourceIconsService
+    this.customResourceService
       .getAppTitle()
       .then(title => {
         document.title = title;

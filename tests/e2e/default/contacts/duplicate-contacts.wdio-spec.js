@@ -43,8 +43,6 @@ describe('Duplicate contact detection', () => {
 
   before(async () => {
     await utils.saveDoc(extensionLibDoc);
-    const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
-    await waitForServiceWorker.promise;
     await commonPage.reloadSession();
     await cookieLogin();
     originalCreatePersonFormDoc = await utils.getDoc(CREATE_PERSON_FORM_ID);
