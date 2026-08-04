@@ -16,7 +16,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 
 import { LanguageService } from '@mm-services/language.service';
 import { FormatDateService } from '@mm-services/format-date.service';
-import { toBik, toGreg_text, toBik_dev } from 'bikram-sambat';
+import { toBik, toGreg_text, toBik_dev, daysInMonth } from 'bikram-sambat';
 import { setupNepaliDatePicker, hideDatePicker } from '../../../../js/enketo/widgets/bikram-sambat-picker-shared';
 
 @Component({
@@ -134,6 +134,16 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
 
     setupNepaliDatePicker($hiddenDateInput, {
       onDateSelect: (data: any) => {
+        // Clicks on non-existent/phantom days are ignored intentionally (see #11252)
+        try {
+          const maxDays = daysInMonth(data.bsYear, data.bsMonth);
+          if (data.bsDate > maxDays) {
+            return;
+          }
+        } catch (_e) {
+          console.warn('BikramSambat date limit check error:', _e);
+          return; // Ignore if the library throws for out-of-range years/months
+        }
         const gregDateStr = toGreg_text(data.bsYear, data.bsMonth, data.bsDate);
         const gregMoment = moment(gregDateStr);
         const normalizedMoment = this.isStartDate ? gregMoment.startOf('day') : gregMoment.endOf('day');

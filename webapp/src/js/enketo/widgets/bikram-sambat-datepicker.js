@@ -6,6 +6,7 @@ const bikram_sambat_bs = require( 'bikram-sambat-bootstrap' );
 const eurodigit = require( 'eurodigit' );
 const toDevanagari = eurodigit.to_non_euro.devanagari;
 const fromDevanagari = eurodigit.to_euro;
+const BikramSambat = require( 'bikram-sambat' );
 
 const {
   setupNepaliDatePicker,
@@ -35,6 +36,15 @@ const NEPALI_MONTH_NAMES = [
 ];
 
 const MONTH_PLACEHOLDER = 'महिना';
+
+const isDayValid = (day, month, year) => {
+  try {
+    return day >= 1 && day <= BikramSambat.daysInMonth(year, month);
+  } catch (_e) {
+    console.warn('BikramSambat validation error:', _e);
+    return false;
+  }
+};
 
 class Bikramsambatdatepicker extends Widget {
   static get selector() {
@@ -92,13 +102,24 @@ class Bikramsambatdatepicker extends Widget {
         // setTimeout) after both "change" and "blur", once the library's
         // own handlers have finished running.
         const clearIfIncomplete = () => {
-          const day   = $parent.find( 'input[name="day"]' ).val();
-          const month = $parent.find( 'input[name="month"]' ).val();
-          const year  = $parent.find( 'input[name="year"]' ).val();
+          const dayDev   = $parent.find( 'input[name="day"]' ).val();
+          const monthDev = $parent.find( 'input[name="month"]' ).val();
+          const yearDev  = $parent.find( 'input[name="year"]' ).val();
 
-          if ( !day || !month || !year ) {
+          if ( !dayDev || !monthDev || !yearDev ) {
             $realDateInput.val( '' );
             $realDateInput.trigger( 'change' );
+            return;
+          }
+
+          const day = Number(fromDevanagari(dayDev));
+          const month = Number(fromDevanagari(monthDev));
+          const year = Number(fromDevanagari(yearDev));
+
+          if (Number.isNaN(day) || Number.isNaN(month) || Number.isNaN(year) || !isDayValid(day, month, year)) {
+            $realDateInput.val( '' );
+            $realDateInput.trigger( 'change' );
+            $parent.find( 'input[name="day"]' ).val( '' );
           }
         };
 
@@ -153,19 +174,42 @@ const setupCalendarPicker = ($parent, widget) => {
       const year = data.bsYear;
       const monthNum = data.bsMonth;
       const day = data.bsDate;
+
+      // Guard against invalid days (e.g. Mansir 30, 2082)
+      // Clicks on non-existent/phantom days are ignored intentionally (see #11252)
+      try {
+        if (day > BikramSambat.daysInMonth(year, monthNum)) {
+          return;
+        }
+      } catch ( _e ) {
+        console.warn('BikramSambat date limit check error:', _e);
+        return; // Ignore if the library throws for out-of-range years/months
+      }
       const monthName = NEPALI_MONTH_NAMES[monthNum - 1];
       if (monthName) {
-        // Update the input fields with Devanagari digits and trigger change
-        $parent.find('input[name="day"]').val(toDevanagari(day.toString())).trigger('change');
-        $parent.find('input[name="month"]').val(toDevanagari(monthNum.toString())).trigger('change');
-        $parent.find('input[name="year"]').val(toDevanagari(year.toString())).trigger('change').trigger('blur');
+        // Set all values first to prevent validation checks against stale/intermediate DOM states (see #11252)
+        $parent.find('input[name="day"]').val(toDevanagari(day.toString()));
+        $parent.find('input[name="month"]').val(toDevanagari(monthNum.toString()));
+        $parent.find('input[name="year"]').val(toDevanagari(year.toString()));
+
+        // Then trigger change and blur events so validation runs on the complete set of values
+        $parent.find('input[name="day"]').trigger('change');
+        $parent.find('input[name="month"]').trigger('change');
+        $parent.find('input[name="year"]').trigger('change').trigger('blur');
         $group.find('.month-dropdown button').html(monthName + ' <span class="caret"></span>');
       }
     },
     onClear: () => {
-      $parent.find('input[name="day"]').val('').trigger('change');
-      $parent.find('input[name="month"]').val('').trigger('change');
-      $parent.find('input[name="year"]').val('').trigger('change').trigger('blur');
+      // Set all values first to prevent validation checks against stale/intermediate DOM states
+      $parent.find('input[name="day"]').val('');
+      $parent.find('input[name="month"]').val('');
+      $parent.find('input[name="year"]').val('');
+
+      // Then trigger change and blur events so validation runs on the complete set of values
+      $parent.find('input[name="day"]').trigger('change');
+      $parent.find('input[name="month"]').trigger('change');
+      $parent.find('input[name="year"]').trigger('change').trigger('blur');
+
       $group.find('.month-dropdown button').html(`${MONTH_PLACEHOLDER} <span class="caret"></span>`);
       $hiddenDateInput.val('');
       const $picker = $hiddenDateInput.data('picker');
