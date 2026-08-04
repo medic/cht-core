@@ -56,7 +56,6 @@ describe('Contacts More Menu Component', () => {
         fixture = TestBed.createComponent(ContactsMoreMenuComponent);
         component = fixture.componentInstance;
         store = TestBed.inject(MockStore);
-        // NOTE: No fixture.detectChanges() here — each test controls when ngOnInit fires
       });
   });
 
