@@ -14,14 +14,10 @@ const parseXml = (xml: string): XMLDocument => new DOMParser().parseFromString(x
 const REPORTED_DATE = 1700000000000;
 const UUID_PATTERN = /^[0-9a-f-]{36}$/;
 
-const buildFormConfig = (
-  repeatPaths: string[] = [],
-  xmlVersion: any = '1.0',
-  internalId = 'my-form'
-): FormConfig => {
+const buildFormConfig = (repeatPaths: string[] = [], xmlVersion = '1.0'): FormConfig => {
   const repeatXml = repeatPaths.map(path => `<repeat nodeset="${path}"/>`).join('');
   const xml = `<root>${repeatXml}</root>`;
-  return new FormConfig({ xmlVersion, internalId }, 'report', xml, '', '');
+  return new FormConfig({ xmlVersion }, 'report', xml, '', '');
 };
 
 describe('form-data', () => {
@@ -92,7 +88,11 @@ describe('form-data', () => {
 
         const result = formData.deserializeDoc(buildFormConfig(['/data/child']), REPORTED_DATE);
 
-        expect(result).excluding(['_id', 'form_version', 'reported_date', '_attachments']).to.deep.equal({
+        expect(result).to.deep.equal({
+          _id: 'the-id',
+          form_version: '1.0',
+          reported_date: REPORTED_DATE,
+          _attachments: undefined,
           name: 'parent',
           child: [
             { name: 'Daddy Bear' },
@@ -119,7 +119,11 @@ describe('form-data', () => {
         const config = buildFormConfig(['/data/child', '/data/child/foods']);
         const result = formData.deserializeDoc(config, REPORTED_DATE);
 
-        expect(result).excluding(['_id', 'form_version', 'reported_date', '_attachments']).to.deep.equal({
+        expect(result).to.deep.equal({
+          _id: 'the-id',
+          form_version: '1.0',
+          reported_date: REPORTED_DATE,
+          _attachments: undefined,
           name: 'parent',
           child: [
             { name: 'Daddy Bear', foods: [{ type: 'ugali' }, { type: 'chapati' }] },
@@ -135,7 +139,11 @@ describe('form-data', () => {
 
         const result = formData.deserializeDoc(buildFormConfig(['/data/child']), REPORTED_DATE);
 
-        expect(result).excluding(['_id', 'form_version', 'reported_date', '_attachments']).to.deep.equal({
+        expect(result).to.deep.equal({
+          _id: 'the-id',
+          form_version: '1.0',
+          reported_date: REPORTED_DATE,
+          _attachments: undefined,
           child: [{ name: 'Only Child' }],
         });
       });
@@ -146,7 +154,13 @@ describe('form-data', () => {
 
         const result = formData.deserializeDoc(buildFormConfig(), REPORTED_DATE);
 
-        expect(result).excluding(['_id', 'form_version', 'reported_date', '_attachments']).to.deep.equal({ val: '3' });
+        expect(result).to.deep.equal({
+          _id: 'the-id',
+          form_version: '1.0',
+          reported_date: REPORTED_DATE,
+          _attachments: undefined,
+          val: '3'
+        });
       });
 
       it('adds the _id and the form_version from the form config', () => {
@@ -182,7 +196,6 @@ describe('form-data', () => {
           form_version: '1.0',
           reported_date: REPORTED_DATE,
           _attachments: undefined,
-          // The form data wins over the original doc value
           name: 'Sally',
         });
       });
@@ -243,7 +256,6 @@ describe('form-data', () => {
             content_type: 'image/png',
           },
         });
-        // The binary data lives in the attachment, not in the field value
         expect(result.my_file).to.equal('');
         expect(result.sub_element).to.deep.equal({ sub_sub_element: { other_file: '' } });
       });
@@ -286,8 +298,6 @@ describe('form-data', () => {
       });
 
       it('keeps an existing binary attachment when the form has no binary field for it', () => {
-        // A contact's edit form need not contain every field its create form has, and binary data is never
-        // loaded back into a form, so the attachment has to be kept regardless of the form's shape.
         const doc = parseXml('<data><name>Sally</name></data>');
         const formData = new EnketoFormData(doc.documentElement, 'the-id');
         const existing = { data: 'saved by another form', content_type: 'image/png' };
@@ -300,8 +310,6 @@ describe('form-data', () => {
       });
 
       it('keeps an existing binary attachment stored under the legacy form-prefixed name', () => {
-        // Docs saved before the name dropped the form id carry `user-file/<form>/<path>`, which no longer
-        // matches the derived name - it must still be kept rather than deleted on the next save.
         const doc = parseXml('<data><my_file type="binary"></my_file></data>');
         const formData = new EnketoFormData(doc.documentElement, 'the-id');
         const legacy = { data: 'previously saved', content_type: 'image/png' };
@@ -336,7 +344,6 @@ describe('form-data', () => {
         const attachment = result._attachments['user-file-my image.png'];
         expect(attachment.content_type).to.equal('image/png');
         expect(attachment.data).to.be.an.instanceof(Blob);
-        // The file name reference is left in the field value
         expect(result.my_file).to.equal('my image.png');
       });
 
@@ -397,10 +404,10 @@ describe('form-data', () => {
       });
 
       it('drops a file attachment referenced only by the original doc, not by the form', () => {
-        // Deliberate asymmetry: liveness here is decided from the form alone. Report forms are used for both
-        // create and edit, so the form always holds every field the doc has. Only contact forms, whose edit
-        // form may omit fields, additionally consult the doc data - see EnketoContactFormData.getContactData.
-        const doc = parseXml('<data><name>Sally</name></data>');
+        // Deliberate asymmetry: for contact edit forms the form data, alone, is not enough to know if an attachment
+        // is orphaned. There is special handling for this in EnketoRootContactData. The default logic, covered here,
+        // is to simply drop any existing file attachments that are not referenced in the current form data.
+        const doc = parseXml('<data><name>Sally</name></data>'); // No reference to p.png
         const formData = new EnketoFormData(doc.documentElement, 'the-id');
 
         const result = formData.deserializeDoc(buildFormConfig(), REPORTED_DATE, {
@@ -408,7 +415,7 @@ describe('form-data', () => {
           _attachments: { 'user-file-p.png': { content_type: 'image/png', data: 'blob' } },
         });
 
-        expect(result.photo, 'the value itself carries over from the original doc').to.equal('p.png');
+        expect(result.photo).to.equal('p.png');
         expect(result._attachments).to.be.undefined;
       });
     });
@@ -514,7 +521,7 @@ describe('form-data', () => {
 
         const result = contactData
           .getContactData()
-          .deserializeDoc(buildFormConfig([], '1.0', 'contact-form'), REPORTED_DATE);
+          .deserializeDoc(buildFormConfig([], '1.0'), REPORTED_DATE);
 
         expect(result.my_file).to.equal('');
         expect(result._attachments).to.deep.equal({
@@ -688,6 +695,7 @@ describe('form-data', () => {
           form: 'V',
           type: 'data_record',
           contact: { _id: '123' },
+          fields: { hello: 'world' }
         });
 
         expect(result).to.deep.equal({
@@ -717,13 +725,22 @@ describe('form-data', () => {
 
         expect(additional).to.be.empty;
         expect(dbDoc1.id).to.equal('doc-1');
-        expect(dbDoc1.deserializeDoc(buildFormConfig(), REPORTED_DATE))
-          .excluding(['form_version', 'reported_date', '_attachments'])
-          .to.deep.equal({ _id: 'doc-1', type: 'data_record' });
+        expect(dbDoc1.deserializeDoc(buildFormConfig(), REPORTED_DATE)).to.deep.equal({
+          _id: 'doc-1',
+          type: 'data_record',
+          form_version: '1.0',
+          reported_date: REPORTED_DATE,
+          _attachments: undefined,
+        });
         expect(dbDoc2.id).to.match(UUID_PATTERN);
-        expect(dbDoc2.deserializeDoc(buildFormConfig(), REPORTED_DATE))
-          .excluding(['form_version', 'reported_date', '_attachments'])
-          .to.deep.equal({ _id: dbDoc2.id, name: 'Hello', type: 'data_record' });
+        expect(dbDoc2.deserializeDoc(buildFormConfig(), REPORTED_DATE)).to.deep.equal({
+          _id: dbDoc2.id,
+          name: 'Hello',
+          type: 'data_record',
+          form_version: '1.0',
+          reported_date: REPORTED_DATE,
+          _attachments: undefined,
+        });
       });
 
       it('returns form data for nested and repeated elements tagged db-doc=true', () => {
@@ -741,29 +758,41 @@ describe('form-data', () => {
         const reportData = new EnketoReportFormData(doc, 'the-id');
 
         const [dbDoc1, dbDoc2, dbDoc3, dbDoc4, ...additional] = reportData.getDbDocData();
-        const exclusions = ['form_version', 'reported_date', '_attachments'];
 
         expect(additional).to.be.empty;
         expect(dbDoc1.id).to.equal('doc-1');
-        expect(dbDoc1.deserializeDoc(buildFormConfig(), REPORTED_DATE))
-          .excluding(exclusions)
-          .to.deep.equal({ _id: 'doc-1', type: 'data_record' });
+        expect(dbDoc1.deserializeDoc(buildFormConfig(), REPORTED_DATE)).to.deep.equal({
+          _id: 'doc-1',
+          type: 'data_record',
+          form_version: '1.0',
+          reported_date: REPORTED_DATE,
+          _attachments: undefined,
+        });
         expect(dbDoc2.id).to.equal('doc-2');
-        expect(dbDoc2.deserializeDoc(buildFormConfig(), REPORTED_DATE))
-          .excluding(exclusions)
-          .to.deep.equal({ _id: 'doc-2', type: 'data_record' });
+        expect(dbDoc2.deserializeDoc(buildFormConfig(), REPORTED_DATE)).to.deep.equal({
+          _id: 'doc-2',
+          type: 'data_record',
+          form_version: '1.0',
+          reported_date: REPORTED_DATE,
+          _attachments: undefined,
+        });
         expect(dbDoc3.id).to.equal('doc-3');
-        expect(dbDoc3.deserializeDoc(buildFormConfig(), REPORTED_DATE))
-          .excluding(exclusions)
-          .to.deep.equal({
-            _id: 'doc-3',
-            type: 'data_record',
-            my_doc: { _id: 'doc-4', type: 'data_record' }
-          });
+        expect(dbDoc3.deserializeDoc(buildFormConfig(), REPORTED_DATE)).to.deep.equal({
+          _id: 'doc-3',
+          type: 'data_record',
+          my_doc: { _id: 'doc-4', type: 'data_record' },
+          form_version: '1.0',
+          reported_date: REPORTED_DATE,
+          _attachments: undefined,
+        });
         expect(dbDoc4.id).to.equal('doc-4');
-        expect(dbDoc4.deserializeDoc(buildFormConfig(), REPORTED_DATE))
-          .excluding(exclusions)
-          .to.deep.equal({ _id: 'doc-4', type: 'data_record' });
+        expect(dbDoc4.deserializeDoc(buildFormConfig(), REPORTED_DATE)).to.deep.equal({
+          _id: 'doc-4',
+          type: 'data_record',
+          form_version: '1.0',
+          reported_date: REPORTED_DATE,
+          _attachments: undefined,
+        });
       });
 
       it('populates db-doc-ref elements with the id of the referenced doc', () => {

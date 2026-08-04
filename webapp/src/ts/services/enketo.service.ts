@@ -406,11 +406,9 @@ export class EnketoService {
         contactDoc._id,
         isHardcodedType(contactDoc.type) ? contactDoc.type : contactDoc.contact_type
       );
-      const contactData = formData.getContactData();
-
       const reportedDate = Date.now();
       const rootOutputDoc: Record<string, any> = {
-        ...contactData.deserializeDoc(config, reportedDate, contactDoc),
+        ...formData.getContactData().deserializeDoc(config, reportedDate, contactDoc),
         type: contactDoc.type,
         contact_type: contactDoc.contact_type,
       };
@@ -450,6 +448,7 @@ export class EnketoService {
       ]);
 
       const reportedDate = Date.now();
+      // Unpack the db-docs before deserializing the report so the db-doc-refs are all populated first.
       const dbDocObjects = subDocsData.map(docData => docData.deserializeDoc(config, reportedDate));
       const rootOutputDoc: Record<string, any> = {
         ...formData.deserializeDoc(config, reportedDate, reportDoc),

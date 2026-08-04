@@ -244,8 +244,6 @@ describe('FormatDataRecord service', () => {
     });
 
     it('returns the path-based image path for an inline-binary field, whose value is cleared on save', async () => {
-      // Saving an inline binary moves the data into `user-file/<field path>` and clears the field value,
-      // so the field path is the only thing left that identifies the attachment.
       const report = {
         _id: 'my-report',
         form: 'my-form',

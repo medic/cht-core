@@ -1216,7 +1216,7 @@ describe('Enketo service', () => {
           sub_element: { sub_sub_element: { other_file: '' } },
         });
         // Attachment names use the field's path relative to the owning doc - not the root node name
-        // ("my-root-element") and not the form internalId ("my-form") - even for a deeply-nested field.
+        // ("my-root-element") - even for a deeply-nested field.
         expect(Object.keys(report._attachments)).to.have.members([
           'user-file/my_file',
           'user-file/sub_element/sub_sub_element/other_file',
@@ -1237,7 +1237,7 @@ describe('Enketo service', () => {
 
         const [report, ...additional] = await saveReport(
           { contact: { _id: 'my-user', phone: '8989' } },
-          { xml: loadXML('plain-repeat-binary-form'), doc: { internalId: 'my-form' } }
+          { xml: '<root><repeat nodeset="/my-form/my_repeat"></repeat></root>', doc: { internalId: 'my-form' } }
         );
 
         expect(additional).to.be.empty;
@@ -1293,7 +1293,10 @@ describe('Enketo service', () => {
         );
 
         expect(additional).to.be.empty;
+        expect(report.fields.main_file).to.equal('main_upload.png');
+        expect(report.fields.doc1.sub_file).to.equal('sub_upload.png');
         expect(Object.keys(report._attachments)).to.deep.equal(['user-file-main_upload.png']);
+        expect(doc1.sub_file).to.equal('sub_upload.png');
         expect(Object.keys(doc1._attachments)).to.deep.equal(['user-file-sub_upload.png']);
       });
 
@@ -1363,7 +1366,7 @@ describe('Enketo service', () => {
             contact: { _id: '123', phone: '555' },
             _attachments: {
               'some-custom-attachment': { content_type: 'text/plain', data: 'c' },
-              'user-file/gone_from_the_form': { content_type: 'image/png', data: 'd' },
+              'user-file/existing_binary': { content_type: 'image/png', data: 'd' },
               'user-file-referenced.png': { content_type: 'image/png', data: 'a' },
               'user-file-orphan.png': { content_type: 'image/png', data: 'b' },
             },
@@ -1374,7 +1377,7 @@ describe('Enketo service', () => {
         // Custom (non user-file) attachments are kept
         expect(report._attachments['some-custom-attachment']).to.deep.equal({ content_type: 'text/plain', data: 'c' });
         // Binary attachments are kept even when the form has no binary field for them
-        expect(report._attachments['user-file/gone_from_the_form'])
+        expect(report._attachments['user-file/existing_binary'])
           .to.deep.equal({ content_type: 'image/png', data: 'd' });
         // user-file attachments still referenced by a field are kept
         expect(report._attachments['user-file-referenced.png']).to.deep.equal({ content_type: 'image/png', data: 'a' });
@@ -1810,35 +1813,104 @@ describe('Enketo service', () => {
         expect(clinic._attachments).to.deep.equal({ 'user-file-p.png': photo });
       });
 
-      it('routes attachments to the sibling doc that owns the field', async () => {
+      it('routes attachments to the sibling and child docs that own the field', async () => {
         form.getDataStr.returns(`
           <data>
             <clinic>
               <name>Clinic</name>
               <parent>NEW</parent>
+              <contact>NEW</contact>
               <clinic_photo type="binary">clinic image data</clinic_photo>
+              <clinic_file type="file">clinic_file.png</clinic_file>
             </clinic>
             <parent>
               <name>New Parent</name>
               <parent_photo type="binary">parent image data</parent_photo>
               <parent_file type="file">parent_upload.png</parent_file>
             </parent>
+            <contact>
+              <name>New Contact</name>
+              <contact_photo type="binary">contact image data</contact_photo>
+              <contact_file type="file">contact_upload.png</contact_file>
+            </contact>
+            <repeat>
+              <child>
+                <name>Child One</name>
+                <type>person</type>
+                <child_photo type="binary">child1 image data</child_photo>
+                <child_file type="file">child1_upload.png</child_file>
+              </child>
+            </repeat>
+            <repeat>
+              <child>
+                <name>Child Two</name>
+                <type>person</type>
+                <child_photo type="binary">child2 image data</child_photo>
+                <child_file type="file">child2_upload.png</child_file>
+              </child>
+            </repeat>
           </data>`);
-        getCurrentFiles.returns([{ name: 'parent_upload.png', type: 'image/png' }]);
+        getCurrentFiles.returns([
+          { name: 'parent_upload.png', type: 'image/png' },
+          { name: 'contact_upload.png', type: 'image/png' },
+          { name: 'clinic_file.png', type: 'image/png' },
+          { name: 'child1_upload.png', type: 'image/png' },
+          { name: 'child2_upload.png', type: 'image/png' },
+        ]);
 
-        const { preparedDocs: [clinic, parent, ...additional] } = await saveContact({ type: 'clinic' });
+        const {
+          preparedDocs: [clinic, parent, contact, child1, child2, ...additional]
+        } = await saveContact({ type: 'clinic' });
 
         expect(additional).to.be.empty;
-        expect(clinic.clinic_photo).to.equal('');
-        expect(clinic._attachments).to.deep.equal({
-          'user-file/clinic_photo': { data: 'clinic image data', content_type: 'image/png' },
+        expect(clinic).to.deep.include({
+          name: 'Clinic',
+          clinic_photo: '',
+          clinic_file: 'clinic_file.png'
         });
-        expect(parent.parent_photo).to.equal('');
-        expect(parent._attachments['user-file/parent_photo']).to.deep.equal({
-          data: 'parent image data',
-          content_type: 'image/png',
+        expect(Object.keys(clinic._attachments)).to.deep.equal(['user-file-clinic_file.png', 'user-file/clinic_photo']);
+        expect(clinic._attachments['user-file-clinic_file.png'].data).to.be.an.instanceof(Blob);
+        expect(clinic._attachments['user-file/clinic_photo'].data).to.equal('clinic image data');
+        expect(parent).to.deep.include({
+          name: 'New Parent',
+          parent_photo: '',
+          parent_file: 'parent_upload.png'
         });
+        expect(Object.keys(parent._attachments)).to.deep.equal(
+          ['user-file-parent_upload.png', 'user-file/parent_photo']
+        );
+        expect(parent._attachments['user-file/parent_photo'].data).to.deep.equal('parent image data');
         expect(parent._attachments['user-file-parent_upload.png'].data).to.be.an.instanceof(Blob);
+        expect(contact).to.deep.include({
+          name: 'New Contact',
+          contact_photo: '',
+          contact_file: 'contact_upload.png'
+        });
+        expect(Object.keys(contact._attachments)).to.deep.equal(
+          ['user-file-contact_upload.png', 'user-file/contact_photo']
+        );
+        expect(contact._attachments['user-file/contact_photo'].data).to.deep.equal('contact image data');
+        expect(contact._attachments['user-file-contact_upload.png'].data).to.be.an.instanceof(Blob);
+        expect(child1).to.deep.include({
+          name: 'Child One',
+          child_photo: '',
+          child_file: 'child1_upload.png'
+        });
+        expect(Object.keys(child1._attachments)).to.deep.equal(
+          ['user-file-child1_upload.png', 'user-file/child_photo']
+        );
+        expect(child1._attachments['user-file/child_photo'].data).to.deep.equal('child1 image data');
+        expect(child1._attachments['user-file-child1_upload.png'].data).to.be.an.instanceof(Blob);
+        expect(child2).to.deep.include({
+          name: 'Child Two',
+          child_photo: '',
+          child_file: 'child2_upload.png'
+        });
+        expect(Object.keys(child2._attachments)).to.deep.equal(
+          ['user-file-child2_upload.png', 'user-file/child_photo']
+        );
+        expect(child2._attachments['user-file/child_photo'].data).to.deep.equal('child2 image data');
+        expect(child2._attachments['user-file-child2_upload.png'].data).to.be.an.instanceof(Blob);
       });
 
       it('retains custom attachments and referenced file attachments, dropping unreferenced ones', async () => {
