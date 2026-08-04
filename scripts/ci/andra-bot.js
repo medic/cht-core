@@ -86,10 +86,13 @@ const matchesLicense = (prBody, template) => {
     return true;
   }
 
-  // missing section is already covered by the section check
+  // missing section is already covered by the section check. License is the template's
+  // last section, so in the body it absorbs anything the contributor writes below it
+  // (screenshots, notes) — trailing content is fine as long as the license text itself
+  // is intact, so only the start of the section has to match.
   const bodyLicenseSections = parseSections(prBody)
     .filter(section => section.heading === templateLicenseSection.heading);
-  return bodyLicenseSections.every(section => section.content === templateLicenseSection.content);
+  return bodyLicenseSections.every(section => section.content.startsWith(templateLicenseSection.content));
 };
 
 const getLinkedIssues = async (github, context) => {
@@ -196,17 +199,28 @@ const syncComment = async (github, context, core, { existingComment, body }) => 
   }
 };
 
-const hasLabel = (pr, name) => pr.labels.some(label => label.name === name);
+// Labels are read from the API rather than the event payload: a re-run (or a run
+// superseded within seconds) replays a stale label snapshot, which would strand one
+// label of the pair on the PR.
+const getCurrentLabels = async (github, context, core) => {
+  try {
+    const labels = await github.paginate(github.rest.issues.listLabelsOnIssue, {
+      ...context.repo,
+      issue_number: context.payload.pull_request.number,
+      per_page: 100,
+    });
+    return new Set(labels.map(label => label.name));
+  } catch (err) {
+    core.warning(`Could not read the PR labels: ${err.message}`);
+    return null;
+  }
+};
 
 const addLabel = async (github, context, core, name) => {
-  const pr = context.payload.pull_request;
-  if (hasLabel(pr, name)) {
-    return;
-  }
   try {
     await github.rest.issues.addLabels({
       ...context.repo,
-      issue_number: pr.number,
+      issue_number: context.payload.pull_request.number,
       labels: [name],
     });
   } catch (err) {
@@ -216,14 +230,10 @@ const addLabel = async (github, context, core, name) => {
 };
 
 const removeLabel = async (github, context, core, name) => {
-  const pr = context.payload.pull_request;
-  if (!hasLabel(pr, name)) {
-    return;
-  }
   try {
     await github.rest.issues.removeLabel({
       ...context.repo,
-      issue_number: pr.number,
+      issue_number: context.payload.pull_request.number,
       name,
     });
   } catch (err) {
@@ -232,8 +242,16 @@ const removeLabel = async (github, context, core, name) => {
 };
 
 const swapLabels = async (github, context, core, { add, remove }) => {
-  await addLabel(github, context, core, add);
-  await removeLabel(github, context, core, remove);
+  const currentLabels = await getCurrentLabels(github, context, core);
+  if (!currentLabels) {
+    return;
+  }
+  if (!currentLabels.has(add)) {
+    await addLabel(github, context, core, add);
+  }
+  if (currentLabels.has(remove)) {
+    await removeLabel(github, context, core, remove);
+  }
 };
 
 const findExistingComment = async (github, context) => {

@@ -76,6 +76,14 @@ describe('AndraBot', () => {
     });
   };
 
+  const setComments = (comments) => github.paginate
+    .withArgs(github.rest.issues.listComments)
+    .resolves(comments);
+
+  const setLabels = (names) => github.paginate
+    .withArgs(github.rest.issues.listLabelsOnIssue)
+    .resolves(names.map(name => ({ name })));
+
   const run = (pr) => andraBot({ github, context: getContext(pr), core });
 
   beforeEach(() => {
@@ -87,6 +95,7 @@ describe('AndraBot', () => {
           createComment: sinon.stub().resolves(),
           deleteComment: sinon.stub().resolves(),
           listComments: sinon.stub(),
+          listLabelsOnIssue: sinon.stub(),
           addLabels: sinon.stub().resolves(),
           removeLabel: sinon.stub().resolves(),
         },
@@ -274,6 +283,14 @@ describe('AndraBot', () => {
       expect(commentBody).to.not.contain(templateMismatchMessage());
     });
 
+    it('should not report a license change for content appended below the license section', async () => {
+      setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
+      const appended = `${filledTemplate}\n\nAdded a screenshot:\n\n![screenshot](http://example.com/s.png)`;
+      await run(getPr({ body: appended }));
+
+      expect(core.setFailed.called).to.be.false;
+    });
+
     it('should not report a license change when the whole section is missing', async () => {
       setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
       const withoutLicense = filledTemplate.slice(0, filledTemplate.indexOf('# License'));
@@ -340,7 +357,8 @@ describe('AndraBot', () => {
     });
 
     it('should swap the success label for the failure label when checks fail', async () => {
-      await run(getPr({ labels: [{ name: SUCCESS_LABEL }] }));
+      setLabels([SUCCESS_LABEL]);
+      await run(getPr());
 
       expect(core.setFailed.calledOnce).to.be.true;
       expect(github.rest.issues.addLabels.args[0][0].labels).to.deep.equal([FAILURE_LABEL]);
@@ -349,7 +367,8 @@ describe('AndraBot', () => {
     });
 
     it('should not add the failure label again when already present', async () => {
-      await run(getPr({ labels: [{ name: FAILURE_LABEL }] }));
+      setLabels([FAILURE_LABEL]);
+      await run(getPr());
 
       expect(core.setFailed.calledOnce).to.be.true;
       expect(github.rest.issues.addLabels.called).to.be.false;
@@ -357,7 +376,8 @@ describe('AndraBot', () => {
 
     it('should swap the failure label for the success label once all checks pass', async () => {
       setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
-      await run(getPr({ body: filledTemplate, labels: [{ name: FAILURE_LABEL }] }));
+      setLabels([FAILURE_LABEL]);
+      await run(getPr({ body: filledTemplate }));
 
       expect(core.setFailed.called).to.be.false;
       expect(github.rest.issues.addLabels.calledOnce).to.be.true;
@@ -382,10 +402,31 @@ describe('AndraBot', () => {
 
     it('should not touch labels when checks pass and the success label is already set', async () => {
       setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
-      await run(getPr({ body: filledTemplate, labels: [{ name: SUCCESS_LABEL }] }));
+      setLabels([SUCCESS_LABEL]);
+      await run(getPr({ body: filledTemplate }));
 
       expect(github.rest.issues.addLabels.called).to.be.false;
       expect(github.rest.issues.removeLabel.called).to.be.false;
+    });
+
+    it('should read labels from the API rather than the stale event payload', async () => {
+      // A re-run replays the payload from before the first run wrote the failure label.
+      setLabels([FAILURE_LABEL]);
+      await run(getPr({ labels: [] }));
+
+      expect(core.setFailed.calledOnce).to.be.true;
+      expect(github.rest.issues.addLabels.called).to.be.false;
+    });
+
+    it('should warn and leave labels alone when reading the labels fails', async () => {
+      github.paginate.withArgs(github.rest.issues.listLabelsOnIssue).rejects(new Error('boom'));
+      await run(getPr());
+
+      expect(core.warning.calledOnce).to.be.true;
+      expect(core.warning.args[0][0]).to.contain('boom');
+      expect(github.rest.issues.addLabels.called).to.be.false;
+      expect(github.rest.issues.removeLabel.called).to.be.false;
+      expect(core.setFailed.calledOnce).to.be.true;
     });
 
     it('should warn but still report the check failures when labelling fails', async () => {
@@ -448,7 +489,7 @@ describe('AndraBot', () => {
     });
 
     it('should replace the existing bot comment when the content differs', async () => {
-      github.paginate.resolves([
+      setComments([
         { id: 7, body: 'a human comment', user: { login: 'external-dev', type: 'User' } },
         { id: 8, body: `${COMMENT_MARKER}\nold bot comment`, user: { login: 'github-actions[bot]', type: 'Bot' } },
       ]);
@@ -461,7 +502,7 @@ describe('AndraBot', () => {
     });
 
     it('should not delete a user comment containing the comment marker', async () => {
-      github.paginate.resolves([
+      setComments([
         { id: 7, body: `${COMMENT_MARKER}\nlooks like a bot comment`, user: { login: 'external-dev', type: 'User' } },
       ]);
       await run(getPr());
@@ -475,7 +516,7 @@ describe('AndraBot', () => {
       const body = github.rest.issues.createComment.args[0][0].body;
 
       github.rest.issues.createComment.resetHistory();
-      github.paginate.resolves([{ id: 8, body, user: { login: 'github-actions[bot]', type: 'Bot' } }]);
+      setComments([{ id: 8, body, user: { login: 'github-actions[bot]', type: 'Bot' } }]);
       await run(getPr());
 
       expect(github.rest.issues.deleteComment.called).to.be.false;
@@ -488,7 +529,7 @@ describe('AndraBot', () => {
       const body = github.rest.issues.createComment.args[0][0].body;
 
       github.rest.issues.createComment.resetHistory();
-      github.paginate.resolves([
+      setComments([
         { id: 8, body: body.replaceAll('\n', '\r\n'), user: { login: 'github-actions[bot]', type: 'Bot' } },
       ]);
       await run(getPr());
@@ -498,7 +539,7 @@ describe('AndraBot', () => {
     });
 
     it('should replace the bot comment with a success message once all checks pass', async () => {
-      github.paginate.resolves([
+      setComments([
         { id: 8, body: `${COMMENT_MARKER}\nold bot comment`, user: { login: 'github-actions[bot]', type: 'Bot' } },
       ]);
       setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
@@ -532,7 +573,7 @@ describe('AndraBot', () => {
     });
 
     it('should not post a comment when deleting the old one fails', async () => {
-      github.paginate.resolves([
+      setComments([
         { id: 8, body: `${COMMENT_MARKER}\nold bot comment`, user: { login: 'github-actions[bot]', type: 'Bot' } },
       ]);
       github.rest.issues.deleteComment.rejects(new Error('boom'));
@@ -544,12 +585,13 @@ describe('AndraBot', () => {
     });
 
     it('should keep a passing PR green when replacing the comment with the success message fails', async () => {
-      github.paginate.resolves([
+      setComments([
         { id: 8, body: `${COMMENT_MARKER}\nold bot comment`, user: { login: 'github-actions[bot]', type: 'Bot' } },
       ]);
       github.rest.issues.createComment.rejects(new Error('boom'));
       setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
-      await run(getPr({ body: filledTemplate, labels: [{ name: FAILURE_LABEL }] }));
+      setLabels([FAILURE_LABEL]);
+      await run(getPr({ body: filledTemplate }));
 
       expect(core.warning.calledOnce).to.be.true;
       expect(core.setFailed.called).to.be.false;
