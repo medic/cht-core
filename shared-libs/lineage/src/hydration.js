@@ -22,6 +22,13 @@ const extractParentIds = current => selfAndParents(current)
   .map(parent => parent._id)
   .filter(id => id);
 
+// One entry per id, in the given order. Ids with no matching doc yield undefined so that positions in the
+// lineage - and therefore ancestor depth - are preserved.
+const orderDocsByIds = (ids, docs) => {
+  const docsById = new Map(docs.map(doc => [ doc._id, doc ]));
+  return ids.map(id => docsById.get(id));
+};
+
 const getContactById = (contacts, id) => id && contacts.find(contact => contact && contact._id === id);
 
 const getContactIds = (contacts) => {
@@ -238,10 +245,8 @@ module.exports = function(Promise, DB) {
         if (!parentIds.length) {
           return [doc];
         }
-        return fetchDocs(parentIds).then(function(ancestors) {
-          const ancestorsById = new Map(ancestors.map(ancestor => [ancestor._id, ancestor]));
-          return [doc, ...parentIds.map(parentId => ancestorsById.get(parentId))];
-        });
+        return fetchDocs(parentIds)
+          .then(ancestors => [ doc, ...orderDocsByIds(parentIds, ancestors) ]);
       })
       .catch(function(err) {
         if (err.status === 404) {
