@@ -1,0 +1,1 @@
+The `License` section of the PR description has been modified. Contributions are accepted under the license stated in the [pull request template](https://github.com/medic/cht-core/blob/master/.github/PULL_REQUEST_TEMPLATE.md) — please restore the original license text.
