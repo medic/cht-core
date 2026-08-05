@@ -164,6 +164,33 @@ describe('MobileTooltipDirective', () => {
     expect(tooltip()).to.be.null;
   });
 
+  it('re-shows on tap of the still-focused trigger after a scroll dismissal (no new focusin fires)', () => {
+    createOn(true);
+    trigger().focus();
+    expect(tooltip()).to.exist;
+    document.dispatchEvent(new Event('scroll'));
+    expect(tooltip()).to.be.null;
+
+    trigger().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(tooltip()?.textContent).to.equal('Full tooltip text');
+  });
+
+  it('does not re-create a tooltip that is already showing when its trigger is tapped again', () => {
+    createOn(true);
+    trigger().focus();
+    const shown = tooltip();
+    expect(shown).to.exist;
+
+    trigger().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(tooltip()).to.equal(shown);
+  });
+
+  it('does not show on tap of a titled element that is not focused', () => {
+    createOn(true);
+    trigger().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(tooltip()).to.be.null;
+  });
+
   it('dismisses when the focused element is detached from the DOM', async () => {
     createOn(true);
     document.body.appendChild(fixture.nativeElement); // so the trigger removal mutates the observed body

@@ -44,11 +44,24 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
   // instance listening (e.g. a host page embedding several <cht-form> elements), every instance
   // replaces the same tooltip instead of each stacking its own copy.
   private static overlayRef: OverlayRef | null = null;
+  private static trigger: HTMLElement | null = null;
   private static removalObserver: MutationObserver | null = null;
   private static visibilityObserver: IntersectionObserver | null = null;
   private noHoverQuery: MediaQueryList | null = null;
-  private readonly focusIn = (event: FocusEvent) => this.show(event);
+  private readonly focusIn = (event: FocusEvent) => this.show(event.target as HTMLElement | null);
   private readonly dismiss = () => this.hide();
+  // A scroll dismisses the tooltip but leaves the trigger focused, so no new focusin will ever
+  // fire for it — a tap on the still-focused trigger brings the tooltip back. Scoped to the
+  // focused element (which the first tap's own click also targets, harmlessly skipped as already
+  // shown) so plain titled-but-unfocusable elements don't gain tap tooltips.
+  private readonly tap = (event: Event) => {
+    const titled = (event.target as Element | null)?.closest?.('[title]');
+    if (titled instanceof HTMLElement &&
+        titled === this.document.activeElement &&
+        titled !== MobileTooltipDirective.trigger) {
+      this.show(titled);
+    }
+  };
 
   constructor(
     private readonly overlay: Overlay,
@@ -67,6 +80,7 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
     this.zone.runOutsideAngular(() => {
       this.document.addEventListener('focusin', this.focusIn);
       this.document.addEventListener('focusout', this.dismiss);
+      this.document.addEventListener('click', this.tap);
       // The single scroll-dismissal path: a capture-phase document listener sees every scroll —
       // window, CDK containers, and plain CSS `overflow` containers (scroll doesn't bubble, but
       // capture still passes through document) — so the overlay needs no CDK scroll strategy.
@@ -80,12 +94,13 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.document.removeEventListener('focusin', this.focusIn);
     this.document.removeEventListener('focusout', this.dismiss);
+    this.document.removeEventListener('click', this.tap);
     this.document.removeEventListener('scroll', this.dismiss, true);
     this.document.defaultView?.removeEventListener('resize', this.dismiss);
     this.hide();
   }
 
-  private show(event: FocusEvent) {
+  private show(target: HTMLElement | null) {
     // Always clear any existing tooltip first — even when focus lands on a title-less element — so a
     // previous one can't be left behind.
     this.hide();
@@ -96,9 +111,8 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
       return;
     }
 
-    const target = event.target as HTMLElement;
     const title = target?.getAttribute?.('title');
-    if (!title) {
+    if (!target || !title) {
       return;
     }
 
@@ -119,6 +133,7 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
       direction: (this.document.defaultView?.getComputedStyle(target).direction as Direction) || 'ltr',
       panelClass: 'mm-mobile-tooltip',
     });
+    MobileTooltipDirective.trigger = target;
 
     const componentRef = MobileTooltipDirective.overlayRef
       .attach(new ComponentPortal(MobileTooltipContentComponent));
@@ -158,5 +173,6 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
     MobileTooltipDirective.visibilityObserver = null;
     MobileTooltipDirective.overlayRef?.dispose();
     MobileTooltipDirective.overlayRef = null;
+    MobileTooltipDirective.trigger = null;
   }
 }
