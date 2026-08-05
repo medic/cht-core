@@ -1,4 +1,5 @@
 const moment = require('moment');
+const { toBik_dev } = require('bikram-sambat');
 
 const utils = require('@utils');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
@@ -9,6 +10,11 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const reportFactory = require('@factories/cht/reports/generic-report');
 const { CONTACT_TYPES } = require('@medic/constants');
+
+const fromDevanagari = (str) => {
+  const devanagariDigits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+  return str.replace(/[०-९]/g, (d) => devanagariDigits.indexOf(d).toString());
+};
 
 describe('Reports Sidebar Filter', () => {
   const places = placeFactory.generateHierarchy();
@@ -90,7 +96,10 @@ describe('Reports Sidebar Filter', () => {
     await utils.revertSettings(true);
   });
 
-  after(async () => await utils.deleteUsers([ districtHospitalUser, healthCenterUser ]));
+  after(async () => {
+    await browser.setCookies({ name: 'locale', value: 'en' });
+    await utils.deleteUsers([ districtHospitalUser, healthCenterUser ]);
+  });
 
   it('should filter by date', async () => {
     await loginPage.login(districtHospitalUser);
@@ -178,6 +187,75 @@ describe('Reports Sidebar Filter', () => {
     expect(await reportsPage.leftPanelSelectors.allReports().length).to.equal(2);
     expect(await reportsPage.leftPanelSelectors.reportByUUID(pregnancyHealthCenter._id).isDisplayed()).to.be.true;
     expect(await reportsPage.leftPanelSelectors.reportByUUID(visitHealthCenter._id).isDisplayed()).to.be.true;
+  });
+
+  it('should filter by date in Nepali language (Bikram Sambat)', async () => {
+    await browser.url('/');
+    await browser.setCookies({ name: 'locale', value: 'ne' });
+    await browser.refresh();
+
+    await loginPage.login(districtHospitalUser);
+    await commonPage.waitForPageLoaded();
+
+    await commonPage.goToReports();
+    await reportsPage.leftPanelSelectors.firstReport().waitForDisplayed();
+    expect(await reportsPage.leftPanelSelectors.allReports().length).to.equal(reports.length);
+
+    await reportsPage.openSidebarFilter();
+    await reportsPage.openSidebarFilterDateAccordion();
+
+    // 1. Max Date parity - verify future dates are disabled
+    await reportsPage.clickSidebarFilterFromDate();
+    await reportsPage.waitForNepaliDatePickerDisplayed();
+
+    // Future dates in the current month should be disabled (unless today is the last day of the Nepali month)
+    const disableCells = await reportsPage.getDisabledNepaliDateCells();
+    if (disableCells.length === 0) {
+      const todayBik = toBik_dev(moment().format('YYYY-MM-DD'));
+      const todayDay = Number.parseInt(fromDevanagari(todayBik.split('-')[2]), 10);
+      expect(todayDay).to.be.at.least(29);
+    } else {
+      expect(disableCells.length).to.be.greaterThan(0);
+    }
+
+    // 2. Escape Dismissal - press Escape and verify picker is dismissed
+    await browser.keys(['Escape']);
+    const picker = reportsPage.getNepaliDatePicker();
+    expect(await picker.isDisplayed()).to.be.false;
+
+    // 3. Dismiss by clicking outside (e.g. the freetext search input)
+    await reportsPage.clickSidebarFilterFromDate();
+    expect(await picker.isDisplayed()).to.be.true;
+    await reportsPage.clickSidebarFilterFreetext();
+    expect(await picker.isDisplayed()).to.be.false;
+
+    // 4. Select From and To dates
+    await reportsPage.setSidebarFilterBikFromDate();
+    await reportsPage.setSidebarFilterBikToDate();
+
+    // Verify both From and To input fields have selected date values
+    expect(await reportsPage.getFromDateValue()).to.not.equal('');
+    expect(await reportsPage.getToDateValue()).to.not.equal('');
+
+    // Dismiss the open picker so we can test reopening it
+    await browser.keys(['Escape']);
+
+    // 5. Reopen active selection verification
+    await reportsPage.clickSidebarFilterToDate();
+    // Verify that the active selected date is highlighted correctly
+    expect(await reportsPage.isNepaliDatePickerActiveCellDisplayed()).to.be.true;
+    
+    // Dismiss it
+    await browser.keys(['Escape']);
+
+    await commonPage.waitForPageLoaded();
+
+    expect(await reportsPage.leftPanelSelectors.allReports().length).to.equal(2);
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(pregnancyDistrictHospital._id).isDisplayed()).to.be.true;
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(visitDistrictHospital._id).isDisplayed()).to.be.true;
+
+    await browser.setCookies({ name: 'locale', value: 'en' });
+    await browser.refresh();
   });
 });
 
