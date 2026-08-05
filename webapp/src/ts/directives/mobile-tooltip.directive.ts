@@ -4,10 +4,13 @@ import { ConnectedPosition, Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { Direction } from '@angular/cdk/bidi';
 
-/** Renders the tooltip text inside the CDK overlay. */
+/**
+ * Renders the tooltip text inside the CDK overlay. Hidden from assistive tech: the trigger keeps
+ * its `title` attribute, which is what screen readers announce — the overlay is a visual duplicate.
+ */
 @Component({
   selector: 'mm-mobile-tooltip',
-  template: `<div class="mm-mobile-tooltip__content">{{ text }}</div>`,
+  template: `<div class="mm-mobile-tooltip__content" aria-hidden="true">{{ text }}</div>`,
 })
 export class MobileTooltipContentComponent {
   @Input() text = '';

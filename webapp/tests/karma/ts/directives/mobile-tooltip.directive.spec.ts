@@ -140,6 +140,12 @@ describe('MobileTooltipDirective', () => {
     expect(document.querySelector('.cdk-overlay-container [dir="rtl"]')).to.exist;
   });
 
+  it('hides the overlay from assistive tech (screen readers announce the trigger\'s own title)', () => {
+    createOn(true);
+    trigger().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    expect(tooltip()?.getAttribute('aria-hidden')).to.equal('true');
+  });
+
   it('dismisses on scroll', () => {
     createOn(true);
     trigger().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
