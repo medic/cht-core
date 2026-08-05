@@ -1,5 +1,4 @@
 const path = require('path');
-const fs = require('fs');
 const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
@@ -10,6 +9,7 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
 const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Sub-contact attachment routing', () => {
+  // Manually entering binary data to simulate input from external source like 3rd-party android app.
   const BINARY_IMAGE_DATA = 'iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8z8BQz0AEYBxVSF+FABJADve' +
     'WkH6oAAAAAElFTkSuQmCC';
   const familyPhotoPath = path.join(__dirname, '../enketo/images/photo-for-upload-form.png');
@@ -21,36 +21,14 @@ describe('Sub-contact attachment routing', () => {
     edit_form: 'form:contact:health_center_with_attachments:edit',
     person: false
   };
-  const createFormDoc = {
-    _id: 'form:contact:health_center_with_attachments:create',
-    internalId: 'contact:health_center_with_attachments:create',
-    title: 'New Family With Attachments',
-    type: 'form',
-    _attachments: {
-      xml: {
-        content_type: 'application/octet-stream',
-        data: Buffer.from(fs.readFileSync(
-          path.join(__dirname, 'forms/health_center-with-attachments-create.xml'),
-          'utf8'
-        )).toString('base64'),
-      }
-    }
-  };
-  const editFormDoc = {
-    _id: 'form:contact:health_center_with_attachments:edit',
-    internalId: 'contact:health_center_with_attachments:edit',
-    title: 'Edit Family With Attachments',
-    type: 'form',
-    _attachments: {
-      xml: {
-        content_type: 'application/octet-stream',
-        data: Buffer.from(fs.readFileSync(
-          path.join(__dirname, 'forms/health_center-with-attachments-edit.xml'),
-          'utf8'
-        )).toString('base64'),
-      }
-    }
-  };
+  const createFormDoc = commonPage.createFormDoc(
+    path.join(__dirname, 'forms/health_center-with-attachments-create'),
+    'contact:health_center_with_attachments:create'
+  );
+  const editFormDoc = commonPage.createFormDoc(
+    path.join(__dirname, 'forms/health_center-with-attachments-edit'),
+    'contact:health_center_with_attachments:edit'
+  );
 
   const districtHospital = placeFactory.place().build({
     name: 'District Hospital',

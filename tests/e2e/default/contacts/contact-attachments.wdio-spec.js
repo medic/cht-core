@@ -43,41 +43,14 @@ describe('Contact form attachments', () => {
     'contact.type.person_with_attachments.edit': 'Edit Person With Attachments'
   };
 
-  const createFormXml = fs.readFileSync(
-    path.join(__dirname, 'forms/person-with-attachments-create.xml'),
-    'utf8'
+  const createFormDoc = commonPage.createFormDoc(
+    path.join(__dirname, 'forms/person-with-attachments-create'),
+    'contact:person_with_attachments:create'
   );
-
-  const editFormXml = fs.readFileSync(
-    path.join(__dirname, 'forms/person-with-attachments-edit.xml'),
-    'utf8'
+  const editFormDoc = commonPage.createFormDoc(
+    path.join(__dirname, 'forms/person-with-attachments-edit'),
+    'contact:person_with_attachments:edit'
   );
-
-  const createFormDoc = {
-    _id: 'form:contact:person_with_attachments:create',
-    internalId: 'contact:person_with_attachments:create',
-    title: 'New Person With Attachments',
-    type: 'form',
-    _attachments: {
-      xml: {
-        content_type: 'application/octet-stream',
-        data: Buffer.from(createFormXml).toString('base64'),
-      }
-    }
-  };
-
-  const editFormDoc = {
-    _id: 'form:contact:person_with_attachments:edit',
-    internalId: 'contact:person_with_attachments:edit',
-    title: 'Edit Person With Attachments',
-    type: 'form',
-    _attachments: {
-      xml: {
-        content_type: 'application/octet-stream',
-        data: Buffer.from(editFormXml).toString('base64'),
-      }
-    }
-  };
 
   const createContactWithAttachment = (contactName, imagePath = photoPngPath) => {
     const imageBuffer = fs.readFileSync(imagePath);
