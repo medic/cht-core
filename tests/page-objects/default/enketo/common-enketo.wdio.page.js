@@ -8,7 +8,12 @@ const getCurrentPageSection = async () => (await currentSection().isExisting()) 
 
 const enabledFieldset = (section) => section.$$('fieldset.or-branch:not(.disabled)');
 
-const addRepeatSectionButton = () => $(`button.add-repeat-btn`);
+const addRepeatSectionButton = (title) => {
+  if (!title) {
+    return $(`button.add-repeat-btn`);
+  }
+  return $(`//section[h4//span[normalize-space(text())="${title}"]]//button[contains(@class, "add-repeat-btn")]`);
+};
 
 const radioButtonElement = async (question, value) => {
   return (await getCurrentPageSection())
@@ -114,8 +119,8 @@ const isConstraintMessageDisplayed = async (question) => {
     .isDisplayed();
 };
 
-const addRepeatSection = async () => {
-  await addRepeatSectionButton().click();
+const addRepeatSection = async (title) => {
+  await addRepeatSectionButton(title).click();
 };
 
 const drawShapeOnCanvas = async (question) => {
@@ -140,6 +145,7 @@ const isRadioButtonSelected = async (question, value) => {
 };
 
 module.exports = {
+  getCurrentPageSection,
   isElementDisplayed,
   selectRadioButton,
   selectCheckBox,

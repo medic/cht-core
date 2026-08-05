@@ -1,26 +1,252 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">
-    <h:head>
-        <h:title>photo-upload</h:title>
-
-        <model>
-            <instance>
-                <photo-upload id="photo-upload">
-                    <my_photo/>
-                    <meta>
-                        <instanceID/>
-                    </meta>
-                </photo-upload>
-            </instance>
-
-            <bind nodeset="/photo-upload/my_photo" type="binary"/>
-        </model>
-    </h:head>
-
-    <h:body>
-        <upload ref="/photo-upload/my_photo" mediatype="image/*">
-            <hint>Select a picture or take a photo</hint>
-            <label>Image widget</label>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
+  <h:head>
+    <h:title>Db-docs with attachments</h:title>
+    <model odk:xforms-version="1.0.0">
+      <itext>
+        <translation lang="en">
+          <text id="/data/text:label">
+            <value>Report Text</value>
+          </text>
+          <text id="/data/photo:label">
+            <value>Report Photo</value>
+          </text>
+          <text id="/data/badge:label">
+            <value>Report Badge</value>
+          </text>
+          <text id="/data/repeated_attachments:label">
+            <value>Repeated Attachments</value>
+          </text>
+          <text id="/data/repeated_attachments/text:label">
+            <value>Repeated Text</value>
+          </text>
+          <text id="/data/repeated_attachments/photo:label">
+            <value>Repeated Photo</value>
+          </text>
+          <text id="/data/repeated_attachments/badge:label">
+            <value>Repeated Badge</value>
+          </text>
+          <text id="/data/child_doc:label">
+            <value>Child db-doc</value>
+          </text>
+          <text id="/data/child_doc/fields/text:label">
+            <value>Child Text</value>
+          </text>
+          <text id="/data/child_doc/fields/photo:label">
+            <value>Child Photo</value>
+          </text>
+          <text id="/data/child_doc/fields/badge:label">
+            <value>Child Badge</value>
+          </text>
+          <text id="/data/child_doc/grandchild_doc:label">
+            <value>Grandchild db-doc</value>
+          </text>
+          <text id="/data/child_doc/grandchild_doc/fields/text:label">
+            <value>Grandchild Text</value>
+          </text>
+          <text id="/data/child_doc/grandchild_doc/fields/photo:label">
+            <value>Grandchild Photo</value>
+          </text>
+          <text id="/data/child_doc/grandchild_doc/fields/badge:label">
+            <value>Grandchild Badge</value>
+          </text>
+          <text id="/data/repeat:label">
+            <value>Repeated db-doc</value>
+          </text>
+          <text id="/data/repeat/repeated_doc/fields/text:label">
+            <value>Repeated db-doc Text</value>
+          </text>
+          <text id="/data/repeat/repeated_doc/fields/photo:label">
+            <value>Repeated db-doc Photo</value>
+          </text>
+          <text id="/data/repeat/repeated_doc/fields/badge:label">
+            <value>Repeated db-doc Badge</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <data id="db-docs-with-attachments" version="20260805163551" prefix="J1!db-docs-with-attachments!" delimiter="#">
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <user>
+              <contact_id/>
+            </user>
+          </inputs>
+          <text/>
+          <photo/>
+          <badge type="binary"/>
+          <repeated_attachments jr:template="">
+            <text/>
+            <photo/>
+            <badge type="binary"/>
+          </repeated_attachments>
+          <child_doc db-doc="true">
+            <type/>
+            <form/>
+            <content_type/>
+            <contact>
+              <_id/>
+            </contact>
+            <fields>
+              <text/>
+              <photo/>
+              <badge type="binary"/>
+            </fields>
+            <grandchild_doc db-doc="true">
+              <type/>
+              <form/>
+              <content_type/>
+              <contact>
+                <_id/>
+              </contact>
+              <fields>
+                <text/>
+                <photo/>
+                <badge type="binary"/>
+              </fields>
+            </grandchild_doc>
+            <grandchild_doc_id db-doc-ref="/data/child_doc/grandchild_doc"/>
+          </child_doc>
+          <child_doc_id db-doc-ref="/data/child_doc"/>
+          <repeat jr:template="">
+            <repeated_doc db-doc="true">
+              <type/>
+              <form/>
+              <content_type/>
+              <contact>
+                <_id/>
+              </contact>
+              <fields>
+                <text/>
+                <photo/>
+                <badge type="binary"/>
+              </fields>
+            </repeated_doc>
+            <repeated_doc_id db-doc-ref="/data/repeat/repeated_doc"/>
+          </repeat>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <instance id="contact-summary"/>
+      <instance id="user-contact-summary"/>
+      <bind nodeset="/data/inputs/user/contact_id" type="string"/>
+      <bind nodeset="/data/text" type="string"/>
+      <bind nodeset="/data/photo" type="binary"/>
+      <bind nodeset="/data/badge" type="string"/>
+      <bind nodeset="/data/repeated_attachments/text" type="string"/>
+      <bind nodeset="/data/repeated_attachments/photo" type="binary"/>
+      <bind nodeset="/data/repeated_attachments/badge" type="string"/>
+      <bind nodeset="/data/child_doc/type" type="string" calculate="&quot;data_record&quot;"/>
+      <bind nodeset="/data/child_doc/form" type="string" calculate="&quot;child_doc&quot;"/>
+      <bind nodeset="/data/child_doc/content_type" type="string" calculate="&quot;xml&quot;"/>
+      <bind nodeset="/data/child_doc/contact/_id" type="string" calculate=" /data/inputs/user/contact_id "/>
+      <bind nodeset="/data/child_doc/fields/text" type="string"/>
+      <bind nodeset="/data/child_doc/fields/photo" type="binary"/>
+      <bind nodeset="/data/child_doc/fields/badge" type="string"/>
+      <bind nodeset="/data/child_doc/grandchild_doc/type" type="string" calculate="&quot;data_record&quot;"/>
+      <bind nodeset="/data/child_doc/grandchild_doc/form" type="string" calculate="&quot;grandchild_doc&quot;"/>
+      <bind nodeset="/data/child_doc/grandchild_doc/content_type" type="string" calculate="&quot;xml&quot;"/>
+      <bind nodeset="/data/child_doc/grandchild_doc/contact/_id" type="string" calculate=" /data/inputs/user/contact_id "/>
+      <bind nodeset="/data/child_doc/grandchild_doc/fields/text" type="string"/>
+      <bind nodeset="/data/child_doc/grandchild_doc/fields/photo" type="binary"/>
+      <bind nodeset="/data/child_doc/grandchild_doc/fields/badge" type="string"/>
+      <bind nodeset="/data/child_doc/grandchild_doc_id" type="string"/>
+      <bind nodeset="/data/child_doc_id" type="string"/>
+      <bind nodeset="/data/repeat/repeated_doc/type" type="string" calculate="&quot;data_record&quot;"/>
+      <bind nodeset="/data/repeat/repeated_doc/form" type="string" calculate="&quot;repeated_doc&quot;"/>
+      <bind nodeset="/data/repeat/repeated_doc/content_type" type="string" calculate="&quot;xml&quot;"/>
+      <bind nodeset="/data/repeat/repeated_doc/contact/_id" type="string" calculate=" /data/inputs/user/contact_id "/>
+      <bind nodeset="/data/repeat/repeated_doc/fields/text" type="string"/>
+      <bind nodeset="/data/repeat/repeated_doc/fields/photo" type="binary"/>
+      <bind nodeset="/data/repeat/repeated_doc/fields/badge" type="string"/>
+      <bind nodeset="/data/repeat/repeated_doc_id" type="string"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
+    </model>
+  </h:head>
+  <h:body>
+    <group ref="/data/inputs">
+      <group ref="/data/inputs/user"/>
+    </group>
+    <input ref="/data/text">
+      <label ref="jr:itext('/data/text:label')"/>
+    </input>
+    <upload ref="/data/photo" mediatype="image/*">
+      <label ref="jr:itext('/data/photo:label')"/>
+    </upload>
+    <input ref="/data/badge">
+      <label ref="jr:itext('/data/badge:label')"/>
+    </input>
+    <group ref="/data/repeated_attachments">
+      <label ref="jr:itext('/data/repeated_attachments:label')"/>
+      <repeat nodeset="/data/repeated_attachments">
+        <input ref="/data/repeated_attachments/text">
+          <label ref="jr:itext('/data/repeated_attachments/text:label')"/>
+        </input>
+        <upload ref="/data/repeated_attachments/photo" mediatype="image/*">
+          <label ref="jr:itext('/data/repeated_attachments/photo:label')"/>
         </upload>
-    </h:body>
+        <input ref="/data/repeated_attachments/badge">
+          <label ref="jr:itext('/data/repeated_attachments/badge:label')"/>
+        </input>
+      </repeat>
+    </group>
+    <group ref="/data/child_doc">
+      <label ref="jr:itext('/data/child_doc:label')"/>
+      <group ref="/data/child_doc/contact"/>
+      <group ref="/data/child_doc/fields">
+        <input ref="/data/child_doc/fields/text">
+          <label ref="jr:itext('/data/child_doc/fields/text:label')"/>
+        </input>
+        <upload ref="/data/child_doc/fields/photo" mediatype="image/*">
+          <label ref="jr:itext('/data/child_doc/fields/photo:label')"/>
+        </upload>
+        <input ref="/data/child_doc/fields/badge">
+          <label ref="jr:itext('/data/child_doc/fields/badge:label')"/>
+        </input>
+      </group>
+      <group ref="/data/child_doc/grandchild_doc">
+        <label ref="jr:itext('/data/child_doc/grandchild_doc:label')"/>
+        <group ref="/data/child_doc/grandchild_doc/contact"/>
+        <group ref="/data/child_doc/grandchild_doc/fields">
+          <input ref="/data/child_doc/grandchild_doc/fields/text">
+            <label ref="jr:itext('/data/child_doc/grandchild_doc/fields/text:label')"/>
+          </input>
+          <upload ref="/data/child_doc/grandchild_doc/fields/photo" mediatype="image/*">
+            <label ref="jr:itext('/data/child_doc/grandchild_doc/fields/photo:label')"/>
+          </upload>
+          <input ref="/data/child_doc/grandchild_doc/fields/badge">
+            <label ref="jr:itext('/data/child_doc/grandchild_doc/fields/badge:label')"/>
+          </input>
+        </group>
+      </group>
+    </group>
+    <group ref="/data/repeat">
+      <label ref="jr:itext('/data/repeat:label')"/>
+      <repeat nodeset="/data/repeat">
+        <group ref="/data/repeat/repeated_doc">
+          <group ref="/data/repeat/repeated_doc/contact"/>
+          <group ref="/data/repeat/repeated_doc/fields">
+            <input ref="/data/repeat/repeated_doc/fields/text">
+              <label ref="jr:itext('/data/repeat/repeated_doc/fields/text:label')"/>
+            </input>
+            <upload ref="/data/repeat/repeated_doc/fields/photo" mediatype="image/*">
+              <label ref="jr:itext('/data/repeat/repeated_doc/fields/photo:label')"/>
+            </upload>
+            <input ref="/data/repeat/repeated_doc/fields/badge">
+              <label ref="jr:itext('/data/repeat/repeated_doc/fields/badge:label')"/>
+            </input>
+          </group>
+        </group>
+      </repeat>
+    </group>
+  </h:body>
 </h:html>

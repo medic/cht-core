@@ -47,6 +47,7 @@ const rightPanelSelectors = {
   automaticReplyState: () => $(`${AUTOMATIC_REPLY_SECTION} .state`),
   automaticReplyRecipient: () => $(`${AUTOMATIC_REPLY_SECTION} .recipient`),
   detailReportRowContent: (row, type) => $$(`${REPORT_BODY_DETAILS} li[test-id*='${row}'] span[test-id='${type}']`),
+  reportImage: (testId) => $(`${REPORT_BODY_DETAILS} li[test-id='${testId}'] report-image img.report-image`),
   deleteAllButton: () => $('.desktop.multiselect-bar-container .bulk-delete'),
   selectedReportsCount: () => $('.desktop.multiselect-bar-container .count-label'),
   sentTask: () => $(`${REPORT_BODY_DETAILS} ul .task-list .task-state .state`),
