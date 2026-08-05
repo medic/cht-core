@@ -2,7 +2,6 @@ const path = require('path');
 const fs = require('fs');
 const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
-const userFactory = require('@factories/cht/users/users');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
@@ -11,120 +10,59 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
 const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Sub-contact attachment routing', () => {
-  // An inline binary is attached under `user-file/<field path relative to the owning doc>`. Every `badge`
-  // sits directly under its own owning group, so all three owner docs end up with the same attachment
-  // name - uniqueness is per-doc, not global.
-  const BADGE_ATTACHMENT = 'user-file/badge';
-
+  const BINARY_IMAGE_DATA = 'iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8z8BQz0AEYBxVSF+FABJADve' +
+    'WkH6oAAAAAElFTkSuQmCC';
   const familyPhotoPath = path.join(__dirname, '../enketo/images/photo-for-upload-form.png');
-  const primaryContactPhotoPath = path.join(__dirname, '../../../../webapp/src/img/layers.png');
-  const childPhotoPath = path.join(__dirname, '../../../../webapp/src/img/icon.png');
 
-  const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
-
-  const onlineUser = userFactory.build({
-    place: healthCenter._id,
-    roles: ['program_officer']
-  });
-
-  const familyType = {
-    id: 'family_with_attachments',
-    name_key: 'contact.type.family_with_attachments',
-    group_key: 'contact.type.family_with_attachments.plural',
-    create_key: 'contact.type.family_with_attachments.new',
-    edit_key: 'contact.type.family_with_attachments.edit',
-    primary_contact_key: '',
+  const healthCenterType = {
+    id: 'health_center_with_attachments',
     parents: [CONTACT_TYPES.HEALTH_CENTER, CONTACT_TYPES.CLINIC, 'district_hospital'],
-    icon: 'medic-clinic',
-    create_form: 'form:contact:family_with_attachments:create',
-    edit_form: 'form:contact:family_with_attachments:edit',
+    create_form: 'form:contact:health_center_with_attachments:create',
+    edit_form: 'form:contact:health_center_with_attachments:edit',
     person: false
   };
-
-  const translations = {
-    'contact.type.family_with_attachments': 'Family With Attachments',
-    'contact.type.family_with_attachments.plural': 'Families With Attachments',
-    'contact.type.family_with_attachments.new': 'New Family With Attachments',
-    'contact.type.family_with_attachments.edit': 'Edit Family With Attachments'
-  };
-
-  const createFormXml = fs.readFileSync(
-    path.join(__dirname, 'forms/family-with-attachments-create.xml'),
-    'utf8'
-  );
-
-  const editFormXml = fs.readFileSync(
-    path.join(__dirname, 'forms/family-with-attachments-edit.xml'),
-    'utf8'
-  );
-
   const createFormDoc = {
-    _id: 'form:contact:family_with_attachments:create',
-    internalId: 'contact:family_with_attachments:create',
+    _id: 'form:contact:health_center_with_attachments:create',
+    internalId: 'contact:health_center_with_attachments:create',
     title: 'New Family With Attachments',
     type: 'form',
     _attachments: {
       xml: {
         content_type: 'application/octet-stream',
-        data: Buffer.from(createFormXml).toString('base64'),
+        data: Buffer.from(fs.readFileSync(
+          path.join(__dirname, 'forms/health_center-with-attachments-create.xml'),
+          'utf8'
+        )).toString('base64'),
       }
     }
   };
-
   const editFormDoc = {
-    _id: 'form:contact:family_with_attachments:edit',
-    internalId: 'contact:family_with_attachments:edit',
+    _id: 'form:contact:health_center_with_attachments:edit',
+    internalId: 'contact:health_center_with_attachments:edit',
     title: 'Edit Family With Attachments',
     type: 'form',
     _attachments: {
       xml: {
         content_type: 'application/octet-stream',
-        data: Buffer.from(editFormXml).toString('base64'),
+        data: Buffer.from(fs.readFileSync(
+          path.join(__dirname, 'forms/health_center-with-attachments-edit.xml'),
+          'utf8'
+        )).toString('base64'),
       }
     }
   };
 
-  const fetchFamilyAndChildren = async (familyId) => {
-    const family = await utils.getDoc(familyId);
-    const [familyDoc, primaryContact] = await utils.getDocs([familyId, family.contact._id]);
-    const allRows = await utils.db.allDocs({ include_docs: true });
-    const repeatChildren = allRows.rows
-      .map(row => row.doc)
-      .filter(doc => doc?.parent?._id === familyId && doc._id !== primaryContact._id);
-    return { family: familyDoc, primaryContact, repeatChildren };
-  };
-
-  const submitFamilyForm = async ({ familyName, primaryContactName, repeatChildren }) => {
-    await commonEnketoPage.setInputValue('Family Name', familyName);
-    await commonEnketoPage.addFileInputValue('Family Photo', familyPhotoPath);
-
-    await commonEnketoPage.setInputValue('Primary Contact Name', primaryContactName);
-    await commonEnketoPage.addFileInputValue('Primary Contact Photo', primaryContactPhotoPath);
-
-    for (let i = 0; i < repeatChildren.length; i++) {
-      await commonEnketoPage.addRepeatSection();
-      await commonEnketoPage.setInputValue('Child Name', repeatChildren[i].name);
-      await commonEnketoPage.addFileInputValue('Child Photo', repeatChildren[i].photoPath, { repeatIndex: i });
-    }
-
-    await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
-    await contactPage.waitForContactLoaded();
-  };
+  const districtHospital = placeFactory.place().build({
+    name: 'District Hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL
+  });
 
   before(async () => {
-    await utils.saveDocs([...places.values()]);
-    await utils.createUsers([onlineUser]);
-    await utils.addTranslations('en', translations);
-
     const settings = await utils.getSettings();
-    settings.contact_types.push(familyType);
+    settings.contact_types.push(healthCenterType);
     await utils.updateSettings({ contact_types: settings.contact_types }, { ignoreReload: true });
-
-    await utils.saveDocs([createFormDoc, editFormDoc]);
-
-    await loginPage.login(onlineUser);
+    await utils.saveDocs([districtHospital, createFormDoc, editFormDoc]);
+    await loginPage.cookieLogin();
   });
 
   after(async () => {
@@ -132,125 +70,150 @@ describe('Sub-contact attachment routing', () => {
     await utils.revertDb([/^form:/], true);
   });
 
-  afterEach(async () => {
-    await commonPage.goToPeople();
-    await commonPage.waitForPageLoaded();
-  });
+  it('creates place with parent, contact, and children all having attachments', async () => {
+    await commonPage.goToPeople(districtHospital._id);
+    await commonPage.clickFastActionFAB({ actionId: healthCenterType.id });
 
-  it('should route uploads to main, sibling, and repeat docs', async () => {
-    await commonPage.goToPeople(healthCenter._id);
-    await commonPage.clickFastActionFAB({ actionId: familyType.id });
+    await commonEnketoPage.setInputValue('Parent Name', 'parent');
+    await commonEnketoPage.setInputValue('Parent Badge', BINARY_IMAGE_DATA);
+    await commonEnketoPage.addFileInputValue('Parent Photo', familyPhotoPath);
 
-    await submitFamilyForm({
-      familyName: 'Routing Family',
-      primaryContactName: 'Amina',
-      repeatChildren: [{ name: 'Kid Alpha', photoPath: childPhotoPath }],
-    });
+    await commonEnketoPage.setInputValue('Contact Name', 'contact');
+    await commonEnketoPage.setInputValue('Contact Badge', BINARY_IMAGE_DATA);
+    await commonEnketoPage.addFileInputValue('Contact Photo', familyPhotoPath);
 
-    const familyId = await contactPage.getCurrentContactId();
-    expect(familyId).to.exist;
-
-    const { family, primaryContact, repeatChildren } = await fetchFamilyAndChildren(familyId);
-
-    expect(family.name).to.equal('Routing Family');
-    expect(family._attachments).to.exist;
-    const familyAttachmentNames = Object.keys(family._attachments);
-    // Two attachments per owner doc: the file-widget upload, named after the uploaded file, and the
-    // inline-binary `badge` from the form's instance default, named after its field path. A binary's
-    // field value is cleared on save - the base64 lives only in the attachment.
-    expect(familyAttachmentNames).to.have.lengthOf(2);
-    expect(familyAttachmentNames, 'family badge attachment').to.include(BADGE_ATTACHMENT);
-    expect(familyAttachmentNames.find(n => /^user-file-photo-for-upload-form.*\.png$/.test(n))).to.exist;
-    expect(family.badge, 'family badge value cleared').to.equal('');
-
-    expect(primaryContact.name).to.equal('Amina');
-    expect(primaryContact._attachments).to.exist;
-    const primaryAttachmentNames = Object.keys(primaryContact._attachments);
-    expect(primaryAttachmentNames).to.have.lengthOf(2);
-    expect(primaryAttachmentNames, 'primary contact badge attachment').to.include(BADGE_ATTACHMENT);
-    expect(primaryAttachmentNames.find(n => /^user-file-layers.*\.png$/.test(n))).to.exist;
-    expect(primaryContact.badge, 'primary contact badge value cleared').to.equal('');
-
-    expect(repeatChildren).to.have.lengthOf(1);
-    const [child] = repeatChildren;
-    expect(child.name).to.equal('Kid Alpha');
-    expect(child._attachments).to.exist;
-    const childAttachmentNames = Object.keys(child._attachments);
-    expect(childAttachmentNames).to.have.lengthOf(2);
-    expect(childAttachmentNames, 'child badge attachment').to.include(BADGE_ATTACHMENT);
-    expect(childAttachmentNames.find(n => /^user-file-icon.*\.png$/.test(n))).to.exist;
-    expect(child.badge, 'child badge value cleared').to.equal('');
-
-    // The badge name is identical on all three docs, while the three file uploads keep distinct
-    // timestamped names — so the combined set collapses to 4 names.
-    const allAttachmentNames = [
-      ...familyAttachmentNames,
-      ...primaryAttachmentNames,
-      ...childAttachmentNames,
-    ];
-    expect(new Set(allAttachmentNames).size).to.equal(4);
-  });
-
-  it('should keep saved attachments intact when adding a new repeat child on edit', async () => {
-    await commonPage.goToPeople(healthCenter._id);
-    await commonPage.clickFastActionFAB({ actionId: familyType.id });
-
-    await submitFamilyForm({
-      familyName: 'Edit Family',
-      primaryContactName: 'Bilal',
-      repeatChildren: [{ name: 'Kid One', photoPath: childPhotoPath }],
-    });
-
-    const familyId = await contactPage.getCurrentContactId();
-    const before = await fetchFamilyAndChildren(familyId);
-
-    const snapshotAttachments = (doc) => Object.fromEntries(
-      Object.entries(doc._attachments || {}).map(([key, value]) => [key, value.length])
-    );
-    const beforeFamily = snapshotAttachments(before.family);
-    const beforePrimary = snapshotAttachments(before.primaryContact);
-    expect(before.repeatChildren).to.have.lengthOf(1);
-    const beforeKidOne = snapshotAttachments(before.repeatChildren[0]);
-
-    await commonPage.accessEditOption();
-    await commonPage.waitForPageLoaded();
+    await commonEnketoPage.setInputValue('Health Center Name', 'contact');
+    await commonEnketoPage.setInputValue('Health Center Badge', BINARY_IMAGE_DATA);
+    await commonEnketoPage.addFileInputValue('Health Center Photo', familyPhotoPath);
 
     await commonEnketoPage.addRepeatSection();
-    await commonEnketoPage.setInputValue('Child Name', 'Kid Two');
-    await commonEnketoPage.addFileInputValue('Child Photo', familyPhotoPath, { repeatIndex: 0 });
+    await commonEnketoPage.setInputValue('Child Name', 'child0');
+    await commonEnketoPage.setInputValue('Child Badge', BINARY_IMAGE_DATA);
+    await commonEnketoPage.addFileInputValue('Child Photo', familyPhotoPath);
+
+    await commonEnketoPage.addRepeatSection();
+    await commonEnketoPage.setInputValue('Child Name', 'child1', { repeatIndex: 1 });
+    await commonEnketoPage.setInputValue('Child Badge', BINARY_IMAGE_DATA, { repeatIndex: 1 });
+    await commonEnketoPage.addFileInputValue('Child Photo', familyPhotoPath, { repeatIndex: 1 });
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
     await contactPage.waitForContactLoaded();
 
-    const after = await fetchFamilyAndChildren(familyId);
+    const childIds = await contactPage.getAllRHSPlaceIds();
+    expect(childIds).to.have.lengthOf(2);
+    const healthCenter = await utils.getDoc(await contactPage.getCurrentContactId());
+    const [primaryContact, parent, child0, child1] = await utils.getDocs([
+      healthCenter.contact._id,
+      healthCenter.parent._id,
+      ...childIds
+    ]);
 
-    // The family doc is re-saved by this edit, and the edit form has no <badge> field at all - existing
-    // binary attachments are kept regardless of whether the form still contains the field.
-    expect(snapshotAttachments(after.family)).to.deep.equal(beforeFamily);
-    expect(Object.keys(after.family._attachments), 'family badge survives the edit').to.include(BADGE_ATTACHMENT);
-    // The primary contact is not re-saved by this edit (the edit form has no <contact> group and the
-    // family's contact field still points at it), so all of its attachments are untouched.
-    expect(snapshotAttachments(after.primaryContact)).to.deep.equal(beforePrimary);
+    expect(healthCenter).to.deep.include({
+      name: 'contact',
+      badge: '',
+      parent: { _id: parent._id },
+      contact: { _id: primaryContact._id, parent: { _id: healthCenter._id, parent: { _id: parent._id } } }
+    });
+    expect(healthCenter.photo).to.match(/^photo-for-upload-form-/);
+    expect(Object.keys(healthCenter._attachments)).to.deep.equal([
+      `user-file-${healthCenter.photo}`,
+      'user-file/badge'
+    ]);
+    expect(primaryContact).to.deep.include({
+      _id: healthCenter.contact._id,
+      parent: { _id: healthCenter._id, parent: { _id: parent._id } },
+      name: 'contact',
+      badge: '',
+    });
+    expect(primaryContact.photo).to.match(/^photo-for-upload-form-/);
+    expect(Object.keys(primaryContact._attachments)).to.deep.equal([
+      `user-file-${primaryContact.photo}`,
+      'user-file/badge'
+    ]);
+    expect(parent).to.deep.include({
+      _id: healthCenter.parent._id,
+      name: 'parent',
+      badge: '',
+    });
+    expect(parent.photo).to.match(/^photo-for-upload-form-/);
+    expect(Object.keys(parent._attachments)).to.deep.equal([
+      `user-file-${parent.photo}`,
+      'user-file/badge'
+    ]);
+    expect(child0).to.deep.include({
+      name: 'child0',
+      badge: '',
+      parent: { _id: healthCenter._id, parent: { _id: parent._id } },
+    });
+    expect(child0.photo).to.match(/^photo-for-upload-form-/);
+    expect(Object.keys(child0._attachments)).to.deep.equal([
+      `user-file-${child0.photo}`,
+      'user-file/badge'
+    ]);
+    expect(child1).to.deep.include({
+      name: 'child1',
+      badge: '',
+      parent: { _id: healthCenter._id, parent: { _id: parent._id } },
+    });
+    expect(child1.photo).to.match(/^photo-for-upload-form-/);
+    expect(Object.keys(child1._attachments)).to.deep.equal([
+      `user-file-${child1.photo}`,
+      'user-file/badge'
+    ]);
+  });
 
-    expect(after.family.badge).to.equal(before.family.badge);
-    expect(after.primaryContact.badge).to.equal(before.primaryContact.badge);
+  it('maintains attachments as expected when editing a contact to add children', async () => {
+    await commonPage.accessEditOption();
+    await commonPage.waitForPageLoaded();
 
-    const kidOneAfter = after.repeatChildren.find(c => c.name === 'Kid One');
-    const kidTwoAfter = after.repeatChildren.find(c => c.name === 'Kid Two');
-    expect(kidOneAfter, 'Kid One should still exist').to.exist;
-    expect(kidTwoAfter, 'Kid Two should be created').to.exist;
+    await commonEnketoPage.addRepeatSection();
+    await commonEnketoPage.setInputValue('Child Name', 'child2');
+    await commonEnketoPage.setInputValue('Child Badge', BINARY_IMAGE_DATA);
+    await commonEnketoPage.addFileInputValue('Child Photo', familyPhotoPath);
 
-    // Kid One is not in the edit form's repeat (it starts empty), so it is not re-saved at all.
-    expect(snapshotAttachments(kidOneAfter)).to.deep.equal(beforeKidOne);
-    const kidOneBefore = before.repeatChildren.find(c => c.name === 'Kid One');
-    expect(kidOneAfter.badge).to.equal(kidOneBefore.badge);
+    await commonEnketoPage.addRepeatSection();
+    await commonEnketoPage.setInputValue('Child Name', 'child3', { repeatIndex: 1 });
+    await commonEnketoPage.setInputValue('Child Badge', BINARY_IMAGE_DATA, { repeatIndex: 1 });
+    await commonEnketoPage.addFileInputValue('Child Photo', familyPhotoPath, { repeatIndex: 1 });
 
-    // Kid Two is created on edit — the edit form has no badge default for
-    // children, so the new repeat child has no badge attachment.
-    expect(kidTwoAfter._attachments).to.exist;
-    const kidTwoAttachmentNames = Object.keys(kidTwoAfter._attachments);
-    expect(kidTwoAttachmentNames).to.have.lengthOf(1);
-    expect(kidTwoAttachmentNames[0]).to.match(/^user-file-photo-for-upload-form.*\.png$/);
+    await genericForm.submitForm();
+    await commonPage.waitForPageLoaded();
+    await contactPage.waitForContactLoaded();
+
+    const childIds = await contactPage.getAllRHSPlaceIds();
+    expect(childIds).to.have.lengthOf(4);
+    const [healthCenter, child2, child3] = await utils.getDocs([
+      await contactPage.getCurrentContactId(),
+      childIds[2],
+      childIds[3]
+    ]);
+
+    expect(healthCenter.badge).to.equal('');
+    expect(healthCenter.photo).to.match(/^photo-for-upload-form-/);
+    expect(Object.keys(healthCenter._attachments)).to.deep.equal([
+      `user-file-${healthCenter.photo}`,
+      'user-file/badge'
+    ]);
+    expect(child2).to.deep.include({
+      name: 'child2',
+      badge: '',
+      parent: { _id: healthCenter._id, parent: healthCenter.parent },
+    });
+    expect(child2.photo).to.match(/^photo-for-upload-form-/);
+    expect(Object.keys(child2._attachments)).to.deep.equal([
+      `user-file-${child2.photo}`,
+      'user-file/badge'
+    ]);
+    expect(child3).to.deep.include({
+      name: 'child3',
+      badge: '',
+      parent: { _id: healthCenter._id, parent: healthCenter.parent },
+    });
+    expect(child3.photo).to.match(/^photo-for-upload-form-/);
+    expect(Object.keys(child3._attachments)).to.deep.equal([
+      `user-file-${child3.photo}`,
+      'user-file/badge'
+    ]);
   });
 });
