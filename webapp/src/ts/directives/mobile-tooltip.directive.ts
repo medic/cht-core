@@ -67,8 +67,9 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
     this.zone.runOutsideAngular(() => {
       this.document.addEventListener('focusin', this.focusIn);
       this.document.addEventListener('focusout', this.dismiss);
-      // Capture phase so scrolls in plain CSS `overflow` containers (which the CDK ScrollDispatcher
-      // doesn't observe) still dismiss the tooltip instead of leaving it floating.
+      // The single scroll-dismissal path: a capture-phase document listener sees every scroll —
+      // window, CDK containers, and plain CSS `overflow` containers (scroll doesn't bubble, but
+      // capture still passes through document) — so the overlay needs no CDK scroll strategy.
       this.document.addEventListener('scroll', this.dismiss, true);
       // A resize (e.g. an orientation change) invalidates the computed position without necessarily
       // scrolling or blurring; dismiss rather than track.
@@ -109,8 +110,10 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
 
     MobileTooltipDirective.overlayRef = this.overlay.create({
       positionStrategy,
-      // Dismiss on scroll rather than reposition — a transient tooltip shouldn't chase the page.
-      scrollStrategy: this.overlay.scrollStrategies.close(),
+      // No scroll strategy: scrolling dismisses (rather than repositions — a transient tooltip
+      // shouldn't chase the page) via the capture-phase document listener, which covers a superset
+      // of what the CDK ScrollDispatcher observes.
+      scrollStrategy: this.overlay.scrollStrategies.noop(),
       // Resolve direction from the trigger so `start`/`end` and bidi text are correct in RTL; the
       // overlay lives on <body>, outside the app's `[dir]` subtree, so it can't inherit it.
       direction: (this.document.defaultView?.getComputedStyle(target).direction as Direction) || 'ltr',
