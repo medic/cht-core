@@ -526,7 +526,7 @@ describe('FormatDate service', () => {
       expect(gregStr).to.equal('2024-04-12');
 
       // Convert back to BS using toBik and check it matches original values
-      const convertedBack = BikramSambat.toBik(moment(gregStr).toDate());
+      const convertedBack = BikramSambat.toBik(gregStr);
       expect(convertedBack.year).to.equal(bsYear);
       expect(convertedBack.month).to.equal(bsMonth);
       expect(convertedBack.day).to.equal(bsDate);

@@ -1,3 +1,4 @@
+/* global window */
 const mockConfig = require('../mock-config');
 
 describe('cht-form web component - Bikram Sambat Widget', () => {
@@ -186,7 +187,10 @@ describe('cht-form web component - Bikram Sambat Widget', () => {
     const picker = await $('.nepali-date-picker');
     expect(await picker.isDisplayed()).to.be.true;
 
-    const viewportSize = await browser.getWindowSize();
+    const viewportSize = await browser.execute(() => ({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    }));
     const location = await picker.getLocation();
     const size = await picker.getSize();
 

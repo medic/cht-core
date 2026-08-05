@@ -67,6 +67,8 @@ const sidebarFilterSelectors = {
   dateAccordionBody: () => $('#date-filter-accordion mat-panel-description'),
   toDate: () => $('#toDateFilter'),
   fromDate: () => $('#fromDateFilter'),
+  dateFilterChip: () => $('#date-filter-accordion mat-expansion-panel-header .chip'),
+  clearDateFilterBtn: () => $('#date-filter-accordion mat-expansion-panel-header .chip .fa-times'),
   formAccordionHeader: () => $('#form-filter-accordion mat-expansion-panel-header'),
   formAccordionBody: () => $('#form-filter-accordion mat-panel-description'),
   facilityAccordionHeader: () => $('#place-filter-accordion mat-expansion-panel-header'),
@@ -640,4 +642,5 @@ module.exports = {
   verifyReport,
   openFirstReport,
   waitForReportsLoaded,
+  sidebarFilterSelectors,
 };
