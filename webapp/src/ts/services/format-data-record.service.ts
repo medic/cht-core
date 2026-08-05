@@ -465,7 +465,7 @@ export class FormatDataRecordService {
     if (isImagePath(filePath)) {
       return filePath;
     }
-    const binaryFilePath = 'user-file/' + label.split('.').slice(2).join('/');
+    const binaryFilePath = 'user-file/fields/' + label.split('.').slice(2).join('/');
     if (isImagePath(binaryFilePath)) {
       return binaryFilePath;
     }

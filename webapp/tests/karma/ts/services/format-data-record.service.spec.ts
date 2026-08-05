@@ -253,8 +253,8 @@ describe('FormatDataRecord service', () => {
           group: { nested_photo: '' },
         },
         _attachments: {
-          'user-file/photo': { content_type: 'image/png' },
-          'user-file/group/nested_photo': { content_type: 'image/png' },
+          'user-file/fields/photo': { content_type: 'image/png' },
+          'user-file/fields/group/nested_photo': { content_type: 'image/png' },
         },
       };
 
@@ -265,7 +265,7 @@ describe('FormatDataRecord service', () => {
           label: 'report.my-form.photo',
           value: '',
           depth: 0,
-          imagePath: 'user-file/photo',
+          imagePath: 'user-file/fields/photo',
           target: undefined,
         },
         { label: 'report.my-form.group', depth: 0 },
@@ -273,7 +273,7 @@ describe('FormatDataRecord service', () => {
           label: 'report.my-form.group.nested_photo',
           value: '',
           depth: 1,
-          imagePath: 'user-file/group/nested_photo',
+          imagePath: 'user-file/fields/group/nested_photo',
           target: undefined,
         },
       ]);
@@ -286,14 +286,14 @@ describe('FormatDataRecord service', () => {
         content_type: 'xml',
         fields: { photo: '' },
         _attachments: {
-          'user-file/photo': { content_type: 'image/png' },
+          'user-file/fields/photo': { content_type: 'image/png' },
           'user-file/my-form/photo': { content_type: 'image/gif' },
         },
       };
 
       const result = await service.format(report);
 
-      expect((result.fields as any[])[0].imagePath).to.equal('user-file/photo');
+      expect((result.fields as any[])[0].imagePath).to.equal('user-file/fields/photo');
     });
 
     it('returns empty image path if attachment does not exist for image name', async () => {

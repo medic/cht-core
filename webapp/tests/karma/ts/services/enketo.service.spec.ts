@@ -1193,7 +1193,7 @@ describe('Enketo service', () => {
           gender: 'f',
           my_file: '',
         });
-        expect(report._attachments['user-file/my_file']).to.deep.equal({
+        expect(report._attachments['user-file/fields/my_file']).to.deep.equal({
           data: 'some image data',
           content_type: 'image/png',
         });
@@ -1218,14 +1218,14 @@ describe('Enketo service', () => {
         // Attachment names use the field's path relative to the owning doc - not the root node name
         // ("my-root-element") - even for a deeply-nested field.
         expect(Object.keys(report._attachments)).to.have.members([
-          'user-file/my_file',
-          'user-file/sub_element/sub_sub_element/other_file',
+          'user-file/fields/my_file',
+          'user-file/fields/sub_element/sub_sub_element/other_file',
         ]);
-        expect(report._attachments['user-file/my_file']).to.deep.equal({
+        expect(report._attachments['user-file/fields/my_file']).to.deep.equal({
           data: 'some image data',
           content_type: 'image/png',
         });
-        expect(report._attachments['user-file/sub_element/sub_sub_element/other_file']).to.deep.equal({
+        expect(report._attachments['user-file/fields/sub_element/sub_sub_element/other_file']).to.deep.equal({
           data: 'some other data',
           content_type: 'image/png',
         });
@@ -1246,8 +1246,8 @@ describe('Enketo service', () => {
           my_repeat: [{ photo: '' }, { photo: '' }],
         });
         expect(report._attachments).to.deep.equal({
-          'user-file/my_repeat[1]/photo': { data: 'repeat_photo_data_0', content_type: 'image/png' },
-          'user-file/my_repeat[2]/photo': { data: 'repeat_photo_data_1', content_type: 'image/png' },
+          'user-file/fields/my_repeat[1]/photo': { data: 'repeat_photo_data_0', content_type: 'image/png' },
+          'user-file/fields/my_repeat[2]/photo': { data: 'repeat_photo_data_1', content_type: 'image/png' },
         });
       });
 
@@ -1263,7 +1263,7 @@ describe('Enketo service', () => {
         expect(additional).to.be.empty;
         // Only the main doc's own binary field is attached to the main doc
         expect(report._attachments).to.deep.equal({
-          'user-file/main_photo': { data: 'main_photo_data', content_type: 'image/png' },
+          'user-file/fields/main_photo': { data: 'main_photo_data', content_type: 'image/png' },
         });
         expect(report.fields.main_photo).to.equal('');
         expect(report.fields.doc1.photo1).to.equal('');
@@ -1366,7 +1366,7 @@ describe('Enketo service', () => {
             contact: { _id: '123', phone: '555' },
             _attachments: {
               'some-custom-attachment': { content_type: 'text/plain', data: 'c' },
-              'user-file/existing_binary': { content_type: 'image/png', data: 'd' },
+              'user-file/fields/existing_binary': { content_type: 'image/png', data: 'd' },
               'user-file-referenced.png': { content_type: 'image/png', data: 'a' },
               'user-file-orphan.png': { content_type: 'image/png', data: 'b' },
             },
@@ -1377,7 +1377,7 @@ describe('Enketo service', () => {
         // Custom (non user-file) attachments are kept
         expect(report._attachments['some-custom-attachment']).to.deep.equal({ content_type: 'text/plain', data: 'c' });
         // Binary attachments are kept even when the form has no binary field for them
-        expect(report._attachments['user-file/existing_binary'])
+        expect(report._attachments['user-file/fields/existing_binary'])
           .to.deep.equal({ content_type: 'image/png', data: 'd' });
         // user-file attachments still referenced by a field are kept
         expect(report._attachments['user-file-referenced.png']).to.deep.equal({ content_type: 'image/png', data: 'a' });

@@ -898,7 +898,7 @@ describe('form-data', () => {
         });
         expect(subResult.photo1).to.equal('');
         expect(rootResult._attachments).to.deep.equal({
-          'user-file/main_photo': { data: 'main data', content_type: 'image/png' },
+          'user-file/fields/main_photo': { data: 'main data', content_type: 'image/png' },
         });
         expect(rootResult.fields).to.deep.equal({
           main_photo: '',

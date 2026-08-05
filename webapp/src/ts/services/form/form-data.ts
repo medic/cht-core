@@ -80,11 +80,11 @@ export class EnketoFormData {
     return this.findChildNode(element, '_id')?.textContent || uuid();
   }
 
-  protected getDocAttachments(originalAttachments: Record<string, any> = {}) {
+  protected getDocAttachments(originalAttachments: Record<string, any> = {}, xpathPrefix = '') {
     const isOrphanedFileAttachment = (fileName: string) => fileName.startsWith(USER_FILE_ATTACHMENT_PREFIX)
       && !this.findNodeWithTextContent(fileName.slice(USER_FILE_ATTACHMENT_PREFIX.length));
     const binaryAttachments = this.binaryTypeElements
-      .map(element => this.buildBinaryAttachmentData(element))
+      .map(element => this.buildBinaryAttachmentData(element, xpathPrefix))
       .filter(({ attachment }) => attachment)
       .reduce((binaryAttachments, { filename, attachment }) => ({ ...binaryAttachments, [filename]: attachment }), {});
     const newFileAttachments = FileManager
@@ -128,11 +128,11 @@ export class EnketoFormData {
     return !!nearestDbDoc && nearestDbDoc !== this.rootElement && this.rootElement.contains(nearestDbDoc);
   }
 
-  private buildBinaryAttachmentData(element: Element) {
+  private buildBinaryAttachmentData(element: Element, xpathPrefix: string) {
     const rootXpath = Xpath.getElementTreeXPath(this.rootElement);
     const xpath = Xpath.getElementTreeXPath(element);
     const relativeXpath = xpath.slice(rootXpath.length);
-    const filename = `${USER_BINARY_ATTACHMENT_PREFIX}${relativeXpath}`;
+    const filename = `${USER_BINARY_ATTACHMENT_PREFIX}${xpathPrefix}${relativeXpath}`;
     const data = element.textContent;
     element.textContent = '';
     return {
@@ -237,7 +237,7 @@ export class EnketoReportFormData extends EnketoFormData {
     originalDoc?: Record<string, any>
   ): Record<string, any> {
     // Resolve the attachments first because moving a binary value into an attachment clears the field value.
-    const attachments = this.getDocAttachments(originalDoc?._attachments);
+    const attachments = this.getDocAttachments(originalDoc?._attachments, '/fields');
     return {
       ...originalDoc,
       _id: this.id,
