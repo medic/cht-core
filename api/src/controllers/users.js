@@ -6,7 +6,7 @@ const { bulkUploadLog, roles, users } = require('@medic/user-management')(config
 const auth = require('../auth');
 const logger = require('@medic/logger');
 const serverUtils = require('../server-utils');
-const replication = require('../services/replication');
+const replication = require('../services/replication/replication');
 
 const hasFullPermission = req => {
   return auth

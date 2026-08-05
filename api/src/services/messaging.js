@@ -292,7 +292,9 @@ module.exports = {
         return db.medic.allDocs({ keys: uniqueIds, include_docs: true });
       })
       .then(results => {
-        const docs = results.rows.map(r => r.doc);
+        const docs = results.rows
+          .map(r => r?.doc)
+          .filter(Boolean);
         const stateChangesByDocId = applyTaskStateChangesToDocs(taskStateChanges, docs);
         const updated = docs.filter(doc => stateChangesByDocId[doc._id] && stateChangesByDocId[doc._id].length);
 

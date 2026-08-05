@@ -44,6 +44,8 @@ const isDisplayed = async () => {
 module.exports = {
   modal,
   body,
+  submitButton,
+  cancelButton,
   submit,
   cancel,
   getModalDetails,

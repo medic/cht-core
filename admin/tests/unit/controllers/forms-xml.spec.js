@@ -37,7 +37,7 @@ describe('FormsXmlCtrl controller', () => {
       scope = $rootScope.$new();
       rootScope = $rootScope;
       db = {
-        query: sinon.stub().resolves({}),
+        allDocs: sinon.stub().resolves({}),
         get: sinon.stub().resolves({}),
         put: sinon.stub().resolves()
       };

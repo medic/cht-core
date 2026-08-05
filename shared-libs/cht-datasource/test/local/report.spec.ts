@@ -106,6 +106,60 @@ describe('local report', () => {
       });
     });
 
+    describe('getSummaries', () => {
+      let getDocsByIdsOuter: SinonStub;
+      let getDocsByIdsInner: SinonStub;
+
+      beforeEach(() => {
+        getDocsByIdsInner = sinon.stub();
+        getDocsByIdsOuter = sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
+      });
+
+      it('passes empty ids through to getDocsByIds', async () => {
+        getDocsByIdsInner.resolves([]);
+
+        const result = await Report.v1.getSummaries(localContext)({ ids: [] });
+
+        expect(result).to.deep.equal([]);
+        expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocsByIdsInner.calledOnceWithExactly([])).to.be.true;
+      });
+
+      it('summarises reports and filters out non-report docs', async () => {
+        const reportDoc = {
+          _id: 'a',
+          _rev: '1',
+          type: DOC_TYPES.DATA_RECORD,
+          form: 'delivery',
+          from: '+123',
+          reported_date: 100,
+          fields: { patient_id: 'f', patient_name: 'jeff' },
+        };
+        const contactDoc = { _id: 'b', _rev: '2', type: 'person', name: 'james' };
+        getDocsByIdsInner.resolves([reportDoc, contactDoc, null]);
+
+        const result = await Report.v1.getSummaries(localContext)({ ids: ['a', 'b', 'missing'] });
+
+        expect(result).to.deep.equal([{
+          _id: 'a',
+          _rev: '1',
+          from: '+123',
+          phone: undefined,
+          form: 'delivery',
+          read: undefined,
+          valid: true,
+          verified: undefined,
+          reported_date: 100,
+          contact: undefined,
+          lineage: [],
+          subject: { name: 'jeff', value: 'f', type: 'reference' },
+          case_id: undefined,
+        }]);
+        expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocsByIdsInner.calledOnceWithExactly(['a', 'b', 'missing'])).to.be.true;
+      });
+    });
+
     describe('getWithLineage', () => {
       const identifier = { uuid: 'uuid' } as const;
       let fetchHydratedDocOuter: SinonStub;
@@ -334,6 +388,59 @@ describe('local report', () => {
           expect(queryViewFreetextByRange.notCalled).to.be.true;
           expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
           expect(fetchAndFilterIdsInner.notCalled).to.be.true;
+        });
+      });
+    });
+
+    describe('getPage', () => {
+      const limit = 3;
+      const notNullCursor = '5';
+      let getDocsByIdsInner: SinonStub;
+      let getDocsByIdsOuter: SinonStub;
+      let fetchAndFilterInner: SinonStub;
+      let fetchAndFilterOuter: SinonStub;
+
+      beforeEach(() => {
+        getDocsByIdsInner = sinon.stub();
+        getDocsByIdsOuter = sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
+        fetchAndFilterInner = sinon.stub();
+        fetchAndFilterOuter = sinon.stub(LocalDoc, 'fetchAndFilter').returns(fetchAndFilterInner);
+      });
+
+      it('returns a page of reports for the given ids, hydrating the sliced page via getDocsByIds', async () => {
+        const ids: [string, ...string[]] = ['r1', 'r2', 'r3', 'r4'];
+        const qualifier = { ids };
+        const expectedResult = { cursor: '3', data: [{ type: 'data_record', form: 'a' }] };
+        fetchAndFilterInner.resolves(expectedResult);
+
+        const res = await Report.v1.getPage(localContext)(qualifier, notNullCursor, limit);
+
+        expect(res).to.deep.equal(expectedResult);
+        expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        const getPageFn = fetchAndFilterOuter.firstCall.args[0];
+        expect(getPageFn).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[2]).to.equal(limit);
+        expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
+
+        await getPageFn(2, 1);
+        expect(getDocsByIdsInner.calledOnceWithExactly(['r2', 'r3'])).to.be.true;
+      });
+
+      [
+        {},
+        '-1',
+        undefined,
+      ].forEach((invalidCursor) => {
+        it(`throws an error if cursor is invalid: ${JSON.stringify(invalidCursor)}`, async () => {
+          const ids: [string, ...string[]] = ['r1'];
+          const expectedMessage =
+            `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}]`;
+          await expect(Report.v1.getPage(localContext)({ ids }, invalidCursor as string, limit))
+            .to.be.rejectedWith(expectedMessage);
+
+          expect(fetchAndFilterOuter.notCalled).to.be.true;
+          expect(fetchAndFilterInner.notCalled).to.be.true;
         });
       });
     });

@@ -1,4 +1,5 @@
 const contactsByFreetext = require('./medic-offline-freetext');
+const tasks = require('./medic-offline-tasks');
 
 const getRev = async (db, id) => db
   .get(id)
@@ -15,4 +16,7 @@ const initDdoc = async (db, ddoc) => db.put({
   _rev: await getRev(db, ddoc._id),
 });
 
-module.exports.init = async (db) => initDdoc(db, contactsByFreetext);
+module.exports.init = async (db) => {
+  await initDdoc(db, contactsByFreetext);
+  await initDdoc(db, tasks);
+};

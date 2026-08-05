@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const nouveau = require('@medic/nouveau');
 const { expect } = require('chai');
-const { CONTACT_TYPES, DOC_TYPES, PREFIXES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES, PREFIXES, DOC_IDS } = require('@medic/constants');
 
 describe('docs_by_replication_key', () => {
   let docByPlaceIds;
@@ -12,6 +12,14 @@ describe('docs_by_replication_key', () => {
       _id: 'form:doc_by_place_test_form',
       reported_date: 1,
       type: 'form',
+    },
+    {
+      _id: `${PREFIXES.UI_EXTENSION}chw`,
+      type: DOC_TYPES.UI_EXTENSION,
+      roles: ['chw']
+    },
+    {
+      _id: DOC_IDS.EXTENSION_LIBS,
     },
     {
       _id: 'report_about_patient',
@@ -148,6 +156,24 @@ describe('docs_by_replication_key', () => {
       type: 'target',
       user: PREFIXES.COUCH_USER + 'username',
       owner: 'testuser',
+    },
+    {
+      // a null contact._id must not break indexing; the report still replicates by its patient subject
+      _id: 'report_with_null_submitter',
+      reported_date: 1,
+      form: 'V',
+      type: DOC_TYPES.DATA_RECORD,
+      patient_id: 'testpatient',
+      contact: { _id: null },
+    },
+    {
+      // a contact with no _id must not break indexing; the report still replicates by its patient subject
+      _id: 'report_with_no_submitter_id',
+      reported_date: 1,
+      form: 'V',
+      type: DOC_TYPES.DATA_RECORD,
+      patient_id: 'testpatient',
+      contact: {},
     },
   ];
 
@@ -328,6 +354,14 @@ describe('docs_by_replication_key', () => {
     expect(docByPlaceIds).to.include('form:doc_by_place_test_form');
   });
 
+  it('should always return the extension-libs doc', () => {
+    expect(docByPlaceIds).to.include('extension-libs');
+  });
+
+  it('should always return the UI Extensions', () => {
+    expect(docByPlaceIds).to.include(`${PREFIXES.UI_EXTENSION}chw`);
+  });
+
   it('should never return form deletes', () => {
     expect(docByPlaceIds).to.not.include('form:some_deleted_form____tombstone');
   });
@@ -382,6 +416,14 @@ describe('docs_by_replication_key', () => {
     it('should return target docs', () => {
       expect(docByPlaceIds).to.include('target_created_by_user');
       expect(docByPlaceIds).to.not.include('target_created_by_other_user');
+    });
+
+    it('should still index a report whose contact._id is null', () => {
+      expect(docByPlaceIds).to.include('report_with_null_submitter');
+    });
+
+    it('should still index a report whose contact has no _id', () => {
+      expect(docByPlaceIds).to.include('report_with_no_submitter_id');
     });
   });
 

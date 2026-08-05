@@ -1,12 +1,37 @@
 function (doc) {
   var skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
+  const maxLength = 1000;
+  const minLength = 3;
+
+  var normalizeDevanagariNumerals = function(str) {
+    return str.replace(/[०-९]/g, function(d) {
+      return String.fromCodePoint(d.codePointAt(0) - 0x0966 + 0x0030);
+    });
+  };
 
   var indexMaybe = function(type, fieldName, value, opts) {
-    if(String(value).length < 3) { // Too short
+    var stringValue = String(value);
+    if (stringValue.length < minLength) { // Too short
       return;
+    }
+
+    if (type === 'string') {
+      return indexString(fieldName, stringValue, opts);
     }
     index(type, fieldName, value, opts);
   };
+
+  const indexString = function(fieldName, value, opts) {
+    if (value === undefined || value === null) {
+      return;
+    }
+
+    value = value.toString();
+    if (value.length > maxLength) {
+      return;
+    }
+    index('string', fieldName, value, opts);
+  }
 
   var indexField = function(key, value) {
     if (!key || !value) {
@@ -18,7 +43,7 @@ function (doc) {
     }
 
     if (typeof value === 'string') {
-      var lowerValue = value.toLowerCase();
+      var lowerValue = normalizeDevanagariNumerals(value.toLowerCase());
       indexMaybe('text', 'default', lowerValue);
       indexMaybe('string', 'exact_match', lowerKey + ':' + lowerValue);
     } else if (typeof value === 'number') {
@@ -51,12 +76,12 @@ function (doc) {
     return;
   }
 
-  index('string', 'contact_type', contactType);
+  indexString('contact_type', contactType);
 
   var dead = !!doc.date_of_death;
   var muted = !!doc.muted;
   var order = dead + ' ' + muted + ' ' + contactTypeIndex + ' ' + (doc.name && doc.name.toLowerCase());
-  index('string', 'sort_order', order, { store: true });
+  indexString('sort_order', order, { store: true });
 
   Object.keys(doc).forEach(function(key) {
     indexField(key, doc[key]);

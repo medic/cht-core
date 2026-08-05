@@ -376,6 +376,8 @@ export class RulesEngineService implements OnDestroy {
       const dueDate = moment(emission.dueDate, 'YYYY-MM-DD');
       emission.overdue = dueDate.isBefore(moment());
       emission.date = new Date(dueDate.valueOf());
+      // Preserve the unresolved title key for non-PII analytics
+      emission.titleKey = typeof emission.title === 'string' ? emission.title : undefined;
       emission.title = this.translateProperty(emission.title, emission);
       emission.priorityLabel = this.translateProperty(emission.priorityLabel, emission);
       emission.owner = taskDoc.owner;

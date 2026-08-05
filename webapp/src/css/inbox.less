@@ -30,6 +30,9 @@
 body {
   overflow-y: hidden;
   .app-root {
+    .tool-bar {
+      background-color: var(--accent-color, @top-header-color);
+    }
     &.messages .tool-bar {
       background-color: @messages-color;
     }
@@ -45,9 +48,6 @@ body {
     &.contacts .tool-bar {
       background-color: @contacts-color;
     }
-    &.user .tool-bar {
-      background-color: @admin-color;
-    }
     &.error .tool-bar,
     &testing .tool-bar {
       background-color: @error-color;
@@ -57,9 +57,9 @@ body {
     &.trainings,
     &.testing,
     &.user,
-    &.privacy-policy {
-      .tool-bar {
-        background-color: @top-header-color;
+    &.privacy-policy,
+    &[class*="ui-extension-"] {
+      .tool-bar:not([style*="--accent-color"]).tool-bar {
 
         .ellipsis-title,
         .app-menu-button .mat-icon[fonticon="fa-bars"]:before {
@@ -68,6 +68,17 @@ body {
 
         .navigation .mat-icon-back path {
           fill: @text-inverse-color;
+        }
+      }
+      .tool-bar {
+
+        .ellipsis-title,
+        .app-menu-button .mat-icon[fonticon="fa-bars"]:before {
+          color: @tab-navbar-color;
+        }
+
+        .navigation .mat-icon-back path {
+          fill: @tab-navbar-color;
         }
       }
 
@@ -94,7 +105,8 @@ body {
     &.about,
     &.testing,
     &.error,
-    &.privacy-policy {
+    &.privacy-policy,
+    &[class*="ui-extension-"] {
       .page {
         padding-left: calc(@tab-navbar-size + 15px);
       }
@@ -1449,11 +1461,23 @@ mm-sidebar-menu .mat-sidenav-container {
       color: @text-secondary-color;
     }
 
-    mat-icon {
+    mat-icon,
+    .nav-icon {
       text-align: center;
       margin-right: 15px;
       margin-left: 10px;
       flex-shrink: 0;
+    }
+
+    .nav-icon {
+      width: @icon-extra-small;
+      height: @icon-extra-small;
+
+      img,
+      svg {
+        width: 100%;
+        height: 100%;
+      }
     }
 
     mat-icon.fa-graduation-cap:before {
@@ -1529,7 +1553,8 @@ mm-sidebar-menu .mat-sidenav-container {
       height: calc(@sidebar-menu-height - @sidebar-menu-header-mobile);
     }
 
-    .nav-item mat-icon {
+    .nav-item mat-icon,
+    .nav-item .nav-icon {
       margin-left: -6px;
     }
 
@@ -1565,7 +1590,8 @@ mm-sidebar-menu .mat-sidenav-container {
     &.about,
     &.testing,
     &.error,
-    &.privacy-policy {
+    &.privacy-policy,
+    &[class*="ui-extension-"] {
       .page {
         padding-left: 15px;
       }

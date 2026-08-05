@@ -310,5 +310,52 @@ describe('Purger', () => {
         ]]);
       });
     });
+
+    it('should purge interaction-log docs alongside feedback and telemetry', () => {
+      const start = 100;
+      const end = 200;
+
+      localDb.get.withArgs('_local/purgelog').callsFake(() => Promise.resolve({
+        _id: '_local/purgelog',
+        synced_seq: end,
+        purged_seq: start,
+      }));
+
+      const interactionDocId = 'interaction-2026-03-27-greg-device-uuid-123';
+      localDb.allDocs
+        .withArgs({ keys: ['feedback-doc:1', interactionDocId, 'telemetry-1'] })
+        .resolves({ rows: [
+          { id: 'feedback-doc:1', value: { rev: 1 } },
+          { id: interactionDocId, value: { rev: 2 } },
+          { id: 'telemetry-1', value: { rev: 1 } },
+        ] });
+
+      localDb.changes.onCall(0).resolves({
+        last_seq: 200,
+        results: [
+          { id: 'feedback-doc:1', seq: 110 },
+          { id: interactionDocId, seq: 130 },
+          { id: 'telemetry-1', seq: 150 },
+          { id: 'interactive-other', seq: 160 }, // prefix near-miss must NOT be purged
+          { id: 'read:report:1', seq: 170 },
+        ]
+      });
+
+      localDb.bulkDocs.resolves([]);
+
+      return purger.purgeMeta(localDb).then(() => {
+        chai.expect(localDb.allDocs.callCount).to.equal(1);
+        chai.expect(localDb.allDocs.args[0]).to.deep.equal([{
+          keys: ['feedback-doc:1', interactionDocId, 'telemetry-1']
+        }]);
+
+        chai.expect(localDb.bulkDocs.callCount).to.equal(1);
+        chai.expect(localDb.bulkDocs.args[0]).to.deep.equal([[
+          { _id: 'feedback-doc:1', _rev: 1, _deleted: true, purged: true },
+          { _id: interactionDocId, _rev: 2, _deleted: true, purged: true },
+          { _id: 'telemetry-1', _rev: 1, _deleted: true, purged: true },
+        ]]);
+      });
+    });
   });
 });

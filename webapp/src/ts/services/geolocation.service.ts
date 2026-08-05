@@ -124,11 +124,14 @@ export class GeolocationService {
       console.debug('Geolocation requested');
       this.defer();
 
-      if (this.geo || this.geoError) {
-        this.finalise();
+      if (!this.geo && !this.geoError) {
+        this.geoError = { code: -1, message: 'Geolocation not yet acquired' };
       }
+      this.finalise();
 
-      return this.deferred.promise;
+      const promise = this.deferred.promise;
+      this.deferred = null;
+      return promise;
     };
 
     complete.cancel = this.stopWatching.bind(this);

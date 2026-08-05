@@ -55,19 +55,23 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
     private responsiveService: ResponsiveService,
     private matBottomSheet: MatBottomSheet,
     private matDialog: MatDialog,
-  ) {
-    this.store.select(Selectors.getDirection).subscribe(direction => {
-      this.direction = direction;
-    });
-  }
+  ) { }
 
   ngOnInit() {
+    this.subscribeToDirection();
     this.subscribeToStore();
     this.subscribeToRouter();
   }
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
+  }
+
+  private subscribeToDirection() {
+    const directionSubscription = this.store
+      .select(Selectors.getDirection)
+      .subscribe(direction => this.direction = direction);
+    this.subscriptions.add(directionSubscription);
   }
 
   private subscribeToRouter() {

@@ -9,6 +9,7 @@ import { SessionService } from '@mm-services/session.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { SettingsService } from '@mm-services/settings.service';
 
 @Injectable({
   providedIn: 'root'
@@ -40,6 +41,7 @@ export class SearchService {
     private readonly searchFactoryService:SearchFactoryService,
     private readonly performanceService: PerformanceService,
     private readonly ngZone:NgZone,
+    private readonly settingsService: SettingsService,
   ) { }
 
   private _currentQuery: any = {};
@@ -158,7 +160,9 @@ export class SearchService {
     const trackPerformance = this.performanceService.track();
     const searchFn = await this.searchFactoryService.get(this.dbService, this.datasourceService);
     try {
-      const searchResults = await searchFn(type, filters, options, extensions);
+      const settings = await this.settingsService.get();
+      const filtersWithSettings = { ...filters, settings };
+      const searchResults = await searchFn(type, filtersWithSettings, options, extensions);
 
       const filterKeys = Object.keys(filters).filter(f => filters[f]).sort();
       // Will end up with entries like:
@@ -171,10 +175,10 @@ export class SearchService {
       additionalDocIds
         .filter(docId => searchResults.docIds.indexOf(docId) === -1)
         .forEach(docId => searchResults.docIds.push(docId));
-      const dataRecordsPromise = this.getDataRecordsService.get(
-        searchResults.docIds,
-        { hydrateContactNames, include_docs: options.include_docs }
-      );
+      const getDataRecordsOptions = { hydrateContactNames, include_docs: options.include_docs };
+      const dataRecordsPromise = type === 'reports'
+        ? this.getDataRecordsService.getReports(searchResults.docIds, getDataRecordsOptions)
+        : this.getDataRecordsService.getContacts(searchResults.docIds, getDataRecordsOptions);
 
       if (!displayLastVisitedDate) {
         return dataRecordsPromise;
@@ -215,6 +219,7 @@ export interface Filter {
   search?: string;
   parent?: string;
   subjectIds?: string[];
+  settings?: Record<string, any>;
 }
 
 interface SearchOptions {

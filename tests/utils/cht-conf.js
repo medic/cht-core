@@ -18,10 +18,19 @@ const runCommand = async (action, dirPath) => {
 const getDirPath = () => path.join(__dirname, 'config-temp');
 
 const createDirectory = async (dir) => {
+  await clearDirectory(dir);
+  await fs.promises.mkdir(dir);
+};
+const clearDirectory = async (dir) => {
   if (fs.existsSync(dir)) {
     await fs.promises.rm(dir, { recursive: true });
   }
-  await fs.promises.mkdir(dir);
+};
+
+// project eslint needs to be root, as cht-core eslint rules fail for the "default" layout
+const writeRootEslint = async (dir) => {
+  const eslintRules = { env: { node: true, es2022: true }, parserOptions: { ecmaVersion: 2022 }, root: true };
+  await fs.promises.writeFile(path.join(dir, '.eslintrc'), JSON.stringify(eslintRules));
 };
 
 const initializeConfigDir = async () => {
@@ -29,11 +38,7 @@ const initializeConfigDir = async () => {
 
   await createDirectory(dir);
   await runCommand('initialise-project-layout', dir);
-  // project eslint needs to be root, as cht-core eslint rules fail for the "default" layout
-  const eslintPath = path.join(dir, '.eslintrc');
-  const eslintRules = JSON.parse(await fs.promises.readFile(eslintPath, 'utf-8'));
-  eslintRules.root = true;
-  await fs.promises.writeFile(eslintPath, JSON.stringify(eslintRules));
+  await writeRootEslint(dir);
 };
 
 const compileConfig = async ({ tasks, targets, contactSummary, contactSummaryExtras }) => {
@@ -86,9 +91,32 @@ const compileAndUploadAppForms = async (formsDir) => {
   await runCommand('upload-app-forms', dir);
 };
 
+// Copies config/default into config-temp so actions can run against an isolated copy instead of
+// mutating the checked-in config (compile-app-settings, backup-* and convert-* all write into the config dir).
+const copyDefaultConfig = async () => {
+  const defaultConfigDir = path.join(__dirname, '..', '..', 'config', 'default');
+  const dir = getDirPath();
+
+  await createDirectory(dir);
+  await fs.promises.cp(defaultConfigDir, dir, {
+    recursive: true,
+    filter: src => !src.includes(`${path.sep}node_modules${path.sep}`) && !src.endsWith(`${path.sep}node_modules`),
+  });
+  await writeRootEslint(dir);
+  return dir;
+};
+
+const clearTempDir = () => {
+  return clearDirectory(getDirPath());
+};
+
 module.exports = {
   runCommand,
   compileConfig,
   initializeConfigDir,
   compileAndUploadAppForms,
+
+  getDirPath,
+  copyDefaultConfig,
+  clearTempDir,
 };

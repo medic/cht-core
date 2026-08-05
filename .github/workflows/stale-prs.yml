@@ -11,7 +11,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@5bef64f19d7facfb25b37b414482c7164d639639  # v9
+      - uses: actions/stale@b5d41d4e1d5dceea10e7104786b73624c18a190f  # v10.2.0
         with:
           stale-pr-message: 'This PR is now marked "stale" after 30 days without activity. It will be closed automatically in 10 days unless you add a comment, push new changes or remove the "stale" label.'
           days-before-pr-stale: 30

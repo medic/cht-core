@@ -1,4 +1,4 @@
-const bulkGet = require('../services/bulk-get');
+const bulkGet = require('../services/replication/bulk-get');
 const _ = require('lodash');
 const serverUtils = require('../server-utils');
 
