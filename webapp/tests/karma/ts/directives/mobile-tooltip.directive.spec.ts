@@ -155,6 +155,15 @@ describe('MobileTooltipDirective', () => {
     expect(tooltip()).to.be.null;
   });
 
+  it('dismisses on viewport resize (e.g. an orientation change would invalidate the position)', () => {
+    createOn(true);
+    trigger().dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    expect(tooltip()).to.exist;
+
+    window.dispatchEvent(new Event('resize'));
+    expect(tooltip()).to.be.null;
+  });
+
   it('dismisses when the focused element is detached from the DOM', async () => {
     createOn(true);
     document.body.appendChild(fixture.nativeElement); // so the trigger removal mutates the observed body

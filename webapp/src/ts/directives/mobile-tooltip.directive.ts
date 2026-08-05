@@ -70,6 +70,9 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
       // Capture phase so scrolls in plain CSS `overflow` containers (which the CDK ScrollDispatcher
       // doesn't observe) still dismiss the tooltip instead of leaving it floating.
       this.document.addEventListener('scroll', this.dismiss, true);
+      // A resize (e.g. an orientation change) invalidates the computed position without necessarily
+      // scrolling or blurring; dismiss rather than track.
+      this.document.defaultView?.addEventListener('resize', this.dismiss);
     });
   }
 
@@ -77,6 +80,7 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
     this.document.removeEventListener('focusin', this.focusIn);
     this.document.removeEventListener('focusout', this.dismiss);
     this.document.removeEventListener('scroll', this.dismiss, true);
+    this.document.defaultView?.removeEventListener('resize', this.dismiss);
     this.hide();
   }
 
