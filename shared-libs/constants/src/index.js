@@ -65,8 +65,26 @@ const DB_ADMIN_ROLES = [USER_ROLES.ADMIN, USER_ROLES.COUCHDB_ADMIN];
 const PREFIXES = {
   COUCH_USER: 'org.couchdb.user:',
   TRANSLATIONS: 'messages-',
+  UI_EXTENSION: `${DOC_TYPES.UI_EXTENSION}:`,
   FORM: 'form:',
-  UI_EXTENSION: `${DOC_TYPES.UI_EXTENSION}:`
+  ARCHIVE_JOB: 'archive:',
+  BULK_OPERATION_LOG: 'bulk-operation:',
+  BULK_OPERATION_ACTION: 'bulk-operation-action:',
+};
+
+// Bulk operation framework (delete, move, merge) shared between the api and sentinel.
+const BULK_OPERATIONS = {
+  OPERATIONS_ATTACHMENT: 'operations',
+  ACTIONS: {
+    ARCHIVE: 'archive',
+    SET_CONTACT: 'set-contact',
+    DELETE_USER: 'delete-user',
+  },
+  STATUSES: {
+    QUEUED: 'queued',
+    COMPLETED: 'completed',
+    FAILED: 'failed',
+  },
 };
 
 module.exports = {
@@ -79,4 +97,5 @@ module.exports = {
   CONTACT_TYPES,
   STANDARD_HTTP_HEADERS,
   PREFIXES,
+  BULK_OPERATIONS,
 };

@@ -152,6 +152,7 @@ const load = () => {
 const listen = () => {
   dbWatcher.listen();
   dbWatcher.medic(change => {
+    logger.debug('Medic change: %s %s', change.id, change.changes?.[0]?.rev);
     if (tombstoneUtils.isTombstoneId(change.id)) {
       return Promise.resolve();
     }
