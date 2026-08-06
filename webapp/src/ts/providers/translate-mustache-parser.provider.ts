@@ -7,13 +7,17 @@ export class TranslateMustacheParserProvider extends TranslateDefaultParser {
 
   interpolate(expression, params?) {
     if (typeof expression === 'string' && this.sectionTemplate.test(expression)) {
-      return messages.template({
-        config: {},
-        translate: value => value,
-        doc: params || {},
-        content: { message: expression },
-        extensionLibs: extensionLibs.getAll(),
-      });
+      try {
+        return messages.template({
+          config: {},
+          translate: value => value,
+          doc: params || {},
+          content: { message: expression },
+          extensionLibs: extensionLibs.getAll(),
+        });
+      } catch (err) {
+        console.error('Error rendering Mustache translation - using default interpolation', err);
+      }
     }
     return super.interpolate(expression, params);
   }

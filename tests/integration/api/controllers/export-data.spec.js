@@ -1,6 +1,7 @@
 const utils = require('@utils');
 const uuid = require('uuid').v7;
 const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
+const { createExtensionLibDoc } = require('@utils/extension-libs');
 
 const getRows = (result) => {
   const rows = result.split('\n');
@@ -18,6 +19,55 @@ const expectRows = (expected, rows) => {
 describe('Export Data V2.0', () => {
 
   after(() => utils.revertDb([], true));
+
+  describe('GET /api/v2/export/messages with extension-libs', () => {
+    const report = {
+      _id: 'export-messages-extension-lib',
+      type: DOC_TYPES.DATA_RECORD,
+      form: 'extension_lib_test',
+      locale: 'en',
+      from: '+12025550123',
+      reported_date: Date.now(),
+      fields: { name: 'Ada' },
+      scheduled_tasks: [{
+        state: 'scheduled',
+        due: Date.now(),
+        recipient: 'reporting_unit',
+        message: [{
+          locale: 'en',
+          content: 'Hello {{#uppercase}}{{fields.name}}{{/uppercase}}',
+        }],
+      }],
+    };
+
+    before(async () => {
+      const reloadLog = await utils.waitForApiLogs(/Detected extension-libs change - reloading/);
+      await utils.saveDocs([
+        createExtensionLibDoc({ 'uppercase.js': 'module.exports = value => value.toUpperCase();' }),
+        report,
+      ]);
+      await reloadLog.promise;
+    });
+
+    const waitForTransformedExport = async (retries = 20) => {
+      const result = await utils.request({ path: '/api/v2/export/messages' });
+      if (result.includes('Hello ADA')) {
+        return result;
+      }
+      if (!retries) {
+        throw new Error(`Extension-lib output was not present in messages export:\n${result}`);
+      }
+      await utils.delayPromise(100);
+      return waitForTransformedExport(retries - 1);
+    };
+
+    it('renders scheduled message content with the loaded extension library', async () => {
+      const result = await waitForTransformedExport();
+
+      expect(result).to.include('export-messages-extension-lib');
+      expect(result).to.include('Hello ADA');
+    });
+  });
 
   describe('GET|POST /api/v2/export/reports', () => {
     const docs = [{

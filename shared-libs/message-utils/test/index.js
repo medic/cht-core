@@ -1811,7 +1811,8 @@ describe('messageUtils', () => {
       expect(result).to.equal('ADA');
     });
 
-    it('ignores extension-lib exports that are not functions', () => {
+    it('logs and falls back to rendered content when an extension-lib export is not a function', () => {
+      const logError = sinon.stub(logger, 'error');
       const extensionLibs = {
         'not_a_helper.js': { value: 'not a function' },
       };
@@ -1823,7 +1824,9 @@ describe('messageUtils', () => {
         extensionLibs,
       });
 
-      expect(result).to.equal('value: ');
+      expect(result).to.equal('value: text');
+      expect(logError.calledOnce).to.equal(true);
+      expect(logError.firstCall.args[1].message).to.include('must export a function');
     });
 
     it('does not allow an extension-lib to replace a built-in helper', () => {
@@ -1862,6 +1865,79 @@ describe('messageUtils', () => {
       expect(logError.firstCall.args[1]).to.equal(error);
     });
 
+    it('falls back to rendered content when an extension-lib returns a Promise', () => {
+      const logError = sinon.stub(logger, 'error');
+
+      const result = utils.template({
+        config: {},
+        doc: { name: 'Ada' },
+        content: { message: 'Hello {{#uppercase}}{{name}}{{/uppercase}}' },
+        extensionLibs: { 'uppercase.js': value => Promise.resolve(value.toUpperCase()) },
+      });
+
+      expect(result).to.equal('Hello Ada');
+      expect(logError.calledOnce).to.equal(true);
+      expect(logError.firstCall.args[1].message).to.include('returned a Promise');
+    });
+
+    it('does not stringify object results returned by an extension-lib', () => {
+      const logError = sinon.stub(logger, 'error');
+      const toString = sinon.stub().throws(new Error('should not stringify'));
+
+      const result = utils.template({
+        config: {},
+        doc: { name: 'Ada' },
+        content: { message: 'Hello {{#uppercase}}{{name}}{{/uppercase}}' },
+        extensionLibs: { 'uppercase.js': () => ({ toString }) },
+      });
+
+      expect(result).to.equal('Hello Ada');
+      expect(toString.notCalled).to.equal(true);
+      expect(logError.calledOnce).to.equal(true);
+      expect(logError.firstCall.args[1].message).to.include('returned a non-primitive value');
+    });
+
+    it('falls back to rendered content when an extension-lib returns a Symbol', () => {
+      const logError = sinon.stub(logger, 'error');
+
+      const result = utils.template({
+        config: {},
+        doc: { name: 'Ada' },
+        content: { message: 'Hello {{#symbol}}{{name}}{{/symbol}}' },
+        extensionLibs: { 'symbol.js': () => Symbol('unsafe') },
+      });
+
+      expect(result).to.equal('Hello Ada');
+      expect(logError.calledOnce).to.equal(true);
+      expect(logError.firstCall.args[1].message).to.include('returned a non-primitive value');
+    });
+
+    it('stringifies primitive results before Mustache appends them', () => {
+      const result = utils.template({
+        config: {},
+        doc: {},
+        content: { message: 'Value: {{#answer}}ignored{{/answer}}' },
+        extensionLibs: { 'answer.js': () => 42 },
+      });
+
+      expect(result).to.equal('Value: 42');
+    });
+
+    it('catches errors from rendering nested helper content', () => {
+      const error = new Error('nested render failed');
+      const logError = sinon.stub(logger, 'error');
+      const getExtensionLibHelpers = utils.__get__('getExtensionLibHelpers');
+      const helper = getExtensionLibHelpers({ 'uppercase.js': value => value.toUpperCase() }).uppercase();
+
+      const result = helper('unrendered content', () => {
+        throw error;
+      });
+
+      expect(result).to.equal('unrendered content');
+      expect(logError.calledOnce).to.equal(true);
+      expect(logError.firstCall.args[1]).to.equal(error);
+    });
+
     it('does not allow an extension-lib helper to shadow template data', () => {
       const customHelper = sinon.stub().returns('custom');
       const logWarning = sinon.stub(logger, 'warn');
@@ -1896,6 +1972,17 @@ describe('messageUtils', () => {
       expect(logWarning.calledWithMatch('conflicts with another extension lib helper')).to.equal(true);
     });
 
+    it('supports helper names inherited by ordinary objects', () => {
+      const result = utils.template({
+        config: {},
+        doc: { name: 'Ada' },
+        content: { message: '{{#constructor}}{{name}}{{/constructor}}' },
+        extensionLibs: { 'constructor.js': value => value.toUpperCase() },
+      });
+
+      expect(result).to.equal('ADA');
+    });
+
     it('warns when a positive Mustache section is missing', () => {
       const logWarning = sinon.stub(logger, 'warn');
 
@@ -1907,6 +1994,31 @@ describe('messageUtils', () => {
 
       expect(result).to.equal('ID: ');
       expect(logWarning.calledWithMatch('Mustache section "to_devanagri" is not defined')).to.equal(true);
+    });
+
+    it('does not warn when an inverted section handles a missing value', () => {
+      const logWarning = sinon.stub(logger, 'warn');
+      const content = {
+        message: '{{#patient_id}}ID: {{patient_id}}{{/patient_id}}{{^patient_id}}ID unavailable{{/patient_id}}',
+      };
+
+      const result = utils.template({ config: {}, doc: {}, content });
+
+      expect(result).to.equal('ID unavailable');
+      expect(logWarning.notCalled).to.equal(true);
+    });
+
+    it('only warns once for the same missing section and template', () => {
+      const logWarning = sinon.stub(logger, 'warn');
+      const options = {
+        config: {},
+        doc: {},
+        content: { message: 'Missing value: {{#deduplicated_helper}}value{{/deduplicated_helper}}' },
+      };
+
+      expect(utils.template(options)).to.equal('Missing value: ');
+      expect(utils.template(options)).to.equal('Missing value: ');
+      expect(logWarning.calledOnce).to.equal(true);
     });
 
     it('caches helpers for an unchanged extension-lib registry', () => {

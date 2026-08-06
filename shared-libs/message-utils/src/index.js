@@ -17,6 +17,10 @@ const EMPTY_EXTENSION_LIBS = Object.freeze({});
 const BUILT_IN_HELPER_NAMES = new Set([ 'bikram_sambat_date', 'date', 'datetime', 'local_phone' ]);
 const extensionLibHelpersCache = new WeakMap();
 const loggedViewCollisions = new WeakMap();
+const loggedMissingSections = new Set();
+
+// Object.hasOwn requires Chrome 93, while CHT Core supports Chrome 90.
+const hasOwn = (object, property) => Object.prototype.hasOwnProperty.call(object, property); // NOSONAR
 
 const getParent = function(doc, type) {
   let facility = doc.parent ? doc : doc.contact;
@@ -344,23 +348,33 @@ const getExtensionLibHelpers = (extensionLibs = EMPTY_EXTENSION_LIBS) => {
   }
 
   const helpers = Object.entries(extensionLibs)
-    .filter(([, extensionLib]) => typeof extensionLib === 'function')
     .reduce((helpers, [fileName, extensionLib]) => {
       const helperName = fileName.replace(/\.js$/, '');
       if (BUILT_IN_HELPER_NAMES.has(helperName)) {
         logger.warn(`Extension lib "${fileName}" conflicts with built-in helper "${helperName}" and will be ignored.`);
         return helpers;
       }
-      if (helpers[helperName]) {
+      if (hasOwn(helpers, helperName)) {
         logger.warn(`Extension lib "${fileName}" conflicts with another extension lib helper "${helperName}" and ` +
           'will be ignored.');
         return helpers;
       }
       helpers[helperName] = function() {
         return function(text, renderText) {
-          const renderedText = renderText(text);
+          let renderedText = text;
           try {
-            return extensionLib(renderedText);
+            renderedText = renderText(text);
+            if (typeof extensionLib !== 'function') {
+              throw new TypeError(`Extension lib "${fileName}" must export a function.`);
+            }
+            const result = extensionLib(renderedText);
+            if (result && typeof result.then === 'function') {
+              throw new TypeError(`Extension lib "${fileName}" returned a Promise.`);
+            }
+            if (![ 'string', 'number', 'boolean', 'bigint' ].includes(typeof result)) {
+              throw new TypeError(`Extension lib "${fileName}" returned a non-primitive value.`);
+            }
+            return String(result);
           } catch (err) {
             logger.error(`Error executing extension lib "${fileName}" - using untransformed content: %o`, err);
             return renderedText;
@@ -368,7 +382,7 @@ const getExtensionLibHelpers = (extensionLibs = EMPTY_EXTENSION_LIBS) => {
         };
       };
       return helpers;
-    }, {});
+    }, Object.create(null));
   extensionLibHelpersCache.set(extensionLibs, helpers);
   return helpers;
 };
@@ -381,7 +395,7 @@ const withoutViewCollisions = (extensionLibs, extensionHelpers, view) => {
   }
 
   return Object.entries(extensionHelpers).reduce((helpers, [helperName, helper]) => {
-    if (Object.hasOwn(view, helperName)) {
+    if (hasOwn(view, helperName)) {
       if (!loggedCollisions.has(helperName)) {
         logger.warn(`Extension lib helper "${helperName}" conflicts with template data and will be ignored.`);
         loggedCollisions.add(helperName);
@@ -390,13 +404,28 @@ const withoutViewCollisions = (extensionLibs, extensionHelpers, view) => {
     }
     helpers[helperName] = helper;
     return helpers;
-  }, {});
+  }, Object.create(null));
 };
 
 const warnForMissingSections = (template, view) => {
-  mustache.parse(template).forEach(token => {
-    if (token[0] === '#' && objectPath.get(view, token[1]) === undefined) {
+  const sectionTokens = [];
+  const collectSectionTokens = tokens => tokens.forEach(token => {
+    if ([ '#', '^' ].includes(token[0])) {
+      sectionTokens.push(token);
+      collectSectionTokens(token[4] || []);
+    }
+  });
+  collectSectionTokens(mustache.parse(template));
+
+  const invertedSections = new Set(sectionTokens.filter(token => token[0] === '^').map(token => token[1]));
+  sectionTokens.forEach(token => {
+    const warningKey = JSON.stringify([ template, token[1] ]);
+    if (token[0] === '#' &&
+        !invertedSections.has(token[1]) &&
+        objectPath.get(view, token[1]) === undefined &&
+        !loggedMissingSections.has(warningKey)) {
       logger.warn(`Mustache section "${token[1]}" is not defined; its content will be omitted.`);
+      loggedMissingSections.add(warningKey);
     }
   });
 };

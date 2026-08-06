@@ -24,6 +24,7 @@ to update the document.
   missing or misspelled; CHT Core logs a warning when it detects this.
 - An extension helper is ignored when its name conflicts with a built-in helper or a top-level template data property.
 - If multiple attachments map to the same helper name, the first helper is used and the duplicate is ignored.
-- If a helper throws while rendering, CHT Core logs the error and uses the rendered, untransformed section content.
+- Helpers must be synchronous functions that return a primitive value. Invalid exports, thrown errors, Promises, and
+  object results are logged, and CHT Core uses the rendered, untransformed section content instead.
 - The webapp loads libraries before rendering and reloads them when the `extension-libs` document changes. API and
   Sentinel also reload on document changes, while App Management loads the current document for each queue query.

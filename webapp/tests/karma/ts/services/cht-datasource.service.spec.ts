@@ -437,6 +437,9 @@ describe('CHTScriptApiService service', () => {
     it('should reload extension libs when their document changes', async () => {
       settingsService.get.resolves();
       sessionService.isOnlineOnly.returns(true);
+      extensionLibs.set({
+        'uppercase.js': value => `old:${value}`,
+      });
       await service.isInitialized();
       const changesFeed = changesService.subscribe.args[0][0];
       medicDb.get.resolves({
@@ -448,6 +451,7 @@ describe('CHTScriptApiService service', () => {
       expect(changesFeed.filter({ id: DOC_IDS.SETTINGS })).to.be.true;
       expect(changesFeed.filter({ id: DOC_IDS.EXTENSION_LIBS })).to.be.true;
       expect(changesFeed.filter({ id: 'other' })).to.be.false;
+      expect(extensionLibs.get('uppercase.js')('hello')).to.equal('old:hello');
 
       await changesFeed.callback({ id: DOC_IDS.EXTENSION_LIBS });
 

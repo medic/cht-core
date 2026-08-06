@@ -11,6 +11,7 @@ describe('messages', () => {
   beforeEach(() => config.init({
     getAll: sinon.stub().returns({}),
     get: sinon.stub(),
+    getExtensionLibs: sinon.stub().returns({}),
   }));
 
   afterEach(() => {
@@ -413,6 +414,32 @@ describe('messages', () => {
   });
 
   describe('addError', () => {
+    it('passes all rendering options to messageUtils.template', () => {
+      const settings = { date_format: 'YYYY-MM-DD' };
+      const extensionLibs = { 'uppercase.js': value => value.toUpperCase() };
+      const doc = { _id: 'report' };
+      const error = { code: 'invalid', message: '{{#uppercase}}invalid{{/uppercase}}' };
+      const context = { patient: { name: 'Ada' } };
+      config.getAll.returns(settings);
+      config.getExtensionLibs.returns(extensionLibs);
+      sinon.stub(messageUtils, 'template').returns('INVALID');
+      sinon.stub(utils, 'addError');
+
+      messages.addError(doc, error, context);
+
+      assert.deepEqual(messageUtils.template.args[0][0], {
+        config: settings,
+        translate: utils.translate,
+        doc,
+        content: error,
+        extraContext: context,
+        extensionLibs,
+      });
+      assert(messageUtils.template.calledOnce);
+      assert(utils.addError.calledOnceWithExactly(doc, error));
+      assert.equal(error.message, 'INVALID');
+    });
+
     it('handles error object without message property', () => {
       sinon.stub(logger, 'warn');
       sinon.stub(messageUtils, 'template').returns('processed error');

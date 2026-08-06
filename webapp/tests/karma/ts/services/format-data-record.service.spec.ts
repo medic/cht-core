@@ -13,6 +13,9 @@ import { LanguageService } from '@mm-services/language.service';
 import { DbService } from '@mm-services/db.service';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import { DOC_TYPES } from '@medic/constants';
+import * as extensionLibs from '@medic/extension-libs';
+
+const messages = require('@medic/message-utils');
 
 describe('FormatDataRecord service', () => {
   let Settings;
@@ -23,6 +26,7 @@ describe('FormatDataRecord service', () => {
   let service;
 
   beforeEach(() => {
+    extensionLibs.set({});
     Settings = sinon.stub();
     Language = sinon.stub();
     db = { query: sinon.stub() };
@@ -40,7 +44,10 @@ describe('FormatDataRecord service', () => {
     service = TestBed.inject(FormatDataRecordService);
   });
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    extensionLibs.set({});
+    sinon.restore();
+  });
 
   it('generates cleared messages', () => {
     const doc = {
@@ -422,6 +429,10 @@ describe('FormatDataRecord service', () => {
 
   describe('generating messages', () => {
     it('should generate messages with patient', () => {
+      const loadedExtensionLibs = extensionLibs.set({
+        'uppercase.js': value => value.toUpperCase(),
+      });
+      const generate = sinon.spy(messages, 'generate');
       const report = {
         _id: 'report',
         form: 'frm',
@@ -494,6 +505,18 @@ describe('FormatDataRecord service', () => {
             message: 'Patient alpha is 22 years old',
           }]
         });
+        expect(generate.callCount).to.equal(2);
+        const options = generate.firstCall.args[0];
+        expect(options.config).to.deep.equal({ registrations: [{ form: 'reg' }] });
+        expect(options.translate).to.be.a('function');
+        expect(options.doc).to.equal(report);
+        expect(options.content).to.deep.equal({ translationKey: 'message1', message: undefined });
+        expect(options.recipient).to.equal('reporting_unit');
+        expect(options.extraContext).to.deep.equal({
+          patient: report.patient,
+          registrations: [registration],
+        });
+        expect(options.extensionLibs).to.equal(loadedExtensionLibs);
       });
     });
 
