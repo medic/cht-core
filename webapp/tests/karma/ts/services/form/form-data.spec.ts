@@ -276,6 +276,40 @@ describe('form-data', () => {
         });
       });
 
+      it('includes the repeat index in the binary attachment name of a single repeat instance', () => {
+        const doc = parseXml('<data><my_repeat><photo type="binary">data 0</photo></my_repeat></data>');
+        const formData = new EnketoFormData(doc.documentElement, 'the-id');
+
+        const result = formData.deserializeDoc(buildFormConfig(['/data/my_repeat']), REPORTED_DATE);
+
+        expect(result._attachments).to.deep.equal({
+          'user-file/my_repeat[1]/photo': { data: 'data 0', content_type: 'image/png' },
+        });
+      });
+
+      it('includes an index for every level of nested repeats in the binary attachment name', () => {
+        const doc = parseXml(`
+          <data>
+            <my_repeat>
+              <inner><photo type="binary">data 0-0</photo></inner>
+              <inner><photo type="binary">data 0-1</photo></inner>
+            </my_repeat>
+            <my_repeat>
+              <inner><photo type="binary">data 1-0</photo></inner>
+            </my_repeat>
+          </data>`);
+        const formData = new EnketoFormData(doc.documentElement, 'the-id');
+
+        const config = buildFormConfig(['/data/my_repeat', '/data/my_repeat/inner']);
+        const result = formData.deserializeDoc(config, REPORTED_DATE);
+
+        expect(result._attachments).to.deep.equal({
+          'user-file/my_repeat[1]/inner[1]/photo': { data: 'data 0-0', content_type: 'image/png' },
+          'user-file/my_repeat[1]/inner[2]/photo': { data: 'data 0-1', content_type: 'image/png' },
+          'user-file/my_repeat[2]/inner[1]/photo': { data: 'data 1-0', content_type: 'image/png' },
+        });
+      });
+
       it('keeps the existing binary attachment when the field has no new value', () => {
         const doc = parseXml('<data><my_file type="binary"></my_file></data>');
         const formData = new EnketoFormData(doc.documentElement, 'the-id');
@@ -792,6 +826,29 @@ describe('form-data', () => {
           form_version: '1.0',
           reported_date: REPORTED_DATE,
           _attachments: undefined,
+        });
+      });
+
+      it('names the binary attachments of a repeated db-doc relative to the db-doc root', () => {
+        const doc = parseXml(`
+          <data>
+            <my_repeat>
+              <my_doc db-doc="true"><_id>doc-1</_id><photo type="binary">data 0</photo></my_doc>
+            </my_repeat>
+            <my_repeat>
+              <my_doc db-doc="true"><_id>doc-2</_id><photo type="binary">data 1</photo></my_doc>
+            </my_repeat>
+          </data>`);
+        const reportData = new EnketoReportFormData(doc, 'the-id');
+        const config = buildFormConfig(['/data/my_repeat']);
+
+        const [dbDoc1, dbDoc2] = reportData.getDbDocData();
+
+        expect(dbDoc1.deserializeDoc(config, REPORTED_DATE)._attachments).to.deep.equal({
+          'user-file/photo': { data: 'data 0', content_type: 'image/png' },
+        });
+        expect(dbDoc2.deserializeDoc(config, REPORTED_DATE)._attachments).to.deep.equal({
+          'user-file/photo': { data: 'data 1', content_type: 'image/png' },
         });
       });
 

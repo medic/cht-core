@@ -121,6 +121,31 @@ describe('FormatDataRecord service', () => {
     });
   });
 
+  it('hides the field of every repeat instance', async () => {
+    const report = {
+      _id: 'my-report',
+      form: 'my-form',
+      content_type: 'xml',
+      hidden_fields: ['my_repeat.hidden_field', 'my_repeat.hidden_group'],
+      fields: {
+        my_repeat: [
+          { shown_field: 1, hidden_field: 2, hidden_group: { nested_field: 3 } },
+          { shown_field: 4, hidden_field: 5, hidden_group: { nested_field: 6 } },
+        ],
+      }
+    };
+
+    const result = await service.format(report);
+
+    expect(result.fields).to.deep.equal([
+      { label: 'report.my-form.my_repeat', depth: 0 },
+      { label: 'report.my-form.my_repeat.0', depth: 1 },
+      { label: 'report.my-form.my_repeat.0.shown_field', value: 1, depth: 2, target: undefined, imagePath: undefined },
+      { label: 'report.my-form.my_repeat.1', depth: 1 },
+      { label: 'report.my-form.my_repeat.1.shown_field', value: 4, depth: 2, target: undefined, imagePath: undefined },
+    ]);
+  });
+
   it('returns correct deep display fields', () => {
     const report = {
       _id: 'my-report',
@@ -243,7 +268,7 @@ describe('FormatDataRecord service', () => {
       ]);
     });
 
-    it('returns the path-based image path for an inline-binary field, whose value is cleared on save', async () => {
+    it('returns the path-based image path for a binary field', async () => {
       const report = {
         _id: 'my-report',
         form: 'my-form',
@@ -276,6 +301,87 @@ describe('FormatDataRecord service', () => {
           imagePath: 'user-file/fields/group/nested_photo',
           target: undefined,
         },
+      ]);
+    });
+
+    it('returns the image path for a binary field inside a repeat', async () => {
+      const report = {
+        _id: 'my-report',
+        form: 'my-form',
+        content_type: 'xml',
+        fields: {
+          my_repeat: [
+            { photo: '' },
+            { photo: '' },
+          ],
+        },
+        _attachments: {
+          'user-file/fields/my_repeat[1]/photo': { content_type: 'image/png' },
+          'user-file/fields/my_repeat[2]/photo': { content_type: 'image/png' },
+        },
+      };
+
+      const result = await service.format(report);
+
+      expect(result.fields).to.deep.equal([
+        { label: 'report.my-form.my_repeat', depth: 0 },
+        { label: 'report.my-form.my_repeat.0', depth: 1 },
+        {
+          label: 'report.my-form.my_repeat.0.photo',
+          value: '',
+          depth: 2,
+          imagePath: 'user-file/fields/my_repeat[1]/photo',
+          target: undefined,
+        },
+        { label: 'report.my-form.my_repeat.1', depth: 1 },
+        {
+          label: 'report.my-form.my_repeat.1.photo',
+          value: '',
+          depth: 2,
+          imagePath: 'user-file/fields/my_repeat[2]/photo',
+          target: undefined,
+        },
+      ]);
+    });
+
+    it('returns the image path for a binary field inside nested repeats', async () => {
+      const report = {
+        _id: 'my-report',
+        form: 'my-form',
+        content_type: 'xml',
+        fields: {
+          my_repeat: [
+            { inner: [{ photo: '' }, { photo: '' }] },
+          ],
+        },
+        _attachments: {
+          'user-file/fields/my_repeat[1]/inner[1]/photo': { content_type: 'image/png' },
+          'user-file/fields/my_repeat[1]/inner[2]/photo': { content_type: 'image/png' },
+        },
+      };
+
+      const result = await service.format(report);
+
+      expect(result.fields).to.deep.equal([
+        { label: 'report.my-form.my_repeat', depth: 0 },
+        { label: 'report.my-form.my_repeat.0', depth: 1 },
+        { label: 'report.my-form.my_repeat.0.inner', depth: 2 },
+        { label: 'report.my-form.my_repeat.0.inner.0', depth: 3 },
+        {
+          label: 'report.my-form.my_repeat.0.inner.0.photo',
+          value: '',
+          depth: 3,
+          imagePath: 'user-file/fields/my_repeat[1]/inner[1]/photo',
+          target: undefined,
+        },
+        { label: 'report.my-form.my_repeat.0.inner.1', depth: 3 },
+        {
+          label: 'report.my-form.my_repeat.0.inner.1.photo',
+          value: '',
+          depth: 3,
+          imagePath: 'user-file/fields/my_repeat[1]/inner[2]/photo',
+          target: undefined,
+        }
       ]);
     });
 

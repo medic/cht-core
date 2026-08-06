@@ -543,7 +543,7 @@ export class EnketoService {
   }
 
   private getHiddenFields(elements: Element[]) {
-    const hiddenXpaths = new Set(elements.map((element) => Xpath.getElementRawXPath(element)));
+    const hiddenXpaths = new Set(elements.map((element) => Xpath.getElementXPath(element)));
     const hasHiddenAncestor = (
       segments: string[]
     ) => (_: string, i: number) => i > 0 && hiddenXpaths.has(segments.slice(0, i).join('/'));

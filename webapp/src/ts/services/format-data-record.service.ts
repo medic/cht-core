@@ -465,12 +465,19 @@ export class FormatDataRecordService {
     if (isImagePath(filePath)) {
       return filePath;
     }
-    const binaryFilePath = 'user-file/fields/' + label.split('.').slice(2).join('/');
+    const labelParts = label.split('.').slice(1);
+    const binaryFilePath = labelParts
+      .slice(1)
+      .reduce(
+        // Properly encode positional indicator
+        (path, part) => /^\d+$/.test(part) ? `${path}[${Number(part) + 1}]` : `${path}/${part}`,
+        'user-file/fields'
+      );
     if (isImagePath(binaryFilePath)) {
       return binaryFilePath;
     }
     // Fall back to the old style of naming image attachments
-    const legacyFilePath = 'user-file/' + label.split('.').slice(1).join('/');
+    const legacyFilePath = 'user-file/' + labelParts.join('/');
     if (isImagePath(legacyFilePath)) {
       return legacyFilePath;
     }
@@ -510,14 +517,13 @@ export class FormatDataRecordService {
     const label = 'report.' + doc.form;
     const fields = this.getFields(doc, [], doc.fields, label, 0);
     this.includeNonFormFieldsXml(doc, fields);
-    const hide = doc.hidden_fields || [];
-    hide.push('inputs');
-    return _.filter(fields, (field) => {
-      return _.every(hide, (h) => {
-        const hiddenLabel = label + '.' + h;
-        return hiddenLabel !== field.label && field.label.indexOf(hiddenLabel + '.') !== 0;
-      });
-    });
+    const hiddenLabels = ['inputs', ...doc.hidden_fields || []].map(field => `${label}.${field}`);
+    const isHidden = (fieldLabel: string) => {
+      // Drop any position indicators for arrays (e.g. repeat.1.field > repeat.field)
+      const positionlessLabel = fieldLabel.replace(/\.\d+(?=\.|$)/g, '');
+      return hiddenLabels.some(hidden => positionlessLabel === hidden || positionlessLabel.startsWith(`${hidden}.`));
+    };
+    return fields.filter(field => !isHidden(field.label));
   }
 
   private formatXmlFields(doc) {
