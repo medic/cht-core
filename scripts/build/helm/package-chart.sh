@@ -2,15 +2,27 @@
 
 set -eu -o pipefail
 
-# if you're gonna put this in CI, consider using just installing helm,
-# not sure the benefit of a https://github.com/Azure/setup-helm/blob/main/src/run.ts
-# when all we need is `apt install helm`? (well, ok we need a few more
-# lines: https://helm.sh/docs/intro/install/#from-apt-debianubuntu
-
 # set CHT version from argument
 TAG_VERSION=$1
 
-# update all values
+# check to make sure it's at least X.Y.Z format
+if ! [[ "$TAG_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "Version \"$TAG_VERSION\" isn't SemVer, exiting"
+  exit 1
+fi
+
+# prompt user if they're ready to continue
+echo "
+Do you want to package helm chart for version ${TAG_VERSION} of the CHT?
+
+You must have release candidate branch for ${TAG_VERSION} checked out already!  (y/N)"
+read -r -p " " yn
+case "${yn}" in
+  [yY] ) ;;
+  *) echo "aborted"; exit 1 ;;
+esac
+
+# update placeholder values in files
 sed -i "s/ (CHT) v4/ (CHT)/" Chart.yaml
 sed -i "s/version: .*/version: $TAG_VERSION/" Chart.yaml
 sed -i "s/appVersion: .*/appVersion: \"$TAG_VERSION\"/" Chart.yaml
@@ -42,3 +54,9 @@ fi
 
 # reset files for the next time we run this script
 git checkout values/base.yaml Chart.yaml
+
+echo "
+
+Helm charts have been built.  Commit these changes, submit a PR and
+push the new charts to the CHT Core Repo.
+"

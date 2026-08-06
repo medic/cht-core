@@ -1,58 +1,53 @@
-name: Release Helm Charts
+name: Push Helm Charts→Docs Site
 
 on:
+
+  # CHT Core only pushes new tags when we do a release
   push:
     tags:
       - '*'
-
-permissions:
-  contents: write  # Required to attach files to GitHub releases
+  # allow this to be run manually in case a change is made outside
+  # of a release
+  workflow_dispatch:
 
 jobs:
-  build-helm-charts:
-    name: Package Helm Charts and save to GitHub
+  checkout-repo-upload-chart-artifacts:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: Checkout CHT Core Repo 🛎️
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Pages ⚙️
+        id: pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Upload artifact 📡
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          persist-credentials: false
-          fetch-depth: 0
+          # Upload just helm charts
+          path: './scripts/build/helm-releases'
 
-      - name: Install dependencies # does this need to have keys/repos added? https://helm.sh/docs/intro/install/
-        run: |
-          sudo apt-get update
-          sudo apt-get install helm
-
-      - name: Generate Helm Chart
-        working-directory: scripts/build/helm
-        run: |
-          TAG_VERSION="${GITHUB_REF#refs/tags/}"
-          package-chart.sh $TAG_VERSION
-
-      - name: Commit and push new helm chart to GH
-        run: |
-          git config --global user.name "helm-chart-ci"
-          git config --global user.email "development+helm-chart-ci@medic.org"
-          git checkout -b "$TAG_VERSION-helm-chart"
-          git add .
-          git commit -am "$TAG_VERSION new helm chart (GH CI Helm Release Bot)"
-          git push 
-          gh pr create \
-            --title "$TAG_VERSION new helm chart (GH CI Helm Release Bot)" \
-            --body "$TAG_VERSION new helm chart"
-
-jobs:
-  publish-helm-charts:
-    name: Publish Helm Charts to Docs Site
+  copy-artifacts-to-gh-pages:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    needs: checkout-repo-upload-chart-artifacts
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
 
     steps:
-      - name: Attach Helm Chart to Release
-        run: gh release upload "$TAG_NAME" release-assets/* --clobber
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG_NAME: ${{ github.ref_name }}
+      - name: Publish to GitHub Pages 🚀
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5

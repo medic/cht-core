@@ -37,6 +37,7 @@ Once all issues have been merged into `master` then the release process can star
   - [ ] Ensure that the release notes PR is merged before moving to next step.
 - [ ] Create a [new release](https://github.com/medic/cht-core/releases/new) in GitHub, with the naming convention `<major>.<minor>.<patch>`, from the release branch created above as the target branch. Click on the "Choose a tag" dropdown and create a tag for the release with the naming convention `<major>.<minor>.<patch>`. Add a link to the release notes page in the description of the release.
 - [ ] Once you publish the release, confirm the release build completes successfully and the new release is available on the [market](https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases). Make sure that the document has new entry with `id: medic:medic:<major>.<minor>.<patch>`
+- [ ] Run the [helm chart build script](https://github.com/medic/cht-core/blob/master/scripts/build/helm/package-chart.sh) (eg `./package-chart.sh 5.3.0`), commit the new chart and merge the PR so it will be in the release.
 - [ ] Upgrade the [demo](https://demo-cht.dev.medicmobile.org/) instance to the newly released version.
   - [ ] From the "App Management" admin console (`medic` user creds in 1Password), go to "Upgrades" and stage the upgrade for this version.
   - [ ] Clone `cht-core` repo and checkout the target tag (`git checkout <major>.<minor>.x` ) to ensure you have the proper version of the helm charts.
