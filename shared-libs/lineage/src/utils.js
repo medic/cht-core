@@ -25,6 +25,7 @@ const getPlaceId = (doc) => (doc.fields && doc.fields.place_id) || doc.place_id;
 
 module.exports = {
   getId,
+  isContact,
   validLinkedDocs,
   isReport,
   getPatientId,

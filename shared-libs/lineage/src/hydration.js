@@ -22,11 +22,32 @@ const extractParentIds = current => selfAndParents(current)
   .map(parent => parent._id)
   .filter(id => id);
 
-// One entry per id, in the given order. Ids with no matching doc yield undefined so that positions in the
-// lineage - and therefore ancestor depth - are preserved.
+// Walks a parent chain, emitting one id per link and stopping at the first link without an `_id`
+const chainIds = start => {
+  const ids = [];
+  let current = start;
+  while (current && current._id) {
+    ids.push(current._id);
+    current = current.parent;
+  }
+  return ids;
+};
+
+const lineageIds = doc => {
+  if (utils.isContact(doc)) {
+    return chainIds(doc);
+  }
+  if (utils.isReport(doc) && doc.form) {
+    return [ doc._id, ...chainIds(doc.contact) ];
+  }
+  return [];
+};
+
+// One entry per id, in the given order. Ids with no matching doc yield null - as `include_docs` did for an emitted
+// id with no document - so that positions in the lineage, and therefore ancestor depth, are preserved.
 const orderDocsByIds = (ids, docs) => {
   const docsById = new Map(docs.map(doc => [ doc._id, doc ]));
-  return ids.map(id => docsById.get(id));
+  return ids.map(id => docsById.get(id) || null);
 };
 
 const getContactById = (contacts, id) => id && contacts.find(contact => contact && contact._id === id);
@@ -236,15 +257,18 @@ module.exports = function(Promise, DB) {
   };
 
   const fetchLineageById = function(id) {
-    // The lineage of a document is recorded on the document itself: the parent chain for a contact, or the contact's
-    // parent chain for a report. Fetch the document, then fetch its ancestors by id, preserving lineage order.
     return DB.get(id)
       .then(function(doc) {
-        const startParent = utils.isReport(doc) ? doc.contact : doc.parent;
-        const parentIds = extractParentIds(startParent);
+        const ids = lineageIds(doc);
+        if (!ids.length) {
+          return [];
+        }
+
+        const parentIds = ids.slice(1);
         if (!parentIds.length) {
           return [doc];
         }
+
         return fetchDocs(parentIds)
           .then(ancestors => [ doc, ...orderDocsByIds(parentIds, ancestors) ]);
       })

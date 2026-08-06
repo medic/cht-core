@@ -24,7 +24,7 @@ describe('Lineage', function() {
 
   describe('fetchLineageById', function() {
     it('queries db with correct parameters', function() {
-      get.resolves({ _id: 'banana', parent: { _id: 'apple' } });
+      get.resolves({ _id: 'banana', type: CONTACT_TYPES.CLINIC, parent: { _id: 'apple' } });
       allDocs.resolves({ rows: [{ doc: { _id: 'apple' } }] });
       const id = 'banana';
 
@@ -183,7 +183,7 @@ describe('Lineage', function() {
     });
 
     it('throws when lineage is empty and throwWhenMissingLineage is true', function() {
-      get.rejects({ status: 404 });
+      get.resolves({ _id: 'a', type: DOC_TYPES.TRANSLATIONS });
 
       return lineage.fetchHydratedDoc('a', { throwWhenMissingLineage: true })
         .then(() => chai.expect.fail('should have thrown'))

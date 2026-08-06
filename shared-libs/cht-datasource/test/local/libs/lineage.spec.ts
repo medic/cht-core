@@ -30,7 +30,7 @@ describe('local lineage lib', () => {
 
   it('getLineageDocsById', async () => {
     const uuid = '123';
-    const doc = { _id: uuid, parent: { _id: 'parent1' } };
+    const doc = { _id: uuid, type: CONTACT_TYPES.CLINIC, parent: { _id: 'parent1' } };
     const parentDoc = { _id: 'parent1' };
     medicGet.resolves(doc);
     const getDocsByIdsInner = sinon.stub().resolves([parentDoc]);

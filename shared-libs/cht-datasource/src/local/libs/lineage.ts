@@ -26,17 +26,30 @@ import * as LocalContact from '../contact';
 import { InvalidArgumentError } from '../../libs/error';
 import contactTypeUtils from '@medic/contact-types-utils';
 import { isEqual } from 'lodash';
+import { DOC_TYPES } from '@medic/constants';
 
-const getParentIds = (doc: Doc): string[] => {
-  const parentIds: string[] = [];
-  let current: unknown = doc.type === 'data_record' ? doc.contact : doc.parent;
-  while (isRecord(current)) {
-    if (typeof current._id === 'string') {
-      parentIds.push(current._id);
-    }
+const isContactDoc = (doc: Doc): boolean => doc.type === 'contact'
+  || (isString(doc.type) && contactTypeUtils.HARDCODED_TYPES.includes(doc.type));
+
+// Walks a parent chain, emitting one id per link and stopping at the first link without an `_id`
+const walkLineageIds = (start: unknown): string[] => {
+  const ids: string[] = [];
+  let current: unknown = start;
+  while (isRecord(current) && isString(current._id) && current._id.length) {
+    ids.push(current._id);
     current = current.parent;
   }
-  return parentIds;
+  return ids;
+};
+
+const getParentIds = (doc: Doc): Nullable<string[]> => {
+  if (isContactDoc(doc)) {
+    return walkLineageIds(doc.parent);
+  }
+  if (doc.type === DOC_TYPES.DATA_RECORD && doc.form) {
+    return walkLineageIds(doc.contact);
+  }
+  return null;
 };
 
 /**
@@ -50,6 +63,9 @@ export const getLineageDocsById = (medicDb: PouchDB.Database<Doc>): (id: string)
     try {
       const doc = await medicDb.get(id);
       const parentIds = getParentIds(doc);
+      if (!parentIds) {
+        return [];
+      }
       if (parentIds.length === 0) {
         return [doc];
       }
