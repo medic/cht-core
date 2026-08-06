@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
   <h:head>
     <h:title>Replace User</h:title>
     <model odk:xforms-version="1.0.0">
@@ -32,41 +32,8 @@
           <text id="male_female-1">
             <value>Female</value>
           </text>
-          <text id="/data/inputs/source:label">
-            <value>Source</value>
-          </text>
-          <text id="/data/inputs/source_id:label">
-            <value>Source ID</value>
-          </text>
-          <text id="/data/inputs/user/contact_id:label">
-            <value>User's Contact ID</value>
-          </text>
-          <text id="/data/inputs/user/facility_id:label">
-            <value>Facility ID</value>
-          </text>
-          <text id="/data/inputs/user/name:label">
-            <value>Username</value>
-          </text>
-          <text id="/data/inputs/user/phone:label">
-            <value>Phone Number</value>
-          </text>
           <text id="/data/inputs/contact/_id:label">
             <value>The user being replaced</value>
-          </text>
-          <text id="/data/inputs/contact/role:label">
-            <value>Role</value>
-          </text>
-          <text id="/data/inputs/contact/parent/_id:label">
-            <value>Parent 1 ID</value>
-          </text>
-          <text id="/data/inputs/contact/parent/parent/_id:label">
-            <value>Parent 2 ID</value>
-          </text>
-          <text id="/data/inputs/contact/parent/parent/parent/_id:label">
-            <value>Parent 3 ID</value>
-          </text>
-          <text id="/data/patient_id:label">
-            <value>Assocaite form with original contact</value>
           </text>
           <text id="/data/intro/warning_header:label">
             <value>&lt;i class="fa fa-exclamation-triangle"&gt;&lt;/i&gt; Warning</value>
@@ -87,18 +54,6 @@ This action can only be taken with the proper admin code.</value>
           </text>
           <text id="/data/new_contact:label">
             <value>New User</value>
-          </text>
-          <text id="/data/new_contact/parent/_id:label">
-            <value>Parent 1 ID</value>
-          </text>
-          <text id="/data/new_contact/parent/parent/_id:label">
-            <value>Parent 2 ID</value>
-          </text>
-          <text id="/data/new_contact/parent/parent/parent/_id:label">
-            <value>Parent 3 ID</value>
-          </text>
-          <text id="/data/new_contact/type:label">
-            <value>Type</value>
           </text>
           <text id="/data/new_contact/name:label">
             <value>Full name</value>
@@ -158,9 +113,6 @@ DOB ISO: <output value=" /data/new_contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/new_contact/new_phone:label">
             <value>Phone Number</value>
           </text>
-          <text id="/data/new_contact/phone:label">
-            <value>Phone Number</value>
-          </text>
           <text id="/data/new_contact/phone_alternate:jr:constraintMsg">
             <value>Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678</value>
           </text>
@@ -191,7 +143,7 @@ Please contact your administrator if you do not receive a login link.</value>
         </translation>
       </itext>
       <instance>
-        <data id="replace_user" version="2025-05-01 23-06" prefix="J1!replace_user!" delimiter="#">
+        <data id="replace_user" version="20260724164712" prefix="J1!replace_user!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -267,9 +219,9 @@ Please contact your administrator if you do not receive a login link.</value>
             </ephemeral_dob>
             <sex/>
             <phone_read_only/>
-            <new_phone/>
+            <new_phone cht:unique_tel="true"/>
             <phone/>
-            <phone_alternate/>
+            <phone_alternate cht:unique_tel="true"/>
             <role/>
             <external_id/>
             <meta tag="hidden">
@@ -388,9 +340,9 @@ Please contact your administrator if you do not receive a login link.</value>
       <bind nodeset="/data/new_contact/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"/>
       <bind nodeset="/data/new_contact/sex" type="string" required="true()"/>
       <bind nodeset="/data/new_contact/phone_read_only" type="string" relevant=" /data/user_phone  != ''" calculate=" /data/user_phone " readonly="true()"/>
-      <bind nodeset="/data/new_contact/new_phone" type="tel" required="true()" relevant=" /data/user_phone  = ''" constraint="true()" jr:constraintMsg="jr:itext('/data/new_contact/new_phone:jr:constraintMsg')"/>
+      <bind nodeset="/data/new_contact/new_phone" type="string" required="true()" relevant=" /data/user_phone  = ''" constraint="true()" jr:constraintMsg="jr:itext('/data/new_contact/new_phone:jr:constraintMsg')"/>
       <bind nodeset="/data/new_contact/phone" type="string" calculate="coalesce( /data/user_phone ,  /data/new_contact/new_phone )"/>
-      <bind nodeset="/data/new_contact/phone_alternate" type="tel" constraint="true()" jr:constraintMsg="jr:itext('/data/new_contact/phone_alternate:jr:constraintMsg')"/>
+      <bind nodeset="/data/new_contact/phone_alternate" type="string" constraint="true()" jr:constraintMsg="jr:itext('/data/new_contact/phone_alternate:jr:constraintMsg')"/>
       <bind nodeset="/data/new_contact/role" type="string" calculate=" /data/contact_role " readonly="true()"/>
       <bind nodeset="/data/new_contact/external_id" type="string"/>
       <bind nodeset="/data/new_contact/meta/created_by" type="string" calculate="../../../created_by"/>
@@ -480,10 +432,10 @@ Please contact your administrator if you do not receive a login link.</value>
         <label ref="jr:itext('/data/new_contact/phone_read_only:label')"/>
         <hint ref="jr:itext('/data/new_contact/phone_read_only:hint')"/>
       </input>
-      <input ref="/data/new_contact/new_phone">
+      <input ref="/data/new_contact/new_phone" appearance="numbers tel">
         <label ref="jr:itext('/data/new_contact/new_phone:label')"/>
       </input>
-      <input ref="/data/new_contact/phone_alternate">
+      <input ref="/data/new_contact/phone_alternate" appearance="numbers tel">
         <label ref="jr:itext('/data/new_contact/phone_alternate:label')"/>
       </input>
       <select1 ref="/data/new_contact/role" appearance="minimal">

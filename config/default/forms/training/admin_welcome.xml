@@ -32,7 +32,7 @@
         </translation>
       </itext>
       <instance>
-        <data id="training:admin_welcome" version="20250926152620" prefix="J1!training:admin_welcome!" delimiter="#">
+        <data id="training:admin_welcome" version="20260724164712" prefix="J1!training:admin_welcome!" delimiter="#">
           <welcome>
             <img/>
             <instance_info/>
