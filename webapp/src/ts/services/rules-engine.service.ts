@@ -232,6 +232,7 @@ export class RulesEngineService implements OnDestroy {
       user: rulesEngineContext.userSettingsDoc,
       rulesAreDeclarative: !!rulesEngineContext.settingsDoc?.tasks?.isDeclarative,
       monthStartDate: this.uhcSettingsService.getMonthStartDate(rulesEngineContext.settingsDoc),
+      useBikramSambatMonths: this.uhcSettingsService.getUseBikramSambatMonths(rulesEngineContext.settingsDoc),
       chtScriptApi: rulesEngineContext.chtScriptApi
     };
 
@@ -614,9 +615,31 @@ export class RulesEngineService implements OnDestroy {
       .format(this.INTERVAL_TAG_FORMAT);
   }
 
+  getBSMonthName(monthNumber: number): string {
+    const isNepali = this.translateService.currentLang === 'ne';
+    const nepaliMonths = [
+      'बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ', 'असोज', 'कार्तिक', 'मंसिर', 'पौष', 'माघ', 'फाल्गुन', 'चैत'
+    ];
+    const englishMonths = [
+      'Baisakh', 'Jestha', 'Ashadh', 'Shrawan', 'Bhadra', 'Ashwin',
+      'Kartik', 'Mangsir', 'Poush', 'Magh', 'Falgun', 'Chaitra'
+    ];
+    const index = monthNumber - 1;
+    if (index >= 0 && index < 12) {
+      return isNepali ? nepaliMonths[index] : englishMonths[index];
+    }
+    return '';
+  }
+
   getReportingMonth(settings: Record<string, unknown>, reportingPeriod:ReportingPeriod) {
     try {
       const tag = this.getTargetIntervalTag(settings, reportingPeriod);
+      const useBikramSambatMonths = this.uhcSettingsService.getUseBikramSambatMonths(settings);
+      if (useBikramSambatMonths) {
+        const parts = tag.split('-');
+        const monthNum = parseInt(parts[1], 10);
+        return this.getBSMonthName(monthNum);
+      }
       return moment(tag, this.INTERVAL_TAG_FORMAT).format('MMMM');
     } catch (error) {
       console.error('Error getting reporting month:', error);

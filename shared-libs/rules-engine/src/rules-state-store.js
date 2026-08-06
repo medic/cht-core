@@ -69,6 +69,7 @@ const self = {
       contactState: {},
       targetState: targetState.createEmptyState(settings.targets),
       monthStartDate: settings.monthStartDate,
+      useBikramSambatMonths: !!settings.useBikramSambatMonths,
     };
     if (settings.useBikramSambatMonths) {
       state.useBikramSambatMonths = settings.useBikramSambatMonths;
@@ -237,6 +238,11 @@ const self = {
    * @returns {number} current monthStartDate
    */
   getMonthStartDate: () => state.monthStartDate,
+
+  /**
+   * @returns {boolean} current useBikramSambatMonths setting
+   */
+  getUseBikramSambatMonths: () => !!state.useBikramSambatMonths,
 
   /**
    * @returns {boolean} whether or not the state is loaded
