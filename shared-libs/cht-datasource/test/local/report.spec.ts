@@ -504,7 +504,7 @@ describe('local report', () => {
 
         const page3 = await getUuidsPage(qualifier, page2.cursor, 5);
         expect(page3.data).to.deep.equal(allUuids.slice(10));
-        expect(page3.cursor).to.equal(null);
+        expect(page3.cursor).to.be.null;
       });
 
       it('returns an empty final page with a null cursor when the set divides evenly', async () => {
@@ -521,7 +521,7 @@ describe('local report', () => {
 
         const page3 = await getUuidsPage(qualifier, page2.cursor, 6);
         expect(page3.data).to.deep.equal([]);
-        expect(page3.cursor).to.equal(null);
+        expect(page3.cursor).to.be.null;
       });
 
       it('returns only the reports recorded with the requested form', async () => {
@@ -530,7 +530,7 @@ describe('local report', () => {
         const page = await getUuidsPage(Qualifier.byForm('anc_followup'), null, 5);
 
         expect(page.data).to.deep.equal(['anc-0']);
-        expect(page.cursor).to.equal(null);
+        expect(page.cursor).to.be.null;
       });
 
       it('returns an empty page for a form with no reports', async () => {
@@ -539,7 +539,7 @@ describe('local report', () => {
         const page = await getUuidsPage(Qualifier.byForm('no_such_form'), null, 5);
 
         expect(page.data).to.deep.equal([]);
-        expect(page.cursor).to.equal(null);
+        expect(page.cursor).to.be.null;
       });
     });
 
