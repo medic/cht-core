@@ -1,0 +1,178 @@
+import { Component, Directive, Inject, Input, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { ConnectedPosition, Overlay, OverlayRef } from '@angular/cdk/overlay';
+import { ComponentPortal } from '@angular/cdk/portal';
+import { Direction } from '@angular/cdk/bidi';
+
+/**
+ * Renders the tooltip text inside the CDK overlay. Hidden from assistive tech: the trigger keeps
+ * its `title` attribute, which is what screen readers announce — the overlay is a visual duplicate.
+ */
+@Component({
+  selector: 'mm-mobile-tooltip',
+  template: `<div class="mm-mobile-tooltip__content" aria-hidden="true">{{ text }}</div>`,
+})
+export class MobileTooltipContentComponent {
+  @Input() text = '';
+}
+
+// Anchor at the start edge (grow toward the end), falling back to the end edge; each above the
+// trigger then below. `withPush` keeps whichever is chosen inside the viewport.
+const POSITIONS: ConnectedPosition[] = [
+  { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom', offsetY: -4 },
+  { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 4 },
+  { originX: 'end', originY: 'top', overlayX: 'end', overlayY: 'bottom', offsetY: -4 },
+  { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 4 },
+];
+
+/**
+ * Touch / no-hover devices can't hover to reveal a native `title` tooltip, so elements with a title
+ * are made focusable (tabindex="0") and their title is shown on focus. This directive (hosted on the
+ * app root) renders that tooltip in a CDK overlay positioned with a flexible strategy, so it stays
+ * within the viewport regardless of the trigger's position, the text length, or the direction
+ * (LTR/RTL). It replaces the previous `[title]:focus::before` CSS tooltip, which grew from a fixed
+ * edge and was clipped off-screen (and by ancestor `overflow`) in several contexts.
+ *
+ * Hover-capable devices are unaffected: the native `title` tooltip is used there, so this only
+ * shows on no-hover devices.
+ */
+@Directive({
+  selector: '[mmMobileTooltip]',
+})
+export class MobileTooltipDirective implements OnInit, OnDestroy {
+  // There is one tooltip per document, so its state is shared across instances: with more than one
+  // instance listening (e.g. a host page embedding several <cht-form> elements), every instance
+  // replaces the same tooltip instead of each stacking its own copy.
+  private static overlayRef: OverlayRef | null = null;
+  private static trigger: HTMLElement | null = null;
+  private static removalObserver: MutationObserver | null = null;
+  private static visibilityObserver: IntersectionObserver | null = null;
+  private noHoverQuery: MediaQueryList | null = null;
+  private readonly focusIn = (event: FocusEvent) => this.show(event.target as HTMLElement | null);
+  private readonly dismiss = () => this.hide();
+  // A scroll dismisses the tooltip but leaves the trigger focused, so no new focusin will ever
+  // fire for it — a tap on the still-focused trigger brings the tooltip back. Scoped to the
+  // focused element (which the first tap's own click also targets, harmlessly skipped as already
+  // shown) so plain titled-but-unfocusable elements don't gain tap tooltips.
+  private readonly tap = (event: Event) => {
+    const titled = (event.target as Element | null)?.closest?.('[title]');
+    if (titled instanceof HTMLElement &&
+        titled === this.document.activeElement &&
+        titled !== MobileTooltipDirective.trigger) {
+      this.show(titled);
+    }
+  };
+
+  constructor(
+    private readonly overlay: Overlay,
+    private readonly zone: NgZone,
+    @Inject(DOCUMENT) private readonly document: Document,
+  ) { }
+
+  ngOnInit() {
+    // `hover: none` alone, NOT `pointer: coarse`: a device that can hover shows the native `title`
+    // tooltip, so rendering this overlay as well displays two tooltips at once (click + hover) —
+    // touchscreen laptops, for instance, can match `pointer: coarse` while the mouse still hovers.
+    // The overlay is only warranted where hovering is impossible.
+    this.noHoverQuery = this.document.defaultView?.matchMedia('(hover: none)') ?? null;
+    // Outside the Angular zone: these fire on every focus/scroll on the page and must not trigger
+    // app-wide change detection. The overlay's content is rendered with a manual detectChanges().
+    this.zone.runOutsideAngular(() => {
+      this.document.addEventListener('focusin', this.focusIn);
+      this.document.addEventListener('focusout', this.dismiss);
+      this.document.addEventListener('click', this.tap);
+      // The single scroll-dismissal path: a capture-phase document listener sees every scroll —
+      // window, CDK containers, and plain CSS `overflow` containers (scroll doesn't bubble, but
+      // capture still passes through document) — so the overlay needs no CDK scroll strategy.
+      this.document.addEventListener('scroll', this.dismiss, true);
+      // A resize (e.g. an orientation change) invalidates the computed position without necessarily
+      // scrolling or blurring; dismiss rather than track.
+      this.document.defaultView?.addEventListener('resize', this.dismiss);
+    });
+  }
+
+  ngOnDestroy() {
+    this.document.removeEventListener('focusin', this.focusIn);
+    this.document.removeEventListener('focusout', this.dismiss);
+    this.document.removeEventListener('click', this.tap);
+    this.document.removeEventListener('scroll', this.dismiss, true);
+    this.document.defaultView?.removeEventListener('resize', this.dismiss);
+    this.hide();
+  }
+
+  private show(target: HTMLElement | null) {
+    // Always clear any existing tooltip first — even when focus lands on a title-less element — so a
+    // previous one can't be left behind.
+    this.hide();
+
+    // Checked live on every focus rather than once at startup, so input-capability changes
+    // (DevTools device emulation toggled, a convertible docking/undocking) apply without a reload.
+    if (!this.noHoverQuery?.matches) {
+      return;
+    }
+
+    const title = target?.getAttribute?.('title');
+    if (!target || !title) {
+      return;
+    }
+
+    const positionStrategy = this.overlay
+      .position()
+      .flexibleConnectedTo(target)
+      .withPush(true)
+      .withPositions(POSITIONS);
+
+    MobileTooltipDirective.overlayRef = this.overlay.create({
+      positionStrategy,
+      // No scroll strategy: scrolling dismisses (rather than repositions — a transient tooltip
+      // shouldn't chase the page) via the capture-phase document listener, which covers a superset
+      // of what the CDK ScrollDispatcher observes.
+      scrollStrategy: this.overlay.scrollStrategies.noop(),
+      // Resolve direction from the trigger so `start`/`end` and bidi text are correct in RTL; the
+      // overlay lives on <body>, outside the app's `[dir]` subtree, so it can't inherit it.
+      direction: (this.document.defaultView?.getComputedStyle(target).direction as Direction) || 'ltr',
+      panelClass: 'mm-mobile-tooltip',
+    });
+    MobileTooltipDirective.trigger = target;
+
+    const componentRef = MobileTooltipDirective.overlayRef
+      .attach(new ComponentPortal(MobileTooltipContentComponent));
+    componentRef.instance.text = title;
+    componentRef.changeDetectorRef.detectChanges();
+
+    // Browsers don't fire `focusout` when a focused element is detached (e.g. the sidebar last-sync
+    // span re-rendering on a sync update, or list rows refreshing on the changes feed) — focus
+    // silently resets to <body>. Watch for the trigger leaving the DOM and dismiss, so the tooltip
+    // can't be stranded on a detached node.
+    MobileTooltipDirective.removalObserver = new MutationObserver(() => {
+      if (!target.isConnected) {
+        this.hide();
+      }
+    });
+    MobileTooltipDirective.removalObserver.observe(this.document.body, { childList: true, subtree: true });
+
+    // The trigger can also stop being visible without leaving the DOM, gaining a focusout, or
+    // scrolling: on single-pane (mobile) layouts, tapping a list-row date opens the report and
+    // slides the still-focused list off-screen (`.show-content .left-pane { left: -100% }`), which
+    // would leave the tooltip hovering over the report. Dismiss when the trigger leaves the
+    // viewport. On two-pane layouts the list — and the tooltip — correctly stay put, which is why
+    // this watches visibility instead of router navigation events: every list-row tap navigates
+    // (or is skipped as a same-URL navigation), visible trigger or not.
+    MobileTooltipDirective.visibilityObserver = new IntersectionObserver((entries) => {
+      if (entries.some(entry => !entry.isIntersecting)) {
+        this.hide();
+      }
+    });
+    MobileTooltipDirective.visibilityObserver.observe(target);
+  }
+
+  private hide() {
+    MobileTooltipDirective.removalObserver?.disconnect();
+    MobileTooltipDirective.removalObserver = null;
+    MobileTooltipDirective.visibilityObserver?.disconnect();
+    MobileTooltipDirective.visibilityObserver = null;
+    MobileTooltipDirective.overlayRef?.dispose();
+    MobileTooltipDirective.overlayRef = null;
+    MobileTooltipDirective.trigger = null;
+  }
+}
