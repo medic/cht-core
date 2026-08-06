@@ -265,8 +265,8 @@ describe('Reports Sidebar Filter', () => {
     await commonPage.waitForPageLoaded();
 
     // Verify labels are reset, the filter chip is gone, and the report list goes back to original length
-    expect(await reportsPage.getFromDateValue()).to.not.include(fromDayText);
-    expect(await reportsPage.getToDateValue()).to.not.include(toDayText);
+    expect(await reportsPage.getFromDateValue()).to.equal('बाट');
+    expect(await reportsPage.getToDateValue()).to.equal('सम्म');
     expect(await reportsPage.sidebarFilterSelectors.dateFilterChip().isExisting()).to.be.false;
     expect(await reportsPage.leftPanelSelectors.allReports().length).to.equal(reports.length);
 

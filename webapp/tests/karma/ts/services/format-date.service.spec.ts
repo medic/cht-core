@@ -525,11 +525,9 @@ describe('FormatDate service', () => {
       const gregStr = BikramSambat.toGreg_text(bsYear, bsMonth, bsDate);
       expect(gregStr).to.equal('2024-04-12');
 
-      // Convert back to BS using toBik and check it matches original values
-      const convertedBack = BikramSambat.toBik(gregStr);
-      expect(convertedBack.year).to.equal(bsYear);
-      expect(convertedBack.month).to.equal(bsMonth);
-      expect(convertedBack.day).to.equal(bsDate);
+      // Convert back to BS using the service and check it matches original values
+      const formatted = service.date(moment(gregStr));
+      expect(formatted).to.equal('३० चैत २०८०');
     });
 
     it('returns the correct formatted days for divergent years 2082 and 2083 via the service', () => {
