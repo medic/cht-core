@@ -46,7 +46,7 @@ sed -i "s/{{cht_image_tag}}/$TAG_VERSION/g" values/base.yaml
 helm package . -d ../helm-releases
 
 # do this only first time
-if [ ! -f ../helm-releases/index.yaml ]; then
+if [[ ! -f ../helm-releases/index.yaml ]]; then
 	helm repo index ../helm-releases  --url https://helm.app.medicmobile.org/cht-core
 else
 	helm repo index ../helm-releases --merge ../helm-releases/index.yaml --url https://helm.app.medicmobile.org/cht-core
