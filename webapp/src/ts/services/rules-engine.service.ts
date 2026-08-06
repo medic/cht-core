@@ -637,7 +637,7 @@ export class RulesEngineService implements OnDestroy {
       const useBikramSambatMonths = this.uhcSettingsService.getUseBikramSambatMonths(settings);
       if (useBikramSambatMonths) {
         const parts = tag.split('-');
-        const monthNum = parseInt(parts[1], 10);
+        const monthNum = Number.parseInt(parts[1], 10);
         return this.getBSMonthName(monthNum);
       }
       return moment(tag, this.INTERVAL_TAG_FORMAT).format('MMMM');
