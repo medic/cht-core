@@ -67,6 +67,8 @@ const sidebarFilterSelectors = {
   dateAccordionBody: () => $('#date-filter-accordion mat-panel-description'),
   toDate: () => $('#toDateFilter'),
   fromDate: () => $('#fromDateFilter'),
+  dateFilterChip: () => $('#date-filter-accordion mat-expansion-panel-header .chip'),
+  clearDateFilterBtn: () => $('#date-filter-accordion mat-expansion-panel-header .chip .fa-times'),
   formAccordionHeader: () => $('#form-filter-accordion mat-expansion-panel-header'),
   formAccordionBody: () => $('#form-filter-accordion mat-panel-description'),
   facilityAccordionHeader: () => $('#place-filter-accordion mat-expansion-panel-header'),
@@ -358,13 +360,19 @@ const setSidebarFilterBikDate = async (fieldPromise, prevClicks, cellIndex) => {
   const cells = await picker.$$('table tbody td.current-month-date:not(.disable)');
   if (cellIndex === 'last') {
     if (cells.length > 0) {
-      await cells[cells.length - 1].click();
+      const cell = cells[cells.length - 1];
+      const text = (await cell.getText()).trim();
+      await cell.click();
+      return text;
     } else {
       throw new Error('No enabled cells found in the Nepali date picker');
     }
   } else {
     if (cells.length > cellIndex) {
-      await cells[cellIndex].click();
+      const cell = cells[cellIndex];
+      const text = (await cell.getText()).trim();
+      await cell.click();
+      return text;
     } else {
       throw new Error(`Requested cell index ${cellIndex} is not available. Only ${cells.length} cells are enabled.`);
     }
@@ -634,4 +642,5 @@ module.exports = {
   verifyReport,
   openFirstReport,
   waitForReportsLoaded,
+  sidebarFilterSelectors,
 };

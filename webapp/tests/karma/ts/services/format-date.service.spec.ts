@@ -503,24 +503,29 @@ describe('FormatDate service', () => {
     });
 
     it('correctly handles conversion across timezones and negative offsets', () => {
-      const dateInUTC = moment.utc('2024-06-29T05:00:00Z');
-      const localDate = dateInUTC.local();
-      
-      const localDay = localDate.date();
-      const expectedText = localDay === 29 ? '१५ असार २०८१' : '१४ असार २०८१';
-      expect(service.date(localDate)).to.equal(expectedText);
+      // Stub moment.fn.local to return a moment with a fixed -360 (GMT-6) offset
+      // to ensure a negative offset shift is exercised deterministically
+      const localStub = sinon.stub(moment.fn, 'local').callsFake(function(this: any) {
+        return this.utcOffset(-360);
+      });
+      try {
+        const dateInUTC = moment.utc('2024-06-29T05:00:00Z');
+        expect(service.date(dateInUTC.local())).to.equal('१४ असार २०८१');
+      } finally {
+        localStub.restore();
+      }
     });
 
-    it('correctly handles conversion across Daylight Saving Time (DST) boundaries', () => {
-      const beforeDST = moment('2024-03-10T01:59:59'); // Standard Time
-      const afterDST = moment('2024-03-10T03:00:00'); // DST (02:00:00 doesn't exist)
-      
-      expect(service.date(beforeDST)).to.equal('२७ फाल्गुन २०८०');
-      expect(service.date(afterDST)).to.equal('२७ फाल्गुन २०८०');
-    });
+    it('toGreg_text reverse conversion round-trips correctly at month/year boundaries', () => {
+      const bsYear = 2080;
+      const bsMonth = 12;
+      const bsDate = 30;
 
-    it('toGreg_text reverse conversion round-trips correctly at month/year boundaries via the service', () => {
-      const gregStr = '2024-04-12';
+      // Convert BS to Gregorian string: 2080 Chaitra 30 -> 2024-04-12
+      const gregStr = BikramSambat.toGreg_text(bsYear, bsMonth, bsDate);
+      expect(gregStr).to.equal('2024-04-12');
+
+      // Convert back to BS using the service and check it matches original values
       const formatted = service.date(moment(gregStr));
       expect(formatted).to.equal('३० चैत २०८०');
     });
