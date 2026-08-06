@@ -10,6 +10,7 @@ import { SearchFactoryService } from '@mm-services/search.service';
 import { DbService } from '@mm-services/db.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { SettingsService } from '@mm-services/settings.service';
 
 describe('Search service', () => {
   let service:SearchService;
@@ -38,6 +39,7 @@ describe('Search service', () => {
         { provide: SessionService, useValue: session },
         { provide: SearchFactoryService, useValue: { get: sinon.stub().resolves(searchStub) } },
         { provide: PerformanceService, useValue: performanceService },
+        { provide: SettingsService, useValue: { get: sinon.stub().resolves({}) } },
       ],
     });
     service = TestBed.inject(SearchService);
@@ -171,7 +173,7 @@ describe('Search service', () => {
         .then(result => {
           expect(searchStub.callCount).to.equal(1);
           expect(searchStub.args[0])
-            .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, { sortByLastVisitedDate: false }]);
+            .to.deep.equal(['contacts', { settings: {} }, { limit: 50, skip: 0 }, { sortByLastVisitedDate: false }]);
           expect(result).to.deep.equal([{ _id: 'a' }]);
         });
     });
@@ -183,7 +185,7 @@ describe('Search service', () => {
         .then(result => {
           expect(searchStub.callCount).to.equal(1);
           expect(searchStub.args[0])
-            .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, { sortByLastVisitedDate: false }]);
+            .to.deep.equal(['contacts', { settings: {} }, { limit: 50, skip: 0 }, { sortByLastVisitedDate: false }]);
           expect(result).to.deep.equal([{ _id: 'a' }]);
           expect(db.query.callCount).to.equal(0);
         });
@@ -232,7 +234,12 @@ describe('Search service', () => {
         .then(result => {
           expect(searchStub.callCount).to.equal(1);
           expect(searchStub.args[0])
-            .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, { sortByLastVisitedDate: undefined }]);
+            .to.deep.equal([
+              'contacts', 
+              { settings: {} },
+              { limit: 50, skip: 0 }, 
+              { sortByLastVisitedDate: undefined  }
+            ]);
           expect(db.query.callCount).to.equal(2);
           expect(db.query.args[0]).to.deep.equal([
             'medic-client/visits_by_date',
@@ -323,7 +330,7 @@ describe('Search service', () => {
         .then(result => {
           expect(searchStub.callCount).to.equal(1);
           expect(searchStub.args[0])
-            .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, extensions]);
+            .to.deep.equal(['contacts', { settings: {} }, { limit: 50, skip: 0 }, extensions]);
           expect(db.query.callCount).to.equal(2);
           expect(db.query.args[0]).to.deep.equal([
             'medic-client/visits_by_date',
@@ -465,7 +472,7 @@ describe('Search service', () => {
         .then(result => {
           expect(searchStub.callCount).to.equal(1);
           expect(searchStub.args[0])
-            .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, extensions]);
+            .to.deep.equal(['contacts', { settings: {} }, { limit: 50, skip: 0 }, extensions]);
           expect(db.query.callCount).to.equal(2);
           expect(db.query.args[0]).to.deep.equal([
             'medic-client/visits_by_date',
@@ -544,7 +551,7 @@ describe('Search service', () => {
         .then(result => {
           expect(searchStub.callCount).to.equal(1);
           expect(searchStub.args[0])
-            .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, extensions]);
+            .to.deep.equal(['contacts', { settings: {} }, { limit: 50, skip: 0 }, extensions]);
           expect(db.query.callCount).to.equal(2);
           expect(db.query.args[0]).to.deep.equal([
             'medic-client/visits_by_date',
@@ -625,7 +632,7 @@ describe('Search service', () => {
           expect(searchStub.callCount).to.equal(1);
           expect(searchStub.args[0]).to.deep.equal([
             'contacts',
-            {},
+            { settings: {} }, 
             { limit: 50, skip: 0 },
             { sortByLastVisitedDate: true }
           ]);
