@@ -157,6 +157,8 @@ describe('qualifier', () => {
       null,
       undefined,
       '',
+      '   ',
+      '\t\n',
       { },
       0,
     ].forEach(form => {
@@ -173,6 +175,8 @@ describe('qualifier', () => {
       [ null, false ],
       [ 'pregnancy', false ],
       [ { form: { } }, false ],
+      [ { form: '' }, false ],
+      [ { form: '   ' }, false ],
       [ { form: 'pregnancy' }, true ],
       [ { form: 'pregnancy', other: 'other' }, true ]
     ].forEach(([ form, expected ]) => {

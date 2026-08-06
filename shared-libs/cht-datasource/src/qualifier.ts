@@ -1,4 +1,4 @@
-import { hasField, isRecord, isString } from './libs/core';
+import { hasField, hasStringFieldWithValue, isRecord, isString } from './libs/core';
 import { InvalidArgumentError } from './libs/error';
 
 /**
@@ -186,23 +186,26 @@ export type FormQualifier = Readonly<{ form: string }>;
  * @param form the form code to search with (e.g. `pregnancy`). This is matched verbatim against the
  * document's `form` field — it is not normalised.
  * @returns the qualifier
- * @throws InvalidArgumentError if the form code is not a non-empty string
+ * @throws InvalidArgumentError if the form code is not a string with a non-blank value
  */
 export const byForm = (form: string): FormQualifier => {
-  if (!isString(form) || form.length === 0) {
+  const qualifier = { form };
+  if (!isFormQualifier(qualifier)) {
     throw new InvalidArgumentError(`Invalid form [${JSON.stringify(form)}].`);
   }
 
-  return { form };
+  return qualifier;
 };
 
 /**
  * Returns `true` if the given qualifier is a {@link FormQualifier} otherwise `false`.
+ *
+ * The qualifier must have a `form` key whose value is a string that is not empty or blank.
  * @param qualifier the qualifier to check
  * @returns `true` if the given qualifier is a {@link FormQualifier}, otherwise `false`.
  */
 export const isFormQualifier = (qualifier: unknown): qualifier is FormQualifier => {
-  return isRecord(qualifier) && hasField(qualifier, { name: 'form', type: 'string' });
+  return isRecord(qualifier) && hasStringFieldWithValue(qualifier, 'form');
 };
 
 /**

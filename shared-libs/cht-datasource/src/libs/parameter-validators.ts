@@ -126,15 +126,6 @@ export const assertFreetextQualifier: (qualifier: unknown) => asserts qualifier 
 };
 
 /** @internal */
-export const assertFormQualifier: (qualifier: unknown) => asserts qualifier is FormQualifier = (
-  qualifier: unknown
-) => {
-  if (!isFormQualifier(qualifier)) {
-    throw new InvalidArgumentError(`Invalid form [${JSON.stringify(qualifier)}].`);
-  }
-};
-
-/** @internal */
 export const assertFreetextOrFormQualifier: (
   qualifier: unknown
 ) => asserts qualifier is FreetextQualifier | FormQualifier = (
