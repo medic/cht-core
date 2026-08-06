@@ -283,7 +283,16 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
 };
 
 const storeTargetsDoc = (provider, aggregate, updatedTargets) => {
-  const targetDocTag = aggregate.filterInterval ? moment(aggregate.filterInterval.end).format('YYYY-MM') : 'latest';
+  let targetDocTag = 'latest';
+  if (aggregate.filterInterval) {
+    if (rulesStateStore.getUseBikramSambatMonths()) {
+      const { toBik } = require('bikram-sambat');
+      const bsEnd = toBik(moment(aggregate.filterInterval.end).format('YYYY-MM-DD'));
+      targetDocTag = `${bsEnd.year}-${String(bsEnd.month).padStart(2, '0')}`;
+    } else {
+      targetDocTag = moment(aggregate.filterInterval.end).format('YYYY-MM');
+    }
+  }
   const minifyTarget = target => ({ id: target.id, value: target.value });
   const userContext = {
     userContactDoc: rulesStateStore.currentUserContact(),

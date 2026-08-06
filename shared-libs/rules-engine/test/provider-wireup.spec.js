@@ -122,6 +122,7 @@ describe('provider-wireup integration tests', () => {
           calculatedAt: NOW,
           contactState: {},
           monthStartDate: 1,
+          useBikramSambatMonths: false,
         },
       }]);
 
@@ -141,6 +142,7 @@ describe('provider-wireup integration tests', () => {
             },
             calculatedAt: NOW,
             monthStartDate: 1,
+            useBikramSambatMonths: false,
           },
         }]);
       expect(db.put.args[0][0].rulesStateStore.rulesConfigHash)
