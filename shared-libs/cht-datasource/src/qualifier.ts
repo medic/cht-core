@@ -177,6 +177,35 @@ export const isKeyedFreetextQualifier = (qualifier: FreetextQualifier): boolean 
 };
 
 /**
+ * A qualifier that identifies entities based on the code of the form used to record them.
+ */
+export type FormQualifier = Readonly<{ form: string }>;
+
+/**
+ * Builds a qualifier for finding entities recorded with the given form.
+ * @param form the form code to search with (e.g. `pregnancy`). This is matched verbatim against the
+ * document's `form` field — it is not normalised.
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the form code is not a non-empty string
+ */
+export const byForm = (form: string): FormQualifier => {
+  if (!isString(form) || form.length === 0) {
+    throw new InvalidArgumentError(`Invalid form [${JSON.stringify(form)}].`);
+  }
+
+  return { form };
+};
+
+/**
+ * Returns `true` if the given qualifier is a {@link FormQualifier} otherwise `false`.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link FormQualifier}, otherwise `false`.
+ */
+export const isFormQualifier = (qualifier: unknown): qualifier is FormQualifier => {
+  return isRecord(qualifier) && hasField(qualifier, { name: 'form', type: 'string' });
+};
+
+/**
  * A qualifier that identifies entities based on a reporting period (e.g. a calendar month). The reporting period
  * should be represented with the format YYYY-MM (e.g. "2025-07").
  */

@@ -214,6 +214,7 @@ describe('local report', () => {
       const expectedResult = { cursor: 'bookmark', data: ['1', '2', '3'] };
       let queryViewFreetextByKey: SinonStub;
       let queryViewFreetextByRange: SinonStub;
+      let queryViewByForm: SinonStub;
       let fetchAndFilterIdsInner: SinonStub;
       let fetchAndFilterIdsOuter: SinonStub;
       let queryNouveauFreetext: SinonStub;
@@ -221,10 +222,14 @@ describe('local report', () => {
 
       beforeEach(() => {
         queryViewFreetextByKey = sinon.stub();
-        sinon
-          .stub(LocalDoc, 'queryDocIdsByKey')
+        queryViewByForm = sinon.stub();
+        const queryDocIdsByKey = sinon.stub(LocalDoc, 'queryDocIdsByKey');
+        queryDocIdsByKey
           .withArgs(localContext.medicDb, 'medic-offline-freetext/reports_by_freetext')
           .returns(queryViewFreetextByKey);
+        queryDocIdsByKey
+          .withArgs(localContext.medicDb, 'medic-client/reports_by_form')
+          .returns(queryViewByForm);
 
         queryViewFreetextByRange = sinon.stub();
         sinon
@@ -389,6 +394,152 @@ describe('local report', () => {
           expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
           expect(fetchAndFilterIdsInner.notCalled).to.be.true;
         });
+      });
+
+      describe('when qualifying by form', () => {
+        beforeEach(() => {
+          fetchAndFilterIdsInner.resolves(expectedResult);
+          // The form branch must not depend on the nouveau/offline split at all.
+          useNouveauIndexes.resolves(true);
+        });
+
+        ([
+          [null, 0],
+          ['1', 1]
+        ] as [string | null, number][]).forEach(([cursor, skip]) => {
+          it(`queries the reports_by_form view with cursor ${JSON.stringify(cursor)}`, async () => {
+            const qualifier = Qualifier.byForm('pregnancy');
+
+            const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
+
+            expect(res).to.deep.equal(expectedResult);
+            expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
+            expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
+            expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
+
+            // Verify the page function uses the form view, keyed on the form code
+            const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+            pageFn(limit, skip);
+
+            expect(queryViewByForm.calledOnceWithExactly(['pregnancy'], limit, skip)).to.be.true;
+
+            // The freetext machinery must be untouched
+            expect(queryNouveauFreetext.notCalled).to.be.true;
+            expect(queryViewFreetextByKey.notCalled).to.be.true;
+            expect(queryViewFreetextByRange.notCalled).to.be.true;
+          });
+        });
+
+        it('does not normalise the form code', async () => {
+          const qualifier = Qualifier.byForm('ANC_FollowUp');
+
+          await Report.v1.getUuidsPage(localContext)(qualifier, null, limit);
+
+          const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+          pageFn(limit, 0);
+
+          expect(queryViewByForm.calledOnceWithExactly(['ANC_FollowUp'], limit, 0)).to.be.true;
+        });
+
+        it('throws an error if cursor is invalid', async () => {
+          const qualifier = Qualifier.byForm('pregnancy');
+          const cursor = 'not a number';
+
+          await expect(Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit))
+            .to.be.rejectedWith(
+              InvalidArgumentError,
+              `The cursor must be a string or null for first page: [${JSON.stringify(cursor)}]`
+            );
+
+          expect(queryViewByForm.notCalled).to.be.true;
+          expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
+          expect(fetchAndFilterIdsInner.notCalled).to.be.true;
+        });
+
+        it('prefers the freetext branch when a qualifier satisfies both', async () => {
+          const qualifier = { freetext: 'searchterm', form: 'pregnancy' };
+          queryNouveauFreetext.resolves(expectedResult);
+
+          const res = await Report.v1.getUuidsPage(localContext)(qualifier, null, limit);
+
+          expect(res).to.deep.equal(expectedResult);
+          expect(queryNouveauFreetext.calledOnce).to.be.true;
+          expect(queryViewByForm.notCalled).to.be.true;
+        });
+      });
+    });
+
+    // Unlike the stubbed dispatch tests above, this exercises the real page-assembly and cursor
+    // arithmetic against a fake view, so it would catch an off-by-one in the skip/cursor handling.
+    describe('getUuidsPage by form (pagination)', () => {
+      const allUuids = Array.from({ length: 12 }, (_, i) => `report-${i.toString()}`);
+      // Emulates the reports_by_form view: only rows whose key matches the qualifier are returned.
+      const viewRows: Record<string, string[]> = {
+        pregnancy: allUuids,
+        anc_followup: ['anc-0'],
+      };
+
+      beforeEach(() => {
+        sinon.stub(Nouveau, 'useNouveauIndexes').resolves(false);
+        sinon
+          .stub(LocalDoc, 'queryDocIdsByKey')
+          .withArgs(localContext.medicDb, 'medic-client/reports_by_form')
+          .returns((key: unknown, limit: number, skip: number) => {
+            const [form] = key as [string];
+            return Promise.resolve((viewRows[form] ?? []).slice(skip, skip + limit));
+          });
+      });
+
+      it('walks the full result set across cursor pages', async () => {
+        const getUuidsPage = Report.v1.getUuidsPage(localContext);
+        const qualifier = Qualifier.byForm('pregnancy');
+
+        const page1 = await getUuidsPage(qualifier, null, 5);
+        expect(page1.data).to.deep.equal(allUuids.slice(0, 5));
+        expect(page1.cursor).to.equal('5');
+
+        const page2 = await getUuidsPage(qualifier, page1.cursor, 5);
+        expect(page2.data).to.deep.equal(allUuids.slice(5, 10));
+        expect(page2.cursor).to.equal('10');
+
+        const page3 = await getUuidsPage(qualifier, page2.cursor, 5);
+        expect(page3.data).to.deep.equal(allUuids.slice(10));
+        expect(page3.cursor).to.equal(null);
+      });
+
+      it('returns an empty final page with a null cursor when the set divides evenly', async () => {
+        const getUuidsPage = Report.v1.getUuidsPage(localContext);
+        const qualifier = Qualifier.byForm('pregnancy');
+
+        const page1 = await getUuidsPage(qualifier, null, 6);
+        expect(page1.data).to.deep.equal(allUuids.slice(0, 6));
+        expect(page1.cursor).to.equal('6');
+
+        const page2 = await getUuidsPage(qualifier, page1.cursor, 6);
+        expect(page2.data).to.deep.equal(allUuids.slice(6, 12));
+        expect(page2.cursor).to.equal('12');
+
+        const page3 = await getUuidsPage(qualifier, page2.cursor, 6);
+        expect(page3.data).to.deep.equal([]);
+        expect(page3.cursor).to.equal(null);
+      });
+
+      it('returns only the reports recorded with the requested form', async () => {
+        const getUuidsPage = Report.v1.getUuidsPage(localContext);
+
+        const page = await getUuidsPage(Qualifier.byForm('anc_followup'), null, 5);
+
+        expect(page.data).to.deep.equal(['anc-0']);
+        expect(page.cursor).to.equal(null);
+      });
+
+      it('returns an empty page for a form with no reports', async () => {
+        const getUuidsPage = Report.v1.getUuidsPage(localContext);
+
+        const page = await getUuidsPage(Qualifier.byForm('no_such_form'), null, 5);
+
+        expect(page.data).to.deep.equal([]);
+        expect(page.cursor).to.equal(null);
       });
     });
 

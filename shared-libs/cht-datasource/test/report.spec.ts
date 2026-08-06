@@ -718,6 +718,8 @@ describe('report', () => {
           'getSummariesPage',
           'getUuidsByFreetext',
           'getUuidsPageByFreetext',
+          'getUuidsByForm',
+          'getUuidsPageByForm',
           'getByUuid',
           'create',
           'update',

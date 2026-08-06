@@ -1,5 +1,5 @@
 import { getResource, getResources, postResource, putResource, RemoteDataContext } from './libs/data-context';
-import { FreetextQualifier, IdsQualifier, UuidQualifier } from '../qualifier';
+import { FormQualifier, FreetextQualifier, IdsQualifier, isFreetextQualifier, UuidQualifier } from '../qualifier';
 import * as Report from '../report';
 import { Nullable, Page } from '../libs/core';
 
@@ -16,18 +16,33 @@ export namespace v1 {
     identifier: UuidQualifier
   ): Promise<Nullable<Report.v1.Report>> => getReport(remoteContext)(identifier.uuid);
 
+  const getReportUuidsByForm = (remoteContext: RemoteDataContext, form: string) => getResources(
+    remoteContext,
+    // The form code is a path segment, so it must be encoded. The value itself is not normalised.
+    `api/v1/report/by-form/${encodeURIComponent(form)}`
+  );
+
   /** @internal */
   export const getUuidsPage = (remoteContext: RemoteDataContext) => (
-    qualifier: FreetextQualifier,
+    qualifier: FreetextQualifier | FormQualifier,
     cursor: Nullable<string>,
     limit: number
   ): Promise<Page<string>> => {
+    // Freetext is matched first so the behaviour of existing freetext callers is unchanged.
+    if (isFreetextQualifier(qualifier)) {
+      const queryParams = {
+        limit: limit.toString(),
+        freetext: qualifier.freetext,
+        ...(cursor ? { cursor } : {}),
+      };
+      return getReportUuids(remoteContext)(queryParams);
+    }
+
     const queryParams = {
       limit: limit.toString(),
-      freetext: qualifier.freetext,
       ...(cursor ? { cursor } : {}),
     };
-    return getReportUuids(remoteContext)(queryParams);
+    return getReportUuidsByForm(remoteContext, qualifier.form)(queryParams);
   };
 
   const postReportSummary = postResource('api/v1/report/summary');

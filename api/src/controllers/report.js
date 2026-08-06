@@ -130,6 +130,58 @@ module.exports = {
 
     /**
      * @openapi
+     * /api/v1/report/by-form/{formCode}:
+     *   get:
+     *     summary: Get report UUIDs by form
+     *     operationId: v1ReportByFormGet
+     *     description: >
+     *       Returns a paginated array of identifiers for the reports recorded with the given form. The form code is
+     *       matched verbatim against the report's `form` field.
+     *     tags: [Report]
+     *     x-since: 5.3.0
+     *     x-permissions:
+     *       hasAll: [can_view_reports]
+     *     parameters:
+     *       - in: path
+     *         name: formCode
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: The code of the form the reports were recorded with (e.g. `pregnancy`).
+     *       - $ref: '#/components/parameters/cursor'
+     *       - $ref: '#/components/parameters/limitId'
+     *     responses:
+     *       '200':
+     *         description: A page of report UUIDs
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 data:
+     *                   type: array
+     *                   description: The results for this page
+     *                   items:
+     *                     type: string
+     *                 cursor:
+     *                   $ref: '#/components/schemas/PageCursor'
+     *               required: [data, cursor]
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     */
+    getUuidsByForm: serverUtils.doOrError(async (req, res) => {
+      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
+      const qualifier = Qualifier.byForm(req.params.formCode);
+      const uuids = await getReportIds(qualifier, req.query.cursor, req.query.limit);
+      return res.json(uuids);
+    }),
+
+    /**
+     * @openapi
      * /api/v1/report/summary:
      *   post:
      *     summary: Get report summaries by id

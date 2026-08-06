@@ -3,6 +3,7 @@ import {
   byContactType,
   byContactId,
   byContactIds,
+  byForm,
   byFreetext,
   byReportingPeriod,
   byUsername,
@@ -11,6 +12,7 @@ import {
   isContactTypeQualifier,
   isContactIdQualifier,
   isContactIdsQualifier,
+  isFormQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
   isReportingPeriodQualifier,
@@ -138,6 +140,44 @@ describe('qualifier', () => {
         expect(() => byContactType(contactType as string)).to.throw(
           `Invalid contact type [${JSON.stringify(contactType)}].`
         );
+      });
+    });
+  });
+
+  describe('byForm', () => {
+    it('builds a qualifier that identifies entities by their form code', () => {
+      expect(byForm('pregnancy')).to.deep.equal({ form: 'pregnancy' });
+    });
+
+    it('does not normalise the form code', () => {
+      expect(byForm('  ANC_FollowUp ')).to.deep.equal({ form: '  ANC_FollowUp ' });
+    });
+
+    [
+      null,
+      undefined,
+      '',
+      { },
+      0,
+    ].forEach(form => {
+      it(`throws an error for ${JSON.stringify(form)}`, () => {
+        expect(() => byForm(form as string)).to.throw(
+          `Invalid form [${JSON.stringify(form)}].`
+        );
+      });
+    });
+  });
+
+  describe('isFormQualifier', () => {
+    [
+      [ null, false ],
+      [ 'pregnancy', false ],
+      [ { form: { } }, false ],
+      [ { form: 'pregnancy' }, true ],
+      [ { form: 'pregnancy', other: 'other' }, true ]
+    ].forEach(([ form, expected ]) => {
+      it(`evaluates ${JSON.stringify(form)}`, () => {
+        expect(isFormQualifier(form)).to.equal(expected);
       });
     });
   });
