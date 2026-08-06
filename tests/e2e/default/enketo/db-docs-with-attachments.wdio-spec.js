@@ -128,12 +128,17 @@ describe('db-docs with attachments', () => {
     await reportsPage.rightPanelSelectors
       .reportImage('report.db-docs-with-attachments.photo')
       .waitForDisplayed();
-    // TODO binary attachments in repeat not rendered
     await reportsPage.rightPanelSelectors
       .reportImage('report.db-docs-with-attachments.repeated_attachments.0.photo')
       .waitForDisplayed();
     await reportsPage.rightPanelSelectors
-      .reportImage('report.db-docs-with-attachments.repeated_attachments.0.photo')
+      .reportImage('report.db-docs-with-attachments.repeated_attachments.0.badge')
+      .waitForDisplayed();
+    await reportsPage.rightPanelSelectors
+      .reportImage('report.db-docs-with-attachments.repeated_attachments.1.photo')
+      .waitForDisplayed();
+    await reportsPage.rightPanelSelectors
+      .reportImage('report.db-docs-with-attachments.repeated_attachments.1.badge')
       .waitForDisplayed();
 
     await reportsPage.goToReportById(childDoc._id);
