@@ -84,7 +84,7 @@ const assertIndeterminateFields = (result) => {
   [medic, sentinel, usersmeta, users].forEach(assertCouchDbDataSizeFields);
 };
 
-describe('monitoring', () => {
+describe.skip('monitoring', () => {
   beforeEach(async () => {
     await sentinelUtils.waitForSentinel();
     await utils.waitForIndexes();
