@@ -2,7 +2,7 @@
 
 set -eu -o pipefail
 
-# set CHT version from argument
+# set CHT version from argument 
 TAG_VERSION=$1
 
 # check to make sure it's at least X.Y.Z format
