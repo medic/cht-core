@@ -84,44 +84,33 @@ const saveTransitions = change => {
     infoDoc.transitions = change.info?.transitions || {};
     delete infoDoc.transitions_started;
   };
-  return modifyInfoDoc(change.id, modify, change.info);
+  return modifyInfoDoc(change.id, modify);
 };
 
 const saveCompletedTasks = (id, infodoc, completedTasks = []) => {
   return modifyInfoDoc(id, infoDoc => {
     infoDoc.completed_tasks = infodoc?.completed_tasks || completedTasks;
-  }, infodoc);
+  });
 };
 
 const markTransitionsStarted = (id) => {
   const modify = infoDoc => {
     infoDoc.transitions_started = new Date().toISOString();
   };
-  return modifyInfoDoc(id, modify, blankInfoDoc(id));
+  return modifyInfoDoc(id, modify);
 };
 
 const clearTransitionsStarted = (id) => {
   const modify = infoDoc => {
     delete infoDoc.transitions_started;
   };
-  return modifyInfoDoc(id, modify, blankInfoDoc(id));
+  return modifyInfoDoc(id, modify);
 };
 
-// Fetch the infodoc. If it is missing, return `fallback` (to be created) when provided;
-const fetchInfoDoc = async (id, fallback) => {
-  try {
-    return await db.sentinel.get(getInfoDocId(id));
-  } catch (err) {
-    if (err.status === 404 && fallback) {
-      return fallback;
-    }
-    throw err;
-  }
-};
-
-// Fetch the infodoc, apply `modify`, and save, retrying on conflict
-const modifyInfoDoc = async (id, modify, fallback) => {
-  const infoDoc = await fetchInfoDoc(id, fallback);
+// Applies `modify` to an existing infodoc and saves it, retrying on conflict.
+// Throws a 404 if the infodoc doesn't exist; creating one is left to the caller.
+const modifyInfoDoc = async (id, modify) => {
+  const infoDoc = await db.sentinel.get(getInfoDocId(id));
 
   modify(infoDoc);
 
@@ -131,7 +120,7 @@ const modifyInfoDoc = async (id, modify, fallback) => {
     if (err.status !== 409) {
       throw err;
     }
-    return modifyInfoDoc(id, modify, fallback);
+    return modifyInfoDoc(id, modify);
   }
 };
 

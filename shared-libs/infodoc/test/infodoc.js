@@ -416,21 +416,24 @@ describe('infodoc', () => {
       });
     });
 
-    it('should use infodoc directly when sentinel returns 404', () => {
+    it('should throw when the infodoc has been deleted, instead of recreating it', () => {
       const change = {
         id: 'some',
         info: {
           _id: 'some-info',
+          _rev: '1-abc',
           transitions: { one: { ok: true } }
         }
       };
       sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
       sinon.stub(db.sentinel, 'put').resolves();
 
-      return lib.saveTransitions(change).then(() => {
-        assert.equal(db.sentinel.put.callCount, 1);
-        assert.deepEqual(db.sentinel.put.args[0][0], change.info);
-      });
+      return lib.saveTransitions(change)
+        .then(() => assert.fail('should have thrown'))
+        .catch(err => {
+          assert.equal(err.status, 404);
+          assert.equal(db.sentinel.put.callCount, 0);
+        });
     });
 
     it('should use default value when infodoc property is falsy', () => {
@@ -444,7 +447,7 @@ describe('infodoc', () => {
       });
     });
 
-    it('should throw non-404 errors from sentinel get', () => {
+    it('should throw errors from sentinel get', () => {
       const change = { id: 'some', info: { transitions: {} } };
       sinon.stub(db.sentinel, 'get').rejects({ status: 500 });
 
@@ -493,6 +496,22 @@ describe('infodoc', () => {
         assert.equal(db.sentinel.put.callCount, 21);
         assert.deepEqual(db.sentinel.put.args[20], [{ ...info, transitions: change.info.transitions }]);
       });
+    });
+
+    it('should stop retrying conflicts once the infodoc has been deleted', () => {
+      const change = { id: 'some', info: { transitions: { one: { ok: true } } } };
+      const sentinelGet = sinon.stub(db.sentinel, 'get');
+      sentinelGet.resolves({ _id: 'some-info', _rev: '1-abc', doc_id: 'some' });
+      // the infodoc is deleted between the conflicting put and the next fetch
+      sentinelGet.onCall(1).rejects({ status: 404 });
+      sinon.stub(db.sentinel, 'put').rejects({ status: 409 });
+
+      return lib.saveTransitions(change)
+        .then(() => assert.fail('should have thrown'))
+        .catch(err => {
+          assert.equal(err.status, 404);
+          assert.equal(db.sentinel.put.callCount, 1);
+        });
     });
 
     it('clears the transitions_started marker when committing transitions', () => {

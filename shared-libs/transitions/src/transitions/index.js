@@ -57,10 +57,23 @@ const isMidWriteStale = infoDoc => {
     Date.now() - Date.parse(infoDoc.transitions_started) >= MID_WRITE_STALE_INTERVAL;
 };
 
+// Infodoc updates throw a 404 once background cleanup has deleted the infodoc of a deleted document.
+// There is nothing left to record against, so log and carry on.
+const ignoreDeletedInfoDoc = async (id, infoDocUpdate) => {
+  try {
+    return await infoDocUpdate;
+  } catch (err) {
+    if (err.status !== 404) {
+      throw err;
+    }
+    logger.warn(`transitions: infodoc for ${id} has been deleted, skipping infodoc update`);
+  }
+};
+
 // the transitions_started marker is stale, so clear it and process the doc anyway
 const clearStaleMarker = async (change, infoDocForChange) => {
   logger.warn(`transitions: clearing stale transitions_started marker on infodoc for ${change.id}`);
-  await infodoc.clearTransitionsStarted(change.id);
+  await ignoreDeletedInfoDoc(change.id, infodoc.clearTransitionsStarted(change.id));
   delete infoDocForChange.transitions_started;
 };
 
@@ -294,7 +307,7 @@ const finalizeChange = async ({ change, results, markStarted }) => {
     logger.debug(`nothing changed skipping saveDoc for doc ${change.id} seq ${change.seq}`);
     // info.transitions is how we know Sentinel has processed a doc; record it even when nothing ran.
     if (change.initialProcessing) {
-      await infodoc.saveTransitions(change);
+      await ignoreDeletedInfoDoc(change.id, infodoc.saveTransitions(change));
     }
     return;
   }
@@ -308,7 +321,7 @@ const finalizeChange = async ({ change, results, markStarted }) => {
 const saveForSentinel = async change => {
   const result = await saveDoc(change);
   logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
-  await infodoc.saveTransitions(change);
+  await ignoreDeletedInfoDoc(change.id, infodoc.saveTransitions(change));
   return result;
 };
 
@@ -316,11 +329,11 @@ const saveForSentinel = async change => {
 // sentinel read detects it and waits. The marker is cleared as part of the transitions write on
 // success, or rolled back on any failure after it's set.
 const saveForApi = async change => {
-  await infodoc.markTransitionsStarted(change.id);
+  await ignoreDeletedInfoDoc(change.id, infodoc.markTransitionsStarted(change.id));
   try {
     const result = await saveDoc(change);
     logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
-    await infodoc.saveTransitions(change);
+    await ignoreDeletedInfoDoc(change.id, infodoc.saveTransitions(change));
     return result;
   } catch (err) {
     await infodoc
