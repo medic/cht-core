@@ -8,7 +8,14 @@ import {
   queryDocIdsByRange,
   updateDoc
 } from './libs/doc';
-import { FreetextQualifier, IdsQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
+import {
+  FormQualifier,
+  FreetextQualifier,
+  IdsQualifier,
+  isFreetextQualifier,
+  isKeyedFreetextQualifier,
+  UuidQualifier
+} from '../qualifier';
 import { assertHasRequiredField, hasStringFieldWithValue, Nullable, Page } from '../libs/core';
 import * as Report from '../report';
 import * as LocalContact from './contact';
@@ -125,21 +132,34 @@ export namespace v1 {
     const queryNouveauFreetext = queryByFreetext(medicDb, 'reports_by_freetext');
     const getOfflineFreetextQueryPageFn = getOfflineFreetextQueryFn(medicDb);
     const promisedUseNouveau = useNouveauIndexes(medicDb);
+    // The form branch below returns without awaiting promisedUseNouveau, so a binding that only ever
+    // serves form queries would leave a rejection unobserved. The freetext branch still awaits (and
+    // so still surfaces) the real error.
+    promisedUseNouveau.catch(() => { /* no-op */ });
+    const queryViewByForm = queryDocIdsByKey(medicDb, 'medic-client/reports_by_form');
 
     return async (
-      qualifier: FreetextQualifier,
+      qualifier: FreetextQualifier | FormQualifier,
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<string>> => {
-      const freetextQualifier = normalizeFreetextQualifier(qualifier);
-      if (await promisedUseNouveau) {
-        // Running server-side. Use Nouveau indexes.
-        return await queryNouveauFreetext(freetextQualifier, cursor, limit);
+      // Freetext is matched first so the behaviour of existing freetext callers is unchanged.
+      if (isFreetextQualifier(qualifier)) {
+        const freetextQualifier = normalizeFreetextQualifier(qualifier);
+        if (await promisedUseNouveau) {
+          // Running server-side. Use Nouveau indexes.
+          return await queryNouveauFreetext(freetextQualifier, cursor, limit);
+        }
+
+        // Use client-side offline freetext views.
+        const skip = validateCursor(cursor);
+        const getPageFn = getOfflineFreetextQueryPageFn(freetextQualifier);
+        return fetchAndFilterIds(getPageFn, limit)(limit, skip);
       }
 
-      // Use client-side offline freetext views.
+      // The view emits [doc.form], so the form code is the complete key.
       const skip = validateCursor(cursor);
-      const getPageFn = getOfflineFreetextQueryPageFn(freetextQualifier);
+      const getPageFn = (limit: number, skip: number) => queryViewByForm([qualifier.form], limit, skip);
       return fetchAndFilterIds(getPageFn, limit)(limit, skip);
     };
   };

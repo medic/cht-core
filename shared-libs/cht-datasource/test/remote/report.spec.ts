@@ -152,6 +152,54 @@ describe('remote report', () => {
           freetext: freetext,
         })).to.be.true;
       });
+
+      describe('with a form qualifier', () => {
+        it('calls the by-form endpoint with the form code in the path', async () => {
+          const expectedResponse = { data: ['uuid1', 'uuid2'], cursor };
+          getResourcesInner.resolves(expectedResponse);
+
+          const result = await Report.v1.getUuidsPage(remoteContext)({ form: 'pregnancy' }, cursor, limit);
+
+          expect(result).to.equal(expectedResponse);
+          expect(getResourcesOuter.calledOnceWithExactly(
+            remoteContext,
+            'api/v1/report/by-form/pregnancy'
+          )).to.be.true;
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            cursor,
+          })).to.be.true;
+        });
+
+        it('omits cursor param when cursor is null', async () => {
+          const expectedResponse = { data: [], cursor: null };
+          getResourcesInner.resolves(expectedResponse);
+
+          const result = await Report.v1.getUuidsPage(remoteContext)({ form: 'pregnancy' }, null, limit);
+
+          expect(result).to.equal(expectedResponse);
+          expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString() })).to.be.true;
+        });
+
+        it('encodes the form code for use as a path segment', async () => {
+          getResourcesInner.resolves({ data: [], cursor: null });
+
+          await Report.v1.getUuidsPage(remoteContext)({ form: 'a/b c' }, null, limit);
+
+          expect(getResourcesOuter.calledOnceWithExactly(
+            remoteContext,
+            'api/v1/report/by-form/a%2Fb%20c'
+          )).to.be.true;
+        });
+
+        it('prefers the freetext endpoint when a qualifier satisfies both', async () => {
+          getResourcesInner.resolves({ data: [], cursor: null });
+
+          await Report.v1.getUuidsPage(remoteContext)({ freetext, form: 'pregnancy' }, null, limit);
+
+          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/uuid')).to.be.true;
+        });
+      });
     });
 
     describe('getPage', () => {

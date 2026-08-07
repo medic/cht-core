@@ -183,6 +183,58 @@ describe('Report Controller Tests', () => {
       });
     });
 
+    describe('getUuidsByForm', () => {
+      const formCode = 'pregnancy';
+      const limit = 100;
+      const cursor = null;
+      const uuids = { data: ['uuid1', 'uuid2'], cursor: null };
+
+      it('returns a page of report ids for the given form', async () => {
+        req = {
+          params: { formCode },
+          query: { cursor, limit },
+        };
+        reportGetIdsPage.resolves(uuids);
+
+        await controller.v1.getUuidsByForm(req, res);
+
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_reports'] }
+        )).to.be.true;
+        expect(reportGetIdsPage.calledOnceWithExactly(Qualifier.byForm(formCode), cursor, limit)).to.be.true;
+        expect(res.json.calledOnceWithExactly(uuids)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('returns a page of report ids for undefined limit', async () => {
+        req = {
+          params: { formCode },
+          query: { cursor },
+        };
+        reportGetIdsPage.resolves(uuids);
+
+        await controller.v1.getUuidsByForm(req, res);
+
+        expect(reportGetIdsPage.calledOnceWithExactly(Qualifier.byForm(formCode), cursor, undefined)).to.be.true;
+        expect(res.json.calledOnceWithExactly(uuids)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('errors without querying when the form code is empty', async () => {
+        req = {
+          params: { formCode: '' },
+          query: { cursor, limit },
+        };
+
+        await controller.v1.getUuidsByForm(req, res);
+
+        expect(reportGetIdsPage.notCalled).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+      });
+    });
+
     describe('getAll', () => {
       const limit = 100;
       const cursor = null;
