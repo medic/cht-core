@@ -325,6 +325,37 @@ describe('outbound shared library', () => {
         });
     });
 
+    it('should pass configured proxy through to request options', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          base_url: 'http://test',
+          path: '/foo',
+          proxy: 'http://proxy.local:3128'
+        }
+      };
+
+      sinon.stub(request, 'post').resolves();
+
+      return outbound.__get__('sendPayload')(payload, conf)
+        .then(() => {
+          assert.equal(request.post.callCount, 1);
+          assert.deepEqual(request.post.args, [
+            [
+              {
+                url: 'http://test/foo',
+                body: { some: 'data' },
+                timeout: 10000,
+                proxy: 'http://proxy.local:3128',
+              }
+            ]
+          ]);
+        });
+    });
+
     it('should support pushing via basic auth', () => {
       const payload = {
         some: 'data'
@@ -403,6 +434,112 @@ describe('outbound shared library', () => {
               }
             ]
           ]);
+        });
+    });
+
+    it('should support pushing with custom header auth', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          auth: {
+            type: 'Header',
+            name: 'x-api-key',
+            value_key: 'test-config'
+          },
+          base_url: 'http://test',
+          path: '/foo'
+        }
+      };
+
+      sinon.stub(secureSettings, 'getCredentials').resolves('secret-key');
+      sinon.stub(request, 'post').resolves();
+
+      return outbound.__get__('sendPayload')(payload, conf)
+        .then(() => {
+          assert.equal(secureSettings.getCredentials.callCount, 1);
+          assert.deepEqual(secureSettings.getCredentials.args, [['test-config']]);
+          assert.equal(request.post.callCount, 1);
+          assert.deepEqual(request.post.args, [
+            [
+              {
+                url: 'http://test/foo',
+                body: { some: 'data' },
+                timeout: 10000,
+                headers: {
+                  'x-api-key': 'secret-key'
+                }
+              }
+            ]
+          ]);
+        });
+    });
+
+    it('should allow destination and header auth together', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          auth: {
+            type: 'Header',
+            name: 'x-api-key',
+            value_key: 'test-config'
+          },
+          headers: {
+            'content-type': 'application/json',
+            'x-correlation-id': 'abc123'
+          },
+          base_url: 'http://test',
+          path: '/foo'
+        }
+      };
+
+      sinon.stub(secureSettings, 'getCredentials').resolves('secret-key');
+      sinon.stub(request, 'post').resolves();
+
+      return outbound.__get__('sendPayload')(payload, conf)
+        .then(() => {
+          assert.equal(request.post.callCount, 1);
+          assert.deepEqual(request.post.args, [
+            [
+              {
+                url: 'http://test/foo',
+                body: { some: 'data' },
+                timeout: 10000,
+                headers: {
+                  'content-type': 'application/json',
+                  'x-correlation-id': 'abc123',
+                  'x-api-key': 'secret-key'
+                }
+              }
+            ]
+          ]);
+        });
+    });
+
+    it('should fail when destination headers is not an object', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          headers: ['bad'],
+          base_url: 'http://test',
+          path: '/foo'
+        }
+      };
+
+      return outbound.__get__('sendPayload')(payload, conf)
+        .then(() => {
+          assert.fail('This send should have failed');
+        })
+        .catch(err => {
+          assert.equal(err.message, 'destination.headers must be an object');
         });
     });
 
@@ -521,13 +658,13 @@ describe('outbound shared library', () => {
   });
 
   describe('handleHeaderAuth', () => {
-    it('throws for unsupported header name', async () => {
+    it('throws when header auth name is missing', async () => {
       const handleHeaderAuth = outbound.__get__('handleHeaderAuth');
       try {
-        await handleHeaderAuth({ name: 'X-Custom' }, {});
+        await handleHeaderAuth({ value_key: 'header-key' }, {});
         assert.fail('should have thrown');
       } catch (err) {
-        assert.include(err.message, 'Unsupported header name');
+        assert.include(err.message, 'No auth.name');
       }
     });
   });

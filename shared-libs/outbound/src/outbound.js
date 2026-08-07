@@ -101,15 +101,39 @@ const handleBasicAuth = async (authConf, sendOptions) => {
   };
 };
 
-const handleHeaderAuth = async (authConf, sendOptions) => {
-  sendOptions.headers = sendOptions.headers || {};
-  if (authConf.name && authConf.name.toLowerCase() === 'authorization') {
-    const value = await fetchPassword(authConf.value_key);
-    sendOptions.headers.authorization = value;
+const handleConfiguredHeaders = (config, sendOptions) => {
+  const destinationHeaders = objectPath.get(config, 'destination.headers');
+  if (!destinationHeaders) {
     return;
   }
-  logger.error(`Unsupported header name '${authConf.name}'. Supported: authorization`);
-  throw new OutboundError(`Unsupported header name '${authConf.name}'. Supported: authorization`);
+
+  if (Object.prototype.toString.call(destinationHeaders) !== '[object Object]') {
+    throw new OutboundError('destination.headers must be an object');
+  }
+
+  sendOptions.headers = sendOptions.headers || {};
+  Object.keys(destinationHeaders).forEach(headerName => {
+    sendOptions.headers[headerName.toLowerCase()] = destinationHeaders[headerName];
+  });
+};
+
+const handleConfiguredProxy = (config, sendOptions) => {
+  const destinationProxy = objectPath.get(config, 'destination.proxy');
+  if (!destinationProxy) {
+    return;
+  }
+
+  sendOptions.proxy = destinationProxy;
+};
+
+const handleHeaderAuth = async (authConf, sendOptions) => {
+  if (!authConf.name) {
+    throw new OutboundError('No auth.name for header auth');
+  }
+
+  sendOptions.headers = sendOptions.headers || {};
+  const value = await fetchPassword(authConf.value_key);
+  sendOptions.headers[authConf.name.toLowerCase()] = value;
 };
 
 const handleMusoSihAuth = async (authConf, config, sendOptions) => {
@@ -177,6 +201,8 @@ const sendPayload = async (payload, config) => {
     timeout: OUTBOUND_REQ_TIMEOUT,
   };
 
+  handleConfiguredHeaders(config, sendOptions);
+  handleConfiguredProxy(config, sendOptions);
   await handleAuth(config, sendOptions);
 
   if (logger.isDebugEnabled()) {
