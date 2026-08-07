@@ -495,31 +495,33 @@ describe('AndraBot', () => {
       expect(commentBody).to.contain(getMessage('not-assigned', { issueList: '#1234' }));
     });
 
-    describe('when the issue cannot be read', () => {
-      const failGet = (status) => github.rest.issues.get
-        .rejects(Object.assign(new Error('Server Error'), { status }));
+    it('should ignore a reference to an issue that was deleted or transferred', async () => {
+      github.rest.issues.get.rejects(Object.assign(new Error('Gone'), { status: 410 }));
 
+      await run(getPr({ body: filledTemplate }));
+
+      expect(core.setFailed.calledOnce).to.be.true;
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('missing-linked-issue'));
+    });
+
+    /*
+     * Anything other than "the issue is not there" is left to throw, so the job goes red with
+     * no comment and no label change and the next synchronize re-runs it. Swallowing these is
+     * the one path that could hand a genuinely unlinked PR its Ready for review label.
+     */
+    describe('when the issue lookup fails for another reason', () => {
       [500, 403].forEach(status => {
-        it(`should not claim the PR is unlinked after a ${status.toString()}`, async () => {
-          failGet(status);
+        it(`should propagate a ${status.toString()} rather than treat it as unlinked`, async () => {
+          const err = Object.assign(new Error('Server Error'), { status });
+          github.rest.issues.get.rejects(err);
 
-          await run(getPr({ body: filledTemplate }));
+          await expect(run(getPr({ body: filledTemplate }))).to.be.rejectedWith('Server Error');
 
-          expect(core.setFailed.called).to.be.false;
-          expect(core.warning.called).to.be.true;
+          expect(github.rest.issues.createComment.called).to.be.false;
+          expect(github.rest.issues.addLabels.called).to.be.false;
+          expect(github.rest.issues.removeLabel.called).to.be.false;
         });
-      });
-
-      it('should still run the template check when the lookup fails', async () => {
-        failGet(500);
-
-        // Body has a closing reference (so the lookup is attempted) but no template sections.
-        await run(getPr({ body: 'Closes #1234' }));
-
-        expect(core.setFailed.calledOnce).to.be.true;
-        const commentBody = github.rest.issues.createComment.args[0][0].body;
-        expect(commentBody).to.contain(templateMismatchMessage());
-        expect(commentBody).to.not.contain(getMessage('missing-linked-issue'));
       });
     });
 

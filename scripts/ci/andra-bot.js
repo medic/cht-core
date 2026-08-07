@@ -145,13 +145,15 @@ const toIssueNode = (issue, reference) => {
   };
 };
 
-// A referenced issue that genuinely does not exist is not a link. Any other failure means we
-// could not tell, and blaming the contributor for that is the very false-fail this check is
-// meant to avoid — so those are reported separately rather than folded into "not linked".
+// A referenced issue that does not exist is not a link, so 404 (and 410, for issues that were
+// transferred or deleted) means the reference simply does not count. Anything else is left to
+// throw: the job goes red without a comment or a label change, exactly as it already does for
+// every other API call here, and the next `synchronize` re-runs it. Swallowing those would be
+// the one path that can hand a genuinely unlinked PR its `Ready for review` label.
+const MISSING_ISSUE_STATUSES = new Set([404, 410]);
+
 const resolveReferencedIssues = async (github, context, core, references) => {
-  let inconclusive = false;
   const issues = await Promise.all(references.map(async (reference) => {
-    const name = `${reference.owner}/${reference.repo}#${reference.number.toString()}`;
     try {
       const { data } = await github.rest.issues.get({
         owner: reference.owner,
@@ -161,16 +163,15 @@ const resolveReferencedIssues = async (github, context, core, references) => {
       // A pull request is also an issue on this endpoint, but referencing one is not a link.
       return data.pull_request ? null : toIssueNode(data, reference);
     } catch (err) {
-      if (err.status === 404) {
-        core.info(`Ignoring referenced issue ${name}: not found.`);
-      } else {
-        inconclusive = true;
-        core.warning(`Could not read referenced issue ${name}: ${err.message}`);
+      if (!MISSING_ISSUE_STATUSES.has(err.status)) {
+        throw err;
       }
+      const name = `${reference.owner}/${reference.repo}#${reference.number.toString()}`;
+      core.info(`Ignoring referenced issue ${name}: not found.`);
       return null;
     }
   }));
-  return { issues: issues.filter(Boolean), inconclusive };
+  return issues.filter(Boolean);
 };
 
 const getLinkedIssues = async (github, context, core) => {
@@ -203,14 +204,14 @@ const getLinkedIssues = async (github, context, core) => {
   const linkedIssues = result.repository.pullRequest.closingIssuesReferences.nodes
     .filter(issue => isInOrg(issue.repository.owner.login));
   if (linkedIssues.length) {
-    return { issues: linkedIssues, inconclusive: false };
+    return linkedIssues;
   }
 
   const references = parseClosingReferences(context.payload.pull_request.body, context)
     .filter(reference => isInOrg(reference.owner))
     .slice(0, MAX_LINKED_ISSUES);
   if (!references.length) {
-    return { issues: [], inconclusive: false };
+    return [];
   }
   return resolveReferencedIssues(github, context, core, references);
 };
@@ -246,14 +247,7 @@ const getFailures = async (github, context, core) => {
     failures.push(getMessage('license-changed'));
   }
 
-  const { issues: linkedIssues, inconclusive } = await getLinkedIssues(github, context, core);
-  if (inconclusive && !linkedIssues.length) {
-    // Failing the PR here would blame the contributor for a GitHub outage. The warning keeps
-    // the run visible without stranding a correctly-linked PR behind an infrastructure blip.
-    core.warning('Could not verify the linked issue, skipping that check.');
-    return failures;
-  }
-
+  const linkedIssues = await getLinkedIssues(github, context, core);
   const linkedIssueFailure = getLinkedIssueFailure(pr, linkedIssues);
   if (linkedIssueFailure) {
     failures.push(linkedIssueFailure);
