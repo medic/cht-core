@@ -29,8 +29,8 @@ esac
 
 # switch to dev cluster and update images
 kubectl config use-context arn:aws:eks:eu-west-2:720541322708:cluster/dev-cht-eks
-kubectl -n $NAMESPACE set image deployment/cht-api cht-api=public.ecr.aws/medic/cht-api:$TAG_VERSION
-kubectl -n $NAMESPACE set image deployment/cht-couchdb cht-couchdb=public.ecr.aws/medic/cht-couchdb:$TAG_VERSION
-kubectl -n $NAMESPACE set image deployment/cht-haproxy cht-haproxy=public.ecr.aws/medic/cht-haproxy:$TAG_VERSION
-kubectl -n $NAMESPACE set image deployment/cht-haproxy-healthcheck cht-haproxy-healthcheck=public.ecr.aws/medic/cht-haproxy-healthcheck:$TAG_VERSION
-kubectl -n $NAMESPACE set image deployment/cht-sentinel cht-sentinel=public.ecr.aws/medic/cht-sentinel:$TAG_VERSION
+kubectl -n $NAMESPACE set image deployment/cht-api cht-api=public.ecr.aws/medic/cht-api:"$TAG_VERSION"
+kubectl -n $NAMESPACE set image deployment/cht-couchdb cht-couchdb=public.ecr.aws/medic/cht-couchdb:"$TAG_VERSION"
+kubectl -n $NAMESPACE set image deployment/cht-haproxy cht-haproxy=public.ecr.aws/medic/cht-haproxy:"$TAG_VERSION"
+kubectl -n $NAMESPACE set image deployment/cht-haproxy-healthcheck cht-haproxy-healthcheck=public.ecr.aws/medic/cht-haproxy-healthcheck:"$TAG_VERSION"
+kubectl -n $NAMESPACE set image deployment/cht-sentinel cht-sentinel=public.ecr.aws/medic/cht-sentinel:"$TAG_VERSION"
