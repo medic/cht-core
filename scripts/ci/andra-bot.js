@@ -95,7 +95,86 @@ const matchesLicense = (prBody, template) => {
   return bodyLicenseSections.every(section => section.content.startsWith(templateLicenseSection.content));
 };
 
-const getLinkedIssues = async (github, context) => {
+const MAX_LINKED_ISSUES = 20;
+
+// GitHub's documented closing keywords, and the three reference forms they accept:
+// `#123`, `owner/repo#123`, and a full issue URL.
+// https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue
+const CLOSING_KEYWORDS = 'close[sd]?|fix(?:e[sd])?|resolve[sd]?';
+const REPO_NAME = String.raw`[\w.-]+`;
+const CLOSING_REFERENCE_REGEX = new RegExp(
+  String.raw`\b(?:${CLOSING_KEYWORDS})\b\s*:?\s+` +
+  String.raw`(?:https?://github\.com/(${REPO_NAME})/(${REPO_NAME})/issues/(\d+)` +
+  String.raw`|(?:(${REPO_NAME})/(${REPO_NAME}))?#(\d+))`,
+  'gi'
+);
+
+// GitHub only populates closingIssuesReferences from keywords when the PR targets the
+// repository's default branch; on any other base the field is empty even though the
+// contributor linked the issue correctly. Parsing the body covers that case.
+const parseClosingReferences = (body, context) => {
+  const matches = stripComments(body || '').matchAll(CLOSING_REFERENCE_REGEX);
+  const references = [...matches].map(([, urlOwner, urlRepo, urlNumber, owner, repo, number]) => ({
+    owner: urlOwner || owner || context.repo.owner,
+    repo: urlRepo || repo || context.repo.repo,
+    number: Number(urlNumber || number),
+  }));
+
+  // Owner and repo names are case-insensitive on GitHub, so the key is too.
+  const seen = new Set();
+  return references.filter(reference => {
+    const key = `${reference.owner}/${reference.repo}#${reference.number.toString()}`.toLowerCase();
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+};
+
+// Shapes a REST issue like a closingIssuesReferences node so the callers can't tell them apart.
+// The names come from repository_url where possible, so they carry GitHub's canonical casing
+// rather than whatever the contributor typed.
+const toIssueNode = (issue, reference) => {
+  const [, owner, repo] = /\/repos\/([^/]+)\/([^/]+)$/.exec(issue.repository_url || '') || [];
+  const nameWithOwner = `${owner || reference.owner}/${repo || reference.repo}`;
+  return {
+    number: issue.number,
+    repository: { nameWithOwner, owner: { login: owner || reference.owner } },
+    assignees: { nodes: (issue.assignees || []).map(assignee => ({ login: assignee.login })) },
+  };
+};
+
+// A referenced issue that does not exist is not a link, so 404 (and 410, for issues that were
+// transferred or deleted) means the reference simply does not count. Anything else is left to
+// throw: the job goes red without a comment or a label change, exactly as it already does for
+// every other API call here, and the next `synchronize` re-runs it. Swallowing those would be
+// the one path that can hand a genuinely unlinked PR its `Ready for review` label.
+const MISSING_ISSUE_STATUSES = new Set([404, 410]);
+
+const resolveReferencedIssues = async (github, context, core, references) => {
+  const issues = await Promise.all(references.map(async (reference) => {
+    try {
+      const { data } = await github.rest.issues.get({
+        owner: reference.owner,
+        repo: reference.repo,
+        issue_number: reference.number,
+      });
+      // A pull request is also an issue on this endpoint, but referencing one is not a link.
+      return data.pull_request ? null : toIssueNode(data, reference);
+    } catch (err) {
+      if (!MISSING_ISSUE_STATUSES.has(err.status)) {
+        throw err;
+      }
+      const name = `${reference.owner}/${reference.repo}#${reference.number.toString()}`;
+      core.info(`Ignoring referenced issue ${name}: not found.`);
+      return null;
+    }
+  }));
+  return issues.filter(Boolean);
+};
+
+const getLinkedIssues = async (github, context, core) => {
   const query = `
     query ($owner: String!, $repo: String!, $number: Int!) {
       repository(owner: $owner, name: $repo) {
@@ -121,9 +200,20 @@ const getLinkedIssues = async (github, context) => {
     number: context.payload.pull_request.number,
   });
   // Issues linked from repositories outside the org don't count as linked.
-  return result.repository.pullRequest.closingIssuesReferences.nodes.filter(
-    issue => issue.repository.owner.login === context.repo.owner
-  );
+  const isInOrg = owner => owner.toLowerCase() === context.repo.owner.toLowerCase();
+  const linkedIssues = result.repository.pullRequest.closingIssuesReferences.nodes
+    .filter(issue => isInOrg(issue.repository.owner.login));
+  if (linkedIssues.length) {
+    return linkedIssues;
+  }
+
+  const references = parseClosingReferences(context.payload.pull_request.body, context)
+    .filter(reference => isInOrg(reference.owner))
+    .slice(0, MAX_LINKED_ISSUES);
+  if (!references.length) {
+    return [];
+  }
+  return resolveReferencedIssues(github, context, core, references);
 };
 
 const getLinkedIssueFailure = (pr, linkedIssues) => {
@@ -144,7 +234,7 @@ const getLinkedIssueFailure = (pr, linkedIssues) => {
   return getMessage('not-assigned', { issueList });
 };
 
-const getFailures = async (github, context) => {
+const getFailures = async (github, context, core) => {
   const pr = context.payload.pull_request;
   const failures = [];
 
@@ -157,7 +247,7 @@ const getFailures = async (github, context) => {
     failures.push(getMessage('license-changed'));
   }
 
-  const linkedIssues = await getLinkedIssues(github, context);
+  const linkedIssues = await getLinkedIssues(github, context, core);
   const linkedIssueFailure = getLinkedIssueFailure(pr, linkedIssues);
   if (linkedIssueFailure) {
     failures.push(linkedIssueFailure);
@@ -278,7 +368,7 @@ const runAndraBot = async ({ github, context, core }) => {
     return;
   }
 
-  const failures = await getFailures(github, context);
+  const failures = await getFailures(github, context, core);
   const existingComment = await findExistingComment(github, context);
 
   if (!failures.length) {
