@@ -33,9 +33,28 @@ describe('Edit ', () => {
     contact: onlineUserContact
   });
 
+  const restrictedUserContact = personFactory.build({ name: 'Restricted Person', parent: healthCenter });
+
+  // User without can_update_contacts permission
+  const restrictedUser = userFactory.build({
+    username: 'restricted_user',
+    place: healthCenter._id,
+    roles: ['restricted_chw'],
+    contact: personFactory.build({ parent: healthCenter })
+  });
+
   before(async () => {
-    await utils.saveDocs([...places.values()]);
-    await utils.createUsers([offlineUser, onlineUser]);
+    await utils.updatePermissions(
+      ['restricted_chw'],
+      ['can_view_contacts', 'can_view_contacts_tab'],
+      ['can_update_contacts']
+    );
+    await utils.saveDocs([...places.values(), restrictedUserContact]);
+    await utils.createUsers([offlineUser, onlineUser, restrictedUser]);
+  });
+
+  after(async () => {
+    await utils.revertSettings(true);
   });
 
   it('should update a contact, delete the same contact then unassign primary contact from facility', async () => {
@@ -58,6 +77,21 @@ describe('Edit ', () => {
     await contactPage.selectLHSRowByText(healthCenter.name);
     await contactPage.waitForContactLoaded();
     expect(await contactPage.getAllRHSPeopleNames()).to.not.include.members([ CONTACT_UPDATED_NAME ]);
+
+    await commonPage.logout();
+  });
+
+  it('should not show edit option when user lacks can_update_contacts permission', async () => {
+    await loginPage.login(restrictedUser);
+    await commonPage.waitForPageLoaded();
+    await commonPage.goToPeople();
+    await contactPage.selectLHSRowByText(restrictedUserContact.name);
+    await contactPage.waitForContactLoaded();
+
+    await commonPage.openMoreOptionsMenu();
+
+    const isEditVisible = await commonPage.isMenuOptionVisible('edit');
+    expect(isEditVisible).to.be.false;
 
     await commonPage.logout();
   });

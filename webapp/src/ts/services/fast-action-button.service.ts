@@ -93,7 +93,7 @@ export class FastActionButtonService {
         label: this.getFormTitle(contactType.create_key) ?? contactType.id,
         icon: { name: contactType.icon, type: IconType.RESOURCE },
         canDisplay: () => this.authService.has([
-          'can_edit',
+          'can_update_contacts',
           contactType.person ? 'can_create_people' : 'can_create_places'
         ]),
         execute: () => {
@@ -126,7 +126,7 @@ export class FastActionButtonService {
       canDisplay: async () => {
         const permission = [ 'can_view_message_action' ];
         if (!canUseMailto()) {
-          permission.push('can_edit');
+          permission.push( 'can_update_contacts');
         }
         return validatePhone() &&
           await this.authService.has(permission) &&
