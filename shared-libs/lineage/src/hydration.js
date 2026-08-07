@@ -22,6 +22,13 @@ const extractParentIds = current => selfAndParents(current)
   .map(parent => parent._id)
   .filter(id => id);
 
+// One entry per id, in the given order. Ids with no matching doc yield undefined so that positions in the
+// lineage - and therefore ancestor depth - are preserved.
+const orderDocsByIds = (ids, docs) => {
+  const docsById = new Map(docs.map(doc => [ doc._id, doc ]));
+  return ids.map(id => docsById.get(id));
+};
+
 const getContactById = (contacts, id) => id && contacts.find(contact => contact && contact._id === id);
 
 const getContactIds = (contacts) => {
@@ -229,16 +236,23 @@ module.exports = function(Promise, DB) {
   };
 
   const fetchLineageById = function(id) {
-    const options = {
-      startkey: [id],
-      endkey: [id, {}],
-      include_docs: true
-    };
-    return DB.query('medic-client/docs_by_id_lineage', options)
-      .then(function(result) {
-        return result.rows.map(function(row) {
-          return row.doc;
-        });
+    // The lineage of a document is recorded on the document itself: the parent chain for a contact, or the contact's
+    // parent chain for a report. Fetch the document, then fetch its ancestors by id, preserving lineage order.
+    return DB.get(id)
+      .then(function(doc) {
+        const startParent = utils.isReport(doc) ? doc.contact : doc.parent;
+        const parentIds = extractParentIds(startParent);
+        if (!parentIds.length) {
+          return [doc];
+        }
+        return fetchDocs(parentIds)
+          .then(ancestors => [ doc, ...orderDocsByIds(parentIds, ancestors) ]);
+      })
+      .catch(function(err) {
+        if (err.status === 404) {
+          return [];
+        }
+        throw err;
       });
   };
 
