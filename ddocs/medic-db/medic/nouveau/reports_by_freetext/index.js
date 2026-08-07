@@ -3,6 +3,12 @@ function(doc) {
   var maxLength = 1000;
   var minLength = 3;
 
+  var normalizeDevanagariNumerals = function(str) {
+    return str.replace(/[०-९]/g, function(d) {
+      return String.fromCodePoint(d.codePointAt(0) - 0x0966 + 0x0030);
+    });
+  };
+
   var indexMaybe = function(type, fieldName, value, opts) {
     var stringValue = String(value);
     if (stringValue.length < minLength) { // Too short
@@ -25,7 +31,7 @@ function(doc) {
     }
 
     if (typeof value === 'string') {
-      var lowerValue = value.toLowerCase();
+      var lowerValue = normalizeDevanagariNumerals(value.toLowerCase());
       indexMaybe('text', 'default', lowerValue);
       indexMaybe('string', 'exact_match', lowerKey + ':' + lowerValue);
     } else if (typeof value === 'number') {
