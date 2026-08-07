@@ -49,20 +49,8 @@ describe('Export Data V2.0', () => {
       await reloadLog.promise;
     });
 
-    const waitForTransformedExport = async (retries = 20) => {
-      const result = await utils.request({ path: '/api/v2/export/messages' });
-      if (result.includes('Hello ADA')) {
-        return result;
-      }
-      if (!retries) {
-        throw new Error(`Extension-lib output was not present in messages export:\n${result}`);
-      }
-      await utils.delayPromise(100);
-      return waitForTransformedExport(retries - 1);
-    };
-
     it('renders scheduled message content with the loaded extension library', async () => {
-      const result = await waitForTransformedExport();
+      const result = await utils.request({ path: '/api/v2/export/messages' });
 
       expect(result).to.include('export-messages-extension-lib');
       expect(result).to.include('Hello ADA');

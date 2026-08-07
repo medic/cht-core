@@ -48,23 +48,26 @@ describe('MessageFormat', () => {
   });
 
   it('should render translations with extension-libs', async () => {
+    const expectedLabel = 'Extension label: noitagivan stropeR';
     await utils.saveDoc(createExtensionLibDoc({
-      'uppercase.js': 'module.exports = value => value.toUpperCase();',
+      'reverse-label.js':
+        'module.exports = value => `Extension label: ${Array.from(value).reverse().join(\'\')}`;',
     }));
     await commonPage.reloadSession();
     await loginPage.cookieLogin();
     await utils.addTranslations('en', {
-      Reports: '{{#uppercase}}reports{{/uppercase}}',
+      Reports: '{{#reverse-label}}Reports navigation{{/reverse-label}}',
     });
 
     await browser.waitUntil(async () => {
       const labels = await commonPage.getAllButtonLabelsNames();
-      return labels.includes('REPORTS');
+      return labels.includes(expectedLabel);
     }, {
       timeout: 5000,
       timeoutMsg: 'Timed out waiting for extension-lib translation to render',
     });
 
-    expect(await commonPage.getAllButtonLabelsNames()).to.include('REPORTS');
+    const labels = await commonPage.getAllButtonLabelsNames();
+    expect(labels.filter(label => label.startsWith('Extension label:'))).to.deep.equal([expectedLabel]);
   });
 });

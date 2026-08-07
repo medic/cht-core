@@ -158,6 +158,12 @@ const reportWithExtensionLib = {
     recipient: 'clinic',
     state_history: [],
     state: 'scheduled',
+  }, {
+    due: twoDaysAgo,
+    message_key: 'messages.extension.invalid',
+    recipient: 'clinic',
+    state_history: [],
+    state: 'scheduled',
   }],
 };
 
@@ -418,7 +424,9 @@ const translations = {
     'TWO. Reported by {{contact.name}}. Patient {{patient_name}} ({{patient_id}}). Value {{fields.value}}',
   'messages.clinic':
     'CLINIC. Reported by {{contact.name}}. Place {{place.name}} ({{place.place_id}}). Value {{fields.value}}',
-  'messages.extension': 'Extension patient: {{#uppercase}}{{patient_name}}{{/uppercase}}',
+  'messages.extension':
+    'Extension helpers: {{#decorate}}{{patient_name}}{{/decorate}} / {{#reverse}}{{patient_name}}{{/reverse}}',
+  'messages.extension.invalid': 'Invalid helper fallback: {{#invalid}}patient {{patient_id}}{{/invalid}}',
 };
 
 const ids = reports.map(report => report._id);
@@ -428,7 +436,11 @@ describe('Due Tasks', () => {
     const reloadLog = await utils.waitForSentinelLogs(true, /Detected extension-libs change - reloading/);
     await utils.saveDocs([
       ...contacts,
-      createExtensionLibDoc({ 'uppercase.js': 'module.exports = value => value.toUpperCase();' }),
+      createExtensionLibDoc({
+        'decorate.js': 'module.exports = value => `patient<${value}>`;',
+        'reverse.js': 'module.exports = value => Array.from(value).reverse().join(\'\');',
+        'invalid.js': 'module.exports = { reason: \'not a function\' };',
+      }),
     ]);
     await reloadLog.promise;
     await utils.addTranslations('test', translations);
@@ -595,7 +607,7 @@ describe('Due Tasks', () => {
     chai.expect(report.scheduled_tasks[1].messages).to.equal(undefined);
   });
 
-  it('renders scheduled messages with extension-libs', async () => {
+  it('renders scheduled messages with multiple extension-libs and handles invalid exports', async () => {
     await sentinelUtils.waitForSentinel();
     await utils.toggleSentinelTransitions();
     await utils.saveDoc(reportWithExtensionLib);
@@ -607,7 +619,12 @@ describe('Due Tasks', () => {
     const report = await utils.getDoc(reportWithExtensionLib._id);
     chai.expect(report.scheduled_tasks[0]).to.deep.include({ state: 'pending' });
     chai.expect(report.scheduled_tasks[0].messages[0]).to.include({
-      message: 'Extension patient: PATIENT1',
+      message: 'Extension helpers: patient<Patient1> / 1tneitaP',
+      to: '111222',
+    });
+    chai.expect(report.scheduled_tasks[1]).to.deep.include({ state: 'pending' });
+    chai.expect(report.scheduled_tasks[1].messages[0]).to.include({
+      message: 'Invalid helper fallback: patient patient1',
       to: '111222',
     });
   });
