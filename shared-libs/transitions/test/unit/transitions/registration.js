@@ -2615,12 +2615,14 @@ describe('registration', () => {
           testMessage1,
           testPhone,
           expectedContext,
+          true,
         ]);
         addMessage.args[1].should.deep.equal([
           testDoc,
           testMessage2,
           testPhone,
           expectedContext,
+          true,
         ]);
 
         utils.getRegistrations.callCount.should.equal(2);
@@ -2681,12 +2683,14 @@ describe('registration', () => {
           testMessage1,
           testPhone,
           expectedContext,
+          true,
         ]);
         messages.addMessage.args[1].should.deep.equal([
           testDoc,
           testMessage2,
           testPhone,
           expectedContext,
+          true,
         ]);
         utils.getRegistrations.callCount.should.equal(2);
         utils.getRegistrations.args[0].should.deep.equal([{ id: undefined }]);
@@ -2749,12 +2753,14 @@ describe('registration', () => {
           testMessage1,
           testPhone,
           expectedContext,
+          true,
         ]);
         messages.addMessage.args[1].should.deep.equal([
           testDoc,
           testMessage2,
           testPhone,
           expectedContext,
+          true,
         ]);
 
         utils.getRegistrations.callCount.should.equal(2);
@@ -2815,7 +2821,35 @@ describe('registration', () => {
         addMessage.args[0][1].should.equal(testMessage1);
         addMessage.args[0][2].should.equal(testPhone);
         addMessage.args[0][3].should.deep.equal(expectedContext);
+        addMessage.args[0][4].should.equal(true);
       });
+    });
+
+    it('does not add duplicate identical replies when called twice', () => {
+      const testPhone = '+40755895896';
+      const testMessage = {
+        message: 'Await further instructions',
+        recipient: testPhone,
+        event_type: 'report_accepted',
+      };
+
+      sinon.stub(utils, 'getRegistrations').resolves([]);
+      config.getAll.returns({});
+      config.get.withArgs('sms').returns({});
+
+      const testConfig = { messages: [testMessage] };
+      const testDoc = {
+        from: '+1234567',
+        fields: {},
+      };
+
+      return transition.addMessages(testConfig, testDoc)
+        .then(() => transition.addMessages(testConfig, testDoc))
+        .then(() => {
+          testDoc.tasks.should.have.lengthOf(1);
+          testDoc.tasks[0].messages[0].message.should.equal('Await further instructions');
+          testDoc.tasks[0].messages[0].to.should.equal(testPhone);
+        });
     });
   });
 
