@@ -168,7 +168,10 @@ const saveProperty = async (id, infodoc, property, defaultValue = {}) => {
     if (err.status !== 404) {
       throw err;
     }
-    updatedInfoDoc = infodoc;
+    // the infodoc has been deleted, so the rev we were handed is stale and would conflict with the
+    // deletion tombstone
+    updatedInfoDoc = Object.assign({}, infodoc);
+    delete updatedInfoDoc._rev;
   }
 
   try {

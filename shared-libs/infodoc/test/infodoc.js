@@ -543,6 +543,31 @@ describe('infodoc', () => {
       });
     });
 
+    it('should drop the stale rev when the infodoc has been deleted', () => {
+      const change = {
+        id: 'some',
+        info: {
+          _id: 'some-info',
+          _rev: '1-abc',
+          transitions: { one: { ok: true } }
+        }
+      };
+      sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+      sinon.stub(db.sentinel, 'put').resolves();
+
+      return lib.saveTransitions(change).then(() => {
+        // keeping the rev would conflict with the deletion tombstone, and the conflict retry would
+        // fetch the same 404 and put the same stale rev forever
+        assert.equal(db.sentinel.put.callCount, 1);
+        assert.deepEqual(db.sentinel.put.args[0][0], {
+          _id: 'some-info',
+          transitions: { one: { ok: true } }
+        });
+        // the change's infodoc is shared with the caller and the conflict retry, so it is untouched
+        assert.equal(change.info._rev, '1-abc');
+      });
+    });
+
     it('should use default value when infodoc property is falsy', () => {
       const serverInfo = { _id: 'some-info', doc_id: 'some' };
       sinon.stub(db.sentinel, 'get').resolves(serverInfo);
