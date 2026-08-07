@@ -5,7 +5,7 @@ STAGING='https://staging.dev.medicmobile.org/_couch/builds_4'
 TAG_VERSION=$(curl -s "${STAGING}"/_design/builds/_view/releases\?limit=1\&descending=true |  tr -d \\n | grep -o 'medic:medic:[0-9\.]*' | cut -f3 -d:)
 NAMESPACE="demo-cht"
 
-# check to make sure it's at least X.Y.Z format
+# check to make sure it's at least X.Y.Z format 
 if ! [[ "$TAG_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   echo "Version \"$TAG_VERSION\" isn't SemVer, exiting"
   exit 1
