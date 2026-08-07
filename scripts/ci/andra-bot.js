@@ -101,11 +101,11 @@ const MAX_LINKED_ISSUES = 20;
 // `#123`, `owner/repo#123`, and a full issue URL.
 // https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue
 const CLOSING_KEYWORDS = 'close[sd]?|fix(?:e[sd])?|resolve[sd]?';
-const REPO_NAME = '[\\w.-]+';
+const REPO_NAME = String.raw`[\w.-]+`;
 const CLOSING_REFERENCE_REGEX = new RegExp(
-  `\\b(?:${CLOSING_KEYWORDS})\\b\\s*:?\\s+` +
-  `(?:https?://github\\.com/(${REPO_NAME})/(${REPO_NAME})/issues/(\\d+)` +
-  `|(?:(${REPO_NAME})/(${REPO_NAME}))?#(\\d+))`,
+  String.raw`\b(?:${CLOSING_KEYWORDS})\b\s*:?\s+` +
+  String.raw`(?:https?://github\.com/(${REPO_NAME})/(${REPO_NAME})/issues/(\d+)` +
+  String.raw`|(?:(${REPO_NAME})/(${REPO_NAME}))?#(\d+))`,
   'gi'
 );
 
