@@ -2,7 +2,7 @@ import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import * as RegistrationUtils from '@medic/registration-utils';
 import * as RulesEngineCore from '@medic/rules-engine';
 import { Subject, Subscription } from 'rxjs';
-import { debounce as _debounce, uniq as _uniq } from 'lodash-es';
+import { debounce as _debounce } from 'lodash-es';
 import * as moment from 'moment';
 import { DOC_IDS, DOC_TYPES } from '@medic/constants';
 
@@ -324,7 +324,7 @@ export class RulesEngineService implements OnDestroy {
   private monitorTaskChanges() {
     const taskDocSubscription = this.changesService.subscribe({
       key: 'task-doc-update',
-      filter: change => change.doc.type === 'task' && this.rulesEngineCore.showTask(change.doc),
+      filter: change => change.doc.type === DOC_TYPES.TASK && this.rulesEngineCore.showTask(change.doc),
       callback: change => {
         this.ngZone.run(() => {
           this.taskActions.setOverdueTasks(this.hydrateTaskDocs([change.doc]));
@@ -356,14 +356,14 @@ export class RulesEngineService implements OnDestroy {
 
   private updateEmissionExternalChanges(changedDocs) {
     const contactsWithUpdatedTasks = changedDocs
-      .filter(doc => doc.type === 'task')
+      .filter(doc => doc.type === DOC_TYPES.TASK)
       .map(doc => doc.requester);
 
     if (!contactsWithUpdatedTasks.length) {
       return;
     }
 
-    return this.rulesEngineCore.updateEmissionsFor(_uniq(contactsWithUpdatedTasks));
+    return this.rulesEngineCore.updateEmissionsFor([...new Set(contactsWithUpdatedTasks)]);
   }
 
   private hydrateTaskDocs(taskDocs: Array<TaskDoc> = []) {

@@ -2,6 +2,7 @@
  * @module emitter.javascript
  * Processes declarative configuration code by executing javascript rules directly
  */
+const { DOC_TYPES } = require('@medic/constants');
 
 class Contact {
   constructor({ contact, reports, tasks}) {
@@ -66,9 +67,9 @@ module.exports = {
 };
 
 const emitCallback = (instanceType, instance) => {
-  if (instanceType === 'task') {
+  if (instanceType === DOC_TYPES.TASK) {
     results.tasks.push(instance);
-  } else if (instanceType === 'target') {
+  } else if (instanceType === DOC_TYPES.TARGET) {
     results.targets.push(instance);
   }
 };
