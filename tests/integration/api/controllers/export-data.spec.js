@@ -1,6 +1,6 @@
 const utils = require('@utils');
 const uuid = require('uuid').v7;
-const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
+const { DOC_IDS, DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
 const { createExtensionLibDoc } = require('@utils/extension-libs');
 
 const getRows = (result) => {
@@ -46,6 +46,12 @@ describe('Export Data V2.0', () => {
         createExtensionLibDoc({ 'uppercase.js': 'module.exports = value => value.toUpperCase();' }),
         report,
       ]);
+      await reloadLog.promise;
+    });
+
+    after(async () => {
+      const reloadLog = await utils.waitForApiLogs(/Detected extension-libs change - reloading/);
+      await utils.deleteDocs([DOC_IDS.EXTENSION_LIBS, report._id]);
       await reloadLog.promise;
     });
 
