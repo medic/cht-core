@@ -282,23 +282,26 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
   return refreshForKnownContacts(calculationTimestamp, rulesStateStore.getContactIds());
 };
 
-const storeTargetsDoc = (provider, aggregate, updatedTargets) => {
-  let targetDocTag = 'latest';
-  if (aggregate.filterInterval) {
-    if (rulesStateStore.getUseBikramSambatMonths()) {
-      try {
-        const { toBik } = require('bikram-sambat');
-        const bsEnd = toBik(moment(aggregate.filterInterval.end).format('YYYY-MM-DD'));
-        targetDocTag = `${bsEnd.year}-${String(bsEnd.month).padStart(2, '0')}`;
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.warn('Failed to parse BS date for target document tag, falling back to Gregorian tag:', err);
-        targetDocTag = moment(aggregate.filterInterval.end).format('YYYY-MM');
-      }
-    } else {
-      targetDocTag = moment(aggregate.filterInterval.end).format('YYYY-MM');
-    }
+const getTargetDocTag = (filterInterval) => {
+  if (!filterInterval) {
+    return 'latest';
   }
+  if (!rulesStateStore.getUseBikramSambatMonths()) {
+    return moment(filterInterval.end).format('YYYY-MM');
+  }
+  try {
+    const { toBik } = require('bikram-sambat');
+    const bsEnd = toBik(moment(filterInterval.end).format('YYYY-MM-DD'));
+    return `${bsEnd.year}-${String(bsEnd.month).padStart(2, '0')}`;
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn('Failed to parse BS date for target document tag, falling back to Gregorian tag:', err);
+    return moment(filterInterval.end).format('YYYY-MM');
+  }
+};
+
+const storeTargetsDoc = (provider, aggregate, updatedTargets) => {
+  const targetDocTag = getTargetDocTag(aggregate.filterInterval);
   const minifyTarget = target => ({ id: target.id, value: target.value });
   const userContext = {
     userContactDoc: rulesStateStore.currentUserContact(),
