@@ -177,30 +177,4 @@ describe('cht-form web component - Bikram Sambat Widget', () => {
       expect(await standardDateWidget.isExisting()).to.be.false;
     }
   });
-
-  it('asserts that the picker renders completely within the viewport', async () => {
-    const widgets = await $$('.bikram-sambat-widget');
-    const firstWidget = widgets[0];
-    const calBtn = await firstWidget.$('.calendar-btn');
-    await calBtn.click();
-
-    const picker = await $('.nepali-date-picker');
-    expect(await picker.isDisplayed()).to.be.true;
-
-    const viewportSize = await browser.execute(() => ({
-      width: window.innerWidth,
-      height: window.innerHeight,
-    }));
-    const location = await picker.getLocation();
-    const size = await picker.getSize();
-
-    expect(location.x).to.be.at.least(0);
-    expect(location.y).to.be.at.least(0);
-    expect(location.x + size.width).to.be.at.most(viewportSize.width);
-    expect(location.y + size.height).to.be.at.most(viewportSize.height);
-
-    // Close picker
-    const closeBtn = await picker.$('.close-btn');
-    await closeBtn.click();
-  });
 });

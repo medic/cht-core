@@ -16,6 +16,37 @@ const fromDevanagari = (str) => {
   return str.replace(/[०-९]/g, (d) => devanagariDigits.indexOf(d).toString());
 };
 
+const toDevanagari = (str) => {
+  const devanagariDigits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+  return str.replace(/[0-9]/g, (d) => devanagariDigits[Number.parseInt(d, 10)]);
+};
+
+const nepaliMonths = ['बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ', 'असोज', 'कात्तिक', 'मंसिर', 'पुस', 'माघ', 'फागुन', 'चैत'];
+
+const getExpectedNepaliLabel = (momentDate) => {
+  const bsStr = toBik_dev(momentDate.format('YYYY-MM-DD'));
+  const [year, month, day] = bsStr.split('-');
+  const dayDev = toDevanagari(Number.parseInt(day, 10).toString());
+  const monthName = nepaliMonths[Number.parseInt(month, 10) - 1];
+  const yearDev = toDevanagari(year);
+  return `${dayDev} ${monthName} ${yearDev}`;
+};
+
+const getExpectedFromLabel = () => {
+  const todayBik = toBik_dev(moment().format('YYYY-MM-DD'));
+  const [year, month] = todayBik.split('-').map(num => Number.parseInt(num, 10));
+  let targetMonth = month - 2;
+  let targetYear = year;
+  if (targetMonth <= 0) {
+    targetMonth += 12;
+    targetYear -= 1;
+  }
+  const dayDev = toDevanagari('1');
+  const monthName = nepaliMonths[targetMonth - 1];
+  const yearDev = toDevanagari(targetYear.toString());
+  return `${dayDev} ${monthName} ${yearDev}`;
+};
+
 describe('Reports Sidebar Filter', () => {
   const places = placeFactory.generateHierarchy();
 
@@ -218,6 +249,22 @@ describe('Reports Sidebar Filter', () => {
       expect(disableCells.length).to.be.greaterThan(0);
     }
 
+    // Verify anchored picker is fully displayed inside the viewport (B6)
+    const isInside = await browser.execute(() => {
+      const pickerEl = document.querySelector('.nepali-date-picker');
+      if (!pickerEl) {
+        return false;
+      }
+      const rect = pickerEl.getBoundingClientRect();
+      return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= window.innerHeight &&
+        rect.right <= window.innerWidth
+      );
+    });
+    expect(isInside).to.be.true;
+
     // 2. Escape Dismissal - press Escape and verify picker is dismissed
     await browser.keys(['Escape']);
     const picker = reportsPage.getNepaliDatePicker();
@@ -236,17 +283,17 @@ describe('Reports Sidebar Filter', () => {
     // Verify both From and To input fields have selected date values and match selection (B9)
     const fromDateLabel = await reportsPage.getFromDateValue();
     const toDateLabel = await reportsPage.getToDateValue();
-    expect(fromDateLabel.split(' ')[0]).to.equal(fromDayText);
-    expect(toDateLabel.split(' ')[0]).to.equal(toDayText);
+    expect(fromDateLabel).to.equal(getExpectedFromLabel());
+    expect(toDateLabel).to.equal(getExpectedNepaliLabel(moment()));
 
     // Dismiss the open picker so we can test reopening it
     await browser.keys(['Escape']);
 
     // 5. Reopen active selection verification (B4)
-    await reportsPage.clickSidebarFilterToDate();
+    await reportsPage.clickSidebarFilterFromDate();
     // Verify that the active selected date is highlighted correctly and has the correct day text
     expect(await reportsPage.isNepaliDatePickerActiveCellDisplayed()).to.be.true;
-    expect(await reportsPage.getNepaliDatePickerActiveCellText()).to.equal(toDayText);
+    expect(await reportsPage.getNepaliDatePickerActiveCellText()).to.equal(fromDayText);
     
     // Dismiss it
     await browser.keys(['Escape']);
@@ -265,8 +312,8 @@ describe('Reports Sidebar Filter', () => {
     await commonPage.waitForPageLoaded();
 
     // Verify labels are reset, the filter chip is gone, and the report list goes back to original length
-    expect(await reportsPage.getFromDateValue()).to.equal('बाट');
-    expect(await reportsPage.getToDateValue()).to.equal('सम्म');
+    expect(await reportsPage.getFromDateValue()).to.equal('मिति');
+    expect(await reportsPage.getToDateValue()).to.equal('मिति');
     expect(await reportsPage.sidebarFilterSelectors.dateFilterChip().isExisting()).to.be.false;
     expect(await reportsPage.leftPanelSelectors.allReports().length).to.equal(reports.length);
 
