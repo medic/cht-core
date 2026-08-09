@@ -141,15 +141,30 @@ const getPreviousInterval = (intervalStartDate, referenceDate, useBikramSambatMo
 
 module.exports = {
   // Returns the timestamps of the start and end of the current calendar interval
-  // @param {Number} [intervalStartDate=1] - day of month when interval starts (1 - 32)
+  // @param {Number} [intervalStartDate=1] - day of month when interval starts
+  // (1 - 31 for Gregorian, 1 - 32 for Bikram Sambat)
   //
-  // if `intervalStartDate` exceeds month's day count, the start/end of following/current month is returned
-  getCurrent: (intervalStartDate, useBikramSambatMonths) => {
-    return getInterval(intervalStartDate, moment(), useBikramSambatMonths);
+  // Clamping behaviour:
+  // - Gregorian: If `intervalStartDate` is 31 and the month has fewer days (e.g. February),
+  //   the start/end bounds clamp to the end of the month.
+  // - Bikram Sambat: If `intervalStartDate` is greater than the number of days in the month,
+  //   the interval starts on day 1 of the following month.
+  //
+  // Example for Gregorian with `intervalStartDate` === 31:
+  // [12-31 -> 01-30], [01-31 -> 02-[28|29]], [03-01 -> 03-30], [03-31 -> 04-30], [05-01 -> 05-30], [05-31 -> 06-30]
+  getCurrent: (intervalStartDate, referenceDateOrFlag, useBikramSambatMonths) => {
+    let referenceDate = moment();
+    let flag = useBikramSambatMonths;
+    if (typeof referenceDateOrFlag === 'boolean') {
+      flag = referenceDateOrFlag;
+    } else if (referenceDateOrFlag) {
+      referenceDate = moment(referenceDateOrFlag);
+    }
+    return getInterval(intervalStartDate, referenceDate, flag);
   },
 
   /** Returns the timestamps of the start and the end of the previous calendar interval
-   *  intervalStartDate: Number. Day of the month when interval starts
+   *  intervalStartDate: Number. Day of the month when interval starts (1 - 31 for Gregorian, 1 - 32 for Bikram Sambat)
    *  referenceDate: Date.
    */
   getPrevious: (intervalStartDate, referenceDate, useBikramSambatMonths) => {
@@ -160,8 +175,9 @@ module.exports = {
   },
 
   /**
-   * Returns the timestamps of the start and end of the a calendar interval that contains a reference date
-   * @param {Number} [intervalStartDate=1] - day of month when interval starts (1 - 32)
+   * Returns the timestamps of the start and end of a calendar interval that contains a reference date
+   * @param {Number} [intervalStartDate=1] - day of month when interval starts
+   * (1 - 31 for Gregorian, 1 - 32 for Bikram Sambat)
    * @param {Number} timestamp - the reference date the interval should include
    * @returns { start: number, end: number } - timestamps that define the calendar interval
    */

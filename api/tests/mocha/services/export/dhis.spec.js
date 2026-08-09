@@ -459,6 +459,50 @@ describe('dhis export service', () => {
       expect(err.message).to.include('has no dataElements');
     }
   });
+
+  it('queries target documents using Bikram Sambat months when enabled', async () => {
+    const chu1 = mockContact('chu1');
+    const chw = mockContact('chw', { dhis: undefined, parent: { _id: chu1._id } });
+
+    const customSettings = Object.assign({}, defaultSettings, {
+      uhc: {
+        visit_count: {
+          month_start_date: 1,
+          use_bikram_sambat_months: true,
+        }
+      }
+    });
+    sinon.stub(config, 'get').returns(customSettings);
+
+    // 2026-08-15 is BS 2083-04. So target doc is mocked with '2083-04'.
+    await medic.bulkDocs([
+      chu1,
+      chw,
+      mockTargetDoc('chw', '2083-04'),
+    ]);
+
+    const actual = await service({
+      dataSet,
+      date: {
+        from: moment('2026-08-15').valueOf(),
+      },
+    });
+
+    expect(actual.dataValues).to.deep.include.members([
+      {
+        dataElement: 'kB0ZBFisE0e',
+        orgUnit: 'ou-chu1',
+        value: 12,
+      },
+      {
+        dataElement: 'e22tIwy1nKR',
+        attributeOptionCombo: 'HllvX50cXC0',
+        categoryOptionCombo: 'HllvX50cXC0',
+        orgUnit: 'ou-chu1',
+        value: 4,
+      }
+    ]);
+  });
 });
 
 const mockContact = (username, override) => Object.assign({

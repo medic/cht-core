@@ -104,7 +104,6 @@ type DateRange = {
   end: number;
 };
 
-
 interface VisitStats {
   lastVisitedDate: number; // Timestamp
   count: number;

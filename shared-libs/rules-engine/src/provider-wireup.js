@@ -286,9 +286,15 @@ const storeTargetsDoc = (provider, aggregate, updatedTargets) => {
   let targetDocTag = 'latest';
   if (aggregate.filterInterval) {
     if (rulesStateStore.getUseBikramSambatMonths()) {
-      const { toBik } = require('bikram-sambat');
-      const bsEnd = toBik(moment(aggregate.filterInterval.end).format('YYYY-MM-DD'));
-      targetDocTag = `${bsEnd.year}-${String(bsEnd.month).padStart(2, '0')}`;
+      try {
+        const { toBik } = require('bikram-sambat');
+        const bsEnd = toBik(moment(aggregate.filterInterval.end).format('YYYY-MM-DD'));
+        targetDocTag = `${bsEnd.year}-${String(bsEnd.month).padStart(2, '0')}`;
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn('Failed to parse BS date for target document tag, falling back to Gregorian tag:', err);
+        targetDocTag = moment(aggregate.filterInterval.end).format('YYYY-MM');
+      }
     } else {
       targetDocTag = moment(aggregate.filterInterval.end).format('YYYY-MM');
     }

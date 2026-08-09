@@ -46,6 +46,20 @@ interface TaskDoc {
   stateHistory: Array<{ state: string, timestamp: number }>;
 }
 
+interface RulesSettings {
+  rules?: string;
+  taskSchedules?: any[];
+  targets?: any[];
+  enableTasks?: boolean;
+  enableTargets?: boolean;
+  contact?: any;
+  user?: any;
+  rulesAreDeclarative?: boolean;
+  monthStartDate?: number;
+  useBikramSambatMonths?: boolean;
+  chtScriptApi?: any;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -222,7 +236,7 @@ export class RulesEngineService implements OnDestroy {
       !!this.parseProvider.parse(target.context)({ user: rulesEngineContext.userContactDoc }) : true;
     const targets = settingsTasks?.targets?.items || [];
 
-    const settings: any = {
+    const settings: RulesSettings = {
       rules: settingsTasks.rules,
       taskSchedules: settingsTasks.schedules,
       targets: targets.filter(filterTargetByContext),
