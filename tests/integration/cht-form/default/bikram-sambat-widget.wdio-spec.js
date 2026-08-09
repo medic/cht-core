@@ -1,4 +1,3 @@
-/* global window */
 const mockConfig = require('../mock-config');
 
 describe('cht-form web component - Bikram Sambat Widget', () => {

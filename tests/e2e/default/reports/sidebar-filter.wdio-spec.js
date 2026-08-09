@@ -251,6 +251,7 @@ describe('Reports Sidebar Filter', () => {
 
     // Verify anchored picker is fully displayed inside the viewport (B6)
     const isInside = await browser.execute(() => {
+      /* global window */
       const pickerEl = document.querySelector('.nepali-date-picker');
       if (!pickerEl) {
         return false;
@@ -278,7 +279,7 @@ describe('Reports Sidebar Filter', () => {
 
     // 4. Select From and To dates
     const fromDayText = await reportsPage.setSidebarFilterBikFromDate();
-    const toDayText = await reportsPage.setSidebarFilterBikToDate();
+    await reportsPage.setSidebarFilterBikToDate();
 
     // Verify both From and To input fields have selected date values and match selection (B9)
     const fromDateLabel = await reportsPage.getFromDateValue();
