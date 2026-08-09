@@ -335,10 +335,12 @@ const logout = async () => {
         try {
           localStorage.clear();
           sessionStorage.clear();
-        } catch (e) {}
+        } catch (err2) {
+          console.error('Failed to clear local storage:', err2);
+        }
       });
-    } catch (e) {
-      // ignore
+    } catch (err3) {
+      console.warn('Fallback cleanup failed:', err3.message || err3);
     }
   }
 };
