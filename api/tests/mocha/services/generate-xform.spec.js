@@ -90,11 +90,15 @@ describe('generate-xform service', () => {
         if (stdErr) {
           spawned.stderr.on.args[0][1](stdErr);
           spawned.on.args[0][1](100);
+          spawned.stderr.on.args[1][1](stdErr);
+          spawned.on.args[2][1](100);
         } else if (errIn) {
           spawned.stdin.on.args[0][1](errIn);
           spawned.on.args[0][1](100);
+          spawned.stdin.on.args[1][1](errIn);
         } else if (errOn) {
           spawned.on.args[1][1](errOn);
+          spawned.on.args[3][1](errOn);
         } else if (successClose) {
           // child process outputs then closes with code 0
           spawned.stdout.on.args[0][1](files.givenForm);
@@ -129,6 +133,39 @@ describe('generate-xform service', () => {
           'xsltproc stderr output:\nsome error'
         );
       }
+    });
+
+    it('should wait for both transforms to finish before rejecting', async () => {
+      const firstTransform = spawned;
+      const secondTransform = {
+        stdout: { on: sinon.stub() },
+        stderr: { on: sinon.stub() },
+        stdin: {
+          setEncoding: sinon.stub(),
+          write: sinon.stub(),
+          end: sinon.stub(),
+          on: sinon.stub(),
+        },
+        on: sinon.stub()
+      };
+      sinon.stub(childProcess, 'spawn')
+        .onFirstCall().returns(firstTransform)
+        .onSecondCall().returns(secondTransform);
+
+      const generate = service.generate('<my-xml/>');
+      firstTransform.stderr.on.args[0][1]('some error');
+      firstTransform.on.args[0][1](100);
+
+      let settled = false;
+      generate.catch(() => settled = true);
+      await new Promise(resolve => setImmediate(resolve));
+      expect(settled).to.equal(false);
+
+      secondTransform.stderr.on.args[0][1]('some error');
+      secondTransform.on.args[0][1](100);
+      await generate.catch(err => {
+        expect(err.message).to.include('xsltproc returned code "100"');
+      });
     });
 
     it('should fail when xsltproc command not found in Node v8 and v16+', async () => {
