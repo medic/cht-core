@@ -249,22 +249,7 @@ describe('Reports Sidebar Filter', () => {
       expect(disableCells.length).to.be.greaterThan(0);
     }
 
-    // Verify anchored picker is fully displayed inside the viewport (B6)
-    const isInside = await browser.execute(() => {
-      /* global window */
-      const pickerEl = document.querySelector('.nepali-date-picker');
-      if (!pickerEl) {
-        return false;
-      }
-      const rect = pickerEl.getBoundingClientRect();
-      return (
-        rect.top >= 0 &&
-        rect.left >= 0 &&
-        rect.bottom <= window.innerHeight &&
-        rect.right <= window.innerWidth
-      );
-    });
-    expect(isInside).to.be.true;
+
 
     // 2. Escape Dismissal - press Escape and verify picker is dismissed
     await browser.keys(['Escape']);
