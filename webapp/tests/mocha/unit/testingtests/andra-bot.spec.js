@@ -343,7 +343,6 @@ describe('AndraBot', () => {
       expect(commentBody).to.not.contain(templateMismatchMessage());
     });
 
-
     it('should query the PR from the event payload', async () => {
       await run(getPr({ body: filledTemplate }));
 
@@ -870,6 +869,51 @@ describe('AndraBot', () => {
 
       expect(github.rest.issues.get.called).to.be.false;
       expect(core.setFailed.calledOnce).to.be.true;
+    });
+
+    it('is not fooled by an unclosed fence', async () => {
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+
+      // Raw body, not the filled template: the template's own backticks can pair with the
+      // fence marker and strip the reference by accident, which would make this pass for
+      // the wrong reason.
+      await run(getPr({ body: 'How to link:\n\n```\nCloses #1234' }));
+
+      expect(github.rest.issues.get.called).to.be.false;
+      expect(core.setFailed.calledOnce).to.be.true;
+    });
+
+    it('is not fooled by a ~~~ block closed with backticks', async () => {
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+
+      await run(getPr({ body: '~~~\nCloses #1234\n```' }));
+
+      expect(github.rest.issues.get.called).to.be.false;
+      expect(core.setFailed.calledOnce).to.be.true;
+    });
+
+    it('does not splice prose either side of a removed span into a reference', async () => {
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+
+      await run(getPr({ body: 'This does not fix `anything` #1234 related.' }));
+
+      expect(github.rest.issues.get.called).to.be.false;
+      expect(core.setFailed.calledOnce).to.be.true;
+    });
+
+    it('still finds a real link when an unbalanced backtick appears above it', async () => {
+      // One stray backtick used to pair with the next one anywhere below and delete the
+      // reference in between — a false failure the contributor could not clear.
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+      const body = filledTemplate.replace(
+        'Fixes the date conversion by using the local format.',
+        'Switch to `Intl.DateTimeFormat for parsing.'
+      );
+
+      await run(getPr({ body }));
+
+      expect(github.rest.issues.get.called).to.be.true;
+      expect(core.setFailed.called).to.be.false;
     });
 
     it('warns rather than silently dropping references past the limit', async () => {

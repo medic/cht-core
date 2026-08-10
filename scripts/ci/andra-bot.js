@@ -42,13 +42,44 @@ const stripComments = (text) => {
   return text;
 };
 
-// GitHub does not linkify inside code, so neither should the fallback: a body that
-// merely documents the syntax must not read as a link. Fences go first so that a
-// backtick inside one can't pair with a later one and swallow real prose.
-const stripCode = (text) => {
+const FENCE_REGEX = /^\s*(```+|~~~+)/;
+const CODE_SPAN_REGEX = /(`+)[^`\n]*?\1/g;
+
+// GitHub does not linkify inside comments or code, so neither should the fallback: a body
+// that merely documents the syntax must not read as a link. Handled line by line, because
+// every subtlety here is a line-level rule — an unclosed fence runs to the end of the
+// document, a `~~~` block is not closed by a ``` one, and a code span cannot span lines.
+//
+// Every removal leaves a newline behind. Deleting outright splices the prose either side
+// together, so `does not fix ` + `#1234` reads as a reference; a space doesn't help since
+// the closing-reference regex spans those. A newline is the one separator it won't cross.
+//
+// One pass over comments is enough here, unlike stripComments above: that one loops
+// because deleting can splice a new marker out of the remains (`<!-<!-- x -->- y -->`),
+// and the newline left behind is what stops that.
+const stripNonProse = (text) => {
+  let openFence = null;
+  // Fences do not nest — the first matching close ends the block, so this tracks one open
+  // marker rather than a stack. A stack would need two closes to exit an inner marker and
+  // would swallow every real reference after the block.
   return text
-    .replace(/^[^\S\n]*(```+|~~~+)[\s\S]*?^[^\S\n]*\1[^\S\n]*$/gm, '')
-    .replace(/(`+)[^`]*?\1/g, '');
+    .replace(/<!--[\s\S]*?-->/g, '\n')
+    .split('\n')
+    .map(line => {
+      const fence = FENCE_REGEX.exec(line)?.[1];
+      if (openFence) {
+        if (fence?.startsWith(openFence)) {
+          openFence = null;
+        }
+        return '';
+      }
+      if (fence) {
+        openFence = fence;
+        return '';
+      }
+      return line.replace(CODE_SPAN_REGEX, '\n');
+    })
+    .join('\n');
 };
 
 const HEADING_PREFIX = '# ';
@@ -128,7 +159,7 @@ const CLOSING_REFERENCE_REGEX = new RegExp(
 // repository's default branch; on any other base the field is empty even though the
 // contributor linked the issue correctly. Parsing the body covers that case.
 const parseClosingReferences = (body, context) => {
-  const matches = stripCode(stripComments(body || '')).matchAll(CLOSING_REFERENCE_REGEX);
+  const matches = stripNonProse(body || '').matchAll(CLOSING_REFERENCE_REGEX);
   const references = [...matches]
     .map(([, urlOwner, urlRepo, urlNumber, owner, repo, number]) => ({
       owner: urlOwner || owner || context.repo.owner,
