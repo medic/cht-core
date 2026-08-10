@@ -45,11 +45,99 @@ describe('local lineage lib', () => {
     expect(getDocsByIdsInner.calledOnceWithExactly(['parent1'])).to.be.true;
   });
 
+  it('getLineageDocsById returns the whole parent chain', async () => {
+    const uuid = '123';
+    const doc = { _id: uuid, type: CONTACT_TYPES.CLINIC, parent: { _id: 'parent1', parent: { _id: 'parent2' } } };
+    const parentDocs = [{ _id: 'parent1' }, { _id: 'parent2' }];
+    medicGet.resolves(doc);
+    const getDocsByIdsInner = sinon.stub().resolves(parentDocs);
+    sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
+
+    const fn = Lineage.getLineageDocsById(medicDb);
+    const result = await fn(uuid);
+
+    expect(result).to.deep.equal([doc, ...parentDocs]);
+    expect(getDocsByIdsInner.calledOnceWithExactly(['parent1', 'parent2'])).to.be.true;
+  });
+
+  it('getLineageDocsById stops at a parent without an _id', async () => {
+    const uuid = '123';
+    const doc = {
+      _id: uuid,
+      type: CONTACT_TYPES.CLINIC,
+      parent: { _id: 'parent1', parent: { parent: { _id: 'parent3' } } }
+    };
+    const parentDoc = { _id: 'parent1' };
+    medicGet.resolves(doc);
+    const getDocsByIdsInner = sinon.stub().resolves([parentDoc]);
+    sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
+
+    const fn = Lineage.getLineageDocsById(medicDb);
+    const result = await fn(uuid);
+
+    expect(result).to.deep.equal([doc, parentDoc]);
+    expect(getDocsByIdsInner.calledOnceWithExactly(['parent1'])).to.be.true;
+  });
+
+  it('getLineageDocsById returns the report and its contact lineage', async () => {
+    const uuid = '123';
+    const doc = { _id: uuid, type: DOC_TYPES.DATA_RECORD, form: 'form', contact: { _id: 'contact1' } };
+    const contactDoc = { _id: 'contact1' };
+    medicGet.resolves(doc);
+    const getDocsByIdsInner = sinon.stub().resolves([contactDoc]);
+    sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
+
+    const fn = Lineage.getLineageDocsById(medicDb);
+    const result = await fn(uuid);
+
+    expect(result).to.deep.equal([doc, contactDoc]);
+    expect(getDocsByIdsInner.calledOnceWithExactly(['contact1'])).to.be.true;
+  });
+
+  it('getLineageDocsById returns just the doc when it has no lineage', async () => {
+    const uuid = '123';
+    const doc = { _id: uuid, type: CONTACT_TYPES.CLINIC };
+    medicGet.resolves(doc);
+    const getDocsByIdsInner = sinon.stub();
+    sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
+
+    const fn = Lineage.getLineageDocsById(medicDb);
+    const result = await fn(uuid);
+
+    expect(result).to.deep.equal([doc]);
+    expect(getDocsByIdsInner.called).to.be.false;
+  });
+
+  [
+    { _id: '123', type: DOC_TYPES.TRANSLATIONS },
+    { _id: '123', type: DOC_TYPES.DATA_RECORD, contact: { _id: 'contact1' } },
+  ].forEach((doc) => {
+    it(`getLineageDocsById returns nothing for ${JSON.stringify(doc)}`, async () => {
+      medicGet.resolves(doc);
+      const getDocsByIdsInner = sinon.stub();
+      sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
+
+      const fn = Lineage.getLineageDocsById(medicDb);
+      const result = await fn('123');
+
+      expect(result).to.deep.equal([]);
+      expect(getDocsByIdsInner.called).to.be.false;
+    });
+  });
+
   it('getLineageDocsById handles 404', async () => {
     medicGet.rejects({ status: 404 });
     const fn = Lineage.getLineageDocsById(medicDb);
     const result = await fn('missing');
     expect(result).to.deep.equal([]);
+  });
+
+  it('getLineageDocsById throws non-404 errors', async () => {
+    const err = new Error('server error');
+    medicGet.rejects(err);
+    const fn = Lineage.getLineageDocsById(medicDb);
+
+    await expect(fn('123')).to.be.rejectedWith(err.message);
   });
 
   describe('getPrimaryContactIds', () => {

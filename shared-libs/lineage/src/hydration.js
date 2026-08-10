@@ -26,7 +26,7 @@ const extractParentIds = current => selfAndParents(current)
 const chainIds = start => {
   const ids = [];
   let current = start;
-  while (current && current._id) {
+  while (current?._id) {
     ids.push(current._id);
     current = current.parent;
   }

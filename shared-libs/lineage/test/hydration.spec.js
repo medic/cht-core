@@ -35,6 +35,85 @@ describe('Lineage', function() {
         chai.expect(allDocs.getCall(0).args[0]).to.deep.equal({ keys: ['apple'], include_docs: true });
       });
     });
+
+    it('returns the report followed by its contact lineage', function() {
+      const report = {
+        _id: 'report',
+        type: DOC_TYPES.DATA_RECORD,
+        form: 'form',
+        contact: { _id: 'contact1', parent: { _id: 'contact2' } },
+      };
+      const contact1 = { _id: 'contact1' };
+      const contact2 = { _id: 'contact2' };
+      get.resolves(report);
+      allDocs.resolves({ rows: [{ doc: contact1 }, { doc: contact2 }] });
+
+      return lineage.fetchLineageById('report').then(result => {
+        chai.expect(allDocs.getCall(0).args[0].keys).to.deep.equal(['contact1', 'contact2']);
+        chai.expect(result).to.deep.equal([report, contact1, contact2]);
+      });
+    });
+
+    it('returns only the doc when there is no lineage to fetch', function() {
+      const report = { _id: 'report', type: DOC_TYPES.DATA_RECORD, form: 'form' };
+      get.resolves(report);
+
+      return lineage.fetchLineageById('report').then(result => {
+        chai.expect(allDocs.callCount).to.equal(0);
+        chai.expect(result).to.deep.equal([report]);
+      });
+    });
+
+    it('stops at the first link without an _id', function() {
+      const contact = {
+        _id: 'contact1',
+        type: 'person',
+        parent: { _id: 'contact2', parent: { parent: { _id: 'contact4' } } },
+      };
+      const contact2 = { _id: 'contact2' };
+      get.resolves(contact);
+      allDocs.resolves({ rows: [{ doc: contact2 }] });
+
+      return lineage.fetchLineageById('contact1').then(result => {
+        chai.expect(allDocs.getCall(0).args[0].keys).to.deep.equal(['contact2']);
+        chai.expect(result).to.deep.equal([contact, contact2]);
+      });
+    });
+
+    it('follows a deep parent chain', function() {
+      const depth = 9;
+      const doc = { _id: 'person', type: 'person', parent: {} };
+      const parentIds = [];
+      let currentParent = doc.parent;
+      for (let i = 1; i <= depth; i++) {
+        parentIds.push(`parent${i}`);
+        currentParent._id = `parent${i}`;
+        currentParent.parent = {};
+        currentParent = currentParent.parent;
+      }
+      get.resolves(doc);
+      allDocs.resolves({ rows: parentIds.map(_id => ({ doc: { _id } })) });
+
+      return lineage.fetchLineageById('person').then(result => {
+        chai.expect(allDocs.getCall(0).args[0].keys).to.deep.equal(parentIds);
+        chai.expect(result).to.deep.equal([doc, ...parentIds.map(_id => ({ _id }))]);
+      });
+    });
+
+    [
+      { name: 'a data_record without a form', doc: { _id: 'message', type: DOC_TYPES.DATA_RECORD, sms_message: {} } },
+      { name: 'a non-contact doc with a parent', doc: { _id: 'settings', type: 'settings', parent: { _id: 'a' } } },
+      { name: 'a doc with no lineage', doc: { _id: 'translations', type: DOC_TYPES.TRANSLATIONS } },
+    ].forEach(({ name, doc }) => {
+      it(`returns nothing for ${name}`, function() {
+        get.resolves(doc);
+
+        return lineage.fetchLineageById(doc._id).then(result => {
+          chai.expect(allDocs.callCount).to.equal(0);
+          chai.expect(result).to.deep.equal([]);
+        });
+      });
+    });
   });
 
   describe('fetchContacts', function() {

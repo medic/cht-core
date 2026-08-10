@@ -334,21 +334,31 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('binds lineage and contact', () => {
-      const report = { _id: 'a', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'a', contact: { _id: 'b' } };
-      const contact = { _id: 'b', _rev: '1' };
-      const parent = { _id: 'c', _rev: '1' };
+      const report = {
+        _id: 'a',
+        _rev: '1',
+        type: DOC_TYPES.DATA_RECORD,
+        form: 'a',
+        contact: { _id: 'b', parent: { _id: 'c', parent: { _id: 'd' } } },
+      };
+      const contact = { _id: 'b', _rev: '1', parent: { _id: 'c', parent: { _id: 'd' } } };
+      const parent = { _id: 'c', _rev: '1', parent: { _id: 'd' } };
       const grandparent = { _id: 'd', _rev: '1' };
       dbGet.withArgs('a').resolves(report);
-      dbAllDocs.resolves({
+      dbAllDocs.withArgs(sinon.match({ keys: ['b', 'c', 'd'], include_docs: true })).resolves({
         rows: [
           { doc: contact },
           { doc: parent },
           { doc: grandparent }
         ] });
       return service.report('a').then(model => {
+        expect(dbAllDocs.callCount).to.equal(1);
         expect(model._id).to.equal('a');
-        expect(model.doc).to.deep.equal(report);
-        expect(model.contact).to.deep.equal(contact);
+        expect(model.contact).to.deep.equal({
+          _id: 'b',
+          _rev: '1',
+          parent: { _id: 'c', _rev: '1', parent: { _id: 'd', _rev: '1' } },
+        });
       });
     });
 
@@ -360,7 +370,6 @@ describe('LineageModelGenerator service', () => {
       const grandparent = { _id: 'd', _rev: '1', contact: { _id: 'f' } };
       const parentContact = { _id: 'e', name: 'erica' };
       const grandparentContact = { _id: 'f', name: 'frank' };
-      const xContact = { _id: 'x', name: 'xavier' };
       const yContact = { _id: 'y', name: 'yvonne' };
       dbGet.resolves(report);
       dbAllDocs.withArgs(sinon.match({ keys: ['x', 'c', 'd'], include_docs: true })).resolves({
@@ -371,7 +380,6 @@ describe('LineageModelGenerator service', () => {
         ] });
       dbAllDocs.withArgs(sinon.match({ keys: ['y', 'e', 'f'], include_docs: true })).resolves({
         rows: [
-          { doc: xContact },
           { doc: yContact },
           { doc: parentContact },
           { doc: grandparentContact }

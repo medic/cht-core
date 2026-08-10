@@ -3,18 +3,16 @@ describe('LineageModelGenerator service', () => {
   'use strict';
 
   let service;
-  let dbQuery;
   let dbAllDocs;
   let dbGet;
 
   beforeEach(() => {
     module('adminApp');
     module($provide => {
-      dbQuery = sinon.stub();
       dbAllDocs = sinon.stub();
       dbGet = sinon.stub();
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.factory('DB', KarmaUtils.mockDB({ query: dbQuery, allDocs: dbAllDocs, get: dbGet }));
+      $provide.factory('DB', KarmaUtils.mockDB({ allDocs: dbAllDocs, get: dbGet }));
     });
     inject(_LineageModelGenerator_ => service = _LineageModelGenerator_);
   });
