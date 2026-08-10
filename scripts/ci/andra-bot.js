@@ -55,7 +55,12 @@ const stripComments = (text) => {
 // backtick (``` ```sh make test``` ```, an inline span, not a block), a four-space indent
 // making a fence literal, a close carrying its own info string. Each would only ever cause
 // this to strip *more*, and unpaired markers already strip nothing.
-const FENCED_BLOCK_REGEX = /^ {0,3}(```+|~~~+)[^\n]*\n[\s\S]*?^ {0,3}\1[^\n]*$/gm;
+// The lookahead makes the opening run atomic: it is taken whole and never retried shorter.
+// Letting it shorten is both wrong and slow — wrong because ````` would accept ``` as its
+// close, which CommonMark forbids (a close is at least as long as its opener), and slow
+// because every candidate length rescans the line, which is quadratic: 3.5s on a body of
+// backticks at the 65536-character limit, against 0.1ms here.
+const FENCED_BLOCK_REGEX = /^ {0,3}(?=(```+|~~~+))\1[^\n]*\n[\s\S]*?^ {0,3}\1[^\n]*$/gm;
 const CODE_SPAN_REGEX = /(`+)[^`\n]*?\1/g;
 const COMMENT_REGEX = /<!--[\s\S]*?-->/g;
 // Carries no comment marker and starts no heading, but is not empty.

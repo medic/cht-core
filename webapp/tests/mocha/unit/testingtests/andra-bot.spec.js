@@ -891,6 +891,19 @@ describe('AndraBot', () => {
       });
     });
 
+    it('still passes a PR whose link sits between markers of unequal length', async () => {
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+      // A closing fence is at least as long as its opener, so these two do not pair and the
+      // line between them is ordinary prose. Letting the opening run be retried shorter finds
+      // a pair anyway and deletes the link — and costs a rescan of the line per candidate
+      // length, which is what makes a body of backticks quadratic.
+
+      await run(getPr({ body: withIssueReference('`````\nCloses #1234\n```') }));
+
+      expect(core.setFailed.called).to.be.false;
+      expect(github.rest.issues.addLabels.args[0][0].labels).to.deep.equal([SUCCESS_LABEL]);
+    });
+
     it('still passes a PR whose body reaches GitHub\'s size limit', async () => {
       setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
       // Two 32k path segments either side of a `/`, and deliberately *no* trailing `#number`:
