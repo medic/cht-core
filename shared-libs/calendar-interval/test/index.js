@@ -13,6 +13,35 @@ describe('CalendarInterval', () => {
   });
 
   describe('getCurrent', () => {
+    it('supports passing referenceDate or flag dynamically as second or third argument', () => {
+      // 1. Second argument is boolean (useBikramSambatMonths flag)
+      clock = sinon.useFakeTimers(moment('2020-04-23').valueOf()); // BS 2077-01-11
+      // With flag = true (Bikram Sambat calendar)
+      const bsInterval = service.getCurrent(1, true);
+      // BS 2077-01-01 -> BS 2077-01-31 is 2020-04-13 -> 2020-05-13
+      chai.expect(bsInterval.start).to.equal(moment('2020-04-13 00:00:00').valueOf());
+      chai.expect(bsInterval.end).to.equal(moment('2020-05-13 23:59:59.999').valueOf());
+
+      // With flag = false (Gregorian calendar)
+      const gregInterval = service.getCurrent(1, false);
+      chai.expect(gregInterval.start).to.equal(moment('2020-04-01 00:00:00').valueOf());
+      chai.expect(gregInterval.end).to.equal(moment('2020-04-30 23:59:59.999').valueOf());
+
+      // 2. Second argument is referenceDate (Date/moment/string) and third is flag
+      const customRef = '2018-02-15'; // BS 2074-11-03
+      // With flag = true
+      const customBs = service.getCurrent(1, customRef, true);
+      // BS 2074-11-01 -> BS 2074-11-30 is 2018-02-13 -> 2018-03-14
+      chai.expect(customBs.start).to.equal(moment('2018-02-13 00:00:00').valueOf());
+      chai.expect(customBs.end).to.equal(moment('2018-03-14 23:59:59.999').valueOf());
+
+      // With flag = false
+      const customGreg = service.getCurrent(1, customRef, false);
+      chai.expect(customGreg.start).to.equal(moment('2018-02-01 00:00:00').valueOf());
+      chai.expect(customGreg.end).to.equal(moment('2018-02-28 23:59:59.999').valueOf());
+      clock.restore();
+    });
+
     it('returns 1st of current month when month start is not set or incorrect', () => {
       clock = sinon.useFakeTimers(moment('2018-01-20 21:10:01').valueOf());
       let expectedStart;
