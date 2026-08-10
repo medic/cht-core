@@ -353,6 +353,7 @@ describe('AndraBot', () => {
         owner: 'medic',
         repo: 'cht-core',
         number: 42,
+        limit: 20,
       });
     });
 
@@ -469,6 +470,7 @@ describe('AndraBot', () => {
     it('should ignore a reference to an issue that does not exist', async () => {
       await run(getPr({ body: filledTemplate }));
 
+      expect(github.rest.issues.get.called).to.be.true;
       expect(core.setFailed.calledOnce).to.be.true;
       const commentBody = github.rest.issues.createComment.args[0][0].body;
       expect(commentBody).to.contain(getMessage('missing-linked-issue'));
@@ -500,6 +502,7 @@ describe('AndraBot', () => {
 
       await run(getPr({ body: filledTemplate }));
 
+      expect(github.rest.issues.get.called).to.be.true;
       expect(core.setFailed.calledOnce).to.be.true;
       const commentBody = github.rest.issues.createComment.args[0][0].body;
       expect(commentBody).to.contain(getMessage('missing-linked-issue'));
@@ -798,6 +801,86 @@ describe('AndraBot', () => {
       expect(core.setFailed.called).to.be.false;
       expect(github.rest.issues.addLabels.args[0][0].labels).to.deep.equal([SUCCESS_LABEL]);
       expect(github.rest.issues.removeLabel.args[0][0].name).to.equal(FAILURE_LABEL);
+    });
+  });
+
+  describe('review follow-ups on #11332', () => {
+    it('does not treat a reference inside a code span as a link', async () => {
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+
+      await run(getPr({ body: withIssueReference('Write `Closes #1234` in the description.') }));
+
+      expect(github.rest.issues.get.called).to.be.false;
+      expect(core.setFailed.calledOnce).to.be.true;
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('missing-linked-issue'));
+    });
+
+    it('does not treat a reference inside a fenced block as a link', async () => {
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+      const body = withIssueReference('Example:\n\n```\nCloses #1234\n```');
+
+      await run(getPr({ body }));
+
+      expect(github.rest.issues.get.called).to.be.false;
+      expect(core.setFailed.calledOnce).to.be.true;
+    });
+
+    it('reads the body when the linked issue is assigned to someone else', async () => {
+      // A sidebar-linked epic fills closingIssuesReferences on any base branch. Short-
+      // circuiting on it would hide the contributor's own keyword link behind a failure
+      // they cannot clear.
+      setLinkedIssues([linkedIssue(999, ['someone-else'])]);
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+
+      await run(getPr({ body: filledTemplate }));
+
+      expect(github.rest.issues.get.called).to.be.true;
+      expect(core.setFailed.called).to.be.false;
+    });
+
+    it('lists an issue once when both sources name it', async () => {
+      setLinkedIssues([linkedIssue(1234, ['someone-else'])]);
+      setReferencedIssue({ number: 1234, assignees: ['someone-else'] });
+
+      await run(getPr({ body: filledTemplate }));
+
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('not-assigned', { issueList: '#1234' }));
+    });
+
+    it('does not bind a keyword across a newline', async () => {
+      await run(getPr({ body: withIssueReference('Closes\n#1234') }));
+
+      expect(github.rest.issues.get.called).to.be.false;
+      expect(core.setFailed.calledOnce).to.be.true;
+    });
+
+    ['Closes #01234', 'Closes #99999999999999999999999'].forEach(reference => {
+      it(`ignores the malformed number in "${reference}"`, async () => {
+        await run(getPr({ body: withIssueReference(reference) }));
+
+        expect(github.rest.issues.get.called).to.be.false;
+        expect(core.setFailed.calledOnce).to.be.true;
+      });
+    });
+
+    it('ignores a repo name made only of dots', async () => {
+      await run(getPr({ body: withIssueReference('Closes medic/..#1234') }));
+
+      expect(github.rest.issues.get.called).to.be.false;
+      expect(core.setFailed.calledOnce).to.be.true;
+    });
+
+    it('warns rather than silently dropping references past the limit', async () => {
+      const refs = Array.from({ length: 22 }, (_, i) => `Closes #${(i + 1).toString()}`).join(' ');
+      github.rest.issues.get.rejects(Object.assign(new Error('Not Found'), { status: 404 }));
+
+      await run(getPr({ body: withIssueReference(refs) }));
+
+      expect(github.rest.issues.get.callCount).to.equal(20);
+      expect(core.warning.args.some(([msg]) => msg.includes('2 later reference(s) were ignored')))
+        .to.be.true;
     });
   });
 });

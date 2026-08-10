@@ -42,6 +42,15 @@ const stripComments = (text) => {
   return text;
 };
 
+// GitHub does not linkify inside code, so neither should the fallback: a body that
+// merely documents the syntax must not read as a link. Fences go first so that a
+// backtick inside one can't pair with a later one and swallow real prose.
+const stripCode = (text) => {
+  return text
+    .replace(/^[^\S\n]*(```+|~~~+)[\s\S]*?^[^\S\n]*\1[^\S\n]*$/gm, '')
+    .replace(/(`+)[^`]*?\1/g, '');
+};
+
 const HEADING_PREFIX = '# ';
 const HEADING_REGEX = new RegExp(`^${HEADING_PREFIX}.+$`, 'gm');
 
@@ -101,9 +110,15 @@ const MAX_LINKED_ISSUES = 20;
 // `#123`, `owner/repo#123`, and a full issue URL.
 // https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue
 const CLOSING_KEYWORDS = 'close[sd]?|fix(?:e[sd])?|resolve[sd]?';
-const REPO_NAME = String.raw`[\w.-]+`;
+// At least one character that isn't a dot, so `..` can't reach the API as a path segment.
+const REPO_NAME = String.raw`[\w.-]*[\w-][\w.-]*`;
+// `:?[^\S\n]+` rather than `\s*:?\s+`: the latter is ambiguous between its two
+// whitespace quantifiers and backtracks quadratically on a long run of spaces
+// (~4s at GitHub's 65536 body limit, re-run on every `edited` event). Excluding
+// newlines also stops a keyword ending one line binding to a `#N` on the next,
+// which GitHub does not link.
 const CLOSING_REFERENCE_REGEX = new RegExp(
-  String.raw`\b(?:${CLOSING_KEYWORDS})\b\s*:?\s+` +
+  String.raw`\b(?:${CLOSING_KEYWORDS})\b:?[^\S\n]+` +
   String.raw`(?:https?://github\.com/(${REPO_NAME})/(${REPO_NAME})/issues/(\d+)` +
   String.raw`|(?:(${REPO_NAME})/(${REPO_NAME}))?#(\d+))`,
   'gi'
@@ -113,12 +128,18 @@ const CLOSING_REFERENCE_REGEX = new RegExp(
 // repository's default branch; on any other base the field is empty even though the
 // contributor linked the issue correctly. Parsing the body covers that case.
 const parseClosingReferences = (body, context) => {
-  const matches = stripComments(body || '').matchAll(CLOSING_REFERENCE_REGEX);
-  const references = [...matches].map(([, urlOwner, urlRepo, urlNumber, owner, repo, number]) => ({
-    owner: urlOwner || owner || context.repo.owner,
-    repo: urlRepo || repo || context.repo.repo,
-    number: Number(urlNumber || number),
-  }));
+  const matches = stripCode(stripComments(body || '')).matchAll(CLOSING_REFERENCE_REGEX);
+  const references = [...matches]
+    .map(([, urlOwner, urlRepo, urlNumber, owner, repo, number]) => ({
+      owner: urlOwner || owner || context.repo.owner,
+      repo: urlRepo || repo || context.repo.repo,
+      // Leading zeros are not autolinked by GitHub, and a digit run long enough to
+      // lose precision would reach the API as exponential notation.
+      number: /^[1-9]\d*$/.test(urlNumber || number)
+        ? Number(urlNumber || number)
+        : Number.NaN,
+    }))
+    .filter(reference => Number.isSafeInteger(reference.number));
 
   // Owner and repo names are case-insensitive on GitHub, so the key is too.
   const seen = new Set();
@@ -166,27 +187,34 @@ const resolveReferencedIssues = async (github, context, core, references) => {
       if (!MISSING_ISSUE_STATUSES.has(err.status)) {
         throw err;
       }
+      // 404 also covers "the token cannot see this repository", so a reference to a
+      // private in-org repo lands here. Warn rather than info so a dropped reference is
+      // visible in the job summary instead of only deep in the log.
       const name = `${reference.owner}/${reference.repo}#${reference.number.toString()}`;
-      core.info(`Ignoring referenced issue ${name}: not found.`);
+      core.warning(`Ignoring referenced issue ${name}: not found or not visible.`);
       return null;
     }
   }));
   return issues.filter(Boolean);
 };
 
+const isAssignedTo = (issue, login) => {
+  return issue.assignees.nodes.some(assignee => assignee.login === login);
+};
+
 const getLinkedIssues = async (github, context, core) => {
   const query = `
-    query ($owner: String!, $repo: String!, $number: Int!) {
+    query ($owner: String!, $repo: String!, $number: Int!, $limit: Int!) {
       repository(owner: $owner, name: $repo) {
         pullRequest(number: $number) {
-          closingIssuesReferences(first: 20) {
+          closingIssuesReferences(first: $limit) {
             nodes {
               number
               repository {
                 nameWithOwner
                 owner { login }
               }
-              assignees(first: 20) {
+              assignees(first: $limit) {
                 nodes { login }
               }
             }
@@ -198,38 +226,62 @@ const getLinkedIssues = async (github, context, core) => {
     owner: context.repo.owner,
     repo: context.repo.repo,
     number: context.payload.pull_request.number,
+    limit: MAX_LINKED_ISSUES,
   });
   // Issues linked from repositories outside the org don't count as linked.
   const isInOrg = owner => owner.toLowerCase() === context.repo.owner.toLowerCase();
+  const author = context.payload.pull_request.user.login;
   const linkedIssues = result.repository.pullRequest.closingIssuesReferences.nodes
     .filter(issue => isInOrg(issue.repository.owner.login));
-  if (linkedIssues.length) {
+
+  // Only short-circuit on a link that would actually pass. closingIssuesReferences is
+  // fed by both closing keywords and the Development sidebar, and the sidebar works on
+  // any base branch — so a sidebar-linked epic can fill this while the contributor's own
+  // keyword link goes unread, leaving them a failure they cannot clear from the PR.
+  if (linkedIssues.some(issue => isAssignedTo(issue, author))) {
     return linkedIssues;
   }
 
-  const references = parseClosingReferences(context.payload.pull_request.body, context)
-    .filter(reference => isInOrg(reference.owner))
-    .slice(0, MAX_LINKED_ISSUES);
-  if (!references.length) {
-    return [];
+  const parsed = parseClosingReferences(context.payload.pull_request.body, context)
+    .filter(reference => isInOrg(reference.owner));
+  if (parsed.length > MAX_LINKED_ISSUES) {
+    core.warning(
+      `Only the first ${MAX_LINKED_ISSUES.toString()} referenced issues are checked; ` +
+      `${(parsed.length - MAX_LINKED_ISSUES).toString()} later reference(s) were ignored.`
+    );
   }
-  return resolveReferencedIssues(github, context, core, references);
+  const references = parsed.slice(0, MAX_LINKED_ISSUES);
+  if (!references.length) {
+    return linkedIssues;
+  }
+
+  const resolved = await resolveReferencedIssues(github, context, core, references);
+  // Re-filter: an issue transferred out of the org comes back under its new owner.
+  return [...linkedIssues, ...resolved.filter(issue => isInOrg(issue.repository.owner.login))];
 };
 
 const getLinkedIssueFailure = (pr, linkedIssues) => {
   if (!linkedIssues.length) {
     return getMessage('missing-linked-issue');
   }
-  const isAssigned = linkedIssues
-    .some(issue => issue.assignees.nodes.some(assignee => assignee.login === pr.user.login));
-  if (isAssigned) {
+  if (linkedIssues.some(issue => isAssignedTo(issue, pr.user.login))) {
     return null;
   }
 
+  // The GraphQL and parsed sets can name the same issue; list it once.
+  const seen = new Set();
   const issueList = linkedIssues
     .map(issue => issue.repository.nameWithOwner === pr.base.repo.full_name
       ? `#${issue.number}`
       : `${issue.repository.nameWithOwner}#${issue.number}`)
+    .filter(name => {
+      const key = name.toLowerCase();
+      if (seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    })
     .join(', ');
   return getMessage('not-assigned', { issueList });
 };
