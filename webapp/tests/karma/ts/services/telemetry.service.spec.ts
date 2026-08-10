@@ -91,7 +91,7 @@ describe('TelemetryService', () => {
     consoleErrorSpy = sinon.spy(console, 'error');
     telemetryDb = {
       post: sinon.stub().resolves(),
-      close: sinon.stub(),
+      close: sinon.stub().resolves(),  // resolves because we now await db.close()
       query: sinon.stub(),
       destroy: sinon.stub().callsFake(() => {
         telemetryDb._destroyed = true;
@@ -189,7 +189,6 @@ describe('TelemetryService', () => {
       expect(consoleErrorSpy.notCalled).to.be.true;
       expect(telemetryDb.post.calledOnce).to.be.true;
       expect(telemetryDb.post.args[0][0]).to.deep.include({ key: 'test', value: 100 });
-      
       // Should create a new DB for 'jane', not reuse 'greg's DB
       expect(windowMock.PouchDB.callCount).to.equal(1);
       expect(windowMock.PouchDB.args[0]).to.deep.equal(['telemetry-2018-11-10-jane']);
@@ -330,7 +329,7 @@ describe('TelemetryService', () => {
         include_docs: true,
       });
       expect(telemetryDb.destroy.calledTwice).to.be.true;
-      expect(telemetryDb.close.notCalled).to.be.true;
+      expect(telemetryDb.close.notCalled).to.be.true;  
 
       expect(consoleErrorSpy.notCalled).to.be.true;
     });
@@ -443,7 +442,7 @@ describe('TelemetryService', () => {
 
       expect(consoleErrorSpy.notCalled).to.be.true;
     });
-  });
+  });  
 
   describe('storeConflictedAggregate()', () => {
     it('should deal with conflicts by making the ID unique and noting the conflict in the new document', async () => {
@@ -484,7 +483,7 @@ describe('TelemetryService', () => {
       expect(metaDb.put.args[1][0]._id).to.match(/^telemetry-2018-11-5-greg-[\w-]+-conflicted-[\w-]+$/);
       expect(metaDb.put.args[1][0].metadata.conflicted).to.equal(true);
       expect(telemetryDb.destroy.calledOnce).to.be.true;
-      expect(telemetryDb.close.notCalled).to.be.true;
+      expect(telemetryDb.close.notCalled).to.be.true;  
     });
   });
 
