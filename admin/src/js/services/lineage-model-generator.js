@@ -21,7 +21,7 @@ angular.module('inboxServices').factory('LineageModelGenerator',
     const get = function(id) {
       return lineageLib.fetchLineageById(id)
         .then(function(docs) {
-          if (!docs.length) {
+          if (!docs.length || !lineageLib.isHydratable(docs[0])) {
             const err = new Error(`Document not found: ${id}`);
             err.code = 404;
             throw err;

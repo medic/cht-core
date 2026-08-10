@@ -19,7 +19,7 @@ export class LineageModelGeneratorService {
     return this.lineageLib
       .fetchLineageById(id)
       .then((docs) => {
-        if (!docs.length) {
+        if (!docs.length || !this.lineageLib.isHydratable(docs[0])) {
           const err = new LineageError(`Document not found: ${id}`, 404);
           throw err;
         }
@@ -87,6 +87,9 @@ export class LineageModelGeneratorService {
     return this.lineageLib
       .fetchHydratedDoc(id, { throwWhenMissingLineage: true })
       .then((hydrated) => {
+        if (!this.lineageLib.isHydratable(hydrated)) {
+          throw new LineageError(`Document not found: ${id}`, 404);
+        }
         return {
           _id: id,
           doc: hydrated,

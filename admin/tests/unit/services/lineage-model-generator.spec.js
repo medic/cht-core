@@ -35,7 +35,7 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('handles no lineage', () => {
-      const contact = { _id: 'a', _rev: '1' };
+      const contact = { _id: 'a', _rev: '1', type: 'clinic' };
       dbGet.returns(Promise.resolve(contact));
       return service.contact('a').then(model => {
         chai.expect(model._id).to.equal('a');
@@ -44,7 +44,7 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('binds lineage', () => {
-      const contact = { _id: 'a', _rev: '1', parent: { _id: 'b', parent: { _id: 'c' } } };
+      const contact = { _id: 'a', _rev: '1', type: 'clinic', parent: { _id: 'b', parent: { _id: 'c' } } };
       const parent = { _id: 'b', _rev: '1', parent: { _id: 'c' } };
       const grandparent = { _id: 'c', _rev: '1' };
       dbGet.withArgs('a').returns(Promise.resolve(contact));
@@ -66,7 +66,9 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('binds contacts', () => {
-      const contact = { _id: 'a', _rev: '1', contact: { _id: 'd' }, parent: { _id: 'b', parent: { _id: 'c' } } };
+      const contact = {
+        _id: 'a', _rev: '1', type: 'clinic', contact: { _id: 'd' }, parent: { _id: 'b', parent: { _id: 'c' } }
+      };
       const contactsContact = { _id: 'd', name: 'dave' };
       const parent = { _id: 'b', _rev: '1', contact: { _id: 'e' }, parent: { _id: 'c' } };
       const parentsContact = { _id: 'e', name: 'eliza' };
@@ -94,7 +96,9 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('hydrates lineage contacts - #3812', () => {
-      const contact = { _id: 'a', _rev: '1', contact: { _id: 'x' }, parent: { _id: 'b', parent: { _id: 'c' } } };
+      const contact = {
+        _id: 'a', _rev: '1', type: 'clinic', contact: { _id: 'x' }, parent: { _id: 'b', parent: { _id: 'c' } }
+      };
       const parent = { _id: 'b', _rev: '1', contact: { _id: 'd' }, parent: { _id: 'c' } };
       const grandparent = { _id: 'c', _rev: '1', contact: { _id: 'e' } };
       const parentContact = { _id: 'd', name: 'donny' };
@@ -132,7 +136,7 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('merges lineage when merge passed', () => {
-      const contact = { _id: 'a', name: '1', parent: { _id: 'b', parent: { _id: 'c' } } };
+      const contact = { _id: 'a', name: '1', type: 'clinic', parent: { _id: 'b', parent: { _id: 'c' } } };
       const parent = { _id: 'b', name: '2', parent: { _id: 'c' } };
       const grandparent = { _id: 'c', name: '3' };
       const expected = {
@@ -140,6 +144,7 @@ describe('LineageModelGenerator service', () => {
         doc: {
           _id: 'a',
           name: '1',
+          type: 'clinic',
           parent: {
             _id: 'b',
             name: '2',
@@ -178,7 +183,9 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('should merge lineage with undefined members', () => {
-      const contact = { _id: 'a', name: '1', parent: { _id: 'b', parent: { _id: 'c', parent: { _id: 'd' } } } };
+      const contact = {
+        _id: 'a', name: '1', type: 'clinic', parent: { _id: 'b', parent: { _id: 'c', parent: { _id: 'd' } } }
+      };
       const parent = { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } };
       dbGet.resolves(contact);
       dbAllDocs.resolves({ rows:
@@ -189,9 +196,10 @@ describe('LineageModelGenerator service', () => {
         doc: {
           _id: 'a',
           name: '1',
+          type: 'clinic',
           parent: { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } }
         },
-        lineage: [{ _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } }, undefined, undefined]
+        lineage: [{ _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } }, null, null]
       };
       return service.contact('a', { merge: true }).then(actual => {
         chai.expect(actual).to.deep.equal(expected);
@@ -199,7 +207,9 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('should merge lineage with undefined members v2', () => {
-      const contact = { _id: 'a', name: '1', parent: { _id: 'b', parent: { _id: 'c', parent: { _id: 'd' } } } };
+      const contact = {
+        _id: 'a', name: '1', type: 'clinic', parent: { _id: 'b', parent: { _id: 'c', parent: { _id: 'd' } } }
+      };
       const parent = { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } };
       dbGet.resolves(contact);
       dbAllDocs.resolves({ rows: [
@@ -212,10 +222,11 @@ describe('LineageModelGenerator service', () => {
         doc: {
           _id: 'a',
           name: '1',
+          type: 'clinic',
           parent: { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd', name: '4' } } },
         },
         lineage: [
-          { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } }, undefined, { _id: 'd', name: '4' }
+          { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } }, null, { _id: 'd', name: '4' }
         ]
       };
       return service.contact('a', { merge: true }).then(actual => {
@@ -224,7 +235,7 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('does not merge lineage without merge', () => {
-      const contact = { _id: 'a', name: '1', parent: { _id: 'b', parent: { _id: 'c' } } };
+      const contact = { _id: 'a', name: '1', type: 'clinic', parent: { _id: 'b', parent: { _id: 'c' } } };
       const parent = { _id: 'b', name: '2' };
       const grandparent = { _id: 'c', name: '3' };
       const expected = {
@@ -232,6 +243,7 @@ describe('LineageModelGenerator service', () => {
         doc: {
           _id: 'a',
           name: '1',
+          type: 'clinic',
           parent: {
             _id: 'b',
             parent: {
