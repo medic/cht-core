@@ -871,25 +871,42 @@ describe('AndraBot', () => {
       expect(core.setFailed.calledOnce).to.be.true;
     });
 
-    it('is not fooled by an unclosed fence', async () => {
-      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+    // Each of these is a body whose issue link is genuine but which an over-eager code
+    // stripper discarded, failing a contributor with no way to clear it — the link they are
+    // told to add is the link already there. Only a fence that is actually closed delimits a
+    // block, so an unpaired marker cannot reach past itself to swallow any of them.
+    [
+      ['an unbalanced <!-- inside a fenced block', '```xml\n<instance> <!-- see docs\n</instance>\n```'],
+      ['a fence marker whose info string holds backticks', '```bash npm test```'],
+      ['an unpaired fence marker', 'How to link:\n\n```'],
+      ['a ~~~ marker that only backticks follow', '~~~\nsample\n```'],
+    ].forEach(([name, sample]) => {
+      it(`still passes a PR whose link follows ${name}`, async () => {
+        setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
 
-      // Raw body, not the filled template: the template's own backticks can pair with the
-      // fence marker and strip the reference by accident, which would make this pass for
-      // the wrong reason.
-      await run(getPr({ body: 'How to link:\n\n```\nCloses #1234' }));
+        await run(getPr({ body: withIssueReference(`${sample}\n\nCloses #1234`) }));
 
-      expect(github.rest.issues.get.called).to.be.false;
-      expect(core.setFailed.calledOnce).to.be.true;
+        expect(core.setFailed.called).to.be.false;
+        expect(github.rest.issues.addLabels.args[0][0].labels).to.deep.equal([SUCCESS_LABEL]);
+      });
     });
 
-    it('is not fooled by a ~~~ block closed with backticks', async () => {
+    it('still passes a PR whose body reaches GitHub\'s size limit', async () => {
       setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+      // Two 32k path segments either side of a `/`, and deliberately *no* trailing `#number`:
+      // the cost is in the failed match, so a reference that resolves never reaches it. A
+      // repo-name pattern requiring a non-dot character (`[\w.-]*[\w-][\w.-]*`) lets its two
+      // quantifiers divide that run between them, which is cubic — ~29s at 8k, and hours at
+      // the 65536-character body limit this sits just inside, on a pull_request_target body
+      // re-parsed on every edit. The keyword cannot bind across the newline, so this stays a
+      // failed match. Mocha's own timeout cannot fire on a blocked event loop, so the process
+      // watchdog is the real assertion; the linear form returns in about a millisecond.
+      const segment = 'a'.repeat(32000);
 
-      await run(getPr({ body: '~~~\nCloses #1234\n```' }));
+      await run(getPr({ body: withIssueReference(`Closes ${segment}/${segment}\n\nCloses #1234`) }));
 
-      expect(github.rest.issues.get.called).to.be.false;
-      expect(core.setFailed.calledOnce).to.be.true;
+      expect(core.setFailed.called).to.be.false;
+      expect(github.rest.issues.addLabels.args[0][0].labels).to.deep.equal([SUCCESS_LABEL]);
     });
 
     it('does not splice prose either side of a removed span into a reference', async () => {

@@ -42,51 +42,55 @@ const stripComments = (text) => {
   return text;
 };
 
-const FENCE_REGEX = /^\s*(```+|~~~+)/;
+// Only a fence that is actually closed delimits a block. An opener with no matching close
+// matches nothing and so strips nothing, which is what keeps this bounded: the alternative —
+// running an unclosed fence to the end of the document, as a renderer does — means one
+// misread line silently discards every reference below it, and the contributor cannot tell
+// why the link they wrote is not being seen. The failure directions are not equal. Reading
+// code as prose lets a PR that only *documents* a link past a check that still requires the
+// author be assigned to that issue; reading prose as code blocks a real contributor with no
+// way to clear it. Everything ambiguous here is therefore resolved toward stripping less.
+//
+// That asymmetry is also why no CommonMark subtleties are encoded: an info string with a
+// backtick (``` ```sh make test``` ```, an inline span, not a block), a four-space indent
+// making a fence literal, a close carrying its own info string. Each would only ever cause
+// this to strip *more*, and unpaired markers already strip nothing.
+const FENCED_BLOCK_REGEX = /^ {0,3}(```+|~~~+)[^\n]*\n[\s\S]*?^ {0,3}\1[^\n]*$/gm;
 const CODE_SPAN_REGEX = /(`+)[^`\n]*?\1/g;
+const COMMENT_REGEX = /<!--[\s\S]*?-->/g;
+// Carries no comment marker and starts no heading, but is not empty.
+const CODE_BLOCK_PLACEHOLDER = '\ncode\n';
 
 // GitHub does not linkify inside comments or code, so neither should the fallback: a body
-// that merely documents the syntax must not read as a link. Handled line by line, because
-// every subtlety here is a line-level rule — an unclosed fence runs to the end of the
-// document, a `~~~` block is not closed by a ``` one, and a code span cannot span lines.
+// that merely documents the syntax must not read as a link.
+//
+// The order is load-bearing. A `<!--` inside a fenced block is literal and closes nothing, so
+// blocks go first; stripping comments first let such a marker pair with the next `-->` below
+// it — in practice the PR template's own — and delete the issue link in between. An XML or
+// HTML sample in a cht-core PR body makes that an ordinary body, not a contrived one.
 //
 // Every removal leaves a newline behind. Deleting outright splices the prose either side
 // together, so `does not fix ` + `#1234` reads as a reference; a space doesn't help since
 // the closing-reference regex spans those. A newline is the one separator it won't cross.
 //
-// One pass over comments is enough here, unlike stripComments above: that one loops
-// because deleting can splice a new marker out of the remains (`<!-<!-- x -->- y -->`),
-// and the newline left behind is what stops that.
-const stripNonProse = (text) => {
-  let openFence = null;
-  // Fences do not nest — the first matching close ends the block, so this tracks one open
-  // marker rather than a stack. A stack would need two closes to exit an inner marker and
-  // would swallow every real reference after the block.
-  return text
-    .replace(/<!--[\s\S]*?-->/g, '\n')
-    .split('\n')
-    .map(line => {
-      const fence = FENCE_REGEX.exec(line)?.[1];
-      if (openFence) {
-        if (fence?.startsWith(openFence)) {
-          openFence = null;
-        }
-        return '';
-      }
-      if (fence) {
-        openFence = fence;
-        return '';
-      }
-      return line.replace(CODE_SPAN_REGEX, '\n');
-    })
-    .join('\n');
-};
+// One pass over comments is enough here, unlike stripComments above: that one loops because
+// deleting can splice a new marker out of the remains (`<!-<!-- x -->- y -->`), and the
+// newline left behind is what stops that.
+const stripNonProse = (text) => text
+  .replace(FENCED_BLOCK_REGEX, '\n')
+  .replace(CODE_SPAN_REGEX, '\n')
+  .replace(COMMENT_REGEX, '\n');
 
 const HEADING_PREFIX = '# ';
 const HEADING_REGEX = new RegExp(`^${HEADING_PREFIX}.+$`, 'gm');
 
 const parseSections = (text) => {
-  text = stripComments(text);
+  // A fenced block's content is literal, so neither the `<!--` of an XML sample nor the `#` of
+  // a shell one means anything here — but left in place the first pairs with the template's
+  // next `-->` and swallows a heading, and the second reads as one. Reducing each block to a
+  // placeholder keeps both out of the scan while still counting as content, so a section
+  // filled only with a code sample is not then judged empty.
+  text = stripComments(text.replace(FENCED_BLOCK_REGEX, CODE_BLOCK_PLACEHOLDER));
   const headings = [...text.matchAll(HEADING_REGEX)];
   return headings.map((match, index) => ({
     heading: match[0].trim().replace(HEADING_PREFIX, ''),
@@ -141,8 +145,12 @@ const MAX_LINKED_ISSUES = 20;
 // `#123`, `owner/repo#123`, and a full issue URL.
 // https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue
 const CLOSING_KEYWORDS = 'close[sd]?|fix(?:e[sd])?|resolve[sd]?';
-// At least one character that isn't a dot, so `..` can't reach the API as a path segment.
-const REPO_NAME = String.raw`[\w.-]*[\w-][\w.-]*`;
+const PATH_SEGMENT_REGEX = /^\.+$/;
+// Kept unambiguous. Splitting this to require a non-dot character (`[\w.-]*[\w-][\w.-]*`)
+// makes the two quantifiers able to divide a word run between them; with two names either
+// side of a `/` the failure path is cubic, and a 65KB body — the API's own limit — takes
+// hours rather than the 29ms this does. `..` is rejected after parsing instead.
+const REPO_NAME = String.raw`[\w.-]+`;
 // `:?[^\S\n]+` rather than `\s*:?\s+`: the latter is ambiguous between its two
 // whitespace quantifiers and backtracks quadratically on a long run of spaces
 // (~4s at GitHub's 65536 body limit, re-run on every `edited` event). Excluding
@@ -170,7 +178,12 @@ const parseClosingReferences = (body, context) => {
         ? Number(urlNumber || number)
         : Number.NaN,
     }))
-    .filter(reference => Number.isSafeInteger(reference.number));
+    .filter(reference => Number.isSafeInteger(reference.number))
+    // `.` and `..` are legal in the character class but are path segments, not names, so
+    // they would traverse in the request URL rather than 404. Nothing else needs excluding:
+    // any other name is merely one that does not exist.
+    .filter(reference => !PATH_SEGMENT_REGEX.test(reference.owner) &&
+      !PATH_SEGMENT_REGEX.test(reference.repo));
 
   // Owner and repo names are case-insensitive on GitHub, so the key is too.
   const seen = new Set();
