@@ -25,28 +25,24 @@ const nepaliMonths = ['बैशाख', 'जेठ', 'असार', 'साउ
 
 const getExpectedNepaliLabel = (momentDate) => {
   const bsStr = toBik_dev(momentDate.format('YYYY-MM-DD'));
-  const [year, month, day] = bsStr.split('-');
+  const [, month, day] = bsStr.split('-');
   const dayNum = Number.parseInt(fromDevanagari(day), 10);
   const monthNum = Number.parseInt(fromDevanagari(month), 10);
   const dayDev = toDevanagari(dayNum.toString());
   const monthName = nepaliMonths[monthNum - 1];
-  const yearDev = year;
-  return `${dayDev} ${monthName} ${yearDev}`;
+  return `${dayDev} ${monthName}`;
 };
 
 const getExpectedFromLabel = () => {
   const todayBik = toBik_dev(moment().format('YYYY-MM-DD'));
-  const [year, month] = todayBik.split('-').map(num => Number.parseInt(fromDevanagari(num), 10));
+  const [, month] = todayBik.split('-').map(num => Number.parseInt(fromDevanagari(num), 10));
   let targetMonth = month - 2;
-  let targetYear = year;
   if (targetMonth <= 0) {
     targetMonth += 12;
-    targetYear -= 1;
   }
   const dayDev = toDevanagari('1');
   const monthName = nepaliMonths[targetMonth - 1];
-  const yearDev = toDevanagari(targetYear.toString());
-  return `${dayDev} ${monthName} ${yearDev}`;
+  return `${dayDev} ${monthName}`;
 };
 
 describe('Reports Sidebar Filter', () => {
