@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { Overlay } from '@angular/cdk/overlay';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -116,6 +117,7 @@ describe('MobileTooltipDirective', () => {
   it('shows a single tooltip when multiple directive instances listen (e.g. several embedded cht-form roots)', () => {
     sinon.stub(window, 'matchMedia').returns({ matches: true } as MediaQueryList);
     TestBed.configureTestingModule({ imports: [MultiInstanceHostComponent] });
+    const create = sinon.spy(TestBed.inject(Overlay), 'create');
     const multiFixture = TestBed.createComponent(MultiInstanceHostComponent);
     try {
       multiFixture.detectChanges();
@@ -126,6 +128,9 @@ describe('MobileTooltipDirective', () => {
       const contents = document.querySelectorAll('.mm-mobile-tooltip__content');
       expect(contents).to.have.lengthOf(1);
       expect(contents[0].textContent).to.equal('Full tooltip text');
+      // Every instance sees the focusin, but only the first builds the tooltip — the others
+      // short-circuit instead of disposing and re-creating it.
+      expect(create.callCount).to.equal(1);
     } finally {
       multiFixture.destroy();
     }
@@ -239,6 +244,47 @@ describe('MobileTooltipDirective', () => {
       expect(tooltip()).to.exist;
     } finally {
       fixture.nativeElement.remove();
+    }
+  });
+
+  it('keeps the tooltip inside the viewport for a trigger at the screen edge (the #11242 clipping)', async () => {
+    createOn(true);
+    // The karma build loads no app CSS ("styles": [] in angular.json), so inject the CDK overlay
+    // structural styles the app gets from the Material prebuilt theme — without them the overlay
+    // has no positioning context and geometry assertions would be meaningless.
+    const style = document.createElement('style');
+    style.textContent = `
+      .cdk-overlay-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+      .cdk-overlay-pane { position: absolute; box-sizing: border-box; display: flex; max-width: 100%; }
+      .cdk-overlay-connected-position-bounding-box { position: absolute; display: flex; flex-direction: column; }
+    `;
+    document.head.appendChild(style);
+    document.body.appendChild(fixture.nativeElement); // real layout, so the rects below mean something
+    try {
+      const el = trigger();
+      el.style.position = 'fixed';
+      el.style.top = '200px';
+      el.style.right = '0';
+      el.setAttribute('title', 'A long absolute date like Tuesday, July 7th, 2026 at 5:30 AM');
+      el.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+      expect(tooltip()).to.exist;
+
+      // CDK applies the connected position on the render tick after attach; wait for the overlay
+      // to leave the container's top-left origin and land next to the trigger (top: 200px).
+      const rectOf = () => (tooltip() as Element).getBoundingClientRect();
+      for (let i = 0; i < 100 && rectOf().top < 100; i++) {
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+      const rect = rectOf();
+      expect(rect.top).to.be.greaterThan(100); // anchored to the trigger, not at the fallback origin
+      expect(rect.width).to.be.greaterThan(0);
+      // The point of the fix: the old CSS anchored the tooltip to a fixed edge of the trigger, so a
+      // trigger at the screen edge pushed most of the text off-screen. The overlay must stay inside.
+      expect(rect.left).to.be.at.least(0);
+      expect(rect.right).to.be.at.most(window.innerWidth);
+    } finally {
+      fixture.nativeElement.remove();
+      style.remove();
     }
   });
 });

@@ -101,6 +101,13 @@ export class MobileTooltipDirective implements OnInit, OnDestroy {
   }
 
   private show(target: HTMLElement | null) {
+    // With several instances listening (e.g. a host page embedding multiple <cht-form> elements),
+    // each one sees the same focusin; without this guard every later instance would dispose and
+    // rebuild the tooltip the first one just created.
+    if (target && target === MobileTooltipDirective.trigger && MobileTooltipDirective.overlayRef) {
+      return;
+    }
+
     // Always clear any existing tooltip first — even when focus lands on a title-less element — so a
     // previous one can't be left behind.
     this.hide();
