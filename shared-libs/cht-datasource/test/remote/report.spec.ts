@@ -154,20 +154,31 @@ describe('remote report', () => {
       });
 
       describe('with a form qualifier', () => {
-        it('calls the by-form endpoint with the form code in the path', async () => {
+        it('sends the form codes as a query param on the shared uuid endpoint', async () => {
           const expectedResponse = { data: ['uuid1', 'uuid2'], cursor };
           getResourcesInner.resolves(expectedResponse);
 
-          const result = await Report.v1.getUuidsPage(remoteContext)({ form: 'pregnancy' }, cursor, limit);
+          const result = await Report.v1.getUuidsPage(remoteContext)(
+            { forms: ['pregnancy', 'delivery'] }, cursor, limit
+          );
 
           expect(result).to.equal(expectedResponse);
-          expect(getResourcesOuter.calledOnceWithExactly(
-            remoteContext,
-            'api/v1/report/by-form/pregnancy'
-          )).to.be.true;
+          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/uuid')).to.be.true;
           expect(getResourcesInner.calledOnceWithExactly({
             limit: limit.toString(),
+            form: 'pregnancy,delivery',
             cursor,
+          })).to.be.true;
+        });
+
+        it('sends a single form code without a trailing separator', async () => {
+          getResourcesInner.resolves({ data: [], cursor: null });
+
+          await Report.v1.getUuidsPage(remoteContext)({ forms: ['pregnancy'] }, null, limit);
+
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            form: 'pregnancy',
           })).to.be.true;
         });
 
@@ -175,29 +186,36 @@ describe('remote report', () => {
           const expectedResponse = { data: [], cursor: null };
           getResourcesInner.resolves(expectedResponse);
 
-          const result = await Report.v1.getUuidsPage(remoteContext)({ form: 'pregnancy' }, null, limit);
+          const result = await Report.v1.getUuidsPage(remoteContext)({ forms: ['pregnancy'] }, null, limit);
 
           expect(result).to.equal(expectedResponse);
-          expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString() })).to.be.true;
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            form: 'pregnancy',
+          })).to.be.true;
         });
 
-        it('encodes the form code for use as a path segment', async () => {
+        it('does not normalise the form codes', async () => {
           getResourcesInner.resolves({ data: [], cursor: null });
 
-          await Report.v1.getUuidsPage(remoteContext)({ form: 'a/b c' }, null, limit);
+          await Report.v1.getUuidsPage(remoteContext)({ forms: ['ANC_FollowUp'] }, null, limit);
 
-          expect(getResourcesOuter.calledOnceWithExactly(
-            remoteContext,
-            'api/v1/report/by-form/a%2Fb%20c'
-          )).to.be.true;
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            form: 'ANC_FollowUp',
+          })).to.be.true;
         });
 
-        it('prefers the freetext endpoint when a qualifier satisfies both', async () => {
+        it('prefers freetext when a qualifier satisfies both', async () => {
           getResourcesInner.resolves({ data: [], cursor: null });
 
-          await Report.v1.getUuidsPage(remoteContext)({ freetext, form: 'pregnancy' }, null, limit);
+          await Report.v1.getUuidsPage(remoteContext)({ freetext, forms: ['pregnancy'] }, null, limit);
 
           expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/uuid')).to.be.true;
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            freetext,
+          })).to.be.true;
         });
       });
     });

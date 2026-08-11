@@ -4,7 +4,7 @@ const logger = require('@medic/logger');
 const getReportsCountByForm = async () => {
   try {
     // Aggregate (grouped count) query. Deliberately left on db.query by the cht-datasource
-    // view->qualifier migration: Qualifier.byForm only covers the page query. Migrating this
+    // view->qualifier migration: Qualifier.byForms only covers the page query. Migrating this
     // needs a narrower count operation (e.g. Report.v1.countByForm) — see the aggregate API
     // follow-up ticket.
     const result = await db.medic.query('medic-client/reports_by_form', {

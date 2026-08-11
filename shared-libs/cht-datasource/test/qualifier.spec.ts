@@ -3,7 +3,7 @@ import {
   byContactType,
   byContactId,
   byContactIds,
-  byForm,
+  byForms,
   byFreetext,
   byReportingPeriod,
   byUsername,
@@ -144,44 +144,64 @@ describe('qualifier', () => {
     });
   });
 
-  describe('byForm', () => {
-    it('builds a qualifier that identifies entities by their form code', () => {
-      expect(byForm('pregnancy')).to.deep.equal({ form: 'pregnancy' });
+  describe('byForms', () => {
+    it('builds a qualifier that identifies entities by their form codes', () => {
+      expect(byForms(['pregnancy', 'delivery'])).to.deep.equal({ forms: ['pregnancy', 'delivery'] });
     });
 
-    it('does not normalise the form code', () => {
-      expect(byForm('  ANC_FollowUp ')).to.deep.equal({ form: '  ANC_FollowUp ' });
+    it('accepts a single form code in an array', () => {
+      expect(byForms(['pregnancy'])).to.deep.equal({ forms: ['pregnancy'] });
+    });
+
+    it('removes duplicate form codes while keeping the order given', () => {
+      expect(byForms(['delivery', 'pregnancy', 'delivery'])).to.deep.equal({ forms: ['delivery', 'pregnancy'] });
+    });
+
+    it('does not normalise the form codes', () => {
+      expect(byForms(['  ANC_FollowUp '])).to.deep.equal({ forms: ['  ANC_FollowUp '] });
     });
 
     [
       null,
       undefined,
-      '',
-      '   ',
-      '\t\n',
+      'pregnancy',
+      [],
+      [''],
+      ['   '],
+      ['\t\n'],
+      ['pregnancy', ''],
+      [null],
+      [0],
       { },
       0,
-    ].forEach(form => {
-      it(`throws an error for ${JSON.stringify(form)}`, () => {
-        expect(() => byForm(form as string)).to.throw(
-          `Invalid form [${JSON.stringify(form)}].`
+    ].forEach(forms => {
+      it(`throws an error for ${JSON.stringify(forms)}`, () => {
+        expect(() => byForms(forms as string[])).to.throw(
+          `Invalid forms [${JSON.stringify(forms)}].`
         );
       });
     });
   });
-
   describe('isFormQualifier', () => {
     [
       [ null, false ],
       [ 'pregnancy', false ],
-      [ { form: { } }, false ],
-      [ { form: '' }, false ],
-      [ { form: '   ' }, false ],
-      [ { form: 'pregnancy' }, true ],
-      [ { form: 'pregnancy', other: 'other' }, true ]
-    ].forEach(([ form, expected ]) => {
-      it(`evaluates ${JSON.stringify(form)}`, () => {
-        expect(isFormQualifier(form)).to.equal(expected);
+      [ { forms: { } }, false ],
+      // A bare string is the shape the singular API used to take, and it would otherwise pass as an
+      // iterable of single characters, so it is rejected explicitly.
+      [ { forms: 'pregnancy' }, false ],
+      [ { forms: [] }, false ],
+      [ { forms: [''] }, false ],
+      [ { forms: ['   '] }, false ],
+      [ { forms: ['pregnancy', ''] }, false ],
+      [ { forms: ['pregnancy', null] }, false ],
+      [ { form: 'pregnancy' }, false ],
+      [ { forms: ['pregnancy'] }, true ],
+      [ { forms: ['pregnancy', 'delivery'] }, true ],
+      [ { forms: ['pregnancy'], other: 'other' }, true ]
+    ].forEach(([ forms, expected ]) => {
+      it(`evaluates ${JSON.stringify(forms)}`, () => {
+        expect(isFormQualifier(forms)).to.equal(expected);
       });
     });
   });

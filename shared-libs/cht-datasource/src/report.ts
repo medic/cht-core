@@ -5,7 +5,7 @@ import { Doc } from './libs/doc';
 import * as Local from './local';
 import { validateCursor } from './local/libs/core';
 import {
-  byForm,
+  byForms,
   byFreetext,
   byIds,
   byUuid,
@@ -158,8 +158,8 @@ export namespace v1 {
     /**
      * Returns an array of report identifiers for the provided page specifications.
      * @param qualifier the limiter defining which identifiers to return. Either a {@link FreetextQualifier} for a
-     * freetext search, or a {@link FormQualifier} to return the reports recorded with a particular form. If both
-     * are provided, the freetext search takes precedence.
+     * freetext search, or a {@link FormQualifier} to return the reports recorded with any of the given forms. If
+     * both are provided, the freetext search takes precedence.
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of identifiers to return. Default is 10000.
@@ -195,8 +195,8 @@ export namespace v1 {
     /**
      * Returns a generator for fetching all report identifiers that match the given qualifier
      * @param qualifier the limiter defining which identifiers to return. Either a {@link FreetextQualifier} for a
-     * freetext search, or a {@link FormQualifier} to return the reports recorded with a particular form. If both
-     * are provided, the freetext search takes precedence.
+     * freetext search, or a {@link FormQualifier} to return the reports recorded with any of the given forms. If
+     * both are provided, the freetext search takes precedence.
      * @returns a generator for fetching all report identifiers that match the given qualifier
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      */
@@ -420,30 +420,30 @@ export namespace v1 {
     getUuidsByFreetext: (qualifier: string) => AsyncGenerator<string, null>;
 
     /**
-     * Returns a paged array of identifiers for the reports recorded with the given form.
-     * @param form the code of the form the reports were recorded with (e.g. `pregnancy`). Matched verbatim
-     * against the report's `form` field.
+     * Returns a paged array of identifiers for the reports recorded with any of the given forms.
+     * @param forms the codes of the forms the reports were recorded with (e.g. `['pregnancy']`). Each is
+     * matched verbatim against the report's `form` field. Pass a single-element array to search one form.
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of identifiers to return. Default is 10000.
      * @returns a page of report identifiers for the provided specification
-     * @throws InvalidArgumentError if the form code is not a non-empty string
+     * @throws InvalidArgumentError if the form codes are not a non-empty array of non-blank strings
      * @throws InvalidArgumentError if the provided `limit` value is `<=0`
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
-    getUuidsPageByForm: (
-      form: string,
+    getUuidsPageByForms: (
+      forms: string[],
       cursor?: Nullable<string>,
       limit?: number | `${number}`
     ) => Promise<Page<string>>;
 
     /**
-     * Returns a generator for fetching all the identifiers of reports recorded with the given form.
-     * @param form the code of the form the reports were recorded with (e.g. `pregnancy`)
+     * Returns a generator for fetching all the identifiers of reports recorded with any of the given forms.
+     * @param forms the codes of the forms the reports were recorded with (e.g. `['pregnancy']`)
      * @returns a generator for fetching all matching report identifiers
-     * @throws InvalidArgumentError if the form code is not a non-empty string
+     * @throws InvalidArgumentError if the form codes are not a non-empty array of non-blank strings
      */
-    getUuidsByForm: (form: string) => AsyncGenerator<string, null>;
+    getUuidsByForms: (forms: string[]) => AsyncGenerator<string, null>;
 
     /**
      * Returns a page of reports for the given ids.
@@ -516,12 +516,12 @@ export namespace v1 {
         limit = DEFAULT_IDS_PAGE_LIMIT
       ) => ctx.bind(v1.getUuidsPage)(byFreetext(qualifier), cursor, limit),
       getUuidsByFreetext: (qualifier) => ctx.bind(v1.getUuids)(byFreetext(qualifier)),
-      getUuidsPageByForm: (
-        form,
+      getUuidsPageByForms: (
+        forms,
         cursor = null,
         limit = DEFAULT_IDS_PAGE_LIMIT
-      ) => ctx.bind(v1.getUuidsPage)(byForm(form), cursor, limit),
-      getUuidsByForm: (form) => ctx.bind(v1.getUuids)(byForm(form)),
+      ) => ctx.bind(v1.getUuidsPage)(byForms(forms), cursor, limit),
+      getUuidsByForms: (forms) => ctx.bind(v1.getUuids)(byForms(forms)),
       getPageByIds: (
         ids,
         cursor = null,

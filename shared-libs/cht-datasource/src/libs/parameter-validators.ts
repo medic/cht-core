@@ -136,8 +136,8 @@ export const assertFreetextOrFormQualifier: (
   }
   // Only form-shaped input gets the new message. Everything else keeps the original freetext error
   // verbatim, so callers (and the 400 bodies the API surfaces from them) are unchanged.
-  if (isRecord(qualifier) && 'form' in qualifier) {
-    throw new InvalidArgumentError(`Invalid form [${JSON.stringify(qualifier)}].`);
+  if (isRecord(qualifier) && 'forms' in qualifier) {
+    throw new InvalidArgumentError(`Invalid forms [${JSON.stringify(qualifier)}].`);
   }
   throw new InvalidArgumentError(`Invalid freetext [${JSON.stringify(qualifier)}].`);
 };

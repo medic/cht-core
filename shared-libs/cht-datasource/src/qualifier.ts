@@ -1,4 +1,4 @@
-import { hasField, hasStringFieldWithValue, isRecord, isString } from './libs/core';
+import { hasField, isRecord, isString } from './libs/core';
 import { InvalidArgumentError } from './libs/error';
 
 /**
@@ -177,35 +177,41 @@ export const isKeyedFreetextQualifier = (qualifier: FreetextQualifier): boolean 
 };
 
 /**
- * A qualifier that identifies entities based on the code of the form used to record them.
+ * A qualifier that identifies entities based on the codes of the forms used to record them.
  */
-export type FormQualifier = Readonly<{ form: string }>;
+export type FormQualifier = Readonly<{ forms: string[] }>;
 
 /**
- * Builds a qualifier for finding entities recorded with the given form.
- * @param form the form code to search with (e.g. `pregnancy`). This is matched verbatim against the
- * document's `form` field — it is not normalised.
+ * Builds a qualifier for finding entities recorded with any of the given forms.
+ * @param forms the form codes to search with (e.g. `['pregnancy']`). Each is matched verbatim against
+ * the document's `form` field — they are not normalised. Duplicates are removed.
  * @returns the qualifier
- * @throws InvalidArgumentError if the form code is not a string with a non-blank value
+ * @throws InvalidArgumentError if the form codes are not a non-empty array of non-blank strings
  */
-export const byForm = (form: string): FormQualifier => {
-  const qualifier = { form };
+export const byForms = (forms: string[]): FormQualifier => {
+  const qualifier = { forms };
   if (!isFormQualifier(qualifier)) {
-    throw new InvalidArgumentError(`Invalid form [${JSON.stringify(form)}].`);
+    throw new InvalidArgumentError(`Invalid forms [${JSON.stringify(forms)}].`);
   }
 
-  return qualifier;
+  return { forms: [...new Set(forms)] };
 };
 
 /**
  * Returns `true` if the given qualifier is a {@link FormQualifier} otherwise `false`.
  *
- * The qualifier must have a `form` key whose value is a string that is not empty or blank.
+ * The qualifier must have a `forms` key holding a non-empty array of strings, none of which is empty
+ * or blank. Unlike {@link isIdsQualifier}, an empty array is rejected: it can only ever match nothing,
+ * which is never what the caller meant, and silently returning an empty page would hide the mistake.
  * @param qualifier the qualifier to check
  * @returns `true` if the given qualifier is a {@link FormQualifier}, otherwise `false`.
  */
 export const isFormQualifier = (qualifier: unknown): qualifier is FormQualifier => {
-  return isRecord(qualifier) && hasStringFieldWithValue(qualifier, 'form');
+  return isRecord(qualifier)
+    && hasField(qualifier, { name: 'forms', type: 'object' })
+    && Array.isArray(qualifier.forms)
+    && qualifier.forms.length > 0
+    && qualifier.forms.every(form => isString(form) && form.trim().length > 0);
 };
 
 /**

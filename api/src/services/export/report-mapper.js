@@ -56,7 +56,7 @@ module.exports = {
       }
 
       // Aggregate (grouped) query used to enumerate the distinct forms in use. Deliberately left
-      // on db.query by the cht-datasource view->qualifier migration: Qualifier.byForm only covers
+      // on db.query by the cht-datasource view->qualifier migration: Qualifier.byForms only covers
       // the page query — see the aggregate API follow-up ticket.
       return db.medic
         .query('medic-client/reports_by_form', { group: true })
@@ -72,7 +72,7 @@ module.exports = {
     return getForms()
       .then(forms => {
         // Single-result sample used only to discover a form's field names. Deliberately left on
-        // db.query by the cht-datasource view->qualifier migration: Qualifier.byForm returns a page
+        // db.query by the cht-datasource view->qualifier migration: Qualifier.byForms returns a page
         // of UUIDs, so it cannot express `limit: 1, include_docs: true` in one round trip — see the
         // aggregate API follow-up ticket.
         const getFieldsPromises = form => db.medic

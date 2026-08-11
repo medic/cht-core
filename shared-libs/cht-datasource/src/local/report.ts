@@ -5,6 +5,7 @@ import {
   fetchAndFilterIds,
   getDocById, getDocIdsByIdRange, getDocsByIds,
   queryDocIdsByKey,
+  queryDocIdsByKeys,
   queryDocIdsByRange,
   updateDoc
 } from './libs/doc';
@@ -136,7 +137,7 @@ export namespace v1 {
     // serves form queries would leave a rejection unobserved. The freetext branch still awaits (and
     // so still surfaces) the real error.
     promisedUseNouveau.catch(() => { /* no-op */ });
-    const queryViewByForm = queryDocIdsByKey(medicDb, 'medic-client/reports_by_form');
+    const queryViewByForms = queryDocIdsByKeys(medicDb, 'medic-client/reports_by_form');
 
     return async (
       qualifier: FreetextQualifier | FormQualifier,
@@ -157,9 +158,12 @@ export namespace v1 {
         return fetchAndFilterIds(getPageFn, limit)(limit, skip);
       }
 
-      // The view emits [doc.form], so the form code is the complete key.
+      // The view emits [doc.form], so each form code is a complete key on its own. The qualifier
+      // preserves the caller's order and drops duplicates, which is what keeps `skip` meaningful
+      // from one page to the next — the view returns rows grouped by key in the order supplied.
       const skip = validateCursor(cursor);
-      const getPageFn = (limit: number, skip: number) => queryViewByForm([qualifier.form], limit, skip);
+      const keys = qualifier.forms.map(form => [form]);
+      const getPageFn = (limit: number, skip: number) => queryViewByForms(keys, limit, skip);
       return fetchAndFilterIds(getPageFn, limit)(limit, skip);
     };
   };
