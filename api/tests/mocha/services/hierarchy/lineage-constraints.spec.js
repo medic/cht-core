@@ -110,28 +110,17 @@ describe('lineage-constraints', () => {
     await expect(assertMoveIsLegal(clinic, healthCenterB, [ 'clinic-1' ])).to.be.fulfilled;
   });
 
-  it('rejects a source whose own primary contact is a place', async () => {
+  // Pre-existing bad data on the source is not the move's concern.
+  it('allows a move even when the source has a place as its own primary contact', async () => {
     const withPlaceContact = { ...clinic, contact: { _id: 'hc-a' } };
     stubNoAncestorLookup();
-    sinon.stub(db.medic, 'get').withArgs('hc-a').resolves(healthCenterA);
 
-    await expect(assertMoveIsLegal(withPlaceContact, healthCenterB, [ 'clinic-1' ]))
-      .to.be.rejectedWith(`has a primary contact 'hc-a' which is not a person`);
+    await expect(assertMoveIsLegal(withPlaceContact, healthCenterB, [ 'clinic-1' ])).to.be.fulfilled;
   });
 
-  it('allows a source whose own primary contact is a person', async () => {
-    const withPersonContact = { ...clinic, contact: { _id: 'person-1' } };
-    stubNoAncestorLookup();
-    sinon.stub(db.medic, 'get').withArgs('person-1')
-      .resolves({ _id: 'person-1', type: 'person', parent: { _id: 'clinic-1' } });
-
-    await expect(assertMoveIsLegal(withPersonContact, healthCenterB, [ 'clinic-1' ])).to.be.fulfilled;
-  });
-
-  it('tolerates a primary contact that no longer exists', async () => {
+  it('allows a move even when the source points at a primary contact that no longer exists', async () => {
     const withMissingContact = { ...clinic, contact: { _id: 'gone' } };
     stubNoAncestorLookup();
-    sinon.stub(db.medic, 'get').withArgs('gone').rejects({ status: 404 });
 
     await expect(assertMoveIsLegal(withMissingContact, healthCenterB, [ 'clinic-1' ])).to.be.fulfilled;
   });

@@ -1,11 +1,3 @@
-/**
- * Lineage replacement helpers for hierarchy operations (move/merge).
- *
- * Ported from cht-conf `src/lib/hierarchy-operations/replace-lineage.js`. These are pure functions
- * (no I/O) that rewrite the embedded `parent`/`contact` lineage of a document in place. They are
- * shared by the move and merge services; the `params.merge` flag selects the merge variant.
- */
-
 const replaceEntireLineage = (replaceInDoc, lineageAttributeName, replaceWith) => {
   if (!replaceWith) {
     const lineageWasDeleted = !!replaceInDoc[lineageAttributeName];

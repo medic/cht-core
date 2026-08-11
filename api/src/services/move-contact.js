@@ -5,20 +5,20 @@ const environment = require('@medic/environment');
 const nouveau = require('@medic/nouveau');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const serverUtils = require('../server-utils');
+const dataContext = require('./data-context');
 const bulkOperations = require('./bulk-operations');
 const { NotFoundError, BadRequestError } = require('../errors');
 const { BULK_OPERATIONS } = require('@medic/constants');
+const { Contact, Qualifier } = require('@medic/cht-datasource');
 // Required as a module, not destructured, so consumers can stub it with sinon.
 const constraints = require('./hierarchy/lineage-constraints');
 const {
-  createLineageFromDoc,
   replaceParentLineage,
   replaceContactLineage,
 } = require('./hierarchy/lineage-manipulation');
 
 const { ACTIONS } = BULK_OPERATIONS;
 
-const HIERARCHY_ROOT = 'root';
 // Documents are read a page at a time and turned straight into operations, so only one page is ever
 // held in memory. A whole-district move can touch tens of thousands of documents, and the API is the
 // half of this that has to stay cheap.
@@ -40,12 +40,15 @@ const getSubtreeIds = async (id) => {
  * Only the operations, which are small, accumulate.
  */
 const buildOperationsInPages = async (ids, buildPage) => {
+  const remaining = [ ...ids ];
   const operations = [];
-  for (let i = 0; i < ids.length; i += DOC_PAGE_SIZE) {
-    const page = ids.slice(i, i + DOC_PAGE_SIZE);
+
+  while (remaining.length) {
+    const page = remaining.splice(0, DOC_PAGE_SIZE);
     const result = await db.medic.allDocs({ keys: page, include_docs: true });
     operations.push(...buildPage(result.rows.map(row => row.doc).filter(Boolean)));
   }
+
   return operations;
 };
 
@@ -85,12 +88,12 @@ const getReportIdsByCreator = async (contactIds) => {
   return [ ...ids ];
 };
 
-// Surviving places whose primary contact sits in the moved subtree; their cached copy of that
-// contact's lineage is now stale. Unlike Delete this never clears the reference.
-const getAncestorIdsToRefresh = async (contactIds) => {
-  const moved = new Set(contactIds);
+// Places caching the lineage of a moved primary contact; unlike Delete this refreshes the reference
+// instead of clearing it. Moved places are included too: `set-parent` only rewrites `parent`, so
+// skipping them would leave a place whose `parent` and `contact` disagree.
+const getPlaceIdsToRefresh = async (contactIds) => {
   const result = await db.medic.query('medic/contacts_by_primary_contact', { keys: contactIds });
-  return [ ...new Set(result.rows.map(row => row.id).filter(id => !moved.has(id))) ];
+  return [ ...new Set(result.rows.map(row => row.id)) ];
 };
 
 /**
@@ -131,33 +134,25 @@ const buildSetContactOperations = (docs, sourceId, replacementLineage) => docs
 
 /**
  * Gathers everything a move touches and queues it as a bulk operation.
- * @param {string} id - the contact being moved
- * @param {string} parentId - the destination contact id, or `root` to move to the top level
+ * @param {Object} source - the contact being moved
+ * @param {Object|null} destination - the new parent, or null when moving to the top level
  * @param {Object} options
  * @param {boolean} options.dryRun - return the summary without queuing anything
  * @returns {Promise<Object>} the summary of changes, plus the bulk operation id when the operation
  *   was queued (omitted for a dry run)
  * @throws {BadRequestError} when the move is not legal
- * @throws {NotFoundError} when the destination does not exist
  */
-const moveContactHierarchy = async (id, parentId, { dryRun } = {}) => {
-  const toRoot = parentId === HIERARCHY_ROOT;
-  const destination = toRoot ? null : await db.medic.get(parentId).catch(err => {
-    if (err.status === 404) {
-      throw new NotFoundError(`Destination contact ${parentId} not found`);
-    }
-    throw err;
-  });
-
+const moveContactHierarchy = async (source, destination, { dryRun } = {}) => {
+  const id = source._id;
   const contactIds = await getSubtreeIds(id);
-  const source = await db.medic.get(id);
+
   // Violations surface as BadRequestError; anything else is a real failure and propagates as a 500.
   await constraints.assertMoveIsLegal(source, destination, contactIds);
 
-  const replacementLineage = createLineageFromDoc(destination);
-  const [ reportIds, ancestorIds ] = await Promise.all([
+  const replacementLineage = lineage.minifyLineage(destination);
+  const [ reportIds, placeIds ] = await Promise.all([
     getReportIdsByCreator(contactIds),
-    getAncestorIdsToRefresh(contactIds),
+    getPlaceIdsToRefresh(contactIds),
   ]);
 
   const setParentOperations = await buildOperationsInPages(
@@ -168,14 +163,14 @@ const moveContactHierarchy = async (id, parentId, { dryRun } = {}) => {
     reportIds,
     docs => buildSetContactOperations(docs, id, replacementLineage)
   );
-  const ancestorOperations = await buildOperationsInPages(
-    ancestorIds,
+  const placeOperations = await buildOperationsInPages(
+    placeIds,
     docs => buildSetContactOperations(docs, id, replacementLineage)
   );
 
   const summary = {
     'set-parent': setParentOperations.length,
-    'set-contact': { reports: reportOperations.length, places: ancestorOperations.length },
+    'set-contact': { reports: reportOperations.length, places: placeOperations.length },
   };
 
   if (dryRun) {
@@ -184,7 +179,7 @@ const moveContactHierarchy = async (id, parentId, { dryRun } = {}) => {
 
   const bulkOperationId = await bulkOperations.queue([
     { action: ACTIONS.SET_PARENT, operations: setParentOperations },
-    { action: ACTIONS.SET_CONTACT, operations: [ ...reportOperations, ...ancestorOperations ] },
+    { action: ACTIONS.SET_CONTACT, operations: [ ...reportOperations, ...placeOperations ] },
   ]);
 
   return { summary, id: bulkOperationId };
@@ -195,32 +190,46 @@ const moveContactHierarchy = async (id, parentId, { dryRun } = {}) => {
  * hierarchy the same way, so they share this handler; each passes the pieces that make its endpoint
  * type-specific. `get` fetches the target as its own type and returns null for the wrong type, so a
  * place cannot be moved through the person endpoint or vice versa, and `type` names it for the
- * not-found message. The handler reads the `dry_run` query param and the `parent_id` body property,
- * asserts the required permission, hands the type-agnostic work off to `moveContactHierarchy`, and
- * responds with the summary (202 when queued, 200 for a dry run).
+ * not-found message. The handler reads the `dry_run` query param and the optional `parent_id` body
+ * property, asserts the required permission, resolves both contacts, and hands the type-agnostic
+ * work off to `moveContactHierarchy`, responding with the summary (202 when queued, 200 for a dry
+ * run).
  * @param {Object} options
  * @param {Function} options.get - fetches the target contact by uuid, or null when it is not this type
  * @param {string} options.type - the contact type name, used in the not-found message
  * @returns {Function} the express request handler
  */
-const handleMove = ({ get, type }) => serverUtils.doOrError(async (req, res) => {
-  const dryRun = req.query.dry_run === 'true';
-  await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_move_contact_hierarchy'] });
+const handleMove = ({ get, type }) => {
+  // Bound here, not at module load: both controllers and this module's own tests require it.
+  const getContact = dataContext.bind(Contact.v1.get);
 
-  const { uuid } = req.params;
-  const contact = await get(uuid);
-  if (!contact) {
-    return serverUtils.error(new NotFoundError(`${type} not found`), req, res);
-  }
+  return serverUtils.doOrError(async (req, res) => {
+    const dryRun = req.query.dry_run === 'true';
+    await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_move_contact_hierarchy'] });
 
-  const parentId = req.body?.parent_id;
-  if (!parentId || typeof parentId !== 'string') {
-    return serverUtils.error(new BadRequestError('parent_id is required and must be a string'), req, res);
-  }
+    // parent_id is optional: leaving it out moves the contact to the top level.
+    const parentId = req.body?.parent_id ?? null;
+    if (parentId !== null && (typeof parentId !== 'string' || !parentId)) {
+      return serverUtils.error(new BadRequestError('parent_id must be a non-empty string'), req, res);
+    }
 
-  const result = await moveContactHierarchy(uuid, parentId, { dryRun });
-  return res.status(dryRun ? 200 : 202).json(result);
-});
+    const { uuid } = req.params;
+    const [ contact, destination ] = await Promise.all([
+      get(uuid),
+      parentId ? getContact(Qualifier.byUuid(parentId)) : null,
+    ]);
+
+    if (!contact) {
+      return serverUtils.error(new NotFoundError(`${type} not found`), req, res);
+    }
+    if (parentId && !destination) {
+      return serverUtils.error(new NotFoundError(`Destination contact ${parentId} not found`), req, res);
+    }
+
+    const result = await moveContactHierarchy(contact, destination, { dryRun });
+    return res.status(dryRun ? 200 : 202).json(result);
+  });
+};
 
 module.exports = {
   handleMove,

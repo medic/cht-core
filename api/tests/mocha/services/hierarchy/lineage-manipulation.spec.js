@@ -1,38 +1,11 @@
 const { expect } = require('chai');
 const {
-  createLineageFromDoc,
   pluckIdsFromLineage,
   replaceParentLineage,
   replaceContactLineage,
 } = require('../../../../src/services/hierarchy/lineage-manipulation');
 
 describe('hierarchy/lineage-manipulation', () => {
-  describe('createLineageFromDoc', () => {
-    it('returns undefined for a falsy doc', () => {
-      expect(createLineageFromDoc(undefined)).to.be.undefined;
-      expect(createLineageFromDoc(null)).to.be.undefined;
-    });
-
-    it('builds a lineage stub carrying the id and the existing parent chain', () => {
-      const doc = { _id: 'destination', parent: { _id: 'district', parent: { _id: 'root' } }, name: 'Dest' };
-
-      const lineage = createLineageFromDoc(doc);
-
-      expect(lineage).to.deep.equal({
-        _id: 'destination',
-        parent: { _id: 'district', parent: { _id: 'root' } },
-      });
-      // Does not carry over unrelated fields such as name.
-      expect(lineage).to.not.have.property('name');
-    });
-
-    it('leaves parent undefined for a top-level doc', () => {
-      const lineage = createLineageFromDoc({ _id: 'top' });
-
-      expect(lineage).to.deep.equal({ _id: 'top', parent: undefined });
-    });
-  });
-
   describe('pluckIdsFromLineage', () => {
     it('returns an empty array for a falsy lineage', () => {
       expect(pluckIdsFromLineage(undefined)).to.deep.equal([]);

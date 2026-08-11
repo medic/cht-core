@@ -1,9 +1,11 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
+const { Contact, Qualifier } = require('@medic/cht-datasource');
 
 const db = require('../../../src/db');
 const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
+const dataContext = require('../../../src/services/data-context');
 const { NotFoundError, BadRequestError } = require('../../../src/errors');
 const request = require('@medic/couch-request');
 const bulkOperations = require('../../../src/services/bulk-operations');
@@ -20,6 +22,11 @@ const person = () => ({
   parent: { _id: 'clinic-1', parent: { _id: 'hc-a', parent: { _id: 'district' } } },
 });
 
+// Pages can carry the same ids, so stubs match the exact key list rather than "contains".
+const keysAre = (...ids) => sinon.match(opts => Array.isArray(opts.keys)
+  && opts.keys.length === ids.length
+  && ids.every((id, i) => opts.keys[i] === id));
+
 const buildRes = () => {
   const res = {};
   res.status = sinon.stub().returns(res);
@@ -35,18 +42,21 @@ const buildReq = (overrides = {}) => ({
 });
 
 describe('move-contact service', () => {
+  let contactGet;
   let handler;
   let queue;
 
   beforeEach(() => {
+    // handleMove binds the datasource itself, so the stub only has to be in place before it is called.
+    contactGet = sinon.stub();
+    sinon.stub(dataContext, 'bind').withArgs(Contact.v1.get).returns(contactGet);
     sinon.stub(auth, 'assertPermissions').resolves();
     sinon.stub(serverUtils, 'error');
     sinon.stub(constraints, 'assertMoveIsLegal').resolves();
     queue = sinon.stub(bulkOperations, 'queue').resolves('bulk-operation:1');
 
-    sinon.stub(db.medic, 'get');
-    db.medic.get.withArgs('hc-b').resolves(healthCenterB());
-    db.medic.get.withArgs('clinic-1').resolves(clinic());
+    contactGet.resolves(healthCenterB());
+
     sinon.stub(db.medic, 'query');
     // ids only: the service pages the documents in separately
     db.medic.query.withArgs('medic/contacts_by_depth')
@@ -56,7 +66,7 @@ describe('move-contact service', () => {
     sinon.stub(db.medic, 'allDocs');
     db.medic.allDocs.resolves({ rows: [] });
     db.medic.allDocs
-      .withArgs(sinon.match(opts => opts.keys?.includes('clinic-1')))
+      .withArgs(keysAre('clinic-1', 'person-1'))
       .resolves({ rows: [ { doc: clinic() }, { doc: person() } ] });
 
     handler = moveContact.handleMove({ get: sinon.stub().resolves(clinic()), type: 'Place' });
@@ -95,6 +105,12 @@ describe('move-contact service', () => {
     });
   });
 
+  it('fetches the destination through cht-datasource', async () => {
+    await handler(buildReq(), buildRes());
+
+    expect(contactGet.args[0]).to.deep.equal([ Qualifier.byUuid('hc-b') ]);
+  });
+
   it('responds 200 with the summary and queues nothing for a dry run', async () => {
     const res = buildRes();
 
@@ -109,7 +125,7 @@ describe('move-contact service', () => {
 
   it('refreshes the cached lineage on reports the moved contacts authored', async () => {
     request.post.resolves({ hits: [ { id: 'report-1' } ] });
-    db.medic.allDocs.withArgs(sinon.match(opts => opts.keys?.includes('report-1'))).resolves({ rows: [ { doc: {
+    db.medic.allDocs.withArgs(keysAre('report-1')).resolves({ rows: [ { doc: {
       _id: 'report-1',
       type: 'data_record',
       contact: { _id: 'person-1', parent: { _id: 'clinic-1', parent: { _id: 'hc-a' } } },
@@ -138,7 +154,6 @@ describe('move-contact service', () => {
     const full = Array.from({ length: 1000 }, (_, i) => ({ id: `r-${i}` }));
     request.post.onFirstCall().resolves({ hits: full, bookmark: 'page-2' });
     request.post.onSecondCall().resolves({ hits: [ { id: 'r-last' } ] });
-    db.medic.allDocs.withArgs(sinon.match(opts => opts.keys?.includes('r-last'))).resolves({ rows: [] });
 
     await handler(buildReq(), buildRes());
 
@@ -151,7 +166,6 @@ describe('move-contact service', () => {
     const full = Array.from({ length: 1000 }, (_, i) => ({ id: `r-${i}` }));
     // A misbehaving index that keeps returning a full page and the same bookmark.
     request.post.resolves({ hits: full, bookmark: 'stuck' });
-    db.medic.allDocs.withArgs(sinon.match(opts => opts.keys?.includes('r-0'))).resolves({ rows: [] });
 
     await handler(buildReq(), buildRes());
 
@@ -161,7 +175,6 @@ describe('move-contact service', () => {
   it('escapes quotes and backslashes in ids before they reach the query', async () => {
     db.medic.query.withArgs('medic/contacts_by_depth')
       .resolves({ rows: [ { id: 'we"ird\\id' } ] });
-    db.medic.get.withArgs('we"ird\\id').resolves(clinic());
 
     await handler(buildReq(), buildRes());
 
@@ -176,12 +189,21 @@ describe('move-contact service', () => {
     expect(queue.called).to.equal(false);
     const err = serverUtils.error.args[0][0];
     expect(err).to.be.an.instanceOf(BadRequestError);
-    expect(err.message).to.contain('must be a string');
+    expect(err.message).to.contain('must be a non-empty string');
+  });
+
+  it('rejects an empty parent_id rather than treating it as the root', async () => {
+    const res = buildRes();
+
+    await handler(buildReq({ body: { parent_id: '' } }), res);
+
+    expect(queue.called).to.equal(false);
+    expect(serverUtils.error.args[0][0]).to.be.an.instanceOf(BadRequestError);
   });
 
   it('refreshes a surviving place whose primary contact moved, without clearing it', async () => {
     db.medic.query.withArgs('medic/contacts_by_primary_contact').resolves({ rows: [ { id: 'hc-a' } ] });
-    db.medic.allDocs.withArgs(sinon.match(opts => opts.keys?.includes('hc-a'))).resolves({ rows: [ { doc: {
+    db.medic.allDocs.withArgs(keysAre('hc-a')).resolves({ rows: [ { doc: {
       _id: 'hc-a',
       type: 'health_center',
       contact: { _id: 'person-1', parent: { _id: 'clinic-1', parent: { _id: 'hc-a' } } },
@@ -197,22 +219,46 @@ describe('move-contact service', () => {
     expect(res.json.args[0][0].summary['set-contact']).to.deep.equal({ reports: 0, places: 1 });
   });
 
-  it('does not treat a moved contact as a surviving ancestor', async () => {
+  it('refreshes a moving place whose own primary contact is moving with it', async () => {
+    // The source is also the holder of its own primary contact, so both fields have to be rewritten.
     db.medic.query.withArgs('medic/contacts_by_primary_contact').resolves({ rows: [ { id: 'clinic-1' } ] });
-
-    await handler(buildReq(), buildRes());
-
-    expect(queue.args[0][0][1].operations).to.deep.equal([]);
-  });
-
-  it('supports moving to the root', async () => {
+    db.medic.allDocs.withArgs(keysAre('clinic-1')).resolves({ rows: [ { doc: {
+      ...clinic(),
+      contact: { _id: 'person-1', parent: { _id: 'clinic-1', parent: { _id: 'hc-a', parent: { _id: 'district' } } } },
+    } } ] });
     const res = buildRes();
 
-    await handler(buildReq({ body: { parent_id: 'root' } }), res);
+    await handler(buildReq(), res);
 
-    expect(db.medic.get.calledWith('hc-b')).to.equal(false);
+    const setContact = queue.args[0][0][1].operations;
+    expect(setContact).to.have.length(1);
+    expect(setContact[0].id).to.equal('clinic-1');
+    expect(setContact[0].current_contact_id).to.equal('person-1');
+    expect(setContact[0].contact).to.deep.equal({
+      _id: 'person-1',
+      parent: { _id: 'clinic-1', parent: { _id: 'hc-b', parent: { _id: 'district' } } },
+    });
+    expect(res.json.args[0][0].summary['set-contact']).to.deep.equal({ reports: 0, places: 1 });
+  });
+
+  it('moves to the top level when parent_id is omitted', async () => {
+    const res = buildRes();
+
+    await handler(buildReq({ body: {} }), res);
+
+    expect(contactGet.called).to.equal(false);
     const setParent = queue.args[0][0][0].operations;
     expect(setParent[0]).to.deep.equal({ id: 'clinic-1', current_parent_id: 'hc-a', parent: undefined });
+    expect(res.status.args[0][0]).to.equal(202);
+  });
+
+  it('moves to the top level when there is no body at all', async () => {
+    const res = buildRes();
+
+    await handler(buildReq({ body: undefined }), res);
+
+    expect(contactGet.called).to.equal(false);
+    expect(res.status.args[0][0]).to.equal(202);
   });
 
   it('responds 404 and queues nothing when the target is not the expected type', async () => {
@@ -225,17 +271,6 @@ describe('move-contact service', () => {
     const err = serverUtils.error.args[0][0];
     expect(err).to.be.an.instanceOf(NotFoundError);
     expect(err.message).to.equal('Place not found');
-  });
-
-  it('responds 400 when parent_id is missing', async () => {
-    const res = buildRes();
-
-    await handler(buildReq({ body: {} }), res);
-
-    expect(queue.called).to.equal(false);
-    const err = serverUtils.error.args[0][0];
-    expect(err).to.be.an.instanceOf(BadRequestError);
-    expect(err.message).to.contain('parent_id is required');
   });
 
   it('responds 400 and queues nothing when the move is not legal', async () => {
@@ -251,7 +286,7 @@ describe('move-contact service', () => {
   });
 
   it('responds 404 when the destination does not exist', async () => {
-    db.medic.get.withArgs('hc-b').rejects({ status: 404 });
+    contactGet.resolves(null);
     const res = buildRes();
 
     await handler(buildReq(), res);
@@ -259,5 +294,6 @@ describe('move-contact service', () => {
     expect(queue.called).to.equal(false);
     const err = serverUtils.error.args[0][0];
     expect(err).to.be.an.instanceOf(NotFoundError);
+    expect(err.message).to.equal('Destination contact hc-b not found');
   });
 });

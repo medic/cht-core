@@ -268,10 +268,9 @@ module.exports = {
      *     summary: Move a place to a new parent
      *     operationId: v1PlaceIdMovePost
      *     description: >
-     *       Queues an asynchronous bulk operation that moves the place and its whole subtree under a
-     *       new parent, rewriting the parent lineage on every descendant and refreshing the cached
-     *       lineage on their reports and on any place whose primary contact moved. Returns a summary
-     *       of the changes and the bulk operation id to poll.
+     *       Queues an asynchronous bulk operation that moves the place and its whole subtree under a new parent.
+     *       If any moved persons are associated with a user, all the reports written by that user will be updated
+     *       with the person's new hierarchy. Returns a summary of the changes and the bulk operation id to poll.
      *     tags: [Place]
      *     x-since: 5.3.0
      *     x-permissions:
@@ -285,17 +284,16 @@ module.exports = {
      *         description: The id of the place to move
      *       - $ref: '#/components/parameters/dryRun'
      *     requestBody:
-     *       required: true
+     *       required: false
      *       content:
      *         application/json:
      *           schema:
      *             type: object
-     *             required: [parent_id]
      *             properties:
      *               parent_id:
      *                 type: string
      *                 description: >
-     *                   The id of the destination parent, or `root` to move the place to the top level.
+     *                   The id of the destination parent. Omit it to move the place to the top level.
      *     responses:
      *       '202':
      *         $ref: '#/components/responses/BulkOperationQueued'

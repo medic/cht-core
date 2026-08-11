@@ -631,21 +631,29 @@ describe('Place API', () => {
       contact: {},
       parent: district,
     }));
-    // The clinic being moved, with the chw inside it.
+    // The clinic being moved, with the chw inside it. Its `contact` carries the chw's lineage, the
+    // way CHT stores it, so the move has to refresh that copy too.
     const clinic = utils.deepFreeze(placeFactory.place().build({
       _id: clinicId,
       name: 'move-clinic',
       type: CONTACT_TYPES.CLINIC,
-      contact: { _id: chw._id },
+      contact: { _id: chw._id, parent: { _id: clinicId, parent: { _id: hcAId, parent: { _id: districtId } } } },
       parent: healthCenterA,
     }));
     // Authored by the chw, so its cached author lineage must be refreshed by the move.
     const report = utils.deepFreeze(
       reportFactory.report().build({ form: 'move-report' }, { patient: chw, submitter: chw })
     );
+    // No contacts inside it, no primary contact and no reports: the minimal case.
+    const loneClinic = utils.deepFreeze(placeFactory.place().build({
+      name: 'move-lone-clinic',
+      type: CONTACT_TYPES.CLINIC,
+      contact: {},
+      parent: healthCenterA,
+    }));
 
     before(async () => {
-      await utils.saveDocs([district, healthCenterA, healthCenterB, clinic, chw, report]);
+      await utils.saveDocs([district, healthCenterA, healthCenterB, clinic, chw, report, loneClinic]);
     });
 
     it('returns a dry-run summary and moves nothing when passing dry_run', async () => {
@@ -657,18 +665,27 @@ describe('Place API', () => {
       });
 
       expect(response).to.deep.equal({
-        summary: { 'set-parent': 2, 'set-contact': { reports: 1, places: 0 } },
+        summary: { 'set-parent': 2, 'set-contact': { reports: 1, places: 1 } },
       });
       const unchanged = await utils.getDoc(clinicId);
       expect(unchanged.parent._id).to.equal(hcAId);
     });
 
-    it('throws 400 when parent_id is missing', async () => {
+    it('throws 400 when parent_id is present but empty', async () => {
+      await expect(utils.request({
+        path: `${endpoint}/${clinicId}/move`,
+        method: 'POST',
+        body: { parent_id: '' },
+      })).to.be.rejectedWith(/parent_id must be a non-empty string/);
+    });
+
+    it('treats an omitted parent_id as a move to the top level', async () => {
+      // A clinic must sit under a health center, so the top level is not a legal destination for one.
       await expect(utils.request({
         path: `${endpoint}/${clinicId}/move`,
         method: 'POST',
         body: {},
-      })).to.be.rejectedWith(/parent_id is required/);
+      })).to.be.rejectedWith(/cannot be moved to the root/);
     });
 
     it('throws 400 when the move would create a circular hierarchy', async () => {
@@ -709,6 +726,20 @@ describe('Place API', () => {
       });
     });
 
+    it('moves a place with minimal data', async () => {
+      const { id, summary } = await utils.request({
+        path: `${endpoint}/${loneClinic._id}/move`,
+        method: 'POST',
+        body: { parent_id: hcBId },
+      });
+      await utils.waitForBulkOperation(id);
+
+      expect(summary).to.deep.equal({ 'set-parent': 1, 'set-contact': { reports: 0, places: 0 } });
+
+      const moved = await utils.getDoc(loneClinic._id);
+      expect(moved.parent).to.deep.equal({ _id: hcBId, parent: { _id: districtId } });
+    });
+
     it('moves the subtree and refreshes the lineage cached on its reports', async () => {
       const { id, summary } = await utils.request({
         path: `${endpoint}/${clinicId}/move`,
@@ -717,11 +748,18 @@ describe('Place API', () => {
       });
       await utils.waitForBulkOperation(id);
 
-      expect(summary).to.deep.equal({ 'set-parent': 2, 'set-contact': { reports: 1, places: 0 } });
+      expect(summary).to.deep.equal({ 'set-parent': 2, 'set-contact': { reports: 1, places: 1 } });
 
       // the moved place now sits under the destination
       const movedClinic = await utils.getDoc(clinicId);
       expect(movedClinic.parent).to.deep.equal({ _id: hcBId, parent: { _id: districtId } });
+
+      // and the lineage it cached for its own primary contact was refreshed, so `parent` and
+      // `contact` cannot disagree about where the clinic sits
+      expect(movedClinic.contact).to.deep.equal({
+        _id: chw._id,
+        parent: { _id: clinicId, parent: { _id: hcBId, parent: { _id: districtId } } },
+      });
 
       // the descendant keeps its own parent, with the chain above it rewritten
       const movedChw = await utils.getDoc(chw._id);

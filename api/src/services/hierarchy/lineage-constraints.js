@@ -1,13 +1,3 @@
-/**
- * Legality checks for hierarchy operations.
- *
- * Ported from cht-conf `src/lib/hierarchy-operations/lineage-constraints.js`, with two changes.
- * cht-conf reads `contact_types` out of the settings doc and falls back to a hardcoded default;
- * server-side we already have the parsed configuration, so `@medic/contact-types-utils` does that
- * job. And cht-conf moves a list of contacts in one command, so it additionally rejects two sources
- * from the same lineage; a move here has a single source, so that check does not apply.
- */
-
 const db = require('../../db');
 const config = require('../../config');
 const contactTypesUtils = require('@medic/contact-types-utils');
@@ -46,9 +36,6 @@ const assertParentTypeIsAllowed = (settings, sourceDoc, destinationDoc) => {
   }
 };
 
-/**
- * Moving a contact beneath one of its own descendants would detach the subtree into a loop.
- */
 const assertDestinationIsNotCurrentParent = (sourceDoc, destinationDoc) => {
   const currentParentId = sourceDoc.parent?._id || sourceDoc.parent;
   if ((destinationDoc?._id || null) === (currentParentId || null)) {
@@ -99,29 +86,6 @@ const assertNoPrimaryContactStranded = async (sourceDoc, destinationDoc, descend
 };
 
 /**
- * The source's own primary contact must be a person, never a place.
- */
-const assertSourcePrimaryContactIsPerson = async (settings, sourceDoc) => {
-  const primaryContactId = getPrimaryContactId(sourceDoc);
-  if (!primaryContactId) {
-    return;
-  }
-
-  const primaryContact = await db.medic.get(primaryContactId).catch(err => {
-    if (err.status === 404) {
-      return null;
-    }
-    throw err;
-  });
-
-  if (primaryContact && !contactTypesUtils.isPerson(settings, primaryContact)) {
-    throw new BadRequestError(
-      `contact '${sourceDoc._id}' has a primary contact '${primaryContactId}' which is not a person`
-    );
-  }
-};
-
-/**
  * Runs every legality check for a move. Throws on the first violation; the caller turns that into a
  * `BadRequestError`, so any other failure (a database error, say) propagates as a 500 instead of
  * being reported to the caller as an invalid move.
@@ -136,7 +100,6 @@ const assertMoveIsLegal = async (sourceDoc, destinationDoc, descendantIds) => {
   assertNoCircularHierarchy(sourceDoc, destinationDoc);
   assertParentTypeIsAllowed(settings, sourceDoc, destinationDoc);
   await assertNoPrimaryContactStranded(sourceDoc, destinationDoc, descendantIds);
-  await assertSourcePrimaryContactIsPerson(settings, sourceDoc);
 };
 
 module.exports = {
