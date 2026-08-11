@@ -185,6 +185,32 @@ const moveContactHierarchy = async (source, destination, { dryRun } = {}) => {
   return { summary, id: bulkOperationId };
 };
 
+// parent_id is optional: leaving it out moves the contact to the top level.
+const parseParentId = (body) => {
+  const parentId = body?.parent_id ?? null;
+  if (parentId !== null && (typeof parentId !== 'string' || !parentId)) {
+    throw new BadRequestError('parent_id must be a non-empty string');
+  }
+  return parentId;
+};
+
+// The target is checked before the destination, so an id of the wrong type for the endpoint is
+// reported as such rather than as a missing destination.
+const resolveTargets = async (getContact, get, { uuid, parentId, type }) => {
+  const [ contact, destination ] = await Promise.all([
+    get(uuid),
+    parentId ? getContact(Qualifier.byUuid(parentId)) : null,
+  ]);
+
+  if (!contact) {
+    throw new NotFoundError(`${type} not found`);
+  }
+  if (parentId && !destination) {
+    throw new NotFoundError(`Destination contact ${parentId} not found`);
+  }
+  return { contact, destination };
+};
+
 /**
  * Builds the move express handler for a contact type. The person and place endpoints move a
  * hierarchy the same way, so they share this handler; each passes the pieces that make its endpoint
@@ -207,24 +233,9 @@ const handleMove = ({ get, type }) => {
     const dryRun = req.query.dry_run === 'true';
     await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_move_contact_hierarchy'] });
 
-    // parent_id is optional: leaving it out moves the contact to the top level.
-    const parentId = req.body?.parent_id ?? null;
-    if (parentId !== null && (typeof parentId !== 'string' || !parentId)) {
-      return serverUtils.error(new BadRequestError('parent_id must be a non-empty string'), req, res);
-    }
-
+    const parentId = parseParentId(req.body);
     const { uuid } = req.params;
-    const [ contact, destination ] = await Promise.all([
-      get(uuid),
-      parentId ? getContact(Qualifier.byUuid(parentId)) : null,
-    ]);
-
-    if (!contact) {
-      return serverUtils.error(new NotFoundError(`${type} not found`), req, res);
-    }
-    if (parentId && !destination) {
-      return serverUtils.error(new NotFoundError(`Destination contact ${parentId} not found`), req, res);
-    }
+    const { contact, destination } = await resolveTargets(getContact, get, { uuid, parentId, type });
 
     const result = await moveContactHierarchy(contact, destination, { dryRun });
     return res.status(dryRun ? 200 : 202).json(result);
