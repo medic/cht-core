@@ -16,6 +16,35 @@ const fromDevanagari = (str) => {
   return str.replace(/[०-९]/g, (d) => devanagariDigits.indexOf(d).toString());
 };
 
+const toDevanagari = (str) => {
+  const devanagariDigits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+  return str.replace(/[0-9]/g, (d) => devanagariDigits[Number.parseInt(d, 10)]);
+};
+
+const nepaliMonths = ['बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ', 'असोज', 'कात्तिक', 'मंसिर', 'पुस', 'माघ', 'फागुन', 'चैत'];
+
+const getExpectedNepaliLabel = (momentDate) => {
+  const bsStr = toBik_dev(momentDate.format('YYYY-MM-DD'));
+  const [, month, day] = bsStr.split('-');
+  const dayNum = Number.parseInt(fromDevanagari(day), 10);
+  const monthNum = Number.parseInt(fromDevanagari(month), 10);
+  const dayDev = toDevanagari(dayNum.toString());
+  const monthName = nepaliMonths[monthNum - 1];
+  return `${dayDev} ${monthName}`;
+};
+
+const getExpectedFromLabel = () => {
+  const todayBik = toBik_dev(moment().format('YYYY-MM-DD'));
+  const [, month] = todayBik.split('-').map(num => Number.parseInt(fromDevanagari(num), 10));
+  let targetMonth = month - 2;
+  if (targetMonth <= 0) {
+    targetMonth += 12;
+  }
+  const dayDev = toDevanagari('1');
+  const monthName = nepaliMonths[targetMonth - 1];
+  return `${dayDev} ${monthName}`;
+};
+
 describe('Reports Sidebar Filter', () => {
   const places = placeFactory.generateHierarchy();
 
@@ -218,6 +247,8 @@ describe('Reports Sidebar Filter', () => {
       expect(disableCells.length).to.be.greaterThan(0);
     }
 
+
+
     // 2. Escape Dismissal - press Escape and verify picker is dismissed
     await browser.keys(['Escape']);
     const picker = reportsPage.getNepaliDatePicker();
@@ -230,20 +261,23 @@ describe('Reports Sidebar Filter', () => {
     expect(await picker.isDisplayed()).to.be.false;
 
     // 4. Select From and To dates
-    await reportsPage.setSidebarFilterBikFromDate();
+    const fromDayText = await reportsPage.setSidebarFilterBikFromDate();
     await reportsPage.setSidebarFilterBikToDate();
 
-    // Verify both From and To input fields have selected date values
-    expect(await reportsPage.getFromDateValue()).to.not.equal('');
-    expect(await reportsPage.getToDateValue()).to.not.equal('');
+    // Verify both From and To input fields have selected date values and match selection (B9)
+    const fromDateLabel = await reportsPage.getFromDateValue();
+    const toDateLabel = await reportsPage.getToDateValue();
+    expect(fromDateLabel).to.equal(getExpectedFromLabel());
+    expect(toDateLabel).to.equal(getExpectedNepaliLabel(moment()));
 
     // Dismiss the open picker so we can test reopening it
     await browser.keys(['Escape']);
 
-    // 5. Reopen active selection verification
-    await reportsPage.clickSidebarFilterToDate();
-    // Verify that the active selected date is highlighted correctly
+    // 5. Reopen active selection verification (B4)
+    await reportsPage.clickSidebarFilterFromDate();
+    // Verify that the active selected date is highlighted correctly and has the correct day text
     expect(await reportsPage.isNepaliDatePickerActiveCellDisplayed()).to.be.true;
+    expect(await reportsPage.getNepaliDatePickerActiveCellText()).to.equal(fromDayText);
     
     // Dismiss it
     await browser.keys(['Escape']);
@@ -253,6 +287,19 @@ describe('Reports Sidebar Filter', () => {
     expect(await reportsPage.leftPanelSelectors.allReports().length).to.equal(2);
     expect(await reportsPage.leftPanelSelectors.reportByUUID(pregnancyDistrictHospital._id).isDisplayed()).to.be.true;
     expect(await reportsPage.leftPanelSelectors.reportByUUID(visitDistrictHospital._id).isDisplayed()).to.be.true;
+
+    // 6. Clear Nepali date filter leg (B11)
+    const clearDateFilterChip = await reportsPage.sidebarFilterSelectors.clearDateFilterBtn();
+    await clearDateFilterChip.waitForDisplayed();
+    await clearDateFilterChip.click();
+
+    await commonPage.waitForPageLoaded();
+
+    // Verify labels are reset, the filter chip is gone, and the report list goes back to original length
+    expect(await reportsPage.getFromDateValue()).to.equal('मिति');
+    expect(await reportsPage.getToDateValue()).to.equal('मिति');
+    expect(await reportsPage.sidebarFilterSelectors.dateFilterChip().isExisting()).to.be.false;
+    expect(await reportsPage.leftPanelSelectors.allReports().length).to.equal(reports.length);
 
     await browser.setCookies({ name: 'locale', value: 'en' });
     await browser.refresh();

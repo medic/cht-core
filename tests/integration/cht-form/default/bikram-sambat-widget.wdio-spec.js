@@ -167,4 +167,13 @@ describe('cht-form web component - Bikram Sambat Widget', () => {
     const closeBtn = await picker.$('.close-btn');
     await closeBtn.click();
   });
+
+  it('asserts that a pre-existing date widget is removed', async () => {
+    const widgets = await $$('.bikram-sambat-widget');
+    for (const widget of widgets) {
+      const parent = await widget.parentElement();
+      const standardDateWidget = await parent.$('.widget.date');
+      expect(await standardDateWidget.isExisting()).to.be.false;
+    }
+  });
 });
