@@ -344,6 +344,23 @@ describe('infodoc', () => {
           assert.deepEqual(secondWrite.transitions, {'new': 'transition data'});
         });
     });
+
+    it('gives up once the conflict retries are exhausted', () => {
+      const infoDocs = [{ _id: 'test-info', _rev: '1-abc' }];
+
+      sinon.stub(db.sentinel, 'bulkDocs').resolves([
+        { id: 'test-info', error: 'conflict', reason: 'Document update conflict.' }
+      ]);
+      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [{ doc: { _id: 'test-info', _rev: '1-bca' } }] });
+
+      return lib.bulkUpdate(infoDocs)
+        .then(() => assert.fail('should have thrown'))
+        .catch(err => {
+          assert.equal(err.status, 409);
+          assert.include(err.message, 'test-info');
+          assert.equal(db.sentinel.bulkDocs.callCount, 11);
+        });
+    });
   });
 
   describe('updateTransition(s)', () => {
@@ -416,21 +433,24 @@ describe('infodoc', () => {
       });
     });
 
-    it('should use infodoc directly when sentinel returns 404', () => {
+    it('should throw when the infodoc has been deleted, instead of recreating it', () => {
       const change = {
         id: 'some',
         info: {
           _id: 'some-info',
+          _rev: '1-abc',
           transitions: { one: { ok: true } }
         }
       };
       sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
       sinon.stub(db.sentinel, 'put').resolves();
 
-      return lib.saveTransitions(change).then(() => {
-        assert.equal(db.sentinel.put.callCount, 1);
-        assert.deepEqual(db.sentinel.put.args[0][0], change.info);
-      });
+      return lib.saveTransitions(change)
+        .then(() => assert.fail('should have thrown'))
+        .catch(err => {
+          assert.equal(err.status, 404);
+          assert.equal(db.sentinel.put.callCount, 0);
+        });
     });
 
     it('should use default value when infodoc property is falsy', () => {
@@ -444,7 +464,7 @@ describe('infodoc', () => {
       });
     });
 
-    it('should throw non-404 errors from sentinel get', () => {
+    it('should throw errors from sentinel get', () => {
       const change = { id: 'some', info: { transitions: {} } };
       sinon.stub(db.sentinel, 'get').rejects({ status: 500 });
 
@@ -486,13 +506,29 @@ describe('infodoc', () => {
       sinon.stub(db.sentinel, 'get').resolves(info);
       const sentinelPut = sinon.stub(db.sentinel, 'put');
       sentinelPut.rejects({ status: 409 });
-      sentinelPut.onCall(20).resolves();
+      sentinelPut.onCall(3).resolves();
 
       return lib.saveTransitions(change).then(() => {
-        assert.equal(db.sentinel.get.callCount, 21);
-        assert.equal(db.sentinel.put.callCount, 21);
-        assert.deepEqual(db.sentinel.put.args[20], [{ ...info, transitions: change.info.transitions }]);
+        assert.equal(db.sentinel.get.callCount, 4);
+        assert.equal(db.sentinel.put.callCount, 4);
+        assert.deepEqual(db.sentinel.put.args[3], [{ ...info, transitions: change.info.transitions }]);
       });
+    });
+
+    it('should stop retrying conflicts once the infodoc has been deleted', () => {
+      const change = { id: 'some', info: { transitions: { one: { ok: true } } } };
+      const sentinelGet = sinon.stub(db.sentinel, 'get');
+      sentinelGet.resolves({ _id: 'some-info', _rev: '1-abc', doc_id: 'some' });
+      // the infodoc is deleted between the conflicting put and the next fetch
+      sentinelGet.onCall(1).rejects({ status: 404 });
+      sinon.stub(db.sentinel, 'put').rejects({ status: 409 });
+
+      return lib.saveTransitions(change)
+        .then(() => assert.fail('should have thrown'))
+        .catch(err => {
+          assert.equal(err.status, 404);
+          assert.equal(db.sentinel.put.callCount, 1);
+        });
     });
 
     it('clears the transitions_started marker when committing transitions', () => {
@@ -542,17 +578,16 @@ describe('infodoc', () => {
       });
     });
 
-    it('retries on 409 conflict indefinitely (no retry limit)', () => {
-      const info = { _id: 'some-info', doc_id: 'some' };
-      sinon.stub(db.sentinel, 'get').resolves(info);
-      const put = sinon.stub(db.sentinel, 'put');
-      // conflict on every attempt except the 101st - a retry limit below this would fail
-      put.rejects({ status: 409 });
-      put.onCall(100).resolves();
+    it('gives up once the conflict retries are exhausted', () => {
+      sinon.stub(db.sentinel, 'get').resolves({ _id: 'some-info', doc_id: 'some' });
+      sinon.stub(db.sentinel, 'put').rejects({ status: 409 });
 
-      return lib.markTransitionsStarted('some').then(() => {
-        assert.equal(db.sentinel.put.callCount, 101);
-      });
+      return lib.markTransitionsStarted('some')
+        .then(() => assert.fail('should have thrown'))
+        .catch(err => {
+          assert.equal(err.status, 409);
+          assert.equal(db.sentinel.put.callCount, 11);
+        });
     });
 
     it('throws non-409 errors', () => {
@@ -589,7 +624,7 @@ describe('infodoc', () => {
       sinon.stub(db.sentinel, 'get').resolves(serverInfo);
       const sentinelPut = sinon.stub(db.sentinel, 'put');
       sentinelPut.rejects({ status: 409 });
-      sentinelPut.onCall(45).resolves();
+      sentinelPut.onCall(3).resolves();
 
       const providedInfo = {
         _id: 'some-info',
@@ -598,9 +633,9 @@ describe('infodoc', () => {
       };
 
       return lib.saveCompletedTasks('some', providedInfo).then(() => {
-        assert.equal(db.sentinel.get.callCount, 46);
-        assert.equal(db.sentinel.put.callCount, 46);
-        assert.deepEqual(db.sentinel.put.args[45], [{ ...serverInfo, completed_tasks: providedInfo.completed_tasks }]);
+        assert.equal(db.sentinel.get.callCount, 4);
+        assert.equal(db.sentinel.put.callCount, 4);
+        assert.deepEqual(db.sentinel.put.args[3], [{ ...serverInfo, completed_tasks: providedInfo.completed_tasks }]);
       });
     });
   });
@@ -633,6 +668,18 @@ describe('infodoc', () => {
           .then(() => assert.fail('should have thrown'))
           .catch(err => {
             assert.equal(err.status, 500);
+          });
+      });
+
+      it('gives up once the conflict retries are exhausted', () => {
+        sentinelGet.resolves({ _id: 'blah-info', latest_replication_date: 'old' });
+        sentinelPut.rejects({ status: 409 });
+
+        return lib.recordDocumentWrite('blah')
+          .then(() => assert.fail('should have thrown'))
+          .catch(err => {
+            assert.equal(err.status, 409);
+            assert.equal(sentinelPut.callCount, 11);
           });
       });
 
@@ -760,6 +807,23 @@ describe('infodoc', () => {
             assert.equal(sentinelBulkDocs.args[0][0][1].initial_replication_date, 'ages ago');
           });
       });
+      it('gives up once the conflict retries are exhausted', () => {
+        sentinelAllDocs.resolves({
+          rows: [{ id: 'blah-info', key: 'blah-info', doc: { _id: 'blah-info', _rev: '1-abc' } }]
+        });
+        sentinelBulkDocs.resolves([
+          { id: 'blah-info', error: 'conflict', reason: 'Document update conflict.' }
+        ]);
+
+        return lib.recordDocumentWrites(['blah'])
+          .then(() => assert.fail('should have thrown'))
+          .catch(err => {
+            assert.equal(err.status, 409);
+            assert.include(err.message, 'blah-info');
+            assert.equal(sentinelBulkDocs.callCount, 11);
+          });
+      });
+
       it('Correctly works through and resolves conflicts when editing or creating infodocs', () => {
         // Attempting against two new docs and two existing
         sentinelAllDocs.onFirstCall().resolves({

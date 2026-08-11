@@ -1,5 +1,14 @@
 const db = {}; // to be filled in by the initLib function exported below
 
+// Every save below refetches and retries when it conflicts. The retries are capped so a document
+// that conflicts persistently fails loudly instead of spinning forever.
+const MAX_CONFLICT_RETRIES = 10;
+const conflictError = ids => {
+  const err = new Error(`Infodocs still conflicting after ${MAX_CONFLICT_RETRIES} retries: ${ids}`);
+  err.status = 409;
+  return err;
+};
+
 const getInfoDocId = id => id + '-info';
 const getDocId = infoDocId => infoDocId.slice(0, -5);
 const blankInfoDoc = (docId, knownReplicationDate) => {
@@ -84,58 +93,47 @@ const saveTransitions = change => {
     infoDoc.transitions = change.info?.transitions || {};
     delete infoDoc.transitions_started;
   };
-  return modifyInfoDoc(change.id, modify, change.info);
+  return modifyInfoDoc(change.id, modify);
 };
 
 const saveCompletedTasks = (id, infodoc, completedTasks = []) => {
   return modifyInfoDoc(id, infoDoc => {
     infoDoc.completed_tasks = infodoc?.completed_tasks || completedTasks;
-  }, infodoc);
+  });
 };
 
 const markTransitionsStarted = (id) => {
   const modify = infoDoc => {
     infoDoc.transitions_started = new Date().toISOString();
   };
-  return modifyInfoDoc(id, modify, blankInfoDoc(id));
+  return modifyInfoDoc(id, modify);
 };
 
 const clearTransitionsStarted = (id) => {
   const modify = infoDoc => {
     delete infoDoc.transitions_started;
   };
-  return modifyInfoDoc(id, modify, blankInfoDoc(id));
+  return modifyInfoDoc(id, modify);
 };
 
-// Fetch the infodoc. If it is missing, return `fallback` (to be created) when provided;
-const fetchInfoDoc = async (id, fallback) => {
-  try {
-    return await db.sentinel.get(getInfoDocId(id));
-  } catch (err) {
-    if (err.status === 404 && fallback) {
-      return fallback;
-    }
-    throw err;
-  }
-};
-
-// Fetch the infodoc, apply `modify`, and save, retrying on conflict
-const modifyInfoDoc = async (id, modify, fallback) => {
-  const infoDoc = await fetchInfoDoc(id, fallback);
+// Applies `modify` to an existing infodoc and saves it, retrying on conflict.
+// Throws a 404 if the infodoc doesn't exist; creating one is left to the caller.
+const modifyInfoDoc = async (id, modify, retriesLeft = MAX_CONFLICT_RETRIES) => {
+  const infoDoc = await db.sentinel.get(getInfoDocId(id));
 
   modify(infoDoc);
 
   try {
     return await db.sentinel.put(infoDoc);
   } catch (err) {
-    if (err.status !== 409) {
+    if (err.status !== 409 || !retriesLeft) {
       throw err;
     }
-    return modifyInfoDoc(id, modify, fallback);
+    return modifyInfoDoc(id, modify, retriesLeft - 1);
   }
 };
 
-const bulkUpdate = infoDocs => {
+const bulkUpdate = (infoDocs, retriesLeft = MAX_CONFLICT_RETRIES) => {
   if (!infoDocs || !infoDocs.length) {
     return Promise.resolve();
   }
@@ -151,6 +149,10 @@ const bulkUpdate = infoDocs => {
     });
 
     if (conflictingInfoDocs.length > 0) {
+      if (!retriesLeft) {
+        throw conflictError(conflictingInfoDocs.map(d => d._id));
+      }
+
       // Attempt an intelligent merge based on responsibilities: callers of this function own
       // everything *except* replication date metadata, which is managed by API on write (who calls
       // recordDocumentWrite[s]), and completed_tasks which is managed by outbound callers manually
@@ -165,14 +167,14 @@ const bulkUpdate = infoDocs => {
             conflictingInfoDocs[idx].completed_tasks = freshInfoDoc.completed_tasks;
           });
 
-          return bulkUpdate(conflictingInfoDocs);
+          return bulkUpdate(conflictingInfoDocs, retriesLeft - 1);
         });
     }
     return infoDocs;
   });
 };
 
-const recordDocumentWrite = (id, date) => {
+const recordDocumentWrite = (id, date, retriesLeft = MAX_CONFLICT_RETRIES) => {
   return db.sentinel.get(getInfoDocId(id))
     .catch(err => {
       if (err.status !== 404) {
@@ -185,8 +187,8 @@ const recordDocumentWrite = (id, date) => {
       infoDoc.latest_replication_date = date;
       return db.sentinel.put(infoDoc)
         .catch(err => {
-          if (err.status === 409) {
-            return recordDocumentWrite(id, date);
+          if (err.status === 409 && retriesLeft) {
+            return recordDocumentWrite(id, date, retriesLeft - 1);
           }
 
           throw err;
@@ -194,7 +196,7 @@ const recordDocumentWrite = (id, date) => {
     });
 };
 
-const recordDocumentWrites = (ids, date) => {
+const recordDocumentWrites = (ids, date, retriesLeft = MAX_CONFLICT_RETRIES) => {
   const infoDocIds = ids.map(getInfoDocId);
 
   return db.sentinel.allDocs({
@@ -216,7 +218,11 @@ const recordDocumentWrites = (ids, date) => {
           .map(r => getDocId(r.id));
 
         if (conflictingIds.length > 0) {
-          return recordDocumentWrites(conflictingIds, date);
+          if (!retriesLeft) {
+            throw conflictError(conflictingIds.map(getInfoDocId));
+          }
+
+          return recordDocumentWrites(conflictingIds, date, retriesLeft - 1);
         }
       });
   });

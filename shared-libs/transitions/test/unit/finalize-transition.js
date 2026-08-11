@@ -75,6 +75,60 @@ describe('finalize transition', () => {
     );
   });
 
+  it('should save the doc even when the infodoc has been deleted (API branch)', done => {
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({ ok: true, rev: '2' });
+    sinon.stub(infodoc, 'markTransitionsStarted').rejects({ status: 404 });
+    sinon.stub(infodoc, 'saveTransitions').rejects({ status: 404 });
+    const clearTransitionsStarted = sinon.stub(infodoc, 'clearTransitionsStarted').resolves();
+    transitions.finalize(
+      {
+        change: { id: 'abc', doc: { _rev: '1' } },
+        results: [null, null, true],
+        markStarted: true,
+      },
+      (err, result) => {
+        assert(!err);
+        assert.deepEqual(result, { ok: true, rev: '2' });
+        assert.equal(saveDoc.callCount, 1);
+        assert.equal(clearTransitionsStarted.callCount, 0);
+        done();
+      }
+    );
+  });
+
+  it('should save the doc even when the infodoc has been deleted (sentinel branch)', done => {
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({ ok: true, rev: '2' });
+    sinon.stub(infodoc, 'saveTransitions').rejects({ status: 404 });
+    transitions.finalize(
+      {
+        change: { id: 'abc', doc: { _rev: '1' } },
+        results: [null, null, true],
+      },
+      (err, result) => {
+        assert(!err);
+        assert.deepEqual(result, { ok: true, rev: '2' });
+        assert.equal(saveDoc.callCount, 1);
+        done();
+      }
+    );
+  });
+
+  it('should callback with non-404 infodoc errors', done => {
+    sinon.stub(db.medic, 'put').resolves({ ok: true, rev: '2' });
+    sinon.stub(infodoc, 'saveTransitions').rejects({ status: 500 });
+    transitions.finalize(
+      {
+        change: { id: 'abc', doc: { _rev: '1' } },
+        results: [null, null, true],
+      },
+      (err, result) => {
+        assert.deepEqual(err, { status: 500 });
+        assert(!result);
+        done();
+      }
+    );
+  });
+
   it('applyTransition creates transitions property', done => {
     const doc = { _rev: '1' };
     const info = {};
