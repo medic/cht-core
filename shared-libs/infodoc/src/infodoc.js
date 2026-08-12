@@ -113,7 +113,10 @@ const fetchInfoDoc = async (id, fallback) => {
     return await db.sentinel.get(getInfoDocId(id));
   } catch (err) {
     if (err.status === 404 && fallback) {
-      return fallback;
+      // copy so the caller keeps its rev, and delete ours so it does not conflict with a tombstone
+      const infoDoc = { ...fallback };
+      delete infoDoc._rev;
+      return infoDoc;
     }
     throw err;
   }
