@@ -540,7 +540,6 @@ module.exports = function(Promise, DB) {
 
     fetchLineageById,
     fetchLineageByIds,
-    isHydratable: utils.isHydratable,
     fillContactsInDocs,
     fillParentsInDocs,
     fetchContacts,
