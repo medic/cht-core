@@ -66,7 +66,7 @@ const canArchive = (doc) => {
  * Archives one batch of doc ids: copies archivable docs (with attachments) to the archive db,
  * records an audit entry, then purges the docs and their info docs. Execution is ordered so that a crash at
  * any point is recoverable by re-running the batch. Ids that are missing or not archivable are
- * skipped.
+ * skipped and logged.
  * @param {string[]} batch - doc ids to archive
  * @returns {Promise<void>}
  */
@@ -78,6 +78,7 @@ const archiveBatch = async (batch) => {
   const date = Date.now();
 
   const archivedIds = [];
+  const skippedIds = [];
   // fetch and write chunk by chunk — attachments are inlined, so both payloads need bounding
   while (ids.length) {
     const chunk = ids.splice(0, FETCH_BATCH_SIZE);
@@ -85,11 +86,17 @@ const archiveBatch = async (batch) => {
     const docsToArchive = medicDocs.rows
       .filter(row => canArchive(row.doc))
       .map(row => ({ ...row.doc, archive_date: date }));
+    const archivable = new Set(docsToArchive.map(doc => doc._id));
+    skippedIds.push(...chunk.filter(id => !archivable.has(id)));
     if (!docsToArchive.length) {
       continue;
     }
     await db.archive.bulkDocs(docsToArchive, { new_edits: false });
-    archivedIds.push(...docsToArchive.map(doc => doc._id));
+    archivedIds.push(...archivable);
+  }
+
+  if (skippedIds.length) {
+    logger.warn(`Archiving: skipped ${skippedIds.length} ids, missing or not archivable: %o`, skippedIds);
   }
 
   await audit.recordArchiving(archivedIds, date);
@@ -193,20 +200,20 @@ const updateLogCursor = (job) => updateLog(job._id, {
   status: job.cursor >= job.total ? JOB_LOG_STATUS.COMPLETED : JOB_LOG_STATUS.RUNNING,
 });
 
-const setLogFailed = (jobId) => updateLog(jobId, { status: JOB_LOG_STATUS.FAILED });
-
 /**
- * Appends an error entry to the job's log, keeping only the last MAX_JOB_ATTEMPTS entries.
+ * Appends an error entry to the job's log, keeping only the last MAX_JOB_ATTEMPTS entries, and
+ * applies any additional field changes in the same write.
  * Never throws — log docs are best-effort history and must not fail the job.
  * @param {string} jobId
  * @param {string|*} message - the failure message (or raw error value)
+ * @param {Object} [changes] - extra fields to set on the log doc
  * @returns {Promise<void>}
  */
-const addLogError = async (jobId, message) => {
+const addLogError = async (jobId, message, changes = {}) => {
   try {
     const log = await getLog(jobId);
     log.errors = [...(log.errors || []), { date: Date.now(), message }].slice(-MAX_JOB_ATTEMPTS);
-    log.updated_date = Date.now();
+    Object.assign(log, changes, { updated_date: Date.now() });
     await db.medicLogs.put(log);
   } catch (err) {
     logger.error(`Archiving: could not update the log for job ${jobId}: %o`, err);
@@ -246,10 +253,11 @@ const saveJob = async (job, batchSize) => {
 const recordError = async (job, err) => {
   try {
     job.error_count = (job.error_count || 0) + 1;
-    await addLogError(job._id, err?.message || err?.stack || err);
+    const failed = job.error_count >= MAX_JOB_ATTEMPTS;
+    const changes = failed ? { status: JOB_LOG_STATUS.FAILED } : {};
+    await addLogError(job._id, err?.message || err?.stack || err, changes);
 
-    if (job.error_count >= MAX_JOB_ATTEMPTS) {
-      await setLogFailed(job._id);
+    if (failed) {
       logger.error(`Archiving: job ${job._id} failed ${job.error_count} times, giving up`);
     }
     await saveJob(job, 0);

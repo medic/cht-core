@@ -1,6 +1,12 @@
 const utils = require('@utils');
+const moment = require('moment');
 
 const ID_PREFIX = 'archive:';
+
+const parkedSchedule = () => {
+  const runAt = moment().add(12, 'hours');
+  return { cron: `${runAt.minutes()} ${runAt.hours()} * * *` };
+};
 
 const postCsv = (csv, opts = {}) => utils.request({
   path: '/api/v1/archive',
@@ -28,6 +34,14 @@ const cleanupJobs = async () => {
 };
 
 describe('POST /api/v1/archive', () => {
+  before(async () => {
+    await utils.updateSettings({ archive: parkedSchedule() }, { ignoreReload: true });
+  });
+
+  after(async () => {
+    await utils.revertSettings(true);
+  });
+
   afterEach(async () => {
     await cleanupJobs();
   });
@@ -45,6 +59,9 @@ describe('POST /api/v1/archive', () => {
     expect(doc).to.include({ total: 3, cursor: 0 });
     expect(doc).to.not.have.property('status');
     expect(doc).to.have.property('date');
+    // still at its first revision: Sentinel has not picked the job up
+    expect(doc._rev).to.match(/^1-/);
+    expect(doc).to.not.have.property('history');
     expect(doc._attachments.ids.content_type).to.equal('text/plain');
 
     const attachment = await utils.sentinelDb.getAttachment(response.jobs[0].id, 'ids');
@@ -129,8 +146,8 @@ describe('POST /api/v1/archive', () => {
     const [first, second] = await Promise.all(
       response.jobs.map(j => utils.sentinelDb.get(j.id))
     );
-    expect(first.total).to.equal(MAX);
-    expect(second.total).to.equal(overflow);
+    expect(first).to.include({ total: MAX, cursor: 0 });
+    expect(second).to.include({ total: overflow, cursor: 0 });
 
     const secondAttachment = await utils.sentinelDb.getAttachment(response.jobs[1].id, 'ids');
     const tailIds = secondAttachment.toString('utf8').split('\n');

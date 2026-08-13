@@ -61,6 +61,30 @@ describe('Archiving Schedule', () => {
     expect(archiveLib.archive.callCount).to.equal(1);
   });
 
+  it('logs an error when the schedule expression is malformed', async () => {
+    sinon.stub(config, 'get').returns({ text_expression: 'every nope' });
+    sinon.stub(archiveLib, 'archive').resolves();
+    sinon.stub(logger, 'error');
+
+    await scheduler.execute();
+
+    expect(logger.error.callCount).to.equal(1);
+    expect(logger.error.args[0]).to.deep.equal([
+      'Archiving: malformed schedule configuration %o, archiving immediately',
+      { text_expression: 'every nope' },
+    ]);
+  });
+
+  it('does not log an error when no schedule is configured', async () => {
+    sinon.stub(config, 'get').returns({ duration: '4 hours' });
+    sinon.stub(archiveLib, 'archive').resolves();
+    sinon.stub(logger, 'error');
+
+    await scheduler.execute();
+
+    expect(logger.error.callCount).to.equal(0);
+  });
+
   it('schedules an archive run with the parsed duration', async () => {
     sinon.stub(config, 'get').returns({ cron: '* 1 * * *', duration: '4 hours' });
     sinon.stub(archiveLib, 'archive').resolves();

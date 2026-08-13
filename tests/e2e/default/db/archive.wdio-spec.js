@@ -40,13 +40,13 @@ describe('archive', function () {
       .catch(err => done({ ok: false, status: err.status }));
   }, id);
 
-  beforeEach(async () => {
+  before(async () => {
     reportToArchive = genericReportFactory
       .report()
       .build({ form: 'home_visit' }, { patient, submitter: contact });
-    await utils.saveDocs([...places.values(), contact, patient]);
+    await utils.saveDocs([...places.values(), contact, patient, reportToArchive]);
     await utils.createUsers([user]);
-    await utils.saveDocs([reportToArchive]);
+    await loginPage.login(user);
   });
 
   const archiveReport = async (report) => {
@@ -67,17 +67,11 @@ describe('archive', function () {
     await utils.archiveDb.bulkDocs(deletes);
   };
 
-  afterEach(async () => {
-    await utils.revertSettings(true);
-    await utils.deleteUsers([user]);
-    await utils.revertDb([/^form:/], true);
+  after(async () => {
     await cleanArchiveDb();
-    await commonElements.reloadSession();
   });
 
   it('removes an archived doc from the offline user device on the next sync', async () => {
-    await loginPage.login(user);
-
     // Confirm the report replicated to the user's device before archiving.
     let local = await getLocalDoc(reportToArchive._id);
     expect(local.ok).to.equal(true);
@@ -97,14 +91,6 @@ describe('archive', function () {
   });
 
   it('restores an unarchived doc to the offline user device on the next sync', async () => {
-    await loginPage.login(user);
-    await archiveReport(reportToArchive);
-    await commonElements.sync();
-
-    // Confirm the archived report is gone from the device before unarchiving.
-    let local = await getLocalDoc(reportToArchive._id);
-    expect(local.ok).to.equal(false);
-
     // Unarchive: restore the doc into medic AND remove it from the archive db.
     const archived = await utils.archiveDb.get(reportToArchive._id);
     const restored = { ...archived };

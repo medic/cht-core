@@ -1,8 +1,11 @@
 const config = require('../config');
+const logger = require('@medic/logger');
 const archiveLib = require('../lib/archiving');
 const scheduling = require('../lib/scheduling');
 
 let archiveTimeout;
+
+const isValidSchedule = schedule => Boolean(schedule) && !(schedule.error > -1);
 
 module.exports = {
   /**
@@ -22,8 +25,13 @@ module.exports = {
       clearTimeout(archiveTimeout);
     }
 
+    const validSchedule = isValidSchedule(schedule);
+    if (!validSchedule && (archiveConfig?.text_expression || archiveConfig?.cron)) {
+      logger.error('Archiving: malformed schedule configuration %o, archiving immediately', archiveConfig);
+    }
+
     // No schedule configured → run on the next tick instead of never letting jobs stack up.
-    const delay = schedule ? scheduling.nextScheduleMillis(schedule) : 0;
+    const delay = validSchedule ? scheduling.nextScheduleMillis(schedule) : 0;
     archiveTimeout = setTimeout(() => archiveLib.archive(duration), delay);
     return Promise.resolve();
   },

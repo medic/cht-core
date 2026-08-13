@@ -306,6 +306,10 @@ describe('Sentinel archiving lib', () => {
     expect(queue[0]._deleted).to.equal(true);
     expect(logs['archive:1'].status).to.equal('failed');
     expect(logs['archive:1'].errors[logs['archive:1'].errors.length - 1].message).to.equal('boom');
+    // The last error and the failed status are saved in a single log write.
+    const failedWrites = db.medicLogs.put.args.map(([doc]) => doc).filter(doc => doc.status === 'failed');
+    expect(failedWrites).to.have.lengthOf(1);
+    expect(failedWrites[0].errors[failedWrites[0].errors.length - 1].message).to.equal('boom');
   });
 
   it('records the error on the job log when archiveBatch throws', async () => {
@@ -619,6 +623,51 @@ describe('Sentinel archiving lib', () => {
       ]);
 
       expect(audit.recordArchiving.args[0]).to.deep.equal([['c1', 'r1'], 424242]);
+    });
+
+    it('logs the ids it skipped because they are missing or not archivable', async () => {
+      stubBatchExternals();
+      sinon.stub(logger, 'warn');
+      db.medic.allDocs.resolves({
+        rows: [
+          { doc: { _id: 'r1', _rev: '1-a', type: 'data_record' } },
+          { doc: { _id: 'f1', _rev: '1-c', type: 'feedback' } }, // not archivable
+          { doc: null }, // missing
+        ],
+      });
+
+      await archiveBatch(['r1', 'f1', 'missing']);
+
+      expect(logger.warn.callCount).to.equal(1);
+      expect(logger.warn.args[0]).to.deep.equal([
+        'Archiving: skipped 2 ids, missing or not archivable: %o',
+        ['f1', 'missing'],
+      ]);
+    });
+
+    it('logs the skipped ids of every chunk in a single warning', async () => {
+      stubBatchExternals();
+      sinon.stub(logger, 'warn');
+      // Nothing in the second chunk is archivable, so it also short circuits before the archive write.
+      db.medic.allDocs
+        .onCall(0).resolves(docRows(makeIds(FETCH_BATCH_SIZE)))
+        .onCall(1).resolves({ rows: [{ doc: null }, { doc: { _id: 'x1', type: 'form' } }] });
+
+      await archiveBatch([...makeIds(FETCH_BATCH_SIZE), 'missing', 'x1']);
+
+      expect(logger.warn.args[0]).to.deep.equal([
+        'Archiving: skipped 2 ids, missing or not archivable: %o',
+        ['missing', 'x1'],
+      ]);
+    });
+
+    it('does not log when every id is archived', async () => {
+      stubBatchExternals();
+      sinon.stub(logger, 'warn');
+
+      await archiveBatch(['r1', 'r2']);
+
+      expect(logger.warn.callCount).to.equal(0);
     });
 
     it('archives every archivable doc type, including hardcoded contact types, and skips the rest', async () => {
