@@ -1,6 +1,10 @@
 function(doc) {
-  var indexedTypes = ['form', 'user-settings'];
-  if (indexedTypes.indexOf(doc.type) !== -1) {
-    emit([ doc.type ]);
+  if (doc.type === 'translations') {
+    emit([ 'translations', doc.enabled ], {
+      code: doc.code,
+      name: doc.name
+    });
+    return;
   }
+  emit([ doc.type ]);
 }
