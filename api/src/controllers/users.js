@@ -13,6 +13,20 @@ const signing = require('../services/offline-data-bundle/signing');
 
 const OFFLINE_DATA_BUNDLE_PERMISSIONS = ['can_send_offline_data_bundle', 'can_relay_offline_data_bundle'];
 
+const validateDeviceKeyBody = async (body) => {
+  const { device_id: deviceId, encryption_key: encryptionKey, signing_key: signingKey } = body;
+  if (!deviceId || !encryptionKey || !signingKey) {
+    return 'Missing required fields: device_id, encryption_key and signing_key';
+  }
+  if (!(await age.isValidRecipient(encryptionKey))) {
+    return 'Invalid encryption_key: expected an age recipient';
+  }
+  if (!(await signing.isValidPublicKey(signingKey))) {
+    return 'Invalid signing_key: expected a base64 Ed25519 public key';
+  }
+  return null;
+};
+
 const hasFullPermission = req => {
   return auth
     .check(req, ['can_edit', 'can_update_users'])
@@ -540,29 +554,9 @@ module.exports = {
       return serverUtils.emptyJSONBodyError(req, res);
     }
 
-    const { device_id: deviceId, encryption_key: encryptionKey, signing_key: signingKey } = req.body;
-    if (!deviceId || !encryptionKey || !signingKey) {
-      return serverUtils.error(
-        { code: 400, reason: 'Missing required fields: device_id, encryption_key and signing_key' },
-        req,
-        res
-      );
-    }
-
-    if (!(await age.isValidRecipient(encryptionKey))) {
-      return serverUtils.error(
-        { code: 400, reason: 'Invalid encryption_key: expected an age recipient' },
-        req,
-        res
-      );
-    }
-
-    if (!(await signing.isValidPublicKey(signingKey))) {
-      return serverUtils.error(
-        { code: 400, reason: 'Invalid signing_key: expected a base64 Ed25519 public key' },
-        req,
-        res
-      );
+    const validationError = await validateDeviceKeyBody(req.body);
+    if (validationError) {
+      return serverUtils.error({ code: 400, reason: validationError }, req, res);
     }
 
     try {
@@ -572,6 +566,7 @@ module.exports = {
         return serverUtils.error({ code: 403, message: 'You do not have permissions to modify this user' }, req, res);
       }
 
+      const { device_id: deviceId, encryption_key: encryptionKey, signing_key: signingKey } = req.body;
       await users.setDeviceKey(username, deviceId, encryptionKey, signingKey);
       const serverPublicKey = await serverKey.getServerPublicKey();
 
