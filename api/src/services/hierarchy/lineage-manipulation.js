@@ -1,5 +1,3 @@
-const { replaceContactLineage, replaceParentLineage } = require('./replace-lineage');
-
 /*
 Given a lineage, return the ids therein
 */
@@ -13,6 +11,4 @@ const pluckIdsFromLineage = (lineage, results = []) => {
 
 module.exports = {
   pluckIdsFromLineage,
-  replaceParentLineage,
-  replaceContactLineage,
 };
