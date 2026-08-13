@@ -128,6 +128,24 @@ describe('ContactType Utils', () => {
       chai.expect(utils.getTypeById(settings, 'district_hospital')).to.equal(undefined);
     });
 
+    it('should return the hardcoded type when nothing is configured', () => {
+      chai.expect(utils.getTypeById({}, CONTACT_TYPES.DISTRICT_HOSPITAL))
+        .to.deep.equal({ id: CONTACT_TYPES.DISTRICT_HOSPITAL });
+      chai.expect(utils.getTypeById({}, CONTACT_TYPES.HEALTH_CENTER))
+        .to.deep.equal({ id: CONTACT_TYPES.HEALTH_CENTER, parents: [ CONTACT_TYPES.DISTRICT_HOSPITAL ] });
+      chai.expect(utils.getTypeById({}, CONTACT_TYPES.CLINIC))
+        .to.deep.equal({ id: CONTACT_TYPES.CLINIC, parents: [ CONTACT_TYPES.HEALTH_CENTER ] });
+      chai.expect(utils.getTypeById({}, 'person')).to.deep.equal({
+        id: 'person',
+        parents: [ CONTACT_TYPES.DISTRICT_HOSPITAL, CONTACT_TYPES.HEALTH_CENTER, CONTACT_TYPES.CLINIC ],
+      });
+    });
+
+    it('should not supplement a configured hierarchy with the hardcoded types', () => {
+      chai.expect(utils.getTypeById({ contact_types: [ { id: 'place' } ] }, 'person')).to.equal(undefined);
+      chai.expect(utils.getTypeById(settings, CONTACT_TYPES.CLINIC)).to.equal(undefined);
+    });
+
     it('should return matching type', () => {
       chai.expect(utils.getTypeById(settings, 'patient')).to.deep.equal(patientType);
       chai.expect(utils.getTypeById(settings, 'chw')).to.deep.equal(chwType);
@@ -356,7 +374,7 @@ describe('ContactType Utils', () => {
     });
 
     it('should return falsy for person types', () => {
-      chai.expect(utils.isPlace({}, { type: 'person' })).to.equal(undefined);
+      chai.expect(utils.isPlace({}, { type: 'person' })).to.equal(false);
       chai.expect(utils.isPlace(settings, { type: personType.id })).to.equal(false);
       chai.expect(utils.isPlace(settings, { type: patientType.id })).to.equal(false);
       chai.expect(utils.isPlace(settings, { type: 'contact', contact_type: personType.id })).to.equal(false);
