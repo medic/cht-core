@@ -31,8 +31,6 @@ describe('cht-form web component - Edit Person Form', () => {
       role: 'chw',
       external_id: '12345',
       notes: 'Test notes',
-      contact: undefined,
-      parent: undefined,
       user_for_contact: {
         create: 'true'
       },
@@ -82,14 +80,12 @@ describe('cht-form web component - Edit Person Form', () => {
       role: 'patient',
       external_id: '54321',
       notes: 'Updated notes',
-      contact: undefined,
-      parent: '',
       meta: {
         ...initialPerson.meta,
         last_edited_by: '',
         last_edited_by_person_uuid: 'default_user',
         last_edited_by_place_uuid: ''
-      },
+      }
     };
 
     await mockConfig.loadForm('default', 'contact',  'person-edit');
