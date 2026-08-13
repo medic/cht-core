@@ -1,8 +1,10 @@
 const chai = require('chai');
+chai.use(require('chai-exclude'));
 const sinon = require('sinon');
-const rewire = require('rewire');
 const { Readable } = require('stream');
+const constants = require('@medic/constants');
 
+const controller = require('../../../src/controllers/archive');
 const db = require('../../../src/db');
 const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
@@ -25,19 +27,31 @@ const newRes = () => ({
   status: sinon.stub().returnsThis(),
 });
 
-describe('Archive controller', () => {
-  let controller;
+const NOW = new Date('2026-05-18T00:00:00.000Z').getTime();
 
+const expectedJob = (ids) => ({
+  date: NOW,
+  total: ids.length,
+  cursor: 0,
+  _attachments: {
+    ids: {
+      content_type: 'text/plain',
+      data: Buffer.from(ids.join('\n'), 'utf8'),
+    },
+  },
+});
+
+describe('Archive controller', () => {
   beforeEach(() => {
-    controller = rewire('../../../src/controllers/archive');
+    // fake only Date — faking timers/setImmediate stalls the request streams
+    sinon.useFakeTimers({ now: NOW, toFake: ['Date'] });
   });
 
   afterEach(() => sinon.restore());
 
   describe('create', () => {
-    it('responds with an AuthenticationError when caller is not a db admin', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({ roles: [] });
-      sinon.stub(auth, 'isDbAdmin').returns(false);
+    it('responds with a PermissionError when caller is not a db admin', async () => {
+      sinon.stub(auth, 'assertDbAdmin').rejects(new errors.PermissionError('User is not an admin'));
       sinon.stub(serverUtils, 'error').returns();
       sinon.stub(db.sentinel, 'put');
 
@@ -45,39 +59,34 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(serverUtils.error.callCount).to.equal(1);
+      expect(auth.assertDbAdmin.callCount).to.equal(1);
+      expect(auth.assertDbAdmin.args[0][0]).to.equal(req);
+      expect(serverUtils.error.callCount).to.equal(1);
       const err = serverUtils.error.args[0][0];
-      chai.expect(err).to.be.an.instanceOf(errors.AuthenticationError);
-      chai.expect(err.code).to.equal(401);
-      chai.expect(err.message).to.equal('User is not an admin');
-      chai.expect(db.sentinel.put.callCount).to.equal(0);
+      expect(err).to.be.an.instanceOf(errors.PermissionError);
+      expect(err.code).to.equal(403);
+      expect(err.message).to.equal('User is not an admin');
+      expect(db.sentinel.put.callCount).to.equal(0);
     });
 
     it('writes one job containing every doc id from the body', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put').resolves({ id: 'x', rev: '1-a' });
 
       const req = newReq(['doc-1', 'doc-2', 'doc-3']);
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(db.sentinel.put.callCount).to.equal(1);
+      expect(db.sentinel.put.callCount).to.equal(1);
       const doc = db.sentinel.put.args[0][0];
-      chai.expect(doc).to.include({ type: 'archive:', total: 3, cursor: 0 });
-      chai.expect(doc).to.not.have.property('status');
-      chai.expect(doc._id).to.match(/^archive:/);
-      chai.expect(doc._attachments.ids.content_type).to.equal('text/plain');
-      chai.expect(doc._attachments.ids.data.toString('utf8')).to.equal('doc-1\ndoc-2\ndoc-3');
-      chai.expect(res.status.calledWith(201)).to.equal(true);
-      chai.expect(res.json.callCount).to.equal(1);
-      chai.expect(res.json.args[0][0].jobs).to.have.length(1);
-      chai.expect(res.json.args[0][0].jobs[0]).to.deep.equal({ id: doc._id, count: 3 });
+      expect(doc._id).to.match(/^archive:/);
+      expect(doc).excluding('_id').to.deep.equal(expectedJob(['doc-1', 'doc-2', 'doc-3']));
+      expect(res.status.calledWith(202)).to.equal(true);
+      expect(res.json.args).to.deep.equal([[{ jobs: [{ id: doc._id, count: 3 }] }]]);
     });
 
     it('strips surrounding quotes and skips blank lines', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put').resolves({ id: 'x', rev: '1-a' });
 
       const req = newReq(['', '"doc-1"', '  doc-2  ', '']);
@@ -85,32 +94,54 @@ describe('Archive controller', () => {
       await controller.create(req, res);
 
       const doc = db.sentinel.put.args[0][0];
-      chai.expect(doc.total).to.equal(2);
-      chai.expect(doc._attachments.ids.data.toString('utf8')).to.equal('doc-1\ndoc-2');
+      expect(doc).excluding('_id').to.deep.equal(expectedJob(['doc-1', 'doc-2']));
     });
 
     it('splits ids into multiple job docs at MAX_IDS_PER_JOB', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put').resolves({ id: 'x', rev: '1-a' });
-      controller.__set__('MAX_IDS_PER_JOB', 3);
 
-      const req = newReq(['a', 'b', 'c', 'd', 'e', 'f', 'g']);
+      const MAX_IDS_PER_JOB = 100 * 1000; // mirrors the controller's per-job cap
+      const allIds = Array.from({ length: MAX_IDS_PER_JOB * 2 + 1 }, (_, i) => `doc-${i}`);
+      const lines = function* () {
+        for (let i = 0; i < allIds.length; i += 10000) {
+          yield allIds.slice(i, i + 10000).join('\n') + '\n';
+        }
+      };
+      const req = Readable.from(lines());
+      req.headers = { 'content-type': 'text/csv' };
+      req.is = () => 'text/csv';
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(db.sentinel.put.callCount).to.equal(3);
-      chai.expect(db.sentinel.put.args[0][0].total).to.equal(3);
-      chai.expect(db.sentinel.put.args[1][0].total).to.equal(3);
-      chai.expect(db.sentinel.put.args[2][0].total).to.equal(1);
-      chai.expect(db.sentinel.put.args[0][0]._attachments.ids.data.toString('utf8')).to.equal('a\nb\nc');
-      chai.expect(db.sentinel.put.args[2][0]._attachments.ids.data.toString('utf8')).to.equal('g');
-      chai.expect(res.json.args[0][0].jobs.map(j => j.count)).to.deep.equal([3, 3, 1]);
+      expect(db.sentinel.put.callCount).to.equal(3);
+      const docs = db.sentinel.put.args.map(([doc]) => doc);
+      const expectedSlices = [
+        allIds.slice(0, MAX_IDS_PER_JOB),
+        allIds.slice(MAX_IDS_PER_JOB, MAX_IDS_PER_JOB * 2),
+        allIds.slice(MAX_IDS_PER_JOB * 2),
+      ];
+      docs.forEach((doc, i) => {
+        expect(doc).excluding(['_id', '_attachments']).to.deep.equal({
+          date: NOW,
+          total: expectedSlices[i].length,
+          cursor: 0,
+        });
+        expect(doc._attachments.ids.content_type).to.equal('text/plain');
+        expect(doc._attachments.ids.data.toString('utf8')).to.equal(expectedSlices[i].join('\n'));
+      });
+      const ids = docs.map(doc => doc._id);
+      expect(res.json.args).to.deep.equal([[{
+        jobs: [
+          { id: ids[0], count: MAX_IDS_PER_JOB },
+          { id: ids[1], count: MAX_IDS_PER_JOB },
+          { id: ids[2], count: 1 },
+        ],
+      }]]);
     });
 
     it('rejects requests with a non-text/csv content-type with 415', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put');
       sinon.stub(serverUtils, 'error').returns();
 
@@ -118,30 +149,28 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(db.sentinel.put.callCount).to.equal(0);
-      chai.expect(serverUtils.error.callCount).to.equal(1);
+      expect(db.sentinel.put.callCount).to.equal(0);
+      expect(serverUtils.error.callCount).to.equal(1);
       const err = serverUtils.error.args[0][0];
-      chai.expect(err).to.be.an.instanceOf(errors.ContentTypeError);
-      chai.expect(err.code).to.equal(415);
-      chai.expect(err.message).to.equal('Content-Type must be text/csv');
+      expect(err).to.be.an.instanceOf(errors.ContentTypeError);
+      expect(err.code).to.equal(415);
+      expect(err.message).to.equal('Content-Type must be text/csv');
     });
 
     it('accepts text/csv with charset parameters', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put').resolves({ id: 'x', rev: '1-a' });
 
       const req = newReq(['doc-1'], { contentType: 'text/csv; charset=utf-8' });
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(db.sentinel.put.callCount).to.equal(1);
-      chai.expect(res.status.calledWith(201)).to.equal(true);
+      expect(db.sentinel.put.callCount).to.equal(1);
+      expect(res.status.calledWith(202)).to.equal(true);
     });
 
     it('rejects an empty body with 400', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put');
       sinon.stub(serverUtils, 'error').returns();
 
@@ -149,18 +178,17 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(db.sentinel.put.callCount).to.equal(0);
-      chai.expect(res.json.callCount).to.equal(0);
-      chai.expect(serverUtils.error.callCount).to.equal(1);
+      expect(db.sentinel.put.callCount).to.equal(0);
+      expect(res.json.callCount).to.equal(0);
+      expect(serverUtils.error.callCount).to.equal(1);
       const err = serverUtils.error.args[0][0];
-      chai.expect(err).to.be.an.instanceOf(errors.BadRequestError);
-      chai.expect(err.code).to.equal(400);
-      chai.expect(err.message).to.equal('No valid doc IDs found in request body');
+      expect(err).to.be.an.instanceOf(errors.BadRequestError);
+      expect(err.code).to.equal(400);
+      expect(err.message).to.equal('No valid doc IDs found in request body');
     });
 
     it('rejects a body of only blank lines with 400', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put');
       sinon.stub(serverUtils, 'error').returns();
 
@@ -168,14 +196,70 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(db.sentinel.put.callCount).to.equal(0);
-      chai.expect(serverUtils.error.callCount).to.equal(1);
-      chai.expect(serverUtils.error.args[0][0].code).to.equal(400);
+      expect(db.sentinel.put.callCount).to.equal(0);
+      expect(serverUtils.error.callCount).to.equal(1);
+      expect(serverUtils.error.args[0][0].code).to.equal(400);
+    });
+
+    it('rejects a streamed body that exceeds the size limit with 413, even without newlines', async () => {
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
+      sinon.stub(db.sentinel, 'put');
+      sinon.stub(serverUtils, 'error').returns();
+
+      const megabyte = 'a'.repeat(1024 * 1024);
+      const chunks = function* () {
+        for (let sent = 0; sent <= constants.MAX_REQUEST_SIZE; sent += megabyte.length) {
+          yield megabyte;
+        }
+      };
+      const req = Readable.from(chunks());
+      req.headers = { 'content-type': 'text/csv' };
+      req.is = () => 'text/csv';
+      const res = newRes();
+      await controller.create(req, res);
+
+      expect(db.sentinel.put.callCount).to.equal(0);
+      expect(res.json.callCount).to.equal(0);
+      expect(serverUtils.error.callCount).to.equal(1);
+      const err = serverUtils.error.args[0][0];
+      expect(err).to.be.an.instanceOf(errors.PayloadTooLargeError);
+      expect(err.code).to.equal(413);
+    });
+
+    it('rejects an oversized declared Content-Length with 413 before reading the body', async () => {
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
+      sinon.stub(db.sentinel, 'put');
+      sinon.stub(serverUtils, 'error').returns();
+
+      const req = newReq(['doc-1']);
+      req.headers['content-length'] = String(constants.MAX_REQUEST_SIZE + 1);
+      const res = newRes();
+      await controller.create(req, res);
+
+      expect(db.sentinel.put.callCount).to.equal(0);
+      // processPayload was never entered: no readline/byte-counter listeners were attached.
+      expect(req.listenerCount('data')).to.equal(0);
+      expect(serverUtils.error.callCount).to.equal(1);
+      const err = serverUtils.error.args[0][0];
+      expect(err).to.be.an.instanceOf(errors.PayloadTooLargeError);
+      expect(err.code).to.equal(413);
+    });
+
+    it('accepts an honest Content-Length within the limit', async () => {
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
+      sinon.stub(db.sentinel, 'put').resolves({ id: 'x', rev: '1-a' });
+
+      const req = newReq(['doc-1']);
+      req.headers['content-length'] = '6';
+      const res = newRes();
+      await controller.create(req, res);
+
+      expect(db.sentinel.put.callCount).to.equal(1);
+      expect(res.status.calledWith(202)).to.equal(true);
     });
 
     it('surfaces errors emitted by the request stream', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put');
       sinon.stub(serverUtils, 'error').returns();
 
@@ -189,13 +273,12 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(serverUtils.error.callCount).to.equal(1);
-      chai.expect(serverUtils.error.args[0][0].message).to.equal('client aborted');
+      expect(serverUtils.error.callCount).to.equal(1);
+      expect(serverUtils.error.args[0][0].message).to.equal('client aborted');
     });
 
     it('surfaces db errors via serverUtils.error', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put').rejects({ status: 500, message: 'boom' });
       sinon.stub(serverUtils, 'error').returns();
 
@@ -203,8 +286,8 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
-      chai.expect(serverUtils.error.callCount).to.equal(1);
-      chai.expect(serverUtils.error.args[0][0]).to.deep.include({ status: 500 });
+      expect(serverUtils.error.callCount).to.equal(1);
+      expect(serverUtils.error.args[0][0]).to.deep.include({ status: 500 });
     });
   });
 

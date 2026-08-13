@@ -86,7 +86,7 @@ const replication = require('./controllers/replication');
 const app = express.Router({ strict: true });
 const asyncLocalStorage = require('./services/async-storage');
 const moment = require('moment');
-const MAX_REQUEST_SIZE = '32mb';
+const { MAX_REQUEST_SIZE } = require('@medic/constants');
 
 // requires content-type application/x-www-form-urlencoded header
 const formParser = bodyParser.urlencoded({ limit: MAX_REQUEST_SIZE, extended: false });
@@ -802,12 +802,7 @@ app.put(
   credentials.put
 );
 
-app.post(
-  '/api/v1/archive',
-  authorization.handleAuthErrors,
-  authorization.offlineUserFirewall,
-  archive.create
-);
+app.post('/api/v1/archive', archive.create);
 
 app.get('/api/v1/users-doc-count', replicationLimitLogController.get);
 app.get('/api/v1/replication-failure-logs', replicationFailureLogController.get);

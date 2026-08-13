@@ -477,7 +477,7 @@ describe('Audit', () => {
       expect(written[0]._rev).to.equal('1-a');
       expect(written[0].history).to.deep.equal([
         { rev: '1-a', user: 'admin', date: new Date(500), service: 'api' },
-        { date, archived: true },
+        { date: new Date(date), archived: true },
       ]);
     });
 
@@ -491,7 +491,7 @@ describe('Audit', () => {
       expect(db.bulkDocs.args[0][0]).to.deep.equal([{
         _id: 'doc-new',
         _rev: undefined,
-        history: [{ date, archived: true }],
+        history: [{ date: new Date(date), archived: true }],
       }]);
     });
 
@@ -513,17 +513,17 @@ describe('Audit', () => {
 
       expect(written[0]._id).to.equal('doc-a');
       expect(written[0]._rev).to.equal('1-a');
-      expect(written[0].history).to.deep.equal([{ date, archived: true }]);
+      expect(written[0].history).to.deep.equal([{ date: new Date(date), archived: true }]);
 
       expect(written[1]._id).to.equal('doc-b');
       expect(written[1]._rev).to.be.undefined;
-      expect(written[1].history).to.deep.equal([{ date, archived: true }]);
+      expect(written[1].history).to.deep.equal([{ date: new Date(date), archived: true }]);
 
       expect(written[2]._id).to.equal('doc-c');
       expect(written[2]._rev).to.equal('3-c');
       expect(written[2].history).to.deep.equal([
         { rev: '3-c', date: new Date(1) },
-        { date, archived: true },
+        { date: new Date(date), archived: true },
       ]);
     });
 
@@ -534,8 +534,18 @@ describe('Audit', () => {
 
       expect(db.allDocs.callCount).to.equal(1);
       expect(db.allDocs.args[0]).to.deep.equal([{ keys: [], include_docs: true }]);
-      expect(db.bulkDocs.callCount).to.equal(1);
-      expect(db.bulkDocs.args[0][0]).to.deep.equal([]);
+      expect(db.bulkDocs.callCount).to.equal(0);
+    });
+
+    it('skips the write entirely when every doc is already recorded as archived', async () => {
+      db.allDocs.resolves({ rows: [
+        { id: 'doc-a', doc: { _id: 'doc-a', _rev: '2-b', history: [{ date: 100, archived: true }] } },
+        { id: 'doc-b', doc: { _id: 'doc-b', _rev: '3-c', history: [{ date: 200, archived: true }] } },
+      ] });
+
+      await lib.recordArchiving(['doc-a', 'doc-b'], 300);
+
+      expect(db.bulkDocs.callCount).to.equal(0);
     });
 
     it('preserves the prior history when appending the archive entry', async () => {
@@ -554,7 +564,7 @@ describe('Audit', () => {
       const written = db.bulkDocs.args[0][0][0];
       expect(written.history).to.deep.equal([
         ...existingHistory,
-        { date, archived: true },
+        { date: new Date(date), archived: true },
       ]);
     });
 
@@ -578,7 +588,32 @@ describe('Audit', () => {
       const written = db.bulkDocs.args[0][0];
       expect(written).to.have.lengthOf(1);
       expect(written[0]._id).to.equal('doc-b');
-      expect(written[0].history).to.deep.equal([{ date: 200, archived: true }]);
+      expect(written[0].history).to.deep.equal([{ date: new Date(200), archived: true }]);
+    });
+
+    it('throws when any audit doc fails to save, so the batch is retried', async () => {
+      db.allDocs.resolves({ rows: [
+        { id: 'doc-a', doc: { _id: 'doc-a', _rev: '1-a', history: [] } },
+        { key: 'doc-b', error: 'not_found' },
+      ] });
+      db.bulkDocs.resolves([
+        { id: 'doc-a', error: 'conflict', reason: 'Document update conflict.' },
+        { id: 'doc-b', ok: true, rev: '1-b' },
+      ]);
+
+      await expect(lib.recordArchiving(['doc-a', 'doc-b'], 300)).to.be.rejectedWith(
+        Error,
+        /Failed to record archiving audit entries.*conflict/
+      );
+    });
+
+    it('does not throw when every audit doc saves cleanly', async () => {
+      db.allDocs.resolves({ rows: [{ key: 'doc-a', error: 'not_found' }] });
+      db.bulkDocs.resolves([{ id: 'doc-a', ok: true, rev: '1-a' }]);
+
+      await lib.recordArchiving(['doc-a'], 400);
+
+      expect(db.bulkDocs.callCount).to.equal(1);
     });
   });
 });

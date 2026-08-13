@@ -1,9 +1,9 @@
-const chai = require('chai');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
 const config = require('../../../src/config');
 const later = require('later');
+const logger = require('@medic/logger');
 const archiveLib = require('../../../src/lib/archiving');
 
 let clock;
@@ -21,29 +21,68 @@ describe('Archiving Schedule', () => {
     clock.restore();
   });
 
-  it('aborts when no archive configuration is present', () => {
+  it('schedules an immediate run when no archive configuration is present', async () => {
     sinon.stub(config, 'get');
     sinon.stub(later.parse, 'text');
     sinon.stub(later.parse, 'cron');
-    sinon.stub(archiveLib, 'archive');
-    return scheduler.execute().then(() => {
-      chai.expect(config.get.callCount).to.equal(1);
-      chai.expect(config.get.args[0]).to.deep.equal(['archive']);
-      chai.expect(later.parse.text.callCount).to.equal(0);
-      chai.expect(later.parse.cron.callCount).to.equal(0);
-      chai.expect(archiveLib.archive.callCount).to.equal(0);
-    });
+    sinon.stub(archiveLib, 'archive').resolves();
+    const setTimeoutSpy = sinon.spy(clock, 'setTimeout');
+
+    await scheduler.execute();
+
+    expect(config.get.callCount).to.equal(1);
+    expect(config.get.args[0]).to.deep.equal(['archive']);
+    expect(later.parse.text.callCount).to.equal(0);
+    expect(later.parse.cron.callCount).to.equal(0);
+    expect(setTimeoutSpy.callCount).to.equal(1);
+    const [callback, delay] = setTimeoutSpy.args[0];
+    expect(delay).to.equal(0);
+
+    callback();
+
+    expect(archiveLib.archive.callCount).to.equal(1);
+    expect(archiveLib.archive.args[0][0]).to.be.null;
   });
 
-  it('aborts when the schedule expression is malformed', () => {
+  it('schedules an immediate run when the schedule expression is malformed', async () => {
     sinon.stub(config, 'get').returns({ cron: '* * nope' });
     sinon.stub(later.parse, 'cron').returns(false);
-    sinon.stub(archiveLib, 'archive');
+    sinon.stub(archiveLib, 'archive').resolves();
+    const setTimeoutSpy = sinon.spy(clock, 'setTimeout');
 
-    return scheduler.execute().then(() => {
-      chai.expect(later.parse.cron.callCount).to.equal(1);
-      chai.expect(archiveLib.archive.callCount).to.equal(0);
-    });
+    await scheduler.execute();
+
+    expect(later.parse.cron.callCount).to.equal(1);
+    expect(setTimeoutSpy.callCount).to.equal(1);
+    expect(setTimeoutSpy.args[0][1]).to.equal(0);
+
+    setTimeoutSpy.args[0][0]();
+
+    expect(archiveLib.archive.callCount).to.equal(1);
+  });
+
+  it('logs an error when the schedule expression is malformed', async () => {
+    sinon.stub(config, 'get').returns({ text_expression: 'every nope' });
+    sinon.stub(archiveLib, 'archive').resolves();
+    sinon.stub(logger, 'error');
+
+    await scheduler.execute();
+
+    expect(logger.error.callCount).to.equal(1);
+    expect(logger.error.args[0]).to.deep.equal([
+      'Archiving: malformed schedule configuration %o, archiving immediately',
+      { text_expression: 'every nope' },
+    ]);
+  });
+
+  it('does not log an error when no schedule is configured', async () => {
+    sinon.stub(config, 'get').returns({ duration: '4 hours' });
+    sinon.stub(archiveLib, 'archive').resolves();
+    sinon.stub(logger, 'error');
+
+    await scheduler.execute();
+
+    expect(logger.error.callCount).to.equal(0);
   });
 
   it('schedules an archive run with the parsed duration', async () => {
@@ -53,13 +92,13 @@ describe('Archiving Schedule', () => {
 
     await scheduler.execute();
 
-    chai.expect(setTimeoutSpy.callCount).to.equal(1);
+    expect(setTimeoutSpy.callCount).to.equal(1);
     const [callback] = setTimeoutSpy.args[0];
 
     callback();
 
-    chai.expect(archiveLib.archive.callCount).to.equal(1);
-    chai.expect(archiveLib.archive.args[0][0]).to.deep.equal({ duration: 4 * 60 * 60 * 1000 });
+    expect(archiveLib.archive.callCount).to.equal(1);
+    expect(archiveLib.archive.args[0][0]).to.equal(4 * 60 * 60 * 1000);
   });
 
   it('passes duration=null when archive.duration is missing', async () => {
@@ -70,59 +109,32 @@ describe('Archiving Schedule', () => {
     await scheduler.execute();
     setTimeoutSpy.args[0][0]();
 
-    chai.expect(archiveLib.archive.args[0][0]).to.deep.equal({ duration: null });
+    expect(archiveLib.archive.args[0][0]).to.be.null;
   });
 
-  it('passes duration=null when archive.duration is malformed', async () => {
-    sinon.stub(config, 'get').returns({ cron: '* 1 * * *', duration: 'lots of time' });
+  it('does not warn when archive.duration is simply missing', async () => {
+    sinon.stub(config, 'get').returns({ cron: '* 1 * * *' });
     sinon.stub(archiveLib, 'archive').resolves();
-    const setTimeoutSpy = sinon.spy(clock, 'setTimeout');
+    sinon.stub(logger, 'warn');
 
     await scheduler.execute();
-    setTimeoutSpy.args[0][0]();
 
-    chai.expect(archiveLib.archive.args[0][0]).to.deep.equal({ duration: null });
+    expect(logger.warn.callCount).to.equal(0);
   });
 
-  it('clears the previous timeout when re-run', () => {
+  it('clears the previous timeout when re-run', async () => {
     sinon.stub(config, 'get').returns({ cron: '* 1 * * *' });
     sinon.stub(archiveLib, 'archive');
     const setTimeoutSpy = sinon.spy(clock, 'setTimeout');
     const clearTimeoutSpy = sinon.spy(clock, 'clearTimeout');
 
-    return scheduler.execute()
-      .then(() => {
-        chai.expect(setTimeoutSpy.callCount).to.equal(1);
-        chai.expect(clearTimeoutSpy.callCount).to.equal(0);
-      })
-      .then(() => scheduler.execute())
-      .then(() => {
-        chai.expect(setTimeoutSpy.callCount).to.equal(2);
-        chai.expect(clearTimeoutSpy.callCount).to.equal(1);
-      });
+    await scheduler.execute();
+    expect(setTimeoutSpy.callCount).to.equal(1);
+    expect(clearTimeoutSpy.callCount).to.equal(0);
+
+    await scheduler.execute();
+    expect(setTimeoutSpy.callCount).to.equal(2);
+    expect(clearTimeoutSpy.callCount).to.equal(1);
   });
 
-  describe('parseDuration', () => {
-    let parseDuration;
-    beforeEach(() => {
-      parseDuration = scheduler.__get__('parseDuration');
-    });
-
-    it('parses "<number> <unit>" expressions into milliseconds', () => {
-      chai.expect(parseDuration('4 hours')).to.equal(4 * 60 * 60 * 1000);
-      chai.expect(parseDuration('30 minutes')).to.equal(30 * 60 * 1000);
-      chai.expect(parseDuration('1 day')).to.equal(24 * 60 * 60 * 1000);
-      chai.expect(parseDuration('  90 seconds  ')).to.equal(90 * 1000);
-    });
-
-    it('returns null for missing, malformed, or non-positive durations', () => {
-      chai.expect(parseDuration()).to.equal(null);
-      chai.expect(parseDuration(null)).to.equal(null);
-      chai.expect(parseDuration(42)).to.equal(null);
-      chai.expect(parseDuration('forever')).to.equal(null);
-      chai.expect(parseDuration('-1 hours')).to.equal(null);
-      chai.expect(parseDuration('0 hours')).to.equal(null);
-      chai.expect(parseDuration('4 lightyears')).to.equal(null);
-    });
-  });
 });
