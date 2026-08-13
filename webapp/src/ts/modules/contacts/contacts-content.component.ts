@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { DOC_TYPES } from '@medic/constants';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
@@ -245,10 +246,28 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscriptions.add(routeSubscription);
   }
 
+  // visit reports are keyed on fields.visited_contact_uuid, which is not a registration subject id,
+  // so ContactChangeFilterService misses them: without this check the visit stats displayed on the
+  // children lists would go stale until the next navigation
+  private isRelevantVisitReport(change) {
+    const doc = change?.doc;
+    const visitedContactId = doc?.fields?.visited_contact_uuid;
+    if (!visitedContactId || doc.type !== DOC_TYPES.DATA_RECORD || !doc.form) {
+      return false;
+    }
+    if (visitedContactId === this.selectedContact?.doc?._id) {
+      return true;
+    }
+    return !!this.selectedContact?.children?.some(
+      (group) => group.type?.count_visits && group.contacts?.some((child) => child.doc?._id === visitedContactId)
+    );
+  }
+
   private subscribeToChanges() {
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-content',
-      filter: (change) => this.contactChangeFilterService.isRelevantChange(change, this.selectedContact),
+      filter: (change) => this.contactChangeFilterService.isRelevantChange(change, this.selectedContact) ||
+        this.isRelevantVisitReport(change),
       callback: (change) => {
         const matchedContact = this.contactChangeFilterService.matchContact(change, this.selectedContact);
         const contactDeleted = this.contactChangeFilterService.isDeleted(change);

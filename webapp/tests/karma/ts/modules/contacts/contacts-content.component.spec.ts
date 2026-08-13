@@ -30,7 +30,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
 import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
-import { CONTACT_TYPES } from '@medic/constants';
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
 
 describe('Contacts content component', () => {
   let component: ContactsContentComponent;
@@ -361,6 +361,60 @@ describe('Contacts content component', () => {
       expect(contactChangeFilterService.isRelevantChange.callCount).to.equal(1);
       expect(selectContact.callCount).to.equal(0);
       expect(!!component.summaryErrorStack).to.be.false;
+    });
+
+    describe('visit report changes', () => {
+      const visitReportChange = (visitedContactUuid) => ({
+        doc: {
+          type: DOC_TYPES.DATA_RECORD,
+          form: 'home_visit',
+          fields: { visited_contact_uuid: visitedContactUuid },
+        },
+      });
+
+      beforeEach(() => {
+        contactChangeFilterService.isRelevantChange.returns(false);
+        selectedContact.children = [
+          { type: { id: 'clinic', count_visits: true }, contacts: [ { doc: { _id: 'a-displayed-child' } } ] },
+          { type: { id: 'person', person: true }, contacts: [ { doc: { _id: 'a-person-child' } } ] },
+        ];
+      });
+
+      it('should update information when a visit report to a displayed child is received', () => {
+        const changesFilter = changesService.subscribe.args[0][0].filter;
+
+        expect(changesFilter(visitReportChange('a-displayed-child'))).to.equal(true);
+      });
+
+      it('should update information when a visit report to the selected contact is received', () => {
+        const changesFilter = changesService.subscribe.args[0][0].filter;
+
+        expect(changesFilter(visitReportChange(selectedContact.doc._id))).to.equal(true);
+      });
+
+      it('should ignore visit reports to contacts that are not displayed', () => {
+        const changesFilter = changesService.subscribe.args[0][0].filter;
+
+        expect(changesFilter(visitReportChange('some-other-contact'))).to.equal(false);
+      });
+
+      it('should ignore visit reports to children whose type does not count visits', () => {
+        const changesFilter = changesService.subscribe.args[0][0].filter;
+
+        expect(changesFilter(visitReportChange('a-person-child'))).to.equal(false);
+      });
+
+      it('should ignore non-report docs carrying a visited_contact_uuid field', () => {
+        const changesFilter = changesService.subscribe.args[0][0].filter;
+        const change = {
+          doc: {
+            type: 'contact',
+            fields: { visited_contact_uuid: 'a-displayed-child' },
+          },
+        };
+
+        expect(changesFilter(change)).to.equal(false);
+      });
     });
   });
   describe('Quick page switches / Null safety', () => {
