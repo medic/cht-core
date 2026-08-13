@@ -38,9 +38,9 @@ export class FormatDataRecordService {
     };
     return this.dbService
       .get()
-      .query('medic-client/reports_by_subject', options)
+      .query('medic-client/registered_patients', options)
       .then((result) => {
-        return _.uniqBy(result.rows.map(row => row.doc), '_id');
+        return result.rows.map(row => row.doc);
       });
   }
 
@@ -71,7 +71,7 @@ export class FormatDataRecordService {
     };
 
     _.forEach(keys, (key) => {
-      if (Array.isArray(key)) {
+      if (_.isArray(key)) {
         const result:any = this.fieldsToHtml(settings, doc, key[1], labels, locale, data[key[0]], def);
         result.isArray = true;
         fields.data.push(result);
@@ -184,12 +184,12 @@ export class FormatDataRecordService {
     let target: any[] = [].concat(array);
     const root: any[] = [];
 
-    while (Array.isArray(_.last(target))) {
+    while (_.isArray(_.last(target))) {
       root.push(_.first(target));
       target = _.last(target);
     }
 
-    return target.map((item) => {
+    return _.map(target, (item) => {
       return root.concat([item]).join('.');
     });
   }
@@ -391,7 +391,7 @@ export class FormatDataRecordService {
 
         if (_.isString(key)) {
           memo.push(this.translateKey(settings, key, field, locale));
-        } else if (Array.isArray(key)) {
+        } else if (_.isArray(key)) {
           _.forEach(this.unrollKey(key), (key) => {
             const field = fields && fields[key];
             memo.push(this.translateKey(settings, key, field, locale));
@@ -447,7 +447,7 @@ export class FormatDataRecordService {
         anyValue.translations[0] &&
         anyValue.translations[0].content) ||
       // 5) Look for the first value
-      value[_.first(Object.keys(value))!];
+      value[_.first(_.keys(value))!];
 
     if (test) {
       result = '-' + result + '-';

@@ -151,7 +151,23 @@ module.exports = {
    *     is not a valid way of determining if the patient with that id exists
    */
   getRegistrations: (options) => {
-    return module.exports.getReportsBySubject({ ...options, registrations: true });
+    const viewOptions = {
+      include_docs: true,
+    };
+    if (options.id) {
+      viewOptions.key = options.id;
+    } else if (options.ids) {
+      viewOptions.keys = options.ids;
+    } else {
+      return Promise.resolve([]);
+    }
+    return db.medic
+      .query('medic-client/registered_patients', viewOptions)
+      .then(data => {
+        return data.rows
+          .map(row => row.doc)
+          .filter(doc => registrationUtils.isValidRegistration(doc, config.getAll()));
+      });
   },
   getForm: formCode => {
     const forms = config.get('forms');
