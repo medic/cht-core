@@ -5,6 +5,7 @@ import * as moment from 'moment';
 
 import { UHCStatsService } from '@mm-services/uhc-stats.service';
 import { DbService } from '@mm-services/db.service';
+import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -14,6 +15,7 @@ describe('UHCStats Service', () => {
   let clock;
   let localDb;
   let dbService;
+  let changesService;
   let contactTypesService;
   let sessionService;
   let authService;
@@ -22,16 +24,19 @@ describe('UHCStats Service', () => {
     clock = sinon.useFakeTimers({now: moment('2021-04-07 18:18:18').valueOf()});
     localDb = { query: sinon.stub() };
     dbService = { get: sinon.stub().returns(localDb) };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     sessionService = { isAdmin: sinon.stub() };
     authService = { has: sinon.stub() };
     contactTypesService = {
       getTypeId: sinon.stub(),
-      get: sinon.stub()
+      get: sinon.stub(),
+      includes: sinon.stub()
     };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: DbService, useValue: dbService },
+        { provide: ChangesService, useValue: changesService },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: SessionService, useValue: sessionService },
         { provide: AuthService, useValue: authService },
@@ -388,7 +393,7 @@ describe('UHCStats Service', () => {
       expect(localDb.query.callCount).to.equal(0);
     });
 
-    it('should get visit stats for contacts when online', async () => {
+    it('should get visit stats for contacts when online, querying visits per contact', async () => {
       sessionService.isAdmin.returns(false);
       sessionService.isOnlineOnly = sinon.stub().returns(true);
       authService.has.resolves(true);
@@ -396,16 +401,16 @@ describe('UHCStats Service', () => {
       localDb.query.onCall(0).returns({ rows: [
         { key: '2b', value: moment('2021-04-15 22:59:59').valueOf() },
         { key: '3c', value: { count: 1, max: 0, min: 0 } },
+        { key: '5e', value: moment('2021-02-13 22:59:59').valueOf() },
       ]});
-      // Query - visits in date range
+      // Query - visits to the only contact visited within the current interval
       localDb.query.onCall(1).returns({ rows: [
-        { key: moment('2021-04-15 09:20:00').valueOf(), value: '2b' },
-        { key: moment('2021-04-15 15:00:00').valueOf(), value: '2b' },
-        { key: moment('2021-04-17 23:59:59').valueOf(), value: '2b' },
-        { key: moment('2021-04-18 23:59:59').valueOf(), value: 'other' },
+        { key: [ '2b', moment('2021-04-15 09:20:00').valueOf() ], value: null },
+        { key: [ '2b', moment('2021-04-15 15:00:00').valueOf() ], value: null },
+        { key: [ '2b', moment('2021-04-17 23:59:59').valueOf() ], value: null },
       ]});
 
-      const result = await service.getVisitStats([ '2b', '3c', '4d' ], visitCountSettings);
+      const result = await service.getVisitStats([ '2b', '3c', '4d', '5e' ], visitCountSettings);
 
       expect(result).to.deep.equal({
         '2b': {
@@ -417,17 +422,42 @@ describe('UHCStats Service', () => {
           lastVisitedDate: 0,
           count: 0,
           countGoal: 5
+        },
+        '5e': {
+          lastVisitedDate: moment('2021-02-13 22:59:59').valueOf(),
+          count: 0,
+          countGoal: 5
         }
       });
       expect(localDb.query.callCount).to.equal(2);
       expect(localDb.query.args[0]).to.have.deep.members([
         'medic-client/contacts_by_last_visited',
-        { group: true, reduce: true, keys: [ '2b', '3c', '4d' ] }
+        { group: true, reduce: true, keys: [ '2b', '3c', '4d', '5e' ] }
       ]);
       expect(localDb.query.args[1]).to.have.deep.members([
         'medic-client/visits_by_date',
-        { start_key: range.start, end_key: range.end }
+        { start_key: [ '2b', range.start ], end_key: [ '2b', range.end ] }
       ]);
+    });
+
+    it('should not query visits when no contact was visited within the interval', async () => {
+      sessionService.isAdmin.returns(false);
+      sessionService.isOnlineOnly = sinon.stub().returns(true);
+      authService.has.resolves(true);
+      localDb.query.onCall(0).returns({ rows: [
+        { key: '2b', value: moment('2021-02-13 22:59:59').valueOf() },
+      ]});
+
+      const result = await service.getVisitStats([ '2b' ], visitCountSettings);
+
+      expect(result).to.deep.equal({
+        '2b': {
+          lastVisitedDate: moment('2021-02-13 22:59:59').valueOf(),
+          count: 0,
+          countGoal: 5
+        }
+      });
+      expect(localDb.query.callCount).to.equal(1);
     });
 
     it('should not query with keys when offline', async () => {
@@ -442,6 +472,8 @@ describe('UHCStats Service', () => {
       // Query - visits in date range
       localDb.query.onCall(1).returns({ rows: [
         { key: moment('2021-04-15 09:20:00').valueOf(), value: '2b' },
+        { key: moment('2021-04-15 15:00:00').valueOf(), value: '2b' },
+        { key: moment('2021-04-16 15:00:00').valueOf(), value: 'not-requested' },
       ]});
 
       const result = await service.getVisitStats([ '2b' ], visitCountSettings);
@@ -462,6 +494,54 @@ describe('UHCStats Service', () => {
         'medic-client/visits_by_date',
         { start_key: range.start, end_key: range.end }
       ]);
+    });
+
+    it('should cache last visited dates when offline and invalidate the cache on relevant changes', async () => {
+      sessionService.isAdmin.returns(false);
+      sessionService.isOnlineOnly = sinon.stub().returns(false);
+      authService.has.resolves(true);
+      localDb.query
+        .withArgs('medic-client/contacts_by_last_visited')
+        .returns({ rows: [ { key: '2b', value: moment('2021-04-15 22:59:59').valueOf() } ] });
+      localDb.query
+        .withArgs('medic-client/visits_by_date')
+        .returns({ rows: [] });
+
+      await service.getVisitStats([ '2b' ], visitCountSettings);
+      await service.getVisitStats([ '2b' ], visitCountSettings);
+
+      const lastVisitedQueries = () => localDb.query
+        .getCalls()
+        .filter(call => call.args[0] === 'medic-client/contacts_by_last_visited');
+      expect(lastVisitedQueries().length).to.equal(1);
+      expect(changesService.subscribe.callCount).to.equal(1);
+      expect(changesService.subscribe.args[0][0].key).to.equal('uhc-stats-service');
+
+      const { filter, callback } = changesService.subscribe.args[0][0];
+      expect(filter({ doc: { fields: { visited_contact_uuid: '2b' } } })).to.equal(true);
+      expect(filter({ deleted: true, id: 'some-doc' })).to.equal(true);
+      contactTypesService.includes.returns(true);
+      expect(filter({ doc: { type: 'clinic' } })).to.equal(true);
+      contactTypesService.includes.returns(false);
+      expect(filter({ doc: { type: 'data_record', fields: {} } })).to.equal(false);
+
+      callback();
+      await service.getVisitStats([ '2b' ], visitCountSettings);
+
+      expect(lastVisitedQueries().length).to.equal(2);
+    });
+
+    it('should not cache last visited dates when online', async () => {
+      sessionService.isAdmin.returns(false);
+      sessionService.isOnlineOnly = sinon.stub().returns(true);
+      authService.has.resolves(true);
+      localDb.query.returns({ rows: [] });
+
+      await service.getVisitStats([ '2b' ], visitCountSettings);
+      await service.getVisitStats([ '2b' ], visitCountSettings);
+
+      expect(localDb.query.callCount).to.equal(2);
+      expect(changesService.subscribe.callCount).to.equal(0);
     });
 
     it('should cache the permission check', async () => {
