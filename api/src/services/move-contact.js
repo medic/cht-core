@@ -12,17 +12,12 @@ const { BULK_OPERATIONS } = require('@medic/constants');
 const { Contact, Qualifier } = require('@medic/cht-datasource');
 // Required as a module, not destructured, so consumers can stub it with sinon.
 const constraints = require('./hierarchy/lineage-constraints');
-const {
-  replaceParentLineage,
-  replaceContactLineage,
-} = require('./hierarchy/lineage-manipulation');
 
 const { ACTIONS } = BULK_OPERATIONS;
 
-// Documents are read a page at a time and turned straight into operations, so only one page is ever
-// held in memory. A whole-district move can touch tens of thousands of documents, and the API is the
-// half of this that has to stay cheap.
-const DOC_PAGE_SIZE = 100;
+// No document is ever read: everything an operation needs comes from views, so a whole-district move
+// costs a handful of view queries rather than tens of thousands of document reads.
+const VIEW_BATCH_SIZE = 10000;
 
 // The id is embedded in a quoted nouveau phrase, so only the characters that can terminate or escape
 // that phrase matter. `nouveau.escapeKeys` is for unquoted terms and would escape the hyphens in a
@@ -36,21 +31,58 @@ const getSubtreeIds = async (id) => {
 };
 
 /**
- * Reads documents a page at a time, turning each page into operations and discarding the documents.
- * Only the operations, which are small, accumulate.
+ * `docs_by_id_lineage` at depth 1 answers both questions this needs in one view: for a contact it
+ * emits the parent's id, and for a report it emits the author's id. Returns a Map of doc id to that
+ * id. A doc with nothing at depth 1, a contact already at the root, simply has no row.
  */
-const buildOperationsInPages = async (ids, buildPage) => {
+const getDepthOneIds = async (ids) => {
   const remaining = [ ...ids ];
-  const operations = [];
+  const byId = new Map();
 
   while (remaining.length) {
-    const page = remaining.splice(0, DOC_PAGE_SIZE);
-    const result = await db.medic.allDocs({ keys: page, include_docs: true });
-    operations.push(...buildPage(result.rows.map(row => row.doc).filter(Boolean)));
+    const batch = remaining.splice(0, VIEW_BATCH_SIZE);
+    const result = await db.medic.query('medic-client/docs_by_id_lineage', {
+      keys: batch.map(id => [ id, 1 ]),
+    });
+    result.rows.forEach(row => byId.set(row.id, row.value?._id));
   }
 
-  return operations;
+  return byId;
 };
+
+// Nests ids into the minified lineage shape CHT stores, with `tail` sitting under the innermost id.
+const nestLineage = (ids, tail) => ids.reduceRight(
+  (parent, _id) => (parent ? { _id, parent } : { _id }),
+  tail
+);
+
+/**
+ * The chain from a contact's parent up to and including the source. A descendant's chain to the
+ * source lies entirely inside the moved subtree, so the parent map is enough to walk it without
+ * reading a single document. The source itself has no chain: its parent is replaced outright.
+ */
+const ancestorsToSource = (id, parentById, sourceId) => {
+  if (id === sourceId) {
+    return [];
+  }
+
+  const chain = [];
+  let current = parentById.get(id);
+  while (current) {
+    chain.push(current);
+    if (current === sourceId) {
+      break;
+    }
+    current = parentById.get(current);
+  }
+  return chain;
+};
+
+// The lineage a contact should hold once the move is applied.
+const buildNewLineage = (id, parentById, sourceId, replacementLineage) => nestLineage(
+  ancestorsToSource(id, parentById, sourceId),
+  replacementLineage
+);
 
 /**
  * Ids of the reports the moved contacts authored. A report caches its author's lineage in `contact`,
@@ -88,49 +120,58 @@ const getReportIdsByCreator = async (contactIds) => {
   return [ ...ids ];
 };
 
-// Places caching the lineage of a moved primary contact; unlike Delete this refreshes the reference
-// instead of clearing it. Moved places are included too: `set-parent` only rewrites `parent`, so
-// skipping them would leave a place whose `parent` and `contact` disagree.
-const getPlaceIdsToRefresh = async (contactIds) => {
+/**
+ * Places caching the lineage of a moved primary contact; unlike Delete this refreshes the reference
+ * instead of clearing it. Moved places are included too: `set-parent` only rewrites `parent`, so
+ * skipping them would leave a place whose `parent` and `contact` disagree.
+ *
+ * The view emits the primary contact's id as the row key, so the pairing comes straight out of it.
+ */
+const getPlacesToRefresh = async (contactIds) => {
   const result = await db.medic.query('medic/contacts_by_primary_contact', { keys: contactIds });
-  return [ ...new Set(result.rows.map(row => row.id)) ];
+  const seen = new Set();
+  const places = [];
+
+  result.rows.forEach(row => {
+    if (seen.has(row.id)) {
+      return;
+    }
+    seen.add(row.id);
+    places.push({ id: row.id, current_contact_id: row.key });
+  });
+
+  return places;
 };
 
 /**
  * The source's own parent is replaced outright: it is the contact being moved. Every descendant keeps
- * its own parent and has the chain *above* the source rewritten, which is what `startingFromId` does.
- * The helpers rewrite the fetched document in place and `minify` strips it back to ids, so the value
- * read off is the minified lineage; the document itself is then discarded.
+ * its own parent and has the chain above the source rewritten, which is what walking the parent map
+ * up to the source produces. A contact already at the root has no row in the map, so its
+ * `current_parent_id` is undefined, and a move to the root leaves no parent at all.
  */
-const buildSetParentOperations = (docs, sourceId, replacementLineage) => docs
-  .map(doc => {
-    const currentParentId = doc.parent?._id || doc.parent;
-    const params = doc._id === sourceId
-      ? { replaceWith: replacementLineage }
-      : { replaceWith: replacementLineage, startingFromId: sourceId };
-    if (!replaceParentLineage(doc, params)) {
-      return null;
-    }
-    lineage.minify(doc);
-    // A move to the root leaves no parent at all, and the handler writes that absence back.
-    return { id: doc._id, current_parent_id: currentParentId, parent: doc.parent };
-  })
-  .filter(Boolean);
+const buildSetParentOperations = (contactIds, parentById, sourceId, replacementLineage) => contactIds
+  .map(id => ({
+    id,
+    current_parent_id: parentById.get(id),
+    parent: buildNewLineage(id, parentById, sourceId, replacementLineage),
+  }));
 
 /**
- * Reports and surviving places both cache the moved contact's lineage in a property called `contact`,
- * so both are refreshed the same way and share Delete's existing `set-contact` action.
+ * Reports and places both cache a moved contact's lineage in a property called `contact`, so both are
+ * refreshed the same way and share Delete's existing `set-contact` action. The cached copy is rebuilt
+ * from the subtree rather than edited in place, so a copy that had drifted is corrected rather than
+ * stepped over.
  */
-const buildSetContactOperations = (docs, sourceId, replacementLineage) => docs
-  .map(doc => {
-    const currentContactId = doc.contact?._id || doc.contact;
-    if (!replaceContactLineage(doc, { replaceWith: replacementLineage, startingFromId: sourceId })) {
-      return null;
-    }
-    lineage.minify(doc);
-    return { id: doc._id, current_contact_id: currentContactId, contact: doc.contact };
-  })
-  .filter(Boolean);
+const buildSetContactOperations = (pairs, parentById, sourceId, replacementLineage) => pairs
+  .filter(({ current_contact_id: contactId }) => contactId)
+  .map(({ id, current_contact_id: contactId }) => ({
+    id,
+    current_contact_id: contactId,
+    contact: {
+      _id: contactId,
+      parent: buildNewLineage(contactId, parentById, sourceId, replacementLineage),
+    },
+  }));
 
 /**
  * Gathers everything a move touches and queues it as a bulk operation.
@@ -149,24 +190,23 @@ const moveContactHierarchy = async (source, destination, { dryRun } = {}) => {
   // Violations surface as BadRequestError; anything else is a real failure and propagates as a 500.
   await constraints.assertMoveIsLegal(source, destination, contactIds);
 
-  const replacementLineage = lineage.minifyLineage(destination);
-  const [ reportIds, placeIds ] = await Promise.all([
+  // `|| undefined` so a move to the root carries the absence of a parent rather than a null.
+  const replacementLineage = lineage.minifyLineage(destination) || undefined;
+  const [ parentById, reportIds, places ] = await Promise.all([
+    getDepthOneIds(contactIds),
     getReportIdsByCreator(contactIds),
-    getPlaceIdsToRefresh(contactIds),
+    getPlacesToRefresh(contactIds),
   ]);
+  // For a report the same view gives the author's id, which is the contact whose lineage it cached.
+  const reportAuthorById = await getDepthOneIds(reportIds);
+  const reportPairs = [ ...reportAuthorById ].map(([ reportId, authorId ]) => ({
+    id: reportId,
+    current_contact_id: authorId,
+  }));
 
-  const setParentOperations = await buildOperationsInPages(
-    contactIds,
-    docs => buildSetParentOperations(docs, id, replacementLineage)
-  );
-  const reportOperations = await buildOperationsInPages(
-    reportIds,
-    docs => buildSetContactOperations(docs, id, replacementLineage)
-  );
-  const placeOperations = await buildOperationsInPages(
-    placeIds,
-    docs => buildSetContactOperations(docs, id, replacementLineage)
-  );
+  const setParentOperations = buildSetParentOperations(contactIds, parentById, id, replacementLineage);
+  const reportOperations = buildSetContactOperations(reportPairs, parentById, id, replacementLineage);
+  const placeOperations = buildSetContactOperations(places, parentById, id, replacementLineage);
 
   const summary = {
     'set-parent': setParentOperations.length,
