@@ -621,10 +621,15 @@ const saveUserSettingsUpdates = async (userSettings) => {
   };
 };
 
-const upsertDeviceKey = async (username, deviceId, publicKey) => {
+const upsertDeviceKey = async (username, deviceId, encryptionKey, signingKey) => {
   const userSettings = await getUserDoc(username, 'medic');
   userSettings.device_keys = userSettings.device_keys || [];
-  const entry = { device_id: deviceId, public_key: publicKey, created_at: new Date().toISOString() };
+  const entry = {
+    device_id: deviceId,
+    encryption_key: encryptionKey,
+    signing_key: signingKey,
+    created_at: new Date().toISOString()
+  };
   const existing = userSettings.device_keys.find(key => key.device_id === deviceId);
   if (existing) {
     Object.assign(existing, entry);

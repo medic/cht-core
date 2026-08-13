@@ -5,6 +5,8 @@ const auth = require('../../../src/auth');
 const authorization = require('../../../src/services/replication/authorization');
 const serverUtils = require('../../../src/server-utils');
 const serverKey = require('../../../src/services/offline-data-bundle/server-key');
+const age = require('../../../src/services/offline-data-bundle/age');
+const signing = require('../../../src/services/offline-data-bundle/signing');
 const purgedDocs = require('../../../src/services/replication/purged-docs');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
@@ -1044,6 +1046,8 @@ describe('Users Controller', () => {
       sinon.stub(auth, 'basicAuthCredentials');
       sinon.stub(users, 'setDeviceKey');
       sinon.stub(serverKey, 'getServerPublicKey');
+      sinon.stub(age, 'isValidRecipient').resolves(true);
+      sinon.stub(signing, 'isValidPublicKey').resolves(true);
     });
 
     it('should respond with error when empty body', () => {
@@ -1056,30 +1060,75 @@ describe('Users Controller', () => {
     });
 
     it('should respond with 400 when device_id is missing', () => {
-      req = { params: { username: 'chw' }, body: { public_key: 'age1recipient' } };
+      req = { params: { username: 'chw' }, body: { encryption_key: 'age1recipient', signing_key: 'ed25519signing' } };
       return controller.deviceKey(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(serverUtils.error.args[0][0]).to.deep.equal(
-          { code: 400, reason: 'Missing required fields: device_id and public_key' }
+          { code: 400, reason: 'Missing required fields: device_id, encryption_key and signing_key' }
         );
         chai.expect(users.setDeviceKey.notCalled).to.be.true;
       });
     });
 
-    it('should respond with 400 when public_key is missing', () => {
-      req = { params: { username: 'chw' }, body: { device_id: 'device-1' } };
+    it('should respond with 400 when encryption_key is missing', () => {
+      req = { params: { username: 'chw' }, body: { device_id: 'device-1', signing_key: 'ed25519signing' } };
       return controller.deviceKey(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(serverUtils.error.args[0][0]).to.deep.equal(
-          { code: 400, reason: 'Missing required fields: device_id and public_key' }
+          { code: 400, reason: 'Missing required fields: device_id, encryption_key and signing_key' }
         );
+        chai.expect(users.setDeviceKey.notCalled).to.be.true;
+      });
+    });
+
+    it('should respond with 400 when signing_key is missing', () => {
+      req = { params: { username: 'chw' }, body: { device_id: 'device-1', encryption_key: 'age1recipient' } };
+      return controller.deviceKey(req, res).then(() => {
+        chai.expect(serverUtils.error.callCount).to.equal(1);
+        chai.expect(serverUtils.error.args[0][0]).to.deep.equal(
+          { code: 400, reason: 'Missing required fields: device_id, encryption_key and signing_key' }
+        );
+        chai.expect(users.setDeviceKey.notCalled).to.be.true;
+      });
+    });
+
+    it('should respond with 400 when encryption_key is not a valid age recipient', () => {
+      age.isValidRecipient.resolves(false);
+      req = {
+        params: { username: 'chw' },
+        body: { device_id: 'device-1', encryption_key: 'not-a-recipient', signing_key: 'ed25519signing' },
+      };
+      return controller.deviceKey(req, res).then(() => {
+        chai.expect(serverUtils.error.callCount).to.equal(1);
+        chai.expect(serverUtils.error.args[0][0]).to.deep.equal(
+          { code: 400, reason: 'Invalid encryption_key: expected an age recipient' }
+        );
+        chai.expect(users.setDeviceKey.notCalled).to.be.true;
+      });
+    });
+
+    it('should respond with 400 when signing_key is not a valid Ed25519 public key', () => {
+      signing.isValidPublicKey.resolves(false);
+      req = {
+        params: { username: 'chw' },
+        body: { device_id: 'device-1', encryption_key: 'age1recipient', signing_key: 'not-a-key' },
+      };
+      return controller.deviceKey(req, res).then(() => {
+        chai.expect(serverUtils.error.callCount).to.equal(1);
+        chai.expect(serverUtils.error.args[0][0]).to.deep.equal(
+          { code: 400, reason: 'Invalid signing_key: expected a base64 Ed25519 public key' }
+        );
+        chai.expect(users.setDeviceKey.notCalled).to.be.true;
       });
     });
 
     it('should propagate error when requester lacks the required permission', () => {
       const permissionError = { code: 403, message: 'Insufficient privileges' };
       auth.assertPermissions.rejects(permissionError);
-      req = { params: { username: 'chw' }, body: { device_id: 'device-1', public_key: 'age1recipient' } };
+      req = {
+        params: { username: 'chw' },
+        body: { device_id: 'device-1', encryption_key: 'age1recipient', signing_key: 'ed25519signing' },
+      };
 
       return controller.deviceKey(req, res).then(() => {
         chai.expect(auth.assertPermissions.callCount).to.equal(1);
@@ -1098,11 +1147,15 @@ describe('Users Controller', () => {
       auth.basicAuthCredentials.returns(false);
       users.setDeviceKey.resolves({ id: 'org.couchdb.user:chw', rev: '2-abc' });
       serverKey.getServerPublicKey.resolves('age1serverrecipient');
-      req = { id: 'req-1', params: { username: 'chw' }, body: { device_id: 'device-1', public_key: 'age1recipient' } };
+      req = {
+        id: 'req-1',
+        params: { username: 'chw' },
+        body: { device_id: 'device-1', encryption_key: 'age1recipient', signing_key: 'ed25519signing' },
+      };
 
       return controller.deviceKey(req, res).then(() => {
         chai.expect(serverUtils.error.notCalled).to.be.true;
-        chai.expect(users.setDeviceKey.args[0]).to.deep.equal(['chw', 'device-1', 'age1recipient']);
+        chai.expect(users.setDeviceKey.args[0]).to.deep.equal(['chw', 'device-1', 'age1recipient', 'ed25519signing']);
         chai.expect(serverKey.getServerPublicKey.callCount).to.equal(1);
         chai.expect(res.json.args[0]).to.deep.equal([{ server_key: 'age1serverrecipient' }]);
       });
@@ -1114,11 +1167,15 @@ describe('Users Controller', () => {
       auth.basicAuthCredentials.returns(false);
       users.setDeviceKey.resolves({ id: 'org.couchdb.user:chw', rev: '2-abc' });
       serverKey.getServerPublicKey.resolves('age1serverrecipient');
-      req = { id: 'req-2', params: { username: 'chw' }, body: { device_id: 'device-1', public_key: 'age1recipient' } };
+      req = {
+        id: 'req-2',
+        params: { username: 'chw' },
+        body: { device_id: 'device-1', encryption_key: 'age1recipient', signing_key: 'ed25519signing' },
+      };
 
       return controller.deviceKey(req, res).then(() => {
         chai.expect(serverUtils.error.notCalled).to.be.true;
-        chai.expect(users.setDeviceKey.args[0]).to.deep.equal(['chw', 'device-1', 'age1recipient']);
+        chai.expect(users.setDeviceKey.args[0]).to.deep.equal(['chw', 'device-1', 'age1recipient', 'ed25519signing']);
         chai.expect(res.json.args[0]).to.deep.equal([{ server_key: 'age1serverrecipient' }]);
       });
     });
@@ -1127,7 +1184,10 @@ describe('Users Controller', () => {
       auth.assertPermissions.resolves({ name: 'chw', roles: ['chw'] });
       auth.isDbAdmin.returns(false);
       auth.basicAuthCredentials.returns(false);
-      req = { params: { username: 'other' }, body: { device_id: 'device-1', public_key: 'age1recipient' } };
+      req = {
+        params: { username: 'other' },
+        body: { device_id: 'device-1', encryption_key: 'age1recipient', signing_key: 'ed25519signing' },
+      };
 
       return controller.deviceKey(req, res).then(() => {
         chai.expect(users.setDeviceKey.notCalled).to.be.true;
@@ -1145,7 +1205,11 @@ describe('Users Controller', () => {
       auth.isDbAdmin.returns(false);
       auth.basicAuthCredentials.returns(false);
       users.setDeviceKey.rejects(saveError);
-      req = { id: 'req-3', params: { username: 'chw' }, body: { device_id: 'device-1', public_key: 'age1recipient' } };
+      req = {
+        id: 'req-3',
+        params: { username: 'chw' },
+        body: { device_id: 'device-1', encryption_key: 'age1recipient', signing_key: 'ed25519signing' },
+      };
 
       return controller.deviceKey(req, res).then(() => {
         chai.expect(res.json.notCalled).to.be.true;

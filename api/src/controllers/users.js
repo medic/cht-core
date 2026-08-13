@@ -8,6 +8,8 @@ const logger = require('@medic/logger');
 const serverUtils = require('../server-utils');
 const replication = require('../services/replication/replication');
 const serverKey = require('../services/offline-data-bundle/server-key');
+const age = require('../services/offline-data-bundle/age');
+const signing = require('../services/offline-data-bundle/signing');
 
 const OFFLINE_DATA_BUNDLE_PERMISSIONS = ['can_send_offline_data_bundle', 'can_relay_offline_data_bundle'];
 
@@ -498,14 +500,19 @@ module.exports = {
    *         application/json:
    *           schema:
    *             type: object
-   *             required: [device_id, public_key]
+   *             required: [device_id, encryption_key, signing_key]
    *             properties:
    *               device_id:
    *                 type: string
    *                 description: Unique identifier for the device.
-   *               public_key:
+   *               encryption_key:
    *                 type: string
-   *                 description: The device's age recipient (public) key.
+   *                 description: >
+   *                   The device's age recipient (X25519 public) key, used to encrypt the checkpoint to the device.
+   *               signing_key:
+   *                 type: string
+   *                 description: >
+   *                   The device's Ed25519 public signing key, used by the server to verify bundle signatures.
    *     responses:
    *       '200':
    *         description: Device key registered
@@ -518,6 +525,10 @@ module.exports = {
    *                   type: string
    *                   description: The server's age recipient (public) key.
    *       '400':
+   *         description: >
+   *           Required fields are missing, or a key is malformed. The `encryption_key` must be an age
+   *           recipient string and the `signing_key` must be base64 of a raw Ed25519 public key; invalid
+   *           key formats are rejected.
    *         $ref: '#/components/responses/BadRequest'
    *       '401':
    *         $ref: '#/components/responses/Unauthorized'
@@ -529,10 +540,26 @@ module.exports = {
       return serverUtils.emptyJSONBodyError(req, res);
     }
 
-    const { device_id: deviceId, public_key: publicKey } = req.body;
-    if (!deviceId || !publicKey) {
+    const { device_id: deviceId, encryption_key: encryptionKey, signing_key: signingKey } = req.body;
+    if (!deviceId || !encryptionKey || !signingKey) {
       return serverUtils.error(
-        { code: 400, reason: 'Missing required fields: device_id and public_key' },
+        { code: 400, reason: 'Missing required fields: device_id, encryption_key and signing_key' },
+        req,
+        res
+      );
+    }
+
+    if (!(await age.isValidRecipient(encryptionKey))) {
+      return serverUtils.error(
+        { code: 400, reason: 'Invalid encryption_key: expected an age recipient' },
+        req,
+        res
+      );
+    }
+
+    if (!(await signing.isValidPublicKey(signingKey))) {
+      return serverUtils.error(
+        { code: 400, reason: 'Invalid signing_key: expected a base64 Ed25519 public key' },
         req,
         res
       );
@@ -545,7 +572,7 @@ module.exports = {
         return serverUtils.error({ code: 403, message: 'You do not have permissions to modify this user' }, req, res);
       }
 
-      await users.setDeviceKey(username, deviceId, publicKey);
+      await users.setDeviceKey(username, deviceId, encryptionKey, signingKey);
       const serverPublicKey = await serverKey.getServerPublicKey();
 
       logger.info(`REQ ${req.id} - Registered device key for device '${deviceId}' on user '${username}'.`);

@@ -6,7 +6,9 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const chai = require('chai');
+const { webcrypto } = require('node:crypto');
 const { USER_ROLES, CONTACT_TYPES, PREFIXES } = require('@medic/constants');
+const age = require('../../../../api/src/services/offline-data-bundle/age');
 
 const getUserId = n => `${PREFIXES.COUCH_USER}${n}`;
 const password = 'passwordSUP3RS3CR37!';
@@ -2520,11 +2522,24 @@ describe('Users API', () => {
       contact: { _id: 'fixture:contact:devkey-other', name: 'DeviceKeyOther' },
       roles: ['data_entry']
     };
-    // valid age recipient (public) keys
-    const deviceKeyA = 'age1lggyhqrw2nlhcxprm4t5xu7pw5rsp3nlxr6mnp5ykhtl2f6c2sqrwv3rs';
-    const deviceKeyB = 'age1e4uw9yvxm647436dtk9d8yrjr9lgpxvpqvfd8ycvz7zszx6yg9qs3lkkny';
+    // real keys generated in the before() below: age recipients and base64 raw Ed25519 public keys
+    let deviceKeyA;
+    let deviceKeyB;
+    let signingKeyA;
+    let signingKeyB;
+
+    const generateSigningKey = async () => {
+      const keyPair = await webcrypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']);
+      const raw = Buffer.from(await webcrypto.subtle.exportKey('raw', keyPair.publicKey));
+      return raw.toString('base64');
+    };
 
     before(async () => {
+      deviceKeyA = await age.identityToRecipient(await age.generateIdentity());
+      deviceKeyB = await age.identityToRecipient(await age.generateIdentity());
+      signingKeyA = await generateSigningKey();
+      signingKeyB = await generateSigningKey();
+
       await utils.saveDoc(parentPlace);
       await utils.createUsers([senderUser, otherUser]);
       await utils.updatePermissions(['chw'], ['can_send_offline_data_bundle'], [], { ignoreReload: true });
@@ -2540,7 +2555,7 @@ describe('Users API', () => {
       const response = await utils.request({
         path: `/api/v1/users/${senderUser.username}/device-key`,
         method: 'POST',
-        body: { device_id: 'device-A', public_key: deviceKeyA },
+        body: { device_id: 'device-A', encryption_key: deviceKeyA, signing_key: signingKeyA },
         auth: { username: senderUser.username, password },
       });
 
@@ -2548,7 +2563,11 @@ describe('Users API', () => {
 
       const userSettings = await utils.getDoc(getUserId(senderUser.username));
       chai.expect(userSettings.device_keys).to.have.lengthOf(1);
-      chai.expect(userSettings.device_keys[0]).to.include({ device_id: 'device-A', public_key: deviceKeyA });
+      chai.expect(userSettings.device_keys[0]).to.include({
+        device_id: 'device-A',
+        encryption_key: deviceKeyA,
+        signing_key: signingKeyA,
+      });
       chai.expect(userSettings.device_keys[0].created_at).to.be.a('string');
     });
 
@@ -2556,20 +2575,21 @@ describe('Users API', () => {
       await utils.request({
         path: `/api/v1/users/${senderUser.username}/device-key`,
         method: 'POST',
-        body: { device_id: 'device-A', public_key: deviceKeyB },
+        body: { device_id: 'device-A', encryption_key: deviceKeyB, signing_key: signingKeyB },
         auth: { username: senderUser.username, password },
       });
 
       const userSettings = await utils.getDoc(getUserId(senderUser.username));
       chai.expect(userSettings.device_keys).to.have.lengthOf(1);
-      chai.expect(userSettings.device_keys[0].public_key).to.equal(deviceKeyB);
+      chai.expect(userSettings.device_keys[0].encryption_key).to.equal(deviceKeyB);
+      chai.expect(userSettings.device_keys[0].signing_key).to.equal(signingKeyB);
     });
 
     it('403s when the user lacks the offline-data-bundle permission', async () => {
       await chai.expect(utils.request({
         path: `/api/v1/users/${otherUser.username}/device-key`,
         method: 'POST',
-        body: { device_id: 'device-C', public_key: deviceKeyA },
+        body: { device_id: 'device-C', encryption_key: deviceKeyA, signing_key: signingKeyA },
         auth: { username: otherUser.username, password },
       })).to.be.rejectedWith(/403/);
     });
@@ -2579,6 +2599,15 @@ describe('Users API', () => {
         path: `/api/v1/users/${senderUser.username}/device-key`,
         method: 'POST',
         body: { device_id: 'device-A' },
+        auth: { username: senderUser.username, password },
+      })).to.be.rejectedWith(/400/);
+    });
+
+    it('400s when a key has an invalid format', async () => {
+      await chai.expect(utils.request({
+        path: `/api/v1/users/${senderUser.username}/device-key`,
+        method: 'POST',
+        body: { device_id: 'device-A', encryption_key: 'not-an-age-recipient', signing_key: signingKeyA },
         auth: { username: senderUser.username, password },
       })).to.be.rejectedWith(/400/);
     });

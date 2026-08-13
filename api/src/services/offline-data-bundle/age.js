@@ -11,4 +11,12 @@ const load = () => {
 module.exports = {
   generateIdentity: async () => (await load()).generateIdentity(),
   identityToRecipient: async (identity) => (await load()).identityToRecipient(identity),
+  isValidRecipient: async (recipient) => {
+    try {
+      new (await load()).Encrypter().addRecipient(recipient);
+      return true;
+    } catch {
+      return false;
+    }
+  },
 };
