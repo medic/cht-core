@@ -158,11 +158,28 @@ export class ContactsEffects {
       .then(children => {
         return this
           .verifySelectedContactNotChanged(contactId)
-          .then(() => this.contactsActions.receiveSelectedContactChildren(children));
+          .then(() => {
+            this.contactsActions.receiveSelectedContactChildren(children);
+            // don't block the children (or the rest of the profile) on the visit stats queries
+            this.loadChildrenVisitStats(children);
+          });
       })
       .finally(() => {
         trackPerformance?.stop({ name: [ ...trackName, 'load_descendants' ].join(':') });
       });
+  }
+
+  private async loadChildrenVisitStats(children) {
+    try {
+      const childrenWithStats = await this.contactViewModelGeneratorService.getChildrenVisitStats(children);
+      // skip when there is nothing to annotate or a newer children list was dispatched in the meantime
+      if (!childrenWithStats || this.selectedContact?.children !== children) {
+        return;
+      }
+      this.contactsActions.receiveSelectedContactChildren(childrenWithStats);
+    } catch (error) {
+      console.error('Error loading visit stats for children', error);
+    }
   }
 
   private loadReports(contactId, forms, trackName) {

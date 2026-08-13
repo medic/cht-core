@@ -14,7 +14,7 @@ import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 import { UHCStatsService } from '@mm-services/uhc-stats.service';
-import { RelativeDateService } from '@mm-services/relative-date.service';
+import { UHCVisitDisplayService } from '@mm-services/uhc-visit-display.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 
 /**
@@ -50,7 +50,7 @@ export class ContactViewModelGeneratorService {
     private settingsService:SettingsService,
     private uhcSettingsService:UHCSettingsService,
     private uhcStatsService:UHCStatsService,
-    private relativeDateService:RelativeDateService,
+    private uhcVisitDisplayService:UHCVisitDisplayService,
     private ngZone:NgZone,
     readonly chtDatasourceService: CHTDatasourceService,
   ){
@@ -250,10 +250,19 @@ export class ContactViewModelGeneratorService {
     return childModels;
   }
 
-  private async addVisitStats(childModels) {
-    const groups = childModels.filter(group => group.type?.count_visits && group.contacts?.length);
-    if (!groups.length) {
-      return childModels;
+  /**
+   * Returns a copy of the given child models where every contact whose type counts visits is annotated
+   * with UHC visit stats display details, or undefined when there is nothing to annotate.
+   * Kept separate from loadChildren so the children can render without waiting on the stats queries.
+   */
+  getChildrenVisitStats(children) {
+    return this.ngZone.runOutsideAngular(() => this._getChildrenVisitStats(children));
+  }
+
+  private async _getChildrenVisitStats(children) {
+    const groups = children?.filter(group => group.type?.count_visits && group.contacts?.length);
+    if (!groups?.length) {
+      return;
     }
 
     try {
@@ -264,60 +273,31 @@ export class ContactViewModelGeneratorService {
         .flat()
         .filter(id => !!id);
       const visitStats = await this.uhcStatsService.getVisitStats(contactIds, visitCountSettings);
+      if (!Object.keys(visitStats).length) {
+        return;
+      }
 
-      groups.forEach(group => {
-        group.contacts.forEach(child => this.setVisitDetails(child, visitStats[child.doc?._id]));
+      return children.map(group => {
+        if (!group.type?.count_visits || !group.contacts?.length) {
+          return group;
+        }
+        return {
+          ...group,
+          contacts: group.contacts.map(child => this.addVisitDetails(child, visitStats[child.doc?._id])),
+        };
       });
     } catch (error) {
       console.error('Error getting visit stats for children', error);
     }
-
-    return childModels;
   }
 
-  private setVisitDetails(child, stats) {
-    if (!stats || !Number.isInteger(stats.lastVisitedDate)) {
-      return;
+  private addVisitDetails(child, stats) {
+    if (!stats) {
+      return child;
     }
-    child.lastVisitedDate = stats.lastVisitedDate;
-    this.setVisitOverdue(child);
-    this.setVisitCountDetails(child, stats);
-  }
-
-  private setVisitOverdue(child) {
-    if (child.lastVisitedDate === 0) {
-      child.overdue = true;
-      child.summary = this.translateService.instant('contact.last.visit.unknown');
-      return;
-    }
-    const now = new Date().getTime();
-    const oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
-    child.overdue = child.lastVisitedDate <= oneMonthAgo;
-    child.summary = this.translateService.instant(
-      'contact.last.visited.date',
-      { date: this.relativeDateService.getRelativeDate(child.lastVisitedDate, {}) }
-    );
-  }
-
-  private setVisitCountDetails(child, stats) {
-    const visitCount = Math.min(stats.count, 99) + (stats.count > 99 ? '+' : '');
-    child.visits = {
-      count: this.translateService.instant('contacts.visits.count', { count: visitCount }),
-      summary: this.translateService.instant('contacts.visits.visits', { VISITS: stats.count }),
-    };
-    if (stats.countGoal) {
-      child.visits.status = this.getVisitStatus(stats.count, stats.countGoal);
-    }
-  }
-
-  private getVisitStatus(visitCount, visitCountGoal) {
-    if (!visitCount) {
-      return 'pending';
-    }
-    if (visitCount < visitCountGoal) {
-      return 'started';
-    }
-    return 'done';
+    const withVisitDetails = { ...child };
+    this.uhcVisitDisplayService.setVisitDetails(withVisitDetails, stats);
+    return withVisitDetails;
   }
 
   loadChildren(model, options?) {
@@ -336,7 +316,6 @@ export class ContactViewModelGeneratorService {
           .then(children => this.groupChildrenByType(children))
           .then(groups => this.buildChildModels(groups, types))
           .then(childModels => this.markDeceased(childModels))
-          .then(childModels => this.addVisitStats(childModels))
           .then(childModels => this.sortChildren(childModels));
       });
   }

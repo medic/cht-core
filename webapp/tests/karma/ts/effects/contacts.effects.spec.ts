@@ -47,6 +47,7 @@ describe('Contacts effects', () => {
     contactViewModelGeneratorService = {
       getContact: sinon.stub().resolves({ _id: 'contact', doc: { _id: 'contact' } }),
       loadChildren: sinon.stub().resolves([]),
+      getChildrenVisitStats: sinon.stub().resolves(undefined),
       loadReports: sinon.stub().resolves([]),
     };
     stopPerformanceTrackStub = sinon.stub();
@@ -355,6 +356,63 @@ describe('Contacts effects', () => {
         expect(receiveSelectedContactChildren.args[0]).to.deep.equal([[
           { type: { id: 'patient' }, contacts: [{ _id: 'person1' }] },
         ]]);
+      });
+
+      it('should receive children again once annotated with visit stats', async () => {
+        const children = [{ type: { id: 'place', count_visits: true }, contacts: [{ _id: 'place1' }] }];
+        const childrenWithStats = [
+          { type: { id: 'place', count_visits: true }, contacts: [{ _id: 'place1', visits: { count: 1 } }] },
+        ];
+        contactViewModelGeneratorService.loadChildren.resolves(children);
+        contactViewModelGeneratorService.getChildrenVisitStats.resolves(childrenWithStats);
+
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
+        await new Promise(resolve => setTimeout(resolve));
+
+        expect(contactViewModelGeneratorService.getChildrenVisitStats.callCount).to.equal(1);
+        expect(contactViewModelGeneratorService.getChildrenVisitStats.args[0]).to.deep.equal([ children ]);
+        const receiveSelectedContactChildren:any = ContactsActions.prototype.receiveSelectedContactChildren;
+        expect(receiveSelectedContactChildren.callCount).to.equal(2);
+        expect(receiveSelectedContactChildren.args[1]).to.deep.equal([ childrenWithStats ]);
+      });
+
+      it('should not receive annotated children when a newer children list was dispatched meanwhile', async () => {
+        const children = [{ type: { id: 'place', count_visits: true }, contacts: [{ _id: 'place1' }] }];
+        contactViewModelGeneratorService.loadChildren.resolves(children);
+        contactViewModelGeneratorService.getChildrenVisitStats.callsFake(() => {
+          // a different children list lands while the visit stats are being loaded
+          store.overrideSelector(Selectors.getSelectedContact, { _id: 'contact', children: [] });
+          store.refreshState();
+          return Promise.resolve([
+            { type: { id: 'place', count_visits: true }, contacts: [{ _id: 'place1', visits: {} }] },
+          ]);
+        });
+
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
+        await new Promise(resolve => setTimeout(resolve));
+
+        const receiveSelectedContactChildren:any = ContactsActions.prototype.receiveSelectedContactChildren;
+        expect(receiveSelectedContactChildren.callCount).to.equal(1);
+      });
+
+      it('should still load the profile when getting children visit stats fails', async () => {
+        contactViewModelGeneratorService.loadChildren.resolves([
+          { type: { id: 'place' }, contacts: [{ _id: 'place1' }] },
+        ]);
+        contactViewModelGeneratorService.getChildrenVisitStats.rejects(new Error('boom'));
+        const consoleErrorMock = sinon.stub(console, 'error');
+
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
+        await new Promise(resolve => setTimeout(resolve));
+
+        const receiveSelectedContactChildren:any = ContactsActions.prototype.receiveSelectedContactChildren;
+        expect(receiveSelectedContactChildren.callCount).to.equal(1);
+        expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
+        expect(consoleErrorMock.callCount).to.equal(1);
+        expect(consoleErrorMock.args[0][0]).to.equal('Error loading visit stats for children');
       });
 
       it('should not receive children if the selected contact changes', async () => {
