@@ -22,6 +22,34 @@ const extractParentIds = current => selfAndParents(current)
   .map(parent => parent._id)
   .filter(id => id);
 
+// Walks a parent chain, emitting one id per link and stopping at the first link without an `_id`
+const chainIds = start => {
+  const ids = [];
+  let current = start;
+  while (current?._id) {
+    ids.push(current._id);
+    current = current.parent;
+  }
+  return ids;
+};
+
+const lineageIds = doc => {
+  if (utils.isContact(doc)) {
+    return chainIds(doc);
+  }
+  if (utils.isReport(doc) && doc.form) {
+    return [ doc._id, ...chainIds(doc.contact) ];
+  }
+  return [];
+};
+
+// One entry per id, in the given order. Ids with no matching doc yield null - as `include_docs` did for an emitted
+// id with no document - so that positions in the lineage, and therefore ancestor depth, are preserved.
+const orderDocsByIds = (ids, docs) => {
+  const docsById = new Map(docs.map(doc => [ doc._id, doc ]));
+  return ids.map(id => docsById.get(id) || null);
+};
+
 const getContactById = (contacts, id) => id && contacts.find(contact => contact && contact._id === id);
 
 const getContactIds = (contacts) => {
@@ -229,16 +257,26 @@ module.exports = function(Promise, DB) {
   };
 
   const fetchLineageById = function(id) {
-    const options = {
-      startkey: [id],
-      endkey: [id, {}],
-      include_docs: true
-    };
-    return DB.query('medic-client/docs_by_id_lineage', options)
-      .then(function(result) {
-        return result.rows.map(function(row) {
-          return row.doc;
-        });
+    return DB.get(id)
+      .then(function(doc) {
+        const ids = lineageIds(doc);
+        if (!ids.length) {
+          return [];
+        }
+
+        const parentIds = ids.slice(1);
+        if (!parentIds.length) {
+          return [doc];
+        }
+
+        return fetchDocs(parentIds)
+          .then(ancestors => [ doc, ...orderDocsByIds(parentIds, ancestors) ]);
+      })
+      .catch(function(err) {
+        if (err.status === 404) {
+          return [];
+        }
+        throw err;
       });
   };
 
