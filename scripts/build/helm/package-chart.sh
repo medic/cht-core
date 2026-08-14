@@ -23,11 +23,13 @@ case "${yn}" in
 esac
 
 # update placeholder values in files
-sed -i "s/ (CHT) v4/ (CHT)/" Chart.yaml
-sed -i "s/version: .*/version: $TAG_VERSION/" Chart.yaml
-sed -i "s/appVersion: .*/appVersion: \"$TAG_VERSION\"/" Chart.yaml
-sed -i "s/{{cht_version}}/$TAG_VERSION/g" values/base.yaml
-sed -i "s/{{cht_image_tag}}/$TAG_VERSION/g" values/base.yaml
+# use "-i.bak" so this works with both GNU (Linux) and BSD (macOS) sed
+sed -i.bak "s/ (CHT) v4/ (CHT)/" Chart.yaml
+sed -i.bak "s/version: .*/version: ${TAG_VERSION}/" Chart.yaml
+sed -i.bak "s/appVersion: .*/appVersion: \"${TAG_VERSION}\"/" Chart.yaml
+sed -i.bak "s/{{cht_version}}/${TAG_VERSION}/g" values/base.yaml
+sed -i.bak "s/{{cht_image_tag}}/${TAG_VERSION}/g" values/base.yaml
+rm -f Chart.yaml.bak values/base.yaml.bak
 
 ./validate-templates.sh
 
