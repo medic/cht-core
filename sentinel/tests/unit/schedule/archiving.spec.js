@@ -75,6 +75,30 @@ describe('Archiving Schedule', () => {
     ]);
   });
 
+  it('does not log an error for a valid cron schedule, which `later` parses without an `error`', async () => {
+    sinon.stub(config, 'get').returns({ cron: '* 1 * * *' });
+    sinon.stub(archiveLib, 'archive').resolves();
+    sinon.stub(logger, 'error');
+    const setTimeoutSpy = sinon.spy(clock, 'setTimeout');
+
+    await scheduler.execute();
+
+    expect(logger.error.callCount).to.equal(0);
+    expect(setTimeoutSpy.args[0][1]).to.be.greaterThan(0);
+  });
+
+  it('does not log an error for a valid text expression', async () => {
+    sinon.stub(config, 'get').returns({ text_expression: 'at 02:00' });
+    sinon.stub(archiveLib, 'archive').resolves();
+    sinon.stub(logger, 'error');
+    const setTimeoutSpy = sinon.spy(clock, 'setTimeout');
+
+    await scheduler.execute();
+
+    expect(logger.error.callCount).to.equal(0);
+    expect(setTimeoutSpy.args[0][1]).to.be.greaterThan(0);
+  });
+
   it('does not log an error when no schedule is configured', async () => {
     sinon.stub(config, 'get').returns({ duration: '4 hours' });
     sinon.stub(archiveLib, 'archive').resolves();

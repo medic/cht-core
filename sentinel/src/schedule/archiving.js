@@ -5,7 +5,8 @@ const scheduling = require('../lib/scheduling');
 
 let archiveTimeout;
 
-const isValidSchedule = schedule => Boolean(schedule) && !(schedule.error > -1);
+// `later` sets `error` to the index where parsing failed (-1 when valid, absent for cron)
+const isValidSchedule = schedule => Boolean(schedule) && (schedule.error ?? -1) < 0;
 
 module.exports = {
   /**
