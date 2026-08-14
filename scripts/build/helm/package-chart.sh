@@ -4,6 +4,7 @@ set -eu -o pipefail
 
 # set CHT version from argument 
 TAG_VERSION=$1
+BASE_HELM_URL="https://docs.communityhealthtoolkit.org/cht-core"
 
 # check to make sure it's at least X.Y.Z format
 if ! [[ "$TAG_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -49,9 +50,9 @@ helm package . -d ../helm-releases
 
 # do this only first time
 if [[ ! -f ../helm-releases/index.yaml ]]; then
-	helm repo index ../helm-releases  --url https://helm.app.medicmobile.org/cht-core
+	helm repo index ../helm-releases  --url $BASE_HELM_URL
 else
-	helm repo index ../helm-releases --merge ../helm-releases/index.yaml --url https://helm.app.medicmobile.org/cht-core
+	helm repo index ../helm-releases --merge ../helm-releases/index.yaml --url $BASE_HELM_URL
 fi
 
 # reset files for the next time we run this script

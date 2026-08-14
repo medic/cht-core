@@ -11,7 +11,7 @@ entries:
     name: cht-chart
     type: application
     urls:
-    - https://helm.app.medicmobile.org/cht-core/cht-chart-5.2.0.tgz
+    - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.2.0.tgz
     version: 5.2.0
   - apiVersion: v2
     appVersion: 5.1.3
@@ -23,7 +23,7 @@ entries:
     name: cht-chart
     type: application
     urls:
-    - https://helm.app.medicmobile.org/cht-core/cht-chart-5.1.3.tgz
+    - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.1.3.tgz
     version: 5.1.3
   - apiVersion: v2
     appVersion: 5.1.2
@@ -35,7 +35,7 @@ entries:
     name: cht-chart
     type: application
     urls:
-    - https://helm.app.medicmobile.org/cht-core/cht-chart-5.1.2.tgz
+    - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.1.2.tgz
     version: 5.1.2
   - apiVersion: v2
     appVersion: 5.1.1
@@ -47,7 +47,7 @@ entries:
     name: cht-chart
     type: application
     urls:
-    - https://helm.app.medicmobile.org/cht-core/cht-chart-5.1.1.tgz
+    - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.1.1.tgz
     version: 5.1.1
   - apiVersion: v2
     appVersion: 5.1.0
@@ -59,7 +59,7 @@ entries:
     name: cht-chart
     type: application
     urls:
-    - https://helm.app.medicmobile.org/cht-core/cht-chart-5.1.0.tgz
+    - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.1.0.tgz
     version: 5.1.0
   - apiVersion: v2
     appVersion: 5.0.3
@@ -71,7 +71,7 @@ entries:
     name: cht-chart
     type: application
     urls:
-    - https://helm.app.medicmobile.org/cht-core/cht-chart-5.0.3.tgz
+    - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.0.3.tgz
     version: 5.0.3
   - apiVersion: v2
     appVersion: 5.0.2
@@ -83,7 +83,7 @@ entries:
     name: cht-chart
     type: application
     urls:
-    - https://helm.app.medicmobile.org/cht-core/cht-chart-5.0.2.tgz
+    - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.0.2.tgz
     version: 5.0.2
   - apiVersion: v2
     appVersion: 5.0.1
@@ -95,7 +95,7 @@ entries:
     name: cht-chart
     type: application
     urls:
-    - https://helm.app.medicmobile.org/cht-core/cht-chart-5.0.1.tgz
+    - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.0.1.tgz
     version: 5.0.1
   - apiVersion: v2
     appVersion: 5.0.0
@@ -107,6 +107,6 @@ entries:
     name: cht-chart
     type: application
     urls:
-    - https://helm.app.medicmobile.org/cht-core/cht-chart-5.0.0.tgz
+    - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.0.0.tgz
     version: 5.0.0
 generated: "2026-07-31T17:08:56.727833077-07:00"
