@@ -15,6 +15,7 @@ fi
 # prompt user if they're ready to continue
 echo "
 Do you want to package helm chart for version ${TAG_VERSION} of the CHT?
+Be sure to run this in the ./cht-core/scripts/build/helm directory.
 
 You must have release candidate branch for ${TAG_VERSION} checked out already!  (y/N)"
 read -r -p " " yn
