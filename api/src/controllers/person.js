@@ -2,6 +2,7 @@ const { Person, Qualifier } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
+const deleteContactService = require('../services/delete-contact');
 
 const getPerson = ctx.bind(Person.v1.get);
 const getPersonWithLineage = ctx.bind(Person.v1.getWithLineage);
@@ -207,6 +208,49 @@ module.exports = {
       };
       const updatedPersonDoc = await updatePerson(updatePersonInput);
       return res.json(updatedPersonDoc);
+    }),
+
+    /**
+     * @openapi
+     * /api/v1/person/{id}:
+     *   delete:
+     *     summary: Delete a person
+     *     operationId: v1PersonIdDelete
+     *     description: >
+     *       Queues an asynchronous bulk operation that removes the person and the reports they are the
+     *       subject of, clears any dangling primary-contact references, and (with delete_users=true)
+     *       removes linked user accounts. Returns a summary of the changes and the bulk operation id
+     *       to poll.
+     *     tags: [Person]
+     *     x-since: 5.3.0
+     *     x-permissions:
+     *       hasAll: [can_delete_contact_hierarchy, can_delete_users]
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: The id of the person to delete
+     *       - $ref: '#/components/parameters/deleteUsers'
+     *       - $ref: '#/components/parameters/dryRun'
+     *     responses:
+     *       '202':
+     *         $ref: '#/components/responses/BulkOperationQueued'
+     *       '200':
+     *         $ref: '#/components/responses/BulkOperationDryRun'
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     */
+    delete: deleteContactService.handleDelete({
+      get: (uuid) => getPerson(Qualifier.byUuid(uuid)),
+      type: 'Person',
     }),
   },
 };

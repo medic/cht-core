@@ -122,6 +122,7 @@
     "can_create_users": [
       "program_officer"
     ],
+    "can_delete_contact_hierarchy": [],
     "can_delete_contacts": [
       "program_officer",
       "chw_supervisor",

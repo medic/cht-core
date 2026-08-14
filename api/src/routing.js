@@ -46,6 +46,7 @@ const { people, places } = require('@medic/contacts')(config, db, dataContext);
 const upgrade = require('./controllers/upgrade');
 const settings = require('./controllers/settings');
 const bulkDocs = require('./controllers/bulk-docs');
+const bulkOperations = require('./controllers/bulk-operations');
 const monitoring = require('./controllers/monitoring');
 const africasTalking = require('./controllers/africas-talking');
 const rapidPro = require('./controllers/rapidpro');
@@ -53,6 +54,7 @@ const infodoc = require('./controllers/infodoc');
 const impact = require('./controllers/impact');
 const targetController = require('./controllers/target');
 const credentials = require('./controllers/credentials');
+const archive = require('./controllers/archive');
 const authorization = require('./middleware/authorization');
 const deprecation = require('./middleware/deprecation');
 const hydration = require('./controllers/hydration');
@@ -84,7 +86,7 @@ const replication = require('./controllers/replication');
 const app = express.Router({ strict: true });
 const asyncLocalStorage = require('./services/async-storage');
 const moment = require('moment');
-const MAX_REQUEST_SIZE = '32mb';
+const { MAX_REQUEST_SIZE } = require('@medic/constants');
 
 // requires content-type application/x-www-form-urlencoded header
 const formParser = bodyParser.urlencoded({ limit: MAX_REQUEST_SIZE, extended: false });
@@ -476,6 +478,8 @@ app.get('/api/v1/monitoring', deprecation.deprecate('/api/v2/monitoring'), monit
 app.get('/api/v2/monitoring', monitoring.getV2);
 app.get('/api/v1/impact', impact.v1.get);
 
+app.get('/api/v1/bulk-operations/:id', bulkOperations.v1.get);
+
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);
 app.post('/api/v1/upgrade/complete', jsonParser, upgrade.complete);
@@ -659,6 +663,7 @@ app.get('/api/v1/place', place.v1.getAll);
 app.get('/api/v1/place/:uuid', place.v1.get);
 app.postJson('/api/v1/place', place.v1.create);
 app.putJson('/api/v1/place/:uuid', place.v1.update);
+app.delete('/api/v1/place/:uuid', place.v1.delete);
 
 /**
  * @openapi
@@ -734,6 +739,7 @@ app.get('/api/v1/person', person.v1.getAll);
 app.get('/api/v1/person/:uuid', person.v1.get);
 app.postJson('/api/v1/person', person.v1.create);
 app.putJson('/api/v1/person/:uuid', person.v1.update);
+app.delete('/api/v1/person/:uuid', person.v1.delete);
 
 app.get('/api/v1/contact', contact.v1.getAll);
 app.get('/api/v1/contact/uuid', contact.v1.getUuids);
@@ -795,6 +801,8 @@ app.put(
   textParser,
   credentials.put
 );
+
+app.post('/api/v1/archive', archive.create);
 
 app.get('/api/v1/users-doc-count', replicationLimitLogController.get);
 app.get('/api/v1/replication-failure-logs', replicationFailureLogController.get);

@@ -61,12 +61,36 @@ const USER_ROLES = {
 
 const DB_ADMIN_ROLES = [USER_ROLES.ADMIN, USER_ROLES.COUCHDB_ADMIN];
 
+// Maximum HTTP request body size in bytes, shared by the api body parsers and streaming routes.
+const MAX_REQUEST_SIZE = 32 * 1024 * 1024;
+
+// Name of the attachment on archive job docs carrying the newline-separated doc ids.
+const ARCHIVE_IDS_ATTACHMENT = 'ids';
+
 // Document ID prefixes used for _all_docs prefix range scans.
 const PREFIXES = {
   COUCH_USER: 'org.couchdb.user:',
   TRANSLATIONS: 'messages-',
+  UI_EXTENSION: `${DOC_TYPES.UI_EXTENSION}:`,
   FORM: 'form:',
-  UI_EXTENSION: `${DOC_TYPES.UI_EXTENSION}:`
+  ARCHIVE_JOB: 'archive:',
+  BULK_OPERATION_LOG: 'bulk-operation:',
+  BULK_OPERATION_ACTION: 'bulk-operation-action:',
+};
+
+// Bulk operation framework (delete, move, merge) shared between the api and sentinel.
+const BULK_OPERATIONS = {
+  OPERATIONS_ATTACHMENT: 'operations',
+  ACTIONS: {
+    ARCHIVE: 'archive',
+    SET_CONTACT: 'set-contact',
+    DELETE_USER: 'delete-user',
+  },
+  STATUSES: {
+    QUEUED: 'queued',
+    COMPLETED: 'completed',
+    FAILED: 'failed',
+  },
 };
 
 module.exports = {
@@ -79,4 +103,7 @@ module.exports = {
   CONTACT_TYPES,
   STANDARD_HTTP_HEADERS,
   PREFIXES,
+  MAX_REQUEST_SIZE,
+  ARCHIVE_IDS_ATTACHMENT,
+  BULK_OPERATIONS,
 };
