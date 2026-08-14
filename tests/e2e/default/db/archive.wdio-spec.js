@@ -109,7 +109,7 @@ describe('archive', function () {
     await commonElements.sync();
 
     // The doc is back on the device with its original content...
-    local = await getLocalDoc(reportToArchive._id);
+    const local = await getLocalDoc(reportToArchive._id);
     expect(local.ok).to.equal(true);
     expect(local.doc.form).to.equal('home_visit');
     expect(local.doc.fields).to.deep.equal(reportToArchive.fields);
