@@ -862,7 +862,7 @@ describe('report', () => {
         const expectedReportIds: Page<Report.v1.Report> = { data: [], cursor: null };
         const reportGetIdsPage = sinon.stub().resolves(expectedReportIds);
         dataContextBind.returns(reportGetIdsPage);
-        const forms = ['pregnancy', 'delivery'];
+        const forms: [string, ...string[]] = ['pregnancy', 'delivery'];
         const limit = 2;
         const cursor = '1';
         const qualifier = { forms };
@@ -882,7 +882,7 @@ describe('report', () => {
         const expectedReportIds: Page<Report.v1.Report> = { data: [], cursor: null };
         const reportGetIdsPage = sinon.stub().resolves(expectedReportIds);
         dataContextBind.returns(reportGetIdsPage);
-        const forms = ['pregnancy'];
+        const forms: [string, ...string[]] = ['pregnancy'];
         const qualifier = { forms };
         sinon.stub(Qualifier, 'byForms').returns(qualifier);
 
@@ -897,7 +897,7 @@ describe('report', () => {
 
         const reportGetIds = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(reportGetIds);
-        const forms = ['pregnancy', 'delivery'];
+        const forms: [string, ...string[]] = ['pregnancy', 'delivery'];
         const qualifier = { forms };
         const byForms = sinon.stub(Qualifier, 'byForms').returns(qualifier);
 

@@ -1,5 +1,5 @@
 import { getResource, getResources, postResource, putResource, RemoteDataContext } from './libs/data-context';
-import { FormQualifier, FreetextQualifier, IdsQualifier, isFreetextQualifier, UuidQualifier } from '../qualifier';
+import { FormsQualifier, FreetextQualifier, IdsQualifier, isFreetextQualifier, UuidQualifier } from '../qualifier';
 import * as Report from '../report';
 import { Nullable, Page } from '../libs/core';
 
@@ -18,17 +18,17 @@ export namespace v1 {
 
   /** @internal */
   export const getUuidsPage = (remoteContext: RemoteDataContext) => (
-    qualifier: FreetextQualifier | FormQualifier,
+    qualifier: FreetextQualifier | FormsQualifier,
     cursor: Nullable<string>,
     limit: number
   ): Promise<Page<string>> => {
-    // Both qualifiers hit the same route, differing only in which parameter they set — the shape
+    // Both qualifiers hit the same route, differing only in which parameter they set - the shape
     // `?freetext=` already established. Freetext is matched first so existing callers are unchanged.
     const queryParams = {
       limit: limit.toString(),
       ...(isFreetextQualifier(qualifier)
         // Comma-joined rather than repeated, matching how `ids` is sent on `api/v1/report`. Form
-        // codes are not normalised, so a code containing a comma could not round-trip; the view
+        // codes are not normalized, so a code containing a comma could not round-trip; the view
         // key is the raw `doc.form` value and CHT form codes do not contain commas.
         ? { freetext: qualifier.freetext }
         : { form: qualifier.forms.join(',') }),

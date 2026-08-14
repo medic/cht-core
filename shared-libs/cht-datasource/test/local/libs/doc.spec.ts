@@ -10,6 +10,7 @@ import {
   getDocIdsByIdRange,
   getDocsByIds,
   queryDocIdsByKey,
+  queryDocIdsByKeys,
   queryDocIdsByRange,
   queryDocsByKey,
   queryDocsByRange,
@@ -461,6 +462,48 @@ describe('local doc lib', () => {
       expect(result).to.deep.equal([]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
         include_docs: false, key: contactType, limit, skip, reduce: false
+      })).to.be.true;
+    });
+  });
+
+  describe('queryDocIdsByKeys', () => {
+    const limit = 100;
+    const skip = 0;
+    const keys = [['pregnancy'], ['delivery']];
+
+    it('returns doc ids based on multiple keys in pages', async () => {
+      const doc0 = { id: 'doc0' };
+      const doc1 = { id: 'doc1' };
+      const doc2 = { id: 'doc2' };
+
+      dbQuery.resolves({
+        rows: [
+          { ...doc0 },
+          { ...doc1 },
+          { ...doc2 }
+        ]
+      });
+
+      const result = await queryDocIdsByKeys(db, 'medic-client/reports_by_form')(keys, limit, skip);
+
+      expect(result).to.deep.equal([doc0.id, doc1.id, doc2.id]);
+      expect(dbQuery.calledOnceWithExactly('medic-client/reports_by_form', {
+        include_docs: false,
+        keys,
+        limit,
+        skip,
+        reduce: false
+      })).to.be.true;
+    });
+
+    it('returns empty array if docs are not found', async () => {
+      dbQuery.resolves({ rows: [] });
+
+      const result = await queryDocIdsByKeys(db, 'medic-client/reports_by_form')(keys, limit, skip);
+
+      expect(result).to.deep.equal([]);
+      expect(dbQuery.calledOnceWithExactly('medic-client/reports_by_form', {
+        include_docs: false, keys, limit, skip, reduce: false
       })).to.be.true;
     });
   });

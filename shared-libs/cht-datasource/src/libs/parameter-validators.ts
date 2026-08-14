@@ -1,11 +1,11 @@
 import { InvalidArgumentError } from './error';
 import {
   ContactTypeQualifier,
-  FormQualifier,
+  FormsQualifier,
   FreetextQualifier,
   IdsQualifier,
   isContactTypeQualifier,
-  isFormQualifier,
+  isFormsQualifier,
   isFreetextQualifier,
   isIdsQualifier,
   isUuidQualifier,
@@ -126,12 +126,12 @@ export const assertFreetextQualifier: (qualifier: unknown) => asserts qualifier 
 };
 
 /** @internal */
-export const assertFreetextOrFormQualifier: (
+export const assertFreetextOrFormsQualifier: (
   qualifier: unknown
-) => asserts qualifier is FreetextQualifier | FormQualifier = (
+) => asserts qualifier is FreetextQualifier | FormsQualifier = (
   qualifier: unknown
 ) => {
-  if (isFreetextQualifier(qualifier) || isFormQualifier(qualifier)) {
+  if (isFreetextQualifier(qualifier) || isFormsQualifier(qualifier)) {
     return;
   }
   // Only form-shaped input gets the new message. Everything else keeps the original freetext error

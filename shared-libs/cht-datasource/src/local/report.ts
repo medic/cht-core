@@ -10,7 +10,7 @@ import {
   updateDoc
 } from './libs/doc';
 import {
-  FormQualifier,
+  FormsQualifier,
   FreetextQualifier,
   IdsQualifier,
   isFreetextQualifier,
@@ -140,11 +140,11 @@ export namespace v1 {
     const queryViewByForms = queryDocIdsByKeys(medicDb, 'medic-client/reports_by_form');
 
     return async (
-      qualifier: FreetextQualifier | FormQualifier,
+      qualifier: FreetextQualifier | FormsQualifier,
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<string>> => {
-      // Freetext is matched first so the behaviour of existing freetext callers is unchanged.
+      // Freetext is matched first so the behavior of existing freetext callers is unchanged.
       if (isFreetextQualifier(qualifier)) {
         const freetextQualifier = normalizeFreetextQualifier(qualifier);
         if (await promisedUseNouveau) {
@@ -158,11 +158,13 @@ export namespace v1 {
         return fetchAndFilterIds(getPageFn, limit)(limit, skip);
       }
 
-      // The view emits [doc.form], so each form code is a complete key on its own. The qualifier
-      // preserves the caller's order and drops duplicates, which is what keeps `skip` meaningful
-      // from one page to the next — the view returns rows grouped by key in the order supplied.
+      // The view emits [doc.form], so each form code is a complete key on its own. Duplicates are
+      // dropped here rather than trusted from the qualifier, since a hand-built FormsQualifier can
+      // reach this point without going through byForms(). Order is preserved, which is what keeps
+      // `skip` meaningful from one page to the next: the view returns rows grouped by key in the
+      // order supplied.
       const skip = validateCursor(cursor);
-      const keys = qualifier.forms.map(form => [form]);
+      const keys = [...new Set(qualifier.forms)].map(form => [form]);
       const getPageFn = (limit: number, skip: number) => queryViewByForms(keys, limit, skip);
       return fetchAndFilterIds(getPageFn, limit)(limit, skip);
     };

@@ -21,10 +21,12 @@ const buildIdsQualifier = (ids) => {
 
 // Accepts `?form=a,b` and `?form=a&form=b` alike, matching how `ids` is handled above rather than
 // picking one convention for this parameter alone.
-const buildFormQualifier = (form) => {
+const buildFormsQualifier = (form) => {
   const formsArray = (Array.isArray(form) ? form : form.split(',')).filter(Boolean);
   if (!formsArray.length) {
-    throw new InvalidArgumentError(`Invalid forms [${JSON.stringify(form)}].`);
+    // Same message shape as byForms() throws below for other invalid input, so the two paths that
+    // can reject a `form` value give a caller one consistent body to parse rather than two.
+    throw new InvalidArgumentError(`Invalid forms [${JSON.stringify(formsArray)}].`);
   }
   return Qualifier.byForms(formsArray);
 };
@@ -147,9 +149,9 @@ module.exports = {
     getUuids: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
       // Freetext wins when both are given, so a caller that already sends `freetext` keeps its
-      // existing behaviour no matter what else is on the query string.
+      // existing behavior no matter what else is on the query string.
       const qualifier = req.query.freetext === undefined && req.query.form !== undefined
-        ? buildFormQualifier(req.query.form)
+        ? buildFormsQualifier(req.query.form)
         : Qualifier.byFreetext(req.query.freetext);
       const docs = await getReportIds(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);

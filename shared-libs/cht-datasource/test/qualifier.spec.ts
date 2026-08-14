@@ -12,7 +12,7 @@ import {
   isContactTypeQualifier,
   isContactIdQualifier,
   isContactIdsQualifier,
-  isFormQualifier,
+  isFormsQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
   isReportingPeriodQualifier,
@@ -157,11 +157,11 @@ describe('qualifier', () => {
       expect(byForms(['delivery', 'pregnancy', 'delivery'])).to.deep.equal({ forms: ['delivery', 'pregnancy'] });
     });
 
-    it('does not normalise the form codes', () => {
-      expect(byForms(['  ANC_FollowUp '])).to.deep.equal({ forms: ['  ANC_FollowUp '] });
+    it('does not trim the form codes it accepts', () => {
+      expect(byForms(['ANC_FollowUp'])).to.deep.equal({ forms: ['ANC_FollowUp'] });
     });
 
-    [
+    ([
       null,
       undefined,
       'pregnancy',
@@ -170,19 +170,22 @@ describe('qualifier', () => {
       ['   '],
       ['\t\n'],
       ['pregnancy', ''],
+      ['  ANC_FollowUp '],
+      [' pregnancy'],
+      ['pregnancy '],
       [null],
       [0],
       { },
       0,
-    ].forEach(forms => {
+    ] as [string, ...string[]][]).forEach(forms => {
       it(`throws an error for ${JSON.stringify(forms)}`, () => {
-        expect(() => byForms(forms as string[])).to.throw(
+        expect(() => byForms(forms)).to.throw(
           `Invalid forms [${JSON.stringify(forms)}].`
         );
       });
     });
   });
-  describe('isFormQualifier', () => {
+  describe('isFormsQualifier', () => {
     [
       [ null, false ],
       [ 'pregnancy', false ],
@@ -196,12 +199,17 @@ describe('qualifier', () => {
       [ { forms: ['pregnancy', ''] }, false ],
       [ { forms: ['pregnancy', null] }, false ],
       [ { form: 'pregnancy' }, false ],
+      // A padded code would otherwise pass validation but match nothing, since the value is compared
+      // verbatim rather than trimmed: reject it instead of returning a silent empty page.
+      [ { forms: ['  ANC_FollowUp '] }, false ],
+      [ { forms: [' pregnancy'] }, false ],
+      [ { forms: ['pregnancy '] }, false ],
       [ { forms: ['pregnancy'] }, true ],
       [ { forms: ['pregnancy', 'delivery'] }, true ],
       [ { forms: ['pregnancy'], other: 'other' }, true ]
     ].forEach(([ forms, expected ]) => {
       it(`evaluates ${JSON.stringify(forms)}`, () => {
-        expect(isFormQualifier(forms)).to.equal(expected);
+        expect(isFormsQualifier(forms)).to.equal(expected);
       });
     });
   });

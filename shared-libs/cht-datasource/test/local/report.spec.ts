@@ -431,7 +431,7 @@ describe('local report', () => {
           });
         });
 
-        it('does not normalise the form code', async () => {
+        it('does not normalize the form code', async () => {
           const qualifier = Qualifier.byForms(['ANC_FollowUp']);
 
           await Report.v1.getUuidsPage(localContext)(qualifier, null, limit);
@@ -440,6 +440,17 @@ describe('local report', () => {
           pageFn(limit, 0);
 
           expect(queryViewByForms.calledOnceWithExactly([['ANC_FollowUp']], limit, 0)).to.be.true;
+        });
+
+        it('drops duplicate form codes even when the qualifier bypasses byForms()', async () => {
+          const qualifier = { forms: ['pregnancy', 'pregnancy', 'delivery'] as [string, ...string[]] };
+
+          await Report.v1.getUuidsPage(localContext)(qualifier, null, limit);
+
+          const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+          pageFn(limit, 0);
+
+          expect(queryViewByForms.calledOnceWithExactly([['pregnancy'], ['delivery']], limit, 0)).to.be.true;
         });
 
         it('throws an error if cursor is invalid', async () => {
@@ -487,7 +498,7 @@ describe('local report', () => {
           .stub(LocalDoc, 'queryDocIdsByKeys')
           .withArgs(localContext.medicDb, 'medic-client/reports_by_form')
           .returns((keys: unknown, limit: number, skip: number) => {
-            // Emulates CouchDB's `keys` behaviour: rows come back grouped in the order the keys are
+            // Emulates CouchDB's `keys` behavior: rows come back grouped in the order the keys are
             // supplied, and skip/limit then apply to that concatenation rather than per key. Getting
             // this wrong is what an off-by-one across a form boundary would look like.
             const rows = (keys as [string][]).flatMap(([form]) => viewRows[form] ?? []);

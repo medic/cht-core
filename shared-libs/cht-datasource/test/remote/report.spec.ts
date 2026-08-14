@@ -195,7 +195,7 @@ describe('remote report', () => {
           })).to.be.true;
         });
 
-        it('does not normalise the form codes', async () => {
+        it('does not normalize the form codes', async () => {
           getResourcesInner.resolves({ data: [], cursor: null });
 
           await Report.v1.getUuidsPage(remoteContext)({ forms: ['ANC_FollowUp'] }, null, limit);

@@ -416,6 +416,107 @@ describe('Report API', () => {
     });
   });
 
+  describe('GET /api/v1/report/uuid with form param', async () => {
+    const forms = 'report0,report1,report2,report3,report4,report5';
+    const fourLimit = 4;
+    const endpoint = '/api/v1/report/uuid';
+
+    it('returns a page of report ids for a comma-separated list of forms', async () => {
+      const qs = {
+        form: forms
+      };
+      const opts = {
+        path: `${endpoint}`,
+        qs
+      };
+      const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
+      const responsePage = await utils.request(opts);
+
+      expect(responsePage.data).to.deep.equalInAnyOrder(expectedReportIds);
+    });
+
+    it('returns only the reports matching a single form', async () => {
+      const qs = {
+        form: 'report0'
+      };
+      const opts = {
+        path: `${endpoint}`,
+        qs
+      };
+      const responsePage = await utils.request(opts);
+
+      expect(responsePage.data).to.deep.equal([ report0._id ]);
+    });
+
+    it('returns a page of report ids when limit and cursor is passed and cursor can be reused', async () => {
+      const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
+      const qs = {
+        form: forms,
+        limit: fourLimit
+      };
+      const opts = {
+        path: `${endpoint}`,
+        qs
+      };
+      const firstPage = await utils.request(opts);
+
+      qs.cursor = firstPage.cursor;
+      const opts2 = {
+        path: `${endpoint}`,
+        qs
+      };
+      const secondPage = await utils.request(opts2);
+
+      const allReportIds = [ ...firstPage.data, ...secondPage.data ];
+
+      expect(allReportIds).to.deep.equalInAnyOrder(expectedReportIds);
+      expect(firstPage.data.length).to.be.equal(4);
+      expect(secondPage.data.length).to.be.equal(2);
+      expect(secondPage.cursor).to.be.null;
+    });
+
+    it('throws 400 error when form is present but empty', async () => {
+      const qs = {
+        form: ''
+      };
+      const opts = {
+        path: `${endpoint}`,
+        qs
+      };
+
+      await expect(utils.request(opts))
+        .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid forms [[]]."}`);
+    });
+
+    it('throws 400 error when limit is invalid', async () => {
+      const qs = {
+        form: forms, limit: -1
+      };
+      const opts = {
+        path: `${endpoint}`,
+        qs
+      };
+
+      await expect(utils.request(opts)).to.be.rejectedWith(
+        `400 - {"code":400,"error":"The limit must be a positive integer: [\\"-1\\"]."}`
+      );
+    });
+
+    it('throws 400 error when cursor is invalid, unlike the 500 the freetext path throws', async () => {
+      const qs = {
+        form: forms, cursor: '-1'
+      };
+      const opts = {
+        path: `${endpoint}`,
+        qs
+      };
+
+      await expect(utils.request(opts)).to.be.rejectedWith(
+        `400 - {"code":400,"error":"The cursor must be a string or null for first page: [\\"-1\\"]."}`
+      );
+    });
+  });
+
   describe('GET /api/v1/report', () => {
     const endpoint = '/api/v1/report';
     const allReportIds = allReports.map(report => report._id);

@@ -249,6 +249,8 @@ describe('Report Controller Tests', () => {
         expect(reportGetIdsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
+        expect(serverUtilsError.args[0][0].message).to.equal('Invalid forms [[]].');
       });
 
       it('uses freetext and ignores form when both are given', async () => {
@@ -270,6 +272,8 @@ describe('Report Controller Tests', () => {
 
         expect(reportGetIdsPage.notCalled).to.be.true;
         expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
+        expect(serverUtilsError.args[0][0].message).to.equal('Invalid freetext [undefined].');
       });
     });
 

@@ -9,7 +9,7 @@ import {
   byFreetext,
   byIds,
   byUuid,
-  FormQualifier,
+  FormsQualifier,
   FreetextQualifier,
   IdsQualifier,
   UuidQualifier
@@ -18,7 +18,7 @@ import * as Remote from './remote';
 import { DEFAULT_DOCS_PAGE_LIMIT, DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
 import {
   assertCursor,
-  assertFreetextOrFormQualifier,
+  assertFreetextOrFormsQualifier,
   assertIdsQualifier,
   assertLimit,
   assertUuidQualifier
@@ -158,7 +158,7 @@ export namespace v1 {
     /**
      * Returns an array of report identifiers for the provided page specifications.
      * @param qualifier the limiter defining which identifiers to return. Either a {@link FreetextQualifier} for a
-     * freetext search, or a {@link FormQualifier} to return the reports recorded with any of the given forms. If
+     * freetext search, or a {@link FormsQualifier} to return the reports recorded with any of the given forms. If
      * both are provided, the freetext search takes precedence.
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
@@ -169,11 +169,11 @@ export namespace v1 {
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
     const curriedFn = async (
-      qualifier: FreetextQualifier | FormQualifier,
+      qualifier: FreetextQualifier | FormsQualifier,
       cursor: Nullable<string> = null,
       limit: number | `${number}` = DEFAULT_IDS_PAGE_LIMIT
     ): Promise<Page<string>> => {
-      assertFreetextOrFormQualifier(qualifier);
+      assertFreetextOrFormsQualifier(qualifier);
       assertCursor(cursor);
       assertLimit(limit);
 
@@ -195,15 +195,15 @@ export namespace v1 {
     /**
      * Returns a generator for fetching all report identifiers that match the given qualifier
      * @param qualifier the limiter defining which identifiers to return. Either a {@link FreetextQualifier} for a
-     * freetext search, or a {@link FormQualifier} to return the reports recorded with any of the given forms. If
+     * freetext search, or a {@link FormsQualifier} to return the reports recorded with any of the given forms. If
      * both are provided, the freetext search takes precedence.
      * @returns a generator for fetching all report identifiers that match the given qualifier
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      */
     const curriedGen = (
-      qualifier: FreetextQualifier | FormQualifier
+      qualifier: FreetextQualifier | FormsQualifier
     ): AsyncGenerator<string, null> => {
-      assertFreetextOrFormQualifier(qualifier);
+      assertFreetextOrFormsQualifier(qualifier);
 
       return getPagedGenerator(getPage, qualifier);
     };
@@ -427,12 +427,13 @@ export namespace v1 {
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of identifiers to return. Default is 10000.
      * @returns a page of report identifiers for the provided specification
-     * @throws InvalidArgumentError if the form codes are not a non-empty array of non-blank strings
+     * @throws InvalidArgumentError if the form codes are not a non-empty array of non-blank strings with no
+     * leading or trailing whitespace
      * @throws InvalidArgumentError if the provided `limit` value is `<=0`
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
     getUuidsPageByForms: (
-      forms: string[],
+      forms: [string, ...string[]],
       cursor?: Nullable<string>,
       limit?: number | `${number}`
     ) => Promise<Page<string>>;
@@ -441,9 +442,10 @@ export namespace v1 {
      * Returns a generator for fetching all the identifiers of reports recorded with any of the given forms.
      * @param forms the codes of the forms the reports were recorded with (e.g. `['pregnancy']`)
      * @returns a generator for fetching all matching report identifiers
-     * @throws InvalidArgumentError if the form codes are not a non-empty array of non-blank strings
+     * @throws InvalidArgumentError if the form codes are not a non-empty array of non-blank strings with no
+     * leading or trailing whitespace
      */
-    getUuidsByForms: (forms: string[]) => AsyncGenerator<string, null>;
+    getUuidsByForms: (forms: [string, ...string[]]) => AsyncGenerator<string, null>;
 
     /**
      * Returns a page of reports for the given ids.

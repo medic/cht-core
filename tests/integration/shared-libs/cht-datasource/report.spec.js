@@ -301,6 +301,77 @@ describe('cht-datasource Report', () => {
       });
     });
 
+    describe('getUuidsPage byForms', async () => {
+      const getUuidsPage = Report.v1.getUuidsPage(dataContext);
+      const forms = [ 'report0', 'report1', 'report2', 'report3', 'report4', 'report5' ];
+      const fourLimit = 4;
+      const cursor = null;
+      const invalidLimit = 'invalidLimit';
+      const invalidCursor = 'invalidCursor';
+
+      it('returns a page of report ids for the given forms', async () => {
+        const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
+        const responsePage = await getUuidsPage(Qualifier.byForms(forms));
+
+        expect(responsePage.data).to.deep.equalInAnyOrder(expectedReportIds);
+      });
+
+      it('returns only the reports matching a single form', async () => {
+        const responsePage = await getUuidsPage(Qualifier.byForms([ 'report0' ]));
+
+        expect(responsePage.data).to.deep.equal([ report0._id ]);
+      });
+
+      it('returns a page of report ids when limit and cursor is passed and cursor can be reused', async () => {
+        const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
+        const firstPage = await getUuidsPage(Qualifier.byForms(forms), cursor, fourLimit);
+        const secondPage = await getUuidsPage(Qualifier.byForms(forms), firstPage.cursor, fourLimit);
+
+        const allReportIds = [ ...firstPage.data, ...secondPage.data ];
+
+        expect(allReportIds).to.deep.equalInAnyOrder(expectedReportIds);
+        expect(firstPage.data.length).to.be.equal(4);
+        expect(secondPage.data.length).to.be.equal(2);
+        expect(firstPage.cursor).to.not.be.null;
+        expect(secondPage.cursor).to.be.null;
+      });
+
+      it('throws error when limit is invalid', async () => {
+        await expect(
+          getUuidsPage(Qualifier.byForms(forms), cursor, invalidLimit)
+        ).to.be.rejectedWith(
+          { code: 400, error: `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].` }
+        );
+      });
+
+      it('throws error when cursor is invalid', async () => {
+        await expect(
+          getUuidsPage(Qualifier.byForms(forms), invalidCursor, fourLimit)
+        ).to.be.rejectedWith(
+          {
+            code: 400,
+            error: `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
+          }
+        );
+      });
+    });
+
+    describe('getUuids byForms', async () => {
+      it('fetches all data by iterating through generator', async () => {
+        const forms = [ 'report0', 'report1', 'report2', 'report3', 'report4', 'report5' ];
+        const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
+        const docs = [];
+
+        const generator = Report.v1.getUuids(dataContext)(Qualifier.byForms(forms));
+
+        for await (const doc of generator) {
+          docs.push(doc);
+        }
+
+        expect(docs).to.deep.equalInAnyOrder(expectedReportIds);
+      });
+    });
+
     describe('create', () => {
       const createReport = Report.v1.create(dataContext);
 
