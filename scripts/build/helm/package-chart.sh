@@ -55,8 +55,4 @@ fi
 # reset files for the next time we run this script
 git checkout values/base.yaml Chart.yaml
 
-echo "
-
-Helm charts have been built.  Commit these changes, submit a PR and
-push the new charts to the CHT Core Repo.
-"
+echo "Helm charts have been built. Commit these changes, submit a PR and push the new charts to the CHT Core Repo."
