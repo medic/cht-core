@@ -2496,7 +2496,7 @@ describe('Users API', () => {
     });
   });
 
-  describe('POST /api/v1/users/{username}/device-key', () => {
+  describe('POST /api/v1/users/{username}/devices/{device_id}/keys', () => {
     const password = 'passwordSUP3RS3CR37!';
     const senderUser = {
       username: 'devkeysender',
@@ -2522,7 +2522,7 @@ describe('Users API', () => {
       contact: { _id: 'fixture:contact:devkey-other', name: 'DeviceKeyOther' },
       roles: ['data_entry']
     };
-    // real keys generated in the before() below: age recipients and base64 raw Ed25519 public keys
+    // real keys generated in the before() below: age recipients and Ed25519 public key JWKs
     let deviceKeyA;
     let deviceKeyB;
     let signingKeyA;
@@ -2530,8 +2530,7 @@ describe('Users API', () => {
 
     const generateSigningKey = async () => {
       const keyPair = await webcrypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']);
-      const raw = Buffer.from(await webcrypto.subtle.exportKey('raw', keyPair.publicKey));
-      return raw.toString('base64');
+      return webcrypto.subtle.exportKey('jwk', keyPair.publicKey);
     };
 
     before(async () => {
@@ -2551,63 +2550,67 @@ describe('Users API', () => {
       await utils.deleteUsers([senderUser, otherUser]);
     });
 
-    it('stores the device key and returns the server public key', async () => {
+    it('stores the device keys and returns the server public keys', async () => {
       const response = await utils.request({
-        path: `/api/v1/users/${senderUser.username}/device-key`,
+        path: `/api/v1/users/${senderUser.username}/devices/device-A/keys`,
         method: 'POST',
-        body: { device_id: 'device-A', encryption_key: deviceKeyA, signing_key: signingKeyA },
+        body: { encryption_key: deviceKeyA, signing_key: signingKeyA },
         auth: { username: senderUser.username, password },
       });
 
-      chai.expect(response.server_key).to.match(/^age1/);
+      chai.expect(response.server_encryption_public_key).to.match(/^age1/);
+      chai.expect(response.server_signing_public_key).to.include({ kty: 'OKP', crv: 'Ed25519' });
 
-      const userSettings = await utils.getDoc(getUserId(senderUser.username));
-      chai.expect(userSettings.device_keys).to.have.lengthOf(1);
-      chai.expect(userSettings.device_keys[0]).to.include({
-        device_id: 'device-A',
-        encryption_key: deviceKeyA,
-        signing_key: signingKeyA,
-      });
-      chai.expect(userSettings.device_keys[0].created_at).to.be.a('string');
+      const userDoc = await utils.usersDb.get(getUserId(senderUser.username));
+      chai.expect(Object.keys(userDoc.keys_by_device)).to.deep.equal(['device-A']);
+      const entry = userDoc.keys_by_device['device-A'];
+      chai.expect(entry.encryption_public_key).to.equal(deviceKeyA);
+      chai.expect(entry.signing_public_key).to.deep.equal(signingKeyA);
+      chai.expect(entry.server_encryption_public_key).to.equal(response.server_encryption_public_key);
+      chai.expect(entry.server_signing_public_key).to.deep.equal(response.server_signing_public_key);
+      // server PRIVATE keys must live in the secureSettings vault, never on the _users doc
+      chai.expect(entry.server_encryption_private_key).to.be.undefined;
+      chai.expect(entry.server_signing_private_key).to.be.undefined;
+      chai.expect(entry.updated_date).to.be.a('number');
     });
 
     it('upserts by device_id when the same device re-registers', async () => {
       await utils.request({
-        path: `/api/v1/users/${senderUser.username}/device-key`,
+        path: `/api/v1/users/${senderUser.username}/devices/device-A/keys`,
         method: 'POST',
-        body: { device_id: 'device-A', encryption_key: deviceKeyB, signing_key: signingKeyB },
+        body: { encryption_key: deviceKeyB, signing_key: signingKeyB },
         auth: { username: senderUser.username, password },
       });
 
-      const userSettings = await utils.getDoc(getUserId(senderUser.username));
-      chai.expect(userSettings.device_keys).to.have.lengthOf(1);
-      chai.expect(userSettings.device_keys[0].encryption_key).to.equal(deviceKeyB);
-      chai.expect(userSettings.device_keys[0].signing_key).to.equal(signingKeyB);
+      const userDoc = await utils.usersDb.get(getUserId(senderUser.username));
+      chai.expect(Object.keys(userDoc.keys_by_device)).to.deep.equal(['device-A']);
+      chai.expect(userDoc.keys_by_device['device-A'].encryption_public_key).to.equal(deviceKeyB);
+      chai.expect(userDoc.keys_by_device['device-A'].signing_public_key).to.deep.equal(signingKeyB);
     });
 
     it('403s when the user lacks the offline-data-bundle permission', async () => {
       await chai.expect(utils.request({
-        path: `/api/v1/users/${otherUser.username}/device-key`,
+        path: `/api/v1/users/${otherUser.username}/devices/device-C/keys`,
         method: 'POST',
-        body: { device_id: 'device-C', encryption_key: deviceKeyA, signing_key: signingKeyA },
+        body: { encryption_key: deviceKeyA, signing_key: signingKeyA },
         auth: { username: otherUser.username, password },
       })).to.be.rejectedWith(/403/);
     });
 
     it('400s when required fields are missing', async () => {
       await chai.expect(utils.request({
-        path: `/api/v1/users/${senderUser.username}/device-key`,
+        path: `/api/v1/users/${senderUser.username}/devices/device-A/keys`,
         method: 'POST',
-        body: { device_id: 'device-A' },
+        body: { encryption_key: deviceKeyA },
         auth: { username: senderUser.username, password },
       })).to.be.rejectedWith(/400/);
     });
 
     it('400s when a key has an invalid format', async () => {
       await chai.expect(utils.request({
-        path: `/api/v1/users/${senderUser.username}/device-key`,
+        path: `/api/v1/users/${senderUser.username}/devices/device-A/keys`,
         method: 'POST',
-        body: { device_id: 'device-A', encryption_key: 'not-an-age-recipient', signing_key: signingKeyA },
+        body: { encryption_key: 'not-an-age-recipient', signing_key: signingKeyA },
         auth: { username: senderUser.username, password },
       })).to.be.rejectedWith(/400/);
     });

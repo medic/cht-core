@@ -3,6 +3,7 @@
 let agePromise;
 const load = () => {
   if (!agePromise) {
+    // eslint-disable-next-line n/no-extraneous-import
     agePromise = import('age-encryption');
   }
   return agePromise;

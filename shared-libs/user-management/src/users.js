@@ -621,22 +621,21 @@ const saveUserSettingsUpdates = async (userSettings) => {
   };
 };
 
-const upsertDeviceKey = async (username, deviceId, encryptionKey, signingKey) => {
-  const userSettings = await getUserDoc(username, 'medic');
-  userSettings.device_keys = userSettings.device_keys || [];
-  const entry = {
-    device_id: deviceId,
-    encryption_key: encryptionKey,
-    signing_key: signingKey,
-    created_at: new Date().toISOString()
+const upsertDeviceKey = async (username, deviceId, encryptionKey, signingKey, serverKeys) => {
+  const userDoc = await getUserDoc(username, 'users');
+  userDoc.keys_by_device = userDoc.keys_by_device || {};
+  userDoc.keys_by_device[deviceId] = {
+    encryption_public_key: encryptionKey,
+    signing_public_key: signingKey,
+    server_encryption_public_key: serverKeys.server_encryption_public_key,
+    server_signing_public_key: serverKeys.server_signing_public_key,
+    updated_date: Date.now(),
   };
-  const existing = userSettings.device_keys.find(key => key.device_id === deviceId);
-  if (existing) {
-    Object.assign(existing, entry);
-  } else {
-    userSettings.device_keys.push(entry);
-  }
-  return saveUserSettingsUpdates(userSettings);
+  await saveUserUpdates(userDoc);
+  return {
+    server_encryption_public_key: serverKeys.server_encryption_public_key,
+    server_signing_public_key: serverKeys.server_signing_public_key,
+  };
 };
 
 const validateFacilityIsNeeded = (data, user) => {

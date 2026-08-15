@@ -1150,71 +1150,79 @@ describe('Users service', () => {
   describe('setDeviceKey', () => {
     const userId = PREFIXES.COUCH_USER + 'steve';
 
-    const ISO_DATE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+    // Only PUBLIC server keys reach this layer; private keys are stored in the secureSettings vault
+    // by the api controller and must never be written to the _users doc.
+    const serverKeys = {
+      server_encryption_public_key: 'age1serverrecipient',
+      server_signing_public_key: { kty: 'OKP', crv: 'Ed25519', x: 'server-pub' },
+    };
+    const signingKey = { kty: 'OKP', crv: 'Ed25519', x: 'device-pub' };
 
-    it('adds a new device key entry to the user-settings doc', async () => {
-      db.medic.get.resolves({ _id: userId, name: 'steve', type: 'user-settings' });
-      db.medic.put.resolves({ id: userId, rev: '2-abc' });
+    it('adds a new device key entry to the _users doc', async () => {
+      db.users.get.resolves({ _id: userId, name: 'steve', type: 'user' });
+      db.users.put.resolves({ id: userId, rev: '2-abc' });
 
-      const result = await service.setDeviceKey('steve', 'device-1', 'age1recipient', 'ed25519signing');
+      const result = await service.setDeviceKey('steve', 'device-1', 'age1recipient', signingKey, serverKeys);
 
-      chai.expect(db.medic.get.args[0]).to.deep.equal([userId]);
-      chai.expect(db.medic.put.calledOnce).to.be.true;
-      const saved = db.medic.put.args[0][0];
+      chai.expect(db.users.get.args[0]).to.deep.equal([userId]);
+      chai.expect(db.users.put.calledOnce).to.be.true;
+      const saved = db.users.put.args[0][0];
       chai.expect(saved._id).to.equal(userId);
       chai.expect(saved.name).to.equal('steve');
-      chai.expect(saved.device_keys).to.have.lengthOf(1);
-      chai.expect(saved.device_keys[0].device_id).to.equal('device-1');
-      chai.expect(saved.device_keys[0].encryption_key).to.equal('age1recipient');
-      chai.expect(saved.device_keys[0].signing_key).to.equal('ed25519signing');
-      chai.expect(saved.device_keys[0].created_at).to.match(ISO_DATE);
-      chai.expect(result).to.deep.equal({ id: userId, rev: '2-abc' });
+      chai.expect(Object.keys(saved.keys_by_device)).to.deep.equal(['device-1']);
+      const entry = saved.keys_by_device['device-1'];
+      chai.expect(entry.encryption_public_key).to.equal('age1recipient');
+      chai.expect(entry.signing_public_key).to.deep.equal(signingKey);
+      chai.expect(entry.server_encryption_public_key).to.equal('age1serverrecipient');
+      chai.expect(entry.server_signing_public_key).to.deep.equal(serverKeys.server_signing_public_key);
+      chai.expect(entry.server_encryption_private_key).to.be.undefined;
+      chai.expect(entry.server_signing_private_key).to.be.undefined;
+      chai.expect(entry.updated_date).to.be.a('number');
+      chai.expect(result).to.deep.equal({
+        server_encryption_public_key: 'age1serverrecipient',
+        server_signing_public_key: serverKeys.server_signing_public_key,
+      });
     });
 
     it('replaces the existing entry when the same device re-registers', async () => {
-      db.medic.get.resolves({
+      const otherEntry = {
+        encryption_public_key: 'age1other',
+        signing_public_key: { kty: 'OKP', crv: 'Ed25519', x: 'other-pub' },
+        server_encryption_public_key: 'age1serverother',
+        server_signing_public_key: { kty: 'OKP', crv: 'Ed25519', x: 'server-other' },
+        updated_date: 1000,
+      };
+      db.users.get.resolves({
         _id: userId,
         name: 'steve',
-        type: 'user-settings',
-        device_keys: [
-          {
-            device_id: 'device-1',
-            encryption_key: 'age1old',
-            signing_key: 'ed25519old',
-            created_at: '2026-01-01T00:00:00.000Z',
+        type: 'user',
+        keys_by_device: {
+          'device-1': {
+            encryption_public_key: 'age1old',
+            signing_public_key: { kty: 'OKP', crv: 'Ed25519', x: 'old-pub' },
+            updated_date: 1000,
           },
-          {
-            device_id: 'device-2',
-            encryption_key: 'age1other',
-            signing_key: 'ed25519other',
-            created_at: '2026-01-01T00:00:00.000Z',
-          },
-        ],
+          'device-2': otherEntry,
+        },
       });
-      db.medic.put.resolves({ id: userId, rev: '3-abc' });
+      db.users.put.resolves({ id: userId, rev: '3-abc' });
 
-      await service.setDeviceKey('steve', 'device-1', 'age1new', 'ed25519new');
+      await service.setDeviceKey('steve', 'device-1', 'age1new', signingKey, serverKeys);
 
-      const savedKeys = db.medic.put.args[0][0].device_keys;
-      chai.expect(savedKeys).to.have.lengthOf(2);
-      chai.expect(savedKeys[0].device_id).to.equal('device-1');
-      chai.expect(savedKeys[0].encryption_key).to.equal('age1new');
-      chai.expect(savedKeys[0].signing_key).to.equal('ed25519new');
-      chai.expect(savedKeys[0].created_at).to.match(ISO_DATE);
-      chai.expect(savedKeys[1]).to.deep.equal(
-        {
-          device_id: 'device-2',
-          encryption_key: 'age1other',
-          signing_key: 'ed25519other',
-          created_at: '2026-01-01T00:00:00.000Z',
-        }
-      );
+      const savedDevices = db.users.put.args[0][0].keys_by_device;
+      chai.expect(Object.keys(savedDevices)).to.have.members(['device-1', 'device-2']);
+      chai.expect(savedDevices['device-1'].encryption_public_key).to.equal('age1new');
+      chai.expect(savedDevices['device-1'].signing_public_key).to.deep.equal(signingKey);
+      chai.expect(savedDevices['device-1'].updated_date).to.be.a('number');
+      chai.expect(savedDevices['device-2']).to.deep.equal(otherEntry);
     });
 
-    it('rejects when the user-settings doc is not found', () => {
-      db.medic.get.rejects({ status: 404 });
+    it('rejects when the _users doc is not found', () => {
+      db.users.get.rejects({ status: 404 });
 
-      return chai.expect(service.setDeviceKey('steve', 'device-1', 'age1recipient', 'ed25519signing')).to.be.rejected;
+      return chai.expect(
+        service.setDeviceKey('steve', 'device-1', 'age1recipient', signingKey, serverKeys)
+      ).to.be.rejected;
     });
   });
 

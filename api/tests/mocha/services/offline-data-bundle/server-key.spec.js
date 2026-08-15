@@ -36,4 +36,43 @@ describe('offline-data-bundle server-key service', () => {
       chai.expect(recipient).to.equal(await age.identityToRecipient(identity));
     });
   });
+
+  describe('device server private keys', () => {
+    const privateKeys = {
+      encryption: 'AGE-SECRET-KEY-1SERVER',
+      signing: { kty: 'OKP', crv: 'Ed25519', x: 'server-pub', d: 'server-priv' },
+    };
+
+    it('vaultKey namespaces by user and device', () => {
+      chai.expect(service.vaultKey('chw', 'device-1')).to.equal('offline-data-bundle-server-key:chw:device-1');
+    });
+
+    it('setServerPrivateKeys stores the serialised privates under the vault key', async () => {
+      const setCredentials = sinon.stub(secureSettings, 'setCredentials').resolves();
+
+      await service.setServerPrivateKeys('chw', 'device-1', privateKeys);
+
+      chai.expect(setCredentials.args[0]).to.deep.equal([
+        'offline-data-bundle-server-key:chw:device-1',
+        JSON.stringify(privateKeys),
+      ]);
+    });
+
+    it('getServerPrivateKeys parses the stored value', async () => {
+      sinon.stub(secureSettings, 'getCredentials').resolves(JSON.stringify(privateKeys));
+
+      const result = await service.getServerPrivateKeys('chw', 'device-1');
+
+      chai.expect(secureSettings.getCredentials.args[0]).to.deep.equal(['offline-data-bundle-server-key:chw:device-1']);
+      chai.expect(result).to.deep.equal(privateKeys);
+    });
+
+    it('getServerPrivateKeys returns undefined when nothing is stored', async () => {
+      sinon.stub(secureSettings, 'getCredentials').resolves();
+
+      const result = await service.getServerPrivateKeys('chw', 'device-1');
+
+      chai.expect(result).to.be.undefined;
+    });
+  });
 });
