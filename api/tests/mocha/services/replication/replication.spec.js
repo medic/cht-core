@@ -370,7 +370,27 @@ describe('Initial Replication service', () => {
       expect(result).to.have.members(['doc1', 'doc3']);
     });
 
-    it('should combine deleted, purged and archived docs without duplicates', async () => {
+    it('should not treat docs deleted from the archive db as archived', async () => {
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { key: 'doc1', id: 'doc1', value: { rev: 1 } },
+          { key: 'doc2', id: 'doc2', value: { rev: 1 } },
+        ]
+      });
+
+      sinon.stub(purgedDocs, 'getPurgedIds').resolves([]);
+      sinon.stub(db.archive, 'allDocs').resolves({
+        rows: [
+          { key: 'doc1', id: 'doc1', value: { rev: '2-a', deleted: true } },
+          { key: 'doc2', id: 'doc2', value: { rev: '1-a' } },
+        ]
+      });
+
+      const result = await replication.getDocIdsToDelete(userCtx, ['doc1', 'doc2']);
+      expect(result).to.have.members(['doc2']);
+    });
+
+    it('should combine deleted, purged and archived docs', async () => {
       sinon.stub(db.medic, 'allDocs').resolves({
         rows: [
           { key: 'doc1', id: 'doc1', value: { rev: 1 } },
@@ -394,6 +414,26 @@ describe('Initial Replication service', () => {
       expect(result).to.have.members(['doc1', 'doc2', 'doc3']);
     });
 
+    it('should return an id only once even when it is deleted, purged and archived at the same time', async () => {
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { key: 'doc1', error: 'deleted' },
+          { key: 'doc2', id: 'doc2', value: { rev: 1 } },
+        ]
+      });
+      sinon.stub(purgedDocs, 'getPurgedIds').resolves(['doc1']);
+      sinon.stub(db.archive, 'allDocs').resolves({
+        rows: [
+          { key: 'doc1', id: 'doc1', value: { rev: '1-a' } },
+          { key: 'doc2', error: 'not_found' },
+        ]
+      });
+
+      const result = await replication.getDocIdsToDelete(userCtx, ['doc1', 'doc2']);
+
+      expect(result).to.deep.equal(['doc1']);
+    });
+
     it('should throw error on db errors', async () => {
       sinon.stub(db.medic, 'allDocs').rejects(new Error('failed'));
       await expect(replication.getDocIdsToDelete(userCtx, [1])).to.be.rejectedWith(Error, 'failed');
@@ -402,6 +442,7 @@ describe('Initial Replication service', () => {
     it('should throw error on purgedDocs errors', async () => {
       sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
       sinon.stub(purgedDocs, 'getPurgedIds').rejects(new Error('boom'));
+      sinon.stub(db.archive, 'allDocs').resolves({ rows: [] });
 
       await expect(replication.getDocIdsToDelete(userCtx, [1])).to.be.rejectedWith(Error, 'boom');
     });

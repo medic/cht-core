@@ -87,11 +87,16 @@ const expectAuditedArchive = async (ids) => {
   }
 };
 
-const waitForJobStatus = async (id, status) => {
+const waitForLogStatus = async (id, status) => {
   let doc;
   do {
     await utils.delayPromise(1000);
-    doc = await utils.sentinelDb.get(id);
+    doc = await utils.logsDb.get(id).catch(err => {
+      if (err.status !== 404) {
+        throw err;
+      }
+      return {};
+    });
   } while (doc.status !== status);
   return doc;
 };
@@ -99,6 +104,8 @@ const waitForJobStatus = async (id, status) => {
 describe('sentinel processes archive jobs', () => {
   const fixtures = [
     { _id: 'archive-e2e-contact', type: 'contact', name: 'Archived contact' },
+    { _id: 'archive-e2e-person', type: 'person', name: 'Archived person' },
+    { _id: 'archive-e2e-clinic', type: 'clinic', name: 'Archived clinic' },
     { _id: 'archive-e2e-report', type: DOC_TYPES.DATA_RECORD, form: 'visit', reported_date: 1 },
     { _id: 'archive-e2e-task', type: 'task', state: 'Completed' },
     { _id: 'archive-e2e-target', type: 'target', targets: [] },
@@ -339,7 +346,55 @@ describe('sentinel processes archive jobs', () => {
     await expectAuditedArchive([id]);
   });
 
-  it('quarantines a job that keeps failing and keeps processing the queue behind it', async function () {
+  it('purges resolved (deleted) conflict revisions, leaving no trace in the changes feed', async function () {
+    this.timeout(60000);
+
+    const id = 'archive-e2e-resolved-conflict';
+
+    const revA = '1-c000000000000000000000000000000c';
+    const revB = '1-d000000000000000000000000000000d';
+    const docA = { _id: id, _rev: revA, type: DOC_TYPES.DATA_RECORD, form: 'visit', reported_date: 1, source: 'A' };
+    const docB = { _id: id, _rev: revB, type: DOC_TYPES.DATA_RECORD, form: 'visit', reported_date: 1, source: 'B' };
+
+    await utils.request({
+      path: `/${constants.DB_NAME}/_bulk_docs`,
+      method: 'POST',
+      body: { docs: [docA, docB], new_edits: false },
+    });
+
+    // Resolve the conflict by deleting the losing branch, leaving a deleted conflict leaf behind.
+    await utils.request({
+      path: `/${constants.DB_NAME}/${id}`,
+      method: 'DELETE',
+      qs: { rev: revA },
+    });
+
+    // Sanity check: no live conflicts remain, but the deleted branch is still in the rev tree.
+    // PouchDB's get() drops the deleted_conflicts option, so query CouchDB directly.
+    const beforeArchive = await utils.request({
+      path: `/${constants.DB_NAME}/${id}`,
+      qs: { conflicts: true, deleted_conflicts: true },
+    });
+    expect(beforeArchive._conflicts).to.be.undefined;
+    expect(beforeArchive._deleted_conflicts).to.have.lengthOf(1);
+
+    await postCsv(id);
+
+    await updateSettings();
+    await runArchiving();
+
+    const archived = await archiveDb.get(id);
+    expect(archived._rev).to.equal(revB);
+    expect(archived.source).to.equal('B');
+
+    // expectFullyPurgedFromMedic asserts the changes feed is empty for the doc, which fails
+    // if the deleted conflict leaf survives the purge.
+    await expectFullyPurgedFromMedic([id]);
+    await expectInfoDocsPurged([id]);
+    await expectAuditedArchive([id]);
+  });
+
+  it('gives up on a job that keeps failing and keeps processing the queue behind it', async function () {
     this.timeout(60000);
 
     // A healthy archivable doc with its own job.
@@ -349,15 +404,14 @@ describe('sentinel processes archive jobs', () => {
 
     // A poison job: no `ids` attachment, so readIds throws on every run. Its id sorts before any
     // uuid-v7 job id, so the loop hits it first. Seed error_count at the threshold-1 (the lib's
-    // MAX_JOB_ATTEMPTS is 20) so a single run trips the quarantine.
+    // MAX_JOB_ATTEMPTS is 10) so a single run trips the permanent failure.
     const poisonId = `${PREFIXES.ARCHIVE_JOB}0000-poison`;
     await utils.sentinelDb.put({
       _id: poisonId,
-      type: PREFIXES.ARCHIVE_JOB,
       date: Date.now(),
       total: 1,
       cursor: 0,
-      error_count: 19,
+      error_count: 9,
     });
 
     const { jobs } = await postCsv(healthyId);
@@ -368,18 +422,24 @@ describe('sentinel processes archive jobs', () => {
 
     await updateSettings();
 
-    // Can't use waitForArchiveCompletion here — the quarantined job intentionally stays behind.
     await utils.runSentinelTasks();
-    const poison = await waitForJobStatus(poisonId, 'failed');
+    await sentinelUtils.waitForArchiveCompletion();
 
-    expect(poison.error_count).to.equal(20);
-    expect(poison.status).to.equal('failed');
-    // The job doc is kept (not deleted) for an admin to inspect.
-    expect(poison._deleted).to.not.equal(true);
+    // The permanently failed job doc is deleted so it never blocks the queue again...
+    const poisonRow = (await utils.sentinelDb.allDocs({ keys: [poisonId] })).rows[0];
+    expect(poisonRow.error || poisonRow.value.deleted).to.be.ok;
+    // ...and its durable failure record lives in medic-logs.
+    const poisonLog = await waitForLogStatus(poisonId, 'failed');
+    expect(poisonLog.errors.length).to.be.at.least(1);
+    expect(poisonLog.errors[poisonLog.errors.length - 1].message).to.be.ok;
 
     // The healthy job behind the poison job was not blocked — it ran to completion and was deleted.
     const healthyJobRow = (await utils.sentinelDb.allDocs({ keys: [healthyJobId] })).rows[0];
     expect(healthyJobRow.error || healthyJobRow.value.deleted).to.be.ok;
+    // Its log doc records the completed lifecycle.
+    const healthyLog = await waitForLogStatus(healthyJobId, 'completed');
+    expect(healthyLog).to.include({ cursor: 1, total: 1 });
+    expect(healthyLog.errors).to.deep.equal([]);
 
     const archived = await liveRows(archiveDb, { keys: [healthyId] });
     expect(archived).to.have.lengthOf(1);

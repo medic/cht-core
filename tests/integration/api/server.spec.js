@@ -276,9 +276,10 @@ describe('server', () => {
         const reqID = getReqId(apiLogs[0]);
 
         const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
+        // the user contact has no lineage, so hydration is a single doc read
         expect(haproxyRequests.length).to.equal(2);
         expect(haproxyRequests[0]).to.include('_session');
-        expect(haproxyRequests[1]).to.include('_design/medic-client/_view/docs_by_id_lineage');
+        expect(haproxyRequests[1]).to.include(constants.USER_CONTACT_ID);
       });
 
       it('should propagate ID via couch-request', async () => {
