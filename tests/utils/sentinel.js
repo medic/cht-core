@@ -137,7 +137,7 @@ const skipToSeq = async (seq) => {
   await utils.sentinelDb.put(backlogDoc);
 };
 
-const getARchivingJobs = async () => {
+const getArchivingJobs = async () => {
   const result = await utils.sentinelDb.allDocs({
     startkey: PREFIXES.ARCHIVE_JOB,
     endkey: `${PREFIXES.ARCHIVE_JOB}\ufff0`,
@@ -149,7 +149,7 @@ const waitForArchiveCompletion = async () => {
   let jobs;
   do {
     await utils.delayPromise(1000);
-    jobs = await getARchivingJobs();
+    jobs = await getArchivingJobs();
   } while (jobs.length > 0);
 };
 
