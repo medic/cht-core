@@ -31,41 +31,35 @@ const getSubtreeIds = async (id) => {
 };
 
 /**
- * Contacts are read in pages and only the parent id is kept, so nothing but the ids accumulates.
- * `docs_by_id_lineage` would have answered this without reading the documents, but it was removed
- * in #11319 and hydration now reads documents for the same reason.
+ * Reads documents a page at a time and keeps only what the caller pulls out of each page, so a
+ * whole-district move never holds more than a page in memory. `docs_by_id_lineage` would have
+ * answered these without reading anything, but it was removed in #11319 and hydration went back to
+ * reading documents for the same reason.
  */
-const getParentIds = async (contactIds) => {
-  const remaining = [ ...contactIds ];
-  const byId = new Map();
+const readInPages = async (ids, onPage) => {
+  const remaining = [ ...ids ];
 
   while (remaining.length) {
     const batch = remaining.splice(0, DOC_PAGE_SIZE);
     const result = await db.medic.allDocs({ keys: batch, include_docs: true });
-    result.rows
-      .filter(row => row.doc)
-      .forEach(row => byId.set(row.doc._id, row.doc.parent?._id || row.doc.parent));
+    onPage(result.rows.map(row => row.doc).filter(Boolean));
   }
+};
 
+const getParentIds = async (contactIds) => {
+  const byId = new Map();
+  await readInPages(contactIds, docs => docs.forEach(
+    doc => byId.set(doc._id, doc.parent?._id || doc.parent)
+  ));
   return byId;
 };
 
 // A report caches its author under `contact`, so the author is the contact whose lineage went stale.
 const getReportAuthorIds = async (reportIds) => {
-  const remaining = [ ...reportIds ];
   const pairs = [];
-
-  while (remaining.length) {
-    const batch = remaining.splice(0, DOC_PAGE_SIZE);
-    const result = await db.medic.allDocs({ keys: batch, include_docs: true });
-    result.rows
-      .filter(row => row.doc)
-      .forEach(row => pairs.push({
-        id: row.doc._id,
-        current_contact_id: row.doc.contact?._id || row.doc.contact,
-      }));
-  }
-
+  await readInPages(reportIds, docs => docs.forEach(
+    doc => pairs.push({ id: doc._id, current_contact_id: doc.contact?._id || doc.contact })
+  ));
   return pairs;
 };
 
