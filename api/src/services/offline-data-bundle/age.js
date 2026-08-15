@@ -20,4 +20,20 @@ module.exports = {
       return false;
     }
   },
+
+  // Encrypts plaintext bytes to the given age recipient string. `plaintext` is a Uint8Array/Buffer;
+  // returns the age ciphertext as a Uint8Array. Throws if the recipient string is invalid.
+  encrypt: async (recipient, plaintext) => {
+    const encrypter = new (await load()).Encrypter();
+    encrypter.addRecipient(recipient);
+    return encrypter.encrypt(plaintext);
+  },
+
+  // Decrypts age ciphertext with the given identity (age secret key string). Returns the
+  // plaintext as a Uint8Array. Throws if the identity cannot decrypt the ciphertext.
+  decrypt: async (identity, ciphertext) => {
+    const decrypter = new (await load()).Decrypter();
+    decrypter.addIdentity(identity);
+    return decrypter.decrypt(ciphertext, 'uint8array');
+  },
 };
