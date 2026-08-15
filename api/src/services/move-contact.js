@@ -15,9 +15,9 @@ const constraints = require('./hierarchy/lineage-constraints');
 
 const { ACTIONS } = BULK_OPERATIONS;
 
-// No document is ever read: everything an operation needs comes from views, so a whole-district move
-// costs a handful of view queries rather than tens of thousands of document reads.
-const VIEW_BATCH_SIZE = 10000;
+// Documents are read a page at a time and only the one id each contributes is kept, so a
+// whole-district move never holds more than a page in memory.
+const DOC_PAGE_SIZE = 100;
 
 // The id is embedded in a quoted nouveau phrase, so only the characters that can terminate or escape
 // that phrase matter. `nouveau.escapeKeys` is for unquoted terms and would escape the hyphens in a
@@ -31,23 +31,42 @@ const getSubtreeIds = async (id) => {
 };
 
 /**
- * `docs_by_id_lineage` at depth 1 answers both questions this needs in one view: for a contact it
- * emits the parent's id, and for a report it emits the author's id. Returns a Map of doc id to that
- * id. A doc with nothing at depth 1, a contact already at the root, simply has no row.
+ * Contacts are read in pages and only the parent id is kept, so nothing but the ids accumulates.
+ * `docs_by_id_lineage` would have answered this without reading the documents, but it was removed
+ * in #11319 and hydration now reads documents for the same reason.
  */
-const getDepthOneIds = async (ids) => {
-  const remaining = [ ...ids ];
+const getParentIds = async (contactIds) => {
+  const remaining = [ ...contactIds ];
   const byId = new Map();
 
   while (remaining.length) {
-    const batch = remaining.splice(0, VIEW_BATCH_SIZE);
-    const result = await db.medic.query('medic-client/docs_by_id_lineage', {
-      keys: batch.map(id => [ id, 1 ]),
-    });
-    result.rows.forEach(row => byId.set(row.id, row.value?._id));
+    const batch = remaining.splice(0, DOC_PAGE_SIZE);
+    const result = await db.medic.allDocs({ keys: batch, include_docs: true });
+    result.rows
+      .filter(row => row.doc)
+      .forEach(row => byId.set(row.doc._id, row.doc.parent?._id || row.doc.parent));
   }
 
   return byId;
+};
+
+// A report caches its author under `contact`, so the author is the contact whose lineage went stale.
+const getReportAuthorIds = async (reportIds) => {
+  const remaining = [ ...reportIds ];
+  const pairs = [];
+
+  while (remaining.length) {
+    const batch = remaining.splice(0, DOC_PAGE_SIZE);
+    const result = await db.medic.allDocs({ keys: batch, include_docs: true });
+    result.rows
+      .filter(row => row.doc)
+      .forEach(row => pairs.push({
+        id: row.doc._id,
+        current_contact_id: row.doc.contact?._id || row.doc.contact,
+      }));
+  }
+
+  return pairs;
 };
 
 // Nests ids into the minified lineage shape CHT stores, with `tail` sitting under the innermost id.
@@ -58,8 +77,8 @@ const nestLineage = (ids, tail) => ids.reduceRight(
 
 /**
  * The chain from a contact's parent up to and including the source. A descendant's chain to the
- * source lies entirely inside the moved subtree, so the parent map is enough to walk it without
- * reading a single document. The source itself has no chain: its parent is replaced outright.
+ * source lies entirely inside the moved subtree, so the parent map is enough to walk it. The source
+ * itself has no chain: its parent is replaced outright.
  */
 const ancestorsToSource = (id, parentById, sourceId) => {
   if (id === sourceId) {
@@ -193,16 +212,11 @@ const moveContactHierarchy = async (source, destination, { dryRun } = {}) => {
   // `|| undefined` so a move to the root carries the absence of a parent rather than a null.
   const replacementLineage = lineage.minifyLineage(destination) || undefined;
   const [ parentById, reportIds, places ] = await Promise.all([
-    getDepthOneIds(contactIds),
+    getParentIds(contactIds),
     getReportIdsByCreator(contactIds),
     getPlacesToRefresh(contactIds),
   ]);
-  // For a report the same view gives the author's id, which is the contact whose lineage it cached.
-  const reportAuthorById = await getDepthOneIds(reportIds);
-  const reportPairs = [ ...reportAuthorById ].map(([ reportId, authorId ]) => ({
-    id: reportId,
-    current_contact_id: authorId,
-  }));
+  const reportPairs = await getReportAuthorIds(reportIds);
 
   const setParentOperations = buildSetParentOperations(contactIds, parentById, id, replacementLineage);
   const reportOperations = buildSetContactOperations(reportPairs, parentById, id, replacementLineage);

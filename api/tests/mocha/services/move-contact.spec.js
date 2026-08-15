@@ -20,11 +20,10 @@ const clinic = { _id: 'clinic-1', type: 'clinic', parent: { _id: 'hc-a', parent:
 // The lineage every moved contact ends up under.
 const UNDER_HC_B = { _id: 'hc-b', parent: { _id: 'district' } };
 
-// docs_by_id_lineage is queried twice, once for the subtree and once for the reports, so the stubs
-// match on which ids the batch is asking about.
-const lineageKeysFor = (...ids) => sinon.match(opts => Array.isArray(opts.keys)
+// allDocs is called for the subtree and again for the reports, so stubs match the exact key list.
+const keysAre = (...ids) => sinon.match(opts => Array.isArray(opts.keys)
   && opts.keys.length === ids.length
-  && ids.every((id, i) => opts.keys[i][0] === id && opts.keys[i][1] === 1));
+  && ids.every((id, i) => opts.keys[i] === id));
 
 const buildRes = () => {
   const res = {};
@@ -44,7 +43,6 @@ describe('move-contact service', () => {
   let contactGet;
   let handler;
   let queue;
-  let lineageQuery;
 
   beforeEach(() => {
     contactGet = sinon.stub().resolves(healthCenterB);
@@ -58,14 +56,12 @@ describe('move-contact service', () => {
     db.medic.query.withArgs('medic/contacts_by_depth')
       .resolves({ rows: [ { id: 'clinic-1' }, { id: 'person-1' } ] });
     db.medic.query.withArgs('medic/contacts_by_primary_contact').resolves({ rows: [] });
-    lineageQuery = db.medic.query.withArgs('medic-client/docs_by_id_lineage');
-    lineageQuery.resolves({ rows: [] });
-    // the subtree's parents: the clinic sits under hc-a, the person under the clinic
-    lineageQuery.withArgs('medic-client/docs_by_id_lineage', lineageKeysFor('clinic-1', 'person-1'))
-      .resolves({ rows: [
-        { id: 'clinic-1', value: { _id: 'hc-a' } },
-        { id: 'person-1', value: { _id: 'clinic-1' } },
-      ] });
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
+    // the subtree: the clinic sits under hc-a, the person under the clinic
+    db.medic.allDocs.withArgs(keysAre('clinic-1', 'person-1')).resolves({ rows: [
+      { doc: clinic },
+      { doc: { _id: 'person-1', type: 'person', parent: { _id: 'clinic-1', parent: { _id: 'hc-a' } } } },
+    ] });
 
     sinon.stub(request, 'post').resolves({ hits: [] });
 
@@ -101,25 +97,14 @@ describe('move-contact service', () => {
     });
   });
 
-  it('reads no documents at all, only views', async () => {
-    const allDocs = sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
-
-    await handler(buildReq(), buildRes());
-
-    expect(allDocs.called).to.equal(false);
-    expect(db.medic.query.args.map(args => args[0])).to.include('medic-client/docs_by_id_lineage');
-  });
-
-  it('batches the lineage view rather than asking for every id at once', async () => {
-    const many = Array.from({ length: 25000 }, (_, i) => ({ id: `c-${i}` }));
+  it('pages the document reads rather than asking for every id at once', async () => {
+    const many = Array.from({ length: 250 }, (_, i) => ({ id: `c-${i}` }));
     db.medic.query.withArgs('medic/contacts_by_depth').resolves({ rows: many });
 
     await handler(buildReq(), buildRes());
 
-    const batches = db.medic.query.args
-      .filter(args => args[0] === 'medic-client/docs_by_id_lineage')
-      .map(args => args[1].keys.length);
-    expect(batches).to.deep.equal([ 10000, 10000, 5000 ]);
+    const batches = db.medic.allDocs.args.map(args => args[0].keys.length);
+    expect(batches).to.deep.equal([ 100, 100, 50 ]);
   });
 
   it('fetches the destination through cht-datasource', async () => {
@@ -142,8 +127,9 @@ describe('move-contact service', () => {
 
   it('refreshes the cached lineage on reports the moved contacts authored', async () => {
     request.post.resolves({ hits: [ { id: 'report-1' } ] });
-    lineageQuery.withArgs('medic-client/docs_by_id_lineage', lineageKeysFor('report-1'))
-      .resolves({ rows: [ { id: 'report-1', value: { _id: 'person-1' } } ] });
+    db.medic.allDocs.withArgs(keysAre('report-1')).resolves({ rows: [
+      { doc: { _id: 'report-1', type: 'data_record', contact: { _id: 'person-1' } } },
+    ] });
     const res = buildRes();
 
     await handler(buildReq(), res);
@@ -159,8 +145,9 @@ describe('move-contact service', () => {
 
   it('skips a report whose author is not resolvable', async () => {
     request.post.resolves({ hits: [ { id: 'report-1' } ] });
-    lineageQuery.withArgs('medic-client/docs_by_id_lineage', lineageKeysFor('report-1'))
-      .resolves({ rows: [ { id: 'report-1' } ] });
+    db.medic.allDocs.withArgs(keysAre('report-1')).resolves({ rows: [
+      { doc: { _id: 'report-1', type: 'data_record' } },
+    ] });
 
     await handler(buildReq(), buildRes());
 
@@ -291,8 +278,10 @@ describe('move-contact service', () => {
   });
 
   it('handles a source that is already at the root, which has no lineage row', async () => {
-    lineageQuery.withArgs('medic-client/docs_by_id_lineage', lineageKeysFor('clinic-1', 'person-1'))
-      .resolves({ rows: [ { id: 'person-1', value: { _id: 'clinic-1' } } ] });
+    db.medic.allDocs.withArgs(keysAre('clinic-1', 'person-1')).resolves({ rows: [
+      { doc: { _id: 'clinic-1', type: 'clinic' } },
+      { doc: { _id: 'person-1', type: 'person', parent: { _id: 'clinic-1' } } },
+    ] });
 
     await handler(buildReq(), buildRes());
 
