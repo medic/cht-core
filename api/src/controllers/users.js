@@ -7,6 +7,35 @@ const auth = require('../auth');
 const logger = require('@medic/logger');
 const serverUtils = require('../server-utils');
 const replication = require('../services/replication/replication');
+const age = require('../services/offline-data-bundle/age');
+const signing = require('../services/offline-data-bundle/signing');
+const serverKey = require('../services/offline-data-bundle/server-key');
+
+const validateDeviceKeyBody = async (body) => {
+  const { encryption_key: encryptionKey, signing_key: signingKey } = body;
+  if (!encryptionKey || !signingKey) {
+    return 'Missing required fields: encryption_key and signing_key';
+  }
+  if (!(await age.isValidRecipient(encryptionKey))) {
+    return 'Invalid encryption_key: expected an age recipient';
+  }
+  if (!(await signing.isValidPublicKey(signingKey))) {
+    return 'Invalid signing_key: expected an Ed25519 public key JWK';
+  }
+  return null;
+};
+
+const generateServerKeys = async () => {
+  const encryptionIdentity = await age.generateIdentity();
+  const encryptionRecipient = await age.identityToRecipient(encryptionIdentity);
+  const signingKeyPair = await signing.generateKeyPair();
+  return {
+    server_encryption_public_key: encryptionRecipient,
+    server_encryption_private_key: encryptionIdentity,
+    server_signing_public_key: signingKeyPair.publicKey,
+    server_signing_private_key: signingKeyPair.privateKey,
+  };
+};
 
 const hasFullPermission = req => {
   return auth
@@ -463,6 +492,109 @@ module.exports = {
         `Requested by '${requesterContext?.name}'.`
       );
       res.json(result);
+    } catch (err) {
+      serverUtils.error(err, req, res);
+    }
+  },
+
+  /**
+   * @openapi
+   * /api/v1/users/{username}/devices/{device_id}/keys:
+   *   post:
+   *     summary: Register a device's public keys
+   *     operationId: v1UsersUsernameDeviceKeysPost
+   *     description: >
+   *       Stores the device's age encryption and Ed25519 signing public keys against the user and returns the
+   *       server's public keys generated for this device. Keys are per-device: re-registering the same `device_id`
+   *       replaces the stored keys. Requires the `can_send_offline_data_bundle` permission. Non-admin users can
+   *       only register keys for themselves.
+   *     tags: [User]
+   *     x-permissions:
+   *       hasAny: [can_send_offline_data_bundle]
+   *     parameters:
+   *       - in: path
+   *         name: username
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: The username to register the device keys for.
+   *       - in: path
+   *         name: device_id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Unique identifier for the device.
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [encryption_key, signing_key]
+   *             properties:
+   *               encryption_key:
+   *                 type: string
+   *                 description: The device's age encryption recipient (public) key.
+   *               signing_key:
+   *                 type: object
+   *                 additionalProperties: true
+   *                 description: The device's Ed25519 public signing key as a JWK.
+   *     responses:
+   *       '200':
+   *         description: Device keys registered
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 server_encryption_public_key:
+   *                   type: string
+   *                   description: The server's age encryption recipient (public) key for this device.
+   *                 server_signing_public_key:
+   *                   type: object
+   *                   additionalProperties: true
+   *                   description: The server's Ed25519 public signing key as a JWK for this device.
+   *       '400':
+   *         $ref: '#/components/responses/BadRequest'
+   *       '401':
+   *         $ref: '#/components/responses/Unauthorized'
+   *       '403':
+   *         $ref: '#/components/responses/Forbidden'
+   */
+  deviceKey: async (req, res) => {
+    try {
+      const username = req.params.username;
+      const deviceId = req.params.device_id;
+      const userCtx = await auth.assertPermissions(req, { hasAny: ['can_send_offline_data_bundle'] });
+      if (!auth.isDbAdmin(userCtx) && !isReferencingSelf(userCtx, auth.basicAuthCredentials(req), username)) {
+        return serverUtils.error({ code: 403, message: 'You do not have permissions to modify this user' }, req, res);
+      }
+
+      if (_.isEmpty(req.body)) {
+        return serverUtils.emptyJSONBodyError(req, res);
+      }
+
+      const validationError = await validateDeviceKeyBody(req.body);
+      if (validationError) {
+        return serverUtils.error({ code: 400, reason: validationError }, req, res);
+      }
+
+      const { encryption_key: encryptionKey, signing_key: signingKey } = req.body;
+      const serverKeys = await generateServerKeys();
+      // Server PRIVATE keys must never touch the _users doc (the user can read it via the CouchDB
+      // proxy). Persist them to the secureSettings vault; only public keys go on the _users doc.
+      await serverKey.setServerPrivateKeys(username, deviceId, {
+        encryption: serverKeys.server_encryption_private_key,
+        signing: serverKeys.server_signing_private_key,
+      });
+      const deviceKeys = { encryption_key: encryptionKey, signing_key: signingKey };
+      const serverPublicKeys = await users.setDeviceKey(username, deviceId, deviceKeys, {
+        server_encryption_public_key: serverKeys.server_encryption_public_key,
+        server_signing_public_key: serverKeys.server_signing_public_key,
+      });
+
+      logger.info(`REQ ${req.id} - Registered device keys for device '${deviceId}' on user '${username}'.`);
+      res.json(serverPublicKeys);
     } catch (err) {
       serverUtils.error(err, req, res);
     }
