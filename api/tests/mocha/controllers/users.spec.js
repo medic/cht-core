@@ -1164,7 +1164,7 @@ describe('Users Controller', () => {
         chai.expect(serverUtils.error.notCalled).to.be.true;
         chai.expect(secureSettings.setCredentials.args[0]).to.deep.equal([vaultKey, vaultValue]);
         chai.expect(users.setDeviceKey.args[0]).to.deep.equal([
-          'chw', 'device-1', 'age1recipient', signingJwk, serverPublicKeys,
+          'chw', 'device-1', { encryption_key: 'age1recipient', signing_key: signingJwk }, serverPublicKeys,
         ]);
         chai.expect(res.json.args[0]).to.deep.equal([serverPublicKeys]);
       });
@@ -1183,7 +1183,7 @@ describe('Users Controller', () => {
         chai.expect(serverUtils.error.notCalled).to.be.true;
         chai.expect(secureSettings.setCredentials.args[0]).to.deep.equal([vaultKey, vaultValue]);
         chai.expect(users.setDeviceKey.args[0]).to.deep.equal([
-          'chw', 'device-1', 'age1recipient', signingJwk, serverPublicKeys,
+          'chw', 'device-1', { encryption_key: 'age1recipient', signing_key: signingJwk }, serverPublicKeys,
         ]);
         chai.expect(res.json.args[0]).to.deep.equal([serverPublicKeys]);
       });

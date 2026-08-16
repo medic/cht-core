@@ -1162,7 +1162,8 @@ describe('Users service', () => {
       db.users.get.resolves({ _id: userId, name: 'steve', type: 'user' });
       db.users.put.resolves({ id: userId, rev: '2-abc' });
 
-      const result = await service.setDeviceKey('steve', 'device-1', 'age1recipient', signingKey, serverKeys);
+      const deviceKeys = { encryption_key: 'age1recipient', signing_key: signingKey };
+      const result = await service.setDeviceKey('steve', 'device-1', deviceKeys, serverKeys);
 
       chai.expect(db.users.get.args[0]).to.deep.equal([userId]);
       chai.expect(db.users.put.calledOnce).to.be.true;
@@ -1207,7 +1208,8 @@ describe('Users service', () => {
       });
       db.users.put.resolves({ id: userId, rev: '3-abc' });
 
-      await service.setDeviceKey('steve', 'device-1', 'age1new', signingKey, serverKeys);
+      const deviceKeys = { encryption_key: 'age1new', signing_key: signingKey };
+      await service.setDeviceKey('steve', 'device-1', deviceKeys, serverKeys);
 
       const savedDevices = db.users.put.args[0][0].keys_by_device;
       chai.expect(Object.keys(savedDevices)).to.have.members(['device-1', 'device-2']);
@@ -1220,9 +1222,8 @@ describe('Users service', () => {
     it('rejects when the _users doc is not found', () => {
       db.users.get.rejects({ status: 404 });
 
-      return chai.expect(
-        service.setDeviceKey('steve', 'device-1', 'age1recipient', signingKey, serverKeys)
-      ).to.be.rejected;
+      const deviceKeys = { encryption_key: 'age1recipient', signing_key: signingKey };
+      return chai.expect(service.setDeviceKey('steve', 'device-1', deviceKeys, serverKeys)).to.be.rejected;
     });
   });
 

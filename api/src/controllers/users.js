@@ -587,7 +587,8 @@ module.exports = {
         encryption: serverKeys.server_encryption_private_key,
         signing: serverKeys.server_signing_private_key,
       });
-      const serverPublicKeys = await users.setDeviceKey(username, deviceId, encryptionKey, signingKey, {
+      const deviceKeys = { encryption_key: encryptionKey, signing_key: signingKey };
+      const serverPublicKeys = await users.setDeviceKey(username, deviceId, deviceKeys, {
         server_encryption_public_key: serverKeys.server_encryption_public_key,
         server_signing_public_key: serverKeys.server_signing_public_key,
       });
