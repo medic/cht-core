@@ -5,6 +5,7 @@ const environment = require('@medic/environment');
 const config = require('./config');
 const dataContext = require('./services/data-context');
 const { roles, users } = require('@medic/user-management')(config, db, dataContext);
+const { PermissionError } = require('./errors');
 
 const contentLengthRegex = /^content-length$/i;
 const contentTypeRegex = /^content-type$/i;
@@ -32,9 +33,18 @@ const hasPermission = (userCtx, permission) => {
   return _.some(roles, role => _.includes(userCtx.roles, role));
 };
 
+const assertDbAdmin = async (req) => {
+  const userCtx = await module.exports.getUserCtx(req);
+  if (!roles.isDbAdmin(userCtx)) {
+    throw new PermissionError('User is not an admin');
+  }
+  return userCtx;
+};
+
 module.exports = {
   isOnlineOnly: roles.isOnlineOnly,
   isDbAdmin: roles.isDbAdmin,
+  assertDbAdmin,
   getUserSettings: users.getUserSettings,
   hasAllPermissions: (userCtx, permissions) => {
     if (roles.isDbAdmin(userCtx)) {
