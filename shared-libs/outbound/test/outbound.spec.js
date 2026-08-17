@@ -437,17 +437,17 @@ describe('outbound shared library', () => {
         });
     });
 
-    it('should support pushing with custom header auth', () => {
+    it('should send configured headers from value and value_key', () => {
       const payload = {
         some: 'data'
       };
 
       const conf = {
         destination: {
-          auth: {
-            type: 'Header',
-            name: 'x-api-key',
-            value_key: 'test-config'
+          headers: {
+            'Content-Type': { value: 'application/json' },
+            'X-Source': { value: 'CHT' },
+            'x-api-key': { value_key: 'dhis2-outbound-api-key' }
           },
           base_url: 'http://test',
           path: '/foo'
@@ -460,7 +460,7 @@ describe('outbound shared library', () => {
       return outbound.__get__('sendPayload')(payload, conf)
         .then(() => {
           assert.equal(secureSettings.getCredentials.callCount, 1);
-          assert.deepEqual(secureSettings.getCredentials.args, [['test-config']]);
+          assert.deepEqual(secureSettings.getCredentials.args, [['dhis2-outbound-api-key']]);
           assert.equal(request.post.callCount, 1);
           assert.deepEqual(request.post.args, [
             [
@@ -469,6 +469,8 @@ describe('outbound shared library', () => {
                 body: { some: 'data' },
                 timeout: 10000,
                 headers: {
+                  'content-type': 'application/json',
+                  'x-source': 'CHT',
                   'x-api-key': 'secret-key'
                 }
               }
@@ -477,7 +479,7 @@ describe('outbound shared library', () => {
         });
     });
 
-    it('should allow destination and header auth together', () => {
+    it('should allow destination headers and header auth together', () => {
       const payload = {
         some: 'data'
       };
@@ -486,12 +488,12 @@ describe('outbound shared library', () => {
         destination: {
           auth: {
             type: 'Header',
-            name: 'x-api-key',
+            name: 'Authorization',
             value_key: 'test-config'
           },
           headers: {
-            'content-type': 'application/json',
-            'x-correlation-id': 'abc123'
+            'content-type': { value: 'application/json' },
+            'x-correlation-id': { value: 'abc123' }
           },
           base_url: 'http://test',
           path: '/foo'
@@ -513,7 +515,7 @@ describe('outbound shared library', () => {
                 headers: {
                   'content-type': 'application/json',
                   'x-correlation-id': 'abc123',
-                  'x-api-key': 'secret-key'
+                  'authorization': 'secret-key'
                 }
               }
             ]
@@ -540,6 +542,111 @@ describe('outbound shared library', () => {
         })
         .catch(err => {
           assert.equal(err.message, 'destination.headers must be an object');
+        });
+    });
+
+    it('should fail when a header config value is not an object', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          base_url: 'http://test',
+          path: '/foo'
+        }
+      };
+
+      return outbound.__get__('sendPayload')(payload, conf)
+        .then(() => {
+          assert.fail('This send should have failed');
+        })
+        .catch(err => {
+          assert.equal(
+            err.message,
+            `destination.headers['Content-Type'] must be an object with 'value' or 'value_key'`
+          );
+        });
+    });
+
+    it('should fail when a header has neither value nor value_key', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          headers: {
+            'X-Source': {}
+          },
+          base_url: 'http://test',
+          path: '/foo'
+        }
+      };
+
+      return outbound.__get__('sendPayload')(payload, conf)
+        .then(() => {
+          assert.fail('This send should have failed');
+        })
+        .catch(err => {
+          assert.equal(
+            err.message,
+            `destination.headers['X-Source'] must have exactly one of 'value' or 'value_key'`
+          );
+        });
+    });
+
+    it('should fail when a header has both value and value_key', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          headers: {
+            'x-api-key': { value: 'plain', value_key: 'secret-key' }
+          },
+          base_url: 'http://test',
+          path: '/foo'
+        }
+      };
+
+      return outbound.__get__('sendPayload')(payload, conf)
+        .then(() => {
+          assert.fail('This send should have failed');
+        })
+        .catch(err => {
+          assert.equal(
+            err.message,
+            `destination.headers['x-api-key'] must have exactly one of 'value' or 'value_key'`
+          );
+        });
+    });
+
+    it('should fail when a header value is not a string', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          headers: {
+            'X-Retry': { value: 3 }
+          },
+          base_url: 'http://test',
+          path: '/foo'
+        }
+      };
+
+      return outbound.__get__('sendPayload')(payload, conf)
+        .then(() => {
+          assert.fail('This send should have failed');
+        })
+        .catch(err => {
+          assert.equal(err.message, `destination.headers['X-Retry'].value must be a string`);
         });
     });
 
@@ -658,13 +765,13 @@ describe('outbound shared library', () => {
   });
 
   describe('handleHeaderAuth', () => {
-    it('throws when header auth name is missing', async () => {
+    it('throws for unsupported header name', async () => {
       const handleHeaderAuth = outbound.__get__('handleHeaderAuth');
       try {
-        await handleHeaderAuth({ value_key: 'header-key' }, {});
+        await handleHeaderAuth({ name: 'X-Custom' }, {});
         assert.fail('should have thrown');
       } catch (err) {
-        assert.include(err.message, 'No auth.name');
+        assert.include(err.message, 'Unsupported header name');
       }
     });
   });

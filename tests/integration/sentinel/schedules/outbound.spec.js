@@ -57,10 +57,11 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const destinationApp = express();
 const jsonParser = bodyParser.json({ limit: '32mb' });
-const inboxes = { working: [], broken: [] };
+const inboxes = { working: [], broken: [], headers: [] };
 destinationApp.use(jsonParser);
 destinationApp.post('/test-working', (req, res) => inboxes.working.push(req.body) && res.json('true'));
 destinationApp.post('/test-broken', (req, res) => inboxes.broken.push(req.body) && res.status(500).end());
+destinationApp.post('/test-headers', (req, res) => inboxes.headers.push(req.headers) && res.json('true'));
 let server;
 let port;
 let sentinelDate;
@@ -101,7 +102,10 @@ describe('Outbound', () => {
     server.close();
   });
 
-  afterEach(() => utils.revertDb([], true).then(() => wipeTasks()));
+  afterEach(() => {
+    inboxes.headers.length = 0;
+    return utils.revertDb([], true).then(() => wipeTasks());
+  });
 
   it('should find existing outbound tasks and execute them, leaving them if the send was unsuccessful', () => {
     const settings = {
@@ -151,6 +155,50 @@ describe('Outbound', () => {
         chai.expect(tasksResult.rows[1].value.deleted).to.be.true;
       })
       .then(checkInfoDocs);
+  });
+
+  it('should send configured custom headers', () => {
+    const waitForHeaderPush = () => {
+      if (inboxes.headers.length) {
+        return Promise.resolve();
+      }
+      return utils.delayPromise(waitForHeaderPush, 100);
+    };
+
+    const settings = {
+      outbound: {
+        with_headers: {
+          destination: {
+            base_url: utils.hostURL(port),
+            path: '/test-headers',
+            headers: {
+              'X-Source': { value: 'CHT' }
+            }
+          },
+          mapping: {
+            id: 'doc._id'
+          },
+          relevant_to: 'doc._id === "header-test"'
+        }
+      },
+      transitions: {
+        mark_for_outbound: true,
+      }
+    };
+
+    if (!server.listening) {
+      server = destinationApp.listen(port);
+    }
+
+    return utils
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
+      .then(() => utils.saveDocs([{ _id: 'header-test' }]))
+      .then(() => sentinelUtils.waitForSentinel(['header-test']))
+      .then(() => waitForHeaderPush())
+      .then(() => {
+        chai.expect(inboxes.headers).to.have.lengthOf(1);
+        chai.expect(inboxes.headers[0]['x-source']).to.equal('CHT');
+      });
   });
 
   const checkInfoDocs = (retry = 10) => {
