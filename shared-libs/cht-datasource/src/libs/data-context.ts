@@ -1,4 +1,4 @@
-import { hasField, isRecord } from './core';
+import { DataObject, hasField, isRecord } from './core';
 import { isLocalDataContext, LocalDataContext } from '../local/libs/data-context';
 import { assertRemoteDataContext, isRemoteDataContext, RemoteDataContext } from '../remote/libs/data-context';
 
@@ -16,8 +16,24 @@ export interface DataContext {
   bind: <T>(fn: (ctx: DataContext) => T) => T;
 }
 
+/**
+ * Service providing access to the app settings. These settings must be guaranteed to remain current for as long as the
+ * service is used. Settings data returned from future calls to service methods should reflect the current state of the
+ * system's settings at the time and not just the state of the settings when the service was first created.
+ */
+export type SettingsService = Readonly<{ getAll: () => DataObject }>;
+
+/** @internal */
+export const assertSettingsService: (settings: unknown) => asserts settings is SettingsService = (
+  settings: unknown
+) => {
+  if (!isRecord(settings) || !hasField(settings, { name: 'getAll', type: 'function' })) {
+    throw new Error(`Invalid settings service [${JSON.stringify(settings)}].`);
+  }
+};
+
 const isDataContext = (context: unknown): context is DataContext => {
-  return isRecord(context) && hasField(context, { name: 'bind', type: 'function' });
+  return isRecord(context) && hasField(context, { name: 'bind', type: 'function' }) && 'settings' in context;
 };
 
 /** @internal */

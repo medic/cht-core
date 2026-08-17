@@ -6,12 +6,13 @@ const personFactory = require('@factories/cht/contacts/person');
 const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
 const sentinelUtils = require('@utils/sentinel');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Tasks Sidebar Filter', () => {
   const places = placeFactory.generateHierarchy();
   const districtHospital = places.get('district_hospital');
   const healthCenter1 = places.get('health_center');
-  const clinic1 = places.get('clinic');
+  const clinic1 = places.get(CONTACT_TYPES.CLINIC);
 
   const healthCenter2 = placeFactory.place().build({
     name: 'Health Center 2',
@@ -21,7 +22,7 @@ describe('Tasks Sidebar Filter', () => {
 
   const clinic2 = placeFactory.place().build({
     name: 'Clinic 2',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     parent: healthCenter2,
   });
 

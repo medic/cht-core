@@ -15,6 +15,7 @@ import { PipesService } from '@mm-services/pipes.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
+import { CONTACT_TYPES } from '@medic/constants';
 
 describe('XmlForms service', () => {
   let dbGet;
@@ -65,6 +66,7 @@ describe('XmlForms service', () => {
     feedbackService = { submit: sinon.stub() };
     getTypeId = sinon.stub().callsFake(contact => contact.type === 'contact' ? contact.contact_type : contact.type);
     contextUtils = {};
+    contextUtils.get = () => Promise.resolve(contextUtils);
     error = sinon.stub(console, 'error');
     warn = sinon.stub(console, 'warn');
 
@@ -78,7 +80,7 @@ describe('XmlForms service', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: DbService, useValue: { get: () => ({
-          query: dbQuery, get: dbGet, getAttachment: dbGetAttachment
+          allDocs: dbQuery, get: dbGet, getAttachment: dbGetAttachment
         } ) } },
         { provide: ChangesService, useValue: { subscribe: Changes } },
         { provide: AuthService, useValue: { has: hasAuth } },
@@ -328,7 +330,7 @@ describe('XmlForms service', () => {
       UserContact.resolves();
       const service = getService();
       getContactType.resolves({ person: false });
-      return service.list({ doc: { type: 'district_hospital' } }).then(actual => {
+      return service.list({ doc: { type: CONTACT_TYPES.DISTRICT_HOSPITAL } }).then(actual => {
         assert.deepEqual(_.map(actual, 'internalId'), [
           'zero',
           'one',
@@ -410,7 +412,7 @@ describe('XmlForms service', () => {
       getContactType.resolves({ person: false });
       getTypeId.returns('the correct type');
 
-      const doc = { type: 'clinic', contact_type: 'not_a_clinic', _id: 'uuid' };
+      const doc = { type: CONTACT_TYPES.CLINIC, contact_type: 'not_a_clinic', _id: 'uuid' };
 
       return service.list({ doc }).then(result => {
         expect(getTypeId.callCount).to.equal(6);
@@ -582,6 +584,44 @@ describe('XmlForms service', () => {
       userContactSummary.resolves({ context: { isAlive: false } });
       const result2 = await service.list({ doc: { sex: 'female', type: 'person' } });
       expect(result2).to.deep.equal([given[1].doc]);
+    });
+
+    it('filter with extensionLib in context expression', () => {
+      const given = [
+        {
+          id: 'form-0',
+          doc: {
+            _id: 'form-0',
+            internalId: 'visit',
+            context: {
+              expression: 'extensionLib("check.js", contact)'
+            },
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form-1',
+          doc: {
+            _id: 'form-1',
+            internalId: 'stock-report',
+            context: {
+              expression: '!extensionLib("check.js", contact)'
+            },
+            _attachments: { xml: { something: true } },
+          },
+        }
+      ];
+      contextUtils.extensionLib = (libId, contact) => {
+        return contact.eligible === true;
+      };
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves({ name: 'Frank' });
+      const service = getService();
+      getContactType.resolves({ person: false });
+      return service.list({ doc: { eligible: true } }).then(actual => {
+        expect(actual.length).to.equal(1);
+        expect(actual[0]).to.deep.equal(given[0].doc);
+      });
     });
 
     it('broken custom functions log clean errors and count as filtered', () => {
@@ -1217,44 +1257,82 @@ describe('XmlForms service', () => {
 
   });
 
-  describe('get', () => {
+  describe('getFormConfig', () => {
 
-    it('gets valid form by id with "xml" attachment', () => {
-      const internalId = 'birth';
-      const expected = {
-        type: 'form',
+    beforeEach(() => {
+      dbGetAttachment.resolves('blob');
+      fileReaderService.resolves('content');
+    });
+
+    it('loads a contact form doc by _id and returns a FormConfig with the attachment contents', async () => {
+      const formId = 'form:contact:person';
+      const formDoc = {
+        _id: formId,
+        internalId: 'contact:person',
         _attachments: {
           xml: { stub: true },
           'model.xml': { stub: true },
           'form.html': { stub: true },
-        }
+        },
       };
       dbQuery.resolves([]);
-      dbGet.resolves(expected);
+      dbGet.resolves(formDoc);
+      dbGetAttachment.withArgs(formId, 'xml').resolves('xml-blob');
+      dbGetAttachment.withArgs(formId, 'form.html').resolves('html-blob');
+      dbGetAttachment.withArgs(formId, 'model.xml').resolves('model-blob');
+      fileReaderService.withArgs('xml-blob').resolves('<root><repeat nodeset="/data/children"/></root>');
+      fileReaderService.withArgs('html-blob').resolves('<div>html</div>');
+      fileReaderService.withArgs('model-blob').resolves('<model/>');
       const service = getService();
-      return service.get(internalId).then(actual => {
-        expect(actual).to.deep.equal(expected);
-        expect(dbGet.callCount).to.equal(1);
-        expect(dbGet.args[0][0]).to.equal(`form:${internalId}`);
-      });
+
+      const config = await service.getFormConfig('contact', formId);
+
+      expect(config.doc).to.deep.equal(formDoc);
+      expect(config.type).to.equal('contact');
+      expect(config.html).to.equal('<div>html</div>');
+      expect(config.model).to.equal('<model/>');
+      expect(config.repeatPaths).to.deep.equal(['/data/children']);
+      expect(dbGet).to.have.been.calledOnceWithExactly(formId);
+      expect(dbGetAttachment.args).to.deep.equal([
+        [formId, 'xml'],
+        [formId, 'form.html'],
+        [formId, 'model.xml'],
+      ]);
     });
 
-    it('gets valid form by id with ".xml" file extension', () => {
-      const internalId = 'birth';
-      const expected = {
-        type: 'form',
+    it('resolves a non-contact form doc via the internalId lookup', async () => {
+      const internalId = 'pregnancy';
+      const formDoc = {
+        _id: `form:${internalId}`,
+        internalId,
         _attachments: {
           'something.xml': { stub: true },
           'model.xml': { stub: true },
           'form.html': { stub: true },
-        }
+        },
       };
-      dbGet.resolves(expected);
       dbQuery.resolves([]);
+      dbGet.resolves(formDoc);
+      dbGetAttachment.withArgs(formDoc._id, 'something.xml').resolves('xml-blob');
+      dbGetAttachment.withArgs(formDoc._id, 'form.html').resolves('html-blob');
+      dbGetAttachment.withArgs(formDoc._id, 'model.xml').resolves('model-blob');
+      fileReaderService.withArgs('xml-blob').resolves('<root/>');
+      fileReaderService.withArgs('html-blob').resolves('<div>html</div>');
+      fileReaderService.withArgs('model-blob').resolves('<model/>');
       const service = getService();
-      return service.get(internalId).then(actual => {
-        expect(actual).to.equal(expected);
-      });
+
+      const config = await service.getFormConfig('report', internalId);
+
+      expect(config.doc).to.deep.equal(formDoc);
+      expect(config.type).to.equal('report');
+      expect(config.html).to.equal('<div>html</div>');
+      expect(config.model).to.equal('<model/>');
+      expect(dbGet).to.have.been.calledOnceWithExactly(formDoc._id);
+      expect(dbGetAttachment.args).to.deep.equal([
+        [formDoc._id, 'something.xml'],
+        [formDoc._id, 'form.html'],
+        [formDoc._id, 'model.xml'],
+      ]);
     });
 
     it('returns error, logs when getById fails', () => {
@@ -1262,7 +1340,7 @@ describe('XmlForms service', () => {
       dbGet.rejects('getById fails');
       dbQuery.rejects('getByView fails');
       const service = getService();
-      return service.get(internalId)
+      return service.getFormConfig('report', internalId)
         .then(() => {
           assert.fail('getById fails');
         })
@@ -1279,7 +1357,7 @@ describe('XmlForms service', () => {
       dbGet.rejects({status: 404 });
       dbQuery.rejects('getByView fails');
       const service = getService();
-      return service.get(internalId)
+      return service.getFormConfig('report', internalId)
         .then(() => {
           assert.fail('getByView fails');
         })
@@ -1292,33 +1370,25 @@ describe('XmlForms service', () => {
         });
     });
 
-    it('returns error when cannot find xform attachment', () => {
+    it('returns error when cannot find xform attachment', async () => {
       const internalId = 'birth';
-      const expectedErrorTitle = 'Error in XMLFormService : hasRequiredAttachments : ';
-      const expectedErrorDetail = `The form "${internalId}" doesn't have required attachments`;
       const expected = {
+        _id: `form:${internalId}`,
         type: 'form',
         _attachments: { 'something.txt': { stub: true } }
       };
       dbGet.resolves(expected);
       dbQuery.resolves([]);
       const service = getService();
-      return service
-        .get(internalId)
-        .then(() => {
-          assert.fail('expected error to be thrown');
-        })
-        .catch(err => {
-          expect(err.message).to.equal(expectedErrorTitle + expectedErrorDetail);
-          expect(error.callCount).to.equal(1);
-          expect(error.args[0][0]).to.equal(expectedErrorTitle);
-          expect(error.args[0][1]).to.equal(expectedErrorDetail);
-        });
+      await expect(service.getFormConfig('report', internalId)).to.be.rejectedWith(
+        `Could not get [xml] form attachment for form [${internalId}].`
+      );
     });
 
-    it('falls back to using view if no doc found', () => {
+    it('falls back to using view if no doc found', async () => {
       const internalId = 'birth';
       const expected = {
+        _id: `form:${internalId}`,
         internalId,
         _attachments: {
           'something.xml': { stub: true },
@@ -1334,15 +1404,14 @@ describe('XmlForms service', () => {
         ]
       });
       const service = getService();
-      return service.get(internalId).then(actual => {
-        expect(warn.callCount).to.equal(1);
-        expect(warn.args[0][0]).to.equal('Error in XMLFormService : getById : ');
-        expect(actual).to.deep.equal(expected);
-        expect(dbQuery.callCount).to.equal(1);
-        expect(dbQuery.args[0][0]).to.equal(`medic-client/doc_by_type`);
-        const options = dbQuery.args[0][1];
-        expect(options.include_docs).to.equal(true);
-        expect(options.key).to.deep.equal(['form']);
+
+      const config = await service.getFormConfig('report', internalId);
+
+      expect(warn.callCount).to.equal(1);
+      expect(warn.args[0][0]).to.equal('Error in XMLFormService : getById : ');
+      expect(config.doc).to.deep.equal(expected);
+      expect(dbQuery).to.have.been.calledOnceWithExactly({
+        include_docs: true, start_key: 'form:', end_key: 'form:\ufff0'
       });
     });
 
@@ -1363,7 +1432,7 @@ describe('XmlForms service', () => {
       });
       const service = getService();
       return service
-        .get(internalId)
+        .getFormConfig('report', internalId)
         .then(() => {
           assert.fail('expected error to be thrown');
         })
@@ -1389,7 +1458,7 @@ describe('XmlForms service', () => {
       });
       const service = getService();
       return service
-        .get(internalId)
+        .getFormConfig('report', internalId)
         .then(() => {
           assert.fail('expected error to be thrown');
         })
@@ -1402,95 +1471,28 @@ describe('XmlForms service', () => {
           expect(error.args[0][1]).to.equal(expectedErrorDetail);
         });
     });
-  });
 
-  describe('getDocAndFormAttachment', () => {
-
-    it('fails if no forms found', () => {
-      const internalId = 'birth';
-      const expectedErrorTitle = 'Error in XMLFormService : getDocAndFormAttachment : ';
-      const expectedErrorDetail = `The form "${internalId}" doesn't have an xform attachment`;
-      dbQuery.resolves([]);
-      dbGet.resolves({
-        _id: 'form:death',
-        _attachments: {
-          'something.xml': { stub: true },
-          'model.xml': { stub: true },
-          'form.html': { stub: true },
-        },
-        internalId: 'birth'
-      });
-      dbGetAttachment.rejects({ status: 404 });
-      const service = getService();
-      return service
-        .getDocAndFormAttachment(internalId)
-        .then(() => {
-          assert.fail('expected error to be thrown');
-        })
-        .catch(err => {
-          expect(err.message).to.equal(expectedErrorTitle + expectedErrorDetail);
-          expect(error.callCount).to.equal(1);
-          expect(error.args[0][0]).to.equal(expectedErrorTitle);
-          expect(error.args[0][1]).to.equal(expectedErrorDetail);
-        });
-    });
-
-    it('fails if failed to get forms, but not 404', () => {
-      const internalId = 'birth';
-      const expectedErrorTitle = 'Error in XMLFormService : getDocAndFormAttachment : ';
-      const expectedErrorDetail = `Failed to get the form "${internalId}" xform attachment`;
-      dbQuery.resolves([]);
-      dbGet.resolves({
-        _id: 'form:death',
-        _attachments: {
-          'something.xml': { stub: true },
-          'model.xml': { stub: true },
-          'form.html': { stub: true },
-        },
-        internalId: 'birth'
-      });
-      dbGetAttachment.rejects();
-      const service = getService();
-      return service
-        .getDocAndFormAttachment(internalId)
-        .then(() => {
-          assert.fail('expected error to be thrown');
-        })
-        .catch(err => {
-          expect(err.message).to.equal(expectedErrorTitle + expectedErrorDetail);
-          expect(error.callCount).to.equal(1);
-          expect(error.args[0][0]).to.equal(expectedErrorTitle);
-          expect(error.args[0][1]).to.equal(expectedErrorDetail);
-        });
-    });
-
-    it('returns doc and xml', () => {
-      const internalId = 'birth';
+    it('rejects when the xform attachment is missing', async () => {
+      const formId = 'form:contact:person';
       const formDoc = {
-        _id: 'form:death',
+        _id: formId,
+        internalId: 'contact:person',
         _attachments: {
           xml: { stub: true },
           'model.xml': { stub: true },
           'form.html': { stub: true },
         },
-        internalId: 'birth'
       };
+      const expectedErrorMessage = `Could not get [xml] form attachment for form [${formId}].`;
       dbQuery.resolves([]);
       dbGet.resolves(formDoc);
-      dbGetAttachment.resolves('someblob');
-      fileReaderService.resolves('<form/>');
+      dbGetAttachment.withArgs(formId, 'xml').rejects({ status: 404 });
+      dbGetAttachment.withArgs(formId, 'form.html').resolves('html-blob');
+      dbGetAttachment.withArgs(formId, 'model.xml').resolves('model-blob');
+      fileReaderService.resolves('content');
       const service = getService();
-      return service
-        .getDocAndFormAttachment(internalId)
-        .then((result) => {
-          expect(result.doc).to.deep.equal(formDoc);
-          expect(result.xml).to.deep.equal('<form/>');
-          expect(dbGetAttachment.callCount).to.equal(1);
-          expect(dbGetAttachment.args[0][0]).to.equal('form:death');
-          expect(dbGetAttachment.args[0][1]).to.equal('xml');
-          expect(fileReaderService.callCount).to.equal(1);
-          expect(fileReaderService.args[0][0]).to.equal('someblob');
-        });
+
+      await expect(service.getFormConfig('contact', formId)).to.be.rejectedWith(expectedErrorMessage);
     });
 
   });

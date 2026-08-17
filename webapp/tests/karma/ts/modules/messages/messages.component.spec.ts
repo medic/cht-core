@@ -124,7 +124,7 @@ describe('Messages Component', () => {
   });
 
   it('listTrackBy() should return unique identifier', () => {
-    const messageWithDoc = { key: '134', id: 'abc', doc: { _rev: '567', id: 'xyz' } };
+    const messageWithDoc = { key: '134', id: 'abc', doc: { _id: 'xyz', _rev: '567' } };
     const messageNoDoc = { key: '134', id: 'abc' };
 
     const resultWithDoc = component.listTrackBy(0, messageWithDoc);

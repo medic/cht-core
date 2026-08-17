@@ -12,10 +12,11 @@ import {
   isContactType,
   isFreetextType,
   isContactTypeAndFreetextType,
-  assertUuidQualifier
+  assertUuidQualifier,
+  assertIdsQualifier
 } from '../../src/libs/parameter-validators';
 import { InvalidArgumentError } from '../../src';
-import { DOC_TYPES } from '@medic/constants';
+import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
 
 describe('libs parameter-validators', () => {
   describe('assertTypeQualifier', () => {
@@ -241,6 +242,43 @@ describe('libs parameter-validators', () => {
     });
   });
 
+  describe('assertIdsQualifier', () => {
+    it('should pass when given a qualifier with an array of non-empty strings', () => {
+      expect(() => assertIdsQualifier({ ids: ['a', 'b', 'c'] })).to.not.throw();
+    });
+
+    it('should pass when given a qualifier with an empty array', () => {
+      expect(() => assertIdsQualifier({ ids: [] })).to.not.throw();
+    });
+
+    it('should throw InvalidArgumentError when the ids property is not an array', () => {
+      expect(() => assertIdsQualifier({ ids: 'abc' }))
+        .to.throw(InvalidArgumentError, `Invalid identifiers [{"ids":"abc"}].`);
+    });
+
+    it('should throw InvalidArgumentError when not given an object', () => {
+      expect(() => assertIdsQualifier('abc')).to.throw(InvalidArgumentError, `Invalid identifiers ["abc"].`);
+    });
+
+    it('should throw InvalidArgumentError when given null', () => {
+      expect(() => assertIdsQualifier(null)).to.throw(InvalidArgumentError, `Invalid identifiers [null].`);
+    });
+
+    it('should throw InvalidArgumentError when given undefined', () => {
+      expect(() => assertIdsQualifier(undefined)).to.throw(InvalidArgumentError);
+    });
+
+    it('should throw InvalidArgumentError when an element is not a string', () => {
+      expect(() => assertIdsQualifier({ ids: ['a', 123, 'c'] }))
+        .to.throw(InvalidArgumentError, `Invalid identifiers [{"ids":["a",123,"c"]}].`);
+    });
+
+    it('should throw InvalidArgumentError when an element is an empty string', () => {
+      expect(() => assertIdsQualifier({ ids: ['a', '', 'c'] }))
+        .to.throw(InvalidArgumentError, `Invalid identifiers [{"ids":["a","","c"]}].`);
+    });
+  });
+
   describe('assertPersonInput', () => {
     const personInput = {
       name: 'apoorva',
@@ -347,7 +385,7 @@ describe('libs parameter-validators', () => {
   describe('assertPlaceInput', () => {
     const placeInput = {
       name: 'h1',
-      type: 'district_hospital'
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL
     } as const;
 
     [

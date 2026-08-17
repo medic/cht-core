@@ -2,10 +2,11 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const messagesUtils = require('@utils/messages');
 const { assert } = require('chai');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const CLINIC = utils.deepFreeze({
   _id: 'clinic',
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
 });
 
 const ORIGINAL_PERSON = utils.deepFreeze({

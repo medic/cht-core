@@ -240,6 +240,10 @@ const assignValueToInput = (input, inputName, value) => {
     return;
   }
 
+  if (Array.isArray(value) && value.every(item => !_isPlainObject(item))) {
+    value = value.join(' ');
+  }
+
   if (_isPlainObject(value)) {
     console.debug(`Android App Launcher Widget :: Cannot set value to "${inputName}" field, value is an object.`);
     return;

@@ -10,13 +10,16 @@ const SUITES = {
     './navigation/**/*.wdio-spec.js',
     './old-navigation/**/*.wdio-spec.js',
     './privacy-policy/**/*.wdio-spec.js',
+    './ui-extensions/**/*.wdio-spec.js',
   ],
-  workflows: [
+  workflows_1: [
     './contacts/**/*.wdio-spec.js',
+    './sms/**/*.wdio-spec.js',
+  ],
+  workflows_2: [
     './reports/**/*.wdio-spec.js',
     './targets/**/*.wdio-spec.js',
     './tasks/**/*.wdio-spec.js',
-    './sms/**/*.wdio-spec.js',
   ],
   data: [
     './db/**/*.wdio-spec.js',

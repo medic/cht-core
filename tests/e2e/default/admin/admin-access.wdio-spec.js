@@ -4,10 +4,11 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const adminPage = require('@page-objects/default/admin/admin.wdio.page');
 const common = require('@page-objects/default/common/common.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Acessing the admin app', () => {
   const offlineUser = userFactory.build({ username: 'offline-user-admin', isOffline: true });
-  const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
+  const parent = placeFactory.place().build({ _id: 'dist1', type: CONTACT_TYPES.DISTRICT_HOSPITAL });
 
   afterEach(async () => {
     await common.reloadSession();

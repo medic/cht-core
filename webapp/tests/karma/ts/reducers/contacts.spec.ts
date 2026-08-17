@@ -2,6 +2,7 @@ import { expect } from 'chai';
 
 import { Actions } from '@mm-actions/contacts';
 import { contactsReducer } from '@mm-reducers/contacts';
+import { CONTACT_TYPES } from '@medic/constants';
 
 describe('Contacts Reducer', () => {
   let state;
@@ -43,7 +44,7 @@ describe('Contacts Reducer', () => {
     it('should update empty state', () => {
       const contacts = [
         {  _id: '1', name: 'Centre 1', type: 'health_center' },
-        {  _id: '2', name: 'Facility 3', type: 'district_hospital' },
+        {  _id: '2', name: 'Facility 3', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
         {  _id: '3', name: 'Person 1', type: 'person' },
         {  _id: '4', name: 'Person 2', type: 'person' },
       ];
@@ -52,14 +53,14 @@ describe('Contacts Reducer', () => {
       expect(newState).to.deep.equal({
         // sorted by contact type order
         contacts: [
-          { _id: '2', name: 'Facility 3', type: 'district_hospital' },
+          { _id: '2', name: 'Facility 3', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
           { _id: '1', name: 'Centre 1', type: 'health_center' },
           { _id: '3', name: 'Person 1', type: 'person' },
           { _id: '4', name: 'Person 2', type: 'person' }
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
-          ['2', { _id: '2', name: 'Facility 3', type: 'district_hospital' }],
+          ['2', { _id: '2', name: 'Facility 3', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
           ['3', { _id: '3', name: 'Person 1', type: 'person' }],
           ['4', { _id: '4', name: 'Person 2', type: 'person' }],
         ]),
@@ -75,16 +76,16 @@ describe('Contacts Reducer', () => {
     it('should add new contacts', () => {
       state = {
         contacts: [
-          { _id: '2', name: 'Facility 3', type: 'district_hospital' },
+          { _id: '2', name: 'Facility 3', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
-          ['2', { _id: '2', name: 'Facility 3', type: 'district_hospital' }],
+          ['2', { _id: '2', name: 'Facility 3', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
         ])
       };
       const newContacts = [
-        { _id: '3', name: 'Facility 2', type: 'district_hospital' },
+        { _id: '3', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
         { _id: '4', name: 'Person 1', type: 'person' },
       ];
 
@@ -92,15 +93,15 @@ describe('Contacts Reducer', () => {
 
       expect(newState).to.deep.equal({
         contacts: [
-          { _id: '3', name: 'Facility 2', type: 'district_hospital' },
-          { _id: '2', name: 'Facility 3', type: 'district_hospital' },
+          { _id: '3', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
+          { _id: '2', name: 'Facility 3', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
           { _id: '1', name: 'Centre 1', type: 'health_center' },
           { _id: '4', name: 'Person 1', type: 'person' }
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
-          ['2', { _id: '2', name: 'Facility 3', type: 'district_hospital' }],
-          ['3', { _id: '3', name: 'Facility 2', type: 'district_hospital' }],
+          ['2', { _id: '2', name: 'Facility 3', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
+          ['3', { _id: '3', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
           ['4', { _id: '4', name: 'Person 1', type: 'person' }],
         ])
       });
@@ -109,31 +110,31 @@ describe('Contacts Reducer', () => {
     it('should update existing contacts', () => {
       state = {
         contacts: [
-          { _id: '2', name: 'Facility 3', type: 'district_hospital' },
+          { _id: '2', name: 'Facility 3', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
-          ['2', { _id: '2', name: 'Facility 3', type: 'district_hospital' }],
+          ['2', { _id: '2', name: 'Facility 3', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
         ])
       };
       const updatedContacts = [
-        { _id: '2', name: 'Facility 2', type: 'district_hospital'},
-        { _id: '3', name: 'Random Facility', type: 'district_hospital'}
+        { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL},
+        { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL}
       ];
 
       const newState = contactsReducer(state, Actions.updateContactsList(updatedContacts));
 
       expect(newState).to.deep.equal({
         contacts: [
-          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
-          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
+          { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL},
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
+          ['2', { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
+          ['3', { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
         ])
       });
     });
@@ -143,26 +144,26 @@ describe('Contacts Reducer', () => {
     it('should remove a contact from the list', () => {
       state = {
         contacts: [
-          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
-          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
+          { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL},
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
+          ['2', { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
+          ['3', { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
         ])
       };
       const newState = contactsReducer(state, Actions.removeContactFromList({ _id: '2'}));
 
       expect(newState).to.deep.equal({
         contacts: [
-          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL},
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
-          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
+          ['3', { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
         ])
       });
     });
@@ -170,14 +171,14 @@ describe('Contacts Reducer', () => {
     it('should work when the contact is not in the list', () => {
       state = {
         contacts: [
-          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
-          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
+          { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL},
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
+          ['2', { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
+          ['3', { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
         ])
       };
 
@@ -185,14 +186,14 @@ describe('Contacts Reducer', () => {
 
       expect(newState).to.deep.equal({
         contacts: [
-          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
-          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
+          { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL},
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
+          ['2', { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
+          ['3', { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
         ])
       });
     });
@@ -207,14 +208,14 @@ describe('Contacts Reducer', () => {
     it('should reset list properties', () => {
       state = {
         contacts: [
-          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
-          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
+          { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL},
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
+          ['2', { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
+          ['3', { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
         ]),
         selected: [],
         filters: {},
@@ -352,14 +353,14 @@ describe('Contacts Reducer', () => {
     it('should set selected contact with full contacts list', () => {
       state = {
         contacts: [
-          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
-          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
+          { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL},
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
+          ['2', { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
+          ['3', { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
         ]),
       };
       const selected = { _id: 'selected_contact', some: 'data' };
@@ -367,14 +368,14 @@ describe('Contacts Reducer', () => {
 
       expect(newState).to.deep.equal({
         contacts: [
-          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
-          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
+          { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL},
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
+          ['2', { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
+          ['3', { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
         ]),
         selected: { _id: 'selected_contact', some: 'data' },
       });
@@ -383,14 +384,14 @@ describe('Contacts Reducer', () => {
     it('should update selected contact', () => {
       state = {
         contacts: [
-          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
-          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
+          { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL},
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
+          ['2', { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
+          ['3', { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
         ]),
         selected: { _id: 'first_selected_contact', some: 'data' }
       };
@@ -399,14 +400,14 @@ describe('Contacts Reducer', () => {
 
       expect(newState).to.deep.equal({
         contacts: [
-          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
-          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
+          { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL},
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
+          ['2', { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
+          ['3', { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
         ]),
         selected: { _id: 'second_selected_contact', some: 'other data' },
       });
@@ -457,14 +458,14 @@ describe('Contacts Reducer', () => {
     it('should update a selected contact with the summary', () => {
       state = {
         contacts: [
-          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
-          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
+          { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL},
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
+          ['2', { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
+          ['3', { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
         ]),
         selected: { _id: 'first_selected_contact', some: 'data' }
       };
@@ -473,14 +474,14 @@ describe('Contacts Reducer', () => {
 
       expect(newState).to.deep.equal({
         contacts: [
-          { _id: '2', name: 'Facility 2', type: 'district_hospital' },
-          { _id: '3', name: 'Random Facility', type: 'district_hospital'},
+          { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
+          { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL},
           { _id: '1', name: 'Centre 1', type: 'health_center' },
         ],
         contactsById: new Map([
           ['1', { _id: '1', name: 'Centre 1', type: 'health_center' }],
-          ['2', { _id: '2', name: 'Facility 2', type: 'district_hospital' }],
-          ['3', { _id: '3', name: 'Random Facility', type: 'district_hospital' }],
+          ['2', { _id: '2', name: 'Facility 2', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
+          ['3', { _id: '3', name: 'Random Facility', type: CONTACT_TYPES.DISTRICT_HOSPITAL }],
         ]),
         selected: { _id: 'first_selected_contact', some: 'data', summary: { some: 'summary' } }
       });

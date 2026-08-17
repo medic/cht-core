@@ -15,9 +15,9 @@ const getPlace = (context, type, nameSuffix) => {
   };
 };
 
-const getDistrictHospital = context => getPlace(context, 'district_hospital', 'Hospital');
+const getDistrictHospital = context => getPlace(context, CONTACT_TYPES.DISTRICT_HOSPITAL, 'Hospital');
 const getHealthCenter = context => getPlace(context, CONTACT_TYPES.HEALTH_CENTER, 'Health Center');
-const getHousehold = context => getPlace(context, 'clinic', 'Household');
+const getHousehold = context => getPlace(context, CONTACT_TYPES.CLINIC, 'Household');
 
 const getPerson = (context, role) => {
   return {

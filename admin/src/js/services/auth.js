@@ -2,14 +2,11 @@ angular.module('inboxServices').factory('Auth',
   function(
     $log,
     DataContext,
-    Session,
-    Settings
+    Session
   ) {
 
     'use strict';
     'ngInject';
-
-    const datasource = DataContext.getDatasource();
 
     /**
      * Receives a list of groups of permissions and returns a promise that will be resolved if the
@@ -23,13 +20,8 @@ angular.module('inboxServices').factory('Auth',
         return has(permissionsGroupList);
       }
 
-      return Settings()
-        .then(settings => {
-          if (!settings) {
-            $log.debug('AuthService :: CHT-Core settings not configured.');
-            return false;
-          }
-
+      return DataContext
+        .then(dataContext => {
           const userCtx = Session.userCtx();
 
           if (!userCtx) {
@@ -37,7 +29,7 @@ angular.module('inboxServices').factory('Auth',
             return false;
           }
 
-          return datasource.v1.hasAnyPermission(permissionsGroupList, userCtx.roles, settings.permissions);
+          return dataContext.getDatasource().v1.hasAnyPermission(permissionsGroupList, userCtx.roles);
         })
         .catch(() => false);
     };
@@ -49,13 +41,8 @@ angular.module('inboxServices').factory('Auth',
      * @param permissions {string | string[]}
      */
     const has = (permissions) => {
-      return Settings()
-        .then(settings => {
-          if (!settings) {
-            $log.debug('AuthService :: CHT-Core settings not configured.');
-            return false;
-          }
-
+      return DataContext
+        .then(dataContext => {
           const userCtx = Session.userCtx();
 
           if (!userCtx) {
@@ -63,7 +50,7 @@ angular.module('inboxServices').factory('Auth',
             return false;
           }
 
-          return datasource.v1.hasPermissions(permissions, userCtx.roles, settings.permissions);
+          return dataContext.getDatasource().v1.hasPermissions(permissions, userCtx.roles);
         })
         .catch(() => false);
     };

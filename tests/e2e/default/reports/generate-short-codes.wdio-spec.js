@@ -5,10 +5,11 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const personFactory = require('@factories/cht/contacts/person');
 const place = require('@factories/cht/contacts/place');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Generating short codes', () => {
   const places = place.generateHierarchy();
-  const clinic = places.get('clinic');
+  const clinic = places.get(CONTACT_TYPES.CLINIC);
   const contact = personFactory.build({ parent: { _id: clinic._id, parent: clinic.parent }, phone: '+254712345670' });
 
   const forms = {

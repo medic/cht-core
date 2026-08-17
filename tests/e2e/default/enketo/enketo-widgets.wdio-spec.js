@@ -9,7 +9,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
-
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Enketo Widgets', () => {
   const PLACES = {
@@ -20,7 +20,7 @@ describe('Enketo Widgets', () => {
     bronx: 'Bronx',
     havendr: 'Harbor'
   };
-  const districtHospital = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
+  const districtHospital = placeFactory.place().build({ _id: 'dist1', type: CONTACT_TYPES.DISTRICT_HOSPITAL });
   const phoneNumber = '+40766565656';
   const offlineUser = userFactory.build({
     place: districtHospital._id,

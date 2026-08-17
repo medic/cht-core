@@ -10,7 +10,7 @@ describe('Person API', () => {
   const contact1 = utils.deepFreeze(personFactory.build({ name: 'contact1', role: 'chw_supervisor' }));
   const contact2 = utils.deepFreeze(personFactory.build({ name: 'contact2', role: 'program_officer' }));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
-  const place0 = utils.deepFreeze({ ...placeMap.get('clinic'), contact: { _id: contact0._id } });
+  const place0 = utils.deepFreeze({ ...placeMap.get(CONTACT_TYPES.CLINIC), contact: { _id: contact0._id } });
   const place1 = utils.deepFreeze({ ...placeMap.get(CONTACT_TYPES.HEALTH_CENTER), contact: { _id: contact1._id } });
   const place2 = utils.deepFreeze({ ...placeMap.get('district_hospital'), contact: { _id: contact2._id } });
 
@@ -298,7 +298,7 @@ describe('Person API', () => {
     it(`throws error for non-person type`, async () => {
       const personInput = {
         name: 'apoorva',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: contact0._id
       };
       const expectedError = `400 - ${JSON.stringify({

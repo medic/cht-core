@@ -41,7 +41,7 @@ describe('Create new lineage structure ', () => {
 
   it('should create new household', async () => {
     await contactPage.selectLHSRowByText(area);
-    await contactPage.addPlace({ type: 'clinic', placeName: household, contactName: householdContact });
+    await contactPage.addPlace({ type: CONTACT_TYPES.CLINIC, placeName: household, contactName: householdContact });
     await sentinelUtils.waitForSentinel(); // prevent stale element references
     expect(await contactPage.getPrimaryContactName()).to.equal(householdContact);
   });

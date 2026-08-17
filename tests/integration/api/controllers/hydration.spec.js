@@ -9,7 +9,7 @@ const password = 'passwordSUP3RS3CR37!';
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
-  type: 'district_hospital',
+  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
   name: 'Big Parent Hospital',
 };
 
@@ -67,7 +67,7 @@ const contacts = [
   },
   {
     _id: 'clinic1',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     name: 'clinic1',
     parent: { _id: 'hc1', parent: { _id: 'PARENT_PLACE' } },
     contact: { _id: 'chw1', parent: { _id: 'clinic1', parent: { _id: 'hc1', parent: { _id: 'PARENT_PLACE' } } } },
@@ -92,7 +92,7 @@ const contacts = [
   },
   {
     _id: 'DISTRICT_2',
-    type: 'district_hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     name: 'District2',
     contact: { _id: 'supervisor2', parent: { _id: 'DISTRICT_2' } },
   },
@@ -117,7 +117,7 @@ const contacts = [
   },
   {
     _id: 'clinic2',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     name: 'clinic2',
     parent: { _id: 'hc2', parent: { _id: 'DISTRICT_2' } },
     contact: { _id: 'patient3', parent: { _id: 'clinic2', parent: { _id: 'hc2', parent: { _id: 'DISTRICT_2' } } } },
@@ -147,7 +147,7 @@ const contacts = [
   },
   {
     _id: 'clinic_with_linked_docs',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     parent: { _id: 'center_with_linked_docs', parent: { _id: 'PARENT_PLACE' } },
     contact: { _id: 'chw_with_linked_docs' },
     linked_docs: {

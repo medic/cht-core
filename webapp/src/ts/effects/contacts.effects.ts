@@ -180,10 +180,15 @@ export class ContactsEffects {
   }
 
   private async loadTargetDoc(contactId, trackName) {
+    const selected = this.selectedContact;
+    if (!selected?.doc) {
+      return;
+    }
+
     const trackPerformance = this.performanceService.track();
 
     const targetDocs = await this.targetAggregateService.getTargetDocs(
-      this.selectedContact,
+      selected,
       this.userFacilityIds,
       this.userContactId
     );

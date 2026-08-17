@@ -47,7 +47,103 @@ const formatResponse = (docIds, hydratedDocs) => {
   });
 };
 
+/**
+ * @openapi
+ * components:
+ *   schemas:
+ *     HydrationResult:
+ *       type: object
+ *       required: [id]
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: The document uuid.
+ *         doc:
+ *           type: object
+ *           additionalProperties: true
+ *           description: The fully hydrated document. Present when the document is found.
+ *         error:
+ *           type: string
+ *           description: '"not_found" when the document is not found.'
+ */
 module.exports = {
+  /**
+   * @openapi
+   * /api/v1/hydrate:
+   *   get:
+   *     summary: Hydrate documents by id (GET)
+   *     operationId: v1HydrateGet
+   *     description: >
+   *       Accepts a JSON array of document uuids and returns fully hydrated documents, in the same
+   *       order in which they were requested. When documents are not found, an entry with the
+   *       missing uuid and an error is added instead.
+   *     tags: [Bulk]
+   *     parameters:
+   *       - in: query
+   *         name: doc_ids
+   *         required: true
+   *         description: A JSON-encoded array of document uuids.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 type: string
+   *             example: ["id1", "id2", "id3"]
+   *     responses:
+   *       '200':
+   *         description: Hydrated documents
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/HydrationResult'
+   *       '400':
+   *         $ref: '#/components/responses/BadRequest'
+   *       '401':
+   *         $ref: '#/components/responses/Unauthorized'
+   *       '403':
+   *         $ref: '#/components/responses/Forbidden'
+   *   post:
+   *     summary: Hydrate documents by id (POST)
+   *     operationId: v1HydratePost
+   *     description: >
+   *       Accepts a JSON array of document uuids and returns fully hydrated documents, in the same
+   *       order in which they were requested. When documents are not found, an entry with the
+   *       missing uuid and an error is added instead.
+   *     tags: [Bulk]
+   *     x-permissions:
+   *       isOnline: true
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [doc_ids]
+   *             properties:
+   *               doc_ids:
+   *                 type: array
+   *                 description: A JSON array of document uuids.
+   *                 items:
+   *                   type: string
+   *     responses:
+   *       '200':
+   *         description: Hydrated documents
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/HydrationResult'
+   *       '400':
+   *         $ref: '#/components/responses/BadRequest'
+   *       '401':
+   *         $ref: '#/components/responses/Unauthorized'
+   *       '403':
+   *         $ref: '#/components/responses/Forbidden'
+   */
   hydrate: (req, res) => {
     const docIds = getDocIds(req);
     if (!docIds) {

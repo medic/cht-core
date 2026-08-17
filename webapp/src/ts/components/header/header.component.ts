@@ -6,8 +6,6 @@ import { Selectors } from '@mm-selectors/index';
 import { DBSyncService } from '@mm-services/db-sync.service';
 import { ModalService } from '@mm-services/modal.service';
 import { StorageInfoService } from '@mm-services/storage-info.service';
-import { SettingsService } from '@mm-services/settings.service';
-
 
 import { RouterLink } from '@angular/router';
 import { AuthDirective } from '@mm-directives/auth.directive';
@@ -20,7 +18,7 @@ import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 import { HeaderLogoPipe, ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 
-import { HeaderTab, HeaderTabsService } from '@mm-services/header-tabs.service';
+import { HeaderTab, HeaderTabsService, SidebarTab } from '@mm-services/header-tabs.service';
 
 export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
 
@@ -52,13 +50,13 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
   currentTab;
   bubbleCount = {};
   permittedTabs: HeaderTab[] = [];
+  headerTabsForLegacySidebar: SidebarTab[] = [];
 
   constructor(
     protected readonly store: Store,
     protected readonly dbSyncService: DBSyncService,
     protected readonly modalService: ModalService,
     protected readonly storageInfoService: StorageInfoService,
-    private settingsService: SettingsService,
     private headerTabsService: HeaderTabsService,
   ) {
     super(store, dbSyncService, modalService, storageInfoService);
@@ -68,10 +66,19 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
     super.ngOnInit();
     this.additionalSubscriptions();
     this.getHeaderTabs();
+    this.headerTabsService
+      .getSidebarTabs()
+      .then(tabs => this.headerTabsForLegacySidebar = tabs);
   }
 
   ngOnDestroy() {
     super.ngOnDestroy();
+  }
+
+  onLegacyMenuClick(tab: SidebarTab) {
+    if (tab.name === 'bug') {
+      this.openFeedback();
+    }
   }
 
   private additionalSubscriptions(){
@@ -93,9 +100,8 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
   }
 
   private getHeaderTabs() {
-    this.settingsService
-      .get()
-      .then(settings => this.headerTabsService.getAuthorizedTabs(settings))
+    this.headerTabsService
+      .getAuthorizedTabs()
       .then(permittedTabs => {
         this.permittedTabs = permittedTabs;
       });

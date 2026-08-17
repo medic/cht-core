@@ -9,7 +9,7 @@ const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Reports tab messages', () => {
   const places = placeFactory.generateHierarchy();
-  const clinic = places.get('clinic');
+  const clinic = places.get(CONTACT_TYPES.CLINIC);
   const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
 
   const contact = personFactory.build({ phone: '+12068881234', parent: healthCenter });

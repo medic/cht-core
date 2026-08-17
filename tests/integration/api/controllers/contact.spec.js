@@ -45,7 +45,7 @@ describe('Contact API', () => {
     notes: commonWord
   });
   const place0 = utils.deepFreeze({
-    ...placeMap.get('clinic'),
+    ...placeMap.get(CONTACT_TYPES.CLINIC),
     notes: commonWord,
     contact: { _id: contact0._id },
     parent: {
@@ -69,7 +69,6 @@ describe('Contact API', () => {
     role: 'patient',
     short_name: 'Mary'
   }));
-  const placeType = 'clinic';
   const clinic1 = utils.deepFreeze(placeFactory.place().build({
     parent: {
       _id: place1._id,
@@ -77,7 +76,7 @@ describe('Contact API', () => {
         _id: place2._id
       }
     },
-    type: placeType,
+    type: CONTACT_TYPES.CLINIC,
     contact: {},
     name: 'clinic1'
   }));
@@ -88,7 +87,7 @@ describe('Contact API', () => {
         _id: place2._id
       }
     },
-    type: placeType,
+    type: CONTACT_TYPES.CLINIC,
     contact: {},
     name: 'clinic2'
   }));
@@ -272,7 +271,7 @@ describe('Contact API', () => {
       const opts = {
         path: `${endpoint}`,
         qs: {
-          type: placeType
+          type: CONTACT_TYPES.CLINIC
         }
       };
       const responsePage = await utils.request(opts);
@@ -327,7 +326,7 @@ describe('Contact API', () => {
       const opts = {
         path: `${endpoint}`,
         qs: {
-          type: placeType,
+          type: CONTACT_TYPES.CLINIC,
           freetext: placeFreetext
         }
       };
@@ -375,7 +374,7 @@ describe('Contact API', () => {
       async () => {
         // first request
         const qs = {
-          type: placeType,
+          type: CONTACT_TYPES.CLINIC,
           limit: twoLimit
         };
         const opts = {
@@ -471,7 +470,7 @@ describe('Contact API', () => {
         const expectedContactIds = [place0._id, clinic1._id, clinic2._id];
         const qs = {
           freetext: placeFreetext,
-          type: placeType,
+          type: CONTACT_TYPES.CLINIC,
           limit: twoLimit
         };
         const opts = {
@@ -642,6 +641,94 @@ describe('Contact API', () => {
         .to.be.rejectedWith(
           `500 - {"code":500,"error":"Server error"}`
         );
+    });
+  });
+
+  describe('GET /api/v1/contact', () => {
+    const endpoint = '/api/v1/contact';
+    const allContactIds = [
+      ...expectedPeopleIds,
+      place0._id,
+      place1._id,
+      place2._id,
+      clinic1._id,
+      clinic2._id,
+    ];
+
+    // Walks every page using the returned cursor. The cursor param is omitted on the first request because
+    // `utils.request` serializes it through `URLSearchParams`, which would turn `null` into the literal "null".
+    const fetchAllPages = async (qs = {}) => {
+      const data = [];
+      let cursor = null;
+      do {
+        const page = await utils.request({ path: endpoint, qs: cursor ? { ...qs, cursor } : qs });
+        data.push(...page.data);
+        cursor = page.cursor;
+      } while (cursor);
+      return data;
+    };
+
+    it('returns a page of contacts for the given type', async () => {
+      const responsePage = await utils.request({ path: endpoint, qs: { type: personType } });
+      const responseIds = responsePage.data.map(doc => doc._id);
+
+      expect(responseIds).to.deep.equalInAnyOrder(expectedPeopleIds);
+      expect(responsePage.cursor).to.be.null;
+      // The doc-page returns full documents, not just ids.
+      responsePage.data.forEach(doc => expect(doc._rev).to.be.a('string'));
+    });
+
+    it('walks all contacts of the given type across two pages using the returned cursor', async () => {
+      const allData = await fetchAllPages({ type: personType, limit: 5 });
+      const responseIds = allData.map(doc => doc._id);
+
+      expect(responseIds).to.deep.equalInAnyOrder(expectedPeopleIds);
+    });
+
+    it('returns a page of contacts for the given ids', async () => {
+      const ids = [contact0._id, contact1._id, contact2._id];
+      const responsePage = await utils.request({ path: endpoint, qs: { ids: ids.join(',') } });
+      const responseIds = responsePage.data.map(doc => doc._id);
+
+      expect(responseIds).to.deep.equalInAnyOrder(ids);
+      expect(responsePage.cursor).to.be.null;
+      responsePage.data.forEach(doc => expect(doc._rev).to.be.a('string'));
+    });
+
+    it('walks the ids page across two pages using the returned cursor', async () => {
+      const allData = await fetchAllPages({ ids: allContactIds.join(','), limit: 5 });
+      const responseIds = allData.map(doc => doc._id);
+
+      expect(responseIds).to.deep.equalInAnyOrder(allContactIds);
+    });
+
+    it('throws 400 error when neither ids nor type is provided', async () => {
+      const opts = { path: endpoint };
+      await expect(utils.request(opts)).to.be.rejectedWith(
+        `400 - {"code":400,"error":"Either query param ids or type is required"}`
+      );
+    });
+
+    it('throws 400 error when the contact type is invalid', async () => {
+      const opts = { path: endpoint, qs: { type: 'invalidPerson' } };
+      await expect(utils.request(opts))
+        .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid contact type [invalidPerson]."}`);
+    });
+
+    it('throws error when user does not have can_view_contacts permission', async () => {
+      const opts = {
+        path: endpoint,
+        qs: { type: personType },
+        auth: { username: userNoPerms.username, password: userNoPerms.password },
+      };
+      await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+    });
+
+    it('throws 400 error when limit is invalid', async () => {
+      const opts = { path: endpoint, qs: { type: personType, limit: -1 } };
+      await expect(utils.request(opts)).to.be.rejectedWith(
+        `400 - {"code":400,"error":"The limit must be a positive integer: [\\"-1\\"]."}`
+      );
     });
   });
 });

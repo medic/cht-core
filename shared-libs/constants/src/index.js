@@ -17,6 +17,8 @@ const DOC_IDS = {
 // Contact Types
 const CONTACT_TYPES = {
   HEALTH_CENTER: 'health_center',
+  CLINIC: 'clinic',
+  DISTRICT_HOSPITAL: 'district_hospital',
 };
 
 // Document Types
@@ -24,6 +26,7 @@ const DOC_TYPES = {
   TOKEN_LOGIN: 'token_login',
   TRANSLATIONS: 'translations',
   DATA_RECORD: 'data_record',
+  UI_EXTENSION: 'ui-extension'
 };
 
 // HTTP Headers
@@ -56,10 +59,14 @@ const USER_ROLES = {
   COUCHDB_ADMIN: '_admin',
 };
 
-// Prefixes
+const DB_ADMIN_ROLES = [USER_ROLES.ADMIN, USER_ROLES.COUCHDB_ADMIN];
+
+// Document ID prefixes used for _all_docs prefix range scans.
 const PREFIXES = {
   COUCH_USER: 'org.couchdb.user:',
   TRANSLATIONS: 'messages-',
+  FORM: 'form:',
+  UI_EXTENSION: `${DOC_TYPES.UI_EXTENSION}:`
 };
 
 module.exports = {
@@ -68,6 +75,7 @@ module.exports = {
   HTTP_HEADERS,
   SENTINEL_METADATA,
   USER_ROLES,
+  DB_ADMIN_ROLES,
   CONTACT_TYPES,
   STANDARD_HTTP_HEADERS,
   PREFIXES,

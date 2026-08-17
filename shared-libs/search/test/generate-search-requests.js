@@ -1,6 +1,7 @@
 const chai = require('chai');
 const GenerateSeachRequests = require('../src/generate-search-requests');
 const service = GenerateSeachRequests.generate;
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('GenerateSearchRequests service', () => {
 
@@ -155,8 +156,8 @@ describe('GenerateSearchRequests service', () => {
   it('creates contacts type request for types filter', () => {
     const filters = {
       types: {
-        selected: [ 'person', 'clinic' ],
-        options: [ 'person', 'clinic', 'district_hospital' ]
+        selected: [ 'person', CONTACT_TYPES.CLINIC ],
+        options: [ 'person', CONTACT_TYPES.CLINIC, 'district_hospital' ]
       }
     };
     const result = service('contacts', filters);
@@ -164,7 +165,7 @@ describe('GenerateSearchRequests service', () => {
     chai.expect(result[0]).to.deep.equal({
       view: 'medic-client/contacts_by_type',
       params: {
-        keys: [ [ 'person' ], [ 'clinic' ] ],
+        keys: [ [ 'person' ], [ CONTACT_TYPES.CLINIC ] ],
         reduce: false
       }
     });
@@ -231,8 +232,8 @@ describe('GenerateSearchRequests service', () => {
   it('creates unfiltered contacts request for types filter when all options are selected', () => {
     const filters = {
       types: {
-        selected: [ 'person', 'clinic', 'district_hospital' ],
-        options: [ 'person', 'clinic', 'district_hospital' ]
+        selected: [ 'person', CONTACT_TYPES.CLINIC, 'district_hospital' ],
+        options: [ 'person', CONTACT_TYPES.CLINIC, 'district_hospital' ]
       }
     };
     const result = service('contacts', filters);
@@ -243,7 +244,7 @@ describe('GenerateSearchRequests service', () => {
     const filters = {
       types: {
         selected: [],
-        options: [ 'person', 'clinic', 'district_hospital' ]
+        options: [ 'person', CONTACT_TYPES.CLINIC, 'district_hospital' ]
       }
     };    
     const result = service('contacts', filters);
@@ -254,7 +255,7 @@ describe('GenerateSearchRequests service', () => {
   it('creates contacts type request for type filter without options', () => {
     const filters = {
       types: {
-        selected: [ 'person', 'clinic' ]
+        selected: [ 'person', CONTACT_TYPES.CLINIC ]
         // no options.
       }
     };
@@ -263,7 +264,7 @@ describe('GenerateSearchRequests service', () => {
     chai.expect(result[0]).to.deep.equal({
       view: 'medic-client/contacts_by_type',
       params: {
-        keys: [ [ 'person' ], [ 'clinic' ] ],
+        keys: [ [ 'person' ], [ CONTACT_TYPES.CLINIC ] ],
         reduce: false
       }
     });
@@ -354,15 +355,15 @@ describe('GenerateSearchRequests service', () => {
       const filters = {
         search: 'someth',
         types: {
-          selected: [ 'clinic' ],
-          options: [ 'person', 'clinic', 'district_hospital' ]
+          selected: [ CONTACT_TYPES.CLINIC ],
+          options: [ 'person', CONTACT_TYPES.CLINIC, 'district_hospital' ]
         }
       };
       const result = service('contacts', filters);
       chai.expect(result.length).to.equal(1);
       chai.expect(result[0].view).to.equal('contacts_by_type_freetext');
       chai.expect(result[0].params).to.deep.equal({
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         key: 'someth'
       });
     });
@@ -377,8 +378,8 @@ describe('GenerateSearchRequests service', () => {
       const filters = {
         search: 'a be see d elephant',
         types: {
-          selected: [ 'clinic' ],
-          options: [ 'person', 'clinic', 'district_hospital' ]
+          selected: [ CONTACT_TYPES.CLINIC ],
+          options: [ 'person', CONTACT_TYPES.CLINIC, 'district_hospital' ]
         }
       };
       const result = service('contacts', filters);
@@ -386,11 +387,11 @@ describe('GenerateSearchRequests service', () => {
       chai.expect(result[0].view).to.equal('contacts_by_type_freetext');
       chai.expect(result[0].params).to.deep.equal({
         key: 'see',
-        type: 'clinic'
+        type: CONTACT_TYPES.CLINIC
       });
       chai.expect(result[1].view).to.equal('contacts_by_type_freetext');
       chai.expect(result[1].params).to.deep.equal({
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         key: 'elephant'
       });
     });
@@ -399,8 +400,8 @@ describe('GenerateSearchRequests service', () => {
       const filters = {
         search: 'some thing',
         types: {
-          selected: [ 'clinic' ],
-          options: [ 'person', 'clinic', 'district_hospital' ]
+          selected: [ CONTACT_TYPES.CLINIC ],
+          options: [ 'person', CONTACT_TYPES.CLINIC, 'district_hospital' ]
         }
       };
       const result = service('contacts', filters);
@@ -408,12 +409,12 @@ describe('GenerateSearchRequests service', () => {
       chai.expect(result[0].view).to.equal('contacts_by_type_freetext');
       chai.expect(result[0].params).to.deep.equal({
         key: 'some',
-        type: 'clinic'
+        type: CONTACT_TYPES.CLINIC
       });
       chai.expect(result[1].view).to.equal('contacts_by_type_freetext');
       chai.expect(result[1].params).to.deep.equal({
         key: 'thing',
-        type: 'clinic'
+        type: CONTACT_TYPES.CLINIC
       });
     });
 
@@ -421,8 +422,8 @@ describe('GenerateSearchRequests service', () => {
       const filters = {
         search: 'some thing',
         types: {
-          selected: [ 'clinic', 'district_hospital' ],
-          options: [ 'person', 'clinic', 'district_hospital' ]
+          selected: [ CONTACT_TYPES.CLINIC, 'district_hospital' ],
+          options: [ 'person', CONTACT_TYPES.CLINIC, 'district_hospital' ]
         }
       };
       const result = service('contacts', filters);
@@ -432,11 +433,11 @@ describe('GenerateSearchRequests service', () => {
       chai.expect(result[0].paramSets).to.deep.equal([
         {
           key: 'some',
-          type: 'clinic'
+          type: CONTACT_TYPES.CLINIC
         },
         {
           key: 'some',
-          type: 'district_hospital'
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL
         }
       ]);
       chai.expect(result[1].view).to.equal('contacts_by_type_freetext');
@@ -444,11 +445,11 @@ describe('GenerateSearchRequests service', () => {
       chai.expect(result[1].paramSets).to.deep.equal([
         {
           key: 'thing',
-          type: 'clinic'
+          type: CONTACT_TYPES.CLINIC
         },
         {
           key: 'thing',
-          type: 'district_hospital'
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL
         }
       ]);
     });
@@ -466,6 +467,208 @@ describe('GenerateSearchRequests service', () => {
       });
     });
 
+    it('contacts search by local phone number searches normalized international format', () => {
+      const settings = { default_country_code: '977' };
+      const result = service('contacts', { search: '9841234567', settings });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('contacts_by_freetext');
+      chai.expect(result[0].union).to.equal(true);
+      const keys = result[0].paramSets.map(p => p.key);
+      chai.expect(keys).to.include('9841234567');
+      chai.expect(keys).to.include('+9779841234567');
+    });
+
+    it('contacts search with international format does not duplicate request', () => {
+      const settings = { default_country_code: '977' };
+      const result = service('contacts', { search: '+9779841234567', settings });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].params.key).to.equal('+9779841234567');
+      chai.expect(result[0].union).to.be.undefined;
+    });
+
+    it('contacts search with international format without + still returns a result', () => {
+      const settings = { default_country_code: '977' };
+      const result = service('contacts', { search: '9779841234567', settings });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('contacts_by_freetext');
+      chai.expect(result[0].union).to.equal(true);
+      const keys = result[0].paramSets.map(p => p.key);
+      chai.expect(keys).to.include('9779841234567');
+      chai.expect(keys).to.include('+9779841234567');
+    });
+
+    it('contacts search with no settings falls back to normal freetext', () => {
+      const result = service('contacts', { search: '9841234567' });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].params.key).to.equal('9841234567');
+    });
+
+    it('contacts search with settings but invalid phone number does not add extra request', () => {
+      const settings = { default_country_code: '977' };
+      const result = service('contacts', { search: 'elephant', settings });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].params.key).to.equal('elephant');
+    });
+
+    it('contacts search with settings but no default_country_code does not add extra request', () => {
+      const settings = { phone_validation: 'full' };
+      const result = service('contacts', { search: '9841234567', settings });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].params.key).to.equal('9841234567');
+    });
+
+    it('contacts search with local phone that normalizes to different value generates union request', () => {
+      const settings = { default_country_code: '1' };
+      const result = service('contacts', { search: '2025551234', settings });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].union).to.equal(true);
+      const keys = result[0].paramSets.map(p => p.key);
+      chai.expect(keys).to.include('2025551234');
+      chai.expect(keys).to.include('+12025551234');
+    });   
+
+    it('contacts local phone search also works with type filter', () => {
+      const settings = { default_country_code: '977' };
+      const filters = {
+        search: '9841234567',
+        settings,
+        types: {
+          selected: ['person'],
+          options: ['person', 'clinic']
+        }
+      };
+      const result = service('contacts', filters);
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('contacts_by_type_freetext');
+      chai.expect(result[0].union).to.equal(true);
+      const keys = result[0].paramSets.map(p => p.key);
+      chai.expect(keys).to.include('9841234567');
+      chai.expect(keys).to.include('+9779841234567');
+      const types = result[0].paramSets.map(p => p.type);
+      chai.expect(types).to.deep.equal(['person', 'person']);
+    });
+
+    it('contacts local phone search does not duplicate when normalized matches original', () => {
+      const settings = { default_country_code: '977' };
+      const result = service('contacts', { search: '9779841234567', settings });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].union).to.equal(true);
+      const keys = result[0].paramSets.map(p => p.key);
+      chai.expect(keys).to.include('9779841234567');
+      chai.expect(keys).to.include('+9779841234567');
+    });
+
+    it('contacts local phone search works with multiple type filters', () => {
+      const settings = { default_country_code: '977' };
+      const filters = {
+        search: '9841234567',
+        settings,
+        types: {
+          selected: ['person', 'clinic'],
+          options: ['person', 'clinic', 'district_hospital']
+        }
+      };
+      const result = service('contacts', filters);
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('contacts_by_type_freetext');
+      chai.expect(result[0].union).to.equal(true);
+      chai.expect(result[0].paramSets.length).to.equal(4);
+      
+      const keyTypes = result[0].paramSets.map(p => `${p.type}:${p.key}`);
+      chai.expect(keyTypes).to.include('person:9841234567');
+      chai.expect(keyTypes).to.include('person:+9779841234567');
+      chai.expect(keyTypes).to.include('clinic:9841234567');
+      chai.expect(keyTypes).to.include('clinic:+9779841234567');
+    });
+
+    it('contacts freetext with type and single-word params', () => {
+      const filters = {
+        search: 'som',
+        types: {
+          selected: [ 'clinic' ],
+          options: [ 'person', 'clinic', 'district_hospital' ]
+        }
+      };
+      const result = service('contacts', filters);
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('contacts_by_type_freetext');
+      chai.expect(result[0].params.key).to.equal('som');
+      chai.expect(result[0].params.type).to.equal('clinic');
+    });
+
+    it('normalizes Devanagari numerals in search terms', () => {
+      const result = service('contacts', { search: '१२३४५६' });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].params.key).to.equal('123456');
+    });
+
+    it('normalizes Devanagari numerals in multi-word search', () => {
+      const result = service('contacts', { search: 'patient १२३४' });
+      chai.expect(result.length).to.equal(2);
+      chai.expect(result[0].params.key).to.equal('patient');
+      chai.expect(result[1].params.key).to.equal('1234');
+    });
+
+    it('normalizes Devanagari numerals in reports search', () => {
+      const result = service('reports', { search: 'patient_id:१२३४५' });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].params.key).to.equal('patient_id:12345');
+    });
+
+    it('contacts search with Devanagari numerals local phone number searches normalized international format', () => {
+      const settings = { default_country_code: '977' };
+      const result = service('contacts', { search: '९८४१२३४५६७', settings });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('contacts_by_freetext');
+      chai.expect(result[0].union).to.equal(true);
+      const keys = result[0].paramSets.map(p => p.key);
+      chai.expect(keys).to.include('9841234567');
+      chai.expect(keys).to.include('+9779841234567');
+    });
+
+    it('reports search by local phone number searches normalized international format', () => {
+      const settings = { default_country_code: '977' };
+      const result = service('reports', { search: '9841234567', settings });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('reports_by_freetext');
+      chai.expect(result[0].union).to.equal(true);
+      const keys = result[0].paramSets.map(p => p.key);
+      chai.expect(keys).to.include('9841234567');
+      chai.expect(keys).to.include('+9779841234567');
+    });
+
+    it('contacts multi-word search containing a phone number generates union request', () => {
+      const settings = { default_country_code: '977' };
+      const result = service('contacts', { search: 'ram 9841234567', settings });
+      chai.expect(result.length).to.equal(2);
+      // Word 'ram'
+      chai.expect(result[0].view).to.equal('contacts_by_freetext');
+      chai.expect(result[0].params.key).to.equal('ram');
+      chai.expect(result[0].union).to.be.undefined;
+      // Word '9841234567'
+      chai.expect(result[1].view).to.equal('contacts_by_freetext');
+      chai.expect(result[1].union).to.equal(true);
+      const keys = result[1].paramSets.map(p => p.key);
+      chai.expect(keys).to.include('9841234567');
+      chai.expect(keys).to.include('+9779841234567');
+    });
+
+    it('contacts search with numeric default_country_code normalizes correctly', () => {
+      const settings = { default_country_code: 1 };
+      const result = service('contacts', { search: '2025551234', settings });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].union).to.equal(true);
+      const keys = result[0].paramSets.map(p => p.key);
+      chai.expect(keys).to.include('2025551234');
+      chai.expect(keys).to.include('+12025551234');
+    });
+
+    it('contacts search with settings but short numeric word does not normalize phone', () => {
+      const settings = { default_country_code: '977', phone_validation: 'none' };
+      const result = service('contacts', { search: '12', settings });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('medic-client/contacts_by_type');
+    });
   });
 
   describe('shouldSortByLastVisitedDate', () => {
@@ -493,10 +696,14 @@ describe('GenerateSearchRequests service', () => {
   });
 
   it('should add map function to contact type request if sorting by date last visited', () => {
-    const result = service('contacts', { types: { selected: [ 'clinic' ] } }, { sortByLastVisitedDate: true } );
+    const result = service('contacts', 
+      { types: { selected: [ CONTACT_TYPES.CLINIC ] } }, 
+      { sortByLastVisitedDate: true } );
+      
     chai.expect(result.length).to.equal(2);
     chai.expect(result[0].view).to.equal('medic-client/contacts_by_type');
-    chai.expect(result[0].params).to.deep.equal({ reduce: false, keys: [ [ 'clinic' ] ]});
+    chai.expect(result[0].params).to.deep.equal({ reduce: false, 
+      keys: [ [ CONTACT_TYPES.CLINIC ] ]});
     chai.expect(result[0].map).to.be.ok;
     const map = result[0].map;
 
@@ -507,7 +714,10 @@ describe('GenerateSearchRequests service', () => {
   });
 
   it('should return sortByLastVisitedDate request with map that transforms key and value', () => {
-    const result = service('contacts', { types: { selected: [ 'clinic' ] } }, { sortByLastVisitedDate: true } );
+    const result = service('contacts', 
+      { types: { selected: [ CONTACT_TYPES.CLINIC ] } }, 
+      { sortByLastVisitedDate: true } );
+
     chai.expect(result.length).to.equal(2);
     chai.expect(result[1].view).to.equal('medic-client/contacts_by_last_visited');
     chai.expect(result[1].params).to.deep.equal({ reduce: true, group: true });

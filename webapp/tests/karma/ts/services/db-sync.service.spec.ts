@@ -1188,6 +1188,11 @@ describe('DBSync service', () => {
       expect(actual).to.equal(false);
     });
 
+    it('does not replicate ui-extensions', () => {
+      const actual = filterFunction({ _id: '1', type: DOC_TYPES.UI_EXTENSION });
+      expect(actual).to.equal(false);
+    });
+
     it('does not replicate translations', () => {
       const actual = filterFunction({ _id: '1', type: DOC_TYPES.TRANSLATIONS });
       expect(actual).to.equal(false);
@@ -1205,6 +1210,11 @@ describe('DBSync service', () => {
 
     it('does not replicate the partners doc', () => {
       const actual = filterFunction({ _id: 'partners' });
+      expect(actual).to.equal(false);
+    });
+
+    it('does not replicate the extension-libs doc', () => {
+      const actual = filterFunction({ _id: DOC_IDS.EXTENSION_LIBS });
       expect(actual).to.equal(false);
     });
   });

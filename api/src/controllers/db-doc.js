@@ -1,4 +1,4 @@
-const dbDoc = require('../services/db-doc');
+const dbDoc = require('../services/replication/db-doc');
 const _ = require('lodash');
 const serverUtils = require('../server-utils');
 

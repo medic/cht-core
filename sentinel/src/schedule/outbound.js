@@ -182,10 +182,9 @@ const batch = (dueConfiguredPushes, startKey) => {
     .then(validTasks => attachInfoDocs(validTasks))
     .then(validTasks => {
       const pushes = validTasks.reduce((acc, {task, doc, info}) => {
-        const pushesForDoc =
-                getConfigurationsToPush(dueConfiguredPushes, task)
-                  .map(([key, config]) => ({task, doc, info, config, key}))
-                  .filter(({config}) => config && Object.keys(config).length > 0); // Filter out tasks without configs
+        const pushesForDoc = getConfigurationsToPush(dueConfiguredPushes, task)
+          .map(([key, config]) => ({task, doc, info, config, key}))
+          .filter(({config}) => config && Object.keys(config).length > 0); // Filter out tasks without configs
 
         return acc.concat(pushesForDoc);
       }, []);

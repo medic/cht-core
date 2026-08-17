@@ -29,7 +29,7 @@ describe('Task overdue bubble counter', () => {
   const patients = Array.from({ length: 3 }).map((_, i) => personFactory.build({
     name: `Number${i}`,
     patient_id: `patient_${i}`,
-    parent: places.get('clinic'),
+    parent: places.get(CONTACT_TYPES.CLINIC),
     reported_date: new Date().getTime(),
   }));
 

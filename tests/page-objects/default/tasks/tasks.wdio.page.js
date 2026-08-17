@@ -9,7 +9,7 @@ const FORM_TITLE_SELECTOR = `${TASK_FORM_SELECTOR} h3#form-title`;
 const NO_SELECTED_TASK_SELECTOR = '.empty-selection';
 
 const sidebarFilterSelectors = {
-  openBtn: () => $('mm-search-bar .open-filter'),
+  openBtn: () => $('mm-search-bar .open-filter, .mm-search-bar-container .btn.open-filter'),
   resetBtn: () => $('.sidebar-reset'),
   overdueAccordionHeader: () => $('#overdue-filter-accordion mat-expansion-panel-header'),
   overdueAccordionBody: () => $('#overdue-filter-accordion mat-panel-description'),
@@ -19,7 +19,7 @@ const sidebarFilterSelectors = {
   placeAccordionBody: () => $('#place-filter-accordion mat-panel-description'),
 };
 
-const getTaskById = (emissionId) => $(`${TASK_LIST_SELECTOR} li[data-record-id="${emissionId}"`);
+const getTaskById = (emissionId) => $(`${TASK_LIST_SELECTOR} li[data-record-id="${emissionId}"]`);
 const getTasks = async (timeout = 10000) => {
   let tasks;
   await browser.waitUntil(async () => {
@@ -82,9 +82,16 @@ const waitForTaskContentLoaded = async (name) => {
   }, { timeout: 2000 });
 };
 
-const getOpenTaskElement = async () => {
-  const emissionId = (await browser.getUrl()).split('/').slice(-1)[0];
-  return getTaskById(emissionId);
+const getTaskListCount = async () => {
+  const tasks = await $$(`${TASK_LIST_SELECTOR} li.content-row`);
+  return tasks.length;
+};
+
+const waitForTaskListCountChange = async (initialCount) => {
+  await browser.waitUntil(
+    async () => (await getTaskListCount()) !== initialCount,
+    { timeout: 10000, timeoutMsg: `Task list count did not change from ${initialCount}.` }
+  );
 };
 
 const waitForTasksGroupLoaded = async () => {
@@ -100,6 +107,12 @@ const noSelectedTask = () => $(NO_SELECTED_TASK_SELECTOR);
 
 const openTaskById = async (id, taskType) => {
   await getTaskById(`${id}${taskType}`).click();
+  await $(TASK_FORM_SELECTOR).waitForDisplayed();
+};
+
+const openTaskByIndex = async (idx = 0) => {
+  const task = await (await getTasks())[idx];
+  await task.click();
   await $(TASK_FORM_SELECTOR).waitForDisplayed();
 };
 
@@ -127,8 +140,9 @@ const filterByOverdue = async (overdueOption) => {
     await sidebarFilterSelectors.overdueAccordionBody().waitForDisplayed();
   }
 
-  const option = sidebarFilterSelectors.overdueAccordionBody().$(`a*=${overdueOption}`);
-  await option.click();
+  const option = sidebarFilterSelectors.overdueAccordionBody().$(`label*=${overdueOption}`);
+  const radio = await option.$('input[type="radio"]');
+  await radio.click();
 };
 
 const filterByTaskType = async (taskType) => {
@@ -168,13 +182,24 @@ const isPlaceFilterDisplayed = async () => {
   return await sidebarFilterSelectors.placeAccordionHeader().isDisplayed();
 };
 
+const scrollTaskList = async () => {
+  await browser.execute(() => {
+    const el = document.getElementById('tasks-list');
+    if (el) {
+      el.scrollTop += 300;
+      el.dispatchEvent(new Event('scroll'));
+    }
+  });
+};
+
 module.exports = {
   getTasks,
   getTaskByContactAndForm,
   waitForTaskContentLoaded,
   getTaskInfo,
   getTasksListInfos,
-  getOpenTaskElement,
+  getTaskListCount,
+  waitForTaskListCountChange,
   waitForTasksGroupLoaded,
   getTasksInGroup,
   noSelectedTask,
@@ -188,4 +213,6 @@ module.exports = {
   filterByPlace,
   resetFilters,
   isPlaceFilterDisplayed,
+  openTaskByIndex,
+  scrollTaskList,
 };

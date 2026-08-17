@@ -345,8 +345,13 @@ describe('transitions', () => {
     assert.throws(transitions.loadTransitions);
     assert.deepEqual(transitions._transitions(), []);
 
-    const expectedError = ['Failed loading transition "default_responses"', 'err'];
-    assert.deepEqual(transitions.getLoadingErrors(), expectedError);
+    const expectedError = [
+      'Failed loading transition "default_responses". ' +
+      'This is likely due to an error in the transition configuration. ' +
+      'Please check your configuration.',
+      'err'
+    ];
+    expect(transitions.getLoadingErrors()).to.deep.equal(expectedError);
   });
 
   it('getLoadingErrors - load failure truthy, load success falsy', () => {
@@ -362,7 +367,6 @@ describe('transitions', () => {
     transitions.loadTransitions();
     expect(!!transitions.getLoadingErrors()).to.be.false;
   });
-
   it('getDeprecatedTransitions() should return list of current deprecated transitions', () => {
     const deprecatedTransitions = transitions.getDeprecatedTransitions();
 
@@ -370,7 +374,7 @@ describe('transitions', () => {
     assert.equal(deprecatedTransitions.length, 2);
   });
 
-  describe('applyTransition',  () => {
+  describe('applyTransition', () => {
     it('should apply transition with change', async () => {
       const transition = {
         key: 'mytransition',

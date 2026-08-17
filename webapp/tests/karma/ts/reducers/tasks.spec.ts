@@ -5,6 +5,7 @@ import moment from 'moment';
 import { Actions as GlobalActions } from '@mm-actions/global';
 import { Actions } from '@mm-actions/tasks';
 import { tasksReducer, orderByDueDateAndPriority } from '@mm-reducers/tasks';
+import { CONTACT_TYPES } from '@medic/constants';
 
 describe('Tasks reducer', () => {
   let state;
@@ -722,7 +723,7 @@ describe('Tasks reducer', () => {
           lastSubmittedTask: { _id: 'othertask' },
         },
       };
-      const contact = { _id: 'contact2', type: 'clinic' };
+      const contact = { _id: 'contact2', type: CONTACT_TYPES.CLINIC };
       state = tasksReducer(state, Actions.setTaskGroupContact(contact));
       expect(state).to.deep.equal({
         tasksList: [
@@ -732,7 +733,7 @@ describe('Tasks reducer', () => {
         selected: { _id: 'task_id', due: '22', field: 1 },
         loaded: true,
         taskGroup: {
-          contact: { _id: 'contact2', type: 'clinic' },
+          contact: { _id: 'contact2', type: CONTACT_TYPES.CLINIC },
           loadingContact: false,
           lastSubmittedTask: { _id: 'othertask' },
         },
@@ -796,7 +797,7 @@ describe('Tasks reducer', () => {
         ],
         loaded: true,
         taskGroup: {
-          contact: { _id: 'contact2', type: 'clinic' },
+          contact: { _id: 'contact2', type: CONTACT_TYPES.CLINIC },
           loadingContact: true,
           lastSubmittedTask: { _id: 'othertask' },
         },
@@ -810,7 +811,7 @@ describe('Tasks reducer', () => {
         selected: { _id: 'task_id', due: '22', field: 1 },
         loaded: true,
         taskGroup: {
-          contact: { _id: 'contact2', type: 'clinic' },
+          contact: { _id: 'contact2', type: CONTACT_TYPES.CLINIC },
           loadingContact: false,
           lastSubmittedTask: { _id: 'othertask' },
         },
@@ -843,7 +844,7 @@ describe('Tasks reducer', () => {
         ],
         loaded: true,
         taskGroup: {
-          contact: { _id: 'contact2', type: 'clinic' },
+          contact: { _id: 'contact2', type: CONTACT_TYPES.CLINIC },
           loadingContact: true,
           lastSubmittedTask: { _id: 'othertask' },
         },

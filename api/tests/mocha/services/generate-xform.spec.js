@@ -273,6 +273,74 @@ describe('generate-xform service', () => {
       }
     });
 
+    it('should pass --nonet to xsltproc to block external resource fetching', async () => {
+      const spawnStub = sinon.stub(childProcess, 'spawn').returns(spawned);
+      const generate = service.generate('<my-xml/>');
+      // simulate a successful run so the promise resolves
+      spawned.stdout.on.args[0][1]('<form/>');
+      spawned.on.args[0][1](0);
+      spawned.stdout.on.args[1][1]('<model/>');
+      spawned.on.args[2][1](0);
+      await generate;
+
+      // Both the form and the model transforms must be invoked with --nonet
+      // as the first argument so that libxml2 refuses to fetch any external
+      // DTDs, entities or stylesheets.
+      expect(spawnStub.callCount).to.equal(2);
+      spawnStub.args.forEach(args => {
+        expect(args[0]).to.equal('xsltproc');
+        expect(args[1][0]).to.equal('--nonet');
+        expect(args[1][args[1].length - 1]).to.equal('-');
+      });
+    });
+
+    it('should reject XForms that declare a DOCTYPE (XXE protection)', async () => {
+      const spawnStub = sinon.stub(childProcess, 'spawn').returns(spawned);
+      const malicious =
+        '<?xml version="1.0"?>\n' +
+        '<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>\n' +
+        '<root>&xxe;</root>';
+      try {
+        await service.generate(malicious);
+        assert.fail('expected error to be thrown');
+      } catch (err) {
+        expect(err.message).to.match(/must not declare a DOCTYPE or external entities/);
+      }
+      // xsltproc must never be spawned for tainted input.
+      expect(spawnStub.called).to.equal(false);
+    });
+
+    it('should reject XForms that declare an external entity (XXE protection)', async () => {
+      const spawnStub = sinon.stub(childProcess, 'spawn').returns(spawned);
+      const malicious =
+        '<?xml version="1.0"?>\n' +
+        '<!ENTITY xxe SYSTEM "file:///etc/hostname">\n' +
+        '<root>&xxe;</root>';
+      try {
+        await service.generate(malicious);
+        assert.fail('expected error to be thrown');
+      } catch (err) {
+        expect(err.message).to.match(/must not declare a DOCTYPE or external entities/);
+      }
+      expect(spawnStub.called).to.equal(false);
+    });
+
+    it('should reject XForms whose comments mention DOCTYPE or ENTITY', async () => {
+      const spawnStub = sinon.stub(childProcess, 'spawn').returns(spawned);
+      const commentedDeclarations =
+        '<?xml version="1.0"?>\n' +
+        '<!-- describe how to write a <!DOCTYPE html> declaration -->\n' +
+        '<!-- and how <!ENTITY foo "bar"> works -->\n' +
+        '<root/>';
+      try {
+        await service.generate(commentedDeclarations);
+        assert.fail('expected error to be thrown');
+      } catch (err) {
+        expect(err.message).to.match(/must not declare a DOCTYPE or external entities/);
+      }
+      expect(spawnStub.called).to.equal(false);
+    });
+
   });
 
   describe('update', () => {

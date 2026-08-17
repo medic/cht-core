@@ -2,9 +2,8 @@
  * CHT Script API - Auth module
  * Provides tools related to Authentication.
  */
-const { USER_ROLES } = require('@medic/constants');
 
-const ADMIN_ROLE = USER_ROLES.COUCHDB_ADMIN;
+const { DB_ADMIN_ROLES } = require('@medic/constants');
 const DISALLOWED_PERMISSION_PREFIX = '!';
 
 const isAdmin = (userRoles) => {
@@ -12,7 +11,7 @@ const isAdmin = (userRoles) => {
     return false;
   }
 
-  return userRoles.includes(ADMIN_ROLE);
+  return DB_ADMIN_ROLES.some(adminRole => userRoles.includes(adminRole));
 };
 
 const groupPermissions = (permissions) => {
@@ -45,6 +44,11 @@ const checkUserHasPermissions = (permissions, userRoles, chtPermissionsSettings,
 
     return expectedToHave === userRoles.some(role => roles.includes(role));
   });
+};
+
+const filterRolesByConfigured = (userRoles, chtRolesSettings = {}) => {
+  const availableRoles = new Set([...DB_ADMIN_ROLES, ...Object.keys(chtRolesSettings)]);
+  return userRoles.filter(role => availableRoles.has(role));
 };
 
 const verifyParameters = (permissions, userRoles, chtPermissionsSettings) => {
@@ -84,15 +88,15 @@ const checkAdminPermissions = (disallowedGroupList, permissions, userRoles) => {
 
 /**
  * Verify if the user's role has the permission(s).
- * @param permissions {string | string[]} Permission(s) to verify
- * @param userRoles {string[]} Array of user roles.
- * @param chtPermissionsSettings {object} Object of configured permissions in CHT-Core's settings.
- * @return {boolean}
+ * @param ctx the current data context
+ * @returns a function that accepts permissions, userRoles, and an optional chtPermissionsSettings override
  */
-const hasPermissions = (permissions, userRoles, chtPermissionsSettings) => {
+const hasPermissions = (ctx) => (permissions, userRoles, chtPermissionsSettings) => {
   permissions = normalizePermissions(permissions);
+  const settings = ctx.settings.getAll();
+  const effectivePermissionsSettings = chtPermissionsSettings ?? settings.permissions;
 
-  if (!verifyParameters(permissions, userRoles, chtPermissionsSettings)) {
+  if (!verifyParameters(permissions, userRoles, effectivePermissionsSettings)) {
     return false;
   }
 
@@ -102,8 +106,9 @@ const hasPermissions = (permissions, userRoles, chtPermissionsSettings) => {
     return checkAdminPermissions([disallowed], permissions, userRoles);
   }
 
-  const hasDisallowed = !checkUserHasPermissions(disallowed, userRoles, chtPermissionsSettings, false);
-  const hasAllowed = checkUserHasPermissions(allowed, userRoles, chtPermissionsSettings, true);
+  const effectiveUserRoles = filterRolesByConfigured(userRoles, settings.roles);
+  const hasDisallowed = !checkUserHasPermissions(disallowed, effectiveUserRoles, effectivePermissionsSettings, false);
+  const hasAllowed = checkUserHasPermissions(allowed, effectiveUserRoles, effectivePermissionsSettings, true);
 
   if (hasDisallowed) {
     debug('Found disallowed permission(s)', permissions, userRoles);
@@ -120,13 +125,13 @@ const hasPermissions = (permissions, userRoles, chtPermissionsSettings) => {
 
 /**
  * Verify if the user's role has all the permissions of any of the provided groups.
- * @param permissionsGroupList {string[][]} Array of groups of permissions due to the complexity of permission grouping
- * @param userRoles {string[]} Array of user roles.
- * @param chtPermissionsSettings {object} Object of configured permissions in CHT-Core's settings.
- * @return {boolean}
+ * @param ctx the current data context
+ * @returns a function that accepts permissionsGroupList, userRoles, and an optional chtPermissionsSettings override
  */
-const hasAnyPermission = (permissionsGroupList, userRoles, chtPermissionsSettings) => {
-  if (!verifyParameters(permissionsGroupList, userRoles, chtPermissionsSettings)) {
+const hasAnyPermission = (ctx) => (permissionsGroupList, userRoles, chtPermissionsSettings) => {
+  const settings = ctx.settings.getAll();
+  const effectivePermissionsSettings = chtPermissionsSettings ?? settings.permissions;
+  if (!verifyParameters(permissionsGroupList, userRoles, effectivePermissionsSettings)) {
     return false;
   }
 
@@ -148,9 +153,14 @@ const hasAnyPermission = (permissionsGroupList, userRoles, chtPermissionsSetting
     return checkAdminPermissions(disallowedGroupList, permissionsGroupList, userRoles);
   }
 
+  const effectiveUserRoles = filterRolesByConfigured(userRoles, settings.roles);
   const hasAnyPermissionGroup = permissionsGroupList.some((permissions, i) => {
-    const hasAnyAllowed = checkUserHasPermissions(allowedGroupList[i], userRoles, chtPermissionsSettings, true);
-    const hasAnyDisallowed = !checkUserHasPermissions(disallowedGroupList[i], userRoles, chtPermissionsSettings, false);
+    const hasAnyAllowed = checkUserHasPermissions(
+      allowedGroupList[i], effectiveUserRoles, effectivePermissionsSettings, true
+    );
+    const hasAnyDisallowed = !checkUserHasPermissions(
+      disallowedGroupList[i], effectiveUserRoles, effectivePermissionsSettings, false
+    );
     // Checking the 'permission group' is valid.
     return hasAnyAllowed && !hasAnyDisallowed;
   });

@@ -1,10 +1,10 @@
 const request = require('@medic/couch-request');
-const _ = require('lodash');
 const db = require('./db');
 const environment = require('@medic/environment');
 const config = require('./config');
 const dataContext = require('./services/data-context');
 const { roles, users } = require('@medic/user-management')(config, db, dataContext);
+const { getDatasource } = require('@medic/cht-datasource');
 const { PermissionError } = require('./errors');
 const contentLengthRegex = /^content-length$/i;
 const contentTypeRegex = /^content-type$/i;
@@ -25,23 +25,25 @@ const get = (path, headers) => {
   });
 };
 
-const hasPermission = (userCtx, permission) => {
-  const roles = config.get('permissions')[permission];
-  if (!roles) {
-    return false;
-  }
-  return _.some(roles, role => _.includes(userCtx.roles, role));
-};
-
 const assertPermissions = async (req, { isOnline = false, hasAll = [], hasAny = [] }) => {
   const userCtx = await module.exports.getUserCtx(req);
   const onlineUserPass = isOnline === false || roles.isOnlineOnly(userCtx);
-  const hasAllPass = hasAll.length === 0 || module.exports.hasAllPermissions(userCtx, hasAll);
-  const hasAnyPass = hasAny.length === 0
-    || roles.isDbAdmin(userCtx)
-    || hasAny.some(perm => hasPermission(userCtx, perm));
+  const isAdmin = roles.isDbAdmin(userCtx);
+  const datasource = getDatasource(dataContext);
+  const hasAllPass = hasAll.length === 0 || isAdmin
+    || datasource.v1.hasPermissions(hasAll, userCtx.roles);
+  const hasAnyPass = hasAny.length === 0 || isAdmin
+    || datasource.v1.hasAnyPermission(hasAny.map(perm => [perm]), userCtx.roles);
   if (!(onlineUserPass && hasAllPass && hasAnyPass)) {
     throw new PermissionError('Insufficient privileges');
+  }
+  return userCtx;
+};
+
+const assertDbAdmin = async (req) => {
+  const userCtx = await module.exports.getUserCtx(req);
+  if (!roles.isDbAdmin(userCtx)) {
+    throw new PermissionError('User is not an admin');
   }
   return userCtx;
 };
@@ -49,6 +51,7 @@ const assertPermissions = async (req, { isOnline = false, hasAll = [], hasAny = 
 module.exports = {
   isOnlineOnly: roles.isOnlineOnly,
   isDbAdmin: roles.isDbAdmin,
+  assertDbAdmin,
   getUserSettings: users.getUserSettings,
   hasAllPermissions: (userCtx, permissions) => {
     if (roles.isDbAdmin(userCtx)) {
@@ -57,10 +60,7 @@ module.exports = {
     if (!permissions || !userCtx || !userCtx.roles) {
       return false;
     }
-    if (!_.isArray(permissions)) {
-      permissions = [ permissions ];
-    }
-    return _.every(permissions, _.partial(hasPermission, userCtx));
+    return getDatasource(dataContext).v1.hasPermissions(permissions, userCtx.roles);
   },
   getUserCtx: req => {
     return get('/_session', req.headers)

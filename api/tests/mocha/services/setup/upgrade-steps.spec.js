@@ -74,22 +74,6 @@ describe('Upgrade steps', () => {
         expect(upgradeUtils.deleteStagedDdocs.callCount).to.equal(1);
       }
     });
-
-    it('should throw an error if cleanup fails', async () => {
-      sinon.stub(upgradeLogService, 'setComplete');
-      sinon.stub(upgradeLogService, 'setFinalizing');
-      sinon.stub(upgradeUtils, 'unstageStagedDdocs');
-      sinon.stub(upgradeUtils, 'deleteStagedDdocs');
-      sinon.stub(upgradeLogService, 'setFinalized');
-      sinon.stub(upgradeUtils, 'cleanup').rejects({ an: 'error'});
-
-      try {
-        await upgradeSteps.finalize();
-        expect.fail('Should have thrown');
-      } catch (err) {
-        expect(err).to.deep.equal({ an: 'error'});
-      }
-    });
   });
 
   describe('abort', () => {
@@ -143,21 +127,6 @@ describe('Upgrade steps', () => {
         expect(viewIndexer.stopIndexing.callCount).to.equal(0);
         expect(upgradeUtils.deleteStagedDdocs.callCount).to.equal(0);
         expect(upgradeLogService.setAborted.callCount).to.equal(0);
-      }
-    });
-
-    it('should throw error if cleanup fails', async () => {
-      sinon.stub(upgradeUtils, 'deleteStagedDdocs');
-      sinon.stub(upgradeLogService, 'setAborted');
-      sinon.stub(upgradeLogService, 'setAborting');
-      sinon.stub(viewIndexer, 'stopIndexing');
-      sinon.stub(upgradeUtils, 'cleanup').rejects({ error: 'boom' });
-
-      try {
-        await upgradeSteps.abort();
-        expect.fail('Should have thrown');
-      } catch (err) {
-        expect(err).to.deep.equal({ error: 'boom' });
       }
     });
   });

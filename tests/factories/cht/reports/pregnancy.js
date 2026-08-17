@@ -1,7 +1,7 @@
 const Factory = require('rosie').Factory;
 const { faker } = require('@faker-js/faker');
 const moment = require('moment');
-const uuid = require('uuid');
+const { v7: uuid } = require('uuid');
 const _ = require('lodash');
 const geolocation = require('./geolocation');
 const { DOC_TYPES } = require('@medic/constants');
@@ -278,7 +278,7 @@ const hiddenFields = [
 ];
 
 module.exports = new Factory()
-  .sequence('_id', uuid.v4)
+  .sequence('_id', uuid)
   .attr('form', 'pregnancy')
   .attr('type', DOC_TYPES.DATA_RECORD)
   .attr('content_type', 'xml')

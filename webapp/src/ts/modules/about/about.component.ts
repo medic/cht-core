@@ -7,7 +7,7 @@ const constants = require('@medic/constants');
 const DOC_IDS = constants.DOC_IDS;
 
 import { DbService } from '@mm-services/db.service';
-import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { Selectors } from '@mm-selectors/index';
 import { SessionService } from '@mm-services/session.service';
 import { VersionService } from '@mm-services/version.service';
@@ -17,7 +17,7 @@ import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { MatCard, MatCardHeader, MatCardTitle, MatCardContent, MatCardSubtitle } from '@angular/material/card';
 import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
 import { MatButton } from '@angular/material/button';
-import { NgSwitch, NgSwitchCase, NgIf, NgFor, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { PartnerImagePipe } from '@mm-pipes/resource-icon.pipe';
 import { SimpleDateTimePipe } from '@mm-pipes/date.pipe';
 
@@ -31,11 +31,7 @@ import { SimpleDateTimePipe } from '@mm-pipes/date.pipe';
     TranslateDirective,
     MatCardContent,
     MatButton,
-    NgSwitch,
-    NgSwitchCase,
-    NgIf,
     MatCardSubtitle,
-    NgFor,
     DecimalPipe,
     TranslatePipe,
     PartnerImagePipe,
@@ -63,7 +59,7 @@ export class AboutComponent implements OnInit, OnDestroy {
   constructor(
     private dbService: DbService,
     private store: Store,
-    private resourceIconsService: ResourceIconsService,
+    private readonly customResourceService: CustomResourceService,
     private sessionService: SessionService,
     private versionService: VersionService,
     private translateService: TranslateService,
@@ -100,7 +96,7 @@ export class AboutComponent implements OnInit, OnDestroy {
   }
 
   private getPartners() {
-    this.resourceIconsService
+    this.customResourceService
       .getDocResources(DOC_IDS.PARTNERS)
       .then(partners => this.partners = partners)
       .catch(error => {

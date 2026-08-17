@@ -2,7 +2,7 @@ const { assert, expect } = require('chai');
 const lineageFactory = require('../src');
 const memdownMedic = require('@medic/memdown');
 const cloneDeep = require('lodash/cloneDeep');
-const { DOC_TYPES } = require('@medic/constants');
+const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
 
 let db;
 
@@ -49,7 +49,7 @@ const circular_chw = {
 };
 const circular_area = {
   _id: circular_areaId,
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
   contact: { _id: circular_chw._id }
 };
 const circular_report = {
@@ -69,7 +69,7 @@ const person_with_circular_ids = {
 };
 const place_with_circular_ids = {
   _id: 'circular_place',
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
   contact: { _id: 'circular_place' },
   parent: { _id: 'circular_person' },
   reported_date: '5',
@@ -97,7 +97,7 @@ const emptyObjectParent = {
     _id: dummyDoc._id,
     parent: {}
   },
-  type: 'clinic'
+  type: CONTACT_TYPES.CLINIC
 };
 const no_contact = {
   _id: 'no_contact',
@@ -108,7 +108,7 @@ const no_lineageContact = {
 };
 const one_parent = {
   _id: 'one_parent',
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
   parent: { _id: dummyDoc._id }
 };
 const place_parentContact = {
@@ -144,7 +144,7 @@ const place_parent = {
 const place = {
   _id: 'place',
   name: 'place_name',
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
   contact: { _id: place_contact._id },
   parent: {
     _id: place_parent._id,
@@ -208,7 +208,7 @@ const report_patient = {
 const report_place = {
   _id: 'report_place',
   place_id: '54321',
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
   name: 'place_name',
   parent: {
     _id: report_parent._id,
@@ -371,7 +371,7 @@ const stub_contacts = {
 };
 const stub_parents = {
   _id: 'stub_parents',
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
   contact: { _id: 'something' },
   parent: {
     _id: 'something_else',
@@ -395,7 +395,7 @@ const sms_doc = {
 const placeWithLinks = {
   _id: 'placeWithLinks',
   name: 'place_name',
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
   contact: { _id: place_contact._id },
   parent: {
     _id: place_parent._id,
@@ -454,7 +454,7 @@ const reportWithLinks = {
 const contactWithStringLinks = {
   _id: 'contactWithStringLinks',
   name: 'place_name',
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
   contact: { _id: place_contact._id },
   parent: {
     _id: place_parent._id,
@@ -467,7 +467,7 @@ const contactWithStringLinks = {
 const contactWithArrayLinks = {
   _id: 'contactWithArrayLinks',
   name: 'place_name',
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
   contact: { _id: place_contact._id },
   parent: {
     _id: place_parent._id,
@@ -1213,7 +1213,7 @@ describe('Lineage', function() {
         .then(([ actual ]) => {
           assert.checkDeepProperties(actual, {
             _id: place_with_circular_ids._id,
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
 
             contact: {
               _id: place_with_circular_ids._id,

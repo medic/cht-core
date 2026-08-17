@@ -24,7 +24,7 @@ const { BRANCH, TAG } = process.env;
 
 describe('Telemetry', () => {
   const places = placeFactory.generateHierarchy();
-  const clinic = places.get('clinic');
+  const clinic = places.get(CONTACT_TYPES.CLINIC);
   const patient = personFactory.build({
     phone: '+12068881234',
     parent: { _id: clinic._id, parent: clinic.parent },

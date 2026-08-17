@@ -149,6 +149,7 @@ describe('Enketo: Phone Widget', () => {
     expect(proxyInput.length).to.equal(1);
     expect(input.length).to.equal(1);
     expect(input.val()).to.equal(NORMALIZED_NUMBER);
+    expect(proxyInput.val()).to.equal(NORMALIZED_NUMBER);
     expect(settingsService.get.calledOnceWithExactly()).to.be.true;
     expect(phoneNumberNormalize.args).to.deep.equal([
       // [{ }, DENORMALIZED_NUMBER],
@@ -170,6 +171,7 @@ describe('Enketo: Phone Widget', () => {
       .change();
 
     expect(input.val()).to.equal(NORMALIZED_NUMBER);
+    expect(proxyInput.val()).to.equal(NORMALIZED_NUMBER);
     expect(settingsService.get.calledOnceWithExactly()).to.be.true;
     expect(phoneNumberNormalize.calledOnceWithExactly({ }, DENORMALIZED_NUMBER)).to.be.true;
     expect(consoleError.calledOnceWithExactly('Error getting settings:', expectedError)).to.be.true;
@@ -187,6 +189,7 @@ describe('Enketo: Phone Widget', () => {
       .change();
 
     expect(input.val()).to.equal(DENORMALIZED_NUMBER);
+    expect(proxyInput.val()).to.equal(DENORMALIZED_NUMBER);
     expect(settingsService.get.calledOnceWithExactly()).to.be.true;
     expect(phoneNumberNormalize.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
   });
@@ -202,6 +205,7 @@ describe('Enketo: Phone Widget', () => {
       .change();
 
     expect(input.val()).to.equal(NORMALIZED_NUMBER);
+    expect(proxyInput.val()).to.equal(NORMALIZED_NUMBER);
     expect(settingsService.get.calledOnceWithExactly()).to.be.true;
     expect(phoneNumberNormalize.calledOnceWithExactly(SETTINGS, NORMALIZED_NUMBER)).to.be.true;
   });

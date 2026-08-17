@@ -10,7 +10,7 @@ const password = 'passwordSUP3RS3CR37!';
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
-  type: 'district_hospital',
+  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
   name: 'Big Parent Hospital'
 };
 
@@ -101,7 +101,7 @@ describe('bulk-get handler', () => {
   it('does not filter online users', () => {
     const docs = [
       { _id: 'ICanBeAnything'},
-      { _id: 'NEW_PLACE', parent: {}, type: 'district_hospital', name: 'NEW PLACE' }
+      { _id: 'NEW_PLACE', parent: {}, type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'NEW PLACE' }
     ];
 
     return utils
@@ -145,10 +145,14 @@ describe('bulk-get handler', () => {
 
   it('filters offline users results', () => {
     const docs = [
-      { _id: 'allowed_contact_1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
-      { _id: 'allowed_contact_2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
-      { _id: 'denied_contact_1', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' },
-      { _id: 'denied_contact_2', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' },
+      { _id: 'allowed_contact_1', 
+        type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
+      { _id: 'allowed_contact_2', 
+        type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
+      { _id: 'denied_contact_1', 
+        type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' },
+      { _id: 'denied_contact_2', 
+        type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' },
     ];
 
     return utils
@@ -253,10 +257,10 @@ describe('bulk-get handler', () => {
 
   it('filters offline users based on requested rev', () => {
     const docs = [
-      { _id: 'a1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
-      { _id: 'a2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
-      { _id: 'd1', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' },
-      { _id: 'd2', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' },
+      { _id: 'a1', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
+      { _id: 'a2', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
+      { _id: 'd1', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' },
+      { _id: 'd2', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' },
     ];
 
     const revs = {};
@@ -302,7 +306,7 @@ describe('bulk-get handler', () => {
             docs: [{
               ok: {
                 _id: 'a1',
-                type: 'clinic',
+                type: CONTACT_TYPES.CLINIC,
                 parent: { _id: 'fixture:offline' },
                 name: 'Allowed Contact 1',
                 _rev: revs.a1[0]
@@ -313,7 +317,7 @@ describe('bulk-get handler', () => {
             docs: [{
               ok: {
                 _id: 'a1',
-                type: 'clinic',
+                type: CONTACT_TYPES.CLINIC,
                 parent: { _id: 'fixture:offline' },
                 name: 'Allowed Contact 1',
                 _rev: revs.a1[1]
@@ -324,7 +328,7 @@ describe('bulk-get handler', () => {
             docs: [{
               ok: {
                 _id: 'a2',
-                type: 'clinic',
+                type: CONTACT_TYPES.CLINIC,
                 parent: { _id: 'fixture:offline' },
                 name: 'Allowed Contact 2',
                 _rev: revs.a2[0]
@@ -335,7 +339,7 @@ describe('bulk-get handler', () => {
             docs: [{
               ok: {
                 _id: 'd2',
-                type: 'clinic',
+                type: CONTACT_TYPES.CLINIC,
                 parent: { _id: 'fixture:offline' },
                 name: 'Previously denied Contact 2',
                 _rev: revs.d2[1]
@@ -347,8 +351,8 @@ describe('bulk-get handler', () => {
 
   it('uses correct request parameters', () => {
     const docs = [
-      { _id: 'a1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
-      { _id: 'a2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' }
+      { _id: 'a1', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
+      { _id: 'a2', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' }
     ];
 
     offlineRequestOptions.body = { docs: [{ id: 'a1' }, { id: 'a2' }] };
@@ -404,9 +408,9 @@ describe('bulk-get handler', () => {
 
   it('does not return bodies of couchDB delete stubs', () => {
     const docs = [
-      { _id: 'a1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
-      { _id: 'a2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
-      { _id: 'a3', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' }
+      { _id: 'a1', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
+      { _id: 'a2', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
+      { _id: 'a3', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' }
     ];
 
     return utils
@@ -432,10 +436,14 @@ describe('bulk-get handler', () => {
 
   it('filters offline users results when db name is not medic', () => {
     const docs = [
-      { _id: 'allowed_contact_1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
-      { _id: 'allowed_contact_2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
-      { _id: 'denied_contact_1', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' },
-      { _id: 'denied_contact_2', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' },
+      { _id: 'allowed_contact_1', 
+        type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
+      { _id: 'allowed_contact_2', 
+        type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
+      { _id: 'denied_contact_1', 
+        type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' },
+      { _id: 'denied_contact_2', 
+        type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' },
     ];
 
     return utils
@@ -515,7 +523,7 @@ describe('bulk-get handler', () => {
     const existentDocs = [
       {
         _id: 'existing_clinic',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
       },
       {
@@ -600,7 +608,7 @@ describe('bulk-get handler', () => {
     const existentDocs = [
       {
         _id: 'existing_clinic',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
       },
       {
@@ -685,7 +693,7 @@ describe('bulk-get handler', () => {
     const existentDocs = [
       {
         _id: 'existing_clinic',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
       },
       {
@@ -772,7 +780,7 @@ describe('bulk-get handler', () => {
     const existingDocs = [
       {
         _id: 'existing_clinic', // depth 1
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         contact: { _id: 'existing_person' }
       },
@@ -810,7 +818,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'existing_clinic2', // depth 1
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         contact: { _id: 'existing_person2' }
       },

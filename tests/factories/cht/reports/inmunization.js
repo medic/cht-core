@@ -1,9 +1,9 @@
-const { v4: uuidv4 } = require('uuid');
+const { v7: uuid } = require('uuid');
 const { DOC_TYPES } = require('@medic/constants');
 
 const immunizationVisitFactory = {
   build: ({ contact, patient }) => ({
-    _id: uuidv4(),
+    _id: uuid(),
     form: 'immunization_visit',
     type: DOC_TYPES.DATA_RECORD,
     content_type: 'xml',
@@ -52,7 +52,7 @@ const immunizationVisitFactory = {
         r_patient_id: patient.patient_id
       },
       meta: {
-        instanceID: `uuid:${uuidv4()}`
+        instanceID: `uuid:${uuid()}`
       }
     },
     geolocation_log: [

@@ -2,9 +2,10 @@ const { expect } = require('chai');
 const utils = require('@utils');
 const personFactory = require('@factories/cht/contacts/person');
 const placeFactory = require('@factories/cht/contacts/place');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Editing contacts ', () => {
-  const district = placeFactory.place().build({type: 'district_hospital'});
+  const district = placeFactory.place().build({type: CONTACT_TYPES.DISTRICT_HOSPITAL});
   const originalContact = personFactory.build(
     {
       parent: {

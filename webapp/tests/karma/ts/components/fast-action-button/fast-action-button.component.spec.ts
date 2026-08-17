@@ -8,6 +8,7 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import { Selectors } from '@mm-selectors/index';
 
+import { MockStore } from '@ngrx/store/testing';
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { AuthService } from '@mm-services/auth.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
@@ -218,6 +219,17 @@ describe('FastActionButtonComponent', () => {
 
     component.fastActions = [ actionThree ];
     expect(component.getTriggerButtonIcon()).to.equal('fa-plus');
+  });
+
+  it('should unsubscribe from direction selector on destroy', () => {
+    const store = TestBed.inject(MockStore);
+    expect(component.direction).to.equal('rtl');
+
+    component.ngOnDestroy();
+    store.overrideSelector(Selectors.getDirection, 'ltr');
+    store.refreshState();
+
+    expect(component.direction).to.equal('rtl');
   });
 
   describe('open()', () => {

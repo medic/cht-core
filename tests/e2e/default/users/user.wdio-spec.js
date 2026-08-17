@@ -3,7 +3,7 @@ const usersAdminPage = require('@page-objects/default/users/user.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const personFactory = require('@factories/cht/contacts/person');
 const placeFactory = require('@factories/cht/contacts/place');
-const { PREFIXES } = require('@medic/constants');
+const { PREFIXES, CONTACT_TYPES } = require('@medic/constants');
 
 const OFFLINE_USER_ROLE = 'chw';
 
@@ -12,7 +12,7 @@ const districtHospital = places.get('district_hospital');
 
 const districtHospital2 = placeFactory.place().build({
   name: 'district_hospital',
-  type: 'district_hospital',
+  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
 });
 
 const person = personFactory.build({ parent: districtHospital, roles: [OFFLINE_USER_ROLE] });

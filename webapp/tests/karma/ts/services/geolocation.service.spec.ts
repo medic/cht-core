@@ -145,7 +145,41 @@ describe('Geolocation service', () => {
       });
     });
 
-    it('blocks promise completion until at least one success', () => {
+    it('resolves immediately when no geo data is available yet', () => {
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsFake(() => {
+        // never calls success or failure
+      });
+
+      return service.init()().then(returned => {
+        expect(returned).to.deep.equal({
+          code: -1,
+          message: 'Geolocation not yet acquired',
+        });
+      });
+    });
+
+    it('resolves with geo data when available before form submission', () => {
+      const position = {
+        latitude: 1,
+        longitude: 2,
+        altitude: 3,
+        accuracy: 4,
+        altitudeAccuracy: 5,
+        heading: 6,
+        speed: 7,
+      };
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsFake(success => {
+        success({coords: position});
+      });
+
+      return service.init()().then(returned => {
+        expect(returned).to.deep.equal(position);
+      });
+    });
+
+    it('discards late GPS success callback after form submission', async () => {
       const position = {
         latitude: 1,
         longitude: 2,
@@ -161,46 +195,52 @@ describe('Geolocation service', () => {
         successFn = success;
       });
 
-      const promise = service.init()().then(returned => {
-        expect(returned).to.deep.equal(position);
-      });
-      successFn({coords: position});
+      const complete = service.init();
+      const result = await complete();
 
-      return promise;
+      expect(result).to.deep.equal({
+        code: -1,
+        message: 'Geolocation not yet acquired',
+      });
+      expect(Telemetry.record.callCount).to.equal(1);
+      expect(Telemetry.record.args[0][0]).to.equal('geolocation:failure:-1');
+
+      successFn({ coords: position });
+
+      expect(Telemetry.record.callCount).to.equal(1);
+      expect(Telemetry.record.args[0][0]).to.equal('geolocation:failure:-1');
     });
 
-    it('blocks promise completion until at least one error', () => {
-      let failureFn;
-      // @ts-ignore
-      window.navigator.geolocation.watchPosition.callsFake((_, failure) => {
-        failureFn = failure;
-      });
-
-      const promise = service
-        .init()()
-        .then(returned => {
-          expect(returned.code).to.equal(43);
-        });
-
-      failureFn({code: 43, message: 'oh no!'});
-
-      return promise;
-    });
-
-    it('should resolve promise even if watcher never calls any callback', fakeAsync(() => {
-      window.navigator.geolocation.watchPosition = sinon.stub(); // make sure this never calls anything!
+    it('should resolve immediately when watcher never calls any callback', () => {
+      window.navigator.geolocation.watchPosition = sinon.stub();
 
       const deferred = service.init();
       expect((<any>window.navigator.geolocation.watchPosition).callCount).to.equal(1);
 
-      tick(31 * 1000);
-
-      return deferred().then(error => {
-        expect(error).to.deep.equal({
-          code: -2,
-          message: 'Geolocation timeout exceeded'
+      return deferred().then(result => {
+        expect(result).to.deep.equal({
+          code: -1,
+          message: 'Geolocation not yet acquired',
         });
       });
+    });
+
+    it('should resolve with timeout error when watcher never fires', fakeAsync(async () => {
+      (<any>window.navigator.geolocation.watchPosition).callsFake(() => {
+        // watcher never calls success or failure
+      });
+
+      const complete = service.init();
+      expect((<any>window.navigator.geolocation.watchPosition).callCount).to.equal(1);
+
+      tick(31 * 1000);
+
+      const result = await complete();
+      expect(result).to.deep.equal({
+        code: -2,
+        message: 'Geolocation timeout exceeded',
+      });
+      expect(Telemetry.record.calledWith('geolocation:failure:-2')).to.be.true;
     }));
 
     it('timeout should prioritize success from geolocation', fakeAsync(async () => {

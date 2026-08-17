@@ -11,7 +11,7 @@ const { CONTACT_TYPES } = require('@medic/constants');
 describe('Report - Send message action', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
-  const clinic = places.get('clinic');
+  const clinic = places.get(CONTACT_TYPES.CLINIC);
 
   const chwContact = personFactory.build({
     phone: '+25475525759',

@@ -1,6 +1,6 @@
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const utils = require('@utils');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
