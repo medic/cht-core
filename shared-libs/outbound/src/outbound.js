@@ -101,7 +101,34 @@ const handleBasicAuth = async (authConf, sendOptions) => {
   };
 };
 
-const handleConfiguredHeaders = (config, sendOptions) => {
+const resolveHeaderValue = async (headerName, headerConf) => {
+  if (Object.prototype.toString.call(headerConf) !== '[object Object]') {
+    throw new OutboundError(
+      `destination.headers['${headerName}'] must be an object with 'value' or 'value_key'`
+    );
+  }
+
+  const hasValue = Object.prototype.hasOwnProperty.call(headerConf, 'value');
+  const hasValueKey = Object.prototype.hasOwnProperty.call(headerConf, 'value_key');
+
+  if (hasValue === hasValueKey) {
+    throw new OutboundError(
+      `destination.headers['${headerName}'] must have exactly one of 'value' or 'value_key'`
+    );
+  }
+
+  if (hasValueKey) {
+    return fetchPassword(headerConf.value_key);
+  }
+
+  if (typeof headerConf.value !== 'string') {
+    throw new OutboundError(`destination.headers['${headerName}'].value must be a string`);
+  }
+
+  return headerConf.value;
+};
+
+const handleConfiguredHeaders = async (config, sendOptions) => {
   const destinationHeaders = objectPath.get(config, 'destination.headers');
   if (!destinationHeaders) {
     return;
@@ -112,9 +139,12 @@ const handleConfiguredHeaders = (config, sendOptions) => {
   }
 
   sendOptions.headers = sendOptions.headers || {};
-  Object.keys(destinationHeaders).forEach(headerName => {
-    sendOptions.headers[headerName.toLowerCase()] = destinationHeaders[headerName];
-  });
+  for (const headerName of Object.keys(destinationHeaders)) {
+    sendOptions.headers[headerName.toLowerCase()] = await resolveHeaderValue(
+      headerName,
+      destinationHeaders[headerName]
+    );
+  }
 };
 
 const handleConfiguredProxy = (config, sendOptions) => {
@@ -127,13 +157,14 @@ const handleConfiguredProxy = (config, sendOptions) => {
 };
 
 const handleHeaderAuth = async (authConf, sendOptions) => {
-  if (!authConf.name) {
-    throw new OutboundError('No auth.name for header auth');
-  }
-
   sendOptions.headers = sendOptions.headers || {};
-  const value = await fetchPassword(authConf.value_key);
-  sendOptions.headers[authConf.name.toLowerCase()] = value;
+  if (authConf.name && authConf.name.toLowerCase() === 'authorization') {
+    const value = await fetchPassword(authConf.value_key);
+    sendOptions.headers.authorization = value;
+    return;
+  }
+  logger.error(`Unsupported header name '${authConf.name}'. Supported: authorization`);
+  throw new OutboundError(`Unsupported header name '${authConf.name}'. Supported: authorization`);
 };
 
 const handleMusoSihAuth = async (authConf, config, sendOptions) => {
@@ -201,7 +232,7 @@ const sendPayload = async (payload, config) => {
     timeout: OUTBOUND_REQ_TIMEOUT,
   };
 
-  handleConfiguredHeaders(config, sendOptions);
+  await handleConfiguredHeaders(config, sendOptions);
   handleConfiguredProxy(config, sendOptions);
   await handleAuth(config, sendOptions);
 

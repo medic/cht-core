@@ -157,24 +157,7 @@ const setRequestDispatcher = (options) => {
     return;
   }
 
-  if (isString(proxy)) {
-    options.dispatcher = new undici.ProxyAgent(proxy);
-    return;
-  }
-
-  if (Object.prototype.toString.call(proxy) === '[object Object]') {
-    if (!proxy.uri && !proxy.url) {
-      throw new Error('Invalid proxy configuration. Expected string URL or object with uri/url.');
-    }
-
-    options.dispatcher = new undici.ProxyAgent({
-      ...proxy,
-      uri: proxy.uri || proxy.url
-    });
-    return;
-  }
-
-  throw new Error('Invalid proxy configuration. Expected string URL or object with uri/url.');
+  options.dispatcher = new undici.ProxyAgent(proxy);
 };
 
 const setRequestOptions = async (options) => {
@@ -298,7 +281,7 @@ const request = async (options = {}) => {
  * @property {Object|undefined} form - when passed an object, this sets body to a querystring representation of value,
  * and adds content-type: application/x-www-form-urlencoded header
  * @property {Object|undefined} auth - a hash containing values username, password
- * @property {string|Object|undefined} proxy - proxy URL, or proxy options object with uri/url
+ * @property {string|Object|undefined} proxy - passed through to undici.ProxyAgent
  * @property {Boolean|undefined} simple - if true, returns full response object instead of parsed body.
  * @property {Number|undefined} timeout - integer containing number of milliseconds. Adds an abortSignal.
  */
