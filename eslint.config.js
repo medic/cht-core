@@ -377,6 +377,7 @@ module.exports = defineConfig([
         $: true,
         $$: true,
         document: true,
+        DOMParser: true,
         caches: true,
         navigator: true,
       },
