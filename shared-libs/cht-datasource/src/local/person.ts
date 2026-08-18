@@ -28,7 +28,13 @@ const getTypeProperties = (settings: DataObject, input: Input.v1.PersonInput) =>
   if (!contactTypeUtils.isPersonType(customType ?? { id: input.type })) {
     throw new InvalidArgumentError(`[${input.type}] is not a valid person type.`);
   }
-  return customType
+  // getTypeById answers for the hardcoded types now, so a truthy lookup no longer means the type is
+  // configured. The stored shape has to key off the configuration itself, or an unconfigured install
+  // would start writing contact_type documents where it used to write the hardcoded type.
+  const isConfigured = contactTypeUtils
+    .getContactTypes(settings)
+    .some(({ id }) => id === input.type);
+  return isConfigured
     ? { contact_type: input.type, type: 'contact' }
     : { type: input.type };
 };

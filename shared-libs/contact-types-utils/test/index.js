@@ -137,8 +137,15 @@ describe('ContactType Utils', () => {
         .to.deep.equal({ id: CONTACT_TYPES.CLINIC, parents: [ CONTACT_TYPES.HEALTH_CENTER ] });
       chai.expect(utils.getTypeById({}, 'person')).to.deep.equal({
         id: 'person',
+        person: true,
         parents: [ CONTACT_TYPES.DISTRICT_HOSPITAL, CONTACT_TYPES.HEALTH_CENTER, CONTACT_TYPES.CLINIC ],
       });
+    });
+
+    it('flags the hardcoded person type as a person, for callers that read the flag directly', () => {
+      // update_clinics and the forms filter read contactType.person rather than calling isPersonType
+      chai.expect(utils.getTypeById({}, 'person').person).to.equal(true);
+      chai.expect(utils.getTypeById({}, CONTACT_TYPES.CLINIC).person).to.equal(undefined);
     });
 
     it('should not supplement a configured hierarchy with the hardcoded types', () => {

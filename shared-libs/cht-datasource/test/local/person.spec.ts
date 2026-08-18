@@ -340,6 +340,7 @@ describe('local person', () => {
       let createDocOuter: SinonStub;
       let createDocInner: SinonStub;
       let getTypeById: SinonStub;
+      let getContactTypes: SinonStub;
       let getReportedDateTimestamp: SinonStub;
 
       beforeEach(() => {
@@ -349,6 +350,7 @@ describe('local person', () => {
         createDocOuter = sinon.stub(LocalDoc, 'createDoc').returns(createDocInner);
         settingsGetAll.returns(settings);
         getTypeById = sinon.stub(contactTypeUtils, 'getTypeById');
+        getContactTypes = sinon.stub(contactTypeUtils, 'getContactTypes').returns([]);
         isPersonType.returns(true);
         getReportedDateTimestamp = sinon.stub(LocalCore, 'getReportedDateTimestamp');
       });
@@ -438,6 +440,7 @@ describe('local person', () => {
           reported_date: 123445566
         };
         getTypeById.returns(customPersonType);
+        getContactTypes.returns([customPersonType]);
         getDocByIdInner.resolves(parent);
         const reportedDate = new Date().getTime();
         getReportedDateTimestamp.returns(reportedDate);
@@ -459,6 +462,27 @@ describe('local person', () => {
           parent: minifiedParent,
           reported_date: reportedDate
         })).to.be.true;
+      });
+
+      it('stores the hardcoded type when nothing is configured, rather than a contact_type', async () => {
+        // getTypeById answers for the hardcoded types, so the stored shape has to come from the
+        // configuration instead of from the lookup being truthy.
+        const input = {
+          name: 'user-1',
+          type: 'person',
+          parent: parent._id,
+        };
+        getTypeById.returns({ id: 'person', person: true, parents: [parent.type] });
+        getContactTypes.returns([]);
+        getDocByIdInner.resolves(parent);
+        const reportedDate = new Date().getTime();
+        getReportedDateTimestamp.returns(reportedDate);
+
+        await Person.v1.create(localContext)(input);
+
+        const created = createDocInner.args[0][0];
+        expect(created.type).to.equal('person');
+        expect(created).to.not.have.property('contact_type');
       });
 
       it('throws error when parent doc is not found', async () => {
