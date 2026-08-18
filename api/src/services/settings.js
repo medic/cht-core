@@ -107,10 +107,7 @@ module.exports = {
 
         if (JSON.stringify(doc.settings) !== original) {
           info('Updating settings with new defaults');
-          return db.medic.put(doc).then((res) => {
-            info(`settings rev ${res?.rev}`);
-            return true;
-          });
+          return db.medic.put(doc).then(() => true);
         }
 
         info('Not updating settings - the existing settings are already up to date');

@@ -20,6 +20,7 @@ if (UNIT_TEST_ENV) {
   module.exports.medic = {
     allDocs: stubMe('allDocs'),
     bulkDocs: stubMe('bulkDocs'),
+    bulkGet: stubMe('bulkGet'),
     put: stubMe('put'),
     remove: stubMe('remove'),
     post: stubMe('post'),
@@ -32,6 +33,7 @@ if (UNIT_TEST_ENV) {
   module.exports.sentinel = {
     allDocs: stubMe('allDocs'),
     bulkDocs: stubMe('bulkDocs'),
+    bulkGet: stubMe('bulkGet'),
     put: stubMe('put'),
     post: stubMe('post'),
     query: stubMe('query'),
@@ -62,6 +64,12 @@ if (UNIT_TEST_ENV) {
     bulkDocs: stubMe('bulkDocs'),
     get: stubMe('get'),
     put: stubMe('put'),
+  };
+
+  module.exports.medicLogs = {
+    get: stubMe('get'),
+    put: stubMe('put'),
+    allDocs: stubMe('allDocs'),
   };
 
   module.exports.allDbs = stubMe('allDbs');
@@ -95,6 +103,7 @@ if (UNIT_TEST_ENV) {
   module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, { fetch: fetchFn });
   module.exports.medicLogs = new PouchDB(`${couchUrl}-logs`, { fetch: fetchFn });
   module.exports.archive = new PouchDB(`${couchUrl}-archive`, { fetch: fetchFn });
+  module.exports.medicLogs = new PouchDB(`${couchUrl}-logs`, { fetch: fetchFn });
   module.exports.allDbs = () => request.get({ url: `${environment.serverUrl}/_all_dbs`, json: true });
   module.exports.get = db => new PouchDB(`${environment.serverUrl}/${db}`);
   module.exports.close = db => {
@@ -122,8 +131,16 @@ if (UNIT_TEST_ENV) {
     });
   };
 
+  /**
+   * Permanently removes docs from a database via CouchDB's `_purge` endpoint.
+   * @param {PouchDB.Database} db - the database to purge from
+   * @param {Array<{ _id: string, _revs: string[] }>} docs - every doc must carry `_revs`:
+   *   the list of leaf revisions to purge
+   * @returns {Promise<{ purge_seq: string|null, purged: Object.<string, string[]> }>} the CouchDB
+   *   `_purge` response, mapping each doc id to the revisions actually purged
+   */
   module.exports.purge = (db, docs) => {
-    const purgePayload = Object.fromEntries(docs.map(doc => [ doc._id, [ doc._rev, ...doc._conflicts || [] ] ]));
+    const purgePayload = Object.fromEntries(docs.map(doc => [ doc._id, doc._revs ]));
 
     return request.post({
       url: `${db.name}/_purge`,
