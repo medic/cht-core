@@ -408,6 +408,42 @@ describe('db', () => {
     });
   });
 
+  describe('createDeleted', () => {
+    it('creates the database and locks it to db admins', async () => {
+      sinon.stub(env, 'db').value('mydb');
+      sinon.stub(env, 'serverUrl').get(() => 'http://admin:pass@couchdb:5984');
+      sinon.stub(db.deleted, 'info').resolves({});
+      sinon.stub(request, 'get').resolves({});
+      sinon.stub(request, 'put').resolves();
+
+      await db.createDeleted();
+
+      expect(db.deleted.info.callCount).to.equal(1);
+      // both calls target the delete db security doc and add the db admin role
+      expect(request.put.args.map(([ { url } ]) => url)).to.deep.equal([
+        'http://admin:pass@couchdb:5984/mydb-delete/_security',
+        'http://admin:pass@couchdb:5984/mydb-delete/_security',
+      ]);
+      expect(request.put.args[0][0].body.admins.roles).to.deep.equal([ '_admin' ]);
+      expect(request.put.args[1][0].body.members.roles).to.deep.equal([ '_admin' ]);
+    });
+
+    it('is a no-op on the policy when the role is already there, so it is safe every startup', async () => {
+      sinon.stub(env, 'db').value('mydb');
+      sinon.stub(env, 'serverUrl').get(() => 'http://admin:pass@couchdb:5984');
+      sinon.stub(db.deleted, 'info').resolves({});
+      sinon.stub(request, 'get').resolves({
+        admins: { roles: [ '_admin' ] },
+        members: { roles: [ '_admin' ] },
+      });
+      sinon.stub(request, 'put').resolves();
+
+      await db.createDeleted();
+
+      expect(request.put.called).to.equal(false);
+    });
+  });
+
   describe('fetch extension', () => {
     it('should set headers where there is an active client request', async () => {
       sinon.stub(PouchDB, 'fetch').resolves({

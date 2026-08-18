@@ -9,7 +9,7 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 const asyncLocalStorage = require('./services/async-storage');
 const audit = require('@medic/audit');
 const { REQUEST_ID_HEADER } = require('./server-utils');
-const { HTTP_HEADERS } = require('@medic/constants');
+const { HTTP_HEADERS, USER_ROLES } = require('@medic/constants');
 
 const { UNIT_TEST_ENV } = process.env;
 
@@ -108,8 +108,22 @@ if (UNIT_TEST_ENV) {
   module.exports.users = new PouchDB(getDbUrl('_users'), { fetch: fetchFn });
   module.exports.archive = new PouchDB(`${environment.couchUrl}-archive`, { fetch: fetchFn });
   module.exports.deleted = new PouchDB(`${environment.couchUrl}-delete`, { fetch: fetchFn });
-  // Created here so the migration that locks it down has a database to apply a policy to.
-  module.exports.createDeleted = () => module.exports.deleted.info();
+  /**
+   * Creates the delete database if it is missing and makes sure it is admin only. It holds whole
+   * copies of deleted documents, so it is locked down like the vault.
+   *
+   * The policy is reapplied on every startup rather than once by a migration. A migration is recorded
+   * as done in the medic database, so if the delete database is ever recreated, by a restore that
+   * left it out for instance, the migration would not run again and it would come back with an empty
+   * security object, leaving everything deleted after that readable through the CouchDB proxy. Both
+   * calls are no-ops once the role is present.
+   */
+  module.exports.createDeleted = async () => {
+    await module.exports.deleted.info();
+    const dbName = `${environment.db}-delete`;
+    await module.exports.addRoleAsAdmin(dbName, USER_ROLES.COUCHDB_ADMIN);
+    await module.exports.addRoleAsMember(dbName, USER_ROLES.COUCHDB_ADMIN);
+  };
   module.exports.builds = new PouchDB(environment.buildsUrl);
 
   // Get the DB with the given name
