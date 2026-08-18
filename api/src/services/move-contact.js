@@ -15,10 +15,6 @@ const constraints = require('./hierarchy/lineage-constraints');
 
 const { ACTIONS } = BULK_OPERATIONS;
 
-// Documents are read a page at a time and only the one id each contributes is kept, so a
-// whole-district move never holds more than a page in memory.
-const DOC_PAGE_SIZE = 100;
-
 // The id is embedded in a quoted nouveau phrase, so only the characters that can terminate or escape
 // that phrase matter. `nouveau.escapeKeys` is for unquoted terms and would escape the hyphens in a
 // uuid, which would stop it matching.
@@ -31,36 +27,18 @@ const getSubtreeIds = async (id) => {
 };
 
 /**
- * Reads documents a page at a time and keeps only what the caller pulls out of each page, so a
- * whole-district move never holds more than a page in memory. `docs_by_id_lineage` would have
- * answered these without reading anything, but it was removed in #11319 and hydration went back to
- * reading documents for the same reason.
+ * The direct parent of every contact in the moved subtree. `contacts_by_depth` emits
+ * `[ancestorId, depth]` from the descendant, so keying on depth 1 gives each contact's parent without
+ * reading a document. The source is the one contact the view cannot answer for, because its parent
+ * sits outside the subtree and so is never one of the keys; it comes off the document in hand.
  */
-const readInPages = async (ids, onPage) => {
-  const remaining = [ ...ids ];
-
-  while (remaining.length) {
-    const batch = remaining.splice(0, DOC_PAGE_SIZE);
-    const result = await db.medic.allDocs({ keys: batch, include_docs: true });
-    onPage(result.rows.map(row => row.doc).filter(Boolean));
-  }
-};
-
-const getParentIds = async (contactIds) => {
-  const byId = new Map();
-  await readInPages(contactIds, docs => docs.forEach(
-    doc => byId.set(doc._id, doc.parent?._id || doc.parent)
-  ));
+const getParentIds = async (contactIds, source) => {
+  const result = await db.medic.query('medic/contacts_by_depth', {
+    keys: contactIds.map(id => [ id, 1 ]),
+  });
+  const byId = new Map(result.rows.map(row => [ row.id, row.key[0] ]));
+  byId.set(source._id, source.parent?._id || source.parent);
   return byId;
-};
-
-// A report caches its author under `contact`, so the author is the contact whose lineage went stale.
-const getReportAuthorIds = async (reportIds) => {
-  const pairs = [];
-  await readInPages(reportIds, docs => docs.forEach(
-    doc => pairs.push({ id: doc._id, current_contact_id: doc.contact?._id || doc.contact })
-  ));
-  return pairs;
 };
 
 // Nests ids into the minified lineage shape CHT stores, with `tail` sitting under the innermost id.
@@ -131,6 +109,35 @@ const getReportIdsByCreator = async (contactIds) => {
   }
 
   return [ ...ids ];
+};
+
+/**
+ * Pairs each report with the author whose lineage it caches. `docs_by_replication_key` stores that
+ * author under `submitter`, so the ids the freetext query returned become pairs with a second index
+ * read rather than a document read. The two indexes cover the same reports: the freetext one only
+ * emits `contact:<id>` when a report has an author, and this one stores `submitter` whenever it does.
+ * Ids are matched verbatim rather than lowercased, because `_id` is indexed exactly as it is.
+ */
+const addReportAuthorsForChunk = async (chunk, pairs) => {
+  const terms = chunk.map(id => `"${escapePhrase(id)}"`);
+  const response = await request.post({
+    uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
+    body: { q: `_id:(${terms.join(' OR ')})`, limit: chunk.length },
+  });
+  (response.hits ?? []).forEach(
+    hit => pairs.push({ id: hit.id, current_contact_id: hit.fields?.submitter })
+  );
+};
+
+const getReportAuthorIds = async (reportIds) => {
+  const remaining = [ ...reportIds ];
+  const pairs = [];
+
+  while (remaining.length) {
+    await addReportAuthorsForChunk(remaining.splice(0, nouveau.BATCH_LIMIT), pairs);
+  }
+
+  return pairs;
 };
 
 /**
@@ -206,7 +213,7 @@ const moveContactHierarchy = async (source, destination, { dryRun } = {}) => {
   // `|| undefined` so a move to the root carries the absence of a parent rather than a null.
   const replacementLineage = lineage.minifyLineage(destination) || undefined;
   const [ parentById, reportIds, places ] = await Promise.all([
-    getParentIds(contactIds),
+    getParentIds(contactIds, source),
     getReportIdsByCreator(contactIds),
     getPlacesToRefresh(contactIds),
   ]);

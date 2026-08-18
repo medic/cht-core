@@ -20,10 +20,13 @@ const clinic = { _id: 'clinic-1', type: 'clinic', parent: { _id: 'hc-a', parent:
 // The lineage every moved contact ends up under.
 const UNDER_HC_B = { _id: 'hc-b', parent: { _id: 'district' } };
 
-// allDocs is called for the subtree and again for the reports, so stubs match the exact key list.
-const keysAre = (...ids) => sinon.match(opts => Array.isArray(opts.keys)
-  && opts.keys.length === ids.length
-  && ids.every((id, i) => opts.keys[i] === id));
+// contacts_by_depth answers two questions here, told apart by which key form the query uses.
+const subtreeOf = sinon.match(opts => Array.isArray(opts.key));
+const atDepthOne = sinon.match(opts => Array.isArray(opts.keys));
+
+// Two nouveau indexes are queried in turn, so the stubs split on which one the uri names.
+const freetextQuery = sinon.match(opts => opts.uri.endsWith('reports_by_freetext'));
+const authorQuery = sinon.match(opts => opts.uri.endsWith('docs_by_replication_key'));
 
 const buildRes = () => {
   const res = {};
@@ -43,6 +46,8 @@ describe('move-contact service', () => {
   let contactGet;
   let handler;
   let queue;
+  let freetext;
+  let authors;
 
   beforeEach(() => {
     contactGet = sinon.stub().resolves(healthCenterB);
@@ -53,17 +58,17 @@ describe('move-contact service', () => {
     queue = sinon.stub(bulkOperations, 'queue').resolves('bulk-operation:1');
 
     sinon.stub(db.medic, 'query');
-    db.medic.query.withArgs('medic/contacts_by_depth')
+    db.medic.query.withArgs('medic/contacts_by_depth', subtreeOf)
       .resolves({ rows: [ { id: 'clinic-1' }, { id: 'person-1' } ] });
+    // The person sits under the clinic. The clinic's own parent is outside the subtree, so the view
+    // never emits a row for it and it has to come off the source document instead.
+    db.medic.query.withArgs('medic/contacts_by_depth', atDepthOne)
+      .resolves({ rows: [ { id: 'person-1', key: [ 'clinic-1', 1 ] } ] });
     db.medic.query.withArgs('medic/contacts_by_primary_contact').resolves({ rows: [] });
-    sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
-    // the subtree: the clinic sits under hc-a, the person under the clinic
-    db.medic.allDocs.withArgs(keysAre('clinic-1', 'person-1')).resolves({ rows: [
-      { doc: clinic },
-      { doc: { _id: 'person-1', type: 'person', parent: { _id: 'clinic-1', parent: { _id: 'hc-a' } } } },
-    ] });
 
-    sinon.stub(request, 'post').resolves({ hits: [] });
+    sinon.stub(request, 'post');
+    freetext = request.post.withArgs(freetextQuery).resolves({ hits: [] });
+    authors = request.post.withArgs(authorQuery).resolves({ hits: [] });
 
     handler = moveContact.handleMove({ get: sinon.stub().resolves(clinic), type: 'Place' });
   });
@@ -97,14 +102,33 @@ describe('move-contact service', () => {
     });
   });
 
-  it('pages the document reads rather than asking for every id at once', async () => {
-    const many = Array.from({ length: 250 }, (_, i) => ({ id: `c-${i}` }));
-    db.medic.query.withArgs('medic/contacts_by_depth').resolves({ rows: many });
+  it('answers everything from indexes without reading a single document', async () => {
+    const allDocs = sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
+    freetext.resolves({ hits: [ { id: 'report-1' } ] });
+    authors.resolves({ hits: [ { id: 'report-1', fields: { submitter: 'person-1' } } ] });
 
     await handler(buildReq(), buildRes());
 
-    const batches = db.medic.allDocs.args.map(args => args[0].keys.length);
-    expect(batches).to.deep.equal([ 100, 100, 50 ]);
+    expect(allDocs.called).to.equal(false);
+  });
+
+  it('asks the view for the parents in one query, keyed at depth one', async () => {
+    await handler(buildReq(), buildRes());
+
+    const parentCalls = db.medic.query.args
+      .filter(([ view, opts ]) => view === 'medic/contacts_by_depth' && opts.keys);
+    expect(parentCalls).to.have.lengthOf(1);
+    expect(parentCalls[0][1].keys).to.deep.equal([ [ 'clinic-1', 1 ], [ 'person-1', 1 ] ]);
+  });
+
+  it('takes the source own parent from the document, which the view cannot report', async () => {
+    // The view is keyed on the subtree and the source's parent sits outside it, so nothing comes back.
+    db.medic.query.withArgs('medic/contacts_by_depth', atDepthOne).resolves({ rows: [] });
+
+    await handler(buildReq(), buildRes());
+
+    const [ sourceOp ] = queue.args[0][0][0].operations;
+    expect(sourceOp).to.deep.equal({ id: 'clinic-1', current_parent_id: 'hc-a', parent: UNDER_HC_B });
   });
 
   it('fetches the destination through cht-datasource', async () => {
@@ -126,10 +150,8 @@ describe('move-contact service', () => {
   });
 
   it('refreshes the cached lineage on reports the moved contacts authored', async () => {
-    request.post.resolves({ hits: [ { id: 'report-1' } ] });
-    db.medic.allDocs.withArgs(keysAre('report-1')).resolves({ rows: [
-      { doc: { _id: 'report-1', type: 'data_record', contact: { _id: 'person-1' } } },
-    ] });
+    freetext.resolves({ hits: [ { id: 'report-1' } ] });
+    authors.resolves({ hits: [ { id: 'report-1', fields: { submitter: 'person-1' } } ] });
     const res = buildRes();
 
     await handler(buildReq(), res);
@@ -143,11 +165,37 @@ describe('move-contact service', () => {
     expect(res.json.args[0][0].summary['set-contact']).to.deep.equal({ reports: 1, places: 0 });
   });
 
-  it('skips a report whose author is not resolvable', async () => {
-    request.post.resolves({ hits: [ { id: 'report-1' } ] });
-    db.medic.allDocs.withArgs(keysAre('report-1')).resolves({ rows: [
-      { doc: { _id: 'report-1', type: 'data_record' } },
-    ] });
+  it('looks the report authors up by id in the replication key index', async () => {
+    freetext.resolves({ hits: [ { id: 'report-1' }, { id: 'report-2' } ] });
+
+    await handler(buildReq(), buildRes());
+
+    const { uri, body } = authors.args[0][0];
+    expect(uri).to.include('_design/medic/_nouveau/docs_by_replication_key');
+    expect(body).to.deep.equal({ q: '_id:("report-1" OR "report-2")', limit: 2 });
+  });
+
+  it('matches the report ids verbatim, unlike the lowercased freetext contact terms', async () => {
+    freetext.resolves({ hits: [ { id: 'RePort-1' } ] });
+
+    await handler(buildReq(), buildRes());
+
+    expect(authors.args[0][0].body.q).to.equal('_id:("RePort-1")');
+  });
+
+  it('chunks the author lookup rather than asking for every report at once', async () => {
+    const full = Array.from({ length: 1000 }, (_, i) => ({ id: `r-${i}` }));
+    freetext.onFirstCall().resolves({ hits: full, bookmark: 'page-2' });
+    freetext.onSecondCall().resolves({ hits: [ { id: 'r-last' } ] });
+
+    await handler(buildReq(), buildRes());
+
+    expect(authors.args.map(([ opts ]) => opts.body.limit)).to.deep.equal([ 1000, 1 ]);
+  });
+
+  it('skips a report whose author the index does not report', async () => {
+    freetext.resolves({ hits: [ { id: 'report-1' } ] });
+    authors.resolves({ hits: [ { id: 'report-1', fields: {} } ] });
 
     await handler(buildReq(), buildRes());
 
@@ -157,39 +205,48 @@ describe('move-contact service', () => {
   it('queries the nouveau index by lowercased contact id', async () => {
     await handler(buildReq(), buildRes());
 
-    const { uri, body } = request.post.args[0][0];
+    const { uri, body } = freetext.args[0][0];
     expect(uri).to.include('_design/medic/_nouveau/reports_by_freetext');
     expect(body.q).to.equal('exact_match:("contact:clinic-1" OR "contact:person-1")');
   });
 
   it('pages the nouveau results with the bookmark rather than capping them', async () => {
     const full = Array.from({ length: 1000 }, (_, i) => ({ id: `r-${i}` }));
-    request.post.onFirstCall().resolves({ hits: full, bookmark: 'page-2' });
-    request.post.onSecondCall().resolves({ hits: [ { id: 'r-last' } ] });
+    freetext.onFirstCall().resolves({ hits: full, bookmark: 'page-2' });
+    freetext.onSecondCall().resolves({ hits: [ { id: 'r-last' } ] });
 
     await handler(buildReq(), buildRes());
 
-    expect(request.post.callCount).to.equal(2);
-    expect(request.post.args[0][0].body.bookmark).to.be.null;
-    expect(request.post.args[1][0].body.bookmark).to.equal('page-2');
+    expect(freetext.callCount).to.equal(2);
+    expect(freetext.args[0][0].body.bookmark).to.be.null;
+    expect(freetext.args[1][0].body.bookmark).to.equal('page-2');
   });
 
   it('stops paging when the bookmark does not advance, rather than looping forever', async () => {
     const full = Array.from({ length: 1000 }, (_, i) => ({ id: `r-${i}` }));
     // A misbehaving index that keeps returning a full page and the same bookmark.
-    request.post.resolves({ hits: full, bookmark: 'stuck' });
+    freetext.resolves({ hits: full, bookmark: 'stuck' });
 
     await handler(buildReq(), buildRes());
 
-    expect(request.post.callCount).to.equal(2);
+    expect(freetext.callCount).to.equal(2);
   });
 
   it('escapes quotes and backslashes in ids before they reach the query', async () => {
-    db.medic.query.withArgs('medic/contacts_by_depth').resolves({ rows: [ { id: 'we"ird\\id' } ] });
+    db.medic.query.withArgs('medic/contacts_by_depth', subtreeOf)
+      .resolves({ rows: [ { id: 'we"ird\\id' } ] });
 
     await handler(buildReq(), buildRes());
 
-    expect(request.post.args[0][0].body.q).to.equal('exact_match:("contact:we\\"ird\\\\id")');
+    expect(freetext.args[0][0].body.q).to.equal('exact_match:("contact:we\\"ird\\\\id")');
+  });
+
+  it('escapes quotes and backslashes in report ids too', async () => {
+    freetext.resolves({ hits: [ { id: 'we"ird\\report' } ] });
+
+    await handler(buildReq(), buildRes());
+
+    expect(authors.args[0][0].body.q).to.equal('_id:("we\\"ird\\\\report")');
   });
 
   it('rejects a parent_id that is not a string', async () => {
@@ -277,11 +334,9 @@ describe('move-contact service', () => {
     expect(res.status.args[0][0]).to.equal(202);
   });
 
-  it('handles a source that is already at the root, which has no lineage row', async () => {
-    db.medic.allDocs.withArgs(keysAre('clinic-1', 'person-1')).resolves({ rows: [
-      { doc: { _id: 'clinic-1', type: 'clinic' } },
-      { doc: { _id: 'person-1', type: 'person', parent: { _id: 'clinic-1' } } },
-    ] });
+  it('handles a source that is already at the root, which has no parent to record', async () => {
+    const rootClinic = { _id: 'clinic-1', type: 'clinic' };
+    handler = moveContact.handleMove({ get: sinon.stub().resolves(rootClinic), type: 'Place' });
 
     await handler(buildReq(), buildRes());
 
