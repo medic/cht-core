@@ -284,7 +284,7 @@ module.exports = {
      *         description: The id of the place to move
      *       - $ref: '#/components/parameters/dryRun'
      *     requestBody:
-     *       required: false
+     *       required: true
      *       content:
      *         application/json:
      *           schema:
@@ -293,7 +293,7 @@ module.exports = {
      *               parent_id:
      *                 type: string
      *                 description: >
-     *                   The id of the destination parent. Omit it to move the place to the top level.
+     *                   Omit parent_id and send {} to move the contact to the top level.
      *     responses:
      *       '202':
      *         $ref: '#/components/responses/BulkOperationQueued'

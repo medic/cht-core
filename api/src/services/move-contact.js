@@ -183,7 +183,11 @@ const buildSetParentOperations = (contactIds, parentById, sourceId, replacementL
  * stepped over.
  */
 const buildSetContactOperations = (pairs, parentById, sourceId, replacementLineage) => pairs
-  .filter(({ current_contact_id: contactId }) => contactId)
+  // Only rewrite a cached copy whose contact is really in the moved subtree. The freetext query
+  // matches a lowercased id and the author can change between the two index reads, so a report can
+  // come back whose author is not moving at all; rebuilding that one from the destination lineage
+  // would corrupt an unrelated report. parentById is keyed on the whole subtree.
+  .filter(({ current_contact_id: contactId }) => parentById.has(contactId))
   .map(({ id, current_contact_id: contactId }) => ({
     id,
     current_contact_id: contactId,

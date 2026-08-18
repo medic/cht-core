@@ -202,6 +202,19 @@ describe('move-contact service', () => {
     expect(queue.args[0][0][1].operations).to.deep.equal([]);
   });
 
+  it('skips a report whose author is not in the moved subtree', async () => {
+    // The freetext term is lowercased, so a contact whose id differs only by case matches too, and
+    // the author can change between the two index reads. Either way that report is not moving.
+    freetext.resolves({ hits: [ { id: 'report-1' } ] });
+    authors.resolves({ hits: [ { id: 'report-1', fields: { submitter: 'PERSON-1' } } ] });
+    const res = buildRes();
+
+    await handler(buildReq(), res);
+
+    expect(queue.args[0][0][1].operations).to.deep.equal([]);
+    expect(res.json.args[0][0].summary['set-contact']).to.deep.equal({ reports: 0, places: 0 });
+  });
+
   it('queries the nouveau index by lowercased contact id', async () => {
     await handler(buildReq(), buildRes());
 
@@ -322,15 +335,6 @@ describe('move-contact service', () => {
       { id: 'clinic-1', current_parent_id: 'hc-a', parent: undefined },
       { id: 'person-1', current_parent_id: 'clinic-1', parent: { _id: 'clinic-1' } },
     ]);
-    expect(res.status.args[0][0]).to.equal(202);
-  });
-
-  it('moves to the top level when there is no body at all', async () => {
-    const res = buildRes();
-
-    await handler(buildReq({ body: undefined }), res);
-
-    expect(contactGet.called).to.equal(false);
     expect(res.status.args[0][0]).to.equal(202);
   });
 
