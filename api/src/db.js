@@ -9,7 +9,7 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 const asyncLocalStorage = require('./services/async-storage');
 const audit = require('@medic/audit');
 const { REQUEST_ID_HEADER } = require('./server-utils');
-const { HTTP_HEADERS } = require('@medic/constants');
+const { HTTP_HEADERS, USER_ROLES } = require('@medic/constants');
 
 const { UNIT_TEST_ENV } = process.env;
 
@@ -24,6 +24,7 @@ if (UNIT_TEST_ENV) {
     'vault',
     'cache',
     'archive',
+    'deleted',
   ];
   const DB_FUNCTIONS_TO_STUB = [
     'allDocs',
@@ -51,6 +52,7 @@ if (UNIT_TEST_ENV) {
     'activeTasks',
     'saveDocs',
     'createVault',
+    'createDeleted',
     'wipeCacheDb',
     'addRoleAsAdmin',
     'addRoleAsMember',
@@ -105,6 +107,18 @@ if (UNIT_TEST_ENV) {
   module.exports.createVault = () => module.exports.vault.info();
   module.exports.users = new PouchDB(getDbUrl('_users'), { fetch: fetchFn });
   module.exports.archive = new PouchDB(`${environment.couchUrl}-archive`, { fetch: fetchFn });
+  module.exports.deleted = new PouchDB(`${environment.couchUrl}-delete`, { fetch: fetchFn });
+  /**
+   * Creates the delete database and explicitly keeps it admin only. CouchDB 3 creates databases
+   * admin only by default, but that default is configurable. Enforcing the policy here keeps retained
+   * deleted documents restricted if the database is recreated or the server default changes.
+   */
+  module.exports.createDeleted = async () => {
+    await module.exports.deleted.info();
+    const dbName = `${environment.db}-delete`;
+    await module.exports.addRoleAsAdmin(dbName, USER_ROLES.COUCHDB_ADMIN);
+    await module.exports.addRoleAsMember(dbName, USER_ROLES.COUCHDB_ADMIN);
+  };
   module.exports.builds = new PouchDB(environment.buildsUrl);
 
   // Get the DB with the given name

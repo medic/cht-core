@@ -698,6 +698,9 @@ describe('routing', () => {
         utils
           .request(Object.assign({ path: `/${constants.DB_NAME}-vault` }, onlineRequestOptions))
           .catch(err => err),
+        utils
+          .request(Object.assign({ path: `/${constants.DB_NAME}-delete` }, onlineRequestOptions))
+          .catch(err => err),
       ]).then(results => {
         results.forEach(result => {
           expect(result.status).to.equal(403);

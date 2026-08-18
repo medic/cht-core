@@ -66,17 +66,17 @@ describe('Delete contact service', () => {
         [ 'facility_id', 'child' ], [ 'contact_id', 'child' ],
       ]);
 
-      // queued in order: set-contact, delete-user, then archive (reports before their subject contacts)
+      // queued in order: set-contact, delete-user, then delete (reports before their subject contacts)
       const actions = queue.args[0][0];
-      expect(actions.map(a => a.action)).to.deep.equal([ 'set-contact', 'delete-user', 'archive' ]);
+      expect(actions.map(a => a.action)).to.deep.equal([ 'set-contact', 'delete-user', 'delete' ]);
       const byAction = Object.fromEntries(actions.map(a => [ a.action, a.operations ]));
       expect(byAction['set-contact']).to.deep.equal([ { id: 'parent-place', current_contact_id: 'target' } ]);
       expect(byAction['delete-user']).to.deep.equal([ { id: 'org.couchdb.user:chw' } ]);
-      expect(byAction.archive.map(o => o.id)).to.deep.equal([ 'report-1', 'report-2', 'target', 'child' ]);
+      expect(byAction.delete.map(o => o.id)).to.deep.equal([ 'report-1', 'report-2', 'target', 'child' ]);
 
       expect(res.status.calledOnceWithExactly(202)).to.be.true;
       expect(res.json.calledOnceWithExactly({
-        summary: { archive: { contacts: 2, reports: 2 }, 'set-contact': 1, 'delete-user': 1 },
+        summary: { delete: { contacts: 2, reports: 2 }, 'set-contact': 1, 'delete-user': 1 },
         id: 'bulk-operation:xyz',
       })).to.be.true;
     });
@@ -124,7 +124,7 @@ describe('Delete contact service', () => {
       expect(queue.called).to.equal(false);
       expect(res.status.calledOnceWithExactly(200)).to.be.true;
       expect(res.json.calledOnceWithExactly({
-        summary: { archive: { contacts: 1, reports: 1 }, 'set-contact': 0, 'delete-user': 0 },
+        summary: { delete: { contacts: 1, reports: 1 }, 'set-contact': 0, 'delete-user': 0 },
       })).to.be.true;
     });
 

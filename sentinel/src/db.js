@@ -66,6 +66,13 @@ if (UNIT_TEST_ENV) {
     put: stubMe('put'),
   };
 
+  module.exports.deleted = {
+    allDocs: stubMe('allDocs'),
+    bulkDocs: stubMe('bulkDocs'),
+    get: stubMe('get'),
+    put: stubMe('put'),
+  };
+
   module.exports.medicLogs = {
     get: stubMe('get'),
     put: stubMe('put'),
@@ -103,6 +110,7 @@ if (UNIT_TEST_ENV) {
   module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, { fetch: fetchFn });
   module.exports.medicLogs = new PouchDB(`${couchUrl}-logs`, { fetch: fetchFn });
   module.exports.archive = new PouchDB(`${couchUrl}-archive`, { fetch: fetchFn });
+  module.exports.deleted = new PouchDB(`${couchUrl}-delete`, { fetch: fetchFn });
   module.exports.medicLogs = new PouchDB(`${couchUrl}-logs`, { fetch: fetchFn });
   module.exports.allDbs = () => request.get({ url: `${environment.serverUrl}/_all_dbs`, json: true });
   module.exports.get = db => new PouchDB(`${environment.serverUrl}/${db}`);
