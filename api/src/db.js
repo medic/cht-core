@@ -109,14 +109,9 @@ if (UNIT_TEST_ENV) {
   module.exports.archive = new PouchDB(`${environment.couchUrl}-archive`, { fetch: fetchFn });
   module.exports.deleted = new PouchDB(`${environment.couchUrl}-delete`, { fetch: fetchFn });
   /**
-   * Creates the delete database if it is missing and makes sure it is admin only. It holds whole
-   * copies of deleted documents, so it is locked down like the vault.
-   *
-   * The policy is reapplied on every startup rather than once by a migration. A migration is recorded
-   * as done in the medic database, so if the delete database is ever recreated, by a restore that
-   * left it out for instance, the migration would not run again and it would come back with an empty
-   * security object, leaving everything deleted after that readable through the CouchDB proxy. Both
-   * calls are no-ops once the role is present.
+   * Creates the delete database and explicitly keeps it admin only. CouchDB 3 creates databases
+   * admin only by default, but that default is configurable. Enforcing the policy here keeps retained
+   * deleted documents restricted if the database is recreated or the server default changes.
    */
   module.exports.createDeleted = async () => {
     await module.exports.deleted.info();
