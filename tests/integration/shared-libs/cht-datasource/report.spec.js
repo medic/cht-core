@@ -301,7 +301,7 @@ describe('cht-datasource Report', () => {
       });
     });
 
-    describe('getUuidsPage byForms', async () => {
+    describe('getUuidsPage byForms', () => {
       const getUuidsPage = Report.v1.getUuidsPage(dataContext);
       const forms = [ 'report0', 'report1', 'report2', 'report3', 'report4', 'report5' ];
       const fourLimit = 4;
@@ -330,8 +330,8 @@ describe('cht-datasource Report', () => {
         const allReportIds = [ ...firstPage.data, ...secondPage.data ];
 
         expect(allReportIds).to.deep.equalInAnyOrder(expectedReportIds);
-        expect(firstPage.data.length).to.be.equal(4);
-        expect(secondPage.data.length).to.be.equal(2);
+        expect(firstPage.data).to.have.lengthOf(4);
+        expect(secondPage.data).to.have.lengthOf(2);
         expect(firstPage.cursor).to.not.be.null;
         expect(secondPage.cursor).to.be.null;
       });
@@ -356,7 +356,7 @@ describe('cht-datasource Report', () => {
       });
     });
 
-    describe('getUuids byForms', async () => {
+    describe('getUuids byForms', () => {
       it('fetches all data by iterating through generator', async () => {
         const forms = [ 'report0', 'report1', 'report2', 'report3', 'report4', 'report5' ];
         const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];

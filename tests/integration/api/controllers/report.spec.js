@@ -416,7 +416,7 @@ describe('Report API', () => {
     });
   });
 
-  describe('GET /api/v1/report/uuid with form param', async () => {
+  describe('GET /api/v1/report/uuid with form param', () => {
     const forms = 'report0,report1,report2,report3,report4,report5';
     const fourLimit = 4;
     const endpoint = '/api/v1/report/uuid';
@@ -470,8 +470,8 @@ describe('Report API', () => {
       const allReportIds = [ ...firstPage.data, ...secondPage.data ];
 
       expect(allReportIds).to.deep.equalInAnyOrder(expectedReportIds);
-      expect(firstPage.data.length).to.be.equal(4);
-      expect(secondPage.data.length).to.be.equal(2);
+      expect(firstPage.data).to.have.lengthOf(4);
+      expect(secondPage.data).to.have.lengthOf(2);
       expect(secondPage.cursor).to.be.null;
     });
 
