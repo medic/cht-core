@@ -1,5 +1,5 @@
 const request = require('@medic/couch-request');
-const url = require('url');
+const url = require('node:url');
 const environment = require('@medic/environment');
 const { USER_ROLES } = require('@medic/constants');
 
@@ -31,10 +31,11 @@ const addSecurityToDb = () => {
 module.exports = {
   name: 'restrict-access-to-delete-db',
   created: new Date(2026, 7, 18),
-  run: () => {
-    return addSecurityToDb().catch(err => {
-      return Promise.reject(new Error('Failed to restrict access to the delete db. ' +
-        JSON.stringify(err, null, 2)));
-    });
+  run: async () => {
+    try {
+      await addSecurityToDb();
+    } catch (err) {
+      throw new Error(`Failed to restrict access to the delete db. ${JSON.stringify(err, null, 2)}`);
+    }
   }
 };
