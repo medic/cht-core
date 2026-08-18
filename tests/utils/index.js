@@ -71,6 +71,7 @@ const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 const auditDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-audit`, { auth });
 const archiveDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-archive`, { auth });
+const deleteDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-delete`, { auth });
 const existingFeedbackDocIds = [];
 const MINIMUM_BROWSER_VERSION = '107';
 const KUBECTL_CONTEXT = `-n ${PROJECT_NAME} --context k3d-${PROJECT_NAME}`;
@@ -1882,6 +1883,7 @@ module.exports = {
   usersDb,
   auditDb,
   archiveDb,
+  deleteDb,
 
   SW_SUCCESSFUL_REGEX,
   ONE_YEAR_IN_S,

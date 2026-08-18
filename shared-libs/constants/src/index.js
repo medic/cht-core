@@ -82,7 +82,7 @@ const PREFIXES = {
 const BULK_OPERATIONS = {
   OPERATIONS_ATTACHMENT: 'operations',
   ACTIONS: {
-    ARCHIVE: 'archive',
+    DELETE: 'delete',
     SET_CONTACT: 'set-contact',
     DELETE_USER: 'delete-user',
   },

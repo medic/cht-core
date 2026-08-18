@@ -64,7 +64,7 @@ describe('Bulk operations service', () => {
 
   describe('queue', () => {
     const actionOperations = [
-      { action: 'archive', operations: [{ id: 'person' }, { id: 'report' }] },
+      { action: 'delete', operations: [{ id: 'person' }, { id: 'report' }] },
       { action: 'set-contact', operations: [{ id: 'place', current_contact_id: 'person' }] },
       { action: 'delete-user', operations: [{ id: 'org.couchdb.user:chw' }] },
     ];
@@ -86,7 +86,7 @@ describe('Bulk operations service', () => {
       expect(saveDocs.args[0][0]).to.equal(db.sentinel);
       const actions = saveDocs.args[0][1];
       expect(actions).to.have.length(3);
-      expect(actions.map(action => action.action)).to.deep.equal(['archive', 'set-contact', 'delete-user']);
+      expect(actions.map(action => action.action)).to.deep.equal(['delete', 'set-contact', 'delete-user']);
       expect(actions[0].bulk_operation_id).to.equal(operationId);
 
       // the log must exist before the listener can pick up an action
@@ -113,7 +113,7 @@ describe('Bulk operations service', () => {
       // the log action entry cross-links to the action doc and starts queued
       const logAction = log.actions[actions[0]._id];
       expect(logAction.status).to.equal('queued');
-      expect(logAction.action).to.equal('archive');
+      expect(logAction.action).to.equal('delete');
       expect(logAction.total_changes_count).to.equal(2);
       expect(logAction.updated_date).to.equal(log.start_date);
     });
@@ -131,7 +131,7 @@ describe('Bulk operations service', () => {
       sinon.stub(db.medicLogs, 'put').resolves();
       const saveDocs = sinon.stub(db, 'saveDocs').resolves();
       const groups = [
-        { action: 'archive', operations: [{ id: 'person' }] },
+        { action: 'delete', operations: [{ id: 'person' }] },
         { action: 'set-contact', operations: [] },
         { action: 'delete-user', operations: [{ id: 'org.couchdb.user:chw' }] },
       ];
@@ -139,7 +139,7 @@ describe('Bulk operations service', () => {
       await service.queue(groups);
 
       const actions = saveDocs.args[0][1];
-      expect(actions.map(action => action.action)).to.deep.equal(['archive', 'delete-user']);
+      expect(actions.map(action => action.action)).to.deep.equal(['delete', 'delete-user']);
     });
   });
 });
