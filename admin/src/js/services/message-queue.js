@@ -16,6 +16,7 @@ angular.module('services').factory('MessageQueueUtils',
     'ngInject';
 
     return {
+      getExtensionLibs: () => extensionLibs.getAll(),
       lineage: lineageFactory($q, DB({ remote: true })),
       loadExtensionLibs: () => extensionLibs.load(DB({ remote: true })),
       messages: messageUtils,
@@ -223,7 +224,7 @@ angular.module('services').factory('MessageQueue',
       .then(() => MessageQueueUtils.loadExtensionLibs())
       .catch(err => {
         $log.error('Error loading extension libs', err);
-        return {};
+        return MessageQueueUtils.getExtensionLibs();
       });
 
     const getTaskDisplayName = function(task) {

@@ -32,6 +32,37 @@ describe('extension-libs', () => {
     expect(extensionLibs.getAll()).to.deep.equal(result);
   });
 
+  it('does not let an older request overwrite a newer load', async () => {
+    let resolveOlder;
+    let resolveNewer;
+    const olderResponse = new Promise(resolve => resolveOlder = resolve);
+    const newerResponse = new Promise(resolve => resolveNewer = resolve);
+    const db = {
+      get: sinon.stub()
+        .onFirstCall().returns(olderResponse)
+        .onSecondCall().returns(newerResponse),
+    };
+
+    const olderLoad = extensionLibs.load(db);
+    const newerLoad = extensionLibs.load(db);
+    resolveNewer({
+      _attachments: {
+        'helper.js': { data: encode('module.exports = () => "newer";') },
+      },
+    });
+    await newerLoad;
+    resolveOlder({
+      _attachments: {
+        'helper.js': { data: encode('module.exports = () => "older";') },
+      },
+    });
+
+    const result = await olderLoad;
+
+    expect(result).to.equal(extensionLibs.getAll());
+    expect(extensionLibs.get('helper.js')()).to.equal('newer');
+  });
+
   it('clears loaded libraries when the extension-libs document does not exist', async () => {
     extensionLibs.set({ 'old.js': () => 'old' });
     const db = { get: sinon.stub().rejects({ status: 404 }) };

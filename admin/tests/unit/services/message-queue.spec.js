@@ -27,6 +27,7 @@ describe('MessageQueue service', function() {
     clock = sinon.useFakeTimers();
     log = { error: sinon.stub() };
     utils = {
+      getExtensionLibs: sinon.stub().returns({}),
       loadExtensionLibs: sinon.stub().resolves({}),
       messages: {
         generate: sinon.stub()
@@ -104,16 +105,40 @@ describe('MessageQueue service', function() {
       });
     });
 
-    it('falls back to no extension-libs when they cannot be loaded', () => {
+    it('retains the last successfully loaded extension-libs when a later load fails', async () => {
       const error = new Error('extension-libs unavailable');
-      utils.loadExtensionLibs.callsFake(() => Q.reject(error));
-      query.resolves({ rows: [] });
+      let retainedRegistry;
+      utils.loadExtensionLibs
+        .onFirstCall().callsFake(() => {
+          retainedRegistry = { 'helper.js': value => `helper:${value}` };
+          utils.getExtensionLibs.returns(retainedRegistry);
+          return Q.resolve(retainedRegistry);
+        })
+        .onSecondCall().callsFake(() => Q.reject(error));
+      query
+        .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
+        .resolves({
+          rows: [{
+            doc: { _id: 'report', reported_date: 100 },
+            value: {
+              scheduled_sms: { content: 'message', recipient: false },
+              task: { type: 'task', state: 'pending' },
+              due: 200,
+            },
+          }],
+        })
+        .withArgs('medic-admin/message_queue', sinon.match({ reduce: true }))
+        .resolves({ rows: [{ value: 1 }] });
+      utils.messages.generate.returns([{ message: 'message', to: false }]);
 
-      return service.query('tab')
-        .then(result => {
-          chai.expect(result).to.deep.equal({ messages: [], total: 0 });
-          chai.expect(log.error.calledOnceWithExactly('Error loading extension libs', error)).to.equal(true);
-        });
+      await service.query('tab');
+      await service.query('tab');
+
+      chai.expect(utils.messages.generate.callCount).to.equal(2);
+      chai.expect(utils.messages.generate.firstCall.args[0].extensionLibs).to.equal(retainedRegistry);
+      chai.expect(utils.messages.generate.secondCall.args[0].extensionLibs).to.equal(retainedRegistry);
+      chai.expect(utils.getExtensionLibs.calledOnceWithExactly()).to.equal(true);
+      chai.expect(log.error.calledOnceWithExactly('Error loading extension libs', error)).to.equal(true);
     });
 
     it('should query the message_queue view with correct default params', () => {
