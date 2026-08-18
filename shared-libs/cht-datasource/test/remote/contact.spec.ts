@@ -192,6 +192,22 @@ describe('remote contact', () => {
           type: contactType,
         })).to.be.true;
       });
+
+      it('serializes the phone qualifier over the uuid endpoint', async () => {
+        const phone = '+254712345678';
+        const expectedResponse = { data: ['uuid-1'], cursor };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Contact.v1.getUuidsPage(remoteContext)({ phone }, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact/uuid')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          cursor,
+          phone,
+        })).to.be.true;
+      });
     });
 
     describe('getPage', () => {
@@ -236,6 +252,22 @@ describe('remote contact', () => {
 
         expect(result).to.equal(expectedResponse);
         expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString(), type: 'person' })).to.be.true;
+      });
+
+      it('serializes the phone qualifier over the contact endpoint', async () => {
+        const phone = '+254712345678';
+        const expectedResponse = { data: [{ type: 'person' }], cursor };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Contact.v1.getPage(remoteContext)({ phone }, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          cursor,
+          phone,
+        })).to.be.true;
       });
     });
   });
