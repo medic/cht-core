@@ -137,12 +137,61 @@ describe('bulk-operations delete handler', () => {
     expect(db.medic.bulkDocs.called).to.equal(false);
   });
 
-  it('fails the whole batch when purging the infodocs throws', async () => {
+  it('still deletes when purging the infodocs fails, since background cleanup covers it', async () => {
     purgeDocs.rejects(new Error('boom'));
 
     const failed = await deleteDocs([ { id: 'a' }, { id: 'b' } ], 'action-1');
 
-    expect(failed.map(op => op.id)).to.deep.equal([ 'a', 'b' ]);
+    expect(failed).to.deep.equal([]);
+    expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([
+      { _id: 'a', _rev: '1-aaa', _deleted: true },
+      { _id: 'b', _rev: '1-bbb', _deleted: true },
+    ]);
+  });
+
+  it('does not delete a doc the delete database rejected, so the body is never dropped', async () => {
+    // bulkDocs resolves with an error row rather than rejecting, and with new_edits: false only
+    // failures come back.
+    db.deleted.bulkDocs.resolves([ { id: 'a', error: 'forbidden' } ]);
+    db.medic.bulkDocs.resolves([ { ok: true, id: 'b' } ]);
+
+    const failed = await deleteDocs([ { id: 'a' }, { id: 'b' } ], 'action-1');
+
+    expect(failed).to.deep.equal([ { id: 'a' } ]);
+    expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([ { _id: 'b', _rev: '1-bbb', _deleted: true } ]);
+  });
+
+  it('deletes nothing when every copy was rejected', async () => {
+    db.deleted.bulkDocs.resolves([ { id: 'a', error: 'forbidden' }, { id: 'b', error: 'forbidden' } ]);
+
+    const failed = await deleteDocs([ { id: 'a' }, { id: 'b' } ], 'action-1');
+
+    expect(failed).to.deep.equal([ { id: 'a' }, { id: 'b' } ]);
+    expect(db.medic.bulkDocs.called).to.equal(false);
+  });
+
+  it('counts an already deleted doc as done, so a retried batch is not reported as failed', async () => {
+    // What a batch sees when Sentinel stopped after deleting but before saving its cursor.
+    db.medic.allDocs.resolves({ rows: [
+      { key: 'a', id: 'a', value: { rev: '2-aaa', deleted: true } },
+      { doc: report },
+    ] });
+    db.medic.bulkDocs.resolves([ { ok: true, id: 'b' } ]);
+
+    const failed = await deleteDocs([ { id: 'a' }, { id: 'b' } ], 'action-1');
+
+    expect(failed).to.deep.equal([]);
+    expect(db.deleted.bulkDocs.args[0][0].map(doc => doc._id)).to.deep.equal([ 'b' ]);
+    expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([ { _id: 'b', _rev: '1-bbb', _deleted: true } ]);
+  });
+
+  it('does nothing at all when every doc in a retried batch is already deleted', async () => {
+    db.medic.allDocs.resolves({ rows: [ { key: 'a', id: 'a', value: { rev: '2-aaa', deleted: true } } ] });
+
+    const failed = await deleteDocs([ { id: 'a' } ], 'action-1');
+
+    expect(failed).to.deep.equal([]);
+    expect(db.deleted.bulkDocs.called).to.equal(false);
     expect(db.medic.bulkDocs.called).to.equal(false);
   });
 });

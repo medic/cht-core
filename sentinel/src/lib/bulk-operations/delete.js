@@ -31,6 +31,57 @@ const buildCopy = (doc, deletedDate) => {
 };
 
 /**
+ * Splits the rows into the docs still to delete and the ids that failed. A row with no doc is either
+ * already deleted, which is what a retried batch sees after Sentinel stopped before saving its
+ * cursor, and counts as done, or it never existed at all, which fails.
+ */
+const sortRows = (rows, failed, actionId) => {
+  const docs = [];
+
+  rows.forEach(row => {
+    if (row.doc) {
+      docs.push(row.doc);
+    } else if (row.value?.deleted) {
+      logger.info(`bulk-operations: delete skipped ${row.key}, already deleted (action ${actionId})`);
+    } else {
+      logger.error(`bulk-operations: delete failed for ${row.key}: doc missing (action ${actionId})`);
+      failed.push({ id: row.key });
+    }
+  });
+
+  return docs;
+};
+
+/**
+ * Copies the docs and returns only those the delete database accepted. bulkDocs resolves with an
+ * error row rather than rejecting, so a doc whose copy failed has to be left alone: deleting it
+ * would drop the body with nothing kept. With `new_edits: false` CouchDB reports only failures, so
+ * anything that comes back is one.
+ */
+const copyDocs = async (docs, actionId) => {
+  const deletedDate = Date.now();
+  const results = await db.deleted.bulkDocs(docs.map(doc => buildCopy(doc, deletedDate)), {
+    new_edits: false,
+  });
+  const rejected = new Set((results || []).filter(res => res.error).map(res => res.id));
+  if (rejected.size) {
+    logger.error(`bulk-operations: delete could not copy some docs (action ${actionId}): %o`, results);
+  }
+
+  return { copied: docs.filter(doc => !rejected.has(doc._id)), rejected: [ ...rejected ] };
+};
+
+// Cleanup rather than the job itself: background cleanup removes any infodoc left behind by a
+// deletion, so a failure here must not stop the docs being deleted.
+const purgeInfoDocs = async (docs, actionId) => {
+  try {
+    await archiving.purgeDocs(db.sentinel, docs.map(doc => `${doc._id}-info`));
+  } catch (err) {
+    logger.warn(`bulk-operations: delete could not purge the infodocs (action ${actionId}): %o`, err);
+  }
+};
+
+/**
  * Copies the batch to the delete database and then deletes it from medic. Unlike archiving, the docs
  * are left as deleted revisions rather than purged, so the tombstone still reaches offline devices
  * and downstream stores such as cht-sync, which is what the forum discussion on #11349 settled on.
@@ -52,31 +103,23 @@ const deleteDocs = async (batch, actionId) => {
       attachments: true,
       conflicts: true,
     });
-    const docs = result.rows.map(row => row.doc).filter(Boolean);
-
-    const found = new Set(docs.map(doc => doc._id));
-    ids
-      .filter(id => !found.has(id))
-      .forEach(id => {
-        logger.error(`bulk-operations: delete failed for ${id}: doc missing (action ${actionId})`);
-        failed.push({ id });
-      });
-
+    const docs = sortRows(result.rows, failed, actionId);
     if (!docs.length) {
       return failed;
     }
 
-    const deletedDate = Date.now();
-    // new_edits: false keeps the original revision, so the copy matches what medic held and a
-    // re-run is a no-op rather than a conflict.
-    await db.deleted.bulkDocs(docs.map(doc => buildCopy(doc, deletedDate)), { new_edits: false });
-    // Sentinel's background cleanup would eventually delete these, but purging now keeps the
-    // infodocs from outliving the batch.
-    await archiving.purgeDocs(db.sentinel, docs.map(doc => `${doc._id}-info`));
+    // The copy keeps the original revision, so re-running is a no-op rather than a conflict.
+    const { copied, rejected } = await copyDocs(docs, actionId);
+    rejected.forEach(id => failed.push({ id }));
+    if (!copied.length) {
+      return failed;
+    }
+
+    await purgeInfoDocs(copied, actionId);
 
     // bulkDocs does not reject when an individual doc fails, so check each result. A doc with
     // conflicts contributes one entry per leaf, so failures are collapsed back down by id.
-    const results = await db.medic.bulkDocs(docs.flatMap(buildTombstones));
+    const results = await db.medic.bulkDocs(copied.flatMap(buildTombstones));
     const errors = results.filter(res => res.error);
     if (errors.length) {
       logger.error(`bulk-operations: delete failed for some docs (action ${actionId}): %o`, errors);
