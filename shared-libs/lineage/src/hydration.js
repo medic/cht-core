@@ -256,29 +256,31 @@ module.exports = function(Promise, DB) {
       });
   };
 
-  const fetchLineageById = function(id) {
+  const fetchDocWithLineage = function(id) {
     return DB.get(id)
       .then(function(doc) {
         const ids = lineageIds(doc);
         if (!ids.length) {
-          return [];
+          return { doc, lineage: [] };
         }
 
         const parentIds = ids.slice(1);
         if (!parentIds.length) {
-          return [doc];
+          return { doc, lineage: [doc] };
         }
 
         return fetchDocs(parentIds)
-          .then(ancestors => [ doc, ...orderDocsByIds(parentIds, ancestors) ]);
+          .then(ancestors => ({ doc, lineage: [ doc, ...orderDocsByIds(parentIds, ancestors) ] }));
       })
       .catch(function(err) {
         if (err.status === 404) {
-          return [];
+          return { doc: null, lineage: [] };
         }
         throw err;
       });
   };
+
+  const fetchLineageById = id => fetchDocWithLineage(id).then(({ lineage }) => lineage);
 
   const fetchLineageByIds = function(ids) {
     return fetchDocs(ids).then(function(docs) {
@@ -317,19 +319,19 @@ module.exports = function(Promise, DB) {
       throwWhenMissingLineage: false,
     });
 
-    return fetchLineageById(id)
+    return fetchDocWithLineage(id)
       .then(function(result) {
-        lineage = result;
+        lineage = result.lineage;
 
         if (lineage.length === 0) {
           if (options.throwWhenMissingLineage) {
             const err = new Error(`Document not found: ${id}`);
             err.code = 404;
             throw err;
-          } else {
-            // Not a doc that has lineage, just do a normal fetch.
-            return fetchDoc(id);
           }
+          // Not a doc that has lineage, so nothing to hydrate. Reuse the doc we already have, falling back to
+          // fetchDoc so that a missing doc still rejects with a 404.
+          return result.doc || fetchDoc(id);
         }
 
         return fetchSubjectLineage(lineage[0])
