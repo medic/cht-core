@@ -15,12 +15,14 @@ describe('bulk-operations delete handler', () => {
     sinon.stub(db.medic, 'allDocs').resolves({ rows: [ { doc: contact }, { doc: report } ] });
     sinon.stub(db.medic, 'bulkDocs').resolves([ { ok: true, id: 'a' }, { ok: true, id: 'b' } ]);
     sinon.stub(db.deleted, 'bulkDocs').resolves([]);
+    // an already deleted row is only a success when a copy was kept, so the copy db is read too
+    sinon.stub(db.deleted, 'allDocs').resolves({ rows: [] });
     purgeDocs = sinon.stub(archiving, 'purgeDocs').resolves();
   });
 
   afterEach(() => sinon.restore());
 
-  it('copies the docs to the delete database, purges the infodocs, then deletes from medic', async () => {
+  it('copies the docs, deletes them from medic, then purges the infodocs', async () => {
     const failed = await deleteDocs([ { id: 'a' }, { id: 'b' } ], 'action-1');
 
     expect(failed).to.deep.equal([]);
@@ -53,7 +55,8 @@ describe('bulk-operations delete handler', () => {
     await deleteDocs([ { id: 'a' } ], 'action-1');
 
     expect(db.deleted.bulkDocs.calledBefore(db.medic.bulkDocs)).to.equal(true);
-    expect(purgeDocs.calledBefore(db.medic.bulkDocs)).to.equal(true);
+    // and the infodocs go last, once we know which docs actually went
+    expect(db.medic.bulkDocs.calledBefore(purgeDocs)).to.equal(true);
   });
 
   it('deletes every live leaf, so a conflict is not promoted to winner', async () => {
@@ -170,28 +173,61 @@ describe('bulk-operations delete handler', () => {
     expect(db.medic.bulkDocs.called).to.equal(false);
   });
 
-  it('counts an already deleted doc as done, so a retried batch is not reported as failed', async () => {
+  it('counts an already deleted doc as done when the copy was kept, so a retry is not failed', async () => {
     // What a batch sees when Sentinel stopped after deleting but before saving its cursor.
     db.medic.allDocs.resolves({ rows: [
       { key: 'a', id: 'a', value: { rev: '2-aaa', deleted: true } },
       { doc: report },
     ] });
+    db.deleted.allDocs.resolves({ rows: [ { key: 'a', id: 'a', value: { rev: '1-aaa' } } ] });
     db.medic.bulkDocs.resolves([ { ok: true, id: 'b' } ]);
 
     const failed = await deleteDocs([ { id: 'a' }, { id: 'b' } ], 'action-1');
 
     expect(failed).to.deep.equal([]);
+    expect(db.deleted.allDocs.args[0][0]).to.deep.equal({ keys: [ 'a' ] });
     expect(db.deleted.bulkDocs.args[0][0].map(doc => doc._id)).to.deep.equal([ 'b' ]);
     expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([ { _id: 'b', _rev: '1-bbb', _deleted: true } ]);
   });
 
-  it('does nothing at all when every doc in a retried batch is already deleted', async () => {
+  it('fails an already deleted doc when no copy was kept, since something else removed it', async () => {
     db.medic.allDocs.resolves({ rows: [ { key: 'a', id: 'a', value: { rev: '2-aaa', deleted: true } } ] });
+    db.deleted.allDocs.resolves({ rows: [ { key: 'a', error: 'not_found' } ] });
+
+    const failed = await deleteDocs([ { id: 'a' } ], 'action-1');
+
+    expect(failed).to.deep.equal([ { id: 'a' } ]);
+    expect(db.deleted.bulkDocs.called).to.equal(false);
+    expect(db.medic.bulkDocs.called).to.equal(false);
+  });
+
+  it('does nothing at all when every doc in a retried batch is already deleted and kept', async () => {
+    db.medic.allDocs.resolves({ rows: [ { key: 'a', id: 'a', value: { rev: '2-aaa', deleted: true } } ] });
+    db.deleted.allDocs.resolves({ rows: [ { key: 'a', id: 'a', value: { rev: '1-aaa' } } ] });
 
     const failed = await deleteDocs([ { id: 'a' } ], 'action-1');
 
     expect(failed).to.deep.equal([]);
     expect(db.deleted.bulkDocs.called).to.equal(false);
     expect(db.medic.bulkDocs.called).to.equal(false);
+  });
+
+  it('purges the infodoc only for docs that were actually deleted', async () => {
+    // A doc updated between the read and the write fails on a conflict and must keep its infodoc,
+    // otherwise its transition history is lost and a later edit looks like the first one.
+    db.medic.bulkDocs.resolves([ { ok: true, id: 'a' }, { id: 'b', error: 'conflict' } ]);
+
+    const failed = await deleteDocs([ { id: 'a' }, { id: 'b' } ], 'action-1');
+
+    expect(failed).to.deep.equal([ { id: 'b' } ]);
+    expect(purgeDocs.args[0][1]).to.deep.equal([ 'a-info' ]);
+  });
+
+  it('does not purge any infodoc when every delete failed', async () => {
+    db.medic.bulkDocs.resolves([ { id: 'a', error: 'conflict' }, { id: 'b', error: 'conflict' } ]);
+
+    await deleteDocs([ { id: 'a' }, { id: 'b' } ], 'action-1');
+
+    expect(purgeDocs.called).to.equal(false);
   });
 });

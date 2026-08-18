@@ -24,6 +24,7 @@ if (UNIT_TEST_ENV) {
     'vault',
     'cache',
     'archive',
+    'deleted',
   ];
   const DB_FUNCTIONS_TO_STUB = [
     'allDocs',
@@ -51,6 +52,7 @@ if (UNIT_TEST_ENV) {
     'activeTasks',
     'saveDocs',
     'createVault',
+    'createDeleted',
     'wipeCacheDb',
     'addRoleAsAdmin',
     'addRoleAsMember',
@@ -105,6 +107,9 @@ if (UNIT_TEST_ENV) {
   module.exports.createVault = () => module.exports.vault.info();
   module.exports.users = new PouchDB(getDbUrl('_users'), { fetch: fetchFn });
   module.exports.archive = new PouchDB(`${environment.couchUrl}-archive`, { fetch: fetchFn });
+  module.exports.deleted = new PouchDB(`${environment.couchUrl}-delete`, { fetch: fetchFn });
+  // Created here so the migration that locks it down has a database to apply a policy to.
+  module.exports.createDeleted = () => module.exports.deleted.info();
   module.exports.builds = new PouchDB(environment.buildsUrl);
 
   // Get the DB with the given name
