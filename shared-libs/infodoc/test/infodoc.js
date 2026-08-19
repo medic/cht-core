@@ -689,6 +689,21 @@ describe('infodoc', () => {
           });
       });
 
+      it('fills in the initial replication date when sentinel created the infodoc without one', () => {
+        sentinelGet.resolves({
+          _id: 'blah-info',
+          initial_replication_date: 'unknown',
+          latest_replication_date: 'unknown'
+        });
+        sentinelPut.resolves();
+
+        return lib.recordDocumentWrite('blah')
+          .then(() => {
+            assert.ok(sentinelPut.args[0][0].initial_replication_date instanceof Date);
+            assert.ok(sentinelPut.args[0][0].latest_replication_date instanceof Date);
+          });
+      });
+
       it('it handles 409s correctly when editing an infodoc', () => {
         sentinelGet.onFirstCall().resolves({
           _id: 'blah-info',
@@ -785,6 +800,35 @@ describe('infodoc', () => {
             assert.equal(sentinelBulkDocs.args[0][0][1].initial_replication_date, 'ages ago');
           });
       });
+      it('fills in initial replication dates when sentinel created the infodocs without them', () => {
+        sentinelAllDocs.resolves({
+          rows: [
+            {
+              id: 'sentinel-created-info',
+              key: 'sentinel-created-info',
+              doc: {
+                _id: 'sentinel-created-info',
+                initial_replication_date: 'unknown',
+                latest_replication_date: 'unknown'
+              }
+            }
+          ]
+        });
+        sentinelBulkDocs.resolves([
+          {
+            ok: true,
+            id: 'sentinel-created-info',
+            rev: '2-abc'
+          }
+        ]);
+
+        return lib.recordDocumentWrites(['sentinel-created'])
+          .then(() => {
+            assert.ok(sentinelBulkDocs.args[0][0][0].initial_replication_date instanceof Date);
+            assert.ok(sentinelBulkDocs.args[0][0][0].latest_replication_date instanceof Date);
+          });
+      });
+
       it('Correctly works through and resolves conflicts when editing or creating infodocs', () => {
         // Attempting against two new docs and two existing
         sentinelAllDocs.onFirstCall().resolves({

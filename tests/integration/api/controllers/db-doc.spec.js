@@ -1677,11 +1677,13 @@ describe('db-doc handler', () => {
 
           return sentinelUtils.waitForSentinel(ids).then(() => sentinelUtils.getInfoDocs(ids));
         }).then(([a1, a2, d1, d2, n1, n2]) => {
-          chai.expect(a1._rev.substring(0, 2)).to.equal('3-');
-          chai.expect(a2._rev.substring(0, 2)).to.equal('2-');
-          chai.expect(d1._rev.substring(0, 2)).to.equal('2-');
-          chai.expect(d2._rev.substring(0, 2)).to.equal('2-');
-          chai.expect(n1._rev.substring(0, 2)).to.equal('2-');
+          // api and sentinel both write infodocs, in no guaranteed order, so how many revisions each
+          // ends up with is not deterministic. Only the allowed writes get an infodoc at all.
+          chai.expect(a1).to.be.ok;
+          chai.expect(a2).to.be.ok;
+          chai.expect(d1).to.be.ok;
+          chai.expect(d2).to.be.ok;
+          chai.expect(n1).to.be.ok;
           chai.expect(n2).to.be.undefined;
         });
     });
