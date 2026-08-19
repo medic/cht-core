@@ -1,4 +1,4 @@
-const DEFAULT_BUILDS_URL = 'https://staging.dev.medicmobile.org/_couch/builds_4';
+const DEFAULT_BUILDS_URL = 'https://staging.app.medicmobile.org/_couch/builds_4';
 
 angular.module('controllers').controller('UpgradeCtrl',
   function(
