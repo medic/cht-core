@@ -51,7 +51,7 @@ export const routes: Routes = [
       {
         path: ':id/edit',
         component: ContactsEditComponent,
-        data: { permissions: ['can_edit'], hideTraining: true },
+        data: { permissions: ['can_update_contacts'], hideTraining: true },
         canActivate: [ AppRouteGuardProvider ],
         canDeactivate: [ ContactRouteGuardProvider ],
       },

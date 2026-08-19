@@ -113,9 +113,9 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
     });
   });
 
-  describe('Edit permissions disabled', () => {
+  describe('Edit contacts permission disabled', () => {
     before(async () => {
-      await utils.updatePermissions(onlineUser.roles, [], ['can_edit']);
+      await utils.updatePermissions(onlineUser.roles, [], ['can_update_contacts']);
       await commonPage.closeReloadModal();
     });
 
@@ -129,6 +129,15 @@ describe('More Options Menu - Online User - Permissions disabled', () => {
       expect(await commonPage.isMenuOptionVisible('delete')).to.be.false;
       expect(await commonPage.isMenuOptionEnabled('export')).to.be.true;
     });
+  });
+
+  describe('Edit reports permission disabled', () => {
+    before(async () => {
+      await utils.updatePermissions(onlineUser.roles, [], ['can_edit']);
+      await commonPage.closeReloadModal();
+    });
+
+    after(async () => await utils.revertSettings(true));
 
     it('should hide the \'edit\', \'delete\' and \'review\' options and ' +
       'enable the \'export\' option when a report is opened', async () => {

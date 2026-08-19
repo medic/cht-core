@@ -98,6 +98,10 @@
       "chw_supervisor",
       "chw"
     ],
+    "can_update_contacts": [
+      "chw_supervisor",
+      "chw"
+    ],
     "can_export_dhis": [
       "chw_supervisor"
     ],
