@@ -274,7 +274,7 @@ module.exports = function(Promise, DB) {
       })
       .catch(function(err) {
         if (err.status === 404) {
-          return { doc: null, lineage: [] };
+          return { doc: null, lineage: [], missing: err };
         }
         throw err;
       });
@@ -294,16 +294,6 @@ module.exports = function(Promise, DB) {
         return docsList;
       });
     });
-  };
-
-  const fetchDoc = function(id) {
-    return DB.get(id)
-      .catch(function(err) {
-        if (err.status === 404) {
-          err.statusCode = 404;
-        }
-        throw err;
-      });
   };
 
   const fetchHydratedDoc = function(id, options = {}, callback = undefined) {
@@ -329,9 +319,12 @@ module.exports = function(Promise, DB) {
             err.code = 404;
             throw err;
           }
-          // Not a doc that has lineage, so nothing to hydrate. Reuse the doc we already have, falling back to
-          // fetchDoc so that a missing doc still rejects with a 404.
-          return result.doc || fetchDoc(id);
+          if (result.missing) {
+            result.missing.statusCode = 404;
+            throw result.missing;
+          }
+          // Not a doc that has lineage, so nothing to hydrate. Reuse the doc we already have.
+          return result.doc;
         }
 
         return fetchSubjectLineage(lineage[0])
