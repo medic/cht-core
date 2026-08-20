@@ -247,7 +247,9 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
   // visit reports are keyed on fields.visited_contact_uuid, which is not a registration subject id,
   // so ContactChangeFilterService misses them: without this check the visit stats displayed on the
-  // children lists would go stale until the next navigation
+  // children lists would go stale until the next navigation.
+  // Note this only works for offline users: they alone receive change docs (see ChangesService), so
+  // for online users the visit stats still only refresh on navigation.
   private isRelevantVisitReport(change) {
     const doc = change?.doc;
     if (!this.contactChangeFilterService.isVisitReport(doc)) {
@@ -262,11 +264,32 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     );
   }
 
+  private hasVisitStatsChildren() {
+    return !!this.selectedContact?.children?.some(
+      (group) => group.type?.count_visits && group.contacts?.length
+    );
+  }
+
+  private isChildrenVisitStatsOnlyChange(change) {
+    if (this.contactChangeFilterService.isRelevantChange(change, this.selectedContact)) {
+      // the profile itself is affected: it needs a full reload
+      return false;
+    }
+    if (change?.deleted) {
+      // deletions carry no doc content, so the deleted doc may have been a visit report
+      return true;
+    }
+    // a visit report about the selected contact itself feeds the UHC card in the contact summary,
+    // which only a full reload refreshes
+    return change?.doc?.fields?.visited_contact_uuid !== this.selectedContact?.doc?._id;
+  }
+
   private subscribeToChanges() {
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-content',
       filter: (change) => this.contactChangeFilterService.isRelevantChange(change, this.selectedContact) ||
-        this.isRelevantVisitReport(change),
+        this.isRelevantVisitReport(change) ||
+        (!!change?.deleted && this.hasVisitStatsChildren()),
       callback: (change) => {
         const matchedContact = this.contactChangeFilterService.matchContact(change, this.selectedContact);
         const contactDeleted = this.contactChangeFilterService.isDeleted(change);
@@ -276,6 +299,11 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
           }
           const parentId = this.selectedContact.doc.parent && this.selectedContact.doc.parent._id;
           return this.router.navigate(['/contacts', parentId]);
+        }
+        if (this.isChildrenVisitStatsOnlyChange(change)) {
+          // only the visit stats displayed on the children rows can be affected: refresh those
+          // (debounced in the effect) instead of reloading the whole profile per change
+          return this.contactsActions.refreshChildrenVisitStats();
         }
         return this.contactsActions.selectContact(this.selectedContact._id, { silent: true });
       }

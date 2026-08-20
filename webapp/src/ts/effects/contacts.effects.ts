@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { combineLatest, of } from 'rxjs';
-import { exhaustMap, withLatestFrom } from 'rxjs/operators';
+import { debounceTime, exhaustMap, tap, withLatestFrom } from 'rxjs/operators';
 
 import { Actions as ContactActionList, ContactsActions } from '@mm-actions/contacts';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
@@ -106,6 +106,19 @@ export class ContactsEffects {
           });
 
         return of(loadContact);
+      }),
+    );
+  }, { dispatch: false });
+
+  refreshChildrenVisitStats = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ContactActionList.refreshChildrenVisitStats),
+      // coalesce bursts of changes (e.g. a sync delivering many visit reports) into one refresh
+      debounceTime(500),
+      tap(() => {
+        if (this.selectedContact?._id) {
+          this.loadChildrenVisitStats(this.selectedContact._id, this.selectedContact.children);
+        }
       }),
     );
   }, { dispatch: false });

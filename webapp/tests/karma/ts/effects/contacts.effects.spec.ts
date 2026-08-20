@@ -1,5 +1,5 @@
 import { provideMockActions } from '@ngrx/effects/testing';
-import { fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
+import { fakeAsync, flush, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { Observable, of } from 'rxjs';
 import { expect } from 'chai';
@@ -975,5 +975,43 @@ describe('Contacts effects', () => {
         expect(setTitle.args[0]).to.deep.equal(['this is the title']);
       });
     });
+  });
+
+  describe('refreshChildrenVisitStats', () => {
+    it('should reload the visit stats of the current children, coalescing bursts', fakeAsync(() => {
+      const children = [
+        { type: { id: 'place', count_visits: true }, contacts: [{ id: 'place1', doc: { _id: 'place1' } }] },
+      ];
+      store.overrideSelector(Selectors.getSelectedContact, { _id: 'contact', children });
+      store.overrideSelector(Selectors.getContactIdToLoad, 'contact');
+      store.refreshState();
+      const visitDetails = { place1: { lastVisitedDate: 100 } };
+      contactViewModelGeneratorService.getChildrenVisitStats.resolves(visitDetails);
+      const updateSelectedContactsVisitStats = sinon
+        .stub(ContactsActions.prototype, 'updateSelectedContactsVisitStats');
+
+      actions$ = of(
+        ContactActionList.refreshChildrenVisitStats(),
+        ContactActionList.refreshChildrenVisitStats(),
+      );
+      effects.refreshChildrenVisitStats.subscribe();
+      tick(500);
+
+      // the burst is debounced into a single refresh
+      expect(contactViewModelGeneratorService.getChildrenVisitStats.callCount).to.equal(1);
+      expect(contactViewModelGeneratorService.getChildrenVisitStats.args[0]).to.deep.equal([ children ]);
+
+      tick();
+      expect(updateSelectedContactsVisitStats.callCount).to.equal(1);
+      expect(updateSelectedContactsVisitStats.args[0]).to.deep.equal([ visitDetails ]);
+    }));
+
+    it('should do nothing without a selected contact', fakeAsync(() => {
+      actions$ = of(ContactActionList.refreshChildrenVisitStats());
+      effects.refreshChildrenVisitStats.subscribe();
+      tick(500);
+
+      expect(contactViewModelGeneratorService.getChildrenVisitStats.callCount).to.equal(0);
+    }));
   });
 });

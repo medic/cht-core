@@ -16,6 +16,7 @@ export const Actions = {
   updateSelectedContactSummary: createSingleValueAction('UPDATE_SELECTED_CONTACT_SUMMARY', 'summary'),
   updateSelectedContactsTasks: createSingleValueAction('UPDATE_SELECTED_CONTACT_TASKS', 'tasks'),
   updateSelectedContactsVisitStats: createSingleValueAction('UPDATE_SELECTED_CONTACT_VISIT_STATS', 'visitStats'),
+  refreshChildrenVisitStats: createAction('REFRESH_CHILDREN_VISIT_STATS'),
   receiveSelectedContactTargetDoc: createSingleValueAction('RECEIVE_SELECTED_CONTACT_TARGET_DOC', 'targetDoc'),
 };
 
@@ -79,6 +80,10 @@ export class ContactsActions {
 
   updateSelectedContactsVisitStats(visitStats) {
     return this.store.dispatch(Actions.updateSelectedContactsVisitStats(visitStats));
+  }
+
+  refreshChildrenVisitStats() {
+    return this.store.dispatch(Actions.refreshChildrenVisitStats());
   }
 
   receiveSelectedContactTargetDoc(targetDoc) {

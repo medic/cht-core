@@ -348,7 +348,8 @@ describe('Contacts content component', () => {
       expect(changesFilter(change)).to.equal(true);
       expect(selectContact.callCount).to.equal(0);
       changesCallback(change);
-      expect(contactChangeFilterService.isRelevantChange.callCount).to.equal(1);
+      // consulted once by the filter and once by the callback to pick full reload over stats refresh
+      expect(contactChangeFilterService.isRelevantChange.callCount).to.equal(2);
       expect(selectContact.callCount).to.equal(1);
       expect(!!component.summaryErrorStack).to.be.false;
     });
@@ -416,6 +417,54 @@ describe('Contacts content component', () => {
         };
 
         expect(changesFilter(change)).to.equal(false);
+      });
+
+      it('should refresh only the visit stats when a visit report to a displayed child is received', () => {
+        const changesCallback = changesService.subscribe.args[0][0].callback;
+        const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
+        const refreshChildrenVisitStats = sinon.stub(ContactsActions.prototype, 'refreshChildrenVisitStats');
+
+        changesCallback(visitReportChange('a-displayed-child'));
+
+        expect(refreshChildrenVisitStats.callCount).to.equal(1);
+        expect(selectContact.callCount).to.equal(0);
+      });
+
+      it('should reload the profile when a visit report to the selected contact is received', () => {
+        const changesCallback = changesService.subscribe.args[0][0].callback;
+        const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
+        const refreshChildrenVisitStats = sinon.stub(ContactsActions.prototype, 'refreshChildrenVisitStats');
+
+        changesCallback(visitReportChange(selectedContact.doc._id));
+
+        expect(selectContact.callCount).to.equal(1);
+        expect(refreshChildrenVisitStats.callCount).to.equal(0);
+      });
+
+      it('should refresh the visit stats when a deletion arrives while visit stats are displayed', () => {
+        const changesFilter = changesService.subscribe.args[0][0].filter;
+        const changesCallback = changesService.subscribe.args[0][0].callback;
+        const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
+        const refreshChildrenVisitStats = sinon.stub(ContactsActions.prototype, 'refreshChildrenVisitStats');
+        contactChangeFilterService.matchContact.returns(false);
+        contactChangeFilterService.isDeleted.returns(true);
+        // the deleted doc may have been a visit report: deletions carry no doc content to tell
+        const change = { deleted: true, id: 'some-deleted-doc' };
+
+        expect(changesFilter(change)).to.equal(true);
+        changesCallback(change);
+
+        expect(refreshChildrenVisitStats.callCount).to.equal(1);
+        expect(selectContact.callCount).to.equal(0);
+      });
+
+      it('should ignore deletions when no children visit stats are displayed', () => {
+        const changesFilter = changesService.subscribe.args[0][0].filter;
+        selectedContact.children = [
+          { type: { id: 'person', person: true }, contacts: [ { doc: { _id: 'a-person-child' } } ] },
+        ];
+
+        expect(changesFilter({ deleted: true, id: 'some-deleted-doc' })).to.equal(false);
       });
     });
   });
