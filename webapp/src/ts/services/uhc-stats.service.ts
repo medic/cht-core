@@ -16,6 +16,7 @@ import { AuthService } from '@mm-services/auth.service';
 export class UHCStatsService {
   private readonly UHC_STATS_PERMISSION = 'can_view_uhc_stats';
   private readonly LAST_VISITED_DATE_PERMISSION = 'can_view_last_visited_date';
+  private readonly REMOTE_QUERY_BATCH_SIZE = 10;
   private readonly canView: Record<string, Promise<boolean>> = {};
   private lastVisitedDates?: Promise<Record<string, number>>;
   private changesSubscription;
@@ -129,38 +130,62 @@ export class UHCStatsService {
     return lastVisitedDates;
   }
 
-  private async getLastVisitedDates(contactIds): Promise<Record<string, number>> {
+  private async getVisitData(contactIds, dateRange: DateRange): Promise<[
+    Record<string, number>,
+    Record<string, number[] | null>
+  ]> {
     if (!this.sessionService.isOnlineOnly()) {
-      return this.getAllLastVisitedDates();
+      // both queries hit the local db and don't depend on each other, so run them concurrently
+      return await Promise.all([
+        this.getAllLastVisitedDates(),
+        this.getLocalVisitsInDateRange(contactIds, dateRange),
+      ]);
     }
 
     const records = await this.dbService
       .get()
       .query('medic-client/contacts_by_last_visited', { reduce: true, group: true, keys: contactIds });
+    const lastVisitedDates = this.getLastVisitedDatesMap(records);
+    // contacts whose last visit predates the interval cannot have visits within it
+    const visitedContactIds = contactIds.filter(contactId => lastVisitedDates[contactId] >= dateRange.start);
+    const visitsByContact = await this.getRemoteVisitsInDateRange(visitedContactIds, dateRange);
 
-    return this.getLastVisitedDatesMap(records);
+    return [ lastVisitedDates, visitsByContact ];
   }
 
-  private async getVisitsByContactInDateRange(contactIds, dateRange: DateRange) {
+  private async getRemoteVisitsInDateRange(contactIds, dateRange: DateRange) {
     const visitsByContact = {};
 
-    if (!contactIds.length) {
-      return visitsByContact;
+    // scoped per-contact reads, to avoid downloading every visit report on the instance, batched so a
+    // long children list doesn't monopolise the browser's connection pool
+    for (let i = 0; i < contactIds.length; i += this.REMOTE_QUERY_BATCH_SIZE) {
+      const batch = contactIds.slice(i, i + this.REMOTE_QUERY_BATCH_SIZE);
+      await Promise.all(batch.map(async contactId => {
+        try {
+          visitsByContact[contactId] = await this.getVisitsInDateRange(dateRange, contactId);
+        } catch (error) {
+          console.error(`Error fetching visits within the UHC interval for contact "${contactId}"`, error);
+          // marks the failure, so the contact is skipped instead of getting a false zero count
+          visitsByContact[contactId] = null;
+        }
+      }));
     }
 
-    if (this.sessionService.isOnlineOnly()) {
-      // scoped per-contact reads, to avoid downloading every visit report on the instance
-      await Promise.all(contactIds.map(async contactId => {
-        visitsByContact[contactId] = await this.getVisitsInDateRange(dateRange, contactId);
-      }));
-      return visitsByContact;
-    }
+    return visitsByContact;
+  }
+
+  private async getLocalVisitsInDateRange(contactIds, dateRange: DateRange) {
+    const visitsByContact = {};
+    const requestedContactIds = new Set(contactIds);
 
     const records = await this.dbService
       .get()
       .query('medic-client/visits_by_date', { start_key: dateRange.start, end_key: dateRange.end });
 
     records?.rows?.forEach(row => {
+      if (!requestedContactIds.has(row.value)) {
+        return;
+      }
       const day = moment(row.key).startOf('day').valueOf();
       visitsByContact[row.value] = visitsByContact[row.value] || [];
       visitsByContact[row.value].push(day);
@@ -229,19 +254,18 @@ export class UHCStatsService {
     }
 
     const dateRange = this.getUHCInterval(visitCountSettings)!;
-    const lastVisitedDates = await this.getLastVisitedDates(contactIds);
-    // contacts whose last visit predates the interval cannot have visits within it
-    const visitedContactIds = contactIds.filter(contactId => lastVisitedDates[contactId] >= dateRange.start);
-    const visitsByContact = await this.getVisitsByContactInDateRange(visitedContactIds, dateRange);
+    const [ lastVisitedDates, visitsByContact ] = await this.getVisitData(contactIds, dateRange);
 
     contactIds.forEach(contactId => {
       const lastVisitedDate = lastVisitedDates[contactId];
-      if (!Number.isInteger(lastVisitedDate)) {
+      const visits = visitsByContact[contactId];
+      // a null marks a failed per-contact visits query: skip the row rather than display a false zero
+      if (!Number.isInteger(lastVisitedDate) || visits === null) {
         return;
       }
       stats[contactId] = {
         lastVisitedDate: lastVisitedDate,
-        count: visitsByContact[contactId]?.length || 0,
+        count: visits?.length || 0,
         countGoal: visitCountSettings.visitCountGoal
       };
     });

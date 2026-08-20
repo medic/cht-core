@@ -460,6 +460,62 @@ describe('UHCStats Service', () => {
       expect(localDb.query.callCount).to.equal(1);
     });
 
+    it('should limit concurrent per-contact visit queries when online', async () => {
+      sessionService.isAdmin.returns(false);
+      sessionService.isOnlineOnly = sinon.stub().returns(true);
+      authService.has.resolves(true);
+      const contactIds = Array.from({ length: 25 }).map((_, idx) => `contact${idx}`);
+      const recentVisit = moment('2021-04-15 22:59:59').valueOf();
+      let inFlight = 0;
+      let maxInFlight = 0;
+      localDb.query.callsFake(async (view) => {
+        if (view === 'medic-client/contacts_by_last_visited') {
+          return { rows: contactIds.map(id => ({ key: id, value: recentVisit })) };
+        }
+        inFlight++;
+        maxInFlight = Math.max(maxInFlight, inFlight);
+        await Promise.resolve();
+        inFlight--;
+        return { rows: [] };
+      });
+
+      const result = await service.getVisitStats(contactIds, visitCountSettings);
+
+      expect(Object.keys(result).length).to.equal(25);
+      const visitQueries = localDb.query.getCalls().filter(call => call.args[0] === 'medic-client/visits_by_date');
+      expect(visitQueries.length).to.equal(25);
+      expect(maxInFlight).to.equal(10);
+    });
+
+    it('should skip contacts whose visits query fails instead of failing the whole batch', async () => {
+      sinon.stub(console, 'error');
+      sessionService.isAdmin.returns(false);
+      sessionService.isOnlineOnly = sinon.stub().returns(true);
+      authService.has.resolves(true);
+      const recentVisit = moment('2021-04-15 22:59:59').valueOf();
+      localDb.query.onCall(0).returns({ rows: [
+        { key: '2b', value: recentVisit },
+        { key: '3c', value: recentVisit },
+      ]});
+      localDb.query
+        .withArgs('medic-client/visits_by_date', sinon.match({ start_key: [ '2b', range.start ] }))
+        .resolves({ rows: [ { key: [ '2b', moment('2021-04-15 09:20:00').valueOf() ], value: null } ] });
+      localDb.query
+        .withArgs('medic-client/visits_by_date', sinon.match({ start_key: [ '3c', range.start ] }))
+        .rejects(new Error('failed'));
+
+      const result = await service.getVisitStats([ '2b', '3c' ], visitCountSettings);
+
+      // the failed contact is left unannotated rather than displayed with a false zero count
+      expect(result).to.deep.equal({
+        '2b': {
+          lastVisitedDate: recentVisit,
+          count: 1,
+          countGoal: 5
+        }
+      });
+    });
+
     it('should not query with keys when offline', async () => {
       sessionService.isAdmin.returns(false);
       sessionService.isOnlineOnly = sinon.stub().returns(false);
