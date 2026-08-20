@@ -626,5 +626,11 @@ module.exports = defineConfig([
       ['@typescript-eslint/no-unused-expressions']: 'off',
       ['@typescript-eslint/no-require-imports']: 'off'
     },
+  },
+  {
+    files: ['webapp/src/js/enketo/widgets/bikram-sambat-picker-shared.js'],
+    languageOptions: {
+      ecmaVersion: 2020,
+    },
   }
 ]);
