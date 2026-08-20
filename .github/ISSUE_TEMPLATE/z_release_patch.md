@@ -41,7 +41,7 @@ Once all issues have been merged into `master` then the release process can star
 - [ ] Create a [new release](https://github.com/medic/cht-core/releases/new) in GitHub, with the naming convention `<major>.<minor>.<patch>`, from the release branch created above as the target branch. Click on the "Choose a tag" dropdown and create a tag for the release with the naming convention `<major>.<minor>.<patch>`. Add a link to the release notes page in the description of the release.
 - [ ] Once you publish the release, confirm the release build completes successfully and the new release is available on the `staging.dev.medicmobile.org` by running this `curl` call. Ensure you see the correct `id: medic:medic:<major>.<minor>.<patch>`:
    ```
-   curl -qs https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases | jq ".rows[-1] "
+curl -s https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases | jq '[.rows[] | select(.key[0]=="release")] | max_by(.value.time)'
    ```
 - [ ] Upgrade the [demo](https://demo-cht.dev.medicmobile.org/) instance to the newly released version.
   - [ ] From the "App Management" admin console (`medic` user creds in 1Password), go to "Upgrades" and stage the upgrade for this version.
