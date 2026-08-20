@@ -15,7 +15,7 @@ entries:
     version: 5.3.0
   - apiVersion: v2
     appVersion: 5.2.0
-    created: "2026-08-19T11:15:59.239967107-07:00"
+    created: "2026-06-25T15:55:46.000000000-05:00"
     description: A Helm chart for Community Health Toolkit (CHT)
     digest: 29cc300af392aaafeebe7283143d1691b65cad5e7fd77fce5d024ca27f7933ca
     home: https://github.com/medic/cht-core
@@ -23,11 +23,11 @@ entries:
     name: cht-chart
     type: application
     urls:
-    - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.2.0.tgz
+      - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.2.0.tgz
     version: 5.2.0
   - apiVersion: v2
     appVersion: 5.1.3
-    created: "2026-08-19T11:15:59.239687134-07:00"
+    created: "2026-06-04T16:02:52.000000000+03:00"
     description: A Helm chart for Community Health Toolkit (CHT)
     digest: faa0e80c7928cf27267fdaec297876a1662fe4003e4eea6d8a5cafd0d1d2838c
     home: https://github.com/medic/cht-core
@@ -35,11 +35,11 @@ entries:
     name: cht-chart
     type: application
     urls:
-    - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.1.3.tgz
+      - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.1.3.tgz
     version: 5.1.3
   - apiVersion: v2
     appVersion: 5.1.2
-    created: "2026-08-19T11:15:59.238937535-07:00"
+    created: "2026-04-30T09:30:59.000000000-05:00"
     description: A Helm chart for Community Health Toolkit (CHT)
     digest: b77d76546317ae38d7ab67e577a7b96979712fe9d0477aa12e0d317c28af50e7
     home: https://github.com/medic/cht-core
@@ -47,11 +47,11 @@ entries:
     name: cht-chart
     type: application
     urls:
-    - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.1.2.tgz
+      - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.1.2.tgz
     version: 5.1.2
   - apiVersion: v2
     appVersion: 5.1.1
-    created: "2026-08-19T11:15:59.238627446-07:00"
+    created: "2026-04-08T14:47:14.000000000+03:00"
     description: A Helm chart for Community Health Toolkit (CHT)
     digest: 530ad0df2b60883e27809351315357ca2632dca851d6ea563a70aae1f072932b
     home: https://github.com/medic/cht-core
@@ -59,11 +59,11 @@ entries:
     name: cht-chart
     type: application
     urls:
-    - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.1.1.tgz
+      - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.1.1.tgz
     version: 5.1.1
   - apiVersion: v2
     appVersion: 5.1.0
-    created: "2026-08-19T11:15:59.238307018-07:00"
+    created: "2026-02-24T20:51:45.000000000-08:00"
     description: A Helm chart for Community Health Toolkit (CHT)
     digest: 0c13fea85b63bc12acdae0a748614cdc85fcbf4443cd315a233631eca36799dd
     home: https://github.com/medic/cht-core
@@ -71,11 +71,11 @@ entries:
     name: cht-chart
     type: application
     urls:
-    - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.1.0.tgz
+      - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.1.0.tgz
     version: 5.1.0
   - apiVersion: v2
     appVersion: 5.0.3
-    created: "2026-08-19T11:15:59.237967223-07:00"
+    created: "2026-02-11T14:04:17.000000000-06:00"
     description: A Helm chart for Community Health Toolkit (CHT)
     digest: 42ff2e79f973534b61c94c429ea46db3aed301e53d9381c576f366ea2385366f
     home: https://github.com/medic/cht-core
@@ -83,11 +83,11 @@ entries:
     name: cht-chart
     type: application
     urls:
-    - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.0.3.tgz
+      - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.0.3.tgz
     version: 5.0.3
   - apiVersion: v2
     appVersion: 5.0.2
-    created: "2026-08-19T11:15:59.237653097-07:00"
+    created: "2026-04-03T16:07:42.000000000+03:00"
     description: A Helm chart for Community Health Toolkit (CHT)
     digest: 9a621035c86b7d13165d28bfb86b938970c3f403fbce5f6ff38b6450e1d89117
     home: https://github.com/medic/cht-core
@@ -95,11 +95,11 @@ entries:
     name: cht-chart
     type: application
     urls:
-    - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.0.2.tgz
+      - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.0.2.tgz
     version: 5.0.2
   - apiVersion: v2
     appVersion: 5.0.1
-    created: "2026-08-19T11:15:59.237325926-07:00"
+    created: "2026-06-25T15:55:46.000000000-05:00"
     description: A Helm chart for Community Health Toolkit (CHT)
     digest: df66d4253cec378b3b1094ff707db78df362c7bd730be4bb3165080a5753ee91
     home: https://github.com/medic/cht-core
@@ -107,11 +107,11 @@ entries:
     name: cht-chart
     type: application
     urls:
-    - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.0.1.tgz
+      - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.0.1.tgz
     version: 5.0.1
   - apiVersion: v2
     appVersion: 5.0.0
-    created: "2026-08-19T11:15:59.237008804-07:00"
+    created: "2025-11-20T15:45:44.000000000+02:00"
     description: A Helm chart for Community Health Toolkit (CHT)
     digest: 2156cddcd51797f78a6034c23993ed59d4089233482c08b74ae45da4e9016e29
     home: https://github.com/medic/cht-core
@@ -119,6 +119,6 @@ entries:
     name: cht-chart
     type: application
     urls:
-    - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.0.0.tgz
+      - https://docs.communityhealthtoolkit.org/cht-core/cht-chart-5.0.0.tgz
     version: 5.0.0
 generated: "2026-08-20T11:09:00.045539559-07:00"
