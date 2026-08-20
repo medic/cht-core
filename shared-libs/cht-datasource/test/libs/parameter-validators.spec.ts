@@ -1,8 +1,9 @@
-import { ContactTypeQualifier, FreetextQualifier } from '../../src/qualifier';
+import { ContactTypeQualifier, FormsQualifier, FreetextQualifier } from '../../src/qualifier';
 import { expect } from 'chai';
 import {
   assertContactTypeFreetextQualifier,
   assertCursor,
+  assertFreetextOrFormsQualifier,
   assertFreetextQualifier,
   assertLimit,
   assertPersonInput,
@@ -110,6 +111,48 @@ describe('libs parameter-validators', () => {
           .to.throw(InvalidArgumentError)
           .with.property('message')
           .that.includes('Invalid freetext');
+      });
+    });
+  });
+
+  describe('assertFreetextOrFormsQualifier', () => {
+    it('should not throw for a valid freetext qualifier', () => {
+      const validQualifier: FreetextQualifier = { freetext: 'key:search text' };
+      expect(() => assertFreetextOrFormsQualifier(validQualifier)).to.not.throw();
+    });
+
+    it('should not throw for a valid forms qualifier', () => {
+      const validQualifier: FormsQualifier = { forms: ['pregnancy'] };
+      expect(() => assertFreetextOrFormsQualifier(validQualifier)).to.not.throw();
+    });
+
+    [
+      null,
+      undefined,
+      '',
+      123,
+      {},
+      { wrongProp: 'value' }
+    ].forEach((qualifier) => {
+      it(`should throw the freetext message for non-form input: ${JSON.stringify(qualifier)}`, () => {
+        expect(() => assertFreetextOrFormsQualifier(qualifier))
+          .to.throw(InvalidArgumentError)
+          .with.property('message')
+          .that.includes('Invalid freetext');
+      });
+    });
+
+    [
+      { forms: [] },
+      { forms: [''] },
+      { forms: ['  padded  '] },
+      { forms: 'pregnancy' }
+    ].forEach((qualifier) => {
+      it(`should throw the forms message for form-shaped input: ${JSON.stringify(qualifier)}`, () => {
+        expect(() => assertFreetextOrFormsQualifier(qualifier))
+          .to.throw(InvalidArgumentError)
+          .with.property('message')
+          .that.includes('Invalid forms');
       });
     });
   });
