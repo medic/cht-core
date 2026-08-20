@@ -558,5 +558,21 @@ describe('UHCStats Service', () => {
 
       expect(authService.has.callCount).to.equal(1);
     });
+
+    it('should not cache a failed permission check', async () => {
+      sessionService.isAdmin.returns(false);
+      sessionService.isOnlineOnly = sinon.stub().returns(true);
+      authService.has.onCall(0).rejects(new Error('503'));
+      authService.has.resolves(true);
+      localDb.query.returns({ rows: [] });
+
+      const error = await service.getVisitStats([ '2b' ], visitCountSettings).catch(err => err);
+      expect(error).to.be.an.instanceOf(Error);
+
+      // the failure was not cached: the next call retries the check and succeeds
+      await service.getVisitStats([ '2b' ], visitCountSettings);
+      await service.getVisitStats([ '2b' ], visitCountSettings);
+      expect(authService.has.callCount).to.equal(2);
+    });
   });
 });

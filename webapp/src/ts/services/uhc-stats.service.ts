@@ -16,7 +16,7 @@ import { AuthService } from '@mm-services/auth.service';
 export class UHCStatsService {
   private readonly UHC_STATS_PERMISSION = 'can_view_uhc_stats';
   private readonly LAST_VISITED_DATE_PERMISSION = 'can_view_last_visited_date';
-  private readonly canView: Record<string, Promise<boolean> | boolean> = {};
+  private readonly canView: Record<string, Promise<boolean>> = {};
   private lastVisitedDates?: Promise<Record<string, number>>;
   private changesSubscription;
 
@@ -60,13 +60,24 @@ export class UHCStatsService {
     return _uniq(visits);
   }
 
-  private canUserView(permission) {
-    if (this.canView[permission] === undefined) {
-      // Disable UHC for DB admins.
-      this.canView[permission] = this.sessionService.isAdmin() ? false : this.authService.has(permission);
+  private canUserView(permission): Promise<boolean> {
+    if (!this.canView[permission]) {
+      const canView = this.checkPermission(permission).catch(error => {
+        // don't cache failures (e.g. api briefly unavailable), so the check is retried on the next call
+        if (this.canView[permission] === canView) {
+          delete this.canView[permission];
+        }
+        throw error;
+      });
+      this.canView[permission] = canView;
     }
 
     return this.canView[permission];
+  }
+
+  private async checkPermission(permission): Promise<boolean> {
+    // Disable UHC for DB admins.
+    return this.sessionService.isAdmin() ? false : this.authService.has(permission);
   }
 
   private getLastVisitedDatesMap(records) {
