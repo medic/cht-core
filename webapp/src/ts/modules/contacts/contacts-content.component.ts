@@ -311,6 +311,15 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscriptions.add(changesSubscription);
   }
 
+  // stable row identity, so late annotations (visit stats, task counts) don't re-create every row
+  trackByGroup(index, group) {
+    return group?.type?.id ?? index;
+  }
+
+  trackByChildContact(index, child) {
+    return child?.id ?? child?.doc?._id ?? index;
+  }
+
   filterReports(months?, reports?) {
     this.reportsTimeWindowMonths = months;
     const reportStartDate = months ? moment().subtract(months, 'months') : null;

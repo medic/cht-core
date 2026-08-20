@@ -73,7 +73,10 @@
         </ng-container>
       </div>
 
-      <div class="card compact-card children" [ngClass]="group?.type?.person ? 'persons' : 'places'" *ngFor="let group of selectedContact?.children">
+      <div
+        class="card compact-card children"
+        [ngClass]="group?.type?.person ? 'persons' : 'places'"
+        *ngFor="let group of selectedContact?.children; trackBy: trackByGroup">
         <div class="action-header cell">
           <div class="col-xs-10">
             <h3>
@@ -85,7 +88,7 @@
         </div>
 
         <ul>
-          <ng-container *ngFor="let child of group?.contacts" >
+          <ng-container *ngFor="let child of group?.contacts; trackBy: trackByChildContact" >
             <mm-content-row *ngIf="!child.deceased"
               [id]="child.doc._id"
               [route]="['/', 'contacts', child.doc._id]"
