@@ -293,11 +293,12 @@ export class ContactsComponent implements OnInit, OnDestroy {
     if (!type?.count_visits) {
       return;
     }
-    this.uhcVisitDisplayService.setVisitDetails(contact, {
+    const visitDetails = this.uhcVisitDisplayService.getVisitDetails({
       lastVisitedDate: contact.lastVisitedDate,
       count: contact.visitCount,
       countGoal: contact.visitCountGoal,
     });
+    Object.assign(contact, visitDetails);
   }
 
   private getChildren() {

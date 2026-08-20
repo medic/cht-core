@@ -21,40 +21,53 @@ export class UHCVisitDisplayService {
     private relativeDateService: RelativeDateService,
   ) { }
 
-  setVisitDetails(contact, stats: { lastVisitedDate?: number; count?: number; countGoal?: number }) {
+  /**
+   * Returns the display details for the given visit stats, or undefined when there is nothing to
+   * display. Pure: merging the result into a contact row is the caller's choice.
+   */
+  getVisitDetails(stats: { lastVisitedDate?: number; count: number; countGoal?: number }): VisitDetails | undefined {
     if (!stats || !Number.isInteger(stats.lastVisitedDate)) {
       return;
     }
-    contact.lastVisitedDate = stats.lastVisitedDate;
-    this.setVisitOverdue(contact, stats.lastVisitedDate);
-    this.setVisitCountDetails(contact, stats.count, stats.countGoal);
+    const details: VisitDetails = {
+      lastVisitedDate: stats.lastVisitedDate!,
+      ...this.getVisitOverdue(stats.lastVisitedDate),
+    };
+    if (Number.isInteger(stats.count)) {
+      details.visits = this.getVisitCountDetails(stats.count, stats.countGoal);
+    }
+    return details;
   }
 
-  private setVisitOverdue(contact, lastVisitedDate) {
+  private getVisitOverdue(lastVisitedDate) {
     if (lastVisitedDate === 0) {
-      contact.overdue = true;
-      contact.summary = this.translateService.instant('contact.last.visit.unknown');
-      return;
+      return {
+        overdue: true,
+        summary: this.translateService.instant('contact.last.visit.unknown'),
+      };
     }
     const now = new Date().getTime();
     const overduePeriodAgo = now - (this.OVERDUE_PERIOD_DAYS * 24 * 60 * 60 * 1000);
-    contact.overdue = lastVisitedDate <= overduePeriodAgo;
-    contact.summary = this.translateService.instant(
-      'contact.last.visited.date',
-      { date: this.relativeDateService.getRelativeDate(lastVisitedDate, {}) }
-    );
+    return {
+      overdue: lastVisitedDate <= overduePeriodAgo,
+      summary: this.translateService.instant(
+        'contact.last.visited.date',
+        { date: this.relativeDateService.getRelativeDate(lastVisitedDate, {}) }
+      ),
+    };
   }
 
-  private setVisitCountDetails(contact, count, countGoal) {
+  private getVisitCountDetails(count, countGoal) {
     const visitCount = Math.min(count, this.MAX_DISPLAYED_VISIT_COUNT) +
       (count > this.MAX_DISPLAYED_VISIT_COUNT ? '+' : '');
-    contact.visits = {
+    const visits: VisitDetails['visits'] = {
       count: this.translateService.instant('contacts.visits.count', { count: visitCount }),
       summary: this.translateService.instant('contacts.visits.visits', { VISITS: count }),
     };
     if (countGoal) {
-      contact.visits.status = this.getVisitStatus(count, countGoal);
+      visits.status = this.getVisitStatus(count, countGoal);
     }
+    return visits;
   }
 
   private getVisitStatus(visitCount, visitCountGoal) {
@@ -66,4 +79,15 @@ export class UHCVisitDisplayService {
     }
     return 'done';
   }
+}
+
+export interface VisitDetails {
+  lastVisitedDate: number;
+  overdue: boolean;
+  summary: string;
+  visits?: {
+    count: string;
+    summary: string;
+    status?: 'pending' | 'started' | 'done';
+  };
 }

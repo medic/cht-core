@@ -161,7 +161,7 @@ export class ContactsEffects {
           .then(() => {
             this.contactsActions.receiveSelectedContactChildren(children);
             // don't block the children (or the rest of the profile) on the visit stats queries
-            this.loadChildrenVisitStats(children);
+            this.loadChildrenVisitStats(contactId, children);
           });
       })
       .finally(() => {
@@ -169,15 +169,20 @@ export class ContactsEffects {
       });
   }
 
-  private async loadChildrenVisitStats(children) {
+  private async loadChildrenVisitStats(contactId, children) {
     try {
-      const childrenWithStats = await this.contactViewModelGeneratorService.getChildrenVisitStats(children);
-      // skip when there is nothing to annotate or a newer children list was dispatched in the meantime
-      if (!childrenWithStats || this.selectedContact?.children !== children) {
+      const visitStats = await this.contactViewModelGeneratorService.getChildrenVisitStats(children);
+      if (!visitStats) {
         return;
       }
-      this.contactsActions.receiveSelectedContactChildren(childrenWithStats);
+      // the details are merged into the store's current children by contact id, so concurrent updates
+      // to the children (e.g. task counts) are kept; only a change of selection discards them
+      await this.verifySelectedContactNotChanged(contactId);
+      this.contactsActions.updateSelectedContactsVisitStats(visitStats);
     } catch (error) {
+      if ((error as any)?.code === 'SELECTED_CONTACT_CHANGED') {
+        return;
+      }
       console.error('Error loading visit stats for children', error);
     }
   }

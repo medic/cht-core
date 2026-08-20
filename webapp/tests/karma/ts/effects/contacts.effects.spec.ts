@@ -129,6 +129,8 @@ describe('Contacts effects', () => {
         refreshState();
       });
 
+      sinon.stub(ContactsActions.prototype, 'updateSelectedContactsVisitStats');
+
       sinon.stub(ContactsActions.prototype, 'updateSelectedContactSummary').callsFake(summary => {
         selectedContact = { ...selectedContact, summary };
         refreshState();
@@ -358,13 +360,13 @@ describe('Contacts effects', () => {
         ]]);
       });
 
-      it('should receive children again once annotated with visit stats', async () => {
-        const children = [{ type: { id: 'place', count_visits: true }, contacts: [{ _id: 'place1' }] }];
-        const childrenWithStats = [
-          { type: { id: 'place', count_visits: true }, contacts: [{ _id: 'place1', visits: { count: 1 } }] },
+      it('should update children visit stats once loaded', async () => {
+        const children = [
+          { type: { id: 'place', count_visits: true }, contacts: [{ id: 'place1', doc: { _id: 'place1' } }] },
         ];
+        const visitDetails = { place1: { lastVisitedDate: 100, overdue: false, summary: 'a-summary' } };
         contactViewModelGeneratorService.loadChildren.resolves(children);
-        contactViewModelGeneratorService.getChildrenVisitStats.resolves(childrenWithStats);
+        contactViewModelGeneratorService.getChildrenVisitStats.resolves(visitDetails);
 
         actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
         await effects.selectContact.toPromise();
@@ -372,29 +374,67 @@ describe('Contacts effects', () => {
 
         expect(contactViewModelGeneratorService.getChildrenVisitStats.callCount).to.equal(1);
         expect(contactViewModelGeneratorService.getChildrenVisitStats.args[0]).to.deep.equal([ children ]);
+        const updateSelectedContactsVisitStats: any = ContactsActions.prototype.updateSelectedContactsVisitStats;
+        expect(updateSelectedContactsVisitStats.callCount).to.equal(1);
+        expect(updateSelectedContactsVisitStats.args[0]).to.deep.equal([ visitDetails ]);
         const receiveSelectedContactChildren:any = ContactsActions.prototype.receiveSelectedContactChildren;
-        expect(receiveSelectedContactChildren.callCount).to.equal(2);
-        expect(receiveSelectedContactChildren.args[1]).to.deep.equal([ childrenWithStats ]);
+        expect(receiveSelectedContactChildren.callCount).to.equal(1);
       });
 
-      it('should not receive annotated children when a newer children list was dispatched meanwhile', async () => {
-        const children = [{ type: { id: 'place', count_visits: true }, contacts: [{ _id: 'place1' }] }];
+      it('should still update visit stats when the children were replaced in the meantime', async () => {
+        const children = [
+          { type: { id: 'place', count_visits: true }, contacts: [{ id: 'place1', doc: { _id: 'place1' } }] },
+        ];
         contactViewModelGeneratorService.loadChildren.resolves(children);
-        contactViewModelGeneratorService.getChildrenVisitStats.callsFake(() => {
-          // a different children list lands while the visit stats are being loaded
-          store.overrideSelector(Selectors.getSelectedContact, { _id: 'contact', children: [] });
-          store.refreshState();
-          return Promise.resolve([
-            { type: { id: 'place', count_visits: true }, contacts: [{ _id: 'place1', visits: {} }] },
-          ]);
-        });
+        let resolveVisitStats;
+        contactViewModelGeneratorService.getChildrenVisitStats.returns(
+          new Promise(resolve => resolveVisitStats = resolve)
+        );
 
         actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
         await effects.selectContact.toPromise();
+
+        // the tasks update rebuilds the children array with new identities while the stats are loading:
+        // the stats are merged by contact id, so they must survive it
+        store.overrideSelector(Selectors.getSelectedContact, {
+          _id: 'contact',
+          children: [
+            {
+              type: { id: 'place', count_visits: true },
+              contacts: [{ id: 'place1', doc: { _id: 'place1' }, taskCount: 2 }],
+            },
+          ],
+        });
+        store.refreshState();
+        resolveVisitStats({ place1: { lastVisitedDate: 100 } });
         await new Promise(resolve => setTimeout(resolve));
 
-        const receiveSelectedContactChildren:any = ContactsActions.prototype.receiveSelectedContactChildren;
-        expect(receiveSelectedContactChildren.callCount).to.equal(1);
+        const updateSelectedContactsVisitStats: any = ContactsActions.prototype.updateSelectedContactsVisitStats;
+        expect(updateSelectedContactsVisitStats.callCount).to.equal(1);
+        expect(updateSelectedContactsVisitStats.args[0]).to.deep.equal([{ place1: { lastVisitedDate: 100 } }]);
+      });
+
+      it('should not update visit stats when the selected contact changed in the meantime', async () => {
+        const children = [
+          { type: { id: 'place', count_visits: true }, contacts: [{ id: 'place1', doc: { _id: 'place1' } }] },
+        ];
+        contactViewModelGeneratorService.loadChildren.resolves(children);
+        let resolveVisitStats;
+        contactViewModelGeneratorService.getChildrenVisitStats.returns(
+          new Promise(resolve => resolveVisitStats = resolve)
+        );
+
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
+
+        // a different contact starts loading while the stats are still being queried
+        store.overrideSelector(Selectors.getContactIdToLoad, 'contact2');
+        store.refreshState();
+        resolveVisitStats({ place1: { lastVisitedDate: 100 } });
+        await new Promise(resolve => setTimeout(resolve));
+
+        const updateSelectedContactsVisitStats: any = ContactsActions.prototype.updateSelectedContactsVisitStats;
+        expect(updateSelectedContactsVisitStats.callCount).to.equal(0);
       });
 
       it('should still load the profile when getting children visit stats fails', async () => {

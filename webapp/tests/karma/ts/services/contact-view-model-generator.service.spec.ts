@@ -332,7 +332,7 @@ describe('ContactViewModelGenerator service', () => {
         return runPlaceTest(childrenArray).then(model => {
           return service
             .getChildrenVisitStats(model.children)
-            .then(children => ({ model, children }));
+            .then(visitDetails => ({ model, visitDetails: visitDetails! }));
         });
       };
 
@@ -345,7 +345,7 @@ describe('ContactViewModelGenerator service', () => {
         });
       });
 
-      it('should annotate children whose type counts visits', () => {
+      it('should return visit details for children whose type counts visits, keyed by contact id', () => {
         types.find(type => type.id === 'mushroom').count_visits = true;
         const visitCountSettings = { monthStartDate: 26, visitCountGoal: 2 };
         uhcSettingsService.getVisitCountSettings.returns(visitCountSettings);
@@ -354,15 +354,17 @@ describe('ContactViewModelGenerator service', () => {
           [childPlace2._id]: { lastVisitedDate: 0, count: 0, countGoal: 2 },
         });
 
-        return runVisitStatsTest([childContactPerson, childPlace, childPlace2]).then(({ model, children }) => {
+        return runVisitStatsTest([childContactPerson, childPlace, childPlace2]).then(({ model, visitDetails }) => {
           expect(uhcStatsService.getVisitStats.callCount).to.equal(1);
           expect(uhcStatsService.getVisitStats.args[0]).to.deep.equal([
             [ childPlace._id, childPlace2._id ],
             visitCountSettings
           ]);
 
-          const placeGroup = children.find(group => group.type?.id === 'mushroom');
-          const visited = placeGroup.contacts.find(child => child.doc._id === childPlace._id);
+          // only the contacts with stats are in the map: the person child is absent
+          expect(Object.keys(visitDetails)).to.have.members([ childPlace._id, childPlace2._id ]);
+
+          const visited = visitDetails[childPlace._id];
           expect(visited.overdue).to.equal(false);
           expect(visited.summary).to.equal('contact.last.visited.date');
           expect(visited.visits).to.deep.equal({
@@ -371,7 +373,7 @@ describe('ContactViewModelGenerator service', () => {
             status: 'done'
           });
 
-          const neverVisited = placeGroup.contacts.find(child => child.doc._id === childPlace2._id);
+          const neverVisited = visitDetails[childPlace2._id];
           expect(neverVisited.overdue).to.equal(true);
           expect(neverVisited.summary).to.equal('contact.last.visit.unknown');
           expect(neverVisited.visits).to.deep.equal({
@@ -380,13 +382,7 @@ describe('ContactViewModelGenerator service', () => {
             status: 'pending'
           });
 
-          const personGroup = children.find(group => group.type?.person);
-          personGroup.contacts.forEach(child => {
-            expect(child.summary).to.equal(undefined);
-            expect(child.visits).to.equal(undefined);
-          });
-
-          // the input children are not mutated
+          // the input children are not touched
           model.children.forEach(group => group.contacts.forEach(child => {
             expect(child.summary).to.equal(undefined);
             expect(child.visits).to.equal(undefined);
@@ -401,11 +397,11 @@ describe('ContactViewModelGenerator service', () => {
           [childPlace._id]: { lastVisitedDate: overAMonthAgo, count: 1, countGoal: 2 },
         });
 
-        return runVisitStatsTest([childPlace]).then(({ children }) => {
-          const child = children[0].contacts.find(child => child.doc._id === childPlace._id);
-          expect(child.overdue).to.equal(true);
-          expect(child.summary).to.equal('contact.last.visited.date');
-          expect(child.visits.status).to.equal('started');
+        return runVisitStatsTest([childPlace]).then(({ visitDetails }) => {
+          const details = visitDetails[childPlace._id];
+          expect(details.overdue).to.equal(true);
+          expect(details.summary).to.equal('contact.last.visited.date');
+          expect(details.visits!.status).to.equal('started');
         });
       });
 
@@ -415,15 +411,14 @@ describe('ContactViewModelGenerator service', () => {
           [childPlace._id]: { lastVisitedDate: new Date().getTime(), count: 1, countGoal: undefined },
         });
 
-        return runVisitStatsTest([childPlace]).then(({ children }) => {
-          const child = children[0].contacts.find(child => child.doc._id === childPlace._id);
-          expect(child.visits.status).to.equal(undefined);
+        return runVisitStatsTest([childPlace]).then(({ visitDetails }) => {
+          expect(visitDetails[childPlace._id].visits!.status).to.equal(undefined);
         });
       });
 
       it('should return undefined when no child type counts visits', () => {
-        return runVisitStatsTest([childContactPerson, childPlace]).then(({ children }) => {
-          expect(children).to.equal(undefined);
+        return runVisitStatsTest([childContactPerson, childPlace]).then(({ visitDetails }) => {
+          expect(visitDetails).to.equal(undefined);
           expect(settingsService.get.callCount).to.equal(0);
           expect(uhcStatsService.getVisitStats.callCount).to.equal(0);
         });
@@ -433,19 +428,19 @@ describe('ContactViewModelGenerator service', () => {
         types.find(type => type.id === 'mushroom').count_visits = true;
         uhcStatsService.getVisitStats.resolves({});
 
-        return runVisitStatsTest([childPlace]).then(({ children }) => {
-          expect(children).to.equal(undefined);
+        return runVisitStatsTest([childPlace]).then(({ visitDetails }) => {
+          expect(visitDetails).to.equal(undefined);
         });
       });
 
-      it('should return undefined when getting visit stats fails', () => {
+      it('should propagate errors from the visit stats queries', () => {
         types.find(type => type.id === 'mushroom').count_visits = true;
         uhcStatsService.getVisitStats.rejects(new Error('boom'));
 
-        return runVisitStatsTest([childContactPerson, childPlace]).then(({ model, children }) => {
-          expect(children).to.equal(undefined);
-          expect(model.children.length).to.equal(2);
-        });
+        return runPlaceTest([childContactPerson, childPlace])
+          .then(model => service.getChildrenVisitStats(model.children))
+          .then(() => assert.fail('should have thrown'))
+          .catch(error => expect(error.message).to.equal('boom'));
       });
     });
 

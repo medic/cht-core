@@ -29,66 +29,61 @@ describe('UHCVisitDisplay Service', () => {
     sinon.restore();
   });
 
-  it('should do nothing without stats or without a last visited date', () => {
-    const contact: any = {};
-
-    service.setVisitDetails(contact, null as any);
-    service.setVisitDetails(contact, {});
-    service.setVisitDetails(contact, { lastVisitedDate: undefined, count: 2 });
-
-    expect(contact).to.deep.equal({});
+  it('should return nothing without stats or without a last visited date', () => {
+    expect(service.getVisitDetails(null as any)).to.equal(undefined);
+    expect(service.getVisitDetails({} as any)).to.equal(undefined);
+    expect(service.getVisitDetails({ lastVisitedDate: undefined, count: 2 })).to.equal(undefined);
     expect(translateService.instant.callCount).to.equal(0);
   });
 
+  it('should not return a visit count badge without a count', () => {
+    const details = service.getVisitDetails({ lastVisitedDate: 0 } as any);
+
+    expect(details!.overdue).to.equal(true);
+    expect(details!.visits).to.equal(undefined);
+  });
+
   it('should mark contacts that were never visited as overdue', () => {
-    const contact: any = {};
+    const details = service.getVisitDetails({ lastVisitedDate: 0, count: 0, countGoal: 2 });
 
-    service.setVisitDetails(contact, { lastVisitedDate: 0, count: 0, countGoal: 2 });
-
-    expect(contact.lastVisitedDate).to.equal(0);
-    expect(contact.overdue).to.equal(true);
-    expect(contact.summary).to.equal(JSON.stringify([ 'contact.last.visit.unknown', undefined ]));
-    expect(contact.visits.status).to.equal('pending');
+    expect(details!.lastVisitedDate).to.equal(0);
+    expect(details!.overdue).to.equal(true);
+    expect(details!.summary).to.equal(JSON.stringify([ 'contact.last.visit.unknown', undefined ]));
+    expect(details!.visits!.status).to.equal('pending');
   });
 
   it('should mark contacts visited over a month ago as overdue', () => {
-    const contact: any = {};
     const lastVisitedDate = new Date().getTime() - (31 * 24 * 60 * 60 * 1000);
 
-    service.setVisitDetails(contact, { lastVisitedDate, count: 1, countGoal: 2 });
+    const details = service.getVisitDetails({ lastVisitedDate, count: 1, countGoal: 2 });
 
-    expect(contact.lastVisitedDate).to.equal(lastVisitedDate);
-    expect(contact.overdue).to.equal(true);
-    expect(contact.summary).to.equal(JSON.stringify([ 'contact.last.visited.date', { date: 'relative-time' } ]));
+    expect(details!.lastVisitedDate).to.equal(lastVisitedDate);
+    expect(details!.overdue).to.equal(true);
+    expect(details!.summary).to.equal(JSON.stringify([ 'contact.last.visited.date', { date: 'relative-time' } ]));
     expect(relativeDateService.getRelativeDate.args[0][0]).to.equal(lastVisitedDate);
-    expect(contact.visits.status).to.equal('started');
+    expect(details!.visits!.status).to.equal('started');
   });
 
   it('should not mark recently visited contacts as overdue', () => {
-    const contact: any = {};
     const lastVisitedDate = new Date().getTime() - 1000;
 
-    service.setVisitDetails(contact, { lastVisitedDate, count: 2, countGoal: 2 });
+    const details = service.getVisitDetails({ lastVisitedDate, count: 2, countGoal: 2 });
 
-    expect(contact.overdue).to.equal(false);
-    expect(contact.visits.status).to.equal('done');
+    expect(details!.overdue).to.equal(false);
+    expect(details!.visits!.status).to.equal('done');
   });
 
   it('should cap the displayed visit count at 99+', () => {
-    const contact: any = {};
+    const details = service.getVisitDetails({ lastVisitedDate: new Date().getTime(), count: 105, countGoal: 2 });
 
-    service.setVisitDetails(contact, { lastVisitedDate: new Date().getTime(), count: 105, countGoal: 2 });
-
-    expect(contact.visits.count).to.equal(JSON.stringify([ 'contacts.visits.count', { count: '99+' } ]));
-    expect(contact.visits.summary).to.equal(JSON.stringify([ 'contacts.visits.visits', { VISITS: 105 } ]));
+    expect(details!.visits!.count).to.equal(JSON.stringify([ 'contacts.visits.count', { count: '99+' } ]));
+    expect(details!.visits!.summary).to.equal(JSON.stringify([ 'contacts.visits.visits', { VISITS: 105 } ]));
   });
 
   it('should not set a visit status without a count goal', () => {
-    const contact: any = {};
+    const details = service.getVisitDetails({ lastVisitedDate: new Date().getTime(), count: 1 });
 
-    service.setVisitDetails(contact, { lastVisitedDate: new Date().getTime(), count: 1 });
-
-    expect(contact.visits.status).to.equal(undefined);
-    expect(contact.visits.count).to.equal(JSON.stringify([ 'contacts.visits.count', { count: '1' } ]));
+    expect(details!.visits!.status).to.equal(undefined);
+    expect(details!.visits!.count).to.equal(JSON.stringify([ 'contacts.visits.count', { count: '1' } ]));
   });
 });

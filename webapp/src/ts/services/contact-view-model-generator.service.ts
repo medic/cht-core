@@ -14,7 +14,7 @@ import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 import { UHCStatsService } from '@mm-services/uhc-stats.service';
-import { UHCVisitDisplayService } from '@mm-services/uhc-visit-display.service';
+import { UHCVisitDisplayService, VisitDetails } from '@mm-services/uhc-visit-display.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 
 /**
@@ -251,11 +251,11 @@ export class ContactViewModelGeneratorService {
   }
 
   /**
-   * Returns a copy of the given child models where every contact whose type counts visits is annotated
-   * with UHC visit stats display details, or undefined when there is nothing to annotate.
+   * Returns UHC visit stats display details for the given child models, keyed by contact id, or
+   * undefined when there is nothing to display.
    * Kept separate from loadChildren so the children can render without waiting on the stats queries.
    */
-  getChildrenVisitStats(children) {
+  getChildrenVisitStats(children): Promise<Record<string, VisitDetails> | undefined> {
     return this.ngZone.runOutsideAngular(() => this._getChildrenVisitStats(children));
   }
 
@@ -265,39 +265,23 @@ export class ContactViewModelGeneratorService {
       return;
     }
 
-    try {
-      const settings = await this.settingsService.get();
-      const visitCountSettings = this.uhcSettingsService.getVisitCountSettings(settings);
-      const contactIds = groups
-        .map(group => group.contacts.map(child => child.doc?._id))
-        .flat()
-        .filter(id => !!id);
-      const visitStats = await this.uhcStatsService.getVisitStats(contactIds, visitCountSettings);
-      if (!Object.keys(visitStats).length) {
-        return;
+    const settings = await this.settingsService.get();
+    const visitCountSettings = this.uhcSettingsService.getVisitCountSettings(settings);
+    const contactIds = groups
+      .map(group => group.contacts.map(child => child.doc?._id))
+      .flat()
+      .filter(id => !!id);
+    const visitStats = await this.uhcStatsService.getVisitStats(contactIds, visitCountSettings);
+
+    const visitDetails = {};
+    Object.keys(visitStats).forEach(contactId => {
+      const details = this.uhcVisitDisplayService.getVisitDetails(visitStats[contactId]);
+      if (details) {
+        visitDetails[contactId] = details;
       }
+    });
 
-      return children.map(group => {
-        if (!group.type?.count_visits || !group.contacts?.length) {
-          return group;
-        }
-        return {
-          ...group,
-          contacts: group.contacts.map(child => this.addVisitDetails(child, visitStats[child.doc?._id])),
-        };
-      });
-    } catch (error) {
-      console.error('Error getting visit stats for children', error);
-    }
-  }
-
-  private addVisitDetails(child, stats) {
-    if (!stats) {
-      return child;
-    }
-    const withVisitDetails = { ...child };
-    this.uhcVisitDisplayService.setVisitDetails(withVisitDetails, stats);
-    return withVisitDetails;
+    return Object.keys(visitDetails).length ? visitDetails : undefined;
   }
 
   loadChildren(model, options?) {
