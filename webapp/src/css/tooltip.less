@@ -1,42 +1,23 @@
 @import 'variables';
 
-@media (pointer: coarse), (hover: none) {
-  /**
-   * Makes native “title” accessible from mobile devices if the element has tabindex=“0"
-   * since it makes the element focusable.
-   */
-  [title] {
-    position: relative;
-    justify-content: left;
-  }
+/**
+ * Touch / no-hover devices can't reveal a native `title` tooltip. Elements with a title are made
+ * focusable (tabindex="0") and, on focus, MobileTooltipDirective renders the title in a CDK overlay
+ * that is positioned to stay within the viewport (any trigger position, text length, or direction).
+ * The overlay is appended at the document level, so these styles are global.
+ */
+.cdk-overlay-container .mm-mobile-tooltip {
+  pointer-events: none;
 
-  [title]:focus::before {
-    content: attr(title);
+  .mm-mobile-tooltip__content {
+    max-width: calc(100vw - 16px);
+    padding: 5px 8px;
     font-size: @font-extra-small;
     line-height: @font-small;
     color: @tooltip-text;
     background-color: @tooltip-background;
     border-radius: @radius-size-small;
-    width: max-content;
-    padding: 5px 8px;
-    position: absolute;
-    top: -28px;
-    right: -10px;
-    z-index: 1;
-  }
-
-  :not(mm-content-row) > .content-row:first-child,
-  mm-content-row:first-child .content-row:first-child {
-    [title]:focus:first-child::before {
-      top: 28px;
-    }
-  }
-
-  .item-summary .relative-date:focus {
-    min-width: 140px;
-  }
-
-  .sync-status .last-sync:focus-within {
-    overflow: visible;
+    white-space: normal;
+    overflow-wrap: break-word;
   }
 }
