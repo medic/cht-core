@@ -1,5 +1,4 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { DOC_TYPES } from '@medic/constants';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
@@ -251,10 +250,10 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   // children lists would go stale until the next navigation
   private isRelevantVisitReport(change) {
     const doc = change?.doc;
-    const visitedContactId = doc?.fields?.visited_contact_uuid;
-    if (!visitedContactId || doc.type !== DOC_TYPES.DATA_RECORD || !doc.form) {
+    if (!this.contactChangeFilterService.isVisitReport(doc)) {
       return false;
     }
+    const visitedContactId = doc.fields.visited_contact_uuid;
     if (visitedContactId === this.selectedContact?.doc?._id) {
       return true;
     }

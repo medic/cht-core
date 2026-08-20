@@ -5,6 +5,7 @@ import * as CalendarInterval from '@medic/calendar-interval';
 
 import { DbService } from '@mm-services/db.service';
 import { ChangesService } from '@mm-services/changes.service';
+import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -22,6 +23,7 @@ export class UHCStatsService {
   constructor(
     private dbService: DbService,
     private changesService: ChangesService,
+    private contactChangeFilterService: ContactChangeFilterService,
     private contactTypesService: ContactTypesService,
     private sessionService: SessionService,
     private authService: AuthService
@@ -78,7 +80,7 @@ export class UHCStatsService {
   private isLastVisitedDateChange(change) {
     // deleted changes carry no doc content, so err on the side of invalidating
     return change.deleted ||
-      !!change.doc?.fields?.visited_contact_uuid ||
+      this.contactChangeFilterService.isVisitReport(change.doc) ||
       this.contactTypesService.includes(change.doc);
   }
 

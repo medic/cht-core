@@ -518,12 +518,15 @@ describe('UHCStats Service', () => {
       expect(changesService.subscribe.args[0][0].key).to.equal('uhc-stats-service');
 
       const { filter, callback } = changesService.subscribe.args[0][0];
-      expect(filter({ doc: { fields: { visited_contact_uuid: '2b' } } })).to.equal(true);
+      const visitReport = { type: 'data_record', form: 'home_visit', fields: { visited_contact_uuid: '2b' } };
+      expect(filter({ doc: visitReport })).to.equal(true);
       expect(filter({ deleted: true, id: 'some-doc' })).to.equal(true);
       contactTypesService.includes.returns(true);
       expect(filter({ doc: { type: 'clinic' } })).to.equal(true);
       contactTypesService.includes.returns(false);
       expect(filter({ doc: { type: 'data_record', fields: {} } })).to.equal(false);
+      // only reports the UHC views index are relevant, not any doc carrying the field
+      expect(filter({ doc: { fields: { visited_contact_uuid: '2b' } } })).to.equal(false);
 
       callback();
       await service.getVisitStats([ '2b' ], visitCountSettings);

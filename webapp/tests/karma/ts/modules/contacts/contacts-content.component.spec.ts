@@ -61,6 +61,8 @@ describe('Contacts content component', () => {
       matchContact: sinon.stub(),
       isRelevantChange: sinon.stub(),
       isDeleted: sinon.stub(),
+      // dependency-free predicate: use the real logic so filter tests can exercise realistic docs
+      isVisitReport: ContactChangeFilterService.prototype.isVisitReport,
     };
     settings = {};
     settingsService = { get: sinon.stub().resolves(settings) };

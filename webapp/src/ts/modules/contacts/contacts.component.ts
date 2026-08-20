@@ -3,10 +3,10 @@ import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { findIndex as _findIndex } from 'lodash-es';
-import { DOC_TYPES } from '@medic/constants';
 
 import { GlobalActions } from '@mm-actions/global';
 import { ChangesService } from '@mm-services/changes.service';
+import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { ContactsActions } from '@mm-actions/contacts';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
@@ -85,6 +85,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
   constructor(
     private store: Store,
     private changesService: ChangesService,
+    private contactChangeFilterService: ContactChangeFilterService,
     private fastActionButtonService: FastActionButtonService,
     private searchService: SearchService,
     private contactTypesService: ContactTypesService,
@@ -228,10 +229,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
     return (
       doc &&
       this.lastVisitedDateExtras &&
-      doc.type === DOC_TYPES.DATA_RECORD &&
-      doc.form &&
-      doc.fields &&
-      doc.fields.visited_contact_uuid &&
+      this.contactChangeFilterService.isVisitReport(doc) &&
       (this.listContains(doc.fields.visited_contact_uuid) || isRelevantDelete)
     );
   }
