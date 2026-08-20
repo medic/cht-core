@@ -5,12 +5,28 @@ const uuid = require('uuid').v7;
 const moment = require('moment');
 
 //
-// NB: using sentinel processing to delay the reading of infodocs is not guaranteed to be successful
-// here, but as of writing seems stable. The API code (see the uses of the controller in
-// ./api/controllers/infodoc) happens asynchronously so it doesn't affect request performance. This
-// means there is no way to know it's run: it just so happens to run faster than sentinel takes to
-// process.
+// API records infodoc writes after it has already responded (see the uses of the controller in
+// ./api/controllers/infodoc), so nothing in the response says whether that has happened yet, and
+// waiting for sentinel says nothing about API: the two write infodocs independently, in no
+// guaranteed order. The write itself is the signal - API stamps latest_replication_date with the
+// time it handled the request, so a date at or after `since` is this request's write.
 //
+const waitForApiInfoDocWrites = async (ids, since, retries = 15) => {
+  const infoDocs = await sentinelUtils.getInfoDocs(ids);
+  const recorded = infoDoc => infoDoc && new Date(infoDoc.latest_replication_date).getTime() >= since;
+
+  if (infoDocs.every(recorded)) {
+    return;
+  }
+
+  if (retries <= 0) {
+    throw new Error(`Timed out waiting for api to record infodoc writes for ${ids}`);
+  }
+
+  await utils.delayPromise(100);
+  return waitForApiInfoDocWrites(ids, since, retries - 1);
+};
+
 const delayedInfoDocsOf = async (ids) => {
   await sentinelUtils.waitForSentinel(ids);
   return sentinelUtils.getInfoDocs(ids);
@@ -27,11 +43,13 @@ describe('infodocs', () => {
     const path = method === 'PUT' ? `/${doc._id}` : '/';
     let infoDoc;
 
+    const beforeCreate = Date.now();
     const result = await utils.requestOnTestDb({ path, method, body: doc });
     assert.isTrue(result.ok);
     doc._rev = result.rev;
     doc.more = 'data';
 
+    await waitForApiInfoDocWrites(doc._id, beforeCreate);
     [infoDoc] = await delayedInfoDocsOf(doc._id);
 
     assert.deepInclude(infoDoc, {
@@ -43,9 +61,11 @@ describe('infodocs', () => {
     assert.isOk(infoDoc.initial_replication_date);
     assert.isOk(infoDoc.latest_replication_date);
 
+    const beforeUpdate = Date.now();
     const update = await utils.requestOnTestDb({ path, method, body: doc });
     assert.isTrue(update.ok);
 
+    await waitForApiInfoDocWrites(doc._id, beforeUpdate);
     const [updatedInfodoc] = await delayedInfoDocsOf(doc._id);
 
     assert.equal(updatedInfodoc.initial_replication_date, infoDoc.initial_replication_date);
@@ -98,6 +118,7 @@ describe('infodocs', () => {
         }
       ];
 
+      const beforeCreate = Date.now();
       const result = await utils.db.bulkDocs(docs);
       assert.equal(result.filter(r => r.ok).length, docs.length);
 
@@ -105,6 +126,7 @@ describe('infodocs', () => {
       docs[0]._rev = result[0].rev;
       docs[1]._rev = result[1].rev;
 
+      await waitForApiInfoDocWrites(docs.map(d => d._id), beforeCreate);
       const infoDocs = await delayedInfoDocsOf(docs.map(d => d._id));
 
       assert.equal(infoDocs.length, 3);
@@ -120,6 +142,7 @@ describe('infodocs', () => {
         assert.isOk(infoDoc.latest_replication_date, `infodoc latest_replication_date for ${doc._id} exists`);
       });
 
+      const beforeUpdate = Date.now();
       const update = await utils.db.bulkDocs(docs);
       assert.isTrue(update[0].ok);
       assert.isTrue(update[1].ok);
@@ -128,6 +151,8 @@ describe('infodocs', () => {
       docs[0]._rev = update[0].rev;
       docs[1]._rev = update[1].rev;
 
+      // the third write conflicted, so api has nothing to record for it
+      await waitForApiInfoDocWrites([docs[0]._id, docs[1]._id], beforeUpdate);
       const newInfoDocs = await delayedInfoDocsOf(docs.map(d => d._id));
 
       assert.notEqual(newInfoDocs[0].latest_replication_date, infoDocs[0].latest_replication_date);

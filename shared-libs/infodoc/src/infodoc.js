@@ -1,5 +1,7 @@
 const db = {}; // to be filled in by the initLib function exported below
 
+const UNKNOWN_DATE = 'unknown';
+
 const getInfoDocId = id => id + '-info';
 const getDocId = infoDocId => infoDocId.slice(0, -5);
 const blankInfoDoc = (docId, knownReplicationDate) => {
@@ -7,8 +9,8 @@ const blankInfoDoc = (docId, knownReplicationDate) => {
     _id: getInfoDocId(docId),
     type: 'info',
     doc_id: docId,
-    initial_replication_date: knownReplicationDate || 'unknown',
-    latest_replication_date: knownReplicationDate || 'unknown'
+    initial_replication_date: knownReplicationDate || UNKNOWN_DATE,
+    latest_replication_date: knownReplicationDate || UNKNOWN_DATE
   };
 };
 
@@ -175,6 +177,14 @@ const bulkUpdate = infoDocs => {
   });
 };
 
+const recordReplicationDates = (infoDoc, date) => {
+  if (!infoDoc.initial_replication_date || infoDoc.initial_replication_date === UNKNOWN_DATE) {
+    infoDoc.initial_replication_date = date;
+  }
+  infoDoc.latest_replication_date = date;
+  return infoDoc;
+};
+
 const recordDocumentWrite = (id, date) => {
   return db.sentinel.get(getInfoDocId(id))
     .catch(err => {
@@ -185,7 +195,7 @@ const recordDocumentWrite = (id, date) => {
       return blankInfoDoc(id, date);
     })
     .then(infoDoc => {
-      infoDoc.latest_replication_date = date;
+      recordReplicationDates(infoDoc, date);
       return db.sentinel.put(infoDoc)
         .catch(err => {
           if (err.status === 409) {
@@ -207,9 +217,7 @@ const recordDocumentWrites = (ids, date) => {
     const updatedInfoDocs = results.rows.map(row => {
       const infoDoc = row.doc || blankInfoDoc(getDocId(row.key), date);
 
-      infoDoc.latest_replication_date = date;
-
-      return infoDoc;
+      return recordReplicationDates(infoDoc, date);
     });
 
     return db.sentinel.bulkDocs(updatedInfoDocs)
