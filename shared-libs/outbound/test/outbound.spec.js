@@ -325,6 +325,37 @@ describe('outbound shared library', () => {
         });
     });
 
+    it('should pass configured proxy through to request options', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          base_url: 'http://test',
+          path: '/foo',
+          proxy: 'http://proxy.local:3128'
+        }
+      };
+
+      sinon.stub(request, 'post').resolves();
+
+      return outbound.__get__('sendPayload')(payload, conf)
+        .then(() => {
+          assert.equal(request.post.callCount, 1);
+          assert.deepEqual(request.post.args, [
+            [
+              {
+                url: 'http://test/foo',
+                body: { some: 'data' },
+                timeout: 10000,
+                proxy: 'http://proxy.local:3128',
+              }
+            ]
+          ]);
+        });
+    });
+
     it('should support pushing via basic auth', () => {
       const payload = {
         some: 'data'
@@ -403,6 +434,219 @@ describe('outbound shared library', () => {
               }
             ]
           ]);
+        });
+    });
+
+    it('should send configured headers from value and value_key', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          headers: {
+            'Content-Type': { value: 'application/json' },
+            'X-Source': { value: 'CHT' },
+            'x-api-key': { value_key: 'dhis2-outbound-api-key' }
+          },
+          base_url: 'http://test',
+          path: '/foo'
+        }
+      };
+
+      sinon.stub(secureSettings, 'getCredentials').resolves('secret-key');
+      sinon.stub(request, 'post').resolves();
+
+      return outbound.__get__('sendPayload')(payload, conf)
+        .then(() => {
+          assert.equal(secureSettings.getCredentials.callCount, 1);
+          assert.deepEqual(secureSettings.getCredentials.args, [['dhis2-outbound-api-key']]);
+          assert.equal(request.post.callCount, 1);
+          assert.deepEqual(request.post.args, [
+            [
+              {
+                url: 'http://test/foo',
+                body: { some: 'data' },
+                timeout: 10000,
+                headers: {
+                  'content-type': 'application/json',
+                  'x-source': 'CHT',
+                  'x-api-key': 'secret-key'
+                }
+              }
+            ]
+          ]);
+        });
+    });
+
+    it('should allow destination headers and header auth together', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          auth: {
+            type: 'Header',
+            name: 'Authorization',
+            value_key: 'test-config'
+          },
+          headers: {
+            'content-type': { value: 'application/json' },
+            'x-correlation-id': { value: 'abc123' }
+          },
+          base_url: 'http://test',
+          path: '/foo'
+        }
+      };
+
+      sinon.stub(secureSettings, 'getCredentials').resolves('secret-key');
+      sinon.stub(request, 'post').resolves();
+
+      return outbound.__get__('sendPayload')(payload, conf)
+        .then(() => {
+          assert.equal(request.post.callCount, 1);
+          assert.deepEqual(request.post.args, [
+            [
+              {
+                url: 'http://test/foo',
+                body: { some: 'data' },
+                timeout: 10000,
+                headers: {
+                  'content-type': 'application/json',
+                  'x-correlation-id': 'abc123',
+                  'authorization': 'secret-key'
+                }
+              }
+            ]
+          ]);
+        });
+    });
+
+    it('should fail when destination headers is not an object', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          headers: ['bad'],
+          base_url: 'http://test',
+          path: '/foo'
+        }
+      };
+
+      return outbound.__get__('sendPayload')(payload, conf)
+        .then(() => {
+          assert.fail('This send should have failed');
+        })
+        .catch(err => {
+          assert.equal(err.message, 'destination.headers must be an object');
+        });
+    });
+
+    it('should fail when a header config value is not an object', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          base_url: 'http://test',
+          path: '/foo'
+        }
+      };
+
+      return outbound.__get__('sendPayload')(payload, conf)
+        .then(() => {
+          assert.fail('This send should have failed');
+        })
+        .catch(err => {
+          assert.equal(
+            err.message,
+            `destination.headers['Content-Type'] must be an object with 'value' or 'value_key'`
+          );
+        });
+    });
+
+    it('should fail when a header has neither value nor value_key', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          headers: {
+            'X-Source': {}
+          },
+          base_url: 'http://test',
+          path: '/foo'
+        }
+      };
+
+      return outbound.__get__('sendPayload')(payload, conf)
+        .then(() => {
+          assert.fail('This send should have failed');
+        })
+        .catch(err => {
+          assert.equal(
+            err.message,
+            `destination.headers['X-Source'] must have exactly one of 'value' or 'value_key'`
+          );
+        });
+    });
+
+    it('should fail when a header has both value and value_key', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          headers: {
+            'x-api-key': { value: 'plain', value_key: 'secret-key' }
+          },
+          base_url: 'http://test',
+          path: '/foo'
+        }
+      };
+
+      return outbound.__get__('sendPayload')(payload, conf)
+        .then(() => {
+          assert.fail('This send should have failed');
+        })
+        .catch(err => {
+          assert.equal(
+            err.message,
+            `destination.headers['x-api-key'] must have exactly one of 'value' or 'value_key'`
+          );
+        });
+    });
+
+    it('should fail when a header value is not a string', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          headers: {
+            'X-Retry': { value: 3 }
+          },
+          base_url: 'http://test',
+          path: '/foo'
+        }
+      };
+
+      return outbound.__get__('sendPayload')(payload, conf)
+        .then(() => {
+          assert.fail('This send should have failed');
+        })
+        .catch(err => {
+          assert.equal(err.message, `destination.headers['X-Retry'].value must be a string`);
         });
     });
 

@@ -101,6 +101,61 @@ const handleBasicAuth = async (authConf, sendOptions) => {
   };
 };
 
+const resolveHeaderValue = async (headerName, headerConf) => {
+  if (Object.prototype.toString.call(headerConf) !== '[object Object]') {
+    throw new OutboundError(
+      `destination.headers['${headerName}'] must be an object with 'value' or 'value_key'`
+    );
+  }
+
+  const hasValue = Object.prototype.hasOwnProperty.call(headerConf, 'value');
+  const hasValueKey = Object.prototype.hasOwnProperty.call(headerConf, 'value_key');
+
+  if (hasValue === hasValueKey) {
+    throw new OutboundError(
+      `destination.headers['${headerName}'] must have exactly one of 'value' or 'value_key'`
+    );
+  }
+
+  if (hasValueKey) {
+    return fetchPassword(headerConf.value_key);
+  }
+
+  if (typeof headerConf.value !== 'string') {
+    throw new OutboundError(`destination.headers['${headerName}'].value must be a string`);
+  }
+
+  return headerConf.value;
+};
+
+const handleConfiguredHeaders = async (config, sendOptions) => {
+  const destinationHeaders = objectPath.get(config, 'destination.headers');
+  if (!destinationHeaders) {
+    return;
+  }
+
+  if (Object.prototype.toString.call(destinationHeaders) !== '[object Object]') {
+    throw new OutboundError('destination.headers must be an object');
+  }
+
+  sendOptions.headers = sendOptions.headers || {};
+  for (const headerName of Object.keys(destinationHeaders)) {
+    sendOptions.headers[headerName.toLowerCase()] = await resolveHeaderValue(
+      headerName,
+      destinationHeaders[headerName]
+    );
+  }
+};
+
+const handleConfiguredProxy = (config, sendOptions) => {
+  const destinationProxy = objectPath.get(config, 'destination.proxy');
+  if (!destinationProxy) {
+    return;
+  }
+
+  sendOptions.proxy = destinationProxy;
+};
+
 const handleHeaderAuth = async (authConf, sendOptions) => {
   sendOptions.headers = sendOptions.headers || {};
   if (authConf.name && authConf.name.toLowerCase() === 'authorization') {
@@ -177,6 +232,8 @@ const sendPayload = async (payload, config) => {
     timeout: OUTBOUND_REQ_TIMEOUT,
   };
 
+  await handleConfiguredHeaders(config, sendOptions);
+  handleConfiguredProxy(config, sendOptions);
   await handleAuth(config, sendOptions);
 
   if (logger.isDebugEnabled()) {
