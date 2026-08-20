@@ -19,6 +19,7 @@ export class UHCStatsService {
   private readonly REMOTE_QUERY_BATCH_SIZE = 10;
   private readonly canView: Record<string, Promise<boolean>> = {};
   private lastVisitedDates?: Promise<Record<string, number>>;
+  private cachedLastVisitedDates?: Record<string, number>;
   private changesSubscription;
 
   constructor(
@@ -91,9 +92,13 @@ export class UHCStatsService {
 
   private isLastVisitedDateChange(change) {
     // deleted changes carry no doc content, so err on the side of invalidating
-    return change.deleted ||
-      this.contactChangeFilterService.isVisitReport(change.doc) ||
-      this.contactTypesService.includes(change.doc);
+    if (change.deleted || this.contactChangeFilterService.isVisitReport(change.doc)) {
+      return true;
+    }
+    // contacts_by_last_visited emits a constant value for contact docs, so contact edits cannot
+    // change its output: only contacts the cache hasn't seen yet are relevant
+    return this.contactTypesService.includes(change.doc) &&
+      this.cachedLastVisitedDates?.[change.doc._id] === undefined;
   }
 
   private watchLastVisitedDateChanges() {
@@ -103,8 +108,21 @@ export class UHCStatsService {
     this.changesSubscription = this.changesService.subscribe({
       key: 'uhc-stats-service',
       filter: change => this.isLastVisitedDateChange(change),
-      callback: () => this.lastVisitedDates = undefined,
+      callback: change => this.updateLastVisitedDates(change),
     });
+  }
+
+  private updateLastVisitedDates(change) {
+    const isNewContact = !change?.deleted && this.contactTypesService.includes(change?.doc);
+    if (isNewContact && this.cachedLastVisitedDates) {
+      // a contact the view hasn't seen appears in it with a constant 0 ("never visited"): patch the
+      // cache instead of re-querying the whole view. The contact's visit reports, if it has any,
+      // arrive as separate changes and invalidate the cache below.
+      this.cachedLastVisitedDates[change.doc._id] = 0;
+      return;
+    }
+    this.lastVisitedDates = undefined;
+    this.cachedLastVisitedDates = undefined;
   }
 
   private getAllLastVisitedDates(): Promise<Record<string, number>> {
@@ -118,7 +136,13 @@ export class UHCStatsService {
     // relevant change instead of once per contact selection.
     const lastVisitedDates = Promise
       .resolve(this.dbService.get().query('medic-client/contacts_by_last_visited', { reduce: true, group: true }))
-      .then(records => this.getLastVisitedDatesMap(records));
+      .then(records => {
+        const dates = this.getLastVisitedDatesMap(records);
+        if (this.lastVisitedDates === lastVisitedDates) {
+          this.cachedLastVisitedDates = dates;
+        }
+        return dates;
+      });
     // don't cache failures
     lastVisitedDates.catch(() => {
       if (this.lastVisitedDates === lastVisitedDates) {

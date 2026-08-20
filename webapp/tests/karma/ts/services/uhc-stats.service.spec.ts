@@ -578,16 +578,50 @@ describe('UHCStats Service', () => {
       expect(filter({ doc: visitReport })).to.equal(true);
       expect(filter({ deleted: true, id: 'some-doc' })).to.equal(true);
       contactTypesService.includes.returns(true);
-      expect(filter({ doc: { type: 'clinic' } })).to.equal(true);
+      expect(filter({ doc: { type: 'clinic', _id: 'new-clinic' } })).to.equal(true);
+      // edits to contacts the cache has seen cannot change the view output
+      expect(filter({ doc: { type: 'clinic', _id: '2b' } })).to.equal(false);
       contactTypesService.includes.returns(false);
       expect(filter({ doc: { type: 'data_record', fields: {} } })).to.equal(false);
       // only reports the UHC views index are relevant, not any doc carrying the field
       expect(filter({ doc: { fields: { visited_contact_uuid: '2b' } } })).to.equal(false);
 
-      callback();
+      callback({ deleted: true, id: 'some-doc' });
       await service.getVisitStats([ '2b' ], visitCountSettings);
 
       expect(lastVisitedQueries().length).to.equal(2);
+    });
+
+    it('should patch new contacts into the cache instead of invalidating it', async () => {
+      sessionService.isAdmin.returns(false);
+      sessionService.isOnlineOnly = sinon.stub().returns(false);
+      authService.has.resolves(true);
+      localDb.query
+        .withArgs('medic-client/contacts_by_last_visited')
+        .returns({ rows: [ { key: '2b', value: moment('2021-04-15 22:59:59').valueOf() } ] });
+      localDb.query
+        .withArgs('medic-client/visits_by_date')
+        .returns({ rows: [] });
+
+      await service.getVisitStats([ '2b' ], visitCountSettings);
+
+      const { filter, callback } = changesService.subscribe.args[0][0];
+      contactTypesService.includes.returns(true);
+      const newContactChange = { id: 'new-contact', doc: { _id: 'new-contact', type: 'clinic' } };
+      expect(filter(newContactChange)).to.equal(true);
+      callback(newContactChange);
+
+      const stats = await service.getVisitStats([ '2b', 'new-contact' ], visitCountSettings);
+
+      const lastVisitedQueries = localDb.query
+        .getCalls()
+        .filter(call => call.args[0] === 'medic-client/contacts_by_last_visited');
+      expect(lastVisitedQueries.length).to.equal(1);
+      expect(stats['new-contact']).to.deep.equal({
+        lastVisitedDate: 0,
+        count: 0,
+        countGoal: 5
+      });
     });
 
     it('should not cache last visited dates when online', async () => {
