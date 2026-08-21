@@ -19,26 +19,12 @@ import {
 } from './libs/lineage';
 import { assertPlaceInput } from '../libs/parameter-validators';
 import * as LocalContact from './contact';
-import { CONTACT_TYPES } from '@medic/constants';
-
-const DEFAULT_PLACE_TYPES_DICT: Record<string, { id: string, parents?: string[], person?: boolean } | undefined> = {
-  [CONTACT_TYPES.DISTRICT_HOSPITAL]: { id: CONTACT_TYPES.DISTRICT_HOSPITAL },
-  health_center: {
-    id: 'health_center',
-    parents: [CONTACT_TYPES.DISTRICT_HOSPITAL],
-  },
-  clinic: {
-    id: 'clinic',
-    parents: ['health_center'],
-  },
-};
 
 const getPlaceType = (
   settings: DataObject,
   input: Input.v1.PlaceInput
 ) => {
-  const type = contactTypeUtils.getTypeById(settings, input.type)
-    ?? DEFAULT_PLACE_TYPES_DICT[input.type];
+  const type = contactTypeUtils.getTypeById(settings, input.type);
   if (!type || type.person) {
     throw new InvalidArgumentError(`[${input.type}] is not a valid place type.`);
   }

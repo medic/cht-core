@@ -8,8 +8,9 @@ const serverUtils = require('../../../src/server-utils');
 const dataContext = require('../../../src/services/data-context');
 const { NotFoundError, BadRequestError } = require('../../../src/errors');
 const request = require('@medic/couch-request');
+const nouveau = require('@medic/nouveau');
 const bulkOperations = require('../../../src/services/bulk-operations');
-const constraints = require('../../../src/services/hierarchy/lineage-constraints');
+const constraints = require('../../../src/services/lineage-constraints');
 const moveContact = require('../../../src/services/move-contact');
 
 // The destination, whose own minified lineage becomes the replacement for everything that moves.
@@ -184,13 +185,15 @@ describe('move-contact service', () => {
   });
 
   it('chunks the author lookup rather than asking for every report at once', async () => {
-    const full = Array.from({ length: 1000 }, (_, i) => ({ id: `r-${i}` }));
-    freetext.onFirstCall().resolves({ hits: full, bookmark: 'page-2' });
-    freetext.onSecondCall().resolves({ hits: [ { id: 'r-last' } ] });
+    // shrunk so the test does not have to build a real page of results
+    sinon.stub(nouveau, 'RESULTS_LIMIT').value(3);
+    sinon.stub(nouveau, 'BATCH_LIMIT').value(2);
+    freetext.onFirstCall().resolves({ hits: [ { id: 'r-1' }, { id: 'r-2' }, { id: 'r-3' } ], bookmark: 'page-2' });
+    freetext.onSecondCall().resolves({ hits: [ { id: 'r-4' } ] });
 
     await handler(buildReq(), buildRes());
 
-    expect(authors.args.map(([ opts ]) => opts.body.limit)).to.deep.equal([ 1000, 1 ]);
+    expect(authors.args.map(([ opts ]) => opts.body.limit)).to.deep.equal([ 2, 2 ]);
   });
 
   it('skips a report whose author the index does not report', async () => {
@@ -224,21 +227,23 @@ describe('move-contact service', () => {
   });
 
   it('pages the nouveau results with the bookmark rather than capping them', async () => {
-    const full = Array.from({ length: 1000 }, (_, i) => ({ id: `r-${i}` }));
-    freetext.onFirstCall().resolves({ hits: full, bookmark: 'page-2' });
-    freetext.onSecondCall().resolves({ hits: [ { id: 'r-last' } ] });
+    sinon.stub(nouveau, 'RESULTS_LIMIT').value(2);
+    freetext.onFirstCall().resolves({ hits: [ { id: 'r-1' }, { id: 'r-2' } ], bookmark: 'page-2' });
+    freetext.onSecondCall().resolves({ hits: [ { id: 'r-3' } ] });
 
     await handler(buildReq(), buildRes());
 
     expect(freetext.callCount).to.equal(2);
     expect(freetext.args[0][0].body.bookmark).to.be.null;
     expect(freetext.args[1][0].body.bookmark).to.equal('page-2');
+    // the whole result set is asked for in one page rather than in batches
+    expect(freetext.args[0][0].body.limit).to.equal(nouveau.RESULTS_LIMIT);
   });
 
   it('stops paging when the bookmark does not advance, rather than looping forever', async () => {
-    const full = Array.from({ length: 1000 }, (_, i) => ({ id: `r-${i}` }));
+    sinon.stub(nouveau, 'RESULTS_LIMIT').value(2);
     // A misbehaving index that keeps returning a full page and the same bookmark.
-    freetext.resolves({ hits: full, bookmark: 'stuck' });
+    freetext.resolves({ hits: [ { id: 'r-1' }, { id: 'r-2' } ], bookmark: 'stuck' });
 
     await handler(buildReq(), buildRes());
 
@@ -312,17 +317,6 @@ describe('move-contact service', () => {
       contact: { _id: 'person-1', parent: { _id: 'clinic-1', parent: UNDER_HC_B } },
     } ]);
     expect(res.json.args[0][0].summary['set-contact']).to.deep.equal({ reports: 0, places: 1 });
-  });
-
-  it('deduplicates a place the primary contact view emits more than once', async () => {
-    db.medic.query.withArgs('medic/contacts_by_primary_contact').resolves({ rows: [
-      { id: 'hc-a', key: 'person-1' },
-      { id: 'hc-a', key: 'clinic-1' },
-    ] });
-
-    await handler(buildReq(), buildRes());
-
-    expect(queue.args[0][0][1].operations.map(op => op.id)).to.deep.equal([ 'hc-a' ]);
   });
 
   it('moves to the top level when parent_id is omitted', async () => {

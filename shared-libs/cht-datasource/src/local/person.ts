@@ -12,20 +12,10 @@ import { assertFieldsUnchanged, getReportedDateTimestamp, validateCursor } from 
 import * as Input from '../input';
 import { assertHasValidParentType, assertSameParentLineage, fetchHydratedDoc, minifyDoc } from './libs/lineage';
 import { assertPersonInput } from '../libs/parameter-validators';
-import { CONTACT_TYPES } from '@medic/constants';
-
-const DEFAULT_PERSON_TYPE = {
-  id: 'person',
-  parents: [
-    CONTACT_TYPES.DISTRICT_HOSPITAL,
-    'health_center',
-    CONTACT_TYPES.CLINIC,
-  ]
-};
 
 const getTypeProperties = (settings: DataObject, input: Input.v1.PersonInput) => {
   const customType = contactTypeUtils.getTypeById(settings, input.type);
-  if (!contactTypeUtils.isPersonType(customType ?? { id: input.type })) {
+  if (!contactTypeUtils.isPersonType(customType)) {
     throw new InvalidArgumentError(`[${input.type}] is not a valid person type.`);
   }
   // getTypeById answers for the hardcoded types now, so a truthy lookup no longer means the type is
@@ -48,7 +38,8 @@ function assertParent(
   if (!parent) {
     throw new InvalidArgumentError(`Parent contact [${input.parent}] not found.`);
   }
-  const childType = contactTypeUtils.getTypeById(settings, input.type) ?? DEFAULT_PERSON_TYPE;
+  // Already validated as a person type above, so the lookup is known to resolve.
+  const childType = contactTypeUtils.getTypeById(settings, input.type)!;
   assertHasValidParentType(childType, parent);
 }
 

@@ -11,8 +11,6 @@ const HARDCODED_TYPES_DICT = {
     id: CONTACT_TYPES.CLINIC,
     parents: [ CONTACT_TYPES.HEALTH_CENTER ],
   },
-  // `person: true` because callers such as update_clinics and the forms filter read the flag off the
-  // type directly rather than going through isPersonType, and would otherwise read this as a place.
   [HARDCODED_PERSON_TYPE]: {
     id: HARDCODED_PERSON_TYPE,
     person: true,

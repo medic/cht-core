@@ -372,7 +372,14 @@ describe('local place', () => {
         createDocInner = sinon.stub().resolves(placeDoc);
         createDocOuter = sinon.stub(LocalDoc, 'createDoc').returns(createDocInner);
         settingsGetAll.returns(settings);
-        getTypeById = sinon.stub(contactTypeUtils, 'getTypeById');
+        // getTypeById resolves the hardcoded types too now, so the default mirrors that dictionary
+        const hardcoded: Record<string, unknown> = {
+          district_hospital: { id: 'district_hospital' },
+          health_center: { id: 'health_center', parents: [ 'district_hospital' ] },
+          clinic: { id: 'clinic', parents: [ 'health_center' ] },
+        };
+        getTypeById = sinon.stub(contactTypeUtils, 'getTypeById')
+          .callsFake((_settings, id) => hardcoded[id] as never);
         getContactTypes = sinon.stub(contactTypeUtils, 'getContactTypes').returns([]);
         getReportedDateTimestamp = sinon.stub(LocalCore, 'getReportedDateTimestamp');
         isContact = sinon

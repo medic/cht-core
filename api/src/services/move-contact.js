@@ -11,7 +11,7 @@ const { NotFoundError, BadRequestError } = require('../errors');
 const { BULK_OPERATIONS } = require('@medic/constants');
 const { Contact, Qualifier } = require('@medic/cht-datasource');
 // Required as a module, not destructured, so consumers can stub it with sinon.
-const constraints = require('./hierarchy/lineage-constraints');
+const constraints = require('./lineage-constraints');
 
 const { ACTIONS } = BULK_OPERATIONS;
 
@@ -89,13 +89,13 @@ const addReportIdsForChunk = async (chunk, ids) => {
   do {
     const response = await request.post({
       uri: `${environment.couchUrl}/_design/medic/_nouveau/reports_by_freetext`,
-      body: { q, limit: nouveau.BATCH_LIMIT, bookmark },
+      body: { q, limit: nouveau.RESULTS_LIMIT, bookmark },
     });
     const hits = response.hits ?? [];
     hits.forEach(hit => ids.add(hit.id));
     // A bookmark that does not advance means the index has no more to give; without this the loop
     // would spin forever inside the request.
-    const exhausted = hits.length < nouveau.BATCH_LIMIT || response.bookmark === bookmark;
+    const exhausted = hits.length < nouveau.RESULTS_LIMIT || response.bookmark === bookmark;
     bookmark = exhausted ? null : response.bookmark;
   } while (bookmark);
 };
@@ -149,18 +149,7 @@ const getReportAuthorIds = async (reportIds) => {
  */
 const getPlacesToRefresh = async (contactIds) => {
   const result = await db.medic.query('medic/contacts_by_primary_contact', { keys: contactIds });
-  const seen = new Set();
-  const places = [];
-
-  result.rows.forEach(row => {
-    if (seen.has(row.id)) {
-      return;
-    }
-    seen.add(row.id);
-    places.push({ id: row.id, current_contact_id: row.key });
-  });
-
-  return places;
+  return result.rows.map(row => ({ id: row.id, current_contact_id: row.key }));
 };
 
 /**
@@ -216,12 +205,11 @@ const moveContactHierarchy = async (source, destination, { dryRun } = {}) => {
 
   // `|| undefined` so a move to the root carries the absence of a parent rather than a null.
   const replacementLineage = lineage.minifyLineage(destination) || undefined;
-  const [ parentById, reportIds, places ] = await Promise.all([
+  const [ parentById, reportPairs, places ] = await Promise.all([
     getParentIds(contactIds, source),
-    getReportIdsByCreator(contactIds),
+    getReportIdsByCreator(contactIds).then(getReportAuthorIds),
     getPlacesToRefresh(contactIds),
   ]);
-  const reportPairs = await getReportAuthorIds(reportIds);
 
   const setParentOperations = buildSetParentOperations(contactIds, parentById, id, replacementLineage);
   const reportOperations = buildSetContactOperations(reportPairs, parentById, id, replacementLineage);

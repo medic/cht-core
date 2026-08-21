@@ -501,12 +501,15 @@ describe('Person API', () => {
     const districtId = uuid();
     const clinicAId = uuid();
     const clinicBId = uuid();
+    const patientId = uuid();
 
     const district = utils.deepFreeze(placeFactory.place().build({
       _id: districtId,
       name: 'person-move-district',
       type: CONTACT_TYPES.DISTRICT_HOSPITAL,
-      contact: {},
+      // The moving patient is this district's primary contact, so the move has to refresh the copy
+      // of their lineage cached here, on a place that is not itself moving.
+      contact: { _id: patientId, parent: { _id: clinicAId, parent: { _id: districtId } } },
     }));
     const clinicA = utils.deepFreeze(placeFactory.place().build({
       _id: clinicAId,
@@ -525,6 +528,7 @@ describe('Person API', () => {
     // An explicit shortcode, for the same reason the delete fixture below sets one: personFactory
     // defaults every person to `test_woman_1`, and a report records its subject's shortcode.
     const patient = utils.deepFreeze(personFactory.build({
+      _id: patientId,
       name: 'moving-patient',
       role: 'patient',
       patient_id: 'person-move-patient',
@@ -555,7 +559,7 @@ describe('Person API', () => {
       });
 
       expect(response).to.deep.equal({
-        summary: { 'set-parent': 1, 'set-contact': { reports: 1, places: 0 } },
+        summary: { 'set-parent': 1, 'set-contact': { reports: 1, places: 1 } },
       });
       const unchanged = await utils.getDoc(patient._id);
       expect(unchanged.parent._id).to.equal(clinicAId);
@@ -613,7 +617,7 @@ describe('Person API', () => {
       });
       await utils.waitForBulkOperation(id);
 
-      expect(summary).to.deep.equal({ 'set-parent': 1, 'set-contact': { reports: 1, places: 0 } });
+      expect(summary).to.deep.equal({ 'set-parent': 1, 'set-contact': { reports: 1, places: 1 } });
 
       const moved = await utils.getDoc(patient._id);
       expect(moved.parent).to.deep.equal({ _id: clinicBId, parent: { _id: districtId } });
@@ -621,6 +625,11 @@ describe('Person API', () => {
       const movedReport = await utils.getDoc(report._id);
       expect(movedReport.contact._id).to.equal(patient._id);
       expect(movedReport.contact.parent).to.deep.equal({ _id: clinicBId, parent: { _id: districtId } });
+
+      // the district keeps pointing at the patient, with the lineage it now has
+      const updatedDistrict = await utils.getDoc(districtId);
+      expect(updatedDistrict.contact._id).to.equal(patient._id);
+      expect(updatedDistrict.contact.parent).to.deep.equal({ _id: clinicBId, parent: { _id: districtId } });
     });
   });
 

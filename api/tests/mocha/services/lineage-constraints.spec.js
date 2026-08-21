@@ -1,10 +1,10 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
 
-const db = require('../../../../src/db');
-const { BadRequestError } = require('../../../../src/errors');
-const config = require('../../../../src/config');
-const { assertMoveIsLegal } = require('../../../../src/services/hierarchy/lineage-constraints');
+const db = require('../../../src/db');
+const { BadRequestError } = require('../../../src/errors');
+const config = require('../../../src/config');
+const { assertMoveIsLegal } = require('../../../src/services/lineage-constraints');
 
 const CONTACT_TYPES = [
   { id: 'district_hospital', parents: [] },
@@ -24,7 +24,7 @@ describe('lineage-constraints', () => {
   beforeEach(() => sinon.stub(config, 'getAll').returns({ contact_types: CONTACT_TYPES }));
   afterEach(() => sinon.restore());
 
-  const stubNoAncestorLookup = () => sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
+  const stubNoAncestorLookup = () => sinon.stub(db.medic, 'query').resolves({ rows: [] });
 
   it('allows a legal move between parents of the same type', async () => {
     stubNoAncestorLookup();
@@ -54,7 +54,7 @@ describe('lineage-constraints', () => {
   });
 
   it('lets a database failure propagate instead of reporting it as an invalid move', async () => {
-    sinon.stub(db.medic, 'allDocs').rejects(new Error('couch is down'));
+    sinon.stub(db.medic, 'query').rejects(new Error('couch is down'));
     const err = await assertMoveIsLegal(clinic, healthCenterB, [ 'clinic-1' ]).catch(e => e);
     expect(err).to.not.be.an.instanceOf(BadRequestError);
     expect(err.message).to.equal('couch is down');
@@ -92,10 +92,27 @@ describe('lineage-constraints', () => {
       .to.be.rejectedWith(`cannot move contact with unknown type 'not_a_type'`);
   });
 
+  it('rejects a destination whose type is not configured', async () => {
+    const unknownDestination = { _id: 'y', type: 'not_a_type' };
+    await expect(assertMoveIsLegal(clinic, unknownDestination, [ 'clinic-1' ]))
+      .to.be.rejectedWith(`destination contact 'y' has an unknown type`);
+  });
+
+  it('makes no database lookup when the contact stays under the same lineage', async () => {
+    // A person moved from a health center down into one of its own clinics keeps every ancestor, so
+    // nothing can be stranded and the view is never queried.
+    const query = sinon.stub(db.medic, 'query');
+    const person = { _id: 'person-1', type: 'person', parent: { _id: 'hc-a', parent: { _id: 'district' } } };
+
+    await expect(assertMoveIsLegal(person, clinic, [ 'person-1' ])).to.be.fulfilled;
+
+    expect(query.called).to.equal(false);
+  });
+
   it('rejects a move that would strand a primary contact', async () => {
     // hc-a drops out of the lineage, and its primary contact is inside the moved subtree.
-    sinon.stub(db.medic, 'allDocs').resolves({ rows: [
-      { doc: { _id: 'hc-a', type: 'health_center', contact: { _id: 'person-in-subtree' } } },
+    sinon.stub(db.medic, 'query').resolves({ rows: [
+      { id: 'hc-a', value: { primary_contact: 'person-in-subtree' } },
     ] });
 
     await expect(assertMoveIsLegal(clinic, healthCenterB, [ 'clinic-1', 'person-in-subtree' ]))
@@ -103,8 +120,8 @@ describe('lineage-constraints', () => {
   });
 
   it('allows the move when the dropped ancestor keeps a primary contact outside the subtree', async () => {
-    sinon.stub(db.medic, 'allDocs').resolves({ rows: [
-      { doc: { _id: 'hc-a', type: 'health_center', contact: { _id: 'someone-else' } } },
+    sinon.stub(db.medic, 'query').resolves({ rows: [
+      { id: 'hc-a', value: { primary_contact: 'someone-else' } },
     ] });
 
     await expect(assertMoveIsLegal(clinic, healthCenterB, [ 'clinic-1' ])).to.be.fulfilled;

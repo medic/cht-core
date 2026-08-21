@@ -1,10 +1,9 @@
-const db = require('../../db');
-const config = require('../../config');
+const db = require('../db');
+const config = require('../config');
 const contactTypesUtils = require('@medic/contact-types-utils');
-const { pluckIdsFromLineage } = require('./lineage-manipulation');
-const { BadRequestError } = require('../../errors');
+const lineage = require('@medic/lineage')(Promise, db.medic);
+const { BadRequestError } = require('../errors');
 
-const getPrimaryContactId = (doc) => typeof doc?.contact === 'string' ? doc.contact : doc?.contact?._id;
 
 /**
  * A contact may only be placed under a parent its configured type permits, and a type with no
@@ -52,7 +51,7 @@ const assertNoCircularHierarchy = (sourceDoc, destinationDoc) => {
     throw new BadRequestError('cannot move a contact to itself');
   }
 
-  const destinationAncestry = pluckIdsFromLineage(destinationDoc);
+  const destinationAncestry = lineage.chainIds(destinationDoc);
   if (destinationAncestry.includes(sourceDoc._id)) {
     throw new BadRequestError(
       `circular hierarchy: '${destinationDoc._id}' is a descendant of '${sourceDoc._id}'`
@@ -65,22 +64,24 @@ const assertNoCircularHierarchy = (sourceDoc, destinationDoc) => {
  * lineage as a result of the move must therefore not have a primary contact inside the moved subtree.
  */
 const assertNoPrimaryContactStranded = async (sourceDoc, destinationDoc, descendantIds) => {
-  const sourceLineageIds = pluckIdsFromLineage(sourceDoc.parent);
-  const destinationLineageIds = pluckIdsFromLineage(destinationDoc);
+  const sourceLineageIds = lineage.chainIds(sourceDoc.parent);
+  const destinationLineageIds = lineage.chainIds(destinationDoc);
   const leavingLineage = sourceLineageIds.filter(id => !destinationLineageIds.includes(id));
   if (!leavingLineage.length) {
     return;
   }
 
-  const result = await db.medic.allDocs({ keys: leavingLineage, include_docs: true });
+  // The view carries each place's primary contact, so the whole docs never need reading. Kept behind
+  // the early return above so a move within the same lineage costs no query at all.
+  const result = await db.medic.query('medic/contacts_by_depth', {
+    keys: leavingLineage.map(id => [ id, 0 ]),
+  });
   const moved = new Set(descendantIds);
-  const stranded = result.rows
-    .map(row => ({ place: row.doc, contactId: getPrimaryContactId(row.doc) }))
-    .find(({ contactId }) => contactId && moved.has(contactId));
+  const stranded = result.rows.find(row => moved.has(row.value.primary_contact));
 
   if (stranded) {
     throw new BadRequestError(
-      `cannot move '${sourceDoc._id}': it would strand the primary contact of '${stranded.place._id}'`
+      `cannot move '${sourceDoc._id}': it would strand the primary contact of '${stranded.id}'`
     );
   }
 };
