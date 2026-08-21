@@ -27,9 +27,34 @@ class AuthenticationError extends Error {
   }
 }
 
+class ContentTypeError extends Error {
+  constructor(message, ...args) {
+    super(message, ...args);
+    this.code = 415;
+  }
+}
+
+class BadRequestError extends Error {
+  constructor(message, ...args) {
+    super(message, ...args);
+    this.code = 400;
+  }
+}
+
+class PayloadTooLargeError extends Error {
+  constructor(message, ...args) {
+    super(message, ...args);
+    this.code = 413;
+  }
+}
+
+
 module.exports = {
   PublicError,
   NotFoundError,
   PermissionError,
   AuthenticationError,
+  ContentTypeError,
+  BadRequestError,
+  PayloadTooLargeError,
 };
