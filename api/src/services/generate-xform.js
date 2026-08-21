@@ -230,8 +230,14 @@ const getEnketoForm = doc => {
 };
 
 const generate = formXml => {
-  return Promise.all([ generateForm(formXml), generateModel(formXml) ])
-    .then(([ form, model ]) => ({ form, model }));
+  return Promise.allSettled([ generateForm(formXml), generateModel(formXml) ])
+    .then(([formResult, modelResult]) => {
+      const failedResult = [formResult, modelResult].find(result => result.status === 'rejected');
+      if (failedResult) {
+        throw failedResult.reason;
+      }
+      return { form: formResult.value, model: modelResult.value };
+    });
 };
 
 const addGeneratedAttachments = (doc, updated, outdated) => {
