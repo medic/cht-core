@@ -203,6 +203,8 @@ const moveContactHierarchy = async (source, destination, { dryRun } = {}) => {
   // Violations surface as BadRequestError; anything else is a real failure and propagates as a 500.
   await constraints.assertMoveIsLegal(source, destination, contactIds);
 
+  // The destination lineage is intentionally snapshotted at queue time. Queue time exclusion of
+  // overlapping hierarchy operations, including stale destinations, is tracked in #11349.
   // `|| undefined` so a move to the root carries the absence of a parent rather than a null.
   const replacementLineage = lineage.minifyLineage(destination) || undefined;
   const [ parentById, reportPairs, places ] = await Promise.all([
