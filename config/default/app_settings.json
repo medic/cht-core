@@ -123,6 +123,7 @@
       "program_officer"
     ],
     "can_delete_contact_hierarchy": [],
+    "can_move_contact_hierarchy": [],
     "can_delete_contacts": [
       "program_officer",
       "chw_supervisor",

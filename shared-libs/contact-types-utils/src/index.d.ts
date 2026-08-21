@@ -16,7 +16,7 @@ export interface ContactType {
 
 export function getTypeId(doc: Record<string, unknown>): string | undefined;
 export function getTypeById(config: Record<string, unknown>, typeId: string): ContactType | null;
-export function isPersonType(type: Record<string, unknown>): boolean;
+export function isPersonType(type?: Record<string, unknown> | null): boolean;
 export function isPlaceType(type: Record<string, unknown>): boolean;
 export function hasParents(type: Record<string, unknown>): boolean;
 export function isParentOf(parentType?: string | Record<string, unknown>, childType?: Record<string, unknown>): boolean;

@@ -495,6 +495,144 @@ describe('Person API', () => {
     });
   });
 
+  describe('POST /api/v1/person/:uuid/move', () => {
+    const endpoint = '/api/v1/person';
+
+    const districtId = uuid();
+    const clinicAId = uuid();
+    const clinicBId = uuid();
+    const patientId = uuid();
+
+    const district = utils.deepFreeze(placeFactory.place().build({
+      _id: districtId,
+      name: 'person-move-district',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+      // The moving patient is this district's primary contact, so the move has to refresh the copy
+      // of their lineage cached here, on a place that is not itself moving.
+      contact: { _id: patientId, parent: { _id: clinicAId, parent: { _id: districtId } } },
+    }));
+    const clinicA = utils.deepFreeze(placeFactory.place().build({
+      _id: clinicAId,
+      name: 'person-move-clinic-a',
+      type: CONTACT_TYPES.CLINIC,
+      contact: {},
+      parent: district,
+    }));
+    const clinicB = utils.deepFreeze(placeFactory.place().build({
+      _id: clinicBId,
+      name: 'person-move-clinic-b',
+      type: CONTACT_TYPES.CLINIC,
+      contact: {},
+      parent: district,
+    }));
+    // An explicit shortcode, for the same reason the delete fixture below sets one: personFactory
+    // defaults every person to `test_woman_1`, and a report records its subject's shortcode.
+    const patient = utils.deepFreeze(personFactory.build({
+      _id: patientId,
+      name: 'moving-patient',
+      role: 'patient',
+      patient_id: 'person-move-patient',
+      parent: { _id: clinicAId, parent: { _id: districtId } },
+    }));
+    // Authored by the person being moved, so its cached author lineage must follow.
+    const report = utils.deepFreeze(
+      reportFactory.report().build({ form: 'person-move-report' }, { patient, submitter: patient })
+    );
+    // No reports and nothing pointing at them: the minimal case.
+    const lonePatient = utils.deepFreeze(personFactory.build({
+      name: 'lone-patient',
+      role: 'patient',
+      patient_id: 'person-move-lone',
+      parent: { _id: clinicAId, parent: { _id: districtId } },
+    }));
+
+    before(async () => {
+      await utils.saveDocs([district, clinicA, clinicB, patient, report, lonePatient]);
+    });
+
+    it('returns a dry-run summary and moves nothing when passing dry_run', async () => {
+      const response = await utils.request({
+        path: `${endpoint}/${patient._id}/move`,
+        method: 'POST',
+        qs: { dry_run: true },
+        body: { parent_id: clinicBId },
+      });
+
+      expect(response).to.deep.equal({
+        summary: { 'set-parent': 1, 'set-contact': { reports: 1, places: 1 } },
+      });
+      const unchanged = await utils.getDoc(patient._id);
+      expect(unchanged.parent._id).to.equal(clinicAId);
+    });
+
+    it('throws 404 when the id is not a person', async () => {
+      await expect(utils.request({
+        path: `${endpoint}/${clinicAId}/move`,
+        method: 'POST',
+        body: { parent_id: clinicBId },
+      })).to.be.rejectedWith('404 - {"code":404,"error":"Person not found"}');
+    });
+
+    it('throws 400 when the person already has that parent', async () => {
+      await expect(utils.request({
+        path: `${endpoint}/${patient._id}/move`,
+        method: 'POST',
+        body: { parent_id: clinicAId },
+      })).to.be.rejectedWith(/already has that parent/);
+    });
+
+    [
+      ['does not have can_move_contact_hierarchy permission', userNoPerms],
+      ['is not an online user', offlineUser],
+    ].forEach(([description, user]) => {
+      it(`throws 403 when user ${description}`, async () => {
+        await expect(utils.request({
+          path: `${endpoint}/${patient._id}/move`,
+          method: 'POST',
+          body: { parent_id: clinicBId },
+          auth: { username: user.username, password: user.password },
+        })).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
+    });
+
+    it('moves a person with minimal data', async () => {
+      const { id, summary } = await utils.request({
+        path: `${endpoint}/${lonePatient._id}/move`,
+        method: 'POST',
+        body: { parent_id: clinicBId },
+      });
+      await utils.waitForBulkOperation(id);
+
+      expect(summary).to.deep.equal({ 'set-parent': 1, 'set-contact': { reports: 0, places: 0 } });
+
+      const moved = await utils.getDoc(lonePatient._id);
+      expect(moved.parent).to.deep.equal({ _id: clinicBId, parent: { _id: districtId } });
+    });
+
+    it('moves a person and the lineage cached on the reports they authored', async () => {
+      const { id, summary } = await utils.request({
+        path: `${endpoint}/${patient._id}/move`,
+        method: 'POST',
+        body: { parent_id: clinicBId },
+      });
+      await utils.waitForBulkOperation(id);
+
+      expect(summary).to.deep.equal({ 'set-parent': 1, 'set-contact': { reports: 1, places: 1 } });
+
+      const moved = await utils.getDoc(patient._id);
+      expect(moved.parent).to.deep.equal({ _id: clinicBId, parent: { _id: districtId } });
+
+      const movedReport = await utils.getDoc(report._id);
+      expect(movedReport.contact._id).to.equal(patient._id);
+      expect(movedReport.contact.parent).to.deep.equal({ _id: clinicBId, parent: { _id: districtId } });
+
+      // the district keeps pointing at the patient, with the lineage it now has
+      const updatedDistrict = await utils.getDoc(districtId);
+      expect(updatedDistrict.contact._id).to.equal(patient._id);
+      expect(updatedDistrict.contact.parent).to.deep.equal({ _id: clinicBId, parent: { _id: districtId } });
+    });
+  });
+
   describe('DELETE /api/v1/person/:uuid', () => {
     const endpoint = '/api/v1/person';
 
