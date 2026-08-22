@@ -3,6 +3,7 @@
     [showSort]="isAllowedToSort"
     [sortDirection]="sortDirection"
     [lastVisitedDateExtras]="lastVisitedDateExtras"
+    [taskCountExtras]="taskCountExtras"
     (sort)="sort($event)"
     (search)="search()">
   </mm-search-bar>
@@ -36,6 +37,9 @@
                   </div>
                   <div *ngIf="contact.visits" class="visits" [class.danger]="contact.visits.status === 'pending'" [class.warning]="contact.visits.status === 'started'" [class.success]="contact.visits.status === 'done'">
                     <span>{{contact.visits.count | localizeNumber}}</span>
+                  </div>
+                  <div *ngIf="contact.taskCount" class="status tasks-count">
+                    <span class="badge">{{contact.taskCount | localizeNumber}}</span>
                   </div>
                 </div>
 
