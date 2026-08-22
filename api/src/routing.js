@@ -53,6 +53,7 @@ const infodoc = require('./controllers/infodoc');
 const impact = require('./controllers/impact');
 const targetController = require('./controllers/target');
 const credentials = require('./controllers/credentials');
+const archive = require('./controllers/archive');
 const authorization = require('./middleware/authorization');
 const deprecation = require('./middleware/deprecation');
 const hydration = require('./controllers/hydration');
@@ -84,7 +85,7 @@ const replication = require('./controllers/replication');
 const app = express.Router({ strict: true });
 const asyncLocalStorage = require('./services/async-storage');
 const moment = require('moment');
-const MAX_REQUEST_SIZE = '32mb';
+const { MAX_REQUEST_SIZE } = require('@medic/constants');
 
 // requires content-type application/x-www-form-urlencoded header
 const formParser = bodyParser.urlencoded({ limit: MAX_REQUEST_SIZE, extended: false });
@@ -795,6 +796,8 @@ app.put(
   textParser,
   credentials.put
 );
+
+app.post('/api/v1/archive', archive.create);
 
 app.get('/api/v1/users-doc-count', replicationLimitLogController.get);
 app.get('/api/v1/replication-failure-logs', replicationFailureLogController.get);
