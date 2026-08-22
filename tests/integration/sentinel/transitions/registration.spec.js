@@ -6,6 +6,7 @@ const chai = require('chai');
 const defaultSettings = utils.getDefaultSettings();
 const testForm = require('./test-stubs');
 const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
+const { createExtensionLibDoc } = require('@utils/extension-libs');
 
 const contacts = [
   {
@@ -2214,7 +2215,7 @@ describe('registration', () => {
       });
   });
 
-  it('should assign and clear schedules', () => {
+  it('should assign and clear schedules', async () => {
     const settings = {
       transitions: { registration: true },
       registrations: [{
@@ -2255,7 +2256,7 @@ describe('registration', () => {
           recipient: 'clinic',
           message: [{
             locale: 'en',
-            content: 'message2'
+            content: '{{#reverse-scheduled}}message2{{/reverse-scheduled}}'
           }],
         }]
       }, {
@@ -2346,7 +2347,7 @@ describe('registration', () => {
       type: 'sch1',
       group: 2,
       state: state,
-      'messages[0].message': 'message2'
+      'messages[0].message': 'transition[2egassem]'
     });
     const expectedMessage3 = (state) => ({
       type: 'sch2',
@@ -2360,6 +2361,13 @@ describe('registration', () => {
       state: state,
       'messages[0].message': 'message4'
     });
+
+    const reloadLog = await utils.waitForSentinelLogs(true, /Detected extension-libs change - reloading/);
+    await utils.saveDoc(createExtensionLibDoc({
+      'reverse-scheduled.js':
+        'module.exports = value => `transition[${Array.from(value).reverse().join(\'\')}]`;',
+    }));
+    await reloadLog.promise;
 
     return utils
       .updateSettings(settings, { ignoreReload: 'sentinel' })

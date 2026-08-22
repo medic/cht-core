@@ -57,14 +57,15 @@ module.exports = {
       message: messageConfig.message, // deprecated usage
     };
     try {
-      const generated = messageUtils.generate(
-        config.getAll(),
-        utils.translate,
+      const generated = messageUtils.generate({
+        config: config.getAll(),
+        translate: utils.translate,
         doc,
         content,
         recipient,
-        context
-      );
+        extraContext: context,
+        extensionLibs: config.getExtensionLibs?.(),
+      });
       const task = { messages: generated };
 
       if (unique) {
@@ -161,13 +162,14 @@ module.exports = {
     }
     // support mustache template syntax in error messages
     try {
-      error.message = messageUtils.template(
-        config.getAll(),
-        utils.translate,
+      error.message = messageUtils.template({
+        config: config.getAll(),
+        translate: utils.translate,
         doc,
-        error,
-        context
-      );
+        content: error,
+        extraContext: context,
+        extensionLibs: config.getExtensionLibs?.(),
+      });
       utils.addError(doc, error);
     } catch (e) {
       utils.addError(doc, {

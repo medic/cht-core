@@ -15,6 +15,7 @@ const bootstrap = require('../../../src/services/config-watcher');
 const manifest = require('../../../src/services/manifest');
 const environment = require('@medic/environment');
 const deployInfo = require('../../../src/services/deploy-info');
+const extensionLibs = require('@medic/extension-libs');
 
 describe('Configuration', () => {
   beforeEach(() => {
@@ -29,10 +30,12 @@ describe('Configuration', () => {
     sinon.spy(config, 'set');
     sinon.spy(config, 'setTranslationCache');
     sinon.spy(config, 'setTransitionsLib');
+    sinon.spy(config, 'setExtensionLibs');
     sinon.stub(fs, 'watch');
     sinon.stub(translations, 'getTranslationDocs');
     sinon.stub(dbWatcher, 'listen');
     sinon.stub(deployInfo, 'store');
+    sinon.stub(extensionLibs, 'load').resolves({});
   });
 
   afterEach(() => {
@@ -58,6 +61,7 @@ describe('Configuration', () => {
             ['docs_by_replication_key'],
           ]);
         chai.expect(translations.getTranslationDocs.callCount).to.equal(1);
+        chai.expect(extensionLibs.load.calledOnceWithExactly(db.medic)).to.equal(true);
 
         chai.expect(settingsService.update.callCount).to.equal(1);
         chai.expect(settingsService.get.callCount).to.equal(1);
@@ -187,6 +191,20 @@ describe('Configuration', () => {
         return dbWatcher.medic.args[0][0]({ id: 'messages-test' }).then(() => {
           chai.expect(process.exit.callCount).to.equal(1);
         });
+      });
+    });
+
+    describe('extension-libs changes', () => {
+      it('reloads extension-libs', () => {
+        return dbWatcher.medic.args[0][0]({ id: DOC_IDS.EXTENSION_LIBS }).then(() => {
+          chai.expect(extensionLibs.load.calledOnceWithExactly(db.medic)).to.equal(true);
+        });
+      });
+
+      it('continues when extension-libs cannot be loaded', () => {
+        extensionLibs.load.rejects(new Error('failed to load'));
+
+        return dbWatcher.medic.args[0][0]({ id: DOC_IDS.EXTENSION_LIBS });
       });
     });
 

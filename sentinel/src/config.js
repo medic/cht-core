@@ -3,6 +3,7 @@ const db = require('./db');
 const logger = require('@medic/logger');
 const translationUtils = require('@medic/translation-utils');
 const { DOC_IDS, PREFIXES } = require('@medic/constants');
+const extensionLibs = require('@medic/extension-libs');
 const translations = {};
 
 const DEFAULT_CONFIG = {
@@ -17,6 +18,7 @@ const DEFAULT_CONFIG = {
 
 let config = DEFAULT_CONFIG;
 let transitionsLib;
+let loadedExtensionLibs = {};
 
 const loadTranslations = () => {
   const options = {
@@ -37,6 +39,13 @@ const loadTranslations = () => {
     });
 };
 
+const loadExtensionLibs = () => extensionLibs
+  .load(db.medic)
+  .then(libs => loadedExtensionLibs = libs)
+  .catch(err => {
+    logger.error('Error loading extension libs - starting up anyway: %o', err);
+  });
+
 const initFeed = () => {
   db.medic
     .changes({ live: true, since: 'now' })
@@ -47,6 +56,9 @@ const initFeed = () => {
       } else if (change.id.startsWith(PREFIXES.TRANSLATIONS)) {
         logger.info('Detected translations change - reloading');
         loadTranslations().then(() => initTransitionLib());
+      } else if (change.id === DOC_IDS.EXTENSION_LIBS) {
+        logger.info('Detected extension-libs change - reloading');
+        loadExtensionLibs();
       }
     })
     .on('error', err => {
@@ -84,12 +96,15 @@ const initTransitionLib = () => {
 module.exports = {
   get: key => (key ? config[key] : config),
   getAll: () => config,
+  getExtensionLibs: () => loadedExtensionLibs,
   getTranslations: () => {
     return translations;
   },
   init: () => {
     initFeed();
-    return loadTranslations().then(initConfig);
+    return loadTranslations()
+      .then(loadExtensionLibs)
+      .then(initConfig);
   },
   initTransitionLib: initTransitionLib,
   getTransitionsLib: () => transitionsLib
