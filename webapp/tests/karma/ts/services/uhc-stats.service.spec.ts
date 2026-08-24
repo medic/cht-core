@@ -624,6 +624,113 @@ describe('UHCStats Service', () => {
       });
     });
 
+    it('should patch new visit reports into the cache instead of invalidating it', async () => {
+      sessionService.isAdmin.returns(false);
+      sessionService.isOnlineOnly = sinon.stub().returns(false);
+      authService.has.resolves(true);
+      localDb.query
+        .withArgs('medic-client/contacts_by_last_visited')
+        .returns({ rows: [ { key: '2b', value: moment('2021-04-01 10:00:00').valueOf() } ] });
+      localDb.query
+        .withArgs('medic-client/visits_by_date')
+        .returns({ rows: [] });
+
+      await service.getVisitStats([ '2b' ], visitCountSettings);
+
+      const { filter, callback } = changesService.subscribe.args[0][0];
+      const reportedDate = moment('2021-04-05 12:00:00').valueOf();
+      const newReport = {
+        id: 'report1',
+        doc: {
+          _id: 'report1',
+          _rev: '1-abc',
+          type: 'data_record',
+          form: 'home_visit',
+          reported_date: reportedDate,
+          fields: { visited_contact_uuid: '2b' },
+        },
+      };
+      expect(filter(newReport)).to.equal(true);
+      callback(newReport);
+
+      // a brand new report only raises the max visit date: the cache is patched, not re-queried
+      let stats = await service.getVisitStats([ '2b' ], visitCountSettings);
+      const lastVisitedQueries = () => localDb.query
+        .getCalls()
+        .filter(call => call.args[0] === 'medic-client/contacts_by_last_visited');
+      expect(lastVisitedQueries().length).to.equal(1);
+      expect(stats['2b'].lastVisitedDate).to.equal(reportedDate);
+
+      // when the report sets a visited_date, that is the date the view indexes
+      const visitedDate = '2021-04-06T09:00:00';
+      callback({
+        id: 'report2',
+        doc: {
+          _id: 'report2',
+          _rev: '1-cba',
+          type: 'data_record',
+          form: 'home_visit',
+          reported_date: moment('2021-04-07 12:00:00').valueOf(),
+          fields: { visited_contact_uuid: '2b', visited_date: visitedDate },
+        },
+      });
+      stats = await service.getVisitStats([ '2b' ], visitCountSettings);
+      expect(lastVisitedQueries().length).to.equal(1);
+      expect(stats['2b'].lastVisitedDate).to.equal(Date.parse(visitedDate));
+
+      // an older report cannot lower the max visit date
+      callback({
+        id: 'report3',
+        doc: {
+          _id: 'report3',
+          _rev: '1-ccc',
+          type: 'data_record',
+          form: 'home_visit',
+          reported_date: moment('2021-03-27 12:00:00').valueOf(),
+          fields: { visited_contact_uuid: '2b' },
+        },
+      });
+      stats = await service.getVisitStats([ '2b' ], visitCountSettings);
+      expect(lastVisitedQueries().length).to.equal(1);
+      expect(stats['2b'].lastVisitedDate).to.equal(Date.parse(visitedDate));
+    });
+
+    it('should invalidate the cache when a visit report is edited', async () => {
+      sessionService.isAdmin.returns(false);
+      sessionService.isOnlineOnly = sinon.stub().returns(false);
+      authService.has.resolves(true);
+      localDb.query
+        .withArgs('medic-client/contacts_by_last_visited')
+        .returns({ rows: [ { key: '2b', value: moment('2021-04-01 10:00:00').valueOf() } ] });
+      localDb.query
+        .withArgs('medic-client/visits_by_date')
+        .returns({ rows: [] });
+
+      await service.getVisitStats([ '2b' ], visitCountSettings);
+
+      const { callback } = changesService.subscribe.args[0][0];
+      // an edit can lower the max visit date (or move the visit to another contact),
+      // so the cache cannot be patched
+      callback({
+        id: 'report1',
+        doc: {
+          _id: 'report1',
+          _rev: '2-abc',
+          type: 'data_record',
+          form: 'home_visit',
+          reported_date: moment('2021-04-05 12:00:00').valueOf(),
+          fields: { visited_contact_uuid: '2b' },
+        },
+      });
+
+      await service.getVisitStats([ '2b' ], visitCountSettings);
+
+      const lastVisitedQueries = localDb.query
+        .getCalls()
+        .filter(call => call.args[0] === 'medic-client/contacts_by_last_visited');
+      expect(lastVisitedQueries.length).to.equal(2);
+    });
+
     it('should not cache last visited dates when online', async () => {
       sessionService.isAdmin.returns(false);
       sessionService.isOnlineOnly = sinon.stub().returns(true);

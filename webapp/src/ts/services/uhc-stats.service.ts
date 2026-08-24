@@ -113,16 +113,37 @@ export class UHCStatsService {
   }
 
   private updateLastVisitedDates(change) {
-    const isNewContact = !change?.deleted && this.contactTypesService.includes(change?.doc);
-    if (isNewContact && this.cachedLastVisitedDates) {
-      // a contact the view hasn't seen appears in it with a constant 0 ("never visited"): patch the
-      // cache instead of re-querying the whole view. The contact's visit reports, if it has any,
-      // arrive as separate changes and invalidate the cache below.
-      this.cachedLastVisitedDates[change.doc._id] = 0;
-      return;
+    if (this.cachedLastVisitedDates && !change?.deleted) {
+      if (this.contactTypesService.includes(change?.doc)) {
+        // a contact the view hasn't seen appears in it with a constant 0 ("never visited"): patch
+        // the cache instead of re-querying the whole view. The contact's visit reports, if it has
+        // any, arrive as separate changes and are patched below.
+        this.cachedLastVisitedDates[change.doc._id] = 0;
+        return;
+      }
+      if (this.isNewDoc(change) && this.contactChangeFilterService.isVisitReport(change.doc)) {
+        // a brand new visit report can only raise the contact's max visit date, so the cache can be
+        // patched without a query. Edited or deleted reports can lower it: they invalidate below.
+        const contactId = change.doc.fields.visited_contact_uuid;
+        this.cachedLastVisitedDates[contactId] = Math.max(
+          this.cachedLastVisitedDates[contactId] || 0,
+          this.getVisitReportDate(change.doc)
+        );
+        return;
+      }
     }
     this.lastVisitedDates = undefined;
     this.cachedLastVisitedDates = undefined;
+  }
+
+  private isNewDoc(change) {
+    return !!change?.doc?._rev?.startsWith('1-');
+  }
+
+  private getVisitReportDate(doc) {
+    // mirrors the date logic of the contacts_by_last_visited map function
+    const date = doc.fields.visited_date ? Date.parse(doc.fields.visited_date) : doc.reported_date;
+    return typeof date === 'number' && !isNaN(date) ? date : 0;
   }
 
   private getAllLastVisitedDates(): Promise<Record<string, number>> {
