@@ -43,7 +43,7 @@ export class UHCVisitDisplayService {
     if (lastVisitedDate === 0) {
       return {
         overdue: true,
-        summary: this.translateService.instant('contact.last.visit.unknown'),
+        summary: this.translateService.instant('contact.last.visited.unknown'),
       };
     }
     const now = new Date().getTime();

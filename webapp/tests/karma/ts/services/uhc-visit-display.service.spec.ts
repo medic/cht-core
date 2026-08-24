@@ -48,7 +48,7 @@ describe('UHCVisitDisplay Service', () => {
 
     expect(details!.lastVisitedDate).to.equal(0);
     expect(details!.overdue).to.equal(true);
-    expect(details!.summary).to.equal(JSON.stringify([ 'contact.last.visit.unknown', undefined ]));
+    expect(details!.summary).to.equal(JSON.stringify([ 'contact.last.visited.unknown', undefined ]));
     expect(details!.visits!.status).to.equal('pending');
   });
 

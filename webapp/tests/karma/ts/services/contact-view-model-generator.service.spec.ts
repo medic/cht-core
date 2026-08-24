@@ -375,7 +375,7 @@ describe('ContactViewModelGenerator service', () => {
 
           const neverVisited = visitDetails[childPlace2._id];
           expect(neverVisited.overdue).to.equal(true);
-          expect(neverVisited.summary).to.equal('contact.last.visit.unknown');
+          expect(neverVisited.summary).to.equal('contact.last.visited.unknown');
           expect(neverVisited.visits).to.deep.equal({
             count: 'contacts.visits.count',
             summary: 'contacts.visits.visits',
