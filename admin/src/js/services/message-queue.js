@@ -103,12 +103,13 @@ angular.module('services').factory('MessageQueue',
 
     const getRecipients = function(messages) {
       const phoneNumbers = compactUnique(messages.map(function(row) {
-        return row.sms && row.sms.to && String(row.sms.to);
+        return row.sms && row.sms.to;
       }));
 
-      // byPhones rejects a number padded with whitespace rather than letting it silently match nothing,
-      // so drop those here: one malformed recipient must not fail the lookup for every other message.
-      const qualifiablePhones = phoneNumbers.filter(function(phone) {
+      // byPhones takes strings and rejects a number padded with whitespace rather than letting it
+      // silently match nothing, so coerce here and drop the padded ones: one malformed recipient must
+      // not fail the lookup for every other message.
+      const qualifiablePhones = phoneNumbers.map(String).filter(function(phone) {
         return phone === phone.trim();
       });
 

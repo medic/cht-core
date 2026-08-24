@@ -391,7 +391,7 @@ describe('cht-datasource Contact', () => {
       });
     });
 
-    describe('getUuidsPage byPhones', async () => {
+    describe('getUuidsPage byPhones', () => {
       const getUuidsPage = Contact.v1.getUuidsPage(dataContext);
       // Every contact that the contacts_by_phone view emits: the view only emits docs with a truthy
       // `phone`, so the places and the generated user contacts are not in it.
@@ -493,7 +493,7 @@ describe('cht-datasource Contact', () => {
       });
     });
 
-    describe('getPage byPhones', async () => {
+    describe('getPage byPhones', () => {
       const getPage = Contact.v1.getPage(dataContext);
 
       it('returns a page of contacts for the given phone numbers', async () => {
