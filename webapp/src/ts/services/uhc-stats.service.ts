@@ -14,6 +14,9 @@ import { AuthService } from '@mm-services/auth.service';
   providedIn: 'root'
 })
 export class UHCStatsService {
+  // getHomeVisitStats feeds the UHC card on a contact's profile, gated by its own permission.
+  // getVisitStats feeds the visit badges on contact rows, gated by the same permission as the
+  // badges the contact list computes through Search extras, so both lists show or hide together.
   private readonly UHC_STATS_PERMISSION = 'can_view_uhc_stats';
   private readonly LAST_VISITED_DATE_PERMISSION = 'can_view_last_visited_date';
   private readonly REMOTE_QUERY_BATCH_SIZE = 10;
@@ -298,7 +301,10 @@ export class UHCStatsService {
       return stats;
     }
 
-    const dateRange = this.getUHCInterval(visitCountSettings)!;
+    const dateRange = this.getUHCInterval(visitCountSettings);
+    if (!dateRange) {
+      return stats;
+    }
     const [ lastVisitedDates, visitsByContact ] = await this.getVisitData(contactIds, dateRange);
 
     contactIds.forEach(contactId => {
