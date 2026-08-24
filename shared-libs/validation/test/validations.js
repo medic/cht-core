@@ -326,7 +326,7 @@ describe('validations', () => {
     };
     return validation.validate(doc, validations).then(errors => {
       assert.equal(errors.length, 1);
-      assert.deepEqual(contactGetUuids.args[0], [Qualifier.byPhone('+9779841111111')]);
+      assert.deepEqual(contactGetUuids.args[0], [Qualifier.byPhones(['+9779841111111'])]);
     });
   });
 
@@ -456,7 +456,6 @@ describe('validations', () => {
   });
 
   it('unique phone validation should pass if no contact with the phone exists', () => {
-    
     const contactGetUuids = sinon.stub().returns((async function* () {})());
     dataContext.bind.withArgs(Contact.v1.getUuids).returns(contactGetUuids);
     const validations = [
@@ -477,7 +476,62 @@ describe('validations', () => {
     };
     return validation.validate(doc, validations).then(errors => {
       assert.equal(errors.length, 0);
-      assert.deepEqual(contactGetUuids.args[0], [Qualifier.byPhone('+9779841111111')]);
+      assert.deepEqual(contactGetUuids.args[0], [Qualifier.byPhones(['+9779841111111'])]);
+    });
+  });
+
+  it('unique phone validation should trim the value rather than rejecting a padded number', () => {
+    // byPhones rejects a padded number rather than letting it silently match nothing, so the value
+    // is trimmed here instead of being allowed to throw out of the validation.
+    const contactGetUuids = sinon.stub().returns((async function* () {})());
+    dataContext.bind.withArgs(Contact.v1.getUuids).returns(contactGetUuids);
+    const validations = [
+      {
+        property: 'phone_number',
+        rule: 'uniquePhone("phone_number")',
+        message: [
+          {
+            content: 'unique phone',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'padded',
+      phone_number: '  +9779841111111  ',
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 0);
+      assert.deepEqual(contactGetUuids.args[0], [Qualifier.byPhones(['+9779841111111'])]);
+    });
+  });
+
+  [ '', '   ', undefined ].forEach(phoneNumber => {
+    it(`unique phone validation should pass without querying for ${JSON.stringify(phoneNumber)}`, () => {
+      // There is no number to clash with, so nothing is looked up.
+      const contactGetUuids = sinon.stub().returns((async function* () {})());
+      dataContext.bind.withArgs(Contact.v1.getUuids).returns(contactGetUuids);
+      const validations = [
+        {
+          property: 'phone_number',
+          rule: 'uniquePhone("phone_number")',
+          message: [
+            {
+              content: 'unique phone',
+              locale: 'en',
+            },
+          ],
+        },
+      ];
+      const doc = {
+        _id: 'blank',
+        phone_number: phoneNumber,
+      };
+      return validation.validate(doc, validations).then(errors => {
+        assert.equal(errors.length, 0);
+        assert.equal(contactGetUuids.callCount, 0);
+      });
     });
   });
 

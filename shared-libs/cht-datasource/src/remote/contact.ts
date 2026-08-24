@@ -5,8 +5,8 @@ import {
   IdsQualifier,
   isContactTypeQualifier,
   isIdsQualifier,
-  isPhoneQualifier,
-  PhoneQualifier,
+  isPhonesQualifier,
+  PhonesQualifier,
   UuidQualifier
 } from '../qualifier';
 import { Nullable, Page } from '../libs/core';
@@ -46,12 +46,15 @@ export namespace v1 {
 
   /** @internal */
   export const getUuidsPage = (remoteContext: RemoteDataContext) => (
-    qualifier: ContactTypeQualifier | FreetextQualifier | PhoneQualifier,
+    qualifier: ContactTypeQualifier | FreetextQualifier | PhonesQualifier,
     cursor: Nullable<string>,
     limit: number
   ): Promise<Page<string>> => {
-    const phoneParams: Record<string, string> = isPhoneQualifier(qualifier)
-      ? { phone: qualifier.phone }
+    // Comma-joined rather than repeated, matching how `ids` is sent on `api/v1/contact`. Phone numbers
+    // are not normalized, so a number containing a comma could not round-trip; the view key is the raw
+    // `doc.phone` value and phone numbers do not contain commas.
+    const phoneParams: Record<string, string> = isPhonesQualifier(qualifier)
+      ? { phone: qualifier.phones.join(',') }
       : {};
     const freetextParams: Record<string, string> = isFreetextType(qualifier)
       ? { freetext: qualifier.freetext }
@@ -72,15 +75,16 @@ export namespace v1 {
 
   /** @internal */
   export const getPage = (remoteContext: RemoteDataContext) => (
-    qualifier: ContactTypeQualifier | IdsQualifier | PhoneQualifier,
+    qualifier: ContactTypeQualifier | IdsQualifier | PhonesQualifier,
     cursor: Nullable<string>,
     limit: number
   ): Promise<Page<Contact.v1.Contact>> => {
     const idsParams: Record<string, string> = isIdsQualifier(qualifier)
       ? { ids: qualifier.ids.join(',') }
       : {};
-    const phoneParams: Record<string, string> = isPhoneQualifier(qualifier)
-      ? { phone: qualifier.phone }
+    // Comma-joined like `ids` above, for the same reason: see getUuidsPage.
+    const phoneParams: Record<string, string> = isPhonesQualifier(qualifier)
+      ? { phone: qualifier.phones.join(',') }
       : {};
     const typeParams: Record<string, string> = isContactTypeQualifier(qualifier)
       ? { type: qualifier.contactType }

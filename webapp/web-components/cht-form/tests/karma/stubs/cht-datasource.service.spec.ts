@@ -35,14 +35,14 @@ describe('CHT Datasource Service', () => {
 
       expect(chtApi).to.have.keys(['v1']);
       expect(chtApi.v1).to.have.keys(['contact']);
-      expect(chtApi.v1.contact.getUuidsByPhone).to.be.a('function');
+      expect(chtApi.v1.contact.getUuidsByPhones).to.be.a('function');
     });
 
-    it('getUuidsByPhone yields no contacts', async () => {
+    it('getUuidsByPhones yields no contacts', async () => {
       const chtApi = await service.get();
 
       const uuids: string[] = [];
-      for await (const uuid of chtApi.v1.contact.getUuidsByPhone('+254712345678')) {
+      for await (const uuid of chtApi.v1.contact.getUuidsByPhones(['+254712345678'])) {
         uuids.push(uuid);
       }
 

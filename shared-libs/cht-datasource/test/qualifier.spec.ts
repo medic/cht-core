@@ -5,7 +5,7 @@ import {
   byContactIds,
   byForms,
   byFreetext,
-  byPhone,
+  byPhones,
   byReportingPeriod,
   byUsername,
   byUuid,
@@ -16,7 +16,7 @@ import {
   isFormsQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
-  isPhoneQualifier,
+  isPhonesQualifier,
   isReportingPeriodQualifier,
   isUsernameQualifier,
   isUuidQualifier,
@@ -230,41 +230,73 @@ describe('qualifier', () => {
     });
   });
 
-  describe('byPhone', () => {
-    it('builds a qualifier that identifies contacts by their phone number', () => {
-      expect(byPhone('+1234')).to.deep.equal({ phone: '+1234' });
+  describe('byPhones', () => {
+    it('builds a qualifier that identifies contacts by their phone numbers', () => {
+      expect(byPhones(['+1234', '+5678'])).to.deep.equal({ phones: ['+1234', '+5678'] });
     });
 
-    it('preserves the phone number verbatim without normalisation', () => {
-      // whitespace and leading "+" are non-empty strings and must be kept as-is (parity with the view)
-      expect(byPhone('  +1 234  ')).to.deep.equal({ phone: '  +1 234  ' });
+    it('accepts a single phone number in an array', () => {
+      expect(byPhones(['+1234'])).to.deep.equal({ phones: ['+1234'] });
     });
 
-    [
+    it('removes duplicate phone numbers while keeping the order given', () => {
+      expect(byPhones(['+5678', '+1234', '+5678'])).to.deep.equal({ phones: ['+5678', '+1234'] });
+    });
+
+    it('keeps internal whitespace, which the view keys can contain', () => {
+      expect(byPhones(['+1 234 567'])).to.deep.equal({ phones: ['+1 234 567'] });
+    });
+
+    ([
       null,
       undefined,
-      '',
-      123,
+      '+1234',
+      [],
+      [''],
+      ['   '],
+      ['\t\n'],
+      ['+1234', ''],
+      ['  +1 234  '],
+      [' +1234'],
+      ['+1234 '],
+      [null],
+      [0],
       { },
-    ].forEach(phone => {
-      it(`throws an error for ${JSON.stringify(phone)}`, () => {
-        expect(() => byPhone(phone as string)).to.throw(`Invalid phone [${JSON.stringify(phone)}].`);
+      0,
+    ] as [string, ...string[]][]).forEach(phones => {
+      it(`throws an error for ${JSON.stringify(phones)}`, () => {
+        expect(() => byPhones(phones)).to.throw(
+          `Invalid phones [${JSON.stringify(phones)}].`
+        );
       });
     });
   });
 
-  describe('isPhoneQualifier', () => {
+  describe('isPhonesQualifier', () => {
     [
       [ null, false ],
       [ '+1234', false ],
-      [ { phone: { } }, false ],
-      [ { phone: 123 }, false ],
-      [ { phone: '+1234' }, true ],
-      [ { phone: '  ' }, true ],
-      [ { phone: '+1234', other: 'other' }, true ]
+      [ { phones: { } }, false ],
+      // A bare string would otherwise pass as an iterable of single characters, so it is rejected explicitly.
+      [ { phones: '+1234' }, false ],
+      [ { phones: [] }, false ],
+      [ { phones: [''] }, false ],
+      [ { phones: ['   '] }, false ],
+      [ { phones: ['+1234', ''] }, false ],
+      [ { phones: ['+1234', null] }, false ],
+      [ { phone: '+1234' }, false ],
+      // A padded number would otherwise pass validation but match nothing, since the value is compared
+      // verbatim against the view key rather than trimmed: reject it instead of returning a silent empty page.
+      [ { phones: ['  +1 234  '] }, false ],
+      [ { phones: [' +1234'] }, false ],
+      [ { phones: ['+1234 '] }, false ],
+      [ { phones: ['+1234'] }, true ],
+      [ { phones: ['+1 234 567'] }, true ],
+      [ { phones: ['+1234', '+5678'] }, true ],
+      [ { phones: ['+1234'], other: 'other' }, true ]
     ].forEach(([ qualifier, expected ]) => {
       it(`evaluates ${JSON.stringify(qualifier)}`, () => {
-        expect(isPhoneQualifier(qualifier)).to.equal(expected);
+        expect(isPhonesQualifier(qualifier)).to.equal(expected);
       });
     });
   });

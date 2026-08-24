@@ -17,9 +17,21 @@ const buildIdsQualifier = (ids) => {
   return Qualifier.byIds(idsArray);
 };
 
+// Accepts `?phone=a,b` and `?phone=a&phone=b` alike, matching how `ids` is handled above rather than
+// picking one convention for this parameter alone.
+const buildPhonesQualifier = (phone) => {
+  const phonesArray = (Array.isArray(phone) ? phone : phone.split(',')).filter(Boolean);
+  if (!phonesArray.length) {
+    // Same message shape as byPhones() throws below for other invalid input, so the two paths that
+    // can reject a `phone` value give a caller one consistent body to parse rather than two.
+    throw new InvalidArgumentError(`Invalid phones [${JSON.stringify(phonesArray)}].`);
+  }
+  return Qualifier.byPhones(phonesArray);
+};
+
 const buildFreetextTypePhoneQualifier = (query) => {
   if (query.phone) {
-    return Qualifier.byPhone(query.phone);
+    return buildPhonesQualifier(query.phone);
   }
   const qualifier = {};
   if (query.freetext) {
@@ -119,11 +131,14 @@ module.exports = {
      *           Required if `type` and `phone` are not provided and may be combined with `type`.
      *       - in: query
      *         name: phone
+     *         x-since: 5.3.0
      *         schema:
      *           type: string
      *         description: >
-     *           A phone number to fetch matching contacts by. Matched verbatim (no normalisation). Required if
-     *           `type` and `freetext` are not provided. Takes precedence over `type` and `freetext`.
+     *           A comma-separated list of phone numbers (e.g. `+254712345678,+254798765432`), or the parameter
+     *           repeated once per number. Each is matched verbatim against the contact's `phone` field (no
+     *           normalization). Required if `type` and `freetext` are not provided. Takes precedence over `type`
+     *           and `freetext`.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitId'
      *     responses:
@@ -196,8 +211,9 @@ module.exports = {
      *         schema:
      *           type: string
      *         description: >
-     *           A phone number to fetch matching contacts by. Matched verbatim (no normalisation). Required if
-     *           `ids` and `type` are not provided. Takes precedence over `type`.
+     *           A comma-separated list of phone numbers (e.g. `+254712345678,+254798765432`), or the parameter
+     *           repeated once per number. Each is matched verbatim against the contact's `phone` field (no
+     *           normalization). Required if `ids` and `type` are not provided. Takes precedence over `type`.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitEntity'
      *     responses:
@@ -234,7 +250,7 @@ module.exports = {
       if (req.query.ids) {
         qualifier = buildIdsQualifier(req.query.ids);
       } else if (req.query.phone) {
-        qualifier = Qualifier.byPhone(req.query.phone);
+        qualifier = buildPhonesQualifier(req.query.phone);
       } else {
         qualifier = Qualifier.byContactType(req.query.type);
       }

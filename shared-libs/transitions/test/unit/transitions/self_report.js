@@ -110,7 +110,7 @@ describe('self_report transition', () => {
       return transition.onMatch({ doc }).then(result => {
         chai.expect(result).to.equal(true);
         chai.expect(getContactUuids.callCount).to.equal(1);
-        chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhone('12345'), null, 1]);
+        chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhones(['12345']), null, 1]);
         chai.expect(bind.calledWith(Contact.v1.getUuidsPage)).to.be.true;
         chai.expect(bind.calledWith(Contact.v1.getWithLineage)).to.be.true;
         chai.expect(getContactWithLineage.callCount).to.equal(0);
@@ -154,7 +154,7 @@ describe('self_report transition', () => {
         .then(result => {
           chai.expect(result).to.equal(true);
           chai.expect(getContactUuids.callCount).to.equal(1);
-          chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhone('12345'), null, 1]);
+          chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhones(['12345']), null, 1]);
           chai.expect(bind.calledWith(Contact.v1.getWithLineage)).to.be.true;
           chai.expect(getContactWithLineage.callCount).to.equal(0);
           chai.expect(doc).to.have.all.keys('from', 'errors', 'form', 'tasks');
@@ -181,7 +181,7 @@ describe('self_report transition', () => {
       return transition.onMatch({ doc }).then(result => {
         chai.expect(result).to.equal(true);
         chai.expect(getContactUuids.callCount).to.equal(1);
-        chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhone('654987'), null, 1]);
+        chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhones(['654987']), null, 1]);
         chai.expect(bind.calledWith(Contact.v1.getWithLineage)).to.be.true;
         chai.expect(getContactWithLineage.callCount).to.equal(1);
         chai.expect(getContactWithLineage.args[0]).to.deep.equal([Qualifier.byUuid('the_contact')]);
@@ -228,7 +228,7 @@ describe('self_report transition', () => {
       return transition.onMatch({ doc }).then(result => {
         chai.expect(result).to.equal(true);
         chai.expect(getContactUuids.callCount).to.equal(1);
-        chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhone('999999'), null, 1]);
+        chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhones(['999999']), null, 1]);
         chai.expect(bind.calledWith(Contact.v1.getWithLineage)).to.be.true;
         chai.expect(getContactWithLineage.callCount).to.equal(1);
         chai.expect(getContactWithLineage.args[0]).to.deep.equal([Qualifier.byUuid('the_contact')]);
@@ -295,7 +295,7 @@ describe('self_report transition', () => {
       return transition.onMatch({ doc }).then(result => {
         chai.expect(result).to.equal(true);
         chai.expect(getContactUuids.callCount).to.equal(1);
-        chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhone('111222333'), null, 1]);
+        chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhones(['111222333']), null, 1]);
         chai.expect(bind.calledWith(Contact.v1.getWithLineage)).to.be.true;
         chai.expect(getContactWithLineage.callCount).to.equal(1);
         chai.expect(getContactWithLineage.args[0]).to.deep.equal([Qualifier.byUuid('contact_uuid')]);
@@ -330,7 +330,7 @@ describe('self_report transition', () => {
       return transition.onMatch({ doc }).then(result => {
         chai.expect(result).to.equal(true);
         chai.expect(getContactUuids.callCount).to.equal(1);
-        chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhone('98765'), null, 1]);
+        chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhones(['98765']), null, 1]);
         chai.expect(bind.calledWith(Contact.v1.getWithLineage)).to.be.true;
         chai.expect(getContactWithLineage.callCount).to.equal(1);
         chai.expect(getContactWithLineage.args[0]).to.deep.equal([Qualifier.byUuid('contact1')]);
@@ -387,7 +387,7 @@ describe('self_report transition', () => {
       return transition.onMatch({ doc }).then(result => {
         chai.expect(result).to.equal(true);
         chai.expect(getContactUuids.callCount).to.equal(1);
-        chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhone('999999'), null, 1]);
+        chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhones(['999999']), null, 1]);
         chai.expect(bind.calledWith(Contact.v1.getWithLineage)).to.be.true;
         chai.expect(getContactWithLineage.callCount).to.equal(1);
         chai.expect(getContactWithLineage.args[0]).to.deep.equal([Qualifier.byUuid('the_contact')]);
@@ -429,7 +429,7 @@ describe('self_report transition', () => {
         .then(result => {
           chai.expect(result).to.equal(true);
           chai.expect(getContactUuids.callCount).to.equal(1);
-          chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhone('12345'), null, 1]);
+          chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhones(['12345']), null, 1]);
           chai.expect(bind.calledWith(Contact.v1.getWithLineage)).to.be.true;
           chai.expect(getContactWithLineage.callCount).to.equal(0);
           chai.expect(doc.tasks.length).to.equal(1);

@@ -25,10 +25,16 @@ module.exports = {
   onMatch: change => {
     const doc = change.doc;
     const formConfig = getConfiguredForm(doc.form);
+    const qualifier = transitionUtils.senderPhoneQualifier(doc);
+    if (!qualifier) {
+      transitionUtils.addRejectionMessage(doc, formConfig, 'sender_not_found');
+      return Promise.resolve(true);
+    }
+
     const getContactUuids = dataContext.bind(Contact.v1.getUuidsPage);
     const getContactWithLineage = dataContext.bind(Contact.v1.getWithLineage);
 
-    return getContactUuids(Qualifier.byPhone(String(doc.from)), null, 1)
+    return getContactUuids(qualifier, null, 1)
       .then(page => {
         if (!page.data.length) {
           transitionUtils.addRejectionMessage(doc, formConfig, 'sender_not_found');

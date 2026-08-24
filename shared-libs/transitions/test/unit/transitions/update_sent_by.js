@@ -28,7 +28,7 @@ describe('update sent by', () => {
       assert.equal(doc.sent_by, 'Clinic');
       assert(dataContext.bind.calledOnceWithExactly(Contact.v1.getPage));
       assert(getContactDocs.calledOnce);
-      assert.deepEqual(getContactDocs.args[0], [Qualifier.byPhone('+34567890123'), null, 1]);
+      assert.deepEqual(getContactDocs.args[0], [Qualifier.byPhones(['+34567890123']), null, 1]);
     });
   });
 

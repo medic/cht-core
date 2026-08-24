@@ -98,7 +98,7 @@ describe('update clinic', () => {
       assert(changed);
       assert(doc.contact);
       assert(!doc.contact.phone);
-      assert.deepEqual(getContactUuids.args[0], [Qualifier.byPhone(phone), null, 1]);
+      assert.deepEqual(getContactUuids.args[0], [Qualifier.byPhones([phone]), null, 1]);
       assert.deepEqual(getContactWithLineage.args[0], [Qualifier.byUuid(contact._id)]);
     });
   });
@@ -266,7 +266,7 @@ describe('update clinic', () => {
     };
     getContactUuids.resolves({ data: [], cursor: null });
     return transition.onMatch(change).then(() => {
-      assert.deepEqual(getContactUuids.args[0], [Qualifier.byPhone('123'), null, 1]);
+      assert.deepEqual(getContactUuids.args[0], [Qualifier.byPhones(['123']), null, 1]);
     });
   });
 

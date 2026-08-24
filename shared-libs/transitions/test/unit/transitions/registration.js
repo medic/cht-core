@@ -182,7 +182,7 @@ describe('registration', () => {
 
       getContactUuid.callCount.should.equal(1);
       getContactDocs.callCount.should.equal(1);
-      getContactDocs.args[0].should.deep.equal([Qualifier.byPhone(senderPhoneNumber), null, 1]);
+      getContactDocs.args[0].should.deep.equal([Qualifier.byPhones([senderPhoneNumber]), null, 1]);
       dataContext.bind.calledWith(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid(parentId)).should.be.true;
       saveDoc.callCount.should.equal(1);
@@ -250,7 +250,7 @@ describe('registration', () => {
 
       getContactUuid.callCount.should.equal(1);
       getContactDocs.callCount.should.equal(1);
-      getContactDocs.args[0].should.deep.equal([Qualifier.byPhone(senderPhoneNumber), null, 1]);
+      getContactDocs.args[0].should.deep.equal([Qualifier.byPhones([senderPhoneNumber]), null, 1]);
       dataContext.bind.calledWith(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid(parentId)).should.be.true;
       saveDoc.callCount.should.equal(1);
@@ -373,7 +373,7 @@ describe('registration', () => {
 
       getContactUuid.callCount.should.equal(1);
       getContactDocs.callCount.should.equal(1);
-      getContactDocs.args[0].should.deep.equal([Qualifier.byPhone(senderPhoneNumber), null, 1]);
+      getContactDocs.args[0].should.deep.equal([Qualifier.byPhones([senderPhoneNumber]), null, 1]);
       dataContext.bind.calledWith(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid(parentId)).should.be.true;
       saveDoc.callCount.should.equal(1);
@@ -1433,7 +1433,7 @@ describe('registration', () => {
       utils.getContactUuid.args[0].should.deep.equal([placeId]);
       utils.getContact.callCount.should.equal(0);
       getContactDocs.callCount.should.equal(1);
-      getContactDocs.args[0].should.deep.equal([Qualifier.byPhone('+111222'), null, 1]);
+      getContactDocs.args[0].should.deep.equal([Qualifier.byPhones(['+111222']), null, 1]);
       dataContext.bind.calledWith(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('west_hc')).should.be.true;
       db.medic.post.callCount.should.equal(1);
@@ -1693,7 +1693,7 @@ describe('registration', () => {
       utils.getContact.callCount.should.equal(0);
       db.medic.post.callCount.should.equal(0);
       getContactDocs.callCount.should.equal(1);
-      getContactDocs.args[0].should.deep.equal([Qualifier.byPhone('+111222'), null, 1]);
+      getContactDocs.args[0].should.deep.equal([Qualifier.byPhones(['+111222']), null, 1]);
       dataContext.bind.calledOnceWithExactly(Contact.v1.getPage).should.be.true;
       getPlace.notCalled.should.be.true;
 

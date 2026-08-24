@@ -675,15 +675,15 @@ describe('functional transitions', () => {
 
       // update_clinics resolves the contact UUID by phone (getUuidsPage)
       getContactUuids
-        .withArgs(Qualifier.byPhone('phone1'), null, 1).resolves({ data: ['contact1'], cursor: null })
-        .withArgs(Qualifier.byPhone('phone2'), null, 1).resolves({ data: [], cursor: null })
-        .withArgs(Qualifier.byPhone('phone3'), null, 1).resolves({ data: ['contact3'], cursor: null });
+        .withArgs(Qualifier.byPhones(['phone1']), null, 1).resolves({ data: ['contact1'], cursor: null })
+        .withArgs(Qualifier.byPhones(['phone2']), null, 1).resolves({ data: [], cursor: null })
+        .withArgs(Qualifier.byPhones(['phone3']), null, 1).resolves({ data: ['contact3'], cursor: null });
 
       // update_sent_by resolves the contact doc by phone (getPage)
       getContactDocs
-        .withArgs(Qualifier.byPhone('phone1'), null, 1).resolves({ data: [contact1], cursor: null })
-        .withArgs(Qualifier.byPhone('phone2'), null, 1).resolves({ data: [], cursor: null })
-        .withArgs(Qualifier.byPhone('phone3'), null, 1).resolves({ data: [contact3], cursor: null });
+        .withArgs(Qualifier.byPhones(['phone1']), null, 1).resolves({ data: [contact1], cursor: null })
+        .withArgs(Qualifier.byPhones(['phone2']), null, 1).resolves({ data: [], cursor: null })
+        .withArgs(Qualifier.byPhones(['phone3']), null, 1).resolves({ data: [contact3], cursor: null });
 
       getContactWithLineage.resolves(contact1);
 

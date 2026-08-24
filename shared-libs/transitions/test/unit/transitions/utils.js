@@ -167,6 +167,40 @@ describe('unit transition utils', () => {
     });
   });
 
+  describe('senderPhoneQualifier', () => {
+    it('builds a phones qualifier for the sender', () => {
+      assert.deepEqual(transitionUtils.senderPhoneQualifier({ from: '+254712345678' }), {
+        phones: ['+254712345678']
+      });
+    });
+
+    it('casts a numeric sender to a string, which the qualifier requires', () => {
+      assert.deepEqual(transitionUtils.senderPhoneQualifier({ from: 123 }), { phones: ['123'] });
+    });
+
+    it('keeps whitespace inside the number, which the view keys can contain', () => {
+      assert.deepEqual(transitionUtils.senderPhoneQualifier({ from: '+1 234 567' }), {
+        phones: ['+1 234 567']
+      });
+    });
+
+    // byPhones rejects a padded number rather than letting it silently match nothing. `doc.from` is
+    // untrusted inbound SMS metadata, so it is trimmed here instead of being allowed to throw and
+    // error the whole doc.
+    [ '  +254712345678  ', ' +254712345678', '+254712345678 ' ].forEach(from => {
+      it(`trims the sender rather than throwing for ${JSON.stringify(from)}`, () => {
+        assert.deepEqual(transitionUtils.senderPhoneQualifier({ from }), { phones: ['+254712345678'] });
+      });
+    });
+
+    // Nothing left to look up: callers treat null the same way they treat "no matching contact".
+    [ '', '   ', '\t\n', undefined, null ].forEach(from => {
+      it(`returns null for ${JSON.stringify(from)}`, () => {
+        assert.isNull(transitionUtils.senderPhoneQualifier({ from }));
+      });
+    });
+  });
+
   it('getDeprecationMessage() should return message based on information provided', () => {
     assert.equal(transitionUtils.getDeprecationMessage(), undefined);
     assert.equal(transitionUtils.getDeprecationMessage('ABC'), 'ABC transition is deprecated');

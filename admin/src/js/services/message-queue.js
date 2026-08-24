@@ -103,24 +103,26 @@ angular.module('services').factory('MessageQueue',
 
     const getRecipients = function(messages) {
       const phoneNumbers = compactUnique(messages.map(function(row) {
-        return row.sms && row.sms.to;
+        return row.sms && row.sms.to && String(row.sms.to);
       }));
 
-      if (!phoneNumbers.length) {
+      // byPhones rejects a number padded with whitespace rather than letting it silently match nothing,
+      // so drop those here: one malformed recipient must not fail the lookup for every other message.
+      const qualifiablePhones = phoneNumbers.filter(function(phone) {
+        return phone === phone.trim();
+      });
+
+      if (!qualifiablePhones.length) {
         return messages;
       }
 
       return DataContext
         .then(function(dataContext) {
           const contact = dataContext.getDatasource().v1.contact;
-          return $q.all(phoneNumbers.map(function(phone) {
-            return collect(contact.getUuidsByPhone(String(phone)));
-          }));
+          return collect(contact.getUuidsByPhones(qualifiablePhones));
         })
-        .then(function(idsPerPhone) {
-          const ids = compactUnique(idsPerPhone.flat());
-
-          return GetSummaries.getContacts(ids);
+        .then(function(ids) {
+          return GetSummaries.getContacts(compactUnique(ids));
         })
         .then(function(summaries) {
           messages.forEach(function(message) {

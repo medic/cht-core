@@ -18,7 +18,7 @@ const isContactPhoneValid = (settings, fieldValue) => {
 const getContactIdsForPhone = async (phoneNumber) => {
   const datasource = await window.CHTCore.CHTDatasource.get();
   const ids = [];
-  for await (const id of datasource.v1.contact.getUuidsByPhone(phoneNumber)) {
+  for await (const id of datasource.v1.contact.getUuidsByPhones([phoneNumber])) {
     ids.push(id);
   }
   return ids;

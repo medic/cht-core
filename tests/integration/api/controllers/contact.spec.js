@@ -353,6 +353,50 @@ describe('Contact API', () => {
       expect(responsePage.cursor).to.be.null;
     });
 
+    it('returns a page of contact ids for a comma-separated list of phone numbers', async () => {
+      const opts = {
+        path: `${endpoint}`,
+        qs: {
+          phone: `${patient.phone},0000000000`
+        }
+      };
+      const responsePage = await utils.request(opts);
+
+      expect(responsePage.data).to.deep.equal([patient._id]);
+      expect(responsePage.cursor).to.be.null;
+    });
+
+    it('returns a page of contact ids when the phone param is repeated', async () => {
+      const opts = {
+        path: `${endpoint}?phone=0000000000&phone=${patient.phone}`
+      };
+      const responsePage = await utils.request(opts);
+
+      expect(responsePage.data).to.deep.equal([patient._id]);
+      expect(responsePage.cursor).to.be.null;
+    });
+
+    it('throws 400 error when every entry in the phone list is empty', async () => {
+      const opts = {
+        path: `${endpoint}`,
+        qs: { phone: ',,' }
+      };
+
+      await expect(utils.request(opts))
+        .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid phones [[]]."}`);
+    });
+
+    it('throws 400 error when a phone number is padded, rather than matching nothing', async () => {
+      const opts = {
+        path: `${endpoint}`,
+        qs: { phone: `  ${patient.phone}  ` }
+      };
+
+      await expect(utils.request(opts)).to.be.rejectedWith(
+        `400 - {"code":400,"error":"Invalid phones [[\\"  ${patient.phone}  \\"]]."}`
+      );
+    });
+
     it('returns a page of people type contact ids when limit and cursor is passed and cursor can be reused',
       async () => {
         const qs = {
@@ -730,6 +774,17 @@ describe('Contact API', () => {
       expect(responsePage.cursor).to.be.null;
       // The doc-page returns full documents, not just ids.
       responsePage.data.forEach(doc => expect(doc._rev).to.be.a('string'));
+    });
+
+    it('returns a page of contacts for a comma-separated list of phone numbers', async () => {
+      const responsePage = await utils.request({
+        path: endpoint,
+        qs: { phone: `${patient.phone},0000000000` }
+      });
+      const responseIds = responsePage.data.map(doc => doc._id);
+
+      expect(responseIds).to.deep.equal([patient._id]);
+      expect(responsePage.cursor).to.be.null;
     });
 
     it('throws 400 error when the contact type is invalid', async () => {

@@ -143,13 +143,15 @@ const validPhone = (value) => {
 };
 
 const uniquePhone = async (value) => {
-  if (!value) {
-    // No phone provided, so it cannot clash with an existing contact. This mirrors the previous behaviour of
-    // querying the view with an empty key (which returned no rows).
+  // The value comes from a report field, so it can be blank or padded. byPhones rejects both rather than
+  // letting them silently match nothing, so trim first and treat a blank as unique: there is no number to
+  // clash with.
+  const phone = value === undefined || value === null ? '' : String(value).trim();
+  if (!phone) {
     return true;
   }
   const getContactUuids = dataContext.bind(Contact.v1.getUuids);
-  const generator = getContactUuids(Qualifier.byPhone(String(value)));
+  const generator = getContactUuids(Qualifier.byPhones([phone]));
   const { done } = await generator.next();
   return done;
 };

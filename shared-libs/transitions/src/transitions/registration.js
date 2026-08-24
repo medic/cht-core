@@ -415,8 +415,13 @@ const setPatientId = (options) => {
 };
 
 const getParentByPhone = options => {
+  const qualifier = transitionUtils.senderPhoneQualifier(options.doc);
+  if (!qualifier) {
+    return Promise.resolve();
+  }
+
   const getContactDocs = dataContext.bind(Contact.v1.getPage);
-  return getContactDocs(Qualifier.byPhone(String(options.doc.from)), null, 1)
+  return getContactDocs(qualifier, null, 1)
     .then(page => page.data.length && page.data[0])
     .then(contact => {
       if (!contact) {
