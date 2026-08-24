@@ -1,9 +1,11 @@
 import { InvalidArgumentError } from './error';
 import {
   ContactTypeQualifier,
+  FormsQualifier,
   FreetextQualifier,
   IdsQualifier,
   isContactTypeQualifier,
+  isFormsQualifier,
   isFreetextQualifier,
   isIdsQualifier,
   isPhoneQualifier,
@@ -17,6 +19,7 @@ import {
   assertHasOptionalField,
   assertHasRequiredField,
   DataObject, isDateTimeString,
+  isRecord,
   Nullable
 } from './core';
 import * as Input from '../input';
@@ -126,6 +129,23 @@ export const assertFreetextQualifier: (qualifier: unknown) => asserts qualifier 
 
 type ContactTypeFreetextPhoneQualifier = ContactTypeQualifier | FreetextQualifier | PhoneQualifier;
 type ContactTypeIdsPhoneQualifier = ContactTypeQualifier | IdsQualifier | PhoneQualifier;
+
+/** @internal */
+export const assertFreetextOrFormsQualifier: (
+  qualifier: unknown
+) => asserts qualifier is FreetextQualifier | FormsQualifier = (
+  qualifier: unknown
+) => {
+  if (isFreetextQualifier(qualifier) || isFormsQualifier(qualifier)) {
+    return;
+  }
+  // Only form-shaped input gets the new message. Everything else keeps the original freetext error
+  // verbatim, so callers (and the 400 bodies the API surfaces from them) are unchanged.
+  if (isRecord(qualifier) && 'forms' in qualifier) {
+    throw new InvalidArgumentError(`Invalid forms [${JSON.stringify(qualifier)}].`);
+  }
+  throw new InvalidArgumentError(`Invalid freetext [${JSON.stringify(qualifier)}].`);
+};
 
 /** @internal */
 export const assertContactTypeFreetextQualifier: (
