@@ -6,6 +6,7 @@ import { toBik_text } from 'bikram-sambat';
 import { TranslateService } from '@mm-services/translate.service';
 import { NgIf, DOCUMENT } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
+import { MobileTooltipDirective } from '@mm-directives/mobile-tooltip.directive';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { CHTDatasourceService as CHTDatasourceServiceStub } from './stubs/cht-datasource.service';
 import { CONTACT_TYPES } from '@medic/constants';
@@ -17,7 +18,7 @@ const DEFAULT_FORM_ID = 'cht-form-id';
   selector: 'cht-form',
   templateUrl: './app.component.html',
   standalone: true,
-  imports: [NgIf, TranslatePipe],
+  imports: [NgIf, TranslatePipe, MobileTooltipDirective],
 })
 export class AppComponent {
   private readonly DEFAULT_USER = { contact_id: 'default_user', language: 'en' } as const;
