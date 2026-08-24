@@ -10,6 +10,7 @@ import { TranslateService } from '@ngx-translate/core';
 
 import { Actions as ContactActionList, ContactsActions } from '@mm-actions/contacts';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
+import { UHCVisitDisplayService } from '@mm-services/uhc-visit-display.service';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
@@ -25,6 +26,7 @@ describe('Contacts effects', () => {
   let effects: ContactsEffects;
   let actions$;
   let contactViewModelGeneratorService;
+  let uhcVisitDisplayService;
   let translateService;
   let contactSummaryService;
   let store;
@@ -47,9 +49,9 @@ describe('Contacts effects', () => {
     contactViewModelGeneratorService = {
       getContact: sinon.stub().resolves({ _id: 'contact', doc: { _id: 'contact' } }),
       loadChildren: sinon.stub().resolves([]),
-      getChildrenVisitStats: sinon.stub().resolves(undefined),
       loadReports: sinon.stub().resolves([]),
     };
+    uhcVisitDisplayService = { getChildrenVisitStats: sinon.stub().resolves(undefined) };
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     translateService = { instant: sinon.stub().returnsArg(0) };
@@ -66,6 +68,7 @@ describe('Contacts effects', () => {
         provideMockActions(() => actions$),
         provideMockStore({ selectors: mockedSelectors }),
         { provide: ContactViewModelGeneratorService, useValue: contactViewModelGeneratorService },
+        { provide: UHCVisitDisplayService, useValue: uhcVisitDisplayService },
         { provide: TranslateService, useValue: translateService },
         { provide: ContactSummaryService, useValue: contactSummaryService },
         { provide: TargetAggregatesService, useValue: targetAggregateService },
@@ -366,14 +369,14 @@ describe('Contacts effects', () => {
         ];
         const visitDetails = { place1: { lastVisitedDate: 100, overdue: false, summary: 'a-summary' } };
         contactViewModelGeneratorService.loadChildren.resolves(children);
-        contactViewModelGeneratorService.getChildrenVisitStats.resolves(visitDetails);
+        uhcVisitDisplayService.getChildrenVisitStats.resolves(visitDetails);
 
         actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
         await effects.selectContact.toPromise();
         await new Promise(resolve => setTimeout(resolve));
 
-        expect(contactViewModelGeneratorService.getChildrenVisitStats.callCount).to.equal(1);
-        expect(contactViewModelGeneratorService.getChildrenVisitStats.args[0]).to.deep.equal([ children ]);
+        expect(uhcVisitDisplayService.getChildrenVisitStats.callCount).to.equal(1);
+        expect(uhcVisitDisplayService.getChildrenVisitStats.args[0]).to.deep.equal([ children ]);
         const updateSelectedContactsVisitStats: any = ContactsActions.prototype.updateSelectedContactsVisitStats;
         expect(updateSelectedContactsVisitStats.callCount).to.equal(1);
         expect(updateSelectedContactsVisitStats.args[0]).to.deep.equal([ visitDetails ]);
@@ -387,7 +390,7 @@ describe('Contacts effects', () => {
         ];
         contactViewModelGeneratorService.loadChildren.resolves(children);
         let resolveVisitStats;
-        contactViewModelGeneratorService.getChildrenVisitStats.returns(
+        uhcVisitDisplayService.getChildrenVisitStats.returns(
           new Promise(resolve => resolveVisitStats = resolve)
         );
 
@@ -420,7 +423,7 @@ describe('Contacts effects', () => {
         ];
         contactViewModelGeneratorService.loadChildren.resolves(children);
         let resolveVisitStats;
-        contactViewModelGeneratorService.getChildrenVisitStats.returns(
+        uhcVisitDisplayService.getChildrenVisitStats.returns(
           new Promise(resolve => resolveVisitStats = resolve)
         );
 
@@ -441,7 +444,7 @@ describe('Contacts effects', () => {
         contactViewModelGeneratorService.loadChildren.resolves([
           { type: { id: 'place' }, contacts: [{ _id: 'place1' }] },
         ]);
-        contactViewModelGeneratorService.getChildrenVisitStats.rejects(new Error('boom'));
+        uhcVisitDisplayService.getChildrenVisitStats.rejects(new Error('boom'));
         const consoleErrorMock = sinon.stub(console, 'error');
 
         actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
@@ -986,7 +989,7 @@ describe('Contacts effects', () => {
       store.overrideSelector(Selectors.getContactIdToLoad, 'contact');
       store.refreshState();
       const visitDetails = { place1: { lastVisitedDate: 100 } };
-      contactViewModelGeneratorService.getChildrenVisitStats.resolves(visitDetails);
+      uhcVisitDisplayService.getChildrenVisitStats.resolves(visitDetails);
       const updateSelectedContactsVisitStats = sinon
         .stub(ContactsActions.prototype, 'updateSelectedContactsVisitStats');
 
@@ -998,8 +1001,8 @@ describe('Contacts effects', () => {
       tick(500);
 
       // the burst is debounced into a single refresh
-      expect(contactViewModelGeneratorService.getChildrenVisitStats.callCount).to.equal(1);
-      expect(contactViewModelGeneratorService.getChildrenVisitStats.args[0]).to.deep.equal([ children ]);
+      expect(uhcVisitDisplayService.getChildrenVisitStats.callCount).to.equal(1);
+      expect(uhcVisitDisplayService.getChildrenVisitStats.args[0]).to.deep.equal([ children ]);
 
       tick();
       expect(updateSelectedContactsVisitStats.callCount).to.equal(1);
@@ -1011,7 +1014,7 @@ describe('Contacts effects', () => {
       effects.refreshChildrenVisitStats.subscribe();
       tick(500);
 
-      expect(contactViewModelGeneratorService.getChildrenVisitStats.callCount).to.equal(0);
+      expect(uhcVisitDisplayService.getChildrenVisitStats.callCount).to.equal(0);
     }));
   });
 });

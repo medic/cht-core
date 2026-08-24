@@ -15,6 +15,7 @@ import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { UHCVisitDisplayService } from '@mm-services/uhc-visit-display.service';
 
 @Injectable()
 export class ContactsEffects {
@@ -37,6 +38,7 @@ export class ContactsEffects {
     private targetAggregateService: TargetAggregatesService,
     private translateService: TranslateService,
     private routeSnapshotService: RouteSnapshotService,
+    private uhcVisitDisplayService: UHCVisitDisplayService,
   ) {
     this.contactsActions = new ContactsActions(store);
     this.globalActions = new GlobalActions(store);
@@ -184,7 +186,7 @@ export class ContactsEffects {
 
   private async loadChildrenVisitStats(contactId, children) {
     try {
-      const visitStats = await this.contactViewModelGeneratorService.getChildrenVisitStats(children);
+      const visitStats = await this.uhcVisitDisplayService.getChildrenVisitStats(children);
       if (!visitStats) {
         return;
       }

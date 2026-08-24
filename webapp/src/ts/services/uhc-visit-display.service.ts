@@ -1,7 +1,10 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 
 import { TranslateService } from '@mm-services/translate.service';
 import { RelativeDateService } from '@mm-services/relative-date.service';
+import { SettingsService } from '@mm-services/settings.service';
+import { UHCSettingsService } from '@mm-services/uhc-settings.service';
+import { UHCStatsService } from '@mm-services/uhc-stats.service';
 
 /**
  * Formats UHC visit stats for display on a contact row: last visited summary,
@@ -19,7 +22,45 @@ export class UHCVisitDisplayService {
   constructor(
     private translateService: TranslateService,
     private relativeDateService: RelativeDateService,
+    private settingsService: SettingsService,
+    private uhcSettingsService: UHCSettingsService,
+    private uhcStatsService: UHCStatsService,
+    private ngZone: NgZone,
   ) { }
+
+  /**
+   * Returns UHC visit stats display details for the given child model groups, keyed by contact id,
+   * or undefined when there is nothing to display.
+   * Kept separate from loading the children so they can render without waiting on the stats queries.
+   */
+  getChildrenVisitStats(children): Promise<Record<string, VisitDetails> | undefined> {
+    return this.ngZone.runOutsideAngular(() => this._getChildrenVisitStats(children));
+  }
+
+  private async _getChildrenVisitStats(children) {
+    const groups = children?.filter(group => group.type?.count_visits && group.contacts?.length);
+    if (!groups?.length) {
+      return;
+    }
+
+    const settings = await this.settingsService.get();
+    const visitCountSettings = this.uhcSettingsService.getVisitCountSettings(settings);
+    const contactIds = groups
+      .map(group => group.contacts.map(child => child.doc?._id))
+      .flat()
+      .filter(id => !!id);
+    const visitStats = await this.uhcStatsService.getVisitStats(contactIds, visitCountSettings);
+
+    const visitDetails = {};
+    Object.keys(visitStats).forEach(contactId => {
+      const details = this.getVisitDetails(visitStats[contactId]);
+      if (details) {
+        visitDetails[contactId] = details;
+      }
+    });
+
+    return Object.keys(visitDetails).length ? visitDetails : undefined;
+  }
 
   /**
    * Returns the display details for the given visit stats, or undefined when there is nothing to
