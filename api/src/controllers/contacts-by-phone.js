@@ -1,8 +1,12 @@
 const db = require('../db');
 const config = require('../config');
+const ctx = require('../services/data-context');
+const { Contact, Qualifier } = require('@medic/cht-datasource');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const phoneNumber = require('@medic/phone-number');
 const serverUtils = require('../server-utils');
+
+const getContactUuids = ctx.bind(Contact.v1.getUuids);
 
 const invalidParameterError = (res) => {
   res.status(400);
@@ -100,7 +104,7 @@ module.exports = {
    *       '404':
    *         $ref: '#/components/responses/NotFound'
    */
-  request: (req, res) => {
+  request: async (req, res) => {
     const phone = getPhoneNumber(req);
     if (!phone) {
       return invalidParameterError(res);
@@ -111,19 +115,23 @@ module.exports = {
       return invalidParameterError(res);
     }
 
-    return db.medic
-      .query('medic-client/contacts_by_phone', { key: normalizedPhone })
-      .then(result => {
-        if (!result || !result.rows || !result.rows.length) {
-          res.status(404);
-          return res.json({ error: 'not_found', reason: 'no matches found' });
-        }
+    try {
+      // The generator pages until the matches are exhausted, preserving the unbounded behavior of the
+      // view query it replaces: a page-limited call could silently drop matches for a shared number.
+      const contactIds = [];
+      for await (const contactId of getContactUuids(Qualifier.byPhones([normalizedPhone]))) {
+        contactIds.push(contactId);
+      }
 
-        const contactIds = result.rows.map(row => row.id);
-        return lineage
-          .fetchHydratedDocs(contactIds)
-          .then(hydratedDocs => res.json({ ok: true, docs: hydratedDocs }));
-      })
-      .catch(err => serverUtils.serverError(err, req, res));
+      if (!contactIds.length) {
+        res.status(404);
+        return res.json({ error: 'not_found', reason: 'no matches found' });
+      }
+
+      const hydratedDocs = await lineage.fetchHydratedDocs(contactIds);
+      return res.json({ ok: true, docs: hydratedDocs });
+    } catch (err) {
+      return serverUtils.serverError(err, req, res);
+    }
   },
 };
