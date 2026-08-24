@@ -7,7 +7,7 @@ test_scripts:
 
 .PHONY: test_with_docker_compose
 test_with_docker_compose:
-	docker compose up --build --wait
+	docker compose up --build --wait || { docker logs tests-haproxy-1  && exit 1; }
 	npm run test:integration
 	docker compose down
 
