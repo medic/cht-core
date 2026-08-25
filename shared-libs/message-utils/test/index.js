@@ -1844,6 +1844,20 @@ describe('messageUtils', () => {
       expect(customHelper.callCount).to.equal(0);
     });
 
+    it('does not expose the helper implementation when it is interpolated without a section', () => {
+      const uppercase = sinon.stub().callsFake(value => value.toUpperCase());
+
+      const result = utils.template({
+        config: {},
+        doc: { name: 'Ada' },
+        content: { message: 'Hi {{uppercase}}' },
+        extensionLibs: { 'uppercase.js': uppercase },
+      });
+
+      expect(result).to.equal('Hi ');
+      expect(uppercase.notCalled).to.equal(true);
+    });
+
     it('falls back to rendered content when an extension-lib throws', () => {
       const error = new Error('broken helper');
       const logError = sinon.stub(logger, 'error');
@@ -1941,17 +1955,18 @@ describe('messageUtils', () => {
     it('does not allow an extension-lib helper to shadow template data', () => {
       const customHelper = sinon.stub().returns('custom');
       const logWarning = sinon.stub(logger, 'warn');
-
-      const result = utils.template({
+      const options = {
         config: {},
         doc: { patient: { name: 'Ada' } },
         content: { message: '{{patient.name}}' },
         extensionLibs: { 'patient.js': customHelper },
-      });
+      };
 
-      expect(result).to.equal('Ada');
+      expect(utils.template(options)).to.equal('Ada');
+      expect(utils.template(options)).to.equal('Ada');
       expect(customHelper.notCalled).to.equal(true);
       expect(logWarning.calledWithMatch('conflicts with template data')).to.equal(true);
+      expect(logWarning.calledOnce).to.equal(true);
     });
 
     it('uses the first extension-lib when helper names collide', () => {

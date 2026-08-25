@@ -418,11 +418,11 @@ describe('messages', () => {
       const settings = { date_format: 'YYYY-MM-DD' };
       const extensionLibs = { 'uppercase.js': value => value.toUpperCase() };
       const doc = { _id: 'report' };
-      const error = { code: 'invalid', message: '{{#uppercase}}invalid{{/uppercase}}' };
+      const error = { code: 'invalid', message: 'configured validation message' };
       const context = { patient: { name: 'Ada' } };
       config.getAll.returns(settings);
       config.getExtensionLibs.returns(extensionLibs);
-      sinon.stub(messageUtils, 'template').returns('INVALID');
+      sinon.stub(messageUtils, 'template').returns('rendered validation message');
       sinon.stub(utils, 'addError');
 
       messages.addError(doc, error, context);
@@ -437,7 +437,7 @@ describe('messages', () => {
       });
       assert(messageUtils.template.calledOnce);
       assert(utils.addError.calledOnceWithExactly(doc, error));
-      assert.equal(error.message, 'INVALID');
+      assert.equal(error.message, 'rendered validation message');
     });
 
     it('handles error object without message property', () => {

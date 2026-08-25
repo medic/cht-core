@@ -62,6 +62,7 @@ describe('Configuration', () => {
           ]);
         chai.expect(translations.getTranslationDocs.callCount).to.equal(1);
         chai.expect(extensionLibs.load.calledOnceWithExactly(db.medic)).to.equal(true);
+        chai.expect(config.setExtensionLibs.calledOnceWithExactly({})).to.equal(true);
 
         chai.expect(settingsService.update.callCount).to.equal(1);
         chai.expect(settingsService.get.callCount).to.equal(1);
@@ -198,13 +199,16 @@ describe('Configuration', () => {
       it('reloads extension-libs', () => {
         return dbWatcher.medic.args[0][0]({ id: DOC_IDS.EXTENSION_LIBS }).then(() => {
           chai.expect(extensionLibs.load.calledOnceWithExactly(db.medic)).to.equal(true);
+          chai.expect(config.setExtensionLibs.calledOnceWithExactly({})).to.equal(true);
         });
       });
 
       it('continues when extension-libs cannot be loaded', () => {
         extensionLibs.load.rejects(new Error('failed to load'));
 
-        return dbWatcher.medic.args[0][0]({ id: DOC_IDS.EXTENSION_LIBS });
+        return dbWatcher.medic.args[0][0]({ id: DOC_IDS.EXTENSION_LIBS }).then(() => {
+          chai.expect(config.setExtensionLibs.notCalled).to.equal(true);
+        });
       });
     });
 

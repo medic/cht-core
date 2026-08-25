@@ -360,7 +360,7 @@ const getExtensionLibHelpers = (extensionLibs = EMPTY_EXTENSION_LIBS) => {
         return helpers;
       }
       helpers[helperName] = function() {
-        return function(text, renderText) {
+        const sectionHelper = function(text, renderText) {
           let renderedText = text;
           try {
             renderedText = renderText(text);
@@ -380,6 +380,10 @@ const getExtensionLibHelpers = (extensionLibs = EMPTY_EXTENSION_LIBS) => {
             return renderedText;
           }
         };
+        // Mustache resolves functions before determining whether they are variables or sections. Avoid exposing the
+        // section helper implementation when a configurer accidentally uses {{helper}} instead of a section.
+        sectionHelper.toString = () => '';
+        return sectionHelper;
       };
       return helpers;
     }, Object.create(null));

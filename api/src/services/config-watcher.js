@@ -79,7 +79,10 @@ const loadSettings = () => {
 
 const loadExtensionLibs = () => extensionLibs
   .load(db.medic)
-  .then(config.setExtensionLibs)
+  .then(libs => {
+    config.setExtensionLibs(libs);
+    logger.info('Extension-libs loaded');
+  })
   .catch(err => {
     logger.error('Error loading extension libs - starting up anyway: %o', err);
   });

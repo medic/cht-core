@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const uuid = require('uuid').v7;
 const { DOC_IDS, DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
-const { createExtensionLibDoc } = require('@utils/extension-libs');
+const { createExtensionLibDoc, waitForExtensionLibsReload } = require('@utils/extension-libs');
 
 const getRows = (result) => {
   const rows = result.split('\n');
@@ -41,18 +41,18 @@ describe('Export Data V2.0', () => {
     };
 
     before(async () => {
-      const reloadLog = await utils.waitForApiLogs(/Detected extension-libs change - reloading/);
+      const reload = await waitForExtensionLibsReload();
       await utils.saveDocs([
         createExtensionLibDoc({ 'uppercase.js': 'module.exports = value => value.toUpperCase();' }),
         report,
       ]);
-      await reloadLog.promise;
+      await reload.promise;
     });
 
     after(async () => {
-      const reloadLog = await utils.waitForApiLogs(/Detected extension-libs change - reloading/);
+      const reload = await waitForExtensionLibsReload();
       await utils.deleteDocs([DOC_IDS.EXTENSION_LIBS, report._id]);
-      await reloadLog.promise;
+      await reload.promise;
     });
 
     it('renders scheduled message content with the loaded extension library', async () => {

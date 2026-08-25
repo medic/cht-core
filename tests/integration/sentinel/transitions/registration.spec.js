@@ -6,7 +6,7 @@ const chai = require('chai');
 const defaultSettings = utils.getDefaultSettings();
 const testForm = require('./test-stubs');
 const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
-const { createExtensionLibDoc } = require('@utils/extension-libs');
+const { createExtensionLibDoc, waitForExtensionLibsReload } = require('@utils/extension-libs');
 
 const contacts = [
   {
@@ -2362,12 +2362,12 @@ describe('registration', () => {
       'messages[0].message': 'message4'
     });
 
-    const reloadLog = await utils.waitForSentinelLogs(true, /Detected extension-libs change - reloading/);
+    const reload = await waitForExtensionLibsReload();
     await utils.saveDoc(createExtensionLibDoc({
       'reverse-scheduled.js':
         'module.exports = value => `transition[${Array.from(value).reverse().join(\'\')}]`;',
     }));
-    await reloadLog.promise;
+    await reload.promise;
 
     return utils
       .updateSettings(settings, { ignoreReload: 'sentinel' })

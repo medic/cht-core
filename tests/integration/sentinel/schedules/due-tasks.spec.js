@@ -3,7 +3,7 @@ const sentinelUtils = require('@utils/sentinel');
 const chai = require('chai');
 const moment = require('moment');
 const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
-const { createExtensionLibDoc } = require('@utils/extension-libs');
+const { createExtensionLibDoc, waitForExtensionLibsReload } = require('@utils/extension-libs');
 
 const reportedDate = moment().valueOf();
 const oneMonthAgo = moment().subtract(1, 'month').toISOString();
@@ -433,7 +433,7 @@ const ids = reports.map(report => report._id);
 
 describe('Due Tasks', () => {
   before(async () => {
-    const reloadLog = await utils.waitForSentinelLogs(true, /Detected extension-libs change - reloading/);
+    const reload = await waitForExtensionLibsReload();
     await utils.saveDocs([
       ...contacts,
       createExtensionLibDoc({
@@ -442,7 +442,7 @@ describe('Due Tasks', () => {
         'invalid.js': 'module.exports = { reason: \'not a function\' };',
       }),
     ]);
-    await reloadLog.promise;
+    await reload.promise;
     await utils.addTranslations('test', translations);
     await utils.updateSettings(settings, { ignoreReload: 'sentinel' });
   });

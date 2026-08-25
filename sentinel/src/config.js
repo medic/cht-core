@@ -41,7 +41,10 @@ const loadTranslations = () => {
 
 const loadExtensionLibs = () => extensionLibs
   .load(db.medic)
-  .then(libs => loadedExtensionLibs = libs)
+  .then(libs => {
+    loadedExtensionLibs = libs;
+    logger.info('Extension-libs loaded');
+  })
   .catch(err => {
     logger.error('Error loading extension libs - starting up anyway: %o', err);
   });

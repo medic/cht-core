@@ -15,16 +15,20 @@ const pickGenerateArgs = call => {
     options.content,
     options.recipient,
     options.extraContext,
+    options.extensionLibs,
   ];
 };
 
 describe('schedules', () => {
   let schedules;
+  let loadedExtensionLibs;
 
   beforeEach(() => {
+    loadedExtensionLibs = { 'uppercase.js': value => value.toUpperCase() };
     config.init({
       getAll: sinon.stub().returns({}),
       get: sinon.stub().returns(),
+      getExtensionLibs: sinon.stub().returns(loadedExtensionLibs),
     });
 
     schedules = require('../../src/lib/schedules');
@@ -566,6 +570,7 @@ describe('schedules', () => {
           place: undefined,
           placeRegistrations: undefined,
         },
+        loadedExtensionLibs,
       ]);
 
       assert.equal(doc.scheduled_tasks.length, 1);
@@ -610,6 +615,7 @@ describe('schedules', () => {
           place: place,
           placeRegistrations: placeRegistrations,
         },
+        loadedExtensionLibs,
       ]);
 
       assert.equal(doc.scheduled_tasks.length, 1);
@@ -656,6 +662,7 @@ describe('schedules', () => {
           place: place,
           placeRegistrations: placeRegistrations,
         },
+        loadedExtensionLibs,
       ]);
 
       assert.equal(doc.scheduled_tasks.length, 1);
@@ -699,6 +706,7 @@ describe('schedules', () => {
           place: undefined,
           placeRegistrations: undefined,
         },
+        loadedExtensionLibs,
       ]);
 
       assert.equal(doc.scheduled_tasks.length, 1);
