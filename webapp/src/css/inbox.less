@@ -604,23 +604,8 @@ mm-analytics-filters {
       height: @icon-small;
     }
   }
-  mm-map {
-    display: block;
-  }
-  .map-container {
-    .map {
-      height: 500px;
-    }
-    .map-marker {
-      font-size: 32px;
-      line-height: 1;
-      text-align: center;
-      color: @contacts-color;
-    }
-    .map-link {
-      display: inline-block;
-      margin-top: 5px;
-    }
+  .map-container .map {
+    height: 500px;
   }
 
   .card.children .row a:hover {
@@ -711,6 +696,61 @@ mm-analytics-filters {
 
   .card.children .content-row.muted h4 {
     color: @inactive-color;
+  }
+}
+
+mm-map {
+  display: block;
+  .map-marker {
+    font-size: 32px;
+    line-height: 1;
+    text-align: center;
+    color: @contacts-color;
+  }
+  .map-link {
+    display: inline-block;
+    margin-top: 5px;
+  }
+}
+
+.tool-bar .inner .btn.open-map {
+  display: flex;
+  align-items: center;
+  background-color: transparent;
+  margin: 0;
+  outline: none;
+  border: none;
+  box-shadow: none;
+  .fa {
+    font-size: @font-extra-large;
+    color: @filter-icon-color;
+  }
+}
+
+#tasks-map {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .tasks-without-location {
+    margin: 0;
+    padding: 8px 10px;
+  }
+  mm-map,
+  .map-container {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .map {
+    flex: 1;
+  }
+  .map-marker {
+    color: @tasks-color;
+    &.overdue {
+      color: @overdue-color;
+    }
   }
 }
 
@@ -1880,7 +1920,8 @@ mm-sidebar-menu .mat-sidenav-container {
     .app-menu-button,
     .ellipsis-title,
     mm-multiselect-bar,
-    mm-search-bar {
+    mm-search-bar,
+    .open-map {
       display: none;
     }
 
