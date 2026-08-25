@@ -50,9 +50,6 @@ export namespace v1 {
     cursor: Nullable<string>,
     limit: number
   ): Promise<Page<string>> => {
-    // Comma-joined rather than repeated, matching how `ids` is sent on `api/v1/contact`. Phone numbers
-    // are not normalized, so a number containing a comma could not round-trip; the view key is the raw
-    // `doc.phone` value and phone numbers do not contain commas.
     const phoneParams: Record<string, string> = isPhonesQualifier(qualifier)
       ? { phone: qualifier.phones.join(',') }
       : {};
@@ -82,7 +79,6 @@ export namespace v1 {
     const idsParams: Record<string, string> = isIdsQualifier(qualifier)
       ? { ids: qualifier.ids.join(',') }
       : {};
-    // Comma-joined like `ids` above, for the same reason: see getUuidsPage.
     const phoneParams: Record<string, string> = isPhonesQualifier(qualifier)
       ? { phone: qualifier.phones.join(',') }
       : {};

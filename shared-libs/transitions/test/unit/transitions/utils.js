@@ -184,16 +184,12 @@ describe('unit transition utils', () => {
       });
     });
 
-    // byPhones rejects a padded number rather than letting it silently match nothing. `doc.from` is
-    // untrusted inbound SMS metadata, so it is trimmed here instead of being allowed to throw and
-    // error the whole doc.
     [ '  +254712345678  ', ' +254712345678', '+254712345678 ' ].forEach(from => {
       it(`trims the sender rather than throwing for ${JSON.stringify(from)}`, () => {
         assert.deepEqual(transitionUtils.senderPhoneQualifier({ from }), { phones: ['+254712345678'] });
       });
     });
 
-    // Nothing left to look up: callers treat null the same way they treat "no matching contact".
     [ '', '   ', '\t\n', undefined, null ].forEach(from => {
       it(`returns null for ${JSON.stringify(from)}`, () => {
         assert.isNull(transitionUtils.senderPhoneQualifier({ from }));

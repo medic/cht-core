@@ -411,7 +411,6 @@ describe('local contact', () => {
             const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
 
             expect(res).to.deep.equal(expectedResult);
-            // the phone dispatch does not validate the contact type nor consult freetext/nouveau views
             expect(getContactTypeIds.notCalled).to.be.true;
             expect(queryNouveauFreetext.notCalled).to.be.true;
             expect(queryViewByType.notCalled).to.be.true;
@@ -422,7 +421,6 @@ describe('local contact', () => {
             expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
             expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
             expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
-            // The view emits the raw phone as a scalar key, so the keys are not wrapped in arrays.
             const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
             pageFn(limit, skip);
 
@@ -816,7 +814,6 @@ describe('local contact', () => {
         const res = await Contact.v1.getPage(localContext)(qualifier, cursor, limit);
 
         expect(res).to.deep.equal(expectedResult);
-        // the phone arm does not validate the contact type
         expect(getContactTypeIds.notCalled).to.be.true;
         expect(queryDocsByKeysOuter.calledWithExactly(
           localContext.medicDb, 'medic-client/contacts_by_phone'
@@ -826,7 +823,6 @@ describe('local contact', () => {
         expect(getPageFn).to.be.a('function');
         expect(fetchAndFilterInner.calledOnceWithExactly(limit, 0)).to.be.true;
 
-        // The view emits the raw phone as a scalar key, so the keys are not wrapped in arrays.
         await getPageFn(limit, 0);
         expect(queryDocsByKeysInner.calledOnceWithExactly(phones, limit, 0)).to.be.true;
         expect(queryDocsByKeyInner.notCalled).to.be.true;

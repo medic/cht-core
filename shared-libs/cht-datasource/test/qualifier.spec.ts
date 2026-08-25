@@ -277,7 +277,6 @@ describe('qualifier', () => {
       [ null, false ],
       [ '+1234', false ],
       [ { phones: { } }, false ],
-      // A bare string would otherwise pass as an iterable of single characters, so it is rejected explicitly.
       [ { phones: '+1234' }, false ],
       [ { phones: [] }, false ],
       [ { phones: [''] }, false ],
@@ -285,8 +284,6 @@ describe('qualifier', () => {
       [ { phones: ['+1234', ''] }, false ],
       [ { phones: ['+1234', null] }, false ],
       [ { phone: '+1234' }, false ],
-      // A padded number would otherwise pass validation but match nothing, since the value is compared
-      // verbatim against the view key rather than trimmed: reject it instead of returning a silent empty page.
       [ { phones: ['  +1 234  '] }, false ],
       [ { phones: [' +1234'] }, false ],
       [ { phones: ['+1234 '] }, false ],

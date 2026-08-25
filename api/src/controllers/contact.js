@@ -17,13 +17,10 @@ const buildIdsQualifier = (ids) => {
   return Qualifier.byIds(idsArray);
 };
 
-// Accepts `?phone=a,b` and `?phone=a&phone=b` alike, matching how `ids` is handled above rather than
-// picking one convention for this parameter alone.
+// Accepts `?phone=a,b` and `?phone=a&phone=b`, like `ids` above.
 const buildPhonesQualifier = (phone) => {
   const phonesArray = (Array.isArray(phone) ? phone : phone.split(',')).filter(Boolean);
   if (!phonesArray.length) {
-    // Same message shape as byPhones() throws below for other invalid input, so the two paths that
-    // can reject a `phone` value give a caller one consistent body to parse rather than two.
     throw new InvalidArgumentError(`Invalid phones [${JSON.stringify(phonesArray)}].`);
   }
   return Qualifier.byPhones(phonesArray);
@@ -107,8 +104,8 @@ module.exports = {
      *     operationId: v1ContactUuidGet
      *     description: >
      *       Returns a paginated array of contact identifier strings matching the given filter criteria.
-     *       At least one of `type`, `freetext`, or `phone` must be provided. When `phone` is provided it is used
-     *       on its own (it cannot be combined with `type` or `freetext`) and takes precedence over them.
+     *       At least one of `type`, `freetext`, or `phone` must be provided. `phone` cannot be combined with the
+     *       others and takes precedence over them.
      *     tags: [Contact]
      *     x-since: 4.18.0
      *     x-permissions:
@@ -135,10 +132,8 @@ module.exports = {
      *         schema:
      *           type: string
      *         description: >
-     *           A comma-separated list of phone numbers (e.g. `+254712345678,+254798765432`), or the parameter
-     *           repeated once per number. Each is matched verbatim against the contact's `phone` field (no
-     *           normalization). Required if `type` and `freetext` are not provided. Takes precedence over `type`
-     *           and `freetext`.
+     *           A comma-separated list of phone numbers, each matched verbatim against the contact's `phone`
+     *           field. Required if `type` and `freetext` are not provided. Takes precedence over both.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitId'
      *     responses:
@@ -211,9 +206,8 @@ module.exports = {
      *         schema:
      *           type: string
      *         description: >
-     *           A comma-separated list of phone numbers (e.g. `+254712345678,+254798765432`), or the parameter
-     *           repeated once per number. Each is matched verbatim against the contact's `phone` field (no
-     *           normalization). Required if `ids` and `type` are not provided. Takes precedence over `type`.
+     *           A comma-separated list of phone numbers, each matched verbatim against the contact's `phone`
+     *           field. Required if `ids` and `type` are not provided. Takes precedence over `type`.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitEntity'
      *     responses:

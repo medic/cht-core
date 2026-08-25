@@ -17,8 +17,8 @@ export class CHTDatasourceService {
     return {
       v1: {
         contact: {
-          // No contacts are available in the standalone cht-form, so nothing matches a phone number.
-          // Used by phone-widget to look for contacts with the same phone number.
+          // Used by phone-widget to find duplicate numbers. The standalone cht-form has no contacts,
+          // so nothing ever matches.
           getUuidsByPhones: (_phones: string[]): AsyncIterable<string> => ({
             [Symbol.asyncIterator]: () => ({
               next: () => Promise.resolve({ done: true as const, value: undefined })

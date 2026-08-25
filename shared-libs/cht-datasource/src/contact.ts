@@ -177,9 +177,8 @@ export namespace v1 {
 
     /**
      * Returns an array of contact identifiers for the provided page specifications.
-     * @param qualifier the limiter defining which identifiers to return. Either a contact type and/or freetext
-     * qualifier, or a {@link PhonesQualifier} to return the contacts with any of the given phone numbers. If both
-     * are provided, the phone numbers take precedence.
+     * @param qualifier the limiter defining which identifiers to return (a contact type and/or freetext, or a
+     * set of phone numbers)
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of identifiers to return. Default is 10000.
@@ -214,9 +213,8 @@ export namespace v1 {
 
     /**
      * Returns a generator for fetching all contact identifiers that match the given qualifier
-     * @param qualifier the limiter defining which identifiers to return. Either a contact type and/or freetext
-     * qualifier, or a {@link PhonesQualifier} to return the contacts with any of the given phone numbers. If both
-     * are provided, the phone numbers take precedence.
+     * @param qualifier the limiter defining which identifiers to return (a contact type and/or freetext, or a
+     * set of phone numbers)
      * @returns a generator for fetching all contact identifiers that match the given qualifier
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      */
@@ -243,8 +241,8 @@ export namespace v1 {
 
     /**
      * Returns an array of contacts for the provided page specifications.
-     * @param qualifier the limiter defining which contacts to return (a contact type, a set of UUIDs, or a
-     * {@link PhonesQualifier} holding the phone numbers to match)
+     * @param qualifier the limiter defining which contacts to return (a contact type, a set of UUIDs, or a set
+     * of phone numbers)
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of contacts to return. Default is 100.
@@ -279,8 +277,8 @@ export namespace v1 {
 
     /**
      * Returns a generator for fetching all contacts that match the given qualifier.
-     * @param qualifier the limiter defining which contacts to return (a contact type, a set of UUIDs, or a
-     * {@link PhonesQualifier} holding the phone numbers to match)
+     * @param qualifier the limiter defining which contacts to return (a contact type, a set of UUIDs, or a set
+     * of phone numbers)
      * @returns a generator for fetching all contacts that match the given qualifier
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      */
@@ -427,8 +425,8 @@ export namespace v1 {
 
     /**
      * Returns a page of identifiers for the contacts with any of the given phone numbers.
-     * @param phones the phone numbers of the contacts to fetch (e.g. `['+254712345678']`). Each is matched
-     * verbatim against the contact's `phone` field. Pass a single-element array to search one number.
+     * @param phones the phone numbers of the contacts to fetch, each matched verbatim against the contact's
+     * `phone` field
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of identifiers to return. Default is 10000.
@@ -446,7 +444,7 @@ export namespace v1 {
 
     /**
      * Returns a generator for fetching all the identifiers of contacts with any of the given phone numbers.
-     * @param phones the phone numbers of the contacts to fetch (e.g. `['+254712345678']`)
+     * @param phones the phone numbers of the contacts to fetch
      * @returns a generator for fetching all matching contact identifiers
      * @throws InvalidArgumentError if the phone numbers are not a non-empty array of non-blank strings with no
      * leading or trailing whitespace
@@ -455,8 +453,8 @@ export namespace v1 {
 
     /**
      * Returns a page of contacts with any of the given phone numbers.
-     * @param phones the phone numbers of the contacts to fetch (e.g. `['+254712345678']`). Each is matched
-     * verbatim against the contact's `phone` field. Pass a single-element array to search one number.
+     * @param phones the phone numbers of the contacts to fetch, each matched verbatim against the contact's
+     * `phone` field
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of contacts to return. Default is 100.
@@ -474,7 +472,7 @@ export namespace v1 {
 
     /**
      * Returns a generator for fetching all contacts with any of the given phone numbers.
-     * @param phones the phone numbers of the contacts to fetch (e.g. `['+254712345678']`)
+     * @param phones the phone numbers of the contacts to fetch
      * @returns a generator for fetching all matching contacts
      * @throws InvalidArgumentError if the phone numbers are not a non-empty array of non-blank strings with no
      * leading or trailing whitespace

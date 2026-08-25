@@ -444,8 +444,6 @@ describe('MessageQueue service', function() {
     });
 
     it('should drop a padded recipient without failing the lookup for the others', () => {
-      // byPhones rejects a number padded with whitespace rather than letting it silently match nothing.
-      // One malformed recipient must not blank the recipient name of every other message.
       const messages = [{
         doc: { _id: 'report_id1', reported_date: 100 },
         value: {
@@ -478,8 +476,7 @@ describe('MessageQueue service', function() {
       return service.query('due').then(result => {
         chai.expect(getUuidsByPhones.args).to.deep.equal([[['phone2']]]);
 
-        // The padded recipient is still listed, falling back to the raw number like any other
-        // recipient that could not be resolved to a contact.
+        // Falls back to the raw number, like any unresolved recipient.
         chai.expect(result.messages[0].recipient).to.equal('  phone1  ');
         chai.expect(result.messages[1].recipient).to.equal('contact two');
       });

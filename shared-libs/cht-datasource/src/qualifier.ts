@@ -122,10 +122,8 @@ export const isContactTypeQualifier = (contactType: unknown): contactType is Con
 export type PhonesQualifier = Readonly<{ phones: [string, ...string[]] }>;
 
 /**
- * Builds a qualifier for finding contacts with any of the given phone numbers.
- * @param phones the phone numbers to search with (e.g. `['+254712345678']`). Each is matched verbatim against
- * the contact's `phone` field: they are not normalized, so a number with leading or trailing whitespace is
- * rejected rather than silently matching nothing. Internal whitespace is kept. Duplicates are removed.
+ * Builds a qualifier for finding contacts with any of the given phone numbers. Duplicates are removed.
+ * @param phones the phone numbers of the contacts, each matched verbatim against the contact's `phone` field
  * @returns the qualifier
  * @throws InvalidArgumentError if the phone numbers are not a non-empty array of non-blank strings with no
  * leading or trailing whitespace
@@ -136,20 +134,14 @@ export const byPhones = (phones: [string, ...string[]]): PhonesQualifier => {
     throw new InvalidArgumentError(`Invalid phones [${JSON.stringify(phones)}].`);
   }
 
-  // Deduping a non-empty array can only ever keep it non-empty, so the tuple shape survives the Set
-  // round-trip; TS just cannot see that on its own.
+  // Deduping a non-empty array keeps it non-empty, which TS cannot infer on its own.
   return { phones: [...new Set(phones)] as [string, ...string[]] };
 };
 
 /**
- * Returns `true` if the given qualifier is a {@link PhonesQualifier} otherwise `false`.
- *
- * The qualifier must have a `phones` key holding a non-empty array of strings, none of which is empty,
- * blank, or padded with leading/trailing whitespace. Unlike {@link isIdsQualifier}, an empty array is
- * rejected: it can only ever match nothing, which is never what the caller meant, and silently returning
- * an empty page would hide the mistake. A padded number is rejected for the same reason: it would
- * otherwise pass validation but match nothing, since the value is compared verbatim against the view key
- * rather than trimmed. Internal whitespace is kept, since the view does no normalization either.
+ * Returns `true` if the given qualifier is a {@link PhonesQualifier} otherwise `false`. Phone numbers are
+ * matched verbatim, so an empty array of phone numbers is considered invalid, as is a number that is blank
+ * or padded with whitespace.
  * @param qualifier the qualifier to check
  * @returns `true` if the given qualifier is a {@link PhonesQualifier}, otherwise `false`.
  */

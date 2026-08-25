@@ -75,10 +75,8 @@ const getOfflineFreetextQueryFn = (medicDb: PouchDB.Database<Doc>) => {
   };
 };
 
-// The view emits the raw `doc.phone` as a scalar key, so each number is a complete key on its own.
-// Duplicates are dropped here rather than trusted from the qualifier, since a hand-built PhonesQualifier
-// can reach the adapters without going through byPhones(). Order is preserved, which is what keeps `skip`
-// meaningful from one page to the next: the view returns rows grouped by key in the order supplied.
+// The view emits the raw `doc.phone` as a scalar key, so each number is a key on its own. Duplicates are
+// dropped in a stable order, since rows come back grouped in the order the keys are supplied.
 const phoneViewKeys = (qualifier: PhonesQualifier): string[] => [...new Set(qualifier.phones)];
 
 const getContactDocsPageFn = (

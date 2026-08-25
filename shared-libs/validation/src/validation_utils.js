@@ -143,9 +143,8 @@ const validPhone = (value) => {
 };
 
 const uniquePhone = async (value) => {
-  // The value comes from a report field, so it can be blank or padded. byPhones rejects both rather than
-  // letting them silently match nothing, so trim first and treat a blank as unique: there is no number to
-  // clash with.
+  // The value comes from a report field, so it can be blank or padded. A blank number has nothing to
+  // clash with, so it is unique.
   const phone = value === undefined || value === null ? '' : String(value).trim();
   if (!phone) {
     return true;

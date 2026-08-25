@@ -70,14 +70,10 @@ module.exports = {
   },
   getUniqueId: () => idGenerator.next().value,
   /*
-    Builds a phone qualifier for the sender of a report. `doc.from` is untrusted inbound SMS metadata,
-    and byPhones rejects a number padded with whitespace rather than letting it silently match nothing,
-    so trim before qualifying. Returns null when nothing is left to look up, which callers handle the
-    same way they handle "no matching contact".
+    Builds a phone qualifier for the sender of a report, or null when there is no number to look up.
+    `doc.from` is untrusted inbound SMS metadata, so it is coerced and trimmed before qualifying.
   */
   senderPhoneQualifier: (doc) => {
-    // Guard null/undefined explicitly: String(undefined) is the truthy string 'undefined', which would
-    // otherwise turn a missing sender into a lookup for a contact whose phone is literally "undefined".
     const phone = doc.from === undefined || doc.from === null ? '' : String(doc.from).trim();
     return phone ? Qualifier.byPhones([phone]) : null;
   },

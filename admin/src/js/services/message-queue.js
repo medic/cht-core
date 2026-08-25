@@ -106,9 +106,7 @@ angular.module('services').factory('MessageQueue',
         return row.sms && row.sms.to;
       }));
 
-      // byPhones takes strings and rejects a number padded with whitespace rather than letting it
-      // silently match nothing, so coerce here and drop the padded ones: one malformed recipient must
-      // not fail the lookup for every other message.
+      // Drop the padded numbers rather than let one malformed recipient fail the whole lookup.
       const qualifiablePhones = phoneNumbers.map(String).filter(function(phone) {
         return phone === phone.trim();
       });

@@ -24,7 +24,6 @@ describe('contacts-by-phone controller', () => {
     }
   })();
 
-  // Fails on the first iteration, which is how a datasource error surfaces to the `for await` loop.
   const rejectingAsyncGenerator = (err) => ({
     [Symbol.asyncIterator]: () => ({ next: () => Promise.reject(err) })
   });

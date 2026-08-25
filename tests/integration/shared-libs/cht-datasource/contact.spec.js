@@ -20,10 +20,9 @@ describe('cht-datasource Contact', () => {
   // combining them to have similar text is not done here because the order in which the docs
   // were being returned were not consistent, meaning the order could be [contact0, contact1, contact2]
   // in the first run whereas another in another giving a non-consistent expected value to match against
-  // NOTE: the phone numbers exist for the byPhones searching. They are deliberately numeric-only strings
-  // so that they cannot collide with any of the freetext searches above. contact0 keeps a plain national
-  // format while the others carry a leading "+", so a failure that is specific to encoding the "+" over
-  // the query string is distinguishable from a failure of the lookup itself.
+  // NOTE: the phone numbers are numeric-only so they cannot collide with the freetext searches above.
+  // contact0 keeps a national format while the others carry a leading "+", which must survive the query
+  // string.
   const contact0 = utils.deepFreeze(personFactory.build({
     name: 'contact0', role: 'chw', notes: searchWord, short_name: searchWord + '0', phone: '0700000000'
   }));
@@ -393,8 +392,7 @@ describe('cht-datasource Contact', () => {
 
     describe('getUuidsPage byPhones', () => {
       const getUuidsPage = Contact.v1.getUuidsPage(dataContext);
-      // Every contact that the contacts_by_phone view emits: the view only emits docs with a truthy
-      // `phone`, so the places and the generated user contacts are not in it.
+      // The view only emits docs with a truthy `phone`, so the places and user contacts are not in it.
       const allPhones = [ contact0.phone, contact1.phone, contact2.phone, patient.phone ];
       const allPhoneContactIds = [ contact0._id, contact1._id, contact2._id, patient._id ];
       const unknownPhone = '0799999999';
@@ -439,8 +437,6 @@ describe('cht-datasource Contact', () => {
       });
 
       it('does not normalize the phone numbers', async () => {
-        // contact0 is stored in the national format, so the international format of the same number
-        // must not match: the value is compared verbatim against the view key.
         const responsePage = await getUuidsPage(Qualifier.byPhones([ '+254700000000' ]));
 
         expect(responsePage.data).to.deep.equal([]);
@@ -460,8 +456,7 @@ describe('cht-datasource Contact', () => {
       });
 
       it('pages across a phone number boundary without dropping or repeating a contact', async () => {
-        // A page size of 2 puts the boundary between two of the requested numbers mid-page, which is
-        // where a per-key rather than whole-result-set skip would show up.
+        // A page size of 2 puts the boundary between two of the requested numbers mid-page.
         const twoLimit = 2;
         const firstPage = await getUuidsPage(Qualifier.byPhones(allPhones), cursor, twoLimit);
         const secondPage = await getUuidsPage(Qualifier.byPhones(allPhones), firstPage.cursor, twoLimit);
@@ -482,9 +477,7 @@ describe('cht-datasource Contact', () => {
       });
 
       it('throws error when cursor is invalid', async () => {
-        // Unlike the limit, the cursor is only checked for being a non-empty string on the client
-        // (assertCursor); whether it parses as a page token is decided server-side by validateCursor.
-        // So this rejects with the API's 400 body rather than the bare InvalidArgumentError message.
+        // The cursor is only validated as a page token server-side, so this rejects with the API's body.
         await expect(
           getUuidsPage(Qualifier.byPhones(allPhones), invalidCursor, threeLimit)
         ).to.be.rejectedWith(
@@ -502,7 +495,6 @@ describe('cht-datasource Contact', () => {
 
         expect(responseIds).to.deep.equalInAnyOrder([ contact1._id, patient._id ]);
         expect(responsePage.cursor).to.be.equal(null);
-        // The doc page returns full documents, not just ids.
         responsePage.data.forEach(doc => expect(doc._rev).to.be.a('string'));
       });
 

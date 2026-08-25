@@ -116,8 +116,7 @@ module.exports = {
     }
 
     try {
-      // The generator pages until the matches are exhausted, preserving the unbounded behavior of the
-      // view query it replaces: a page-limited call could silently drop matches for a shared number.
+      // Page through every match: any number of contacts can share a phone number.
       const contactIds = [];
       for await (const contactId of getContactUuids(Qualifier.byPhones([normalizedPhone]))) {
         contactIds.push(contactId);
