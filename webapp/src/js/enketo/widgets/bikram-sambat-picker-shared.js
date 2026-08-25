@@ -2,13 +2,14 @@
 /* global globalThis */
 const $ = require('jquery');
 
-// Load the nepali-date-picker jQuery plugin into webpack's local $
-// by temporarily making it the global, then restoring the original.
+// Load the bikram-sambat-calendar datepicker plugin (medic's fork of nepali-date-picker,
+// backed by the bikram-sambat library) into webpack's local $ by temporarily making it
+// the global, then restoring the original.
 const _prevJQuery = globalThis.jQuery;
 const _prev$ = globalThis.$;
 try {
   globalThis.jQuery = globalThis.$ = $;
-  require('nepali-date-picker/dist/nepaliDatePicker.min.js');
+  require('bikram-sambat-calendar/dist/nepaliDatePicker.js');
 } finally {
   globalThis.jQuery = _prevJQuery;
   globalThis.$ = _prev$;
@@ -200,17 +201,30 @@ const handleReposition = ($picker, $trigger) => {
   }
   const height = $trigger.outerHeight();
   const pickerHeight = $picker.outerHeight() || 300;
+  const pickerWidth = $picker.outerWidth() || 280;
   const scrollTop = $(window).scrollTop();
+  const scrollLeft = $(window).scrollLeft();
   const viewportHeight = $(window).height();
+  const viewportWidth = $(window).width();
 
   let top = offset.top + height;
   if (top + pickerHeight - scrollTop > viewportHeight && offset.top - pickerHeight - scrollTop > 0) {
     top = offset.top - pickerHeight;
   }
 
+  // Clamp horizontally so the picker never overflows the right edge of the viewport. When it
+  // would, right-align it to the trigger's right edge (tidy) rather than jam it against the screen.
+  let left = offset.left;
+  if (left + pickerWidth - scrollLeft > viewportWidth) {
+    left = offset.left + $trigger.outerWidth() - pickerWidth;
+  }
+  if (left - scrollLeft < 0) {
+    left = scrollLeft;
+  }
+
   $picker.css({
     top: top + 'px',
-    left: offset.left + 'px',
+    left: left + 'px',
     position: 'absolute'
   });
 };
