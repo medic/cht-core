@@ -1,0 +1,18 @@
+<div id="tasks-map">
+  @if (!tasksLoaded) {
+    <div class="empty-selection">
+      <div>
+        <div class="loader"></div>
+      </div>
+    </div>
+  } @else if (!markers.length) {
+    <div class="empty-selection">
+      <div>{{ 'tasks.map.empty' | translate }}</div>
+    </div>
+  } @else {
+    <mm-map [markers]="markers" (markerClick)="onMarkerClick($event)"></mm-map>
+    @if (tasksWithoutLocation) {
+      <p class="tasks-without-location">{{ 'tasks.map.without.location' | translate: { COUNT: tasksWithoutLocation } }}</p>
+    }
+  }
+</div>
