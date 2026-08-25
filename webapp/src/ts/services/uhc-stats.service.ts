@@ -4,8 +4,6 @@ import { isObject as _isObject, uniq as _uniq } from 'lodash-es';
 import * as CalendarInterval from '@medic/calendar-interval';
 
 import { DbService } from '@mm-services/db.service';
-import { ChangesService } from '@mm-services/changes.service';
-import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -19,23 +17,18 @@ export class UHCStatsService {
   // badges the contact list computes through Search extras, so both lists show or hide together.
   private readonly UHC_STATS_PERMISSION = 'can_view_uhc_stats';
   private readonly LAST_VISITED_DATE_PERMISSION = 'can_view_last_visited_date';
-  private readonly REMOTE_QUERY_BATCH_SIZE = 10;
+  private readonly VISIT_QUERY_BATCH_SIZE = 10;
   private readonly canView: Record<string, Promise<boolean>> = {};
-  private lastVisitedDates?: Promise<Record<string, number>>;
-  private cachedLastVisitedDates?: Record<string, number>;
-  private changesSubscription;
 
   constructor(
     private dbService: DbService,
-    private changesService: ChangesService,
-    private contactChangeFilterService: ContactChangeFilterService,
     private contactTypesService: ContactTypesService,
     private sessionService: SessionService,
     private authService: AuthService
   ) { }
 
-  private getMaxVisitDate(rowValue) {
-    return _isObject(rowValue) ? (rowValue as any).max : rowValue;
+  private getMaxVisitDate(rowValue: { max?: number } | number | undefined): number | undefined {
+    return _isObject(rowValue) ? (rowValue as { max?: number }).max : rowValue;
   }
 
   private async getLastVisitedDate(contactId) {
@@ -68,7 +61,8 @@ export class UHCStatsService {
   private canUserView(permission): Promise<boolean> {
     if (!this.canView[permission]) {
       const canView = this.checkPermission(permission).catch(error => {
-        // don't cache failures (e.g. api briefly unavailable), so the check is retried on the next call
+        // AuthService.has rethrows 503s (api unavailable, e.g. during startup): don't cache the
+        // failure, so the check is retried on the next call
         if (this.canView[permission] === canView) {
           delete this.canView[permission];
         }
@@ -93,154 +87,47 @@ export class UHCStatsService {
     return lastVisitedDates;
   }
 
-  private isLastVisitedDateChange(change) {
-    // deleted changes carry no doc content, so err on the side of invalidating
-    if (change.deleted || this.contactChangeFilterService.isVisitReport(change.doc)) {
-      return true;
-    }
-    // contacts_by_last_visited emits a constant value for contact docs, so contact edits cannot
-    // change its output: only contacts the cache hasn't seen yet are relevant
-    return this.contactTypesService.includes(change.doc) &&
-      this.cachedLastVisitedDates?.[change.doc._id] === undefined;
-  }
-
-  private watchLastVisitedDateChanges() {
-    if (this.changesSubscription) {
-      return;
-    }
-    this.changesSubscription = this.changesService.subscribe({
-      key: 'uhc-stats-service',
-      filter: change => this.isLastVisitedDateChange(change),
-      callback: change => this.updateLastVisitedDates(change),
-    });
-  }
-
-  private updateLastVisitedDates(change) {
-    if (this.cachedLastVisitedDates && !change?.deleted) {
-      if (this.contactTypesService.includes(change?.doc)) {
-        // a contact the view hasn't seen appears in it with a constant 0 ("never visited"): patch
-        // the cache instead of re-querying the whole view. The contact's visit reports, if it has
-        // any, arrive as separate changes and are patched below.
-        this.cachedLastVisitedDates[change.doc._id] = 0;
-        return;
-      }
-      if (this.isNewDoc(change) && this.contactChangeFilterService.isVisitReport(change.doc)) {
-        // a brand new visit report can only raise the contact's max visit date, so the cache can be
-        // patched without a query. Edited or deleted reports can lower it: they invalidate below.
-        const contactId = change.doc.fields.visited_contact_uuid;
-        this.cachedLastVisitedDates[contactId] = Math.max(
-          this.cachedLastVisitedDates[contactId] || 0,
-          this.getVisitReportDate(change.doc)
-        );
-        return;
-      }
-    }
-    this.lastVisitedDates = undefined;
-    this.cachedLastVisitedDates = undefined;
-  }
-
-  private isNewDoc(change) {
-    return !!change?.doc?._rev?.startsWith('1-');
-  }
-
-  private getVisitReportDate(doc) {
-    // mirrors the date logic of the contacts_by_last_visited map function
-    const date = doc.fields.visited_date ? Date.parse(doc.fields.visited_date) : doc.reported_date;
-    return typeof date === 'number' && !isNaN(date) ? date : 0;
-  }
-
-  private getAllLastVisitedDates(): Promise<Record<string, number>> {
-    if (this.lastVisitedDates) {
-      return this.lastVisitedDates;
-    }
-
-    this.watchLastVisitedDateChanges();
-    // querying with keys in PouchDB is very unoptimal, so offline users query the whole view.
-    // The result is cached and invalidated through the changes feed, so the price is paid once per
-    // relevant change instead of once per contact selection.
-    const lastVisitedDates = Promise
-      .resolve(this.dbService.get().query('medic-client/contacts_by_last_visited', { reduce: true, group: true }))
-      .then(records => {
-        const dates = this.getLastVisitedDatesMap(records);
-        if (this.lastVisitedDates === lastVisitedDates) {
-          this.cachedLastVisitedDates = dates;
-        }
-        return dates;
-      });
-    // don't cache failures
-    lastVisitedDates.catch(() => {
-      if (this.lastVisitedDates === lastVisitedDates) {
-        this.lastVisitedDates = undefined;
-      }
-    });
-    this.lastVisitedDates = lastVisitedDates;
-
-    return lastVisitedDates;
-  }
-
-  private async getVisitData(contactIds, dateRange: DateRange): Promise<[
-    Record<string, number>,
-    Record<string, number[] | null>
-  ]> {
-    if (!this.sessionService.isOnlineOnly()) {
-      // both queries hit the local db and don't depend on each other, so run them concurrently
-      return await Promise.all([
-        this.getAllLastVisitedDates(),
-        this.getLocalVisitsInDateRange(contactIds, dateRange),
-      ]);
-    }
-
+  private async getLastVisitedDates(contactIds): Promise<Record<string, number>> {
+    // keyed queries against this reduced view are cheap in PouchDB and CouchDB alike (measured
+    // ~6ms for 50 keys over a 30k doc device db, vs ~300ms for the whole view the contact list's
+    // Search extras query — see #8248), so the stats are re-queried whenever they need to refresh
     const records = await this.dbService
       .get()
       .query('medic-client/contacts_by_last_visited', { reduce: true, group: true, keys: contactIds });
-    const lastVisitedDates = this.getLastVisitedDatesMap(records);
-    // contacts whose last visit predates the interval cannot have visits within it
-    const visitedContactIds = contactIds.filter(contactId => lastVisitedDates[contactId] >= dateRange.start);
-    const visitsByContact = await this.getRemoteVisitsInDateRange(visitedContactIds, dateRange);
-
-    return [ lastVisitedDates, visitsByContact ];
+    return this.getLastVisitedDatesMap(records);
   }
 
-  private async getRemoteVisitsInDateRange(contactIds, dateRange: DateRange) {
+  private async getVisitsInDateRangeBatched(contactIds, dateRange: DateRange) {
     const visitsByContact = {};
+    const failedContactIds: string[] = [];
+    let lastError;
 
-    // scoped per-contact reads, to avoid downloading every visit report on the instance, batched so a
-    // long children list doesn't monopolise the browser's connection pool
-    for (let i = 0; i < contactIds.length; i += this.REMOTE_QUERY_BATCH_SIZE) {
-      const batch = contactIds.slice(i, i + this.REMOTE_QUERY_BATCH_SIZE);
+    // per-contact reads — the shape getHomeVisitStats already uses — so online users don't download
+    // every visit report on the instance, batched so a long children list doesn't monopolise the
+    // browser's connection pool
+    for (let i = 0; i < contactIds.length; i += this.VISIT_QUERY_BATCH_SIZE) {
+      const batch = contactIds.slice(i, i + this.VISIT_QUERY_BATCH_SIZE);
       await Promise.all(batch.map(async contactId => {
         try {
           visitsByContact[contactId] = await this.getVisitsInDateRange(dateRange, contactId);
         } catch (error) {
-          console.error(`Error fetching visits within the UHC interval for contact "${contactId}"`, error);
-          // marks the failure, so the contact is skipped instead of getting a false zero count
+          // a null marks the failure, so the contact is skipped instead of getting a false zero count
           visitsByContact[contactId] = null;
+          failedContactIds.push(contactId);
+          lastError = error;
         }
       }));
     }
 
-    return visitsByContact;
-  }
-
-  private async getLocalVisitsInDateRange(contactIds, dateRange: DateRange) {
-    const visitsByContact = {};
-    const requestedContactIds = new Set(contactIds);
-
-    const records = await this.dbService
-      .get()
-      .query('medic-client/visits_by_date', { start_key: dateRange.start, end_key: dateRange.end });
-
-    records?.rows?.forEach(row => {
-      if (!requestedContactIds.has(row.value)) {
-        return;
-      }
-      const day = moment(row.key).startOf('day').valueOf();
-      visitsByContact[row.value] = visitsByContact[row.value] || [];
-      visitsByContact[row.value].push(day);
-    });
-    Object.keys(visitsByContact).forEach(contactId => {
-      visitsByContact[contactId] = _uniq(visitsByContact[contactId]);
-    });
+    if (failedContactIds.length) {
+      // one log line for the whole call: console.error generates feedback docs, and one distinct
+      // message per contact would flood the feedback db whenever the connection is bad
+      console.error(
+        `Error fetching visits within the UHC interval for ${failedContactIds.length} contact(s): ` +
+        `${failedContactIds.join(', ')}`,
+        lastError
+      );
+    }
 
     return visitsByContact;
   }
@@ -273,7 +160,9 @@ export class UHCStatsService {
 
     const lastVisitedDate = await this.getLastVisitedDate(contact._id);
     const dateRange = this.getUHCInterval(visitCountSettings)!;
-    const visits = lastVisitedDate >= dateRange?.start ? await this.getVisitsInDateRange(dateRange, contact._id) : [];
+    const visits = lastVisitedDate !== undefined && lastVisitedDate >= dateRange?.start
+      ? await this.getVisitsInDateRange(dateRange, contact._id)
+      : [];
 
     return {
       lastVisitedDate: lastVisitedDate,
@@ -305,7 +194,11 @@ export class UHCStatsService {
     if (!dateRange) {
       return stats;
     }
-    const [ lastVisitedDates, visitsByContact ] = await this.getVisitData(contactIds, dateRange);
+
+    const lastVisitedDates = await this.getLastVisitedDates(contactIds);
+    // contacts whose last visit predates the interval cannot have visits within it
+    const visitedContactIds = contactIds.filter(contactId => lastVisitedDates[contactId] >= dateRange.start);
+    const visitsByContact = await this.getVisitsInDateRangeBatched(visitedContactIds, dateRange);
 
     contactIds.forEach(contactId => {
       const lastVisitedDate = lastVisitedDates[contactId];
@@ -336,7 +229,9 @@ interface VisitCountSettings {
 }
 
 interface VisitStats {
-  lastVisitedDate: number; // Timestamp
+  // a contact with no row in the view (e.g. free-form type not indexed by it) has no date at all,
+  // as opposed to the view's 0 for "never visited"
+  lastVisitedDate?: number; // Timestamp
   count: number;
   countGoal?: number;
 }

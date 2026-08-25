@@ -5,7 +5,6 @@ import * as moment from 'moment';
 
 import { UHCStatsService } from '@mm-services/uhc-stats.service';
 import { DbService } from '@mm-services/db.service';
-import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -15,7 +14,6 @@ describe('UHCStats Service', () => {
   let clock;
   let localDb;
   let dbService;
-  let changesService;
   let contactTypesService;
   let sessionService;
   let authService;
@@ -24,7 +22,6 @@ describe('UHCStats Service', () => {
     clock = sinon.useFakeTimers({now: moment('2021-04-07 18:18:18').valueOf()});
     localDb = { query: sinon.stub() };
     dbService = { get: sinon.stub().returns(localDb) };
-    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     sessionService = { isAdmin: sinon.stub() };
     authService = { has: sinon.stub() };
     contactTypesService = {
@@ -36,7 +33,6 @@ describe('UHCStats Service', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: DbService, useValue: dbService },
-        { provide: ChangesService, useValue: changesService },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: SessionService, useValue: sessionService },
         { provide: AuthService, useValue: authService },
@@ -393,9 +389,8 @@ describe('UHCStats Service', () => {
       expect(localDb.query.callCount).to.equal(0);
     });
 
-    it('should get visit stats for contacts when online, querying visits per contact', async () => {
+    it('should get visit stats, querying last visited dates with keys and visits per contact', async () => {
       sessionService.isAdmin.returns(false);
-      sessionService.isOnlineOnly = sinon.stub().returns(true);
       authService.has.resolves(true);
       // Query - last visited dates
       localDb.query.onCall(0).returns({ rows: [
@@ -442,7 +437,6 @@ describe('UHCStats Service', () => {
 
     it('should not query visits when no contact was visited within the interval', async () => {
       sessionService.isAdmin.returns(false);
-      sessionService.isOnlineOnly = sinon.stub().returns(true);
       authService.has.resolves(true);
       localDb.query.onCall(0).returns({ rows: [
         { key: '2b', value: moment('2021-02-13 22:59:59').valueOf() },
@@ -460,9 +454,8 @@ describe('UHCStats Service', () => {
       expect(localDb.query.callCount).to.equal(1);
     });
 
-    it('should limit concurrent per-contact visit queries when online', async () => {
+    it('should limit concurrent per-contact visit queries', async () => {
       sessionService.isAdmin.returns(false);
-      sessionService.isOnlineOnly = sinon.stub().returns(true);
       authService.has.resolves(true);
       const contactIds = Array.from({ length: 25 }).map((_, idx) => `contact${idx}`);
       const recentVisit = moment('2021-04-15 22:59:59').valueOf();
@@ -481,21 +474,21 @@ describe('UHCStats Service', () => {
 
       const result = await service.getVisitStats(contactIds, visitCountSettings);
 
-      expect(Object.keys(result).length).to.equal(25);
+      expect(Object.keys(result)).to.have.lengthOf(25);
       const visitQueries = localDb.query.getCalls().filter(call => call.args[0] === 'medic-client/visits_by_date');
-      expect(visitQueries.length).to.equal(25);
+      expect(visitQueries).to.have.lengthOf(25);
       expect(maxInFlight).to.equal(10);
     });
 
     it('should skip contacts whose visits query fails instead of failing the whole batch', async () => {
-      sinon.stub(console, 'error');
+      const consoleError = sinon.stub(console, 'error');
       sessionService.isAdmin.returns(false);
-      sessionService.isOnlineOnly = sinon.stub().returns(true);
       authService.has.resolves(true);
       const recentVisit = moment('2021-04-15 22:59:59').valueOf();
       localDb.query.onCall(0).returns({ rows: [
         { key: '2b', value: recentVisit },
         { key: '3c', value: recentVisit },
+        { key: '4d', value: recentVisit },
       ]});
       localDb.query
         .withArgs('medic-client/visits_by_date', sinon.match({ start_key: [ '2b', range.start ] }))
@@ -503,10 +496,13 @@ describe('UHCStats Service', () => {
       localDb.query
         .withArgs('medic-client/visits_by_date', sinon.match({ start_key: [ '3c', range.start ] }))
         .rejects(new Error('failed'));
+      localDb.query
+        .withArgs('medic-client/visits_by_date', sinon.match({ start_key: [ '4d', range.start ] }))
+        .rejects(new Error('failed'));
 
-      const result = await service.getVisitStats([ '2b', '3c' ], visitCountSettings);
+      const result = await service.getVisitStats([ '2b', '3c', '4d' ], visitCountSettings);
 
-      // the failed contact is left unannotated rather than displayed with a false zero count
+      // the failed contacts are left unannotated rather than displayed with a false zero count
       expect(result).to.deep.equal({
         '2b': {
           lastVisitedDate: recentVisit,
@@ -514,239 +510,28 @@ describe('UHCStats Service', () => {
           countGoal: 5
         }
       });
+      // one aggregated log line for all failures: console.error generates feedback docs
+      expect(consoleError.callCount).to.equal(1);
+      expect(consoleError.args[0][0]).to.contain('2 contact(s)');
+      expect(consoleError.args[0][0]).to.contain('3c');
+      expect(consoleError.args[0][0]).to.contain('4d');
     });
 
-    it('should not query with keys when offline', async () => {
+    it('should query fresh stats on every call', async () => {
       sessionService.isAdmin.returns(false);
-      sessionService.isOnlineOnly = sinon.stub().returns(false);
-      authService.has.resolves(true);
-      // Query - last visited dates
-      localDb.query.onCall(0).returns({ rows: [
-        { key: '2b', value: moment('2021-04-15 22:59:59').valueOf() },
-        { key: 'not-requested', value: moment('2021-04-16 22:59:59').valueOf() },
-      ]});
-      // Query - visits in date range
-      localDb.query.onCall(1).returns({ rows: [
-        { key: moment('2021-04-15 09:20:00').valueOf(), value: '2b' },
-        { key: moment('2021-04-15 15:00:00').valueOf(), value: '2b' },
-        { key: moment('2021-04-16 15:00:00').valueOf(), value: 'not-requested' },
-      ]});
-
-      const result = await service.getVisitStats([ '2b' ], visitCountSettings);
-
-      expect(result).to.deep.equal({
-        '2b': {
-          lastVisitedDate: moment('2021-04-15 22:59:59').valueOf(),
-          count: 1,
-          countGoal: 5
-        }
-      });
-      expect(localDb.query.callCount).to.equal(2);
-      expect(localDb.query.args[0]).to.have.deep.members([
-        'medic-client/contacts_by_last_visited',
-        { group: true, reduce: true }
-      ]);
-      expect(localDb.query.args[1]).to.have.deep.members([
-        'medic-client/visits_by_date',
-        { start_key: range.start, end_key: range.end }
-      ]);
-    });
-
-    it('should cache last visited dates when offline and invalidate the cache on relevant changes', async () => {
-      sessionService.isAdmin.returns(false);
-      sessionService.isOnlineOnly = sinon.stub().returns(false);
-      authService.has.resolves(true);
-      localDb.query
-        .withArgs('medic-client/contacts_by_last_visited')
-        .returns({ rows: [ { key: '2b', value: moment('2021-04-15 22:59:59').valueOf() } ] });
-      localDb.query
-        .withArgs('medic-client/visits_by_date')
-        .returns({ rows: [] });
-
-      await service.getVisitStats([ '2b' ], visitCountSettings);
-      await service.getVisitStats([ '2b' ], visitCountSettings);
-
-      const lastVisitedQueries = () => localDb.query
-        .getCalls()
-        .filter(call => call.args[0] === 'medic-client/contacts_by_last_visited');
-      expect(lastVisitedQueries().length).to.equal(1);
-      expect(changesService.subscribe.callCount).to.equal(1);
-      expect(changesService.subscribe.args[0][0].key).to.equal('uhc-stats-service');
-
-      const { filter, callback } = changesService.subscribe.args[0][0];
-      const visitReport = { type: 'data_record', form: 'home_visit', fields: { visited_contact_uuid: '2b' } };
-      expect(filter({ doc: visitReport })).to.equal(true);
-      expect(filter({ deleted: true, id: 'some-doc' })).to.equal(true);
-      contactTypesService.includes.returns(true);
-      expect(filter({ doc: { type: 'clinic', _id: 'new-clinic' } })).to.equal(true);
-      // edits to contacts the cache has seen cannot change the view output
-      expect(filter({ doc: { type: 'clinic', _id: '2b' } })).to.equal(false);
-      contactTypesService.includes.returns(false);
-      expect(filter({ doc: { type: 'data_record', fields: {} } })).to.equal(false);
-      // only reports the UHC views index are relevant, not any doc carrying the field
-      expect(filter({ doc: { fields: { visited_contact_uuid: '2b' } } })).to.equal(false);
-
-      callback({ deleted: true, id: 'some-doc' });
-      await service.getVisitStats([ '2b' ], visitCountSettings);
-
-      expect(lastVisitedQueries().length).to.equal(2);
-    });
-
-    it('should patch new contacts into the cache instead of invalidating it', async () => {
-      sessionService.isAdmin.returns(false);
-      sessionService.isOnlineOnly = sinon.stub().returns(false);
-      authService.has.resolves(true);
-      localDb.query
-        .withArgs('medic-client/contacts_by_last_visited')
-        .returns({ rows: [ { key: '2b', value: moment('2021-04-15 22:59:59').valueOf() } ] });
-      localDb.query
-        .withArgs('medic-client/visits_by_date')
-        .returns({ rows: [] });
-
-      await service.getVisitStats([ '2b' ], visitCountSettings);
-
-      const { filter, callback } = changesService.subscribe.args[0][0];
-      contactTypesService.includes.returns(true);
-      const newContactChange = { id: 'new-contact', doc: { _id: 'new-contact', type: 'clinic' } };
-      expect(filter(newContactChange)).to.equal(true);
-      callback(newContactChange);
-
-      const stats = await service.getVisitStats([ '2b', 'new-contact' ], visitCountSettings);
-
-      const lastVisitedQueries = localDb.query
-        .getCalls()
-        .filter(call => call.args[0] === 'medic-client/contacts_by_last_visited');
-      expect(lastVisitedQueries.length).to.equal(1);
-      expect(stats['new-contact']).to.deep.equal({
-        lastVisitedDate: 0,
-        count: 0,
-        countGoal: 5
-      });
-    });
-
-    it('should patch new visit reports into the cache instead of invalidating it', async () => {
-      sessionService.isAdmin.returns(false);
-      sessionService.isOnlineOnly = sinon.stub().returns(false);
-      authService.has.resolves(true);
-      localDb.query
-        .withArgs('medic-client/contacts_by_last_visited')
-        .returns({ rows: [ { key: '2b', value: moment('2021-04-01 10:00:00').valueOf() } ] });
-      localDb.query
-        .withArgs('medic-client/visits_by_date')
-        .returns({ rows: [] });
-
-      await service.getVisitStats([ '2b' ], visitCountSettings);
-
-      const { filter, callback } = changesService.subscribe.args[0][0];
-      const reportedDate = moment('2021-04-05 12:00:00').valueOf();
-      const newReport = {
-        id: 'report1',
-        doc: {
-          _id: 'report1',
-          _rev: '1-abc',
-          type: 'data_record',
-          form: 'home_visit',
-          reported_date: reportedDate,
-          fields: { visited_contact_uuid: '2b' },
-        },
-      };
-      expect(filter(newReport)).to.equal(true);
-      callback(newReport);
-
-      // a brand new report only raises the max visit date: the cache is patched, not re-queried
-      let stats = await service.getVisitStats([ '2b' ], visitCountSettings);
-      const lastVisitedQueries = () => localDb.query
-        .getCalls()
-        .filter(call => call.args[0] === 'medic-client/contacts_by_last_visited');
-      expect(lastVisitedQueries().length).to.equal(1);
-      expect(stats['2b'].lastVisitedDate).to.equal(reportedDate);
-
-      // when the report sets a visited_date, that is the date the view indexes
-      const visitedDate = '2021-04-06T09:00:00';
-      callback({
-        id: 'report2',
-        doc: {
-          _id: 'report2',
-          _rev: '1-cba',
-          type: 'data_record',
-          form: 'home_visit',
-          reported_date: moment('2021-04-07 12:00:00').valueOf(),
-          fields: { visited_contact_uuid: '2b', visited_date: visitedDate },
-        },
-      });
-      stats = await service.getVisitStats([ '2b' ], visitCountSettings);
-      expect(lastVisitedQueries().length).to.equal(1);
-      expect(stats['2b'].lastVisitedDate).to.equal(Date.parse(visitedDate));
-
-      // an older report cannot lower the max visit date
-      callback({
-        id: 'report3',
-        doc: {
-          _id: 'report3',
-          _rev: '1-ccc',
-          type: 'data_record',
-          form: 'home_visit',
-          reported_date: moment('2021-03-27 12:00:00').valueOf(),
-          fields: { visited_contact_uuid: '2b' },
-        },
-      });
-      stats = await service.getVisitStats([ '2b' ], visitCountSettings);
-      expect(lastVisitedQueries().length).to.equal(1);
-      expect(stats['2b'].lastVisitedDate).to.equal(Date.parse(visitedDate));
-    });
-
-    it('should invalidate the cache when a visit report is edited', async () => {
-      sessionService.isAdmin.returns(false);
-      sessionService.isOnlineOnly = sinon.stub().returns(false);
-      authService.has.resolves(true);
-      localDb.query
-        .withArgs('medic-client/contacts_by_last_visited')
-        .returns({ rows: [ { key: '2b', value: moment('2021-04-01 10:00:00').valueOf() } ] });
-      localDb.query
-        .withArgs('medic-client/visits_by_date')
-        .returns({ rows: [] });
-
-      await service.getVisitStats([ '2b' ], visitCountSettings);
-
-      const { callback } = changesService.subscribe.args[0][0];
-      // an edit can lower the max visit date (or move the visit to another contact),
-      // so the cache cannot be patched
-      callback({
-        id: 'report1',
-        doc: {
-          _id: 'report1',
-          _rev: '2-abc',
-          type: 'data_record',
-          form: 'home_visit',
-          reported_date: moment('2021-04-05 12:00:00').valueOf(),
-          fields: { visited_contact_uuid: '2b' },
-        },
-      });
-
-      await service.getVisitStats([ '2b' ], visitCountSettings);
-
-      const lastVisitedQueries = localDb.query
-        .getCalls()
-        .filter(call => call.args[0] === 'medic-client/contacts_by_last_visited');
-      expect(lastVisitedQueries.length).to.equal(2);
-    });
-
-    it('should not cache last visited dates when online', async () => {
-      sessionService.isAdmin.returns(false);
-      sessionService.isOnlineOnly = sinon.stub().returns(true);
       authService.has.resolves(true);
       localDb.query.returns({ rows: [] });
 
       await service.getVisitStats([ '2b' ], visitCountSettings);
       await service.getVisitStats([ '2b' ], visitCountSettings);
 
+      // there is no result caching: refreshes triggered by the changes feed re-query the views
       expect(localDb.query.callCount).to.equal(2);
-      expect(changesService.subscribe.callCount).to.equal(0);
     });
+
 
     it('should cache the permission check', async () => {
       sessionService.isAdmin.returns(false);
-      sessionService.isOnlineOnly = sinon.stub().returns(true);
       authService.has.resolves(true);
       localDb.query.returns({ rows: [] });
 
@@ -758,7 +543,6 @@ describe('UHCStats Service', () => {
 
     it('should not cache a failed permission check', async () => {
       sessionService.isAdmin.returns(false);
-      sessionService.isOnlineOnly = sinon.stub().returns(true);
       authService.has.onCall(0).rejects(new Error('503'));
       authService.has.resolves(true);
       localDb.query.returns({ rows: [] });
