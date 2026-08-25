@@ -143,7 +143,7 @@
     "csv": "^6.4.1",
     "csv-writer": "^1.6.0",
     "deep-equal-in-any-order": "^2.1.0",
-    "doctoc": "^2.2.1",
+    "doctoc": "^2.5.0",
     "eslint": "^9.36.0",
     "eslint-plugin-angular": "^4.1.0",
     "eslint-plugin-async": "^0.1.1",
