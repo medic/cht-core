@@ -191,14 +191,7 @@ const ensureOverlay = (position) => {
   }
 };
 
-const handleReposition = ($picker, $trigger) => {
-  if (!$picker.is(':visible') || !$trigger.is(':visible')) {
-    return;
-  }
-  const offset = $trigger.offset();
-  if (!offset) {
-    return;
-  }
+const computeAnchoredPosition = ($picker, $trigger, offset) => {
   const height = $trigger.outerHeight();
   const pickerHeight = $picker.outerHeight() || 300;
   const pickerWidth = $picker.outerWidth() || 280;
@@ -221,6 +214,20 @@ const handleReposition = ($picker, $trigger) => {
   if (left - scrollLeft < 0) {
     left = scrollLeft;
   }
+
+  return { top, left };
+};
+
+const handleReposition = ($picker, $trigger) => {
+  if (!$picker.is(':visible') || !$trigger.is(':visible')) {
+    return;
+  }
+  const offset = $trigger.offset();
+  if (!offset) {
+    return;
+  }
+
+  const { top, left } = computeAnchoredPosition($picker, $trigger, offset);
 
   $picker.css({
     top: top + 'px',
