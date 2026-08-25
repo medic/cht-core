@@ -42,9 +42,9 @@ describe('UHCVisitDisplay Service', () => {
   });
 
   it('should return nothing without stats or without a last visited date', () => {
-    expect(service.getVisitDetails(null as any)).to.equal(undefined);
-    expect(service.getVisitDetails({} as any)).to.equal(undefined);
-    expect(service.getVisitDetails({ lastVisitedDate: undefined, count: 2 })).to.equal(undefined);
+    expect(service.getVisitDetails(null as any)).to.be.undefined;
+    expect(service.getVisitDetails({} as any)).to.be.undefined;
+    expect(service.getVisitDetails({ lastVisitedDate: undefined, count: 2 })).to.be.undefined;
     expect(translateService.instant.callCount).to.equal(0);
   });
 
@@ -52,7 +52,7 @@ describe('UHCVisitDisplay Service', () => {
     const details = service.getVisitDetails({ lastVisitedDate: 0 } as any);
 
     expect(details!.overdue).to.equal(true);
-    expect(details!.visits).to.equal(undefined);
+    expect(details!.visits).to.be.undefined;
   });
 
   it('should mark contacts that were never visited as overdue', () => {
@@ -95,7 +95,7 @@ describe('UHCVisitDisplay Service', () => {
   it('should not set a visit status without a count goal', () => {
     const details = service.getVisitDetails({ lastVisitedDate: new Date().getTime(), count: 1 });
 
-    expect(details!.visits!.status).to.equal(undefined);
+    expect(details!.visits!.status).to.be.undefined;
     expect(details!.visits!.count).to.equal(JSON.stringify([ 'contacts.visits.count', { count: '1' } ]));
   });
 
@@ -152,7 +152,7 @@ describe('UHCVisitDisplay Service', () => {
 
       const visitDetails = await service.getChildrenVisitStats(children);
 
-      expect(visitDetails).to.equal(undefined);
+      expect(visitDetails).to.be.undefined;
       expect(settingsService.get.callCount).to.equal(0);
       expect(uhcStatsService.getVisitStats.callCount).to.equal(0);
     });
@@ -162,7 +162,7 @@ describe('UHCVisitDisplay Service', () => {
 
       const visitDetails = await service.getChildrenVisitStats(buildChildren());
 
-      expect(visitDetails).to.equal(undefined);
+      expect(visitDetails).to.be.undefined;
     });
 
     it('should not touch the input children', async () => {

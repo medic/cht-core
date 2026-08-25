@@ -294,11 +294,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         const matchedContact = this.contactChangeFilterService.matchContact(change, this.selectedContact);
         const contactDeleted = this.contactChangeFilterService.isDeleted(change);
         if (matchedContact && contactDeleted) {
-          if (!this.selectedContact?.doc) {
-            return;
-          }
-          const parentId = this.selectedContact.doc.parent && this.selectedContact.doc.parent._id;
-          return this.router.navigate(['/contacts', parentId]);
+          return this.navigateToParent();
         }
         if (this.isChildrenVisitStatsOnlyChange(change)) {
           // only the visit stats displayed on the children rows can be affected: refresh those
@@ -309,6 +305,14 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       }
     });
     this.subscriptions.add(changesSubscription);
+  }
+
+  private navigateToParent() {
+    if (!this.selectedContact?.doc) {
+      return;
+    }
+    const parentId = this.selectedContact.doc.parent && this.selectedContact.doc.parent._id;
+    return this.router.navigate(['/contacts', parentId]);
   }
 
   // stable row identity, so late annotations (visit stats, task counts) don't re-create every row

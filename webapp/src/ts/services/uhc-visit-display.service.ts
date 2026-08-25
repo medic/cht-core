@@ -20,12 +20,12 @@ export class UHCVisitDisplayService {
   private readonly MAX_DISPLAYED_VISIT_COUNT = 99;
 
   constructor(
-    private translateService: TranslateService,
-    private relativeDateService: RelativeDateService,
-    private settingsService: SettingsService,
-    private uhcSettingsService: UHCSettingsService,
-    private uhcStatsService: UHCStatsService,
-    private ngZone: NgZone,
+    private readonly translateService: TranslateService,
+    private readonly relativeDateService: RelativeDateService,
+    private readonly settingsService: SettingsService,
+    private readonly uhcSettingsService: UHCSettingsService,
+    private readonly uhcStatsService: UHCStatsService,
+    private readonly ngZone: NgZone,
   ) { }
 
   /**
@@ -67,12 +67,13 @@ export class UHCVisitDisplayService {
    * display. Pure: merging the result into a contact row is the caller's choice.
    */
   getVisitDetails(stats: { lastVisitedDate?: number; count: number; countGoal?: number }): VisitDetails | undefined {
-    if (!stats || !Number.isInteger(stats.lastVisitedDate)) {
+    const lastVisitedDate = stats?.lastVisitedDate;
+    if (typeof lastVisitedDate !== 'number' || !Number.isInteger(lastVisitedDate)) {
       return;
     }
     const details: VisitDetails = {
-      lastVisitedDate: stats.lastVisitedDate!,
-      ...this.getVisitOverdue(stats.lastVisitedDate),
+      lastVisitedDate,
+      ...this.getVisitOverdue(lastVisitedDate),
     };
     if (Number.isInteger(stats.count)) {
       details.visits = this.getVisitCountDetails(stats.count, stats.countGoal);
@@ -87,8 +88,7 @@ export class UHCVisitDisplayService {
         summary: this.translateService.instant('contact.last.visited.unknown'),
       };
     }
-    const now = new Date().getTime();
-    const overduePeriodAgo = now - (this.OVERDUE_PERIOD_DAYS * 24 * 60 * 60 * 1000);
+    const overduePeriodAgo = Date.now() - (this.OVERDUE_PERIOD_DAYS * 24 * 60 * 60 * 1000);
     return {
       overdue: lastVisitedDate <= overduePeriodAgo,
       summary: this.translateService.instant(

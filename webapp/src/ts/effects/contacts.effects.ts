@@ -190,8 +190,7 @@ export class ContactsEffects {
       if (!visitStats) {
         return;
       }
-      // the details are merged into the store's current children by contact id, so concurrent updates
-      // to the children (e.g. task counts) are kept; only a change of selection discards them
+      // merged by contact id in the reducer, so concurrent children updates (e.g. task counts) are kept
       await this.verifySelectedContactNotChanged(contactId);
       this.contactsActions.updateSelectedContactsVisitStats(visitStats);
     } catch (error) {
