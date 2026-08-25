@@ -157,9 +157,9 @@ describe('cht-form web component - Bikram Sambat Widget', () => {
 
     for (const link of links) {
       const href = await link.getAttribute('href');
-      // No links should use javascript: or arbitrary protocols
+      // No links should use javascript:, data:, vbscript: or other executable protocols
       if (href) {
-        expect(href.trim().toLowerCase().startsWith('javascript:')).to.be.false;
+        expect(href.trim().toLowerCase()).to.not.match(/^(javascript|data|vbscript):/);
       }
     }
 
