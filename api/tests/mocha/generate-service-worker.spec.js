@@ -91,7 +91,20 @@ describe('generate service worker', () => {
       modifyURLPrefix: {
         'webapp/': '/'
       },
-      maximumFileSizeToCacheInBytes: 31457280
+      maximumFileSizeToCacheInBytes: 31457280,
+      runtimeCaching: [{
+        urlPattern: /^https:\/\/[a-z]\.tile\.openstreetmap\.org\//,
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'cht-map-tiles',
+          cacheableResponse: { statuses: [200] },
+          expiration: {
+            maxEntries: 2000,
+            maxAgeSeconds: 2592000,
+            purgeOnQuotaError: true,
+          },
+        },
+      }],
     }]);
 
     chai.expect(db.medic.get.callCount).to.equal(1);
