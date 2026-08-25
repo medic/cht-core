@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const db = require('../../db');
 const config = require('../../config');
 const dateFormat = require('./date-format');
@@ -163,7 +162,7 @@ module.exports = {
       ],
       getRows: record => {
         const tasks = normalizeTasks(record);
-        return _.flatten(tasks.map(task => {
+        return tasks.flatMap(task => {
           const history = buildHistory(task);
 
           if (!task.messages) {
@@ -207,7 +206,7 @@ module.exports = {
             message.to,
             message.message
           ]);
-        }), true);
+        });
       },
       hydrate: hydrate
     });
