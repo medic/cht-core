@@ -53,12 +53,12 @@ describe('UHC visit stats in the contact hierarchy view', () => {
 
   const visitReports = [
     // two visits on distinct days: meets the goal of 2
-    visitReport(visitedOnGoalHousehold, 0),
+    visitReport(visitedOnGoalHousehold, 1),
     visitReport(visitedOnGoalHousehold, 5),
     // one recent visit: below the goal but not overdue
     visitReport(visitedBelowGoalHousehold, 5),
     // last visit outside both the UHC interval and the 30 day overdue period
-    visitReport(overdueHousehold, 45),
+    visitReport(overdueHousehold, 40),
   ];
 
   const configureUHC = async (rolesWithPermission) => {
@@ -92,14 +92,15 @@ describe('UHC visit stats in the contact hierarchy view', () => {
 
     const visitedOnGoal = await contactPage.getChildVisitStats(visitedOnGoalHousehold._id);
     expect(visitedOnGoal).to.deep.include({ hasVisitBadge: true, overdue: false, count: '2', status: 'success' });
-    expect(visitedOnGoal.summary).to.contain('Visited');
+    expect(visitedOnGoal.summary).to.equal('Visited a day ago');
 
     const visitedBelowGoal = await contactPage.getChildVisitStats(visitedBelowGoalHousehold._id);
     expect(visitedBelowGoal).to.deep.include({ hasVisitBadge: true, overdue: false, count: '1', status: 'warning' });
-    expect(visitedBelowGoal.summary).to.contain('Visited');
+    expect(visitedBelowGoal.summary).to.equal('Visited 5 days ago');
 
     const overdue = await contactPage.getChildVisitStats(overdueHousehold._id);
     expect(overdue).to.deep.include({ hasVisitBadge: true, overdue: true, count: '0', status: 'danger' });
+    expect(overdue.summary).to.equal('Visited a month ago');
 
     const neverVisited = await contactPage.getChildVisitStats(neverVisitedHousehold._id);
     expect(neverVisited).to.deep.include({ hasVisitBadge: true, overdue: true, count: '0', status: 'danger' });
@@ -127,8 +128,14 @@ describe('UHC visit stats in the contact hierarchy view', () => {
 
     await commonPage.goToPeople(healthCenter._id);
     await contactPage.waitForContactLoaded();
-    // the stats load in the background with no visual indication, so allow them time to not appear
-    await browser.pause(1500);
+
+    // nothing on screen signals that the stats load was skipped, so wait for the badge that test one
+    // proved appears with the permission, and expect that wait to time out
+    const badgeAppeared = await contactPage.childRowSelectors
+      .childVisitBadge(visitedOnGoalHousehold._id)
+      .waitForDisplayed({ timeout: 3000 })
+      .then(() => true, () => false);
+    expect(badgeAppeared).to.equal(false);
 
     const visitedOnGoal = await contactPage.getChildVisitStats(visitedOnGoalHousehold._id);
     expect(visitedOnGoal).to.deep.include({ hasVisitBadge: false, overdue: false });
