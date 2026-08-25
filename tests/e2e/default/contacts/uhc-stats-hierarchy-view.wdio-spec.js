@@ -36,9 +36,12 @@ describe('UHC visit stats in the contact hierarchy view', () => {
     parent: { _id: healthCenter._id, parent: { _id: districtHospital._id } },
   });
 
+  // the user's facility must be an ancestor of the opened place: the home place's own profile
+  // deliberately loads no child places (see ContactsEffects.shouldGetDescendants), because the
+  // LHS list already shows them there
   const offlineUser = userFactory.build({
     username: 'offline-uhc-user',
-    place: healthCenter._id,
+    place: districtHospital._id,
     roles: [ROLE],
   });
 
