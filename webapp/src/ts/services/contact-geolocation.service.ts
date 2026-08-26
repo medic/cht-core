@@ -15,6 +15,20 @@ export const isValidGeolocation = (geolocation: any): boolean => {
     isValidCoordinate(geolocation?.longitude, MAX_LONGITUDE);
 };
 
+const EARTH_RADIUS_METERS = 6371000;
+const toRadians = (degrees: number) => degrees * Math.PI / 180;
+
+/**
+ * Great-circle (haversine) distance in meters between two geolocations.
+ */
+export const getDistanceInMeters = (from, to): number => {
+  const latitudeDelta = toRadians(to.latitude - from.latitude);
+  const longitudeDelta = toRadians(to.longitude - from.longitude);
+  const a = Math.sin(latitudeDelta / 2) ** 2 +
+    Math.cos(toRadians(from.latitude)) * Math.cos(toRadians(to.latitude)) * Math.sin(longitudeDelta / 2) ** 2;
+  return 2 * EARTH_RADIUS_METERS * Math.asin(Math.sqrt(a));
+};
+
 const parseJsonDataset = (value: string | undefined): any => {
   if (!value) {
     return undefined;

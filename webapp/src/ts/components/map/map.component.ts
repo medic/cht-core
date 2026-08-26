@@ -10,19 +10,22 @@ const OSM_URL = 'https://www.openstreetmap.org';
 const ZOOM = 17;
 const MAX_ZOOM = 19;
 const MARKER_SIZE = 32;
+const USER_LOCATION_SIZE = 16;
 // same tile server the enketo geopoint widget uses, so the CSP img-src rules already cover it
 const [ tileConfig ] = enketoConfig.maps;
 
 export interface MapMarker {
   geolocation: { latitude: number; longitude: number };
-  label?: string;
+  label?: string; // shown on hover
+  badge?: string; // short text always shown under the marker
   className?: string;
   data?: any;
 }
 
 /**
- * Renders a Leaflet map with either a single `geolocation` or a list of `markers`. The map is created when the
- * container appears and refreshed when the inputs change, so it can be bound to data that loads asynchronously.
+ * Renders a Leaflet map with either a single `geolocation` or a list of `markers`, optionally with the device's
+ * `userLocation`. The map is created when the container appears and refreshed when the inputs change, so it can be
+ * bound to data that loads asynchronously.
  */
 @Component({
   selector: 'mm-map',
@@ -34,6 +37,7 @@ export interface MapMarker {
 export class MapComponent implements OnChanges, OnDestroy {
   @Input() geolocation;
   @Input() markers?: MapMarker[];
+  @Input() userLocation?: { latitude: number; longitude: number; accuracy?: number };
   @Output() markerClick = new EventEmitter<MapMarker>();
 
   @ViewChild('map') set mapElement(element: ElementRef | undefined) {
@@ -44,6 +48,10 @@ export class MapComponent implements OnChanges, OnDestroy {
 
   private map;
   private markersLayer;
+  private userLocationLayer;
+  private resizeObserver?: ResizeObserver;
+  private fitting = false;
+  private userMoved = false;
   validMarkers: MapMarker[] = [];
 
   get isValid() {
@@ -67,19 +75,32 @@ export class MapComponent implements OnChanges, OnDestroy {
     }
     if (!this.isValid) {
       // the container is removed from the template along with the map
-      this.map.remove();
-      this.map = undefined;
+      this.removeMap();
       return;
     }
-    this.renderMarkers();
+    this.render();
   }
 
   ngOnDestroy() {
+    this.removeMap();
+  }
+
+  private removeMap() {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = undefined;
     this.map?.remove();
+    this.map = undefined;
+    this.userMoved = false;
   }
 
   private initMap(container: HTMLElement) {
     this.map = L.map(container, { scrollWheelZoom: false });
+    // any move we didn't trigger ourselves is the user taking control of the view
+    this.map.on('movestart', () => this.userMoved = this.userMoved || !this.fitting);
+    // Leaflet only sizes itself on creation and on window resize. The container often isn't laid out yet when the
+    // map is created (e.g. right after a page load) and Leaflet would keep rendering into that initial sliver.
+    this.resizeObserver = new ResizeObserver(() => this.onContainerResize());
+    this.resizeObserver.observe(container);
     L.tileLayer(tileConfig.tiles[0], {
       attribution: tileConfig.attribution,
       maxZoom: MAX_ZOOM,
@@ -88,26 +109,78 @@ export class MapComponent implements OnChanges, OnDestroy {
       crossOrigin: true,
     }).addTo(this.map);
     this.markersLayer = L.layerGroup().addTo(this.map);
-    this.renderMarkers();
+    this.userLocationLayer = L.layerGroup().addTo(this.map);
+    this.render();
   }
 
-  private renderMarkers() {
+  private render() {
     this.markersLayer.clearLayers();
     this.validMarkers.forEach(marker => this.markersLayer.addLayer(this.createMarker(marker)));
+    this.renderUserLocation();
 
-    const positions = this.validMarkers.map(marker => this.toLatLng(marker));
-    if (positions.length === 1) {
-      this.map.setView(positions[0], ZOOM);
+    this.fitView();
+  }
+
+  private fitView() {
+    const positions = this.validMarkers.map(marker => this.toLatLng(marker.geolocation));
+    if (this.hasUserLocation()) {
+      positions.push(this.toLatLng(this.userLocation));
+    }
+
+    this.fitting = true;
+    try {
+      if (positions.length === 1) {
+        this.map.setView(positions[0], ZOOM);
+      } else {
+        this.map.fitBounds(L.latLngBounds(positions), { padding: [MARKER_SIZE, MARKER_SIZE], maxZoom: ZOOM });
+      }
+    } finally {
+      this.fitting = false;
+    }
+  }
+
+  private onContainerResize() {
+    if (!this.map) {
       return;
     }
-    this.map.fitBounds(L.latLngBounds(positions), { padding: [MARKER_SIZE, MARKER_SIZE], maxZoom: ZOOM });
+    this.map.invalidateSize({ animate: false });
+    if (!this.userMoved) {
+      this.fitView();
+    }
+  }
+
+  private hasUserLocation() {
+    return isValidGeolocation(this.userLocation);
+  }
+
+  private renderUserLocation() {
+    this.userLocationLayer.clearLayers();
+    if (!this.hasUserLocation()) {
+      return;
+    }
+
+    const position = this.toLatLng(this.userLocation);
+    const accuracy = this.userLocation!.accuracy;
+    if (typeof accuracy === 'number' && Number.isFinite(accuracy) && accuracy > 0) {
+      this.userLocationLayer.addLayer(L.circle(position, { radius: accuracy, interactive: false, weight: 1 }));
+    }
+    this.userLocationLayer.addLayer(L.marker(position, {
+      interactive: false,
+      keyboard: false,
+      icon: L.divIcon({
+        className: 'user-location',
+        iconSize: [USER_LOCATION_SIZE, USER_LOCATION_SIZE],
+        iconAnchor: [USER_LOCATION_SIZE / 2, USER_LOCATION_SIZE / 2],
+      }),
+    }));
   }
 
   private createMarker(marker: MapMarker) {
-    const layer = L.marker(this.toLatLng(marker), {
+    const badge = marker.badge ? `<span class="map-marker-badge">${this.escapeHtml(marker.badge)}</span>` : '';
+    const layer = L.marker(this.toLatLng(marker.geolocation), {
       icon: L.divIcon({
         className: ['map-marker', marker.className].filter(Boolean).join(' '),
-        html: '<i class="fa fa-map-marker"></i>',
+        html: `<i class="fa fa-map-marker"></i>${badge}`,
         iconSize: [MARKER_SIZE, MARKER_SIZE],
         iconAnchor: [MARKER_SIZE / 2, MARKER_SIZE],
       }),
@@ -119,7 +192,13 @@ export class MapComponent implements OnChanges, OnDestroy {
     return layer;
   }
 
-  private toLatLng(marker: MapMarker) {
-    return [marker.geolocation.latitude, marker.geolocation.longitude];
+  private escapeHtml(text: string) {
+    const element = document.createElement('span');
+    element.textContent = text;
+    return element.innerHTML;
+  }
+
+  private toLatLng(geolocation) {
+    return [geolocation.latitude, geolocation.longitude];
   }
 }

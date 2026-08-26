@@ -2,7 +2,11 @@ import { TestBed } from '@angular/core/testing';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
-import { ContactGeolocationService, GeolocationEditState } from '@mm-services/contact-geolocation.service';
+import {
+  ContactGeolocationService,
+  GeolocationEditState,
+  getDistanceInMeters,
+} from '@mm-services/contact-geolocation.service';
 
 describe('ContactGeolocationService', () => {
   let service: ContactGeolocationService;
@@ -784,5 +788,30 @@ describe('GeolocationEditState', () => {
       const state = new GeolocationEditState(buildCaptureInput({ context: 'other' }));
       expect(state.isHome).to.be.false;
     });
+  });
+});
+
+describe('getDistanceInMeters', () => {
+  it('should return 0 for the same point', () => {
+    const point = { latitude: -1.2921, longitude: 36.8219 };
+    expect(getDistanceInMeters(point, point)).to.equal(0);
+  });
+
+  it('should be symmetric', () => {
+    const a = { latitude: -1.2921, longitude: 36.8219 };
+    const b = { latitude: -1.31, longitude: 36.79 };
+    expect(getDistanceInMeters(a, b)).to.equal(getDistanceInMeters(b, a));
+  });
+
+  it('should match known distances', () => {
+    // one degree of latitude along a meridian is ~111.2km
+    expect(getDistanceInMeters({ latitude: 0, longitude: 0 }, { latitude: 1, longitude: 0 })).to.be.closeTo(111195, 1);
+    // Nairobi to Mombasa
+    const nairobi = { latitude: -1.2921, longitude: 36.8219 };
+    const mombasa = { latitude: -4.0435, longitude: 39.6682 };
+    expect(getDistanceInMeters(nairobi, mombasa)).to.be.closeTo(440000, 2000);
+    // antipodes are half the circumference apart
+    const antipode = { latitude: 0, longitude: 180 };
+    expect(getDistanceInMeters({ latitude: 0, longitude: 0 }, antipode)).to.be.closeTo(20015087, 1);
   });
 });

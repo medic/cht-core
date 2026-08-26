@@ -10,7 +10,7 @@
       <div>{{ 'tasks.map.empty' | translate }}</div>
     </div>
   } @else {
-    <mm-map [markers]="markers" (markerClick)="onMarkerClick($event)"></mm-map>
+    <mm-map [markers]="markers" [userLocation]="userLocation" (markerClick)="onMarkerClick($event)"></mm-map>
     @if (tasksWithoutLocation) {
       <p class="tasks-without-location">{{ 'tasks.map.without.location' | translate: { COUNT: tasksWithoutLocation } }}</p>
     }

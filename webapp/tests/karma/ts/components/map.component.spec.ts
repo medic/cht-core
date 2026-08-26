@@ -134,6 +134,140 @@ describe('MapComponent', () => {
       expect(emitted).to.deep.equal([markers[1]]);
     });
 
+    it('should render badges under the markers, escaped', async () => {
+      await render({ markers: [
+        { ...markers[0], badge: '315 m' },
+        { ...markers[1], badge: '<b>x</b>' },
+      ] });
+
+      const badges = getElements('.map-marker .map-marker-badge');
+      expect(badges.map(badge => badge.innerText)).to.deep.equal(['315 m', '<b>x</b>']);
+      expect(badges[1].querySelector('b')).to.equal(null);
+    });
+  });
+
+  describe('user location', () => {
+    const markers = [{ geolocation: { latitude: -1.29, longitude: 36.82 }, data: 'a' }];
+
+    it('should draw the user location with its accuracy and fit the map around everything', async () => {
+      await render({ markers, userLocation: { latitude: -1.31, longitude: 36.79, accuracy: 25 } });
+
+      const userMarker = getElement('.leaflet-marker-icon.user-location');
+      expect(userMarker).to.not.equal(undefined);
+      expect(userMarker.classList.contains('leaflet-interactive')).to.equal(false);
+      expect(getElements('.leaflet-overlay-pane path').length).to.equal(1); // the accuracy circle
+
+      const bounds = fixture.componentInstance.map.getBounds();
+      expect(bounds.contains([-1.29, 36.82])).to.equal(true);
+      expect(bounds.contains([-1.31, 36.79])).to.equal(true);
+      expect(fixture.componentInstance.map.getZoom()).to.be.lessThan(17);
+      expect(getElements('.leaflet-marker-icon.map-marker').length).to.equal(1);
+      expect(getElement('.map-container a.map-link')).to.not.equal(undefined); // still a single task marker
+    });
+
+    it('should not draw an accuracy circle without a usable accuracy', async () => {
+      await render({ markers, userLocation: { latitude: -1.31, longitude: 36.79 } });
+
+      expect(getElement('.leaflet-marker-icon.user-location')).to.not.equal(undefined);
+      expect(getElements('.leaflet-overlay-pane path').length).to.equal(0);
+    });
+
+    it('should ignore an invalid user location', async () => {
+      await render({ markers, userLocation: { code: 1, message: 'denied' } });
+
+      expect(getElement('.leaflet-marker-icon.user-location')).to.equal(undefined);
+      expect(fixture.componentInstance.map.getZoom()).to.equal(17);
+    });
+
+    it('should not render a map for a user location alone', async () => {
+      await render({ markers: [], userLocation: { latitude: -1.31, longitude: 36.79 } });
+      expect(getElement('.map-container')).to.equal(undefined);
+    });
+
+    it('should not emit clicks for the user location', async () => {
+      await render({ markers, userLocation: { latitude: -1.31, longitude: 36.79 } });
+      const emitted: any[] = [];
+      fixture.componentInstance.markerClick.subscribe(marker => emitted.push(marker));
+
+      getElement('.leaflet-marker-icon.user-location').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+      expect(emitted).to.deep.equal([]);
+    });
+
+    it('should add the user location when it arrives later', async () => {
+      await render({ markers });
+      expect(getElement('.leaflet-marker-icon.user-location')).to.equal(undefined);
+      expect(fixture.componentInstance.map.getZoom()).to.equal(17);
+
+      await render({ userLocation: { latitude: -1.31, longitude: 36.79 } });
+      expect(getElement('.leaflet-marker-icon.user-location')).to.not.equal(undefined);
+      expect(fixture.componentInstance.map.getZoom()).to.be.lessThan(17);
+    });
+  });
+
+  describe('container resizing', () => {
+    const markers = [
+      { geolocation: { latitude: -1.29, longitude: 36.82 }, data: 'a' },
+      { geolocation: { latitude: -1.31, longitude: 36.79 }, data: 'b' },
+    ];
+
+    const setContainerSize = async (width, height) => {
+      style.textContent = `.map-container .map { width: ${width}px; height: ${height}px; }`;
+      // ResizeObserver callbacks are delivered after layout, not synchronously
+      const map = fixture.componentInstance.map;
+      for (let i = 0; i < 50 && map.getSize().y !== height; i++) {
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+    };
+
+    it('should recover when the map was created before its container was laid out', async () => {
+      style.textContent = '.map-container .map { width: 400px; height: 2px; }';
+      await render({ markers });
+      const map = fixture.componentInstance.map;
+      expect(map.getSize().y).to.equal(2);
+      const bounds = map.getBounds();
+      expect(bounds.contains([-1.29, 36.82]) && bounds.contains([-1.31, 36.79])).to.equal(false);
+
+      await setContainerSize(400, 400);
+
+      expect(map.getSize().y).to.equal(400);
+      expect(map.getBounds().contains([-1.29, 36.82])).to.equal(true);
+      expect(map.getBounds().contains([-1.31, 36.79])).to.equal(true);
+      expect(map.getZoom()).to.be.lessThan(17);
+    });
+
+    it('should keep the view the user chose when the container resizes', async () => {
+      await render({ markers });
+      const map = fixture.componentInstance.map;
+
+      map.setView([0, 0], 5); // the user panned and zoomed away
+      expect(map.getZoom()).to.equal(5);
+
+      await setContainerSize(400, 600);
+
+      expect(map.getSize().y).to.equal(600);
+      expect(map.getZoom()).to.equal(5);
+      expect(map.getCenter().lat).to.be.closeTo(0, 0.001);
+      expect(map.getCenter().lng).to.be.closeTo(0, 0.001);
+    });
+
+    it('should stop observing when the map is removed', async () => {
+      await render({ markers });
+      const disconnect = sinon.spy(fixture.componentInstance.resizeObserver, 'disconnect');
+
+      await render({ markers: [] });
+
+      expect(disconnect.callCount).to.equal(1);
+      expect(fixture.componentInstance.resizeObserver).to.equal(undefined);
+    });
+  });
+
+  describe('marker updates', () => {
+    const markers = [
+      { geolocation: { latitude: -1.29, longitude: 36.82 }, label: 'Jane - Visit', className: 'overdue', data: 'a' },
+      { geolocation: { latitude: -1.31, longitude: 36.79 }, label: 'John - Follow up', data: 'b' },
+    ];
+
     it('should update the markers when the input changes', async () => {
       await render({ markers });
       expect(getElements('.leaflet-marker-icon.map-marker').length).to.equal(2);

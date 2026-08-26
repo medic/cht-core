@@ -10,6 +10,7 @@ import sinon from 'sinon';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { TranslateService } from '@mm-services/translate.service';
+import { GeolocationService } from '@mm-services/geolocation.service';
 import { TasksMapComponent } from '@mm-modules/tasks/tasks-map.component';
 
 describe('TasksMapComponent', () => {
@@ -18,6 +19,9 @@ describe('TasksMapComponent', () => {
   let store: MockStore;
   let router;
   let translateService;
+  let geolocationService;
+  let geoHandle;
+  let resolveUserLocation;
 
   const tasks: any[] = [
     {
@@ -51,8 +55,22 @@ describe('TasksMapComponent', () => {
     await fixture.whenStable();
   };
 
+  const locateUser = async (position) => {
+    resolveUserLocation(position);
+    await geolocationService.currentPromise;
+    fixture.detectChanges();
+    await fixture.whenStable();
+  };
+
   beforeEach(() => {
-    translateService = { instant: sinon.stub().returnsArg(0) };
+    translateService = {
+      instant: sinon.stub().callsFake((key, params) => params ? `${key}:${JSON.stringify(params)}` : key),
+    };
+    geoHandle = { cancel: sinon.stub() };
+    geolocationService = {
+      init: sinon.stub().returns(geoHandle),
+      currentPromise: new Promise(resolve => resolveUserLocation = resolve),
+    };
 
     TestBed.configureTestingModule({
       imports: [
@@ -63,6 +81,7 @@ describe('TasksMapComponent', () => {
       providers: [
         provideMockStore(),
         { provide: TranslateService, useValue: translateService },
+        { provide: GeolocationService, useValue: geolocationService },
       ],
     });
 
@@ -85,6 +104,7 @@ describe('TasksMapComponent', () => {
     expect(setShowContent.args).to.deep.equal([[true]]);
     expect(translateService.instant.args).to.deep.equal([['tasks.map.title']]);
     expect(setTitle.args).to.deep.equal([['tasks.map.title']]);
+    expect(geolocationService.init.callCount).to.equal(1);
   });
 
   it('should show a loader while tasks are loading', async () => {
@@ -109,12 +129,14 @@ describe('TasksMapComponent', () => {
       {
         geolocation: { latitude: -1.29, longitude: 36.82 },
         label: 'Jane - Visit',
+        badge: undefined,
         className: 'overdue',
         data: tasks[0],
       },
       {
         geolocation: { latitude: -1.31, longitude: 36.79 },
         label: 'John - Follow up',
+        badge: undefined,
         className: undefined,
         data: tasks[1],
       },
@@ -144,6 +166,69 @@ describe('TasksMapComponent', () => {
 
     expect(component.markers.length).to.equal(2);
     expect(fixture.debugElement.queryAll(By.css('.leaflet-marker-icon.map-marker')).length).to.equal(2);
+  });
+
+  describe('distance from the user', () => {
+    it('should show the user and badge every marker with its distance once the user is located', async () => {
+      await render({ tasksList: tasks });
+      expect(component.markers.map(marker => marker.badge)).to.deep.equal([undefined, undefined]);
+      expect(getElement('.user-location')).to.equal(undefined);
+
+      const position = { latitude: -1.2921, longitude: 36.8219, accuracy: 10 };
+      await locateUser(position);
+
+      expect(component.userLocation).to.deep.equal(position);
+      expect(getElement('.user-location')).to.not.equal(undefined);
+      expect(component.markers.map(marker => marker.label)).to.deep.equal(['Jane - Visit', 'John - Follow up']);
+      expect(component.markers.map(marker => marker.badge)).to.deep.equal([
+        'tasks.map.distance.m:{"DISTANCE":315}',
+        'tasks.map.distance.km:{"DISTANCE":"4.1"}',
+      ]);
+      const badges = fixture.debugElement.queryAll(By.css('.map-marker .map-marker-badge'));
+      expect(badges.map(badge => badge.nativeElement.innerText)).to.deep.equal([
+        'tasks.map.distance.m:{"DISTANCE":315}',
+        'tasks.map.distance.km:{"DISTANCE":"4.1"}',
+      ]);
+    });
+
+    it('should round distances of 10km or more to whole kilometers', async () => {
+      await render({ tasksList: [tasks[0]] });
+      await locateUser({ latitude: -1.2921, longitude: 36.9719 });
+
+      expect(component.markers[0].badge).to.equal('tasks.map.distance.km:{"DISTANCE":17}');
+    });
+
+    it('should keep distances when the task list changes', async () => {
+      await render({ tasksList: [tasks[0]] });
+      await locateUser({ latitude: -1.2921, longitude: 36.8219 });
+
+      store.overrideSelector(Selectors.getFilteredTasksList, tasks);
+      store.refreshState();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(component.markers.map(marker => marker.badge)).to.deep.equal([
+        'tasks.map.distance.m:{"DISTANCE":315}',
+        'tasks.map.distance.km:{"DISTANCE":"4.1"}',
+      ]);
+    });
+
+    it('should show neither the user nor distances when the location cannot be determined', async () => {
+      await render({ tasksList: tasks });
+      await locateUser({ code: 1, message: 'User denied Geolocation' });
+
+      expect(component.userLocation).to.equal(undefined);
+      expect(getElement('.user-location')).to.equal(undefined);
+      expect(component.markers.map(marker => marker.badge)).to.deep.equal([undefined, undefined]);
+    });
+
+    it('should cancel the geolocation handle on destroy', async () => {
+      await render({ tasksList: tasks });
+
+      component.ngOnDestroy();
+
+      expect(geoHandle.cancel.callCount).to.equal(1);
+    });
   });
 
   it('should navigate to the task when a marker is clicked', async () => {
