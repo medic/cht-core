@@ -136,12 +136,15 @@ const retryLive = async (ids, actionId) => {
   logger.warn(`bulk-operations: delete found ${live.length} doc(s) live again, retrying (action ${actionId})`);
   const result = await readForDelete(live);
   const docs = result.rows.map(row => row.doc).filter(Boolean);
-  const { copied } = await copyDocs(docs, actionId);
+  const { copied, rejected } = await copyDocs(docs, actionId);
   if (copied.length) {
     await tombstoneDocs(copied, actionId);
   }
 
-  return findLive(live);
+  // A rejected copy fails whatever the doc looks like afterwards. We leave it alone, but if another
+  // writer deletes that revision before the check below it would otherwise read as a clean success,
+  // with the body never kept and the infodoc purged.
+  return [ ...new Set([ ...rejected, ...await findLive(live) ]) ];
 };
 
 /**
