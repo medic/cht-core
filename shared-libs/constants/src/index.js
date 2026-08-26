@@ -84,6 +84,7 @@ const BULK_OPERATIONS = {
   ACTIONS: {
     DELETE: 'delete',
     SET_CONTACT: 'set-contact',
+    SET_PARENT: 'set-parent',
     DELETE_USER: 'delete-user',
   },
   STATUSES: {

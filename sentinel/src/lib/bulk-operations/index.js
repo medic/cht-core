@@ -3,6 +3,7 @@ const logger = require('@medic/logger');
 const db = require('../../db');
 const { BULK_OPERATIONS, PREFIXES } = require('@medic/constants');
 const { setContact } = require('./set-contact');
+const { setParent } = require('./set-parent');
 const { deleteUser } = require('./delete-user');
 const { deleteDocs } = require('./delete');
 
@@ -14,6 +15,7 @@ const RETRY_TIMEOUT = 60000;
 
 const HANDLERS = {
   [ACTIONS.SET_CONTACT]: setContact,
+  [ACTIONS.SET_PARENT]: setParent,
   [ACTIONS.DELETE_USER]: deleteUser,
   [ACTIONS.DELETE]: deleteDocs,
 };

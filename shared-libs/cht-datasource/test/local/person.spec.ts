@@ -340,6 +340,7 @@ describe('local person', () => {
       let createDocOuter: SinonStub;
       let createDocInner: SinonStub;
       let getTypeById: SinonStub;
+      let getContactTypes: SinonStub;
       let getReportedDateTimestamp: SinonStub;
 
       beforeEach(() => {
@@ -348,7 +349,10 @@ describe('local person', () => {
         createDocInner = sinon.stub().resolves(personDoc);
         createDocOuter = sinon.stub(LocalDoc, 'createDoc').returns(createDocInner);
         settingsGetAll.returns(settings);
-        getTypeById = sinon.stub(contactTypeUtils, 'getTypeById');
+        // getTypeById resolves the hardcoded types too now, so the default mirrors that
+        getTypeById = sinon.stub(contactTypeUtils, 'getTypeById')
+          .returns({ id: 'person', person: true, parents: [ parent.type ] } as never);
+        getContactTypes = sinon.stub(contactTypeUtils, 'getContactTypes').returns([]);
         isPersonType.returns(true);
         getReportedDateTimestamp = sinon.stub(LocalCore, 'getReportedDateTimestamp');
       });
@@ -395,7 +399,7 @@ describe('local person', () => {
           expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
           expect(getTypeById.calledOnceWithExactly(settings, personInput.type)).to.be.true;
-          expect(isPersonType.calledOnceWithExactly({ id: 'not-person' })).to.be.true;
+          expect(isPersonType.calledOnceWithExactly(typeData)).to.be.true;
           expect(getDocByIdInner.notCalled).to.be.true;
           expect(getReportedDateTimestamp.notCalled).to.be.true;
           expect(createDocInner.notCalled).to.be.true;
@@ -419,7 +423,7 @@ describe('local person', () => {
         expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
         expect(getTypeById.args).to.deep.equal([[settings, input.type], [settings, input.type]]);
-        expect(isPersonType.calledOnceWithExactly({ id: input.type })).to.be.true;
+        expect(isPersonType.calledOnceWithExactly(getTypeById.returnValues[0])).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(input.parent)).to.be.true;
         expect(getReportedDateTimestamp.calledOnceWithExactly(undefined)).to.be.true;
         expect(createDocInner.calledOnceWithExactly({
@@ -438,6 +442,7 @@ describe('local person', () => {
           reported_date: 123445566
         };
         getTypeById.returns(customPersonType);
+        getContactTypes.returns([customPersonType]);
         getDocByIdInner.resolves(parent);
         const reportedDate = new Date().getTime();
         getReportedDateTimestamp.returns(reportedDate);
@@ -461,6 +466,27 @@ describe('local person', () => {
         })).to.be.true;
       });
 
+      it('stores the hardcoded type when nothing is configured, rather than a contact_type', async () => {
+        // getTypeById answers for the hardcoded types, so the stored shape has to come from the
+        // configuration instead of from the lookup being truthy.
+        const input = {
+          name: 'user-1',
+          type: 'person',
+          parent: parent._id,
+        };
+        getTypeById.returns({ id: 'person', person: true, parents: [parent.type] });
+        getContactTypes.returns([]);
+        getDocByIdInner.resolves(parent);
+        const reportedDate = new Date().getTime();
+        getReportedDateTimestamp.returns(reportedDate);
+
+        await Person.v1.create(localContext)(input);
+
+        const created = createDocInner.args[0][0];
+        expect(created.type).to.equal('person');
+        expect(created).to.not.have.property('contact_type');
+      });
+
       it('throws error when parent doc is not found', async () => {
         const input = {
           name: 'user-1',
@@ -476,7 +502,7 @@ describe('local person', () => {
         expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
         expect(getTypeById.calledOnceWithExactly(settings, input.type)).to.be.true;
-        expect(isPersonType.calledOnceWithExactly({ id: input.type })).to.be.true;
+        expect(isPersonType.calledOnceWithExactly(getTypeById.returnValues[0])).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(input.parent)).to.be.true;
         expect(getReportedDateTimestamp.notCalled).to.be.true;
         expect(createDocInner.notCalled).to.be.true;
@@ -499,7 +525,7 @@ describe('local person', () => {
         expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
         expect(getTypeById.args).to.deep.equal([[settings, input.type], [settings, input.type]]);
-        expect(isPersonType.calledOnceWithExactly({ id: input.type })).to.be.true;
+        expect(isPersonType.calledOnceWithExactly(getTypeById.returnValues[0])).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(input.parent)).to.be.true;
         expect(getReportedDateTimestamp.notCalled).to.be.true;
         expect(createDocInner.notCalled).to.be.true;

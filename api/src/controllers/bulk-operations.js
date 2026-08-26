@@ -50,7 +50,7 @@ module.exports = {
      *                         enum: [queued, completed, failed]
      *                       action:
      *                         type: string
-     *                         enum: [delete, set-contact, delete-user]
+     *                         enum: [delete, set-contact, set-parent, delete-user]
      *                       updated_date:
      *                         type: string
      *                         format: date-time
