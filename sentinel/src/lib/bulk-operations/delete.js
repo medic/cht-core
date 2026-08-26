@@ -67,6 +67,24 @@ const findUnretained = async (ids) => {
   return result.rows.filter(row => row.error || row.value?.deleted).map(row => row.key);
 };
 
+// Attachments are inlined so the copy is complete; conflicts are needed to delete every leaf.
+const readForDelete = (ids) => db.medic.allDocs({
+  keys: ids,
+  include_docs: true,
+  attachments: true,
+  conflicts: true,
+});
+
+// A row comes back live, already deleted, or missing. Only a live one still needs work.
+const findLive = async (ids) => {
+  if (!ids.length) {
+    return [];
+  }
+
+  const result = await db.medic.allDocs({ keys: ids });
+  return result.rows.filter(row => row.id && !row.value?.deleted).map(row => row.key);
+};
+
 /**
  * Copies the docs and returns only those the delete database accepted. bulkDocs resolves with an
  * error row rather than rejecting, so a doc whose copy failed has to be left alone: deleting it would
@@ -102,6 +120,31 @@ const tombstoneDocs = async (docs, actionId) => {
 };
 
 /**
+ * One more pass over anything that is live again. A leaf that replicated in after the first snapshot
+ * was never tombstoned, so CouchDB promotes it and the doc comes back, while the write we did report
+ * no error at all. The retry is a full pass rather than another tombstone, so the revision we have
+ * not seen before is copied before it is deleted and nothing is ever removed without its body being
+ * kept. Bounded to one attempt: under continuous replication a loop might never finish.
+ * @returns {Promise<string[]>} the ids still live afterwards, which have failed
+ */
+const retryLive = async (ids, actionId) => {
+  const live = await findLive(ids);
+  if (!live.length) {
+    return [];
+  }
+
+  logger.warn(`bulk-operations: delete found ${live.length} doc(s) live again, retrying (action ${actionId})`);
+  const result = await readForDelete(live);
+  const docs = result.rows.map(row => row.doc).filter(Boolean);
+  const { copied } = await copyDocs(docs, actionId);
+  if (copied.length) {
+    await tombstoneDocs(copied, actionId);
+  }
+
+  return findLive(live);
+};
+
+/**
  * Cleanup rather than the job itself, so a failure is logged and the batch still counts. Only the
  * docs that were actually deleted are purged: purging the infodoc of a doc that survived would throw
  * away its transition history, and Sentinel would treat a later edit as the first time it saw it.
@@ -133,13 +176,7 @@ const deleteDocs = async (batch, actionId) => {
   }
 
   try {
-    // Attachments are inlined so the copy is complete; conflicts are needed to delete every leaf.
-    const result = await db.medic.allDocs({
-      keys: ids,
-      include_docs: true,
-      attachments: true,
-      conflicts: true,
-    });
+    const result = await readForDelete(ids);
     const { docs, deleted, missing } = sortRows(result.rows);
 
     const unretained = await findUnretained(deleted);
@@ -162,7 +199,15 @@ const deleteDocs = async (batch, actionId) => {
 
     const failedIds = await tombstoneDocs(copied, actionId);
     failedIds.forEach(id => failed.push({ id }));
-    await purgeInfoDocs(copied.filter(doc => !failedIds.has(doc._id)), actionId);
+
+    const tombstoned = copied.filter(doc => !failedIds.has(doc._id));
+    const stillLive = new Set(await retryLive(tombstoned.map(doc => doc._id), actionId));
+    stillLive.forEach(id => {
+      logger.error(`bulk-operations: delete failed for ${id}: still live after the retry (action ${actionId})`);
+      failed.push({ id });
+    });
+
+    await purgeInfoDocs(tombstoned.filter(doc => !stillLive.has(doc._id)), actionId);
   } catch (err) {
     logger.error(`bulk-operations: delete failed (action ${actionId}): %o`, err);
     return batch;

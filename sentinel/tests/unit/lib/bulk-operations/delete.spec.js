@@ -212,6 +212,47 @@ describe('bulk-operations delete handler', () => {
     expect(db.medic.bulkDocs.called).to.equal(false);
   });
 
+  // allDocs is called in a fixed order: read, check for survivors, and on a retry read again then
+  // check again. Stubbing by call index keeps that visible.
+  it('retries a doc that came back live, copying the new revision before deleting it', async () => {
+    db.medic.allDocs.onCall(0).resolves({ rows: [ { doc: contact } ] });
+    db.medic.allDocs.onCall(1).resolves({ rows: [ { key: 'a', id: 'a', value: { rev: '2-new' } } ] });
+    db.medic.allDocs.onCall(2).resolves({ rows: [ { doc: { ...contact, _rev: '2-new' } } ] });
+    db.medic.allDocs.onCall(3).resolves({ rows: [ { key: 'a', id: 'a', value: { rev: '3-x', deleted: true } } ] });
+
+    const failed = await deleteDocs([ { id: 'a' } ], 'action-1');
+
+    expect(failed).to.deep.equal([]);
+    // the revision that appeared was copied before it was deleted
+    expect(db.deleted.bulkDocs.callCount).to.equal(2);
+    expect(db.deleted.bulkDocs.args[1][0][0]._rev).to.equal('2-new');
+    expect(db.medic.bulkDocs.args[1][0]).to.deep.equal([ { _id: 'a', _rev: '2-new', _deleted: true } ]);
+  });
+
+  it('fails a doc that is still live after the retry rather than reporting success', async () => {
+    db.medic.allDocs.onCall(0).resolves({ rows: [ { doc: contact } ] });
+    db.medic.allDocs.onCall(1).resolves({ rows: [ { key: 'a', id: 'a', value: { rev: '2-new' } } ] });
+    db.medic.allDocs.onCall(2).resolves({ rows: [ { doc: { ...contact, _rev: '2-new' } } ] });
+    db.medic.allDocs.onCall(3).resolves({ rows: [ { key: 'a', id: 'a', value: { rev: '3-newer' } } ] });
+
+    const failed = await deleteDocs([ { id: 'a' } ], 'action-1');
+
+    expect(failed).to.deep.equal([ { id: 'a' } ]);
+    // and the infodoc is left alone, since the doc is still there
+    expect(purgeDocs.called).to.equal(false);
+  });
+
+  it('does not retry when nothing came back live', async () => {
+    db.medic.allDocs.onCall(0).resolves({ rows: [ { doc: contact } ] });
+    db.medic.allDocs.onCall(1).resolves({ rows: [ { key: 'a', id: 'a', value: { rev: '2-x', deleted: true } } ] });
+
+    const failed = await deleteDocs([ { id: 'a' } ], 'action-1');
+
+    expect(failed).to.deep.equal([]);
+    expect(db.deleted.bulkDocs.callCount).to.equal(1);
+    expect(db.medic.bulkDocs.callCount).to.equal(1);
+  });
+
   it('purges the infodoc only for docs that were actually deleted', async () => {
     // A doc updated between the read and the write fails on a conflict and must keep its infodoc,
     // otherwise its transition history is lost and a later edit looks like the first one.
