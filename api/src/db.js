@@ -115,9 +115,17 @@ if (UNIT_TEST_ENV) {
    */
   module.exports.createDeleted = async () => {
     await module.exports.deleted.info();
-    const dbName = `${environment.db}-delete`;
-    await module.exports.addRoleAsAdmin(dbName, USER_ROLES.COUCHDB_ADMIN);
-    await module.exports.addRoleAsMember(dbName, USER_ROLES.COUCHDB_ADMIN);
+    // Set rather than added to. Adding the admin role would leave any existing grant in place, and
+    // would write nothing at all when the role is already there, so a database that came back from
+    // a restore with a member role on it would stay readable. That is the only case this exists for,
+    // since CouchDB creates databases admin only to begin with.
+    const securityUrl = new URL(environment.serverUrl);
+    securityUrl.pathname = `${environment.db}-delete/_security`;
+    const adminOnly = {
+      admins: { names: [], roles: [ USER_ROLES.COUCHDB_ADMIN ] },
+      members: { names: [], roles: [ USER_ROLES.COUCHDB_ADMIN ] },
+    };
+    await request.put({ url: securityUrl.toString(), json: true, body: adminOnly });
   };
   module.exports.builds = new PouchDB(environment.buildsUrl);
 
