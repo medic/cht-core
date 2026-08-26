@@ -163,8 +163,8 @@ const handleHeaderAuth = async (authConf, sendOptions) => {
     sendOptions.headers.authorization = value;
     return;
   }
-  logger.error(`Unsupported header name '${authConf.name}'. Supported: authorization`);
-  throw new OutboundError(`Unsupported header name '${authConf.name}'. Supported: authorization`);
+  logger.error(`auth.type 'header' only supports the Authorization header. For '${authConf.name}', use destination.headers with value_key`);
+  throw new OutboundError(`auth.type 'header' only supports the Authorization header. For '${authConf.name}', use destination.headers with value_key`);
 };
 
 const handleMusoSihAuth = async (authConf, config, sendOptions) => {
