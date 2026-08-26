@@ -5,11 +5,15 @@ const uuid = require('uuid').v7;
 const moment = require('moment');
 
 //
-// API records infodoc writes after it has already responded (see the uses of the controller in
-// ./api/controllers/infodoc), so nothing in the response says whether that has happened yet, and
-// waiting for sentinel says nothing about API: the two write infodocs independently, in no
-// guaranteed order. The write itself is the signal - API stamps latest_replication_date with the
-// time it handled the request, so a date at or after `since` is this request's write.
+// API and sentinel write infodocs independently, in no guaranteed order, so waiting for one says
+// nothing about the other: both have to be waited on.
+//
+// Sentinel advances the sequence in its metadata doc as it processes changes, which is what
+// `waitForSentinel` watches. API has no equivalent marker: it records infodoc writes after it has
+// already responded (see the uses of the controller in ./api/controllers/infodoc), so nothing in
+// the response says whether that has happened yet. The write itself is the signal - API stamps
+// latest_replication_date with the time it handled the request, so a date at or after `since` is
+// this request's write.
 //
 const waitForApiInfoDocWrites = async (ids, since, retries = 15) => {
   const infoDocs = await sentinelUtils.getInfoDocs(ids);
@@ -27,7 +31,12 @@ const waitForApiInfoDocWrites = async (ids, since, retries = 15) => {
   return waitForApiInfoDocWrites(ids, since, retries - 1);
 };
 
-const delayedInfoDocsOf = async (ids) => {
+// `since` is the time the request that api should have recorded was made; omit it when api is not
+// expected to write, and only sentinel is waited on.
+const delayedInfoDocsOf = async (ids, since) => {
+  if (since) {
+    await waitForApiInfoDocWrites(ids, since);
+  }
   await sentinelUtils.waitForSentinel(ids);
   return sentinelUtils.getInfoDocs(ids);
 };
@@ -49,8 +58,7 @@ describe('infodocs', () => {
     doc._rev = result.rev;
     doc.more = 'data';
 
-    await waitForApiInfoDocWrites(doc._id, beforeCreate);
-    [infoDoc] = await delayedInfoDocsOf(doc._id);
+    [infoDoc] = await delayedInfoDocsOf(doc._id, beforeCreate);
 
     assert.deepInclude(infoDoc, {
       _id: doc._id + '-info',
@@ -65,8 +73,7 @@ describe('infodocs', () => {
     const update = await utils.requestOnTestDb({ path, method, body: doc });
     assert.isTrue(update.ok);
 
-    await waitForApiInfoDocWrites(doc._id, beforeUpdate);
-    const [updatedInfodoc] = await delayedInfoDocsOf(doc._id);
+    const [updatedInfodoc] = await delayedInfoDocsOf(doc._id, beforeUpdate);
 
     assert.equal(updatedInfodoc.initial_replication_date, infoDoc.initial_replication_date);
     assert.notEqual(updatedInfodoc.latest_replication_date, infoDoc.latest_replication_date);
@@ -126,8 +133,7 @@ describe('infodocs', () => {
       docs[0]._rev = result[0].rev;
       docs[1]._rev = result[1].rev;
 
-      await waitForApiInfoDocWrites(docs.map(d => d._id), beforeCreate);
-      const infoDocs = await delayedInfoDocsOf(docs.map(d => d._id));
+      const infoDocs = await delayedInfoDocsOf(docs.map(d => d._id), beforeCreate);
 
       assert.equal(infoDocs.length, 3);
       infoDocs.forEach((infoDoc, idx) => {

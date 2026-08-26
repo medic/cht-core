@@ -689,7 +689,9 @@ describe('infodoc', () => {
           });
       });
 
-      it('fills in the initial replication date when sentinel created the infodoc without one', () => {
+      it('fills in the initial replication date when sentinel created the infodoc without one', async () => {
+        const now = new Date('2026-01-01T00:00:00.000Z');
+        clock = sinon.useFakeTimers({ now: now.valueOf() });
         sentinelGet.resolves({
           _id: 'blah-info',
           initial_replication_date: 'unknown',
@@ -697,11 +699,10 @@ describe('infodoc', () => {
         });
         sentinelPut.resolves();
 
-        return lib.recordDocumentWrite('blah')
-          .then(() => {
-            assert.ok(sentinelPut.args[0][0].initial_replication_date instanceof Date);
-            assert.ok(sentinelPut.args[0][0].latest_replication_date instanceof Date);
-          });
+        await lib.recordDocumentWrite('blah');
+
+        assert.deepEqual(sentinelPut.args[0][0].initial_replication_date, now);
+        assert.deepEqual(sentinelPut.args[0][0].latest_replication_date, now);
       });
 
       it('it handles 409s correctly when editing an infodoc', () => {
@@ -800,7 +801,10 @@ describe('infodoc', () => {
             assert.equal(sentinelBulkDocs.args[0][0][1].initial_replication_date, 'ages ago');
           });
       });
-      it('fills in initial replication dates when sentinel created the infodocs without them', () => {
+
+      it('fills in initial replication dates when sentinel created the infodocs without them', async () => {
+        const now = new Date('2026-01-01T00:00:00.000Z');
+        clock = sinon.useFakeTimers({ now: now.valueOf() });
         sentinelAllDocs.resolves({
           rows: [
             {
@@ -822,11 +826,10 @@ describe('infodoc', () => {
           }
         ]);
 
-        return lib.recordDocumentWrites(['sentinel-created'])
-          .then(() => {
-            assert.ok(sentinelBulkDocs.args[0][0][0].initial_replication_date instanceof Date);
-            assert.ok(sentinelBulkDocs.args[0][0][0].latest_replication_date instanceof Date);
-          });
+        await lib.recordDocumentWrites(['sentinel-created']);
+
+        assert.deepEqual(sentinelBulkDocs.args[0][0][0].initial_replication_date, now);
+        assert.deepEqual(sentinelBulkDocs.args[0][0][0].latest_replication_date, now);
       });
 
       it('Correctly works through and resolves conflicts when editing or creating infodocs', () => {

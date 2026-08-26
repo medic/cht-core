@@ -1677,13 +1677,20 @@ describe('db-doc handler', () => {
 
           return sentinelUtils.waitForSentinel(ids).then(() => sentinelUtils.getInfoDocs(ids));
         }).then(([a1, a2, d1, d2, n1, n2]) => {
-          // api and sentinel both write infodocs, in no guaranteed order, so how many revisions each
-          // ends up with is not deterministic. Only the allowed writes get an infodoc at all.
-          chai.expect(a1).to.be.ok;
-          chai.expect(a2).to.be.ok;
-          chai.expect(d1).to.be.ok;
-          chai.expect(d2).to.be.ok;
-          chai.expect(n1).to.be.ok;
+          // api and sentinel write infodocs independently and in no guaranteed order, so api's write
+          // has not necessarily landed by the time sentinel has caught up, and the exact revision is
+          // not deterministic. The number of writes is still bounded: api writes once per allowed
+          // request, and sentinel writes once, when it first processes the doc.
+          const expectAtMostWrites = (infoDoc, writes) => {
+            chai.expect(infoDoc).to.be.ok;
+            chai.expect(parseInt(infoDoc._rev, 10)).to.be.at.most(writes);
+          };
+
+          expectAtMostWrites(a1, 3);
+          expectAtMostWrites(a2, 2);
+          expectAtMostWrites(d1, 2);
+          expectAtMostWrites(d2, 2);
+          expectAtMostWrites(n1, 2);
           chai.expect(n2).to.be.undefined;
         });
     });
