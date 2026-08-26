@@ -341,6 +341,37 @@ const formatDate = function({ config, text, view, formatString, locale, extensio
   return moment(date).locale(locale).format(formatString);
 };
 
+const executeExtensionLib = (fileName, extensionLib, text, renderText) => {
+  let renderedText = text;
+  try {
+    renderedText = renderText(text);
+    if (typeof extensionLib !== 'function') {
+      throw new TypeError(`Extension lib "${fileName}" must export a function.`);
+    }
+    const result = extensionLib(renderedText);
+    if (result && typeof result.then === 'function') {
+      throw new TypeError(`Extension lib "${fileName}" returned a Promise.`);
+    }
+    if (![ 'string', 'number', 'boolean', 'bigint' ].includes(typeof result)) {
+      throw new TypeError(`Extension lib "${fileName}" returned a non-primitive value.`);
+    }
+    return String(result);
+  } catch (err) {
+    logger.error(`Error executing extension lib "${fileName}" - using untransformed content: %o`, err);
+    return renderedText;
+  }
+};
+
+const suppressSectionHelperInterpolation = () => '';
+
+const createSectionHelper = (fileName, extensionLib) => {
+  const sectionHelper = executeExtensionLib.bind(null, fileName, extensionLib);
+  // Mustache resolves functions before determining whether they are variables or sections. Avoid exposing the
+  // section helper implementation when a configurer accidentally uses {{helper}} instead of a section.
+  sectionHelper.toString = suppressSectionHelperInterpolation;
+  return sectionHelper;
+};
+
 const getExtensionLibHelpers = (extensionLibs = EMPTY_EXTENSION_LIBS) => {
   const cached = extensionLibHelpersCache.get(extensionLibs);
   if (cached) {
@@ -359,32 +390,7 @@ const getExtensionLibHelpers = (extensionLibs = EMPTY_EXTENSION_LIBS) => {
           'will be ignored.');
         return helpers;
       }
-      helpers[helperName] = function() {
-        const sectionHelper = function(text, renderText) {
-          let renderedText = text;
-          try {
-            renderedText = renderText(text);
-            if (typeof extensionLib !== 'function') {
-              throw new TypeError(`Extension lib "${fileName}" must export a function.`);
-            }
-            const result = extensionLib(renderedText);
-            if (result && typeof result.then === 'function') {
-              throw new TypeError(`Extension lib "${fileName}" returned a Promise.`);
-            }
-            if (![ 'string', 'number', 'boolean', 'bigint' ].includes(typeof result)) {
-              throw new TypeError(`Extension lib "${fileName}" returned a non-primitive value.`);
-            }
-            return String(result);
-          } catch (err) {
-            logger.error(`Error executing extension lib "${fileName}" - using untransformed content: %o`, err);
-            return renderedText;
-          }
-        };
-        // Mustache resolves functions before determining whether they are variables or sections. Avoid exposing the
-        // section helper implementation when a configurer accidentally uses {{helper}} instead of a section.
-        sectionHelper.toString = () => '';
-        return sectionHelper;
-      };
+      helpers[helperName] = createSectionHelper.bind(null, fileName, extensionLib);
       return helpers;
     }, Object.create(null));
   extensionLibHelpersCache.set(extensionLibs, helpers);
