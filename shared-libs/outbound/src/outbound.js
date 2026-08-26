@@ -108,8 +108,8 @@ const resolveHeaderValue = async (headerName, headerConf) => {
     );
   }
 
-  const hasValue = Object.prototype.hasOwnProperty.call(headerConf, 'value');
-  const hasValueKey = Object.prototype.hasOwnProperty.call(headerConf, 'value_key');
+  const hasValue = Object.hasOwn(headerConf, 'value');
+  const hasValueKey = Object.hasOwn(headerConf, 'value_key');
 
   if (hasValue === hasValueKey) {
     throw new OutboundError(
