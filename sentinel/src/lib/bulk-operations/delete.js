@@ -92,6 +92,10 @@ const findLive = async (ids) => {
  * that comes back is one.
  */
 const copyDocs = async (docs, actionId) => {
+  if (!docs.length) {
+    return { copied: [], rejected: [] };
+  }
+
   const deletedDate = Date.now();
   const results = await db.deleted.bulkDocs(docs.map(doc => buildCopy(doc, deletedDate)), {
     new_edits: false,
@@ -136,15 +140,18 @@ const retryLive = async (ids, actionId) => {
   logger.warn(`bulk-operations: delete found ${live.length} doc(s) live again, retrying (action ${actionId})`);
   const result = await readForDelete(live);
   const docs = result.rows.map(row => row.doc).filter(Boolean);
+  // Seen live a moment ago and already gone, so another writer removed it and we never kept a copy
+  // of what they removed.
+  const vanished = result.rows.filter(row => !row.doc).map(row => row.key);
   const { copied, rejected } = await copyDocs(docs, actionId);
   if (copied.length) {
     await tombstoneDocs(copied, actionId);
   }
 
-  // A rejected copy fails whatever the doc looks like afterwards. We leave it alone, but if another
-  // writer deletes that revision before the check below it would otherwise read as a clean success,
-  // with the body never kept and the infodoc purged.
-  return [ ...new Set([ ...rejected, ...await findLive(live) ]) ];
+  // Whatever we saw live is either in the delete database now or reported here. A rejected or
+  // vanished copy would otherwise read as a clean success once the doc stopped being live, with
+  // that revision never kept and the infodoc purged.
+  return [ ...new Set([ ...vanished, ...rejected, ...await findLive(live) ]) ];
 };
 
 /**

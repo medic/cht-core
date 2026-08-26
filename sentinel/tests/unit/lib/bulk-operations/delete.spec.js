@@ -258,6 +258,21 @@ describe('bulk-operations delete handler', () => {
     expect(purgeDocs.called).to.equal(false);
   });
 
+  it('fails a revision that vanished before the retry could copy it', async () => {
+    db.medic.allDocs.onCall(0).resolves({ rows: [ { doc: contact } ] });
+    db.medic.allDocs.onCall(1).resolves({ rows: [ { key: 'a', id: 'a', value: { rev: '2-new' } } ] });
+    // another writer removed that revision in between, so there is no doc to copy
+    db.medic.allDocs.onCall(2).resolves({ rows: [ { key: 'a', id: 'a', value: { rev: '3-x', deleted: true } } ] });
+    db.medic.allDocs.onCall(3).resolves({ rows: [ { key: 'a', id: 'a', value: { rev: '3-x', deleted: true } } ] });
+
+    const failed = await deleteDocs([ { id: 'a' } ], 'action-1');
+
+    // gone, but that revision was never kept, so it is not reported as a clean success
+    expect(failed).to.deep.equal([ { id: 'a' } ]);
+    expect(db.deleted.bulkDocs.callCount).to.equal(1);
+    expect(purgeDocs.called).to.equal(false);
+  });
+
   it('does not retry when nothing came back live', async () => {
     db.medic.allDocs.onCall(0).resolves({ rows: [ { doc: contact } ] });
     db.medic.allDocs.onCall(1).resolves({ rows: [ { key: 'a', id: 'a', value: { rev: '2-x', deleted: true } } ] });
