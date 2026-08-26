@@ -630,6 +630,26 @@ describe('Contacts component', () => {
       );
     }));
 
+    it('displays the existing translation keys for visited and never-visited contacts', fakeAsync(() => {
+      authService.has.resolves(true);
+      contactTypesService.getAll.resolves([{ id: 'childType', count_visits: true }]);
+      searchService.search.resolves([
+        { _id: 'visited', type: 'contact', contact_type: 'childType', lastVisitedDate: 1690000000000, visitCount: 3 },
+        { _id: 'never-visited', type: 'contact', contact_type: 'childType', lastVisitedDate: 0, visitCount: 0 },
+      ]);
+      const updateContactsList = sinon.stub(ContactsActions.prototype, 'updateContactsList');
+      component.ngOnInit();
+      flush();
+
+      // TranslateFakeLoader translates a key to itself, so the summary pins the exact key requested (#11372)
+      const contacts = updateContactsList.args[0][0];
+      const neverVisited = contacts.find(contact => contact._id === 'never-visited');
+      expect(neverVisited.summary).to.equal('contact.last.visited.unknown');
+      expect(neverVisited.overdue).to.equal(true);
+      const visited = contacts.find(contact => contact._id === 'visited');
+      expect(visited.summary).to.equal('contact.last.visited.date');
+    }));
+
     it('saves uhc home_visits settings and default sort when correct', fakeAsync(() => {
       authService.has.resolves(true);
       settingsService.get.resolves({

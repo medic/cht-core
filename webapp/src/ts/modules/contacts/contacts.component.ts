@@ -305,7 +305,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
   private setVisitOverdue(contact) {
     if (contact.lastVisitedDate === 0) {
       contact.overdue = true;
-      contact.summary = this.translateService.instant('contact.last.visit.unknown');
+      contact.summary = this.translateService.instant('contact.last.visited.unknown');
       return;
     }
     const now = new Date().getTime();
