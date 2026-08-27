@@ -94,21 +94,7 @@ describe('ContactProfileImageComponent', () => {
     expect(component.objectUrl).to.be.undefined;
   });
 
-  it('falls back silently when getAttachment rejects with 404', async () => {
-    const warn = sinon.stub(console, 'warn');
-    getAttachment.rejects({ status: 404 });
-
-    await setDoc({
-      _id: 'c-1',
-      profile_image: 'amina.jpg',
-      _attachments: { 'user-file-amina.jpg': { stub: true } },
-    });
-
-    expect(component.objectUrl).to.be.undefined;
-    expect(warn.calledOnce).to.be.true;
-  });
-
-  it('rethrows getAttachment errors other than 404', async () => {
+  it('propagates getAttachment errors', async () => {
     getAttachment.rejects({ status: 500 });
 
     component.doc = {

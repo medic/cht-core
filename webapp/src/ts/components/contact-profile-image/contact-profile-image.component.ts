@@ -65,11 +65,6 @@ export class ContactProfileImageComponent implements OnChanges, OnDestroy {
     try {
       const blob = await this.dbService.get().getAttachment(docId, attachmentName);
       this.objectUrl = (window.URL || window.webkitURL).createObjectURL(blob);
-    } catch (err) {
-      if ((err as { status?: number })?.status !== 404) {
-        throw err;
-      }
-      console.warn(`ContactProfileImageComponent: attachment ${attachmentName} missing on ${docId}`);
     } finally {
       this.loading = false;
     }
