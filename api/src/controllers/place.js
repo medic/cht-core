@@ -244,9 +244,9 @@ module.exports = {
      *       - $ref: '#/components/parameters/dryRun'
      *     responses:
      *       '202':
-     *         $ref: '#/components/responses/BulkOperationQueued'
+     *         $ref: '#/components/responses/DeleteContactQueued'
      *       '200':
-     *         $ref: '#/components/responses/BulkOperationDryRun'
+     *         $ref: '#/components/responses/DeleteContactDryRun'
      *       '400':
      *         $ref: '#/components/responses/BadRequest'
      *       '401':
@@ -296,9 +296,9 @@ module.exports = {
      *                   Omit parent_id and send {} to move the contact to the top level.
      *     responses:
      *       '202':
-     *         $ref: '#/components/responses/BulkOperationQueued'
+     *         $ref: '#/components/responses/MoveContactQueued'
      *       '200':
-     *         $ref: '#/components/responses/BulkOperationDryRun'
+     *         $ref: '#/components/responses/MoveContactDryRun'
      *       '400':
      *         $ref: '#/components/responses/BadRequest'
      *       '401':
