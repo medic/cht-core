@@ -76,23 +76,38 @@ const buildNewLineage = (id, parentById, sourceId, replacementLineage) => nestLi
 );
 
 /**
- * Ids of the reports the moved contacts authored. A report caches its author's lineage in `contact`,
- * which goes stale the moment the author moves. The nouveau index emits `contact:<lowercased id>` for
- * every report and is standard in cht-core, so there is no view fallback to maintain. Results are
- * paged with the bookmark rather than capped, so a prolific author is not silently truncated.
+ * Reports the moved contacts authored, each paired with the author whose lineage it caches. A report
+ * caches its author's lineage in `contact`, which goes stale the moment the author moves.
+ *
+ * `docs_by_replication_key` indexes that author as a searchable `submitter` and stores it, so a
+ * single query returns both the report and the value its operation has to be checked against. This
+ * used to be two reads, a freetext query for `contact:<id>` followed by an `_id` lookup here for the
+ * author, because `submitter` was stored but not searchable. #11370 moved the author indexing out of
+ * `reports_by_freetext` and made it searchable here, which removed the emission the first read
+ * relied on and made the second read sufficient on its own.
+ *
+ * Ids are matched verbatim rather than lowercased, because this index uses the keyword analyzer.
+ * Results are paged with the bookmark rather than capped, so a prolific author is not silently
+ * truncated.
  */
-const addReportIdsForChunk = async (chunk, ids) => {
-  const terms = chunk.map(id => `"contact:${escapePhrase(id.toLowerCase())}"`);
-  const q = `exact_match:(${terms.join(' OR ')})`;
+const addReportPairsForChunk = async (chunk, pairs, seen) => {
+  const terms = chunk.map(id => `"${escapePhrase(id)}"`);
+  const q = `submitter:(${terms.join(' OR ')})`;
   let bookmark = null;
 
   do {
     const response = await request.post({
-      uri: `${environment.couchUrl}/_design/medic/_nouveau/reports_by_freetext`,
+      uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
       body: { q, limit: nouveau.RESULTS_LIMIT, bookmark },
     });
     const hits = response.hits ?? [];
-    hits.forEach(hit => ids.add(hit.id));
+    hits.forEach(hit => {
+      if (seen.has(hit.id)) {
+        return;
+      }
+      seen.add(hit.id);
+      pairs.push({ id: hit.id, current_contact_id: hit.fields?.submitter });
+    });
     // A bookmark that does not advance means the index has no more to give; without this the loop
     // would spin forever inside the request.
     const exhausted = hits.length < nouveau.RESULTS_LIMIT || response.bookmark === bookmark;
@@ -100,41 +115,13 @@ const addReportIdsForChunk = async (chunk, ids) => {
   } while (bookmark);
 };
 
-const getReportIdsByCreator = async (contactIds) => {
+const getReportAuthorPairs = async (contactIds) => {
   const remaining = [ ...contactIds ];
-  const ids = new Set();
-
-  while (remaining.length) {
-    await addReportIdsForChunk(remaining.splice(0, nouveau.BATCH_LIMIT), ids);
-  }
-
-  return [ ...ids ];
-};
-
-/**
- * Pairs each report with the author whose lineage it caches. `docs_by_replication_key` stores that
- * author under `submitter`, so the ids the freetext query returned become pairs with a second index
- * read rather than a document read. The two indexes cover the same reports: the freetext one only
- * emits `contact:<id>` when a report has an author, and this one stores `submitter` whenever it does.
- * Ids are matched verbatim rather than lowercased, because `_id` is indexed exactly as it is.
- */
-const addReportAuthorsForChunk = async (chunk, pairs) => {
-  const terms = chunk.map(id => `"${escapePhrase(id)}"`);
-  const response = await request.post({
-    uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
-    body: { q: `_id:(${terms.join(' OR ')})`, limit: chunk.length },
-  });
-  (response.hits ?? []).forEach(
-    hit => pairs.push({ id: hit.id, current_contact_id: hit.fields?.submitter })
-  );
-};
-
-const getReportAuthorIds = async (reportIds) => {
-  const remaining = [ ...reportIds ];
   const pairs = [];
+  const seen = new Set();
 
   while (remaining.length) {
-    await addReportAuthorsForChunk(remaining.splice(0, nouveau.BATCH_LIMIT), pairs);
+    await addReportPairsForChunk(remaining.splice(0, nouveau.BATCH_LIMIT), pairs, seen);
   }
 
   return pairs;
@@ -209,7 +196,7 @@ const moveContactHierarchy = async (source, destination, { dryRun } = {}) => {
   const replacementLineage = lineage.minifyLineage(destination) || undefined;
   const [ parentById, reportPairs, places ] = await Promise.all([
     getParentIds(contactIds, source),
-    getReportIdsByCreator(contactIds).then(getReportAuthorIds),
+    getReportAuthorPairs(contactIds),
     getPlacesToRefresh(contactIds),
   ]);
 
