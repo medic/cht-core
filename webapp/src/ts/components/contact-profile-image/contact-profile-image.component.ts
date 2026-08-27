@@ -1,7 +1,11 @@
-import { Component, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { Subscription } from 'rxjs';
+import { distinctUntilChanged } from 'rxjs/operators';
 import { NgIf } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 
+import { Selectors } from '@mm-selectors/index';
 import { DbService } from '@mm-services/db.service';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 
@@ -13,57 +17,54 @@ const DEFAULT_PROFILE_IMAGE_FIELD = 'profile_image';
   templateUrl: './contact-profile-image.component.html',
   imports: [NgIf, ResourceIconPipe, TranslatePipe]
 })
-export class ContactProfileImageComponent implements OnChanges, OnDestroy {
-  @Input() doc?: { _id?: string; _attachments?: Record<string, any>; [field: string]: any };
-  @Input() docId?: string;
-  @Input() profileImageField?: string;
-  @Input() fallbackIcon?: string;
+export class ContactProfileImageComponent implements OnInit, OnDestroy {
+  subscription: Subscription = new Subscription();
 
+  doc;
+  fallbackIcon;
   loading = false;
   objectUrl?: string;
 
   constructor(
+    private readonly store: Store,
     private readonly dbService: DbService,
   ) {}
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes.doc || changes.docId || changes.profileImageField) {
-      this.revoke();
-      return this.load();
-    }
+  ngOnInit() {
+    this.subscribeToStore();
   }
 
   ngOnDestroy() {
+    this.subscription.unsubscribe();
     this.revoke();
   }
 
-  private async load() {
-    const doc = await this.resolveDoc();
-    const field = this.profileImageField || DEFAULT_PROFILE_IMAGE_FIELD;
-    const profileImage = doc?.[field];
-    if (!doc?._id || !profileImage) {
+  private subscribeToStore() {
+    const reduxSubscription = this.store
+      .select(Selectors.getSelectedContact)
+      .pipe(distinctUntilChanged((a, b) => a?.doc === b?.doc))
+      .subscribe(selectedContact => {
+        this.load(selectedContact)
+          .catch(err => console.error('ContactProfileImageComponent :: Error loading profile image.', err));
+      });
+    this.subscription.add(reduxSubscription);
+  }
+
+  private async load(selectedContact) {
+    this.revoke();
+    this.doc = selectedContact?.doc;
+    this.fallbackIcon = selectedContact?.type?.icon;
+
+    const field = selectedContact?.type?.profile_image_field || DEFAULT_PROFILE_IMAGE_FIELD;
+    const profileImage = this.doc?.[field];
+    const attachmentName = `${USER_FILE_ATTACHMENT_PREFIX}${profileImage}`;
+    if (!this.doc?._id || !profileImage || !this.doc._attachments?.[attachmentName]) {
       return;
     }
-    const attachmentName = `${USER_FILE_ATTACHMENT_PREFIX}${profileImage}`;
-    if (doc._attachments?.[attachmentName]) {
-      await this.fetchObjectUrl(doc._id, attachmentName);
-    }
-  }
 
-  private resolveDoc() {
-    if (this.doc) {
-      return Promise.resolve(this.doc);
-    }
-    if (this.docId) {
-      return this.dbService.get().get(this.docId);
-    }
-    return Promise.resolve(null);
-  }
-
-  private async fetchObjectUrl(docId: string, attachmentName: string) {
     this.loading = true;
     try {
-      const blob = await this.dbService.get().getAttachment(docId, attachmentName);
+      const blob = await this.dbService.get().getAttachment(this.doc._id, attachmentName);
       this.objectUrl = (window.URL || window.webkitURL).createObjectURL(blob);
     } finally {
       this.loading = false;
