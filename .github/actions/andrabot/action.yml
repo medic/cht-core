@@ -1,0 +1,38 @@
+name: AndraBot
+description: >
+  Checks pull requests from external contributors follow the PR template, link an issue
+  and have the author assigned to it; comments on and labels the PR accordingly.
+author: Medic
+
+inputs:
+  token:
+    description: 'GitHub token with `pull-requests: write` (and `issues: read`) on the repository.'
+    default: ${{ github.token }}
+  pr-template:
+    description: Path of the pull request template on the default branch of the repository.
+    default: .github/PULL_REQUEST_TEMPLATE.md
+  failure-label:
+    description: Label set on the PR while any check fails.
+    default: Waiting for contributor
+  success-label:
+    description: Label set on the PR once every check passes.
+    default: Ready for review
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+      env:
+        ANDRABOT_PATH: ${{ github.action_path }}
+        ANDRABOT_PR_TEMPLATE: ${{ inputs.pr-template }}
+        ANDRABOT_FAILURE_LABEL: ${{ inputs.failure-label }}
+        ANDRABOT_SUCCESS_LABEL: ${{ inputs.success-label }}
+      with:
+        github-token: ${{ inputs.token }}
+        script: |
+          const runAndraBot = require(`${process.env.ANDRABOT_PATH}/andra-bot.js`);
+          await runAndraBot({ github, context, core }, {
+            prTemplatePath: process.env.ANDRABOT_PR_TEMPLATE,
+            failureLabel: process.env.ANDRABOT_FAILURE_LABEL,
+            successLabel: process.env.ANDRABOT_SUCCESS_LABEL,
+          });
