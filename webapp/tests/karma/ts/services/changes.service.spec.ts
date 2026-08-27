@@ -436,5 +436,30 @@ describe('Changes service', () => {
     setLastChangedDoc.resetHistory();
     changesCalls.medic.callbacks.change(changes[4]);
   });
+
+  describe('when there is no authenticated user', () => {
+    it('should not touch the db on init', () => {
+      // The app can boot without a session cookie (e.g. mid logout/reauth). userCtx() is null then,
+      // and deriving the DB name from the username would throw. init() must no-op instead.
+      const getStub = sinon.stub();
+      const noUserDbService = { get: getStub };
+      const noUserSessionService = {
+        isOnlineOnly: sinon.stub(),
+        userCtx: sinon.stub().returns(null),
+      };
+
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          provideMockStore({ selectors: [{ selector: Selectors.getLastChangedDoc, value: false }] }),
+          { provide: SessionService, useValue: noUserSessionService },
+          { provide: DbService, useValue: noUserDbService },
+        ]
+      });
+
+      expect(() => TestBed.inject(ChangesService)).to.not.throw();
+      expect(getStub.callCount).to.equal(0);
+    });
+  });
 });
 

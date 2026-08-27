@@ -40,7 +40,7 @@ describe('Search service', function() {
     module(function ($provide) {
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('DB', sinon.stub().returns(db));
-      $provide.value('GetDataRecords', GetDataRecords);
+      $provide.value('GetDataRecords', { getContacts: GetDataRecords, getReports: GetDataRecords });
       $provide.value('SearchFactory', function() {
         return searchStub;
       });

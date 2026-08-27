@@ -1,8 +1,21 @@
 function(doc) {
   var skip = ['_id', '_rev', 'type', 'refid', 'content'];
+  var maxLength = 1000;
+  var minLength = 3;
+
+  var normalizeDevanagariNumerals = function(str) {
+    return str.replace(/[०-९]/g, function(d) {
+      return String.fromCodePoint(d.codePointAt(0) - 0x0966 + 0x0030);
+    });
+  };
 
   var indexMaybe = function(type, fieldName, value, opts) {
-    if(String(value).length < 3) { // Too short
+    var stringValue = String(value);
+    if (stringValue.length < minLength) { // Too short
+      return;
+    }
+
+    if (type === 'string' && stringValue.length > maxLength) {
       return;
     }
     index(type, fieldName, value, opts);
@@ -18,7 +31,7 @@ function(doc) {
     }
 
     if (typeof value === 'string') {
-      var lowerValue = value.toLowerCase();
+      var lowerValue = normalizeDevanagariNumerals(value.toLowerCase());
       indexMaybe('text', 'default', lowerValue);
       indexMaybe('string', 'exact_match', lowerKey + ':' + lowerValue);
     } else if (typeof value === 'number') {
@@ -37,9 +50,6 @@ function(doc) {
     Object.keys(doc.fields).forEach(function(key) {
       indexField(key, doc.fields[key]);
     });
-  }
-  if (doc.contact && doc.contact._id && typeof doc.contact._id === 'string') {
-    index('string', 'exact_match', 'contact:' + doc.contact._id.toLowerCase());
   }
   var reportedDate = doc.reported_date && typeof doc.reported_date === 'number' ? doc.reported_date : 0;
   index('double', 'reported_date', reportedDate, { store: true });

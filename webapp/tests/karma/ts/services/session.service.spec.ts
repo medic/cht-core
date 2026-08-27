@@ -58,6 +58,23 @@ describe('Session service', () => {
     expect(cookieGet.args[0][0]).to.equal('userCtx');
   });
 
+  it('does not log an error when the cookie is absent', () => {
+    const consoleErrorMock = sinon.stub(console, 'error');
+    cookieGet.returns('');
+    const actual = service.userCtx();
+    expect(actual).to.equal(null);
+    expect(consoleErrorMock.callCount).to.equal(0);
+  });
+
+  it('logs an error when the cookie is present but malformed', () => {
+    const consoleErrorMock = sinon.stub(console, 'error');
+    cookieGet.returns('{ not valid json');
+    const actual = service.userCtx();
+    expect(actual).to.equal(null);
+    expect(consoleErrorMock.callCount).to.equal(1);
+    expect(consoleErrorMock.args[0][0]).to.equal('Cookie parsing error');
+  });
+
   it('logs out', async () => {
     const consoleWarnMock = sinon.stub(console, 'warn');
     const userCtxExpected = { name: 'bryan' };

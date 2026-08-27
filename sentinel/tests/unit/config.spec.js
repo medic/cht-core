@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const db = require('../../src/db');
 const translationUtils = require('@medic/translation-utils');
 const transitions = require('../../src/transitions');
-const { DOC_IDS, DOC_TYPES } = require('@medic/constants');
+const { DOC_IDS } = require('@medic/constants');
 
 const rewire = require('rewire');
 const expect = chai.expect;
@@ -11,7 +11,7 @@ const expect = chai.expect;
 describe('config', () => {
   beforeEach(() => {
     // Ensure modules are re-required with stubs
-    sinon.stub(db.medic, 'query').resolves({ rows: [] });
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
     sinon.stub(db.medic, 'get').resolves({ _id: DOC_IDS.SETTINGS, settings: {} });
     sinon.stub(db.medic, 'changes').returns({
       on: function(event, handler) {
@@ -45,11 +45,11 @@ describe('config', () => {
     const changes = db.medic.changes.returnValues[0];
     expect(changes).to.be.an('object');
 
-    expect(db.medic.query.calledOnce).to.be.true;
-    expect(db.medic.query.firstCall.args).to.deep.equal([
-      'medic-client/doc_by_type',
+    expect(db.medic.allDocs.calledOnce).to.be.true;
+    expect(db.medic.allDocs.firstCall.args).to.deep.equal([
       {
-        key: [DOC_TYPES.TRANSLATIONS],
+        start_key: 'messages-',
+        end_key: 'messages-\ufff0',
         include_docs: true,
       }
     ]);
@@ -67,7 +67,7 @@ describe('config', () => {
 
   it('loadTranslations populates translations store', async () => {
     const config = rewire('../../../sentinel/src/config');
-    db.medic.query.resolves({ rows: [
+    db.medic.allDocs.resolves({ rows: [
       { doc: { code: 'en', generic: { a: 'A' } } },
       { doc: { code: 'fr', generic: { hello: 'Bonjour' }, custom: { bye: 'Au revoir' } } },
     ]});
@@ -89,11 +89,11 @@ describe('config', () => {
     changes.on_change({ id: DOC_IDS.SETTINGS });
 
     // messages change triggers translations reload then initTransitionLib
-    db.medic.query.resetHistory();
+    db.medic.allDocs.resetHistory();
     changes.on_change({ id: 'messages-fr' });
     // allow microtasks to flush
     await new Promise(res => setImmediate(res));
-    expect(db.medic.query.calledOnce).to.be.true;
+    expect(db.medic.allDocs.calledOnce).to.be.true;
   });
 
   it('initFeed error logs and exits process', async () => {

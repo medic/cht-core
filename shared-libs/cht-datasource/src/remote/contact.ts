@@ -1,5 +1,12 @@
-import { getResource, getResources, RemoteDataContext } from './libs/data-context';
-import { ContactTypeQualifier, FreetextQualifier, UuidQualifier } from '../qualifier';
+import { getResource, getResources, postResource, RemoteDataContext } from './libs/data-context';
+import {
+  ContactTypeQualifier,
+  FreetextQualifier,
+  IdsQualifier,
+  isContactTypeQualifier,
+  isIdsQualifier,
+  UuidQualifier
+} from '../qualifier';
 import { Nullable, Page } from '../libs/core';
 import * as Contact from '../contact';
 import { isContactType, isFreetextType } from '../libs/parameter-validators';
@@ -7,6 +14,8 @@ import { isContactType, isFreetextType } from '../libs/parameter-validators';
 /** @internal */
 export namespace v1 {
   const getContact = (remoteContext: RemoteDataContext) => getResource(remoteContext, 'api/v1/contact');
+
+  const getContacts = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/contact');
 
   const getContactUuids = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/contact/uuid');
 
@@ -23,6 +32,15 @@ export namespace v1 {
   ): Promise<Nullable<Contact.v1.ContactWithLineage>> => getContact(remoteContext)(identifier.uuid, {
     with_lineage: 'true',
   });
+
+  const postContactSummary = postResource('api/v1/contact/summary');
+
+  /** @internal */
+  export const getSummaries = (
+    remoteContext: RemoteDataContext
+  ) => ({ ids }: IdsQualifier): Promise<Contact.v1.ContactSummary[]> => {
+    return postContactSummary(remoteContext)({ ids });
+  };
 
   /** @internal */
   export const getUuidsPage = (remoteContext: RemoteDataContext) => (
@@ -44,5 +62,27 @@ export namespace v1 {
       ...freetextParams,
     };
     return getContactUuids(remoteContext)(queryParams);
+  };
+
+  /** @internal */
+  export const getPage = (remoteContext: RemoteDataContext) => (
+    qualifier: ContactTypeQualifier | IdsQualifier,
+    cursor: Nullable<string>,
+    limit: number
+  ): Promise<Page<Contact.v1.Contact>> => {
+    const idsParams: Record<string, string> = isIdsQualifier(qualifier)
+      ? { ids: qualifier.ids.join(',') }
+      : {};
+    const typeParams: Record<string, string> = isContactTypeQualifier(qualifier)
+      ? { type: qualifier.contactType }
+      : {};
+
+    const queryParams = {
+      limit: limit.toString(),
+      ...(cursor ? { cursor } : {}),
+      ...typeParams,
+      ...idsParams,
+    };
+    return getContacts(remoteContext)(queryParams);
   };
 }

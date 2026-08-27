@@ -3,18 +3,22 @@ import {
   byContactType,
   byContactId,
   byContactIds,
+  byForms,
   byFreetext,
   byReportingPeriod,
   byUsername,
-  byUuid, FreetextQualifier,
+  byUuid,
+  byIds, FreetextQualifier,
   isContactTypeQualifier,
   isContactIdQualifier,
   isContactIdsQualifier,
+  isFormsQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
   isReportingPeriodQualifier,
   isUsernameQualifier,
   isUuidQualifier,
+  isIdsQualifier,
   byId,
   isIdQualifier
 } from '../src/qualifier';
@@ -81,6 +85,47 @@ describe('qualifier', () => {
     });
   });
 
+  describe('byIds', () => {
+    [
+      [],
+      ['id'],
+      ['id-1', 'id-2'],
+    ].forEach(ids => {
+      it(`builds a qualifier that identifies entities by their identifiers for ${JSON.stringify(ids)}`, () => {
+        expect(byIds(ids)).to.deep.equal({ ids });
+      });
+    });
+
+    [
+      null,
+      'abc',
+      [''],
+      ['id', ''],
+    ].forEach(ids => {
+      it(`throws an error for ${JSON.stringify(ids)}`, () => {
+        expect(() => byIds(ids as string[])).to.throw(`Invalid identifiers [${JSON.stringify(ids)}].`);
+      });
+    });
+  });
+
+  describe('isIdsQualifier', () => {
+    [
+      [ null, false ],
+      [ 'id', false ],
+      [ { ids: '' }, false ],
+      [ { ids: { } }, false ],
+      [ { ids: ['id', ''] }, false ],
+      [ { ids: [null, 'id'] }, false ],
+      [ { ids: [] }, true ],
+      [ { ids: ['id'] }, true ],
+      [ { ids: ['id-1', 'id-2'] }, true ],
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isIdsQualifier(qualifier)).to.equal(expected);
+      });
+    });
+  });
+
   describe('byContactType', () => {
     it('builds a qualifier that identifies an entity by its contactType', () => {
       expect(byContactType('person')).to.deep.equal({ contactType: 'person' });
@@ -95,6 +140,76 @@ describe('qualifier', () => {
         expect(() => byContactType(contactType as string)).to.throw(
           `Invalid contact type [${JSON.stringify(contactType)}].`
         );
+      });
+    });
+  });
+
+  describe('byForms', () => {
+    it('builds a qualifier that identifies entities by their form codes', () => {
+      expect(byForms(['pregnancy', 'delivery'])).to.deep.equal({ forms: ['pregnancy', 'delivery'] });
+    });
+
+    it('accepts a single form code in an array', () => {
+      expect(byForms(['pregnancy'])).to.deep.equal({ forms: ['pregnancy'] });
+    });
+
+    it('removes duplicate form codes while keeping the order given', () => {
+      expect(byForms(['delivery', 'pregnancy', 'delivery'])).to.deep.equal({ forms: ['delivery', 'pregnancy'] });
+    });
+
+    it('does not trim the form codes it accepts', () => {
+      expect(byForms(['ANC_FollowUp'])).to.deep.equal({ forms: ['ANC_FollowUp'] });
+    });
+
+    ([
+      null,
+      undefined,
+      'pregnancy',
+      [],
+      [''],
+      ['   '],
+      ['\t\n'],
+      ['pregnancy', ''],
+      ['  ANC_FollowUp '],
+      [' pregnancy'],
+      ['pregnancy '],
+      [null],
+      [0],
+      { },
+      0,
+    ] as [string, ...string[]][]).forEach(forms => {
+      it(`throws an error for ${JSON.stringify(forms)}`, () => {
+        expect(() => byForms(forms)).to.throw(
+          `Invalid forms [${JSON.stringify(forms)}].`
+        );
+      });
+    });
+  });
+  describe('isFormsQualifier', () => {
+    [
+      [ null, false ],
+      [ 'pregnancy', false ],
+      [ { forms: { } }, false ],
+      // A bare string is the shape the singular API used to take, and it would otherwise pass as an
+      // iterable of single characters, so it is rejected explicitly.
+      [ { forms: 'pregnancy' }, false ],
+      [ { forms: [] }, false ],
+      [ { forms: [''] }, false ],
+      [ { forms: ['   '] }, false ],
+      [ { forms: ['pregnancy', ''] }, false ],
+      [ { forms: ['pregnancy', null] }, false ],
+      [ { form: 'pregnancy' }, false ],
+      // A padded code would otherwise pass validation but match nothing, since the value is compared
+      // verbatim rather than trimmed: reject it instead of returning a silent empty page.
+      [ { forms: ['  ANC_FollowUp '] }, false ],
+      [ { forms: [' pregnancy'] }, false ],
+      [ { forms: ['pregnancy '] }, false ],
+      [ { forms: ['pregnancy'] }, true ],
+      [ { forms: ['pregnancy', 'delivery'] }, true ],
+      [ { forms: ['pregnancy'], other: 'other' }, true ]
+    ].forEach(([ forms, expected ]) => {
+      it(`evaluates ${JSON.stringify(forms)}`, () => {
+        expect(isFormsQualifier(forms)).to.equal(expected);
       });
     });
   });

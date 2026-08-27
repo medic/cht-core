@@ -1,6 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const chai = require('chai');
+const moment = require('moment');
 
 const outboundConfig = (port, minute, hour) => ({
   working: {
@@ -91,10 +92,12 @@ describe('Outbound', () => {
     // the known port is necessary for the outbound config
     server = destinationApp.listen();
     port = server.address().port;
-    sentinelDate = await utils.getSentinelDate();
-    minute = sentinelDate.get('minute') - 2;
-    hour = sentinelDate.get('hour');
     server.close();
+
+    sentinelDate = await utils.getSentinelDate();
+    const twoMinutesAgo = moment(sentinelDate).subtract(2, 'minutes');
+    minute = twoMinutesAgo.get('minute');
+    hour = twoMinutesAgo.get('hour');
   });
 
   after(() => {

@@ -1,9 +1,13 @@
 import { InvalidArgumentError } from './error';
 import {
   ContactTypeQualifier,
+  FormsQualifier,
   FreetextQualifier,
+  IdsQualifier,
   isContactTypeQualifier,
+  isFormsQualifier,
   isFreetextQualifier,
+  isIdsQualifier,
   isUuidQualifier,
   UuidQualifier,
 } from '../qualifier';
@@ -13,6 +17,7 @@ import {
   assertHasOptionalField,
   assertHasRequiredField,
   DataObject, isDateTimeString,
+  isRecord,
   Nullable
 } from './core';
 import * as Input from '../input';
@@ -121,6 +126,23 @@ export const assertFreetextQualifier: (qualifier: unknown) => asserts qualifier 
 };
 
 /** @internal */
+export const assertFreetextOrFormsQualifier: (
+  qualifier: unknown
+) => asserts qualifier is FreetextQualifier | FormsQualifier = (
+  qualifier: unknown
+) => {
+  if (isFreetextQualifier(qualifier) || isFormsQualifier(qualifier)) {
+    return;
+  }
+  // Only form-shaped input gets the new message. Everything else keeps the original freetext error
+  // verbatim, so callers (and the 400 bodies the API surfaces from them) are unchanged.
+  if (isRecord(qualifier) && 'forms' in qualifier) {
+    throw new InvalidArgumentError(`Invalid forms [${JSON.stringify(qualifier)}].`);
+  }
+  throw new InvalidArgumentError(`Invalid freetext [${JSON.stringify(qualifier)}].`);
+};
+
+/** @internal */
 export const assertContactTypeFreetextQualifier: (
   qualifier: unknown
 ) => asserts qualifier is ContactTypeQualifier | FreetextQualifier = (
@@ -134,9 +156,29 @@ export const assertContactTypeFreetextQualifier: (
 };
 
 /** @internal */
+export const assertContactTypeIdsQualifier: (
+  qualifier: unknown
+) => asserts qualifier is ContactTypeQualifier | IdsQualifier = (qualifier: unknown) => {
+  if (!(isContactTypeQualifier(qualifier) || isIdsQualifier(qualifier))) {
+    throw new InvalidArgumentError(
+      `Invalid qualifier [${JSON.stringify(qualifier)}]. Must be a contact type or ids qualifier.`
+    );
+  }
+};
+
+/** @internal */
 export const assertUuidQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
   if (!isUuidQualifier(qualifier)) {
     throw new InvalidArgumentError(`Invalid identifier [${JSON.stringify(qualifier)}].`);
+  }
+};
+
+/** @internal */
+export const assertIdsQualifier: (
+  qualifier: unknown
+) => asserts qualifier is IdsQualifier = (qualifier: unknown) => {
+  if (!isIdsQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid identifiers [${JSON.stringify(qualifier)}].`);
   }
 };
 

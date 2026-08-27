@@ -377,6 +377,7 @@ module.exports = defineConfig([
         $: true,
         $$: true,
         document: true,
+        DOMParser: true,
         caches: true,
         navigator: true,
       },
@@ -612,7 +613,7 @@ module.exports = defineConfig([
       }],
 
       ['jsdoc/check-tag-names']: ['error', {
-        definedTags: ['typeParam'],
+        definedTags: ['typeParam', 'packageDocumentation'],
       }],
     },
   },

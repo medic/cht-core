@@ -1,11 +1,10 @@
 describe('DisplayTranslationsCtrl controller', function() {
-  const { DOC_TYPES } = require('@medic/constants');
   'use strict';
 
   let rootScope;
   let scope;
   let createController;
-  let queryStub;
+  let allDocsStub;
   let modalStub;
   let logError;
 
@@ -19,7 +18,7 @@ describe('DisplayTranslationsCtrl controller', function() {
   beforeEach(inject(function($rootScope, $controller) {
     rootScope = $rootScope;
     scope = $rootScope.$new();
-    queryStub = sinon.stub().resolves({ rows: translationsRows });
+    allDocsStub = sinon.stub().resolves({ rows: translationsRows });
     modalStub = sinon.stub().resolves();
     logError = sinon.stub();
 
@@ -27,7 +26,7 @@ describe('DisplayTranslationsCtrl controller', function() {
       return $controller('DisplayTranslationsCtrl', {
         '$log': { error: logError },
         '$scope': scope,
-        'DB': sinon.stub().returns({ query: queryStub }),
+        'DB': sinon.stub().returns({ allDocs: allDocsStub }),
         'Modal': modalStub,
       });
     };
@@ -57,11 +56,11 @@ describe('DisplayTranslationsCtrl controller', function() {
     chai.expect(modelByKey.bye.lhs).to.equal('See ya');
     chai.expect(modelByKey.bye.rhs).to.equal('Au revoir');
 
-    chai.expect(queryStub.callCount).to.equal(1);
-    chai.expect(queryStub.firstCall.args).to.deep.equal([
-      'medic-client/doc_by_type',
+    chai.expect(allDocsStub.callCount).to.equal(1);
+    chai.expect(allDocsStub.firstCall.args).to.deep.equal([
       {
-        key: [DOC_TYPES.TRANSLATIONS],
+        start_key: 'messages-',
+        end_key: 'messages-\ufff0',
         include_docs: true,
       }
     ]);
@@ -115,12 +114,12 @@ describe('DisplayTranslationsCtrl controller', function() {
     // After modal resolves, updateTranslations should be called; our queryStub should be called again
     rootScope.$digest();
     // Called twice: initial load + refresh after modal
-    chai.expect(queryStub.callCount).to.be.at.least(2);
+    chai.expect(allDocsStub.callCount).to.be.at.least(2);
   });
 
   it('logs error when fetching fails', async () => {
     // make first call reject
-    queryStub.rejects(new Error('boom'));
+    allDocsStub.rejects(new Error('boom'));
     await createController();
     await scope.setupPromise;
     rootScope.$digest();
