@@ -171,7 +171,7 @@ describe('Contacts content component', () => {
 
   it('renders mm-contact-photo in the profile heading wired to the selected contact', () => {
     selectedContact.doc = { _id: 'c-1', name: 'Amina' };
-    selectedContact.type = { icon: 'medic-person', photo_field: 'face_pic' };
+    selectedContact.type = { icon: 'medic-person', profile_image_field: 'face_pic' };
     store.overrideSelector(Selectors.getSelectedContact, selectedContact);
     fixture.detectChanges();
 
@@ -181,7 +181,7 @@ describe('Contacts content component', () => {
     const photoComponent = fixture.debugElement
       .query(el => el.nativeElement === heading)
       .componentInstance;
-    expect(photoComponent.photoField).to.equal('face_pic');
+    expect(photoComponent.profileImageField).to.equal('face_pic');
     expect(photoComponent.fallbackIcon).to.equal('medic-person');
     expect(photoComponent.doc).to.deep.equal(selectedContact.doc);
   });

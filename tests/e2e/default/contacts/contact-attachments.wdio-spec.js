@@ -35,7 +35,7 @@ describe('Contact form attachments', () => {
     create_form: 'form:contact:person_with_attachments:create',
     edit_form: 'form:contact:person_with_attachments:edit',
     person: true,
-    photo_field: 'photo'
+    profile_image_field: 'photo'
   };
 
   const translations = {

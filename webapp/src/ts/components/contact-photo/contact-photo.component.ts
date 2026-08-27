@@ -6,7 +6,7 @@ import { DbService } from '@mm-services/db.service';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 
 const USER_FILE_ATTACHMENT_PREFIX = 'user-file-';
-const DEFAULT_PHOTO_FIELD = 'photo';
+const DEFAULT_PROFILE_IMAGE_FIELD = 'profile_image';
 
 @Component({
   selector: 'mm-contact-photo',
@@ -16,7 +16,7 @@ const DEFAULT_PHOTO_FIELD = 'photo';
 export class ContactPhotoComponent implements OnChanges, OnDestroy {
   @Input() doc?: { _id?: string; _attachments?: Record<string, any>; [field: string]: any };
   @Input() docId?: string;
-  @Input() photoField?: string;
+  @Input() profileImageField?: string;
   @Input() fallbackIcon?: string;
 
   loading = false;
@@ -27,7 +27,7 @@ export class ContactPhotoComponent implements OnChanges, OnDestroy {
   ) {}
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes.doc || changes.docId || changes.photoField) {
+    if (changes.doc || changes.docId || changes.profileImageField) {
       this.revoke();
       return this.load();
     }
@@ -39,12 +39,12 @@ export class ContactPhotoComponent implements OnChanges, OnDestroy {
 
   private async load() {
     const doc = await this.resolveDoc();
-    const field = this.photoField || DEFAULT_PHOTO_FIELD;
-    const photo = doc?.[field];
-    if (!doc?._id || !photo) {
+    const field = this.profileImageField || DEFAULT_PROFILE_IMAGE_FIELD;
+    const profileImage = doc?.[field];
+    if (!doc?._id || !profileImage) {
       return;
     }
-    const attachmentName = `${USER_FILE_ATTACHMENT_PREFIX}${photo}`;
+    const attachmentName = `${USER_FILE_ATTACHMENT_PREFIX}${profileImage}`;
     if (doc._attachments?.[attachmentName]) {
       await this.fetchObjectUrl(doc._id, attachmentName);
     }

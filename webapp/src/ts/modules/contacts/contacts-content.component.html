@@ -26,7 +26,7 @@
           <div class="row heading" [ngClass]="{'deceased': selectedContact?.doc?.date_of_death, 'muted':selectedContact?.doc?.muted }">
             <mm-contact-photo
               [doc]="selectedContact?.doc"
-              [photoField]="selectedContact?.type?.photo_field"
+              [profileImageField]="selectedContact?.type?.profile_image_field"
               [fallbackIcon]="selectedContact?.type?.icon">
             </mm-contact-photo>
             <div class="heading-content">

@@ -5,7 +5,7 @@ import { expect } from 'chai';
 
 import { ContactPhotoComponent } from '@mm-components/contact-photo/contact-photo.component';
 import { DbService } from '@mm-services/db.service';
-import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 
 describe('ContactPhotoComponent', () => {
   let component: ContactPhotoComponent;
@@ -16,7 +16,7 @@ describe('ContactPhotoComponent', () => {
   let revokeObjectURL;
   let originalCreate;
   let originalRevoke;
-  let resourceIconsService;
+  let customResourceService;
 
   const photoBlob = new Blob(['photo-bytes'], { type: 'image/jpeg' });
 
@@ -26,7 +26,7 @@ describe('ContactPhotoComponent', () => {
     const dbService = {
       get: () => ({ getAttachment, get }),
     };
-    resourceIconsService = {
+    customResourceService = {
       getImg: sinon.stub().returns('<svg/>'),
     };
 
@@ -44,7 +44,7 @@ describe('ContactPhotoComponent', () => {
       ],
       providers: [
         { provide: DbService, useValue: dbService },
-        { provide: ResourceIconsService, useValue: resourceIconsService },
+        { provide: CustomResourceService, useValue: customResourceService },
       ],
     })
       .compileComponents()
@@ -68,10 +68,10 @@ describe('ContactPhotoComponent', () => {
     fixture.detectChanges();
   };
 
-  it('loads blob when doc has matching photo and attachment stub', async () => {
+  it('loads blob when doc has matching profile image and attachment stub', async () => {
     await setDoc({
       _id: 'c-1',
-      photo: 'amina.jpg',
+      profile_image: 'amina.jpg',
       _attachments: { 'user-file-amina.jpg': { content_type: 'image/jpeg', stub: true } },
     });
 
@@ -80,15 +80,15 @@ describe('ContactPhotoComponent', () => {
     expect(component.objectUrl).to.exist;
   });
 
-  it('renders no img and skips fetch when doc has no photo field', async () => {
+  it('renders no img and skips fetch when doc has no profile image field', async () => {
     await setDoc({ _id: 'c-1', _attachments: {} });
 
     expect(getAttachment.called).to.be.false;
     expect(component.objectUrl).to.be.undefined;
   });
 
-  it('skips fetch when photo field set but no matching attachment stub', async () => {
-    await setDoc({ _id: 'c-1', photo: 'amina.jpg', _attachments: {} });
+  it('skips fetch when profile image field set but no matching attachment stub', async () => {
+    await setDoc({ _id: 'c-1', profile_image: 'amina.jpg', _attachments: {} });
 
     expect(getAttachment.called).to.be.false;
     expect(component.objectUrl).to.be.undefined;
@@ -100,7 +100,7 @@ describe('ContactPhotoComponent', () => {
 
     await setDoc({
       _id: 'c-1',
-      photo: 'amina.jpg',
+      profile_image: 'amina.jpg',
       _attachments: { 'user-file-amina.jpg': { stub: true } },
     });
 
@@ -113,7 +113,7 @@ describe('ContactPhotoComponent', () => {
 
     component.doc = {
       _id: 'c-1',
-      photo: 'amina.jpg',
+      profile_image: 'amina.jpg',
       _attachments: { 'user-file-amina.jpg': { stub: true } },
     };
     let err;
@@ -127,27 +127,27 @@ describe('ContactPhotoComponent', () => {
     expect(err).to.deep.include({ status: 500 });
   });
 
-  it('defaults photoField to "photo" when input is unbound or undefined', async () => {
+  it('defaults profileImageField to "profile_image" when input is unbound or undefined', async () => {
     await setDoc({
       _id: 'c-1',
-      photo: 'amina.jpg',
+      profile_image: 'amina.jpg',
       _attachments: { 'user-file-amina.jpg': { stub: true } },
     });
 
     expect(getAttachment.calledWith('c-1', 'user-file-amina.jpg')).to.be.true;
 
     getAttachment.resetHistory();
-    component.photoField = undefined;
+    component.profileImageField = undefined;
     await setDoc({
       _id: 'c-2',
-      photo: 'bob.jpg',
+      profile_image: 'bob.jpg',
       _attachments: { 'user-file-bob.jpg': { stub: true } },
     });
     expect(getAttachment.calledWith('c-2', 'user-file-bob.jpg')).to.be.true;
   });
 
-  it('honours an explicit photoField override', async () => {
-    component.photoField = 'picture';
+  it('honours an explicit profileImageField override', async () => {
+    component.profileImageField = 'picture';
     await setDoc({
       _id: 'c-1',
       picture: 'amina.jpg',
@@ -160,7 +160,7 @@ describe('ContactPhotoComponent', () => {
   it('falls back to docId fetch when doc input is not provided', async () => {
     get.resolves({
       _id: 'c-1',
-      photo: 'amina.jpg',
+      profile_image: 'amina.jpg',
       _attachments: { 'user-file-amina.jpg': { stub: true } },
     });
     component.docId = 'c-1';
@@ -175,7 +175,7 @@ describe('ContactPhotoComponent', () => {
   it('revokes prior object URL and re-fetches on doc input change', async () => {
     await setDoc({
       _id: 'c-1',
-      photo: 'amina.jpg',
+      profile_image: 'amina.jpg',
       _attachments: { 'user-file-amina.jpg': { stub: true } },
     });
     expect(createObjectURL.callCount).to.equal(1);
@@ -183,7 +183,7 @@ describe('ContactPhotoComponent', () => {
     createObjectURL.returns('blob:fake-url-2');
     await setDoc({
       _id: 'c-2',
-      photo: 'bob.jpg',
+      profile_image: 'bob.jpg',
       _attachments: { 'user-file-bob.jpg': { stub: true } },
     });
 
@@ -195,7 +195,7 @@ describe('ContactPhotoComponent', () => {
   it('revokes the object URL on destroy', async () => {
     await setDoc({
       _id: 'c-1',
-      photo: 'amina.jpg',
+      profile_image: 'amina.jpg',
       _attachments: { 'user-file-amina.jpg': { stub: true } },
     });
 
