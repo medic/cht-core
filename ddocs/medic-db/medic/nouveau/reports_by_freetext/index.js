@@ -51,9 +51,6 @@ function(doc) {
       indexField(key, doc.fields[key]);
     });
   }
-  if (doc.contact && doc.contact._id && typeof doc.contact._id === 'string') {
-    indexMaybe('string', 'exact_match', 'contact:' + doc.contact._id.toLowerCase());
-  }
   var reportedDate = doc.reported_date && typeof doc.reported_date === 'number' ? doc.reported_date : 0;
   index('double', 'reported_date', reportedDate, { store: true });
 }
