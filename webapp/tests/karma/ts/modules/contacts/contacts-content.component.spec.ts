@@ -169,21 +169,21 @@ describe('Contacts content component', () => {
     expect(component).to.exist;
   });
 
-  it('renders mm-contact-photo in the profile heading wired to the selected contact', () => {
+  it('renders mm-contact-profile-image in the profile heading wired to the selected contact', () => {
     selectedContact.doc = { _id: 'c-1', name: 'Amina' };
     selectedContact.type = { icon: 'medic-person', profile_image_field: 'face_pic' };
     store.overrideSelector(Selectors.getSelectedContact, selectedContact);
     fixture.detectChanges();
 
-    const heading = fixture.nativeElement.querySelector('.row.heading mm-contact-photo');
+    const heading = fixture.nativeElement.querySelector('.row.heading mm-contact-profile-image');
     expect(heading).to.exist;
 
-    const photoComponent = fixture.debugElement
+    const profileImageComponent = fixture.debugElement
       .query(el => el.nativeElement === heading)
       .componentInstance;
-    expect(photoComponent.profileImageField).to.equal('face_pic');
-    expect(photoComponent.fallbackIcon).to.equal('medic-person');
-    expect(photoComponent.doc).to.deep.equal(selectedContact.doc);
+    expect(profileImageComponent.profileImageField).to.equal('face_pic');
+    expect(profileImageComponent.fallbackIcon).to.equal('medic-person');
+    expect(profileImageComponent.doc).to.deep.equal(selectedContact.doc);
   });
 
   it('ngOnDestroy() should unsubscribe from observables and reset state', () => {

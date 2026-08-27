@@ -3,13 +3,13 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import sinon from 'sinon';
 import { expect } from 'chai';
 
-import { ContactPhotoComponent } from '@mm-components/contact-photo/contact-photo.component';
+import { ContactProfileImageComponent } from '@mm-components/contact-profile-image/contact-profile-image.component';
 import { DbService } from '@mm-services/db.service';
 import { CustomResourceService } from '@mm-services/custom-resource.service';
 
-describe('ContactPhotoComponent', () => {
-  let component: ContactPhotoComponent;
-  let fixture: ComponentFixture<ContactPhotoComponent>;
+describe('ContactProfileImageComponent', () => {
+  let component: ContactProfileImageComponent;
+  let fixture: ComponentFixture<ContactProfileImageComponent>;
   let getAttachment;
   let get;
   let createObjectURL;
@@ -18,10 +18,10 @@ describe('ContactPhotoComponent', () => {
   let originalRevoke;
   let customResourceService;
 
-  const photoBlob = new Blob(['photo-bytes'], { type: 'image/jpeg' });
+  const profileImageBlob = new Blob(['profile-image-bytes'], { type: 'image/jpeg' });
 
   beforeEach(() => {
-    getAttachment = sinon.stub().resolves(photoBlob);
+    getAttachment = sinon.stub().resolves(profileImageBlob);
     get = sinon.stub();
     const dbService = {
       get: () => ({ getAttachment, get }),
@@ -40,7 +40,7 @@ describe('ContactPhotoComponent', () => {
     return TestBed.configureTestingModule({
       imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        ContactPhotoComponent,
+        ContactProfileImageComponent,
       ],
       providers: [
         { provide: DbService, useValue: dbService },
@@ -49,7 +49,7 @@ describe('ContactPhotoComponent', () => {
     })
       .compileComponents()
       .then(() => {
-        fixture = TestBed.createComponent(ContactPhotoComponent);
+        fixture = TestBed.createComponent(ContactProfileImageComponent);
         component = fixture.componentInstance;
       });
   });
@@ -76,7 +76,7 @@ describe('ContactPhotoComponent', () => {
     });
 
     expect(getAttachment.calledOnceWithExactly('c-1', 'user-file-amina.jpg')).to.be.true;
-    expect(createObjectURL.calledOnceWith(photoBlob)).to.be.true;
+    expect(createObjectURL.calledOnceWith(profileImageBlob)).to.be.true;
     expect(component.objectUrl).to.exist;
   });
 

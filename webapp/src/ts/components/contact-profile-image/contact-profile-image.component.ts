@@ -9,11 +9,11 @@ const USER_FILE_ATTACHMENT_PREFIX = 'user-file-';
 const DEFAULT_PROFILE_IMAGE_FIELD = 'profile_image';
 
 @Component({
-  selector: 'mm-contact-photo',
-  templateUrl: './contact-photo.component.html',
+  selector: 'mm-contact-profile-image',
+  templateUrl: './contact-profile-image.component.html',
   imports: [NgIf, ResourceIconPipe, TranslatePipe]
 })
-export class ContactPhotoComponent implements OnChanges, OnDestroy {
+export class ContactProfileImageComponent implements OnChanges, OnDestroy {
   @Input() doc?: { _id?: string; _attachments?: Record<string, any>; [field: string]: any };
   @Input() docId?: string;
   @Input() profileImageField?: string;
@@ -69,7 +69,7 @@ export class ContactPhotoComponent implements OnChanges, OnDestroy {
       if ((err as { status?: number })?.status !== 404) {
         throw err;
       }
-      console.warn(`ContactPhotoComponent: attachment ${attachmentName} missing on ${docId}`);
+      console.warn(`ContactProfileImageComponent: attachment ${attachmentName} missing on ${docId}`);
     } finally {
       this.loading = false;
     }

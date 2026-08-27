@@ -24,11 +24,11 @@
       <div class="body meta">
         <div class="card">
           <div class="row heading" [ngClass]="{'deceased': selectedContact?.doc?.date_of_death, 'muted':selectedContact?.doc?.muted }">
-            <mm-contact-photo
+            <mm-contact-profile-image
               [doc]="selectedContact?.doc"
               [profileImageField]="selectedContact?.type?.profile_image_field"
               [fallbackIcon]="selectedContact?.type?.icon">
-            </mm-contact-photo>
+            </mm-contact-profile-image>
             <div class="heading-content">
               <h2 [attr.test-id]="'contact-name'">{{selectedContact?.doc?.name}}</h2>
               <div [attr.test-id]="'deceased-title'" *ngIf="selectedContact?.doc?.date_of_death">{{'contact.deceased.title' | translate}}</div>

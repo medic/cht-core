@@ -338,9 +338,9 @@ describe('Contact form attachments', () => {
       await commonPage.waitForPageLoaded();
       await contactPage.waitForContactLoaded();
 
-      const photo = await contactPage.getContactCardPhoto();
-      await photo.waitForDisplayed();
-      const src = await photo.getAttribute('src');
+      const profileImage = await contactPage.getContactCardProfileImage();
+      await profileImage.waitForDisplayed();
+      const src = await profileImage.getAttribute('src');
       expect(src).to.match(/^blob:/);
     });
 
@@ -354,9 +354,9 @@ describe('Contact form attachments', () => {
       await commonPage.waitForPageLoaded();
       await contactPage.waitForContactLoaded();
 
-      const photo = await contactPage.getContactCardPhoto();
-      expect(await photo.isExisting()).to.be.false;
-      const fallback = await $('.card .heading mm-contact-photo span .resource-icon');
+      const profileImage = await contactPage.getContactCardProfileImage();
+      expect(await profileImage.isExisting()).to.be.false;
+      const fallback = await $('.card .heading mm-contact-profile-image span .resource-icon');
       await fallback.waitForDisplayed();
     });
   });
