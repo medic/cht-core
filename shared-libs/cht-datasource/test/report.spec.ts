@@ -718,6 +718,8 @@ describe('report', () => {
           'getSummariesPage',
           'getUuidsByFreetext',
           'getUuidsPageByFreetext',
+          'getUuidsByForms',
+          'getUuidsPageByForms',
           'getByUuid',
           'create',
           'update',
@@ -854,6 +856,57 @@ describe('report', () => {
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuids)).to.be.true;
         expect(contactGetIds.calledOnceWithExactly(qualifier)).to.be.true;
         expect(byFreetext.calledOnceWithExactly(freetext)).to.be.true;
+      });
+
+      it('getUuidsPageByForms', async () => {
+        const expectedReportIds: Page<Report.v1.Report> = { data: [], cursor: null };
+        const reportGetIdsPage = sinon.stub().resolves(expectedReportIds);
+        dataContextBind.returns(reportGetIdsPage);
+        const forms: [string, ...string[]] = ['pregnancy', 'delivery'];
+        const limit = 2;
+        const cursor = '1';
+        const qualifier = { forms };
+        const byForms = sinon.stub(Qualifier, 'byForms').returns(qualifier);
+
+        const returnedReportIds = await report.getUuidsPageByForms(forms, cursor, limit);
+
+        expect(returnedReportIds).to.equal(expectedReportIds);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
+        expect(
+          reportGetIdsPage.calledOnceWithExactly(qualifier, cursor, limit)
+        ).to.be.true;
+        expect(byForms.calledOnceWithExactly(forms)).to.be.true;
+      });
+
+      it('getUuidsPageByForms uses default cursor and limit', async () => {
+        const expectedReportIds: Page<Report.v1.Report> = { data: [], cursor: null };
+        const reportGetIdsPage = sinon.stub().resolves(expectedReportIds);
+        dataContextBind.returns(reportGetIdsPage);
+        const forms: [string, ...string[]] = ['pregnancy'];
+        const qualifier = { forms };
+        sinon.stub(Qualifier, 'byForms').returns(qualifier);
+
+        const returnedReportIds = await report.getUuidsPageByForms(forms);
+
+        expect(returnedReportIds).to.equal(expectedReportIds);
+        expect(reportGetIdsPage.calledOnceWithExactly(qualifier, null, 10000)).to.be.true;
+      });
+
+      it('getUuidsByForms', () => {
+        const mockAsyncGenerator = fakeGenerator();
+
+        const reportGetIds = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(reportGetIds);
+        const forms: [string, ...string[]] = ['pregnancy', 'delivery'];
+        const qualifier = { forms };
+        const byForms = sinon.stub(Qualifier, 'byForms').returns(qualifier);
+
+        const res = report.getUuidsByForms(forms);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuids)).to.be.true;
+        expect(reportGetIds.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byForms.calledOnceWithExactly(forms)).to.be.true;
       });
 
       it('getPageByIds', async () => {
