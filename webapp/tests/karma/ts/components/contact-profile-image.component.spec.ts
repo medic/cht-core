@@ -68,7 +68,7 @@ describe('ContactProfileImageComponent', () => {
         _id: 'c-1',
         name: 'Amina',
         profile_image: 'amina.jpg',
-        _attachments: { 'user-file-amina.jpg': { content_type: 'image/jpeg', stub: true } },
+        _attachments: { 'user-file-amina.jpg': { content_type: 'image/jpeg' } },
       },
       type: { icon: 'medic-person' },
     });
@@ -84,7 +84,7 @@ describe('ContactProfileImageComponent', () => {
         _id: 'c-1',
         name: 'Amina',
         profile_image: 'amina.jpg',
-        _attachments: { 'user-file-amina.jpg': { stub: true } },
+        _attachments: { 'user-file-amina.jpg': { content_type: 'image/jpeg' } },
       },
       type: {},
     });
@@ -102,7 +102,7 @@ describe('ContactProfileImageComponent', () => {
     expect(getAttachmentImage()).to.be.undefined;
   }));
 
-  it('renders the type icon when the profile image has no matching attachment stub', fakeAsync(() => {
+  it('renders the type icon when the profile image has no matching attachment', fakeAsync(() => {
     selectContact({
       doc: { _id: 'c-1', profile_image: 'amina.jpg', _attachments: {} },
       type: { icon: 'medic-person' },
@@ -126,7 +126,7 @@ describe('ContactProfileImageComponent', () => {
       doc: {
         _id: 'c-1',
         profile_image: 'amina.jpg',
-        _attachments: { 'user-file-amina.jpg': { stub: true } },
+        _attachments: { 'user-file-amina.jpg': { content_type: 'image/jpeg' } },
       },
       type: { icon: 'medic-person' },
     });
@@ -139,7 +139,7 @@ describe('ContactProfileImageComponent', () => {
       doc: {
         _id: 'c-1',
         picture: 'amina.jpg',
-        _attachments: { 'user-file-amina.jpg': { stub: true } },
+        _attachments: { 'user-file-amina.jpg': { content_type: 'image/jpeg' } },
       },
       type: { profile_image_field: 'picture' },
     });
@@ -152,7 +152,7 @@ describe('ContactProfileImageComponent', () => {
       doc: {
         _id: 'c-1',
         profile_image: 'amina.jpg',
-        _attachments: { 'user-file-amina.jpg': { stub: true } },
+        _attachments: { 'user-file-amina.jpg': { content_type: 'image/jpeg' } },
       },
       type: {},
     });
@@ -161,7 +161,7 @@ describe('ContactProfileImageComponent', () => {
       doc: {
         _id: 'c-2',
         profile_image: 'bob.jpg',
-        _attachments: { 'user-file-bob.jpg': { stub: true } },
+        _attachments: { 'user-file-bob.jpg': { content_type: 'image/jpeg' } },
       },
       type: {},
     });
@@ -175,7 +175,7 @@ describe('ContactProfileImageComponent', () => {
     const doc = {
       _id: 'c-1',
       profile_image: 'amina.jpg',
-      _attachments: { 'user-file-amina.jpg': { stub: true } },
+      _attachments: { 'user-file-amina.jpg': { content_type: 'image/jpeg' } },
     };
     selectContact({ doc, type: {} });
     expect(getAttachment.callCount).to.equal(1);
@@ -183,6 +183,66 @@ describe('ContactProfileImageComponent', () => {
     selectContact({ doc, type: {}, children: [] });
 
     expect(getAttachment.callCount).to.equal(1);
+  }));
+
+  it('resolves the binary attachment name from the field name', fakeAsync(() => {
+    selectContact({
+      doc: {
+        _id: 'c-1',
+        profile_image: '',
+        _attachments: { 'user-file/profile_image': { content_type: 'image/png' } },
+      },
+      type: { icon: 'medic-person' },
+    });
+
+    expect(component.attachment).to.deep.equal({ docId: 'c-1', name: 'user-file/profile_image' });
+    expect(getAttachment.calledOnceWithExactly('c-1', 'user-file/profile_image')).to.be.true;
+  }));
+
+  it('resolves the binary attachment name for a configured profile_image_field', fakeAsync(() => {
+    selectContact({
+      doc: {
+        _id: 'c-1',
+        _attachments: { 'user-file/picture': { content_type: 'image/png' } },
+      },
+      type: { profile_image_field: 'picture' },
+    });
+
+    expect(component.attachment).to.deep.equal({ docId: 'c-1', name: 'user-file/picture' });
+  }));
+
+  it('prefers the file attachment name over the binary one', fakeAsync(() => {
+    selectContact({
+      doc: {
+        _id: 'c-1',
+        profile_image: 'amina.jpg',
+        _attachments: {
+          'user-file-amina.jpg': { content_type: 'image/jpeg' },
+          'user-file/profile_image': { content_type: 'image/png' },
+        },
+      },
+      type: {},
+    });
+
+    expect(component.attachment).to.deep.equal({ docId: 'c-1', name: 'user-file-amina.jpg' });
+  }));
+
+  it('ignores attachments that are not images', fakeAsync(() => {
+    selectContact({
+      doc: {
+        _id: 'c-1',
+        profile_image: 'amina.pdf',
+        _attachments: {
+          'user-file-amina.pdf': { content_type: 'application/pdf' },
+          'user-file/profile_image': { content_type: 'application/pdf' },
+        },
+      },
+      type: { icon: 'medic-person' },
+    });
+
+    expect(component.attachment).to.be.undefined;
+    expect(getAttachment.called).to.be.false;
+    expect(component.fallbackIcon).to.equal('medic-person');
   }));
 
   it('unsubscribes on destroy', fakeAsync(() => {

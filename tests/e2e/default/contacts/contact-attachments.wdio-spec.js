@@ -105,6 +105,27 @@ describe('Contact form attachments', () => {
     });
   };
 
+  const createContactWithBinaryAttachment = (contactName, field = 'photo') => {
+    const imageBase64 = fs.readFileSync(photoPngPath).toString('base64');
+    // Binary attachments are named after the field itself rather than the field's value
+    const attachmentKey = `user-file/${field}`;
+
+    return personFactory.build({
+      name: contactName,
+      parent: { _id: healthCenter._id, parent: healthCenter.parent },
+      type: 'contact',
+      contact_type: 'person_with_attachments',
+      // Binary fields are cleared on the doc when the attachment is saved
+      [field]: '',
+      _attachments: {
+        [attachmentKey]: {
+          content_type: 'image/png',
+          data: imageBase64
+        }
+      }
+    });
+  };
+
   before(async () => {
     await utils.saveDocs([...places.values()]);
     await utils.createUsers([onlineUser]);
@@ -358,6 +379,22 @@ describe('Contact form attachments', () => {
       expect(await profileImage.isExisting()).to.be.false;
       const fallback = await $('.card .heading mm-contact-profile-image span .resource-icon');
       await fallback.waitForDisplayed();
+    });
+
+    it('should render the photo for an attachment using the binary naming', async () => {
+      const contact = createContactWithBinaryAttachment('Binary Attachment Person');
+      await utils.saveDocs([contact]);
+
+      const savedContact = await utils.getDoc(contact._id);
+      expect(Object.keys(savedContact._attachments)).to.deep.equal(['user-file/photo']);
+
+      await browser.url(`#/contacts/${contact._id}`);
+      await commonPage.waitForPageLoaded();
+      await contactPage.waitForContactLoaded();
+
+      const profileImage = await contactPage.getContactCardProfileImage();
+      await profileImage.waitForDisplayed();
+      expect(await profileImage.getAttribute('src')).to.match(/^blob:/);
     });
   });
 });
