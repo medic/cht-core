@@ -1,5 +1,6 @@
-<div class="loader" *ngIf="loading"></div>
-<img *ngIf="!loading && objectUrl" class="contact-profile-image" [src]="objectUrl"
-     [alt]="doc?.name || ('contact.profile' | translate)"/>
-<span *ngIf="!loading && !objectUrl && fallbackIcon"
-      [innerHTML]="fallbackIcon | resourceIcon"></span>
+@if (attachment) {
+  <mm-attachment-image [attachment]="attachment"
+                       [alt]="name || ('contact.profile' | translate)"></mm-attachment-image>
+} @else if (fallbackIcon) {
+  <span [innerHTML]="fallbackIcon | resourceIcon"></span>
+}

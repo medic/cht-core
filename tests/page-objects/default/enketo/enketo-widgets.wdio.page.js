@@ -56,7 +56,7 @@ const selectImage = async (formId, filePath) => {
   await input.addValue(filePath);
 };
 
-const reportImagePreview = () => $('.report-image');
+const reportImagePreview = () => $('#reports-content mm-attachment-image img');
 
 module.exports = {
   selectMultipleDropdown,

@@ -32,7 +32,7 @@ const rightPanelSelectors = {
 const contactCardSelectors = {
   contactCardName: () => $('h2[test-id="contact-name"]'),
   contactCardIcon: (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`),
-  contactCardProfileImage: () => $('.card .heading mm-contact-profile-image img.contact-profile-image'),
+  contactCardProfileImage: () => $('.card .heading mm-contact-profile-image img'),
   contactSummaryContainer: () => $('#contact_summary'),
   contactMedicID: () => $('#contact_summary .cell.patient_id > div > p:not(.summary_label)'),
   contactDeceasedStatus: () => $('div[test-id="deceased-title"]'),

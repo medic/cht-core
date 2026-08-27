@@ -588,17 +588,18 @@ mm-analytics-filters {
   cursor: pointer;
 }
 
-.report-image {
+mm-attachment-image img {
   max-width: 100%;
 }
 
-mm-contact-profile-image {
+mm-contact-profile-image,
+mm-contact-profile-image mm-attachment-image {
   display: contents;
+}
 
-  img.contact-profile-image {
-    border-radius: 50%;
-    object-fit: cover;
-  }
+mm-contact-profile-image img {
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .contacts {
