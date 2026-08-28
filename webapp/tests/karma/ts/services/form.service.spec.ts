@@ -1,6 +1,6 @@
 import { fakeAsync, flush, TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import * as _ from 'lodash-es';
 import { toBik_text } from 'bikram-sambat';
@@ -547,6 +547,51 @@ describe('Form service', () => {
         expect(feedbackService.submit.notCalled).to.be.true;
       }
     }));
+
+    describe('geo edit context injection is gated by form type', () => {
+      const instanceData = { clinic: { _id: 'contact1', geolocation: { latitude: 1.23, longitude: 36.8 } } };
+
+      const buildCaptureInput = () => {
+        const formHtml = document.createElement('div');
+        const captureWrapper = document.createElement('div');
+        captureWrapper.classList.add('or-appearance-geolocation-capture');
+        const captureInput = document.createElement('input');
+        captureInput.type = 'hidden';
+        captureWrapper.appendChild(captureInput);
+        formHtml.appendChild(captureWrapper);
+        return { formHtml, captureInput };
+      };
+
+      it('applies geo edit context when form type is contact', async () => {
+        UserContact.resolves({ contact_id: '123' });
+        xmlFormsService.canAccessForm.resolves(true);
+        const formContext = new WebappEnketoFormContext(
+          '#div', mockFormConfig('clinic', { type: 'contact' }), instanceData
+        );
+
+        await service.render(formContext);
+
+        expect(enketoService.renderForm.calledOnce).to.be.true;
+        const onBeforeInit = enketoService.renderForm.args[0][2];
+        expect(onBeforeInit).to.be.a('function');
+        const { formHtml, captureInput } = buildCaptureInput();
+        onBeforeInit(formHtml);
+        expect(captureInput.dataset.geoIsEdit).to.equal('true');
+      });
+
+      it('does not apply geo edit context when form type is not contact', async () => {
+        UserContact.resolves({ contact_id: '123' });
+        xmlFormsService.canAccessForm.resolves(true);
+        const formContext = new WebappEnketoFormContext(
+          '#div', mockFormConfig('clinic', { type: 'report' }), instanceData
+        );
+
+        await service.render(formContext);
+
+        expect(enketoService.renderForm.calledOnce).to.be.true;
+        expect(enketoService.renderForm.args[0]).to.have.lengthOf(2);
+      });
+    });
   });
 
   describe('getExternalInstances', () => {
@@ -1023,6 +1068,59 @@ describe('Form service', () => {
       expect(_.uniq(_.map(actual, '_id')).length).to.equal(3);
     });
 
+    describe('attachGeoToReport', () => {
+      let clock;
+
+      afterEach(() => {
+        clock?.restore();
+      });
+
+      it('returns the docs unchanged when no geoHandle is provided', async () => {
+        const docs = [{ _id: 'a' }];
+        const actual = await (service as any).attachGeoToReport(undefined, docs);
+        expect(actual).to.equal(docs);
+        expect(docs[0]).to.not.have.property('geolocation');
+        expect(docs[0]).to.not.have.property('geolocation_log');
+      });
+
+      it('unconditionally stamps geolocation and appends a log entry with no context on every doc', async () => {
+        clock = sinon.useFakeTimers({ now: 5000 });
+        const geoData = { latitude: 1, longitude: 2, accuracy: 3 };
+        const geoHandle = sinon.stub().resolves(geoData);
+        const docs = [{ _id: 'a' }, { _id: 'b' }];
+
+        const actual = await (service as any).attachGeoToReport(geoHandle, docs);
+
+        actual.forEach((doc: any) => {
+          expect(doc.geolocation).to.deep.equal(geoData);
+          expect(doc.geolocation_log).to.deep.equal([{ timestamp: 5000, recording: geoData }]);
+          expect(doc.geolocation_log[0]).to.not.have.property('is_home');
+        });
+      });
+
+      it('stamps a rejected geoHandle error onto geolocation, regardless of an error code', async () => {
+        const geoError = { code: 42, message: 'some bad geo' };
+        const geoHandle = sinon.stub().rejects(geoError);
+        const docs = [{ _id: 'a' }];
+
+        const actual = await (service as any).attachGeoToReport(geoHandle, docs);
+
+        expect(actual[0].geolocation).to.deep.equal(geoError);
+        expect(actual[0].geolocation_log[0].recording).to.deep.equal(geoError);
+      });
+
+      it('appends to an existing geolocation_log rather than replacing it', async () => {
+        const existingEntry = { timestamp: 1, recording: { old: true } };
+        const geoData = { latitude: 9, longitude: 9 };
+        const geoHandle = sinon.stub().resolves(geoData);
+        const docs = [{ _id: 'a', geolocation_log: [existingEntry] }];
+
+        const actual = await (service as any).attachGeoToReport(geoHandle, docs);
+
+        expect(actual[0].geolocation_log).to.deep.equal([existingEntry, { timestamp: Date.now(), recording: geoData }]);
+      });
+    });
+
     describe('Saving attachments', () => {
       it('should save attachments', async () => {
         UserContact.resolves({ _id: 'my-user', phone: '8989' });
@@ -1449,6 +1547,310 @@ describe('Form service', () => {
 
       expect(dbBulkDocs.callCount).to.equal(1);
       expect(globalActions.setSnackbarContent.notCalled).to.be.true;
+    });
+
+    it('does not add geolocation fields when no geoHandle is provided', async () => {
+      const type = 'some-contact-type';
+
+      enketoService.saveContact.resolves(<any>{
+        docId: 'main1', preparedDocs: [{ _id: 'main1', type }]
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact({ docId: undefined, type }, enketoForm, false);
+
+      assert.equal(dbBulkDocs.callCount, 1);
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.equal(savedDocs.length, 1);
+      assert.notProperty(savedDocs[0], 'geolocation');
+      assert.notProperty(savedDocs[0], 'geolocation_log');
+    });
+
+    it('saves is_home: true into a contact doc log entry when context is home', async () => {
+      const type = 'some-contact-type';
+      const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
+      const geoHandle = sinon.stub().resolves(geoData);
+
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.name = '/data/geo_capture';
+      captureInput.value = 'captured';
+      captureInput.dataset.geoContext = 'home';
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const html = document.createElement('div');
+      html.appendChild(captureWrapper);
+
+      enketoService.saveContact.resolves(<any>{
+        docId: 'main1', preparedDocs: [{ _id: 'main1', type, geo_capture: 'captured' }]
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact(
+        { docId: undefined, type },
+        { form: { view: { html } }, config: { doc: {} } },
+        false,
+        geoHandle
+      );
+
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.isTrue(savedDocs[0].geolocation_log[0].is_home);
+      assert.deepEqual(savedDocs[0].geolocation, geoData);
+      assert.notProperty(savedDocs[0], 'geo_capture');
+    });
+
+    it('removes the raw capture sentinel field using its actual field name, not a hardcoded one', async () => {
+      const type = 'some-contact-type';
+      const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
+      const geoHandle = sinon.stub().resolves(geoData);
+
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.name = '/data/location_capture';
+      captureInput.value = 'captured';
+      captureInput.dataset.geoContext = 'home';
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const html = document.createElement('div');
+      html.appendChild(captureWrapper);
+
+      enketoService.saveContact.resolves(<any>{
+        docId: 'main1', preparedDocs: [{ _id: 'main1', type, location_capture: 'captured' }]
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact(
+        { docId: undefined, type },
+        { form: { view: { html } }, config: { doc: {} } },
+        false,
+        geoHandle
+      );
+
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.notProperty(savedDocs[0], 'location_capture');
+      assert.deepEqual(savedDocs[0].geolocation, geoData);
+    });
+
+    it('saves is_home: false and omits geolocation on contact doc when context is other', async () => {
+      const type = 'some-contact-type';
+      const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
+      const geoHandle = sinon.stub().resolves(geoData);
+
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.value = 'captured';
+      captureInput.dataset.geoContext = 'other';
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const html = document.createElement('div');
+      html.appendChild(captureWrapper);
+
+      enketoService.saveContact.resolves(<any>{
+        docId: 'main1', preparedDocs: [{ _id: 'main1', type }]
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact(
+        { docId: undefined, type },
+        { form: { view: { html } }, config: { doc: {} } },
+        false,
+        geoHandle
+      );
+
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.isFalse(savedDocs[0].geolocation_log[0].is_home);
+      assert.notProperty(savedDocs[0], 'geolocation');
+    });
+
+    it('does not stamp geolocation onto sibling or repeated child docs created in the same submission',
+      async () => {
+        const type = 'clinic';
+        const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
+        const geoHandle = sinon.stub().resolves(geoData);
+
+        const captureInput = document.createElement('input');
+        captureInput.type = 'hidden';
+        captureInput.value = 'captured';
+        captureInput.dataset.geoContext = 'home';
+        const captureWrapper = document.createElement('div');
+        captureWrapper.classList.add('or-appearance-geolocation-capture');
+        captureWrapper.appendChild(captureInput);
+        const html = document.createElement('div');
+        html.appendChild(captureWrapper);
+
+        enketoService.saveContact.resolves(<any>{
+          docId: 'main1',
+          preparedDocs: [
+            { _id: 'main1', type: 'clinic', geo_capture: 'captured', contact: 'NEW' },
+            { _id: 'sis1', type: 'person', parent: 'PARENT' },
+            { _id: 'kid1', type: 'child', parent: 'PARENT' },
+          ]
+        });
+        dbBulkDocs.resolves([]);
+
+        await service.saveContact(
+          { docId: undefined, type },
+          { form: { view: { html } }, config: { doc: {} } },
+          false,
+          geoHandle
+        );
+
+        const savedDocs = dbBulkDocs.args[0][0];
+        const mainDoc = savedDocs.find(doc => doc._id === 'main1');
+        const siblingDoc = savedDocs.find(doc => doc._id === 'sis1');
+        const childDoc = savedDocs.find(doc => doc._id === 'kid1');
+
+        assert.deepEqual(mainDoc.geolocation, geoData);
+        assert.property(mainDoc, 'geolocation_log');
+
+        assert.notProperty(siblingDoc, 'geolocation');
+        assert.notProperty(siblingDoc, 'geolocation_log');
+        assert.notProperty(childDoc, 'geolocation');
+        assert.notProperty(childDoc, 'geolocation_log');
+      });
+
+    it('does not modify geolocation fields when geo_capture is kept', async () => {
+      const type = 'some-contact-type';
+      const existingGeo = { latitude: 1.23, longitude: 36.8, accuracy: 10 };
+      const existingLog = [{ timestamp: 1749168000000, recording: existingGeo, is_home: true }];
+      const geoHandle = sinon.stub().resolves({ latitude: 9.99, longitude: 99.9, accuracy: 5 });
+
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.value = 'kept';
+      captureInput.dataset.geoOriginal = JSON.stringify(existingGeo);
+      captureInput.dataset.geoOriginalLog = JSON.stringify(existingLog);
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const html = document.createElement('div');
+      html.appendChild(captureWrapper);
+
+      enketoService.saveContact.resolves(<any>{
+        docId: 'main1', preparedDocs: [{ _id: 'main1', type, geolocation: existingGeo, geolocation_log: existingLog }]
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact(
+        { docId: undefined, type },
+        { form: { view: { html } }, config: { doc: {} } },
+        false,
+        geoHandle
+      );
+
+      assert.equal(geoHandle.callCount, 0);
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.deepEqual(savedDocs[0].geolocation, existingGeo);
+      assert.deepEqual(savedDocs[0].geolocation_log, existingLog);
+    });
+
+    it('still saves non-geolocation field changes when geo_capture is kept', async () => {
+      const type = 'some-contact-type';
+      const existingGeo = { latitude: 1.23, longitude: 36.8, accuracy: 10 };
+
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.value = 'kept';
+      captureInput.dataset.geoOriginal = JSON.stringify(existingGeo);
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const html = document.createElement('div');
+      html.appendChild(captureWrapper);
+
+      enketoService.saveContact.resolves(<any>{
+        docId: 'main1', preparedDocs: [{ _id: 'main1', type, name: 'Updated Name', geolocation: existingGeo }]
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact(
+        { docId: undefined, type },
+        { form: { view: { html } }, config: { doc: {} } },
+        false,
+        sinon.stub()
+      );
+
+      assert.equal(dbBulkDocs.callCount, 1);
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.equal(savedDocs[0].name, 'Updated Name');
+      assert.deepEqual(savedDocs[0].geolocation, existingGeo);
+    });
+
+    it('restores geolocation fields from the original doc when geo_capture is kept', async () => {
+      const docId = 'existing-contact-id';
+      const type = 'clinic';
+      const originalGeo = { latitude: 43.06, longitude: -89.45, altitude: 0, accuracy: 35 };
+      const originalLog = [{ timestamp: 1749168000000, recording: originalGeo, is_home: true }];
+
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.name = '/data/geo_capture';
+      captureInput.value = 'kept';
+      captureInput.dataset.geoOriginal = JSON.stringify(originalGeo);
+      captureInput.dataset.geoOriginalLog = JSON.stringify(originalLog);
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const html = document.createElement('div');
+      html.appendChild(captureWrapper);
+
+      enketoService.saveContact.resolves(<any>{
+        docId, preparedDocs: [{ _id: docId, type, name: 'My Household', geolocation: '', geo_capture: 'kept' }]
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact(
+        { docId, type },
+        { form: { view: { html } }, config: { doc: {} } },
+        false,
+        sinon.stub()
+      );
+
+      assert.equal(dbBulkDocs.callCount, 1);
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.deepEqual(savedDocs[0].geolocation, originalGeo);
+      assert.notProperty(savedDocs[0], 'geo_capture');
+      assert.deepEqual(savedDocs[0].geolocation_log, originalLog);
+      assert.equal(savedDocs[0].name, 'My Household');
+    });
+
+    it('preserves existing home geolocation when capture context is other during edit', async () => {
+      const docId = 'existing-contact-id';
+      const type = 'clinic';
+      const originalGeo = { latitude: 43.06, longitude: -89.45, altitude: 0, accuracy: 35 };
+      const originalLog = [{ timestamp: 1749168000000, recording: originalGeo, is_home: true }];
+      const capturedGeoData = { latitude: 1.5, longitude: 37.0, accuracy: 8 };
+
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.value = 'captured';
+      captureInput.dataset.geoContext = 'other';
+      captureInput.dataset.geoOriginal = JSON.stringify(originalGeo);
+      captureInput.dataset.geoOriginalLog = JSON.stringify(originalLog);
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const html = document.createElement('div');
+      html.appendChild(captureWrapper);
+
+      enketoService.saveContact.resolves(<any>{
+        docId, preparedDocs: [{ _id: docId, type, name: 'My Household', geolocation: '', geo_capture: 'captured' }]
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact(
+        { docId, type },
+        { form: { view: { html } }, config: { doc: {} } },
+        false,
+        sinon.stub().resolves(capturedGeoData)
+      );
+
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.deepEqual(savedDocs[0].geolocation, originalGeo);
+      assert.isFalse(savedDocs[0].geolocation_log[savedDocs[0].geolocation_log.length - 1].is_home);
     });
   });
 

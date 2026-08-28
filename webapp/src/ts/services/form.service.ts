@@ -5,6 +5,7 @@ import * as moment from 'moment';
 
 import * as enketoConstants from './../../js/enketo/constants';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
+import { ContactGeolocationService } from '@mm-services/contact-geolocation.service';
 import { DbService } from '@mm-services/db.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { SubmitFormBySmsService } from '@mm-services/submit-form-by-sms.service';
@@ -46,6 +47,7 @@ import { FormConfig } from '@mm-services/form/form-config';
 export class FormService {
   constructor(
     private readonly store: Store,
+    private readonly contactGeolocationService: ContactGeolocationService,
     private readonly contactSummaryService: ContactSummaryService,
     private readonly contactTypesService: ContactTypesService,
     private readonly dbService: DbService,
@@ -221,6 +223,12 @@ export class FormService {
       if (!await this.canAccessForm(formContext)) {
         throw { translationKey: 'error.loading.form.no_authorized' };
       }
+      if (formConfig.type === 'contact') {
+        const contact = this.getContactFromInstanceData(instanceData);
+        return await this.enketoService.renderForm(formContext, userSettings, (formHtml) => {
+          this.contactGeolocationService.injectEditContext(formHtml, contact);
+        });
+      }
       return await this.enketoService.renderForm(formContext, userSettings);
     } catch (error) {
       if (error.translationKey) {
@@ -273,7 +281,14 @@ export class FormService {
     return contact;
   }
 
-  private saveGeo(geoHandle, docs) {
+  private getContactFromInstanceData(instanceData: any): any {
+    if (typeof instanceData !== 'object' || instanceData === null) {
+      return undefined;
+    }
+    return Object.values(instanceData)[0];
+  }
+
+  private attachGeoToReport(geoHandle, docs) {
     if (!geoHandle) {
       return docs;
     }
@@ -283,10 +298,7 @@ export class FormService {
       .then(geoData => {
         docs.forEach(doc => {
           doc.geolocation_log = doc.geolocation_log || [];
-          doc.geolocation_log.push({
-            timestamp: Date.now(),
-            recording: geoData
-          });
+          doc.geolocation_log.push({ timestamp: Date.now(), recording: geoData });
           doc.geolocation = geoData;
         });
         return docs;
@@ -344,7 +356,7 @@ export class FormService {
 
   private _save(docs, geoHandle) {
     return this.validateAttachments(docs)
-      .then((docs) => this.saveGeo(geoHandle, docs))
+      .then((docs) => this.attachGeoToReport(geoHandle, docs))
       .then((docs) => this.transitionsService.applyTransitions(docs))
       .then((docs) => this.saveDocs(docs))
       .then((docs) => {
@@ -406,6 +418,7 @@ export class FormService {
     },
     enketoForm: EnketoForm,
     duplicatesAcknowledged: boolean,
+    geoHandle?,
   ) {
     return this.ngZone.runOutsideAngular(async () => {
       const { docId, type } = contactInfo;
@@ -431,8 +444,16 @@ export class FormService {
         throw new DuplicatesFoundError('Duplicates found', duplicates);
       }
 
+      const geoState = this.contactGeolocationService.readCaptureState(enketoForm.form?.view?.html);
+
+      await this.contactGeolocationService.applyGeolocation(
+        geoHandle, [primaryDoc ?? preparedDocs.preparedDocs[0]], geoState
+      );
+      const docsWithGeo = preparedDocs.preparedDocs;
+      docsWithGeo.forEach((doc: any) => this.contactGeolocationService.stripCaptureField(doc, geoState));
+
       this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
-      const bulkDocsResult = await this.dbService.get().bulkDocs(preparedDocs.preparedDocs);
+      const bulkDocsResult = await this.dbService.get().bulkDocs(docsWithGeo);
       const failureMessage = this.generateFailureMessage(bulkDocsResult);
 
       if (failureMessage) {

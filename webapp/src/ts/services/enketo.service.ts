@@ -339,7 +339,11 @@ export class EnketoService {
       () => this.setupNavButtons($selector, form.pages._getCurrentIndex()));
   }
 
-  public async renderForm(formContext: EnketoFormContext, userSettings): Promise<EnketoForm> {
+  public async renderForm(
+    formContext: EnketoFormContext,
+    userSettings,
+    onBeforeInit?: (formHtml: HTMLElement) => void,
+  ): Promise<EnketoForm> {
     const {
       formConfig,
       instanceData,
@@ -351,6 +355,7 @@ export class EnketoService {
     const $formHtml = $(formConfig.html);
     this.replaceDataI18nTranslations($formHtml);
     this.replaceJavarosaMediaWithLoaders($formHtml);
+    onBeforeInit?.($formHtml.get(0)!);
     const xmlFormContext: XmlFormContext = {
       formConfig,
       $formHtml,
