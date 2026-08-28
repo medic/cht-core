@@ -1,6 +1,7 @@
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 
+const moment = require('moment');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const constants = require('@constants');
@@ -88,6 +89,34 @@ const expectAuditedArchive = async (ids) => {
   }
 };
 
+const getArchiveJobs = () => liveRows(utils.sentinelDb, {
+  startkey: PREFIXES.ARCHIVE_JOB,
+  endkey: `${PREFIXES.ARCHIVE_JOB}\ufff0`,
+});
+
+const getArchiveLogs = async () => {
+  const result = await utils.logsDb.allDocs({
+    startkey: PREFIXES.ARCHIVE_JOB,
+    endkey: `${PREFIXES.ARCHIVE_JOB}\ufff0`,
+    include_docs: true,
+  });
+  return result.rows.map(row => row.doc);
+};
+
+const getArchiveDates = async (ids) => {
+  const rows = await liveRows(archiveDb, { keys: ids, include_docs: true });
+  expect(rows.map(row => row.id)).to.have.members(ids);
+  return rows.map(row => row.doc.archive_date);
+};
+
+// archive_date is stamped per batch, so every doc of a later sweep carries a later date than
+// every doc of an earlier one.
+const expectArchivedAfter = async (laterIds, earlierIds) => {
+  const later = await getArchiveDates(laterIds);
+  const earlier = await getArchiveDates(earlierIds);
+  expect(Math.min(...later)).to.be.greaterThan(Math.max(...earlier));
+};
+
 const waitForLogStatus = async (id, status) => {
   let doc;
   do {
@@ -137,11 +166,12 @@ describe('sentinel processes archive jobs', () => {
     }
   };
 
-  const updateSettings = async (duration = '2 hours') => {
-    await utils.updateSettings(
-      { archive: { text_expression: 'every 1 seconds', duration: duration } },
-      { ignoreReload: true }
-    );
+  const updateSettings = async ({ duration = '2 hours', autoArchive } = {}) => {
+    const archive = { text_expression: 'every 1 seconds', duration };
+    if (autoArchive) {
+      archive.auto_archive = autoArchive;
+    }
+    await utils.updateSettings({ archive }, { ignoreReload: true });
     await utils.toggleSentinelTransitions();
     await sentinelUtils.skipToSeq();
   };
@@ -149,6 +179,14 @@ describe('sentinel processes archive jobs', () => {
   const runArchiving = async () => {
     await utils.runSentinelTasks();
     await sentinelUtils.waitForArchiveCompletion();
+  };
+
+  // Auto-archive sweeps create their own jobs, so waiting for the queue to empty is not a
+  // reliable completion signal: wait for the run's own log line instead.
+  const runArchivingOnce = async () => {
+    const finished = await utils.waitForSentinelLogs(true, /Finished archiving/);
+    await utils.runSentinelTasks();
+    await finished.promise;
   };
 
   before(async () => {
@@ -254,7 +292,7 @@ describe('sentinel processes archive jobs', () => {
     expect(jobs).to.have.lengthOf(1);
     const jobId = jobs[0].id;
 
-    await updateSettings('20 milliseconds');
+    await updateSettings({ duration: '20 milliseconds' });
 
     const firstRunDone = await utils.waitForSentinelLogs(true, /Finished archiving/);
     await utils.runSentinelTasks();
@@ -446,5 +484,207 @@ describe('sentinel processes archive jobs', () => {
     expect(archived).to.have.lengthOf(1);
     await expectFullyPurgedFromMedic([healthyId]);
     await expectAuditedArchive([healthyId]);
+  });
+
+  describe('auto archive', () => {
+    // Mirrors the lib's PURGE_BATCH_SIZE: every auto-archive job holds at most this many ids.
+    const BATCH_SIZE = 1000;
+    const daysAgo = days => moment().subtract(days, 'days').format('YYYY-MM-DD');
+    const monthsAgo = months => moment().subtract(months, 'months').format('YYYY-MM');
+    const user = `${PREFIXES.COUCH_USER}archive-e2e-user`;
+
+    // Tasks expire 60 days after their emission ends, and only in a terminal state.
+    const task = (id, { state = 'Completed', endDate = daysAgo(90) } = {}) => ({
+      _id: id,
+      type: 'task',
+      user,
+      owner: 'archive-e2e-owner',
+      state,
+      emission: { startDate: daysAgo(200), dueDate: daysAgo(100), endDate },
+    });
+
+    // Targets expire once their reporting period is more than 6 months old.
+    const target = (owner, monthsBack) => ({
+      _id: `target~${monthsAgo(monthsBack)}~${owner}~${user}`,
+      type: 'target',
+      user,
+      owner,
+      reporting_period: monthsAgo(monthsBack),
+      targets: [],
+    });
+
+    const idsOf = docs => docs.map(doc => doc._id);
+
+    const expectLiveInMedic = async (ids) => {
+      const rows = await liveRows(utils.db, { keys: ids });
+      expect(rows.map(row => row.id)).to.have.members(ids);
+    };
+
+    const expectNotArchived = async (ids) => {
+      const rows = await liveRows(archiveDb, { keys: ids });
+      expect(rows).to.deep.equal([]);
+    };
+
+    beforeEach(async () => {
+      await utils.deleteLogsByPrefix(PREFIXES.ARCHIVE_JOB);
+    });
+
+    it('leaves expired tasks and targets alone when auto_archive is not enabled', async function () {
+      this.timeout(60000);
+      await updateSettings();
+
+      const docs = [
+        task('archive-e2e-auto-off-task-1'),
+        task('archive-e2e-auto-off-task-2'),
+        target('archive-e2e-auto-off', 9),
+      ];
+      await utils.saveDocs(docs);
+      const ids = idsOf(docs);
+
+      await runArchivingOnce();
+
+      await expectLiveInMedic(ids);
+      await expectNotArchived(ids);
+      expect(await getArchiveJobs()).to.deep.equal([]);
+      expect(await getArchiveLogs()).to.deep.equal([]);
+
+      await utils.deleteDocs(ids);
+    });
+
+    it('archives expired tasks, then expired targets, when auto_archive.tasks is enabled', async function () {
+      this.timeout(60000);
+      await updateSettings({ autoArchive: { tasks: true } });
+
+      const expiredTasks = [
+        task('archive-e2e-auto-task-1'),
+        task('archive-e2e-auto-task-2', { state: 'Cancelled' }),
+        task('archive-e2e-auto-task-3', { state: 'Failed' }),
+      ];
+      const expiredTargets = [target('archive-e2e-auto-old', 9), target('archive-e2e-auto-older', 12)];
+      const survivors = [
+        task('archive-e2e-auto-task-recent', { endDate: daysAgo(10) }),
+        task('archive-e2e-auto-task-draft', { state: 'Draft' }),
+        target('archive-e2e-auto-boundary', 6),
+        target('archive-e2e-auto-recent', 1),
+      ];
+      await utils.saveDocs([...expiredTasks, ...expiredTargets, ...survivors]);
+      const taskIds = idsOf(expiredTasks);
+      const targetIds = idsOf(expiredTargets);
+      const survivorIds = idsOf(survivors);
+      await waitForInfoDocs([...taskIds, ...targetIds]);
+
+      await runArchivingOnce();
+
+      const archivedIds = [...taskIds, ...targetIds];
+      await expectFullyPurgedFromMedic(archivedIds);
+      await expectInfoDocsPurged(archivedIds);
+      await expectAuditedArchive(archivedIds);
+      await expectArchivedAfter(targetIds, taskIds);
+
+      await expectLiveInMedic(survivorIds);
+      await expectNotArchived(survivorIds);
+
+      // One job per sweep, tasks first (job ids are time-ordered), both completed and dequeued.
+      expect(await getArchiveJobs()).to.deep.equal([]);
+      const logs = await getArchiveLogs();
+      expect(logs.map(log => ({ status: log.status, total: log.total }))).to.deep.equal([
+        { status: 'completed', total: taskIds.length },
+        { status: 'completed', total: targetIds.length },
+      ]);
+
+      await utils.deleteDocs(survivorIds);
+    });
+
+    it('sweeps tasks and targets only once the queued user jobs are done', async function () {
+      this.timeout(60000);
+      await updateSettings({ autoArchive: { tasks: true } });
+
+      const report = {
+        _id: 'archive-e2e-auto-queued-report',
+        type: DOC_TYPES.DATA_RECORD,
+        form: 'visit',
+        reported_date: 1,
+      };
+      const expiredTasks = [task('archive-e2e-auto-queued-task-1'), task('archive-e2e-auto-queued-task-2')];
+      const expiredTargets = [target('archive-e2e-auto-queued', 9)];
+      await utils.saveDocs([report, ...expiredTasks, ...expiredTargets]);
+      const taskIds = idsOf(expiredTasks);
+      const targetIds = idsOf(expiredTargets);
+      await waitForInfoDocs([report._id, ...taskIds, ...targetIds]);
+
+      const { jobs } = await postCsv(report._id);
+      expect(jobs).to.have.lengthOf(1);
+      const userJobId = jobs[0].id;
+
+      await runArchivingOnce();
+
+      const archivedIds = [report._id, ...taskIds, ...targetIds];
+      await expectFullyPurgedFromMedic(archivedIds);
+      await expectInfoDocsPurged(archivedIds);
+      await expectAuditedArchive(archivedIds);
+      await expectArchivedAfter(taskIds, [report._id]);
+      await expectArchivedAfter(targetIds, taskIds);
+
+      expect(await getArchiveJobs()).to.deep.equal([]);
+      const logs = await getArchiveLogs();
+      expect(logs).to.have.lengthOf(3);
+      expect(logs[0]).to.include({ _id: userJobId, status: 'completed', total: 1 });
+      expect(logs[1]).to.include({ status: 'completed', total: taskIds.length });
+      expect(logs[2]).to.include({ status: 'completed', total: targetIds.length });
+      // The sweeps were queued after the user job finished.
+      expect(logs[1].start_date).to.be.at.least(logs[0].updated_date);
+      expect(logs[2].start_date).to.be.at.least(logs[1].updated_date);
+    });
+
+    it('stops the task sweep at the duration deadline and resumes it on the next run', async function () {
+      this.timeout(300000);
+      await updateSettings({ duration: '1 second', autoArchive: { tasks: true } });
+
+      // Several full batches' worth, so one second is never enough to drain them.
+      const COUNT = BATCH_SIZE * 5;
+      const expiredTasks = Array.from(
+        { length: COUNT },
+        (_, i) => task(`archive-e2e-auto-deadline-task-${String(i).padStart(5, '0')}`)
+      );
+      const expiredTargets = [target('archive-e2e-auto-deadline', 9)];
+      await utils.saveDocs([...expiredTasks, ...expiredTargets]);
+      const taskIds = idsOf(expiredTasks);
+      const targetIds = idsOf(expiredTargets);
+      await waitForInfoDocs([...taskIds, ...targetIds]);
+
+      await runArchivingOnce();
+
+      // The sweep stops between jobs, so the first run archives whole batches but not all of them...
+      const firstRun = await liveRows(archiveDb, { keys: taskIds });
+      expect(firstRun.length).to.be.greaterThan(0);
+      expect(firstRun.length).to.be.lessThan(COUNT);
+      expect(firstRun.length % BATCH_SIZE).to.equal(0);
+      expect(await liveRows(utils.db, { keys: taskIds })).to.have.lengthOf(COUNT - firstRun.length);
+      // ...leaves no partial job behind...
+      expect(await getArchiveJobs()).to.deep.equal([]);
+      // ...and never reaches the targets.
+      await expectLiveInMedic(targetIds);
+      await expectNotArchived(targetIds);
+
+      // Every following run picks up where the previous one stopped, targets last.
+      const MAX_RUNS = 12;
+      let remaining = [...taskIds, ...targetIds];
+      for (let run = 2; run <= MAX_RUNS && remaining.length; run++) {
+        await runArchivingOnce();
+        remaining = (await liveRows(utils.db, { keys: remaining })).map(row => row.id);
+      }
+      expect(remaining).to.deep.equal([]);
+
+      const archivedIds = [...taskIds, ...targetIds];
+      await expectFullyPurgedFromMedic(archivedIds);
+      await expectInfoDocsPurged(archivedIds);
+      await expectAuditedArchive(archivedIds);
+      await expectArchivedAfter(targetIds, taskIds);
+
+      expect(await getArchiveJobs()).to.deep.equal([]);
+      const logs = await getArchiveLogs();
+      expect(logs.every(log => log.status === 'completed')).to.equal(true);
+      expect(logs.reduce((sum, log) => sum + log.total, 0)).to.equal(COUNT + targetIds.length);
+    });
   });
 });
