@@ -2,7 +2,6 @@ import { Injectable, NgZone } from '@angular/core';
 import { v7 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
 import type JQuery from 'jquery';
-import * as FileManager from '../../js/enketo/file-manager.js';
 import events from 'enketo-core/src/js/event';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
@@ -18,8 +17,7 @@ import { FormConfig } from '@mm-services/form/form-config';
 import {
   EnketoContactFormData,
   EnketoFormData,
-  EnketoReportFormData,
-  EnketoRootFormData
+  EnketoReportFormData
 } from '@mm-services/form/form-data';
 import { isHardcodedType } from '@medic/contact-types-utils';
 import { REPORT_ATTACHMENT_NAME } from '@mm-services/get-report-content.service';
@@ -45,9 +43,6 @@ export class EnketoService {
   ) {
     this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
   }
-
-  private readonly USER_BINARY_ATTACHMENT_PREFIX = 'user-file';
-  private readonly USER_FILE_ATTACHMENT_PREFIX = `${this.USER_BINARY_ATTACHMENT_PREFIX}-`;
 
   private readonly objUrls: string[] = [];
   private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
@@ -416,29 +411,20 @@ export class EnketoService {
         contactDoc._id,
         isHardcodedType(contactDoc.type) ? contactDoc.type : contactDoc.contact_type
       );
-
-      const formAttachments = this.processFormAttachments(config.doc.internalId, formData, contactDoc._attachments);
       const reportedDate = Date.now();
       const rootOutputDoc: Record<string, any> = {
-        ...contactDoc,
-        ...formData.deserializeDoc(config),
-        _id: contactDoc._id,
+        ...formData.getContactData().deserializeDoc(config, reportedDate, contactDoc),
         type: contactDoc.type,
         contact_type: contactDoc.contact_type,
-        reported_date: contactDoc.reported_date || reportedDate,
-        _attachments: formAttachments
       };
-      const siblings = await this.processContactSiblings(formData, config, rootOutputDoc, defaultData);
-      siblings.forEach(({ fieldName, fieldValue }) => rootOutputDoc[fieldName] = fieldValue);
+      const siblings = this.initializeContactSiblings(formData, config, rootOutputDoc, reportedDate);
+      await this.setSiblingValuesOnRoot(siblings, rootOutputDoc, defaultData);
       const outputSiblings = siblings
         .filter(({ fieldName, doc }) => doc && rootOutputDoc[fieldName] === doc)
-        .map(({ doc }) => ({ ...doc, reported_date: reportedDate }));
-
+        .map(({ doc }) => doc!);
       const childDocs = formData
         .getChildData()
-        .map(doc => doc.deserializeDoc(config))
-        .map(doc => ({ ...doc, reported_date: reportedDate, parent: rootOutputDoc }));
-
+        .map(data => ({ ...data.deserializeDoc(config, reportedDate), parent: rootOutputDoc }));
       return {
         docId: rootOutputDoc._id,
         preparedDocs: [rootOutputDoc, ...outputSiblings, ...childDocs].map(doc => this.minifyContactLineage(doc))
@@ -461,25 +447,19 @@ export class EnketoService {
       delete reportDoc[REPORT_ATTACHMENT_NAME];
       delete reportDoc._attachments?.[REPORT_ATTACHMENT_NAME];
 
-      this.populateDbDocRefElements(formData, [formData, ...subDocsData]);
-      const attachments = this.processFormAttachments(config.doc.internalId, formData, reportDoc._attachments);
       const hiddenFields = this.getHiddenFields([
         ...formData.hiddenElements,
         ...subDocsData.map(({ rootElement }) => rootElement)
       ]);
 
       const reportedDate = Date.now();
+      // Unpack the db-docs before deserializing the report so the db-doc-refs are all populated first.
+      const dbDocObjects = subDocsData.map(docData => docData.deserializeDoc(config, reportedDate));
       const rootOutputDoc: Record<string, any> = {
-        ...reportDoc,
+        ...formData.deserializeDoc(config, reportedDate, reportDoc),
         hidden_fields: hiddenFields,
-        fields: formData.deserialize(config),
-        reported_date: reportDoc.reported_date || reportedDate,
-        _attachments: attachments
       };
 
-      const dbDocObjects = subDocsData
-        .map(docData => docData.deserializeDoc(config))
-        .map(doc => ({ ...doc, reported_date: reportedDate }));
       return [rootOutputDoc, ...dbDocObjects];
     });
   }
@@ -497,23 +477,40 @@ export class EnketoService {
     return new DOMParser().parseFromString(formString, 'text/xml');
   }
 
-  private async processContactSiblings(
+  private initializeContactSiblings(
     formData: EnketoContactFormData,
     config: FormConfig,
     rootOutputDoc: Record<string, any>,
-    defaultData: Record<string, any>
+    reportedDate: number,
   ) {
-    return Promise.all(EnketoContactFormData.SIBLING_FIELD_NAMES.map(async (fieldName) => {
-      const sibling = formData
-        .getSiblingData(fieldName)
-        ?.deserializeDoc(config);
-      const doc = this.initializeContactSibling(rootOutputDoc, sibling);
-      const fieldValue = await this.getContactSiblingValue(doc, rootOutputDoc[fieldName], defaultData[fieldName]);
-      return { fieldName, fieldValue, doc, };
+    return EnketoContactFormData.SIBLING_FIELD_NAMES.map((fieldName) => {
+      const siblingData = formData.getSiblingData(fieldName);
+      const doc = this.initializeContactSibling(config, rootOutputDoc, reportedDate, siblingData);
+      return { fieldName, doc, };
+    });
+  }
+
+  private async setSiblingValuesOnRoot(
+    siblings: { fieldName: typeof EnketoContactFormData.SIBLING_FIELD_NAMES[number], doc?: Record<string, any>}[],
+    rootOutputDoc: Record<string, any>,
+    defaultData: Record<string, any>,
+  ) {
+    return Promise.all(siblings.map(async ({ fieldName, doc }) => {
+      rootOutputDoc[fieldName] = await this.getContactSiblingValue(
+        doc,
+        rootOutputDoc[fieldName],
+        defaultData[fieldName]
+      );
     }));
   }
 
-  private initializeContactSibling(rootContactDoc: Record<string, any>, rawSibling?: Record<string, any>) {
+  private initializeContactSibling(
+    config: FormConfig,
+    rootContactDoc: Record<string, any>,
+    reportedDate: number,
+    siblingData: EnketoFormData | null
+  ) {
+    const rawSibling = siblingData?.deserializeDoc(config, reportedDate);
     if (!rawSibling) {
       return;
     }
@@ -551,7 +548,7 @@ export class EnketoService {
   }
 
   private getHiddenFields(elements: Element[]) {
-    const hiddenXpaths = new Set(elements.map((element) => Xpath.getElementRawXPath(element)));
+    const hiddenXpaths = new Set(elements.map((element) => Xpath.getElementXPath(element)));
     const hasHiddenAncestor = (
       segments: string[]
     ) => (_: string, i: number) => i > 0 && hiddenXpaths.has(segments.slice(0, i).join('/'));
@@ -575,82 +572,6 @@ export class EnketoService {
       contact: this.extractLineageService.extract(defaultData.contact),
       form_version: formVersion
     };
-  }
-
-  private findReferencedDoc(refElement: Element, reference: string | null, allData: EnketoFormData[]) {
-    const target = reference?.trim().replace(/^\.?\//, ''); // strip leading "./" or "/"
-    if (!target) {
-      return;
-    }
-    const matches = allData.filter(({ rootElement }) => {
-      const path = Xpath.getElementRawXPath(rootElement).replace(/^\//, ''); // strip leading "/"
-      return path === target || path.endsWith(`/${target}`);
-    });
-
-    // For the docs that match the path tail, find the one with the closest ancestor node to the refElement.
-    for (let ancestor: Element | null = refElement; ancestor; ancestor = ancestor.parentElement) {
-      const match = matches.find(({ rootElement }) => ancestor?.contains(rootElement));
-      if (match) {
-        return match;
-      }
-    }
-  }
-
-  private populateDbDocRefElements(formData: EnketoReportFormData, allData: EnketoFormData[]) {
-    formData.dbDocRefElements.forEach(element => {
-      const referencedDoc = this.findReferencedDoc(element, element.getAttribute('db-doc-ref'), allData);
-      if (referencedDoc) {
-        element.textContent = referencedDoc.id;
-      }
-    });
-  }
-
-  private buildBinaryAttachmentData(form: string, originalAttachments: Record<string, any>, element: Element) {
-    const xpath = Xpath.getElementTreeXPath(element);
-    const formXpath = xpath.replace(/^\/[^/]+/, `/${form}`);
-    const filename = `${this.USER_BINARY_ATTACHMENT_PREFIX}${formXpath}`;
-    const data = element.textContent;
-    element.textContent = '';
-    return {
-      filename,
-      // Currently do not support loading binary attachment data into edit form. So, keep existing value.
-      attachment: data ? { data, content_type: 'image/png' } : originalAttachments[filename]
-    };
-  }
-
-  private processFormAttachments(
-    form: string,
-    rootData: EnketoRootFormData,
-    originalAttachments: Record<string, any> = {}
-  ) {
-    const hasCustomAttachmentName = (fileName: string) => !fileName.startsWith(this.USER_FILE_ATTACHMENT_PREFIX)
-      && !fileName.startsWith(`${this.USER_BINARY_ATTACHMENT_PREFIX}/`);
-    const isExistingFileAttachment = (fileName: string) => fileName.startsWith(this.USER_FILE_ATTACHMENT_PREFIX)
-      && rootData.findNodeWithTextContent(fileName.slice(this.USER_FILE_ATTACHMENT_PREFIX.length));
-    const binaryAttachments = rootData.binaryTypeElements
-      .map(element => this.buildBinaryAttachmentData(form, originalAttachments, element))
-      .filter(({ attachment }) => attachment)
-      .reduce((binaryAttachments, { filename, attachment }) => ({ ...binaryAttachments, [filename]: attachment }), {});
-    const newFileAttachments = FileManager
-      .getCurrentFiles()
-      .map(file => ({
-        name: `${this.USER_FILE_ATTACHMENT_PREFIX}${file.name}`,
-        content_type: file.type,
-        data: new Blob([ file ], { type: file.type })
-      }))
-      .reduce((attachments, { name, content_type, data }) => ({ ...attachments, [name]: { content_type, data } }), {});
-    const existingAttachments = Object
-      .entries(originalAttachments)
-      // Keep custom attachments and existing file attachments still referenced by a field
-      .filter(([key]) => hasCustomAttachmentName(key) || isExistingFileAttachment(key))
-      .reduce((existingAttachments, [key, attachment]) => ({ ...existingAttachments, [key]: attachment }), {});
-
-    const attachments = {
-      ...existingAttachments,
-      ...newFileAttachments,
-      ...binaryAttachments
-    };
-    return Object.keys(attachments).length ? attachments : undefined;
   }
 
   unload(form) {
