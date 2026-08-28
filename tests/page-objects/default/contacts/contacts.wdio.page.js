@@ -35,6 +35,7 @@ const rightPanelSelectors = {
 const contactCardSelectors = {
   contactCardName: () => $('h2[test-id="contact-name"]'),
   contactCardIcon: (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`),
+  contactCardProfileImage: () => $('.card .heading mm-contact-profile-image img'),
   contactSummaryContainer: () => $('#contact_summary'),
   contactMedicID: () => $('#contact_summary .cell.patient_id > div > p:not(.summary_label)'),
   contactDeceasedStatus: () => $('div[test-id="deceased-title"]'),
@@ -400,6 +401,8 @@ const getCurrentContactId = async () => {
   return currentUrl.slice(contactBaseUrl.length);
 };
 
+const getContactCardProfileImage = () => contactCardSelectors.contactCardProfileImage();
+
 const getContactListLoadingStatus = async () => {
   await leftPanelSelectors.contactListLoadingStatus().waitForDisplayed();
   return await leftPanelSelectors.contactListLoadingStatus().getText();
@@ -495,6 +498,7 @@ module.exports = {
   deletePerson,
   allContactsList,
   openReport,
+  getContactCardProfileImage,
   getContactCardTitle,
   getContactInfoName,
   getContactMedicID,
