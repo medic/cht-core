@@ -33,8 +33,7 @@ describe('Contact form attachments', () => {
     icon: 'medic-person',
     create_form: 'form:contact:person_with_attachments:create',
     edit_form: 'form:contact:person_with_attachments:edit',
-    person: true,
-    profile_image_field: 'photo'
+    person: true
   };
 
   const translations = {
@@ -60,14 +59,14 @@ describe('Contact form attachments', () => {
     const filename = path.basename(imagePath, path.extname(imagePath));
     const extension = path.extname(imagePath);
     const attachmentKey = `user-file-${filename}-${timestamp}${extension}`;
-    const photoFieldValue = attachmentKey.replace('user-file-', '');
+    const profileImageValue = attachmentKey.replace('user-file-', '');
 
     return personFactory.build({
       name: contactName,
       parent: { _id: healthCenter._id, parent: healthCenter.parent },
       type: 'contact',
       contact_type: 'person_with_attachments',
-      photo: photoFieldValue,
+      profile_image: profileImageValue,
       _attachments: {
         [attachmentKey]: {
           content_type: `image/${extension.slice(1)}`,
@@ -77,35 +76,16 @@ describe('Contact form attachments', () => {
     });
   };
 
-  const createContactWithBinaryAttachment = (contactName, field = 'photo') => {
-    const imageBase64 = fs.readFileSync(photoPngPath).toString('base64');
-    // Binary attachments are named after the field itself rather than the field's value
-    const attachmentKey = `user-file/${field}`;
-
-    return personFactory.build({
-      name: contactName,
-      parent: { _id: healthCenter._id, parent: healthCenter.parent },
-      type: 'contact',
-      contact_type: 'person_with_attachments',
-      // Binary fields are cleared on the doc when the attachment is saved
-      [field]: '',
-      _attachments: {
-        [attachmentKey]: {
-          content_type: 'image/png',
-          data: imageBase64
-        }
-      }
-    });
-  };
+  let originalContactTypes;
 
   before(async () => {
     await utils.saveDocs([...places.values()]);
     await utils.createUsers([onlineUser]);
     await utils.addTranslations('en', translations);
 
-    const settings = await utils.getSettings();
-    settings.contact_types.push(personWithAttachmentsType);
-    await utils.updateSettings({ contact_types: settings.contact_types }, { ignoreReload: true });
+    originalContactTypes = (await utils.getSettings()).contact_types;
+    const contactTypes = [...originalContactTypes, personWithAttachmentsType];
+    await utils.updateSettings({ contact_types: contactTypes }, { ignoreReload: true });
 
     await utils.saveDocs([createFormDoc, editFormDoc]);
 
@@ -129,7 +109,7 @@ describe('Contact form attachments', () => {
     await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
 
     await commonEnketoPage.setInputValue('Full name', contactName);
-    await commonEnketoPage.addFileInputValue('Photo', photoPngPath);
+    await commonEnketoPage.addFileInputValue('Profile Image', photoPngPath);
     await commonEnketoPage.addFileInputValue('Document', layersPngPath);
 
     await genericForm.submitForm();
@@ -164,6 +144,12 @@ describe('Contact form attachments', () => {
 
     expect(createdContact._attachments['user-file/badge'].content_type).to.equal('image/png');
     expect(createdContact._attachments['user-file/badge'].length).to.be.greaterThan(0);
+
+    // Photo is displayed as contact's profile image
+    const profileImage = await contactPage.getContactCardProfileImage();
+    await profileImage.waitForDisplayed();
+    const src = await profileImage.getAttribute('src');
+    expect(src).to.match(/^blob:/);
   });
 
   it('should preserve attachments when editing contact', async () => {
@@ -175,7 +161,7 @@ describe('Contact form attachments', () => {
     await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
 
     await commonEnketoPage.setInputValue('Full name', originalName);
-    await commonEnketoPage.addFileInputValue('Photo', photoPngPath);
+    await commonEnketoPage.addFileInputValue('Profile Image', photoPngPath);
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
@@ -223,8 +209,8 @@ describe('Contact form attachments', () => {
     await browser.url(`#/contacts/${contact._id}/edit`);
     await commonPage.waitForPageLoaded();
 
-    const photoLabel = await $('label[data-contains-ref-target="/data/person_with_attachments/photo"]');
-    const filePicker = await photoLabel.$('.file-picker');
+    const profileImageLabel = await $('label[data-contains-ref-target="/data/person_with_attachments/profile_image"]');
+    const filePicker = await profileImageLabel.$('.file-picker');
     const resetButton = await filePicker.$('button.btn-reset');
 
     const dialog = await new Promise((resolve) => {
@@ -240,10 +226,18 @@ describe('Contact form attachments', () => {
     expect(await fakeInput.getValue()).to.equal('');
 
     await genericForm.submitForm();
+    await commonPage.waitForPageLoaded();
+    await contactPage.waitForContactLoaded();
 
     const contactAfter = await utils.getDoc(contact._id);
-    expect(contactAfter.photo).to.equal('');
+    expect(contactAfter.profile_image).to.equal('');
     expect(contactAfter._attachments).to.be.undefined;
+
+    // No photo, so default icon displayed instead of profile image
+    const profileImage = await contactPage.getContactCardProfileImage();
+    expect(await profileImage.isExisting()).to.be.false;
+    const fallback = await $('.card .heading mm-contact-profile-image span .resource-icon');
+    await fallback.waitForDisplayed();
   });
 
   it('should replace attachment when editing contact', async () => {
@@ -259,8 +253,8 @@ describe('Contact form attachments', () => {
     await browser.url(`#/contacts/${contact._id}/edit`);
     await commonPage.waitForPageLoaded();
 
-    const photoLabel = await $('label[data-contains-ref-target="/data/person_with_attachments/photo"]');
-    const filePicker = await photoLabel.$('.file-picker');
+    const profileImageLabel = await $('label[data-contains-ref-target="/data/person_with_attachments/profile_image"]');
+    const filePicker = await profileImageLabel.$('.file-picker');
     const resetButton = await filePicker.$('button.btn-reset');
 
     const dialog = await new Promise((resolve) => {
@@ -272,7 +266,7 @@ describe('Contact form attachments', () => {
     const filePreview = await filePicker.$('.file-preview img');
     await filePreview.waitForExist({ reverse: true, timeout: 5000 });
 
-    await commonEnketoPage.addFileInputValue('Photo', layersPngPath);
+    await commonEnketoPage.addFileInputValue('Profile Image', layersPngPath);
 
     await genericForm.submitForm();
 
@@ -284,64 +278,46 @@ describe('Contact form attachments', () => {
     const newAttachmentName = newAttachmentNames[0];
 
     expect(newAttachmentName).to.not.equal(originalAttachmentName);
-    expect(contactAfter.photo).to.not.equal('');
-    expect(contactAfter.photo).to.not.equal(contactBefore.photo);
+    expect(contactAfter.profile_image).to.not.equal('');
+    expect(contactAfter.profile_image).to.not.equal(contactBefore.profile_image);
 
     expect(newAttachmentName).to.match(/^user-file-layers.*\.png$/);
-    expect(contactAfter.photo).to.equal(newAttachmentName.replace('user-file-', ''));
+    expect(contactAfter.profile_image).to.equal(newAttachmentName.replace('user-file-', ''));
     expect(contactAfter._attachments[newAttachmentName].content_type).to.equal('image/png');
     expect(contactAfter._attachments[newAttachmentName].length, 'Replaced attachment should have a valid size')
       .to.be.greaterThan(0);
   });
 
-  describe('Displaying the profile photo', () => {
-    it('should render the photo in the profile header when a contact has one', async () => {
-      const contactName = 'Display Photo Person';
+  it('should render the profile photo for a binary attachment and custom profile_image_field', async () => {
+    // Update settings to use custom profile image field
+    const contactTypes = [...originalContactTypes, {
+      ...personWithAttachmentsType,
+      profile_image_field: 'badge'
+    }];
+    await utils.updateSettings({ contact_types: contactTypes }, { ignoreReload: true });
 
-      await commonPage.goToPeople(healthCenter._id);
-      await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
-      await commonEnketoPage.setInputValue('Full name', contactName);
-      await commonEnketoPage.addFileInputValue('Photo', photoPngPath);
-      await genericForm.submitForm();
-      await commonPage.waitForPageLoaded();
-      await contactPage.waitForContactLoaded();
+    const contactName = 'Test Person With Binary profile image';
+    await commonPage.goToPeople(healthCenter._id);
+    await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
 
-      const profileImage = await contactPage.getContactCardProfileImage();
-      await profileImage.waitForDisplayed();
-      const src = await profileImage.getAttribute('src');
-      expect(src).to.match(/^blob:/);
-    });
+    await commonEnketoPage.setInputValue('Full name', contactName);
 
-    it('should fall back to the type icon when a contact has no photo', async () => {
-      const contactName = 'No Photo Person';
+    await genericForm.submitForm();
+    await commonPage.waitForPageLoaded();
+    await contactPage.waitForContactLoaded();
 
-      await commonPage.goToPeople(healthCenter._id);
-      await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
-      await commonEnketoPage.setInputValue('Full name', contactName);
-      await genericForm.submitForm();
-      await commonPage.waitForPageLoaded();
-      await contactPage.waitForContactLoaded();
+    const contactId = await contactPage.getCurrentContactId();
+    const createdContact = await utils.getDoc(contactId);
+    expect(createdContact.name).to.equal(contactName);
+    const attachmentNames = Object.keys(createdContact._attachments);
+    expect(attachmentNames).to.have.lengthOf(1);
+    expect(createdContact._attachments['user-file/badge'].content_type).to.equal('image/png');
+    expect(createdContact._attachments['user-file/badge'].length).to.be.greaterThan(0);
 
-      const profileImage = await contactPage.getContactCardProfileImage();
-      expect(await profileImage.isExisting()).to.be.false;
-      const fallback = await $('.card .heading mm-contact-profile-image span .resource-icon');
-      await fallback.waitForDisplayed();
-    });
-
-    it('should render the photo for an attachment using the binary naming', async () => {
-      const contact = createContactWithBinaryAttachment('Binary Attachment Person');
-      await utils.saveDocs([contact]);
-
-      const savedContact = await utils.getDoc(contact._id);
-      expect(Object.keys(savedContact._attachments)).to.deep.equal(['user-file/photo']);
-
-      await browser.url(`#/contacts/${contact._id}`);
-      await commonPage.waitForPageLoaded();
-      await contactPage.waitForContactLoaded();
-
-      const profileImage = await contactPage.getContactCardProfileImage();
-      await profileImage.waitForDisplayed();
-      expect(await profileImage.getAttribute('src')).to.match(/^blob:/);
-    });
+    // Binary Photo is displayed as contact's profile image
+    const profileImage = await contactPage.getContactCardProfileImage();
+    await profileImage.waitForDisplayed();
+    const src = await profileImage.getAttribute('src');
+    expect(src).to.match(/^blob:/);
   });
 });
