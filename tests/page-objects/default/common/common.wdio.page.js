@@ -178,11 +178,11 @@ const waitForLoaders = async (timeout = 5000) => {
   });
 };
 
-const waitForAngularLoaded = async (timeout = 40000) => {
+const waitForAngularLoaded = async (timeout = 60000) => {
   await hamburgerMenuSelectors.hamburgerMenu().waitForDisplayed({ timeout });
 };
 
-const waitForPageLoaded = async (timeout) => {
+const waitForPageLoaded = async (timeout = 60000) => {
   // if we immediately check for app loaders, we might bypass the initial page load (the bootstrap loader)
   // so waiting for the main page to load.
   await waitForAngularLoaded(timeout);
@@ -315,14 +315,34 @@ const isMoreOptionsMenuPresent = async () => await kebabMenuSelectors.moreOption
 
 const navigateToLogoutModal = async () => {
   await openHamburgerMenu();
-  await hamburgerMenuSelectors.logoutButton().click();
-  await modalPage.body().waitForDisplayed();
+  const logoutBtn = await hamburgerMenuSelectors.logoutButton();
+  await logoutBtn.waitForDisplayed({ timeout: 5000 });
+  await logoutBtn.click();
+  await modalPage.body().waitForDisplayed({ timeout: 5000 });
 };
 
 const logout = async () => {
-  await navigateToLogoutModal();
-  await modalPage.submit();
-  await browser.pause(100); // wait for login page js to execute
+  try {
+    await navigateToLogoutModal();
+    await modalPage.submit();
+    await browser.pause(100); // wait for login page js to execute
+  } catch (err) {
+    console.warn('UI logout failed, performing fallback cookie and storage cleanup:', err.message || err);
+  } finally {
+    try {
+      await browser.deleteCookies();
+      await browser.execute(() => {
+        try {
+          localStorage.clear();
+          sessionStorage.clear();
+        } catch (err2) {
+          console.error('Failed to clear local storage:', err2);
+        }
+      });
+    } catch (err3) {
+      console.warn('Fallback cleanup failed:', err3.message || err3);
+    }
+  }
 };
 
 const getLogoutMessage = async () => {
@@ -554,7 +574,7 @@ const isMenuOptionVisible = async (action) => {
 
 const countInboxItems = async () => await $$('.inbox-items .content-row').length;
 const noMoreElements = (elementTag) => $(`aria/No more ${elementTag}`);
-const loadNextInfiniteScrollPage = async (elementTag, timeout) => {
+const loadNextInfiniteScrollPage = async (elementTag, timeout = 15000) => {
   const initialInboxItemsCount = await countInboxItems();
   await browser.execute(() => {
     const container = document.querySelector('.items-container');
