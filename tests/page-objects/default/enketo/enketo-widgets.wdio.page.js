@@ -1,4 +1,5 @@
 const FORM = 'form[data-form-id="enketo_widgets_test"]';
+const { getCurrentPageSection } = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 const selectMultipleDropdown = (formId = FORM) => {
   return $(`${formId} select[name="/data/enketo_test_select/select_spinner"]`);
@@ -49,14 +50,11 @@ const clickTimer = async (formId) => {
   await timer.click();
 };
 
-const imagePreview = (formId) => $(`form[data-form-id="${formId}"] .file-picker .file-preview img`);
-
-const selectImage = async (formId, filePath) => {
-  const input = await $(`form[data-form-id="${formId}"] input[type=file]`);
-  await input.addValue(filePath);
+const imagePreview = async (question, { repeatIndex = 0 } = {}) => {
+  return (await getCurrentPageSection())
+    .$$(`label*=${question}`)[repeatIndex]
+    .$('.file-picker .file-preview img');
 };
-
-const reportImagePreview = () => $('#reports-content mm-attachment-image img');
 
 module.exports = {
   selectMultipleDropdown,
@@ -71,6 +69,4 @@ module.exports = {
   patientNameErrorLabel,
   clickTimer,
   imagePreview,
-  selectImage,
-  reportImagePreview,
 };
