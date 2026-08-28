@@ -51,7 +51,6 @@ module.exports = defineConfig([
     'shared-libs/cht-datasource/docs/**/*',
     'tests/scalability/report*/**/*',
     'tests/scalability/jmeter/**/*',
-    'webapp/src/ts/providers/xpath-element-path.provider.ts',
     'webapp/dist/**/*',
     '.github/**/compiled/index.js'
   ]),

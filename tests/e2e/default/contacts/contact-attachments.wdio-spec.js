@@ -14,7 +14,6 @@ const { CONTACT_TYPES } = require('@medic/constants');
 describe('Contact form attachments', () => {
   const photoPngPath = path.join(__dirname, '../enketo/images/photo-for-upload-form.png');
   const layersPngPath = path.join(__dirname, '../../../../webapp/src/img/layers.png');
-
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
 
@@ -44,41 +43,14 @@ describe('Contact form attachments', () => {
     'contact.type.person_with_attachments.edit': 'Edit Person With Attachments'
   };
 
-  const createFormXml = fs.readFileSync(
-    path.join(__dirname, 'forms/person-with-attachments-create.xml'),
-    'utf8'
+  const createFormDoc = commonPage.createFormDoc(
+    path.join(__dirname, 'forms/person-with-attachments-create'),
+    'contact:person_with_attachments:create'
   );
-
-  const editFormXml = fs.readFileSync(
-    path.join(__dirname, 'forms/person-with-attachments-edit.xml'),
-    'utf8'
+  const editFormDoc = commonPage.createFormDoc(
+    path.join(__dirname, 'forms/person-with-attachments-edit'),
+    'contact:person_with_attachments:edit'
   );
-
-  const createFormDoc = {
-    _id: 'form:contact:person_with_attachments:create',
-    internalId: 'contact:person_with_attachments:create',
-    title: 'New Person With Attachments',
-    type: 'form',
-    _attachments: {
-      xml: {
-        content_type: 'application/octet-stream',
-        data: Buffer.from(createFormXml).toString('base64'),
-      }
-    }
-  };
-
-  const editFormDoc = {
-    _id: 'form:contact:person_with_attachments:edit',
-    internalId: 'contact:person_with_attachments:edit',
-    title: 'Edit Person With Attachments',
-    type: 'form',
-    _attachments: {
-      xml: {
-        content_type: 'application/octet-stream',
-        data: Buffer.from(editFormXml).toString('base64'),
-      }
-    }
-  };
 
   const createContactWithAttachment = (contactName, imagePath = photoPngPath) => {
     const imageBuffer = fs.readFileSync(imagePath);
@@ -128,37 +100,6 @@ describe('Contact form attachments', () => {
     await commonPage.waitForPageLoaded();
   });
 
-  it('should create contact with image attachment', async () => {
-    const contactName = 'Test Person With Photo';
-
-    await commonPage.goToPeople(healthCenter._id);
-    await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
-
-    await commonEnketoPage.setInputValue('Full name', contactName);
-    await commonEnketoPage.addFileInputValue('Photo', photoPngPath);
-
-    await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
-    await contactPage.waitForContactLoaded();
-
-    const contactId = await contactPage.getCurrentContactId();
-    expect(contactId).to.exist;
-
-    const createdContact = await utils.getDoc(contactId);
-
-    expect(createdContact).to.exist;
-    expect(createdContact.name).to.equal(contactName);
-    expect(createdContact._attachments).to.exist;
-
-    const attachmentNames = Object.keys(createdContact._attachments);
-    expect(attachmentNames).to.have.lengthOf(1);
-    expect(attachmentNames[0]).to.match(/^user-file-photo-for-upload-form.*\.png$/);
-
-    const attachment = createdContact._attachments[attachmentNames[0]];
-    expect(attachment.content_type).to.equal('image/png');
-    expect(attachment.length, 'Attachment should have a valid size').to.be.greaterThan(0);
-  });
-
   it('should create contact with multiple attachments (image + document)', async () => {
     const contactName = 'Test Person With Multiple Files';
 
@@ -183,7 +124,7 @@ describe('Contact form attachments', () => {
     expect(createdContact._attachments).to.exist;
 
     const attachmentNames = Object.keys(createdContact._attachments);
-    expect(attachmentNames).to.have.lengthOf(2);
+    expect(attachmentNames).to.have.lengthOf(3);
 
     const photoAttachment = attachmentNames.find(name => name.match(/^user-file-photo-for-upload-form.*\.png$/));
     const documentAttachment = attachmentNames.find(name => name.match(/^user-file-layers.*\.png$/));
@@ -198,6 +139,9 @@ describe('Contact form attachments', () => {
     expect(createdContact._attachments[documentAttachment].content_type).to.equal('image/png');
     expect(createdContact._attachments[documentAttachment].length, 'Document should have a valid size')
       .to.be.greaterThan(0);
+
+    expect(createdContact._attachments['user-file/badge'].content_type).to.equal('image/png');
+    expect(createdContact._attachments['user-file/badge'].length).to.be.greaterThan(0);
   });
 
   it('should preserve attachments when editing contact', async () => {
@@ -221,7 +165,9 @@ describe('Contact form attachments', () => {
     const contactBefore = await utils.getDoc(contactId);
     expect(contactBefore._attachments).to.exist;
     const originalAttachments = Object.keys(contactBefore._attachments);
-    expect(originalAttachments).to.have.lengthOf(1);
+    expect(originalAttachments).to.have.lengthOf(2);
+    expect(originalAttachments[0]).to.match(/^user-file-photo-for-upload-form.*\.png$/);
+    expect(originalAttachments[1]).to.equal('user-file/badge');
 
     await commonPage.accessEditOption();
 
@@ -237,9 +183,10 @@ describe('Contact form attachments', () => {
     expect(contactAfter._attachments).to.exist;
 
     const attachmentsAfter = Object.keys(contactAfter._attachments);
-    expect(attachmentsAfter).to.have.lengthOf(1);
-    expect(attachmentsAfter[0]).to.equal(originalAttachments[0]);
+    expect(attachmentsAfter).to.deep.equal(originalAttachments);
     expect(contactAfter._attachments[attachmentsAfter[0]].length, 'Preserved attachment should have a valid size')
+      .to.be.greaterThan(0);
+    expect(contactAfter._attachments[attachmentsAfter[1]].length, 'Preserved attachment should have a valid size')
       .to.be.greaterThan(0);
   });
 
