@@ -42,7 +42,6 @@ describe('ContactProfileImageComponent', () => {
         fixture = TestBed.createComponent(ContactProfileImageComponent);
         component = fixture.componentInstance;
         store = TestBed.inject(MockStore);
-        fixture.detectChanges();
       });
   });
 

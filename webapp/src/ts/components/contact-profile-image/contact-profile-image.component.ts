@@ -45,7 +45,7 @@ export class ContactProfileImageComponent implements OnInit, OnDestroy {
   private getAttachmentName(contactDoc, fieldName): string | undefined {
     const isImage = (name: string) => contactDoc?._attachments?.[name]?.content_type?.startsWith('image/');
 
-    const fieldValue = contactDoc[fieldName];
+    const fieldValue = contactDoc?.[fieldName];
     const fileAttachmentName = `${USER_FILE_ATTACHMENT_PREFIX}${fieldValue}`;
     if (fieldValue && isImage(fileAttachmentName)) {
       return fileAttachmentName;
