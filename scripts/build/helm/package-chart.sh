@@ -5,6 +5,8 @@ set -eu -o pipefail
 # set CHT version from argument 
 TAG_VERSION=$1
 BASE_HELM_URL="https://docs.communityhealthtoolkit.org/cht-core"
+TMP_HELM="/tmp/helm-deleteme"
+FINAL_HELM="../helm-releases/"
 
 # check to make sure it's at least X.Y.Z format
 if ! [[ "$TAG_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -46,15 +48,14 @@ rm -f Chart.yaml.bak values/base.yaml.bak
   #Error: 1 chart(s) linted, 1 chart(s) failed
 #helm lint .
 
-# package version, merge with existing index.yaml
-helm package . -d ../helm-releases
-
-# do this only first time
-if [[ ! -f ../helm-releases/index.yaml ]]; then
-	helm repo index ../helm-releases  --url $BASE_HELM_URL
-else
-	helm repo index ../helm-releases --merge ../helm-releases/index.yaml --url $BASE_HELM_URL
-fi
+# package version, merge with existing index.yaml . use silly work around because of
+# open helm bug: https://github.com/helm/chart-releaser/issues/133 changes earlier dates to be current
+# thanks for the workaround! https://github.com/helm/helm/issues/4482#issuecomment-452013778
+helm package -u -d $TMP_HELM .
+helm repo index $TMP_HELM  --url $BASE_HELM_URL
+helm repo index --url $BASE_HELM_URL --merge $FINAL_HELM/index.yaml $TMP_HELM
+mv /$TMP_HELM/*.tgz  $FINAL_HELM
+mv /$TMP_HELM/index.yaml  $FINAL_HELM
 
 # reset files for the next time we run this script
 git checkout values/base.yaml Chart.yaml
