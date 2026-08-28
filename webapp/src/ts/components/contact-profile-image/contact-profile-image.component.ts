@@ -51,7 +51,6 @@ export class ContactProfileImageComponent implements OnInit, OnDestroy {
       return fileAttachmentName;
     }
 
-    // TODO: Naming here depends on https://github.com/medic/cht-core/pull/10923
     const binaryAttachmentName = `${USER_BINARY_ATTACHMENT_PREFIX}/${fieldName}`;
     return isImage(binaryAttachmentName) ? binaryAttachmentName : undefined;
   }
