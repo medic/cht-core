@@ -20,7 +20,9 @@ assignees: ''
 
 When development is ready to begin one of the maintainers should be nominated as a Release Manager. They will be responsible for making sure the following tasks are completed though not necessarily completing them.
 
-- [ ] Checkout to a new `<issue>-update-version` branch (eg: `1234-update-version`) and set the version number in the `package.json` and `package-lock.json`. The easiest way to do this is to use `npm --no-git-tag-version version <major|minor>`. Once the version is updated, submit a PR to `master` branch.
+- [ ] Submit a PR with two changes. Ensure it is merged to `master` before proceeding:
+   *  Run `npm --no-git-tag-version version <major>.<minor>.<patch>` which sets version number in `package.json` and `package-lock.json`.
+   * Run the [helm chart build script](https://github.com/medic/cht-core/blob/master/scripts/build/helm/package-chart.sh) (eg `./package-chart.sh 5.3.0`). This creates a tarball and updates `index.yaml` for the helm chart. Both will get automatically published when the final version is tagged below. 
 - [ ] Ensure that issues associated with commits merged to `master` since the last release are closed and mapped to the milestone.
 
 # Releasing - Release Manager
@@ -43,7 +45,6 @@ If all is good, then in 24h, I will start the release. Thanks!
   - [ ] Use [this script](https://github.com/medic/cht-core/blob/master/scripts/release-notes/index.js) to export the issues into our release note format.
   - [ ] Collect known migration steps, descriptions, screenshots, videos, data, and anything else to help communicate particularly important changes. This information should already be on the issue, but if not, prompt the change author to provide it.
   - [ ] Document any required or recommended upgrades to our other products (eg: cht-conf, cht-gateway, cht-android).
-- [ ] Before creating the release, run the [helm chart build script](https://github.com/medic/cht-core/blob/master/scripts/build/helm/package-chart.sh) (eg `./package-chart.sh 5.3.0`), commit the new chart and merge the PR so it will be in the release.
   - [ ] Add the release to the [Supported versions](https://docs.communityhealthtoolkit.org/core/releases/#supported-versions) and update the EOL date of the previous release. Update the status of any releases that are past their End Of Life date. Also add a link in the `Release Notes` section to the new release page.
   - [ ] Ensure that the release notes PR is merged before moving to next step.
 - [ ] Create a [new release](https://github.com/medic/cht-core/releases/new) in GitHub, with the naming convention `<major>.<minor>.<patch>`, from the release branch created above as the target branch. Click on the "Choose a tag" dropdown and create a tag for the release with the naming convention `<major>.<minor>.<patch>`. Add a link to the release notes in the description of the release.
