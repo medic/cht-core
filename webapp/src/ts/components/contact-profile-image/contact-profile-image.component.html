@@ -1,0 +1,6 @@
+@if (attachment) {
+  <mm-attachment-image [attachment]="attachment"
+                       [alt]="name || ('contact.profile' | translate)"></mm-attachment-image>
+} @else if (fallbackIcon) {
+  <span [innerHTML]="fallbackIcon | resourceIcon"></span>
+}
