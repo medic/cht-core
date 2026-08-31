@@ -320,6 +320,19 @@ describe('Contact Controller', () => {
         expect(serverUtilsError.args[0][0].message).to.equal('Invalid phones [[]].');
       });
 
+      it('errors without querying when the phone param is object-shaped', async () => {
+        // `?phone[a]=b` parses to an object, which has nothing to split.
+        req = { query: { phone: { a: 'b' }, cursor, limit } };
+
+        await controller.v1.getUuids(req, res);
+
+        expect(contactGetUuidsPage.notCalled).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
+        expect(serverUtilsError.args[0][0].message).to.equal('Invalid phones [{"a":"b"}].');
+      });
+
       it('errors without querying when a phone number is padded', async () => {
         req = { query: { phone: '  +254712345678  ', cursor, limit } };
 

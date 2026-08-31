@@ -19,6 +19,10 @@ const buildIdsQualifier = (ids) => {
 
 // Accepts `?phone=a,b` and `?phone=a&phone=b`, like `ids` above.
 const buildPhonesQualifier = (phone) => {
+  // `qs.parse` turns `?phone[a]=b` into an object, which has nothing to split.
+  if (!Array.isArray(phone) && typeof phone !== 'string') {
+    throw new InvalidArgumentError(`Invalid phones [${JSON.stringify(phone)}].`);
+  }
   const phonesArray = (Array.isArray(phone) ? phone : phone.split(',')).filter(Boolean);
   if (!phonesArray.length) {
     throw new InvalidArgumentError(`Invalid phones [${JSON.stringify(phonesArray)}].`);
@@ -104,8 +108,8 @@ module.exports = {
      *     operationId: v1ContactUuidGet
      *     description: >
      *       Returns a paginated array of contact identifier strings matching the given filter criteria.
-     *       At least one of `type`, `freetext`, or `phone` must be provided. `phone` cannot be combined with the
-     *       others and takes precedence over them.
+     *       At least one of `type`, `freetext`, or `phone` must be provided. When `phone` is provided, it takes
+     *       precedence and `type` and `freetext` are ignored.
      *     tags: [Contact]
      *     x-since: 4.18.0
      *     x-permissions:

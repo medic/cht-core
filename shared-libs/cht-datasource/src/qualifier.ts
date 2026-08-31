@@ -123,6 +123,8 @@ export type PhonesQualifier = Readonly<{ phones: [string, ...string[]] }>;
 
 /**
  * Builds a qualifier for finding contacts with any of the given phone numbers. Duplicates are removed.
+ * Results are grouped in the order of the given numbers, so page through them by passing the numbers in the
+ * same order with each cursor.
  * @param phones the phone numbers of the contacts, each matched verbatim against the contact's `phone` field
  * @returns the qualifier
  * @throws InvalidArgumentError if the phone numbers are not a non-empty array of non-blank strings with no

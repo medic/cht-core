@@ -456,16 +456,18 @@ describe('cht-datasource Contact', () => {
       });
 
       it('pages across a phone number boundary without dropping or repeating a contact', async () => {
-        // A page size of 2 puts the boundary between two of the requested numbers mid-page.
+        // Rows come back grouped in the order of the requested numbers, so the split is deterministic.
         const twoLimit = 2;
         const firstPage = await getUuidsPage(Qualifier.byPhones(allPhones), cursor, twoLimit);
         const secondPage = await getUuidsPage(Qualifier.byPhones(allPhones), firstPage.cursor, twoLimit);
+        const thirdPage = await getUuidsPage(Qualifier.byPhones(allPhones), secondPage.cursor, twoLimit);
 
-        const allData = [ ...firstPage.data, ...secondPage.data ];
-
-        expect(allData).to.deep.equalInAnyOrder(allPhoneContactIds);
-        expect(firstPage.data.length).to.be.equal(2);
-        expect(secondPage.data.length).to.be.equal(2);
+        expect(firstPage.data).to.deep.equal([ contact0._id, contact1._id ]);
+        expect(firstPage.cursor).to.be.equal('2');
+        expect(secondPage.data).to.deep.equal([ contact2._id, patient._id ]);
+        expect(secondPage.cursor).to.be.equal('4');
+        expect(thirdPage.data).to.deep.equal([]);
+        expect(thirdPage.cursor).to.be.equal(null);
       });
 
       it('throws error when limit is invalid', async () => {

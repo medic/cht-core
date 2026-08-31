@@ -787,6 +787,37 @@ describe('Contact API', () => {
       expect(responsePage.cursor).to.be.null;
     });
 
+    it('returns a page of contacts when the phone param is repeated', async () => {
+      const responsePage = await utils.request({
+        path: `${endpoint}?phone=0000000000&phone=${patient.phone}`
+      });
+      const responseIds = responsePage.data.map(doc => doc._id);
+
+      expect(responseIds).to.deep.equal([patient._id]);
+      expect(responsePage.cursor).to.be.null;
+    });
+
+    it('throws 400 error when every entry in the phone list is empty', async () => {
+      const opts = {
+        path: endpoint,
+        qs: { phone: ',,' }
+      };
+
+      await expect(utils.request(opts))
+        .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid phones [[]]."}`);
+    });
+
+    it('throws 400 error when a phone number is padded, rather than matching nothing', async () => {
+      const opts = {
+        path: endpoint,
+        qs: { phone: `  ${patient.phone}  ` }
+      };
+
+      await expect(utils.request(opts)).to.be.rejectedWith(
+        `400 - {"code":400,"error":"Invalid phones [[\\"  ${patient.phone}  \\"]]."}`
+      );
+    });
+
     it('throws 400 error when the contact type is invalid', async () => {
       const opts = { path: endpoint, qs: { type: 'invalidPerson' } };
       await expect(utils.request(opts))
