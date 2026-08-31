@@ -1,42 +1,12 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
   <h:head>
     <h:title>Undo death report</h:title>
     <model odk:xforms-version="1.0.0">
       <itext>
         <translation lang="en">
-          <text id="/data/inputs/source:label">
-            <value>Source</value>
-          </text>
-          <text id="/data/inputs/source_id:label">
-            <value>Source ID</value>
-          </text>
           <text id="/data/inputs/contact/_id:label">
             <value>What is the patient's name?</value>
-          </text>
-          <text id="/data/inputs/contact/name:label">
-            <value>Name</value>
-          </text>
-          <text id="/data/inputs/contact/short_name:label">
-            <value>Short Name</value>
-          </text>
-          <text id="/data/inputs/contact/patient_id:label">
-            <value>Patient ID</value>
-          </text>
-          <text id="/data/inputs/contact/date_of_birth:label">
-            <value>Date of Birth</value>
-          </text>
-          <text id="/data/inputs/contact/sex:label">
-            <value>Sex</value>
-          </text>
-          <text id="/data/inputs/contact/parent/_id:label">
-            <value>Household ID</value>
-          </text>
-          <text id="/data/inputs/contact/parent/parent/contact/name:label">
-            <value>CHW name</value>
-          </text>
-          <text id="/data/inputs/contact/parent/parent/contact/phone:label">
-            <value>CHW phone</value>
           </text>
           <text id="/data/undo/undo_information:jr:constraintMsg">
             <value>Only submit this report if you want to undo the death report.</value>
@@ -47,7 +17,7 @@
         </translation>
       </itext>
       <instance>
-        <data id="undo_death_report" version="2025-05-01 22:30:36.650000" prefix="J1!undo_death_report!" delimiter="#">
+        <data id="undo_death_report" version="20260724164712" prefix="J1!undo_death_report!" delimiter="#">
           <inputs>
             <meta>
               <location>
