@@ -14,7 +14,7 @@ const wdioBaseConfig = require('../../wdio.conf');
 const { generateReport } = require('@utils/allure');
 
 const {
-  MARKET_URL_READ = 'https://staging.dev.medicmobile.org',
+  MARKET_URL_READ = 'https://staging.app.medicmobile.org',
   STAGING_SERVER = '_couch/builds_4',
   HAPROXY_PORT,
   BASE_VERSION = 'latest',

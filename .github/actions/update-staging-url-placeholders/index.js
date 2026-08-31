@@ -4,7 +4,7 @@ const github = require('@actions/github');
 const SEARCH_TERM = '<!-- COMPOSE URLS GO HERE - DO NOT CHANGE -->';
 
 const generateReplacement = (branch) => {
-  const url = `https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${branch}/docker-compose`;
+  const url = `https://staging.app.medicmobile.org/_couch/builds_4/medic:medic:${branch}/docker-compose`;
   return `
 
 # Compose URLs
