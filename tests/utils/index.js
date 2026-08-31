@@ -952,6 +952,19 @@ const waitForApiCrash = async () => {
   throw new Error('API expected to crash, but still running after 1.5 minutes');
 };
 
+const logApiContainerDiagnostics = async () => {
+  if (!isDocker()) {
+    return;
+  }
+  try {
+    const state = await getContainerState('api');
+    console.log('api container state:', state ? JSON.stringify(state) : 'container not found');
+    await runCommand(`docker logs --tail 20 ${getContainerName('api')}`);
+  } catch (err) {
+    console.log('Could not collect api container diagnostics:', err.message);
+  }
+};
+
 const listenForApi = async () => {
   const totalTries = 180; // 3 minutes
   let retryCount = totalTries;
@@ -971,6 +984,7 @@ const listenForApi = async () => {
       await delayPromise(1000);
     }
   } while (--retryCount > 0);
+  await logApiContainerDiagnostics();
   throw new Error('API failed to start after 3 minutes');
 };
 
@@ -1088,9 +1102,50 @@ const waitForService = async (service) => {
 
 const stopSentinel = () => stopService('sentinel');
 
+const getContainerState = async (service) => {
+  try {
+    const rawState = await runCommand(
+      `docker inspect -f '{{json .State}}' ${getContainerName(service)}`,
+      { verbose: false }
+    );
+    return JSON.parse(rawState);
+  } catch {
+    // container does not exist
+  }
+};
+
+const isContainerRunning = async (service) => {
+  const state = await getContainerState(service);
+  return !!state && state.Status === 'running';
+};
+
+// `docker compose start` can exit 0 without actually starting the container when docker still
+// considers it running or mid-restart (e.g. racing the `restart: always` policy right after a
+// `stop -t 0`).
+const startServiceInDocker = async (service, retry = 3) => {
+  if (retry <= 0) {
+    const state = await getContainerState(service);
+    throw new Error(
+      `Container for "${service}" failed to start. ` +
+      `Last state: ${state ? JSON.stringify(state) : 'container not found'}`
+    );
+  }
+
+  await dockerComposeCmd(`start ${service}`);
+  let pollRetries = 5;
+  do {
+    if (await isContainerRunning(service)) {
+      return;
+    }
+    await delayPromise(1000);
+  } while (pollRetries-- > 0);
+
+  await startServiceInDocker(service, retry - 1);
+};
+
 const startService = async (service) => {
   if (isDocker()) {
-    return await dockerComposeCmd(`start ${service}`);
+    return await startServiceInDocker(service);
   }
   await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=1`);
 };
