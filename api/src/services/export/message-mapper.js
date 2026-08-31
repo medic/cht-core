@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const db = require('../../db');
 const config = require('../../config');
 const dateFormat = require('./date-format');
@@ -96,12 +95,9 @@ const getRecordRegistrations = (registrations, record) => {
     return [];
   }
 
-  return _.uniqBy(
-    registrations
-      .filter(row => row.key === record.patient.patient_id)
-      .map(row => row.doc),
-    '_id'
-  );
+  return registrations
+    .filter(row => row.key === record.patient.patient_id)
+    .map(row => row.doc);
 };
 
 const hydrate = records => {
@@ -122,7 +118,7 @@ const hydrate = records => {
   }
 
   return db.medic
-    .query('medic-client/reports_by_subject', { keys: patientIds, include_docs: true })
+    .query('medic-client/registered_patients', { keys: patientIds, include_docs: true })
     .then(result => {
       const registrations = result.rows.filter(row => {
         return registrationUtils.isValidRegistration(row.doc, config.get());

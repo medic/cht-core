@@ -2,7 +2,7 @@ function(doc) {
   if (doc.type === 'data_record' && doc.form) {
     var emitField = function(obj, field) {
       if (obj[field]) {
-        emit(String(obj[field]), doc.reported_date);
+        emit(obj[field], doc.reported_date);
       }
     };
 

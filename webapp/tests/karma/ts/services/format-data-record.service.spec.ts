@@ -622,7 +622,7 @@ describe('FormatDataRecord service', () => {
       return service.format(report).then(formatted => {
         expect(db.query.callCount).to.equal(1);
         expect(db.query.args[0]).to.deep.equal([
-          'medic-client/reports_by_subject',
+          'medic-client/registered_patients',
           { key: '12345', include_docs: true }
         ]);
 
@@ -698,7 +698,7 @@ describe('FormatDataRecord service', () => {
       return service.format(report).then(formatted => {
         expect(db.query.callCount).to.equal(1);
         expect(db.query.args[0]).to.deep.equal([
-          'medic-client/reports_by_subject',
+          'medic-client/registered_patients',
           { key: '789', include_docs: true }
         ]);
 
@@ -785,11 +785,11 @@ describe('FormatDataRecord service', () => {
       return service.format(report).then(formatted => {
         expect(db.query.callCount).to.equal(2);
         expect(db.query.args[0]).to.deep.equal([
-          'medic-client/reports_by_subject',
+          'medic-client/registered_patients',
           { key: '123456', include_docs: true }
         ]);
         expect(db.query.args[1]).to.deep.equal([
-          'medic-client/reports_by_subject',
+          'medic-client/registered_patients',
           { key: '789', include_docs: true }
         ]);
 
