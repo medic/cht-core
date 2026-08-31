@@ -22,6 +22,7 @@ describe('TasksMapComponent', () => {
   let geolocationService;
   let geoHandle;
   let resolveUserLocation;
+  let style;
 
   const tasks: any[] = [
     {
@@ -63,6 +64,12 @@ describe('TasksMapComponent', () => {
   };
 
   beforeEach(() => {
+    // no stylesheets are loaded in tests: without a fixed height Leaflet's panes resize the container on every
+    // render, which trips the browser's ResizeObserver loop detection
+    style = document.createElement('style');
+    style.textContent = '.map-container .map { width: 400px; height: 400px; }';
+    document.head.appendChild(style);
+
     translateService = {
       instant: sinon.stub().callsFake((key, params) => params ? `${key}:${JSON.stringify(params)}` : key),
     };
@@ -91,6 +98,7 @@ describe('TasksMapComponent', () => {
   });
 
   afterEach(() => {
+    style.remove();
     store.resetSelectors();
     sinon.restore();
   });

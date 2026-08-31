@@ -214,8 +214,7 @@ describe('MapComponent', () => {
     const setContainerSize = async (width, height) => {
       style.textContent = `.map-container .map { width: ${width}px; height: ${height}px; }`;
       // ResizeObserver callbacks are delivered after layout, not synchronously
-      const map = fixture.componentInstance.map;
-      for (let i = 0; i < 50 && map.getSize().y !== height; i++) {
+      for (let i = 0; i < 50 && fixture.componentInstance.containerSize?.height !== height; i++) {
         await new Promise(resolve => setTimeout(resolve, 10));
       }
     };
@@ -236,11 +235,24 @@ describe('MapComponent', () => {
       expect(map.getZoom()).to.be.lessThan(17);
     });
 
+    it('should not fit the view while the container has no size', async () => {
+      style.textContent = '.map-container .map { width: 400px; height: 0; }';
+      await render({ markers });
+      const map = fixture.componentInstance.map;
+      expect(map.getContainer().clientHeight).to.equal(0);
+      expect(map.getZoom()).to.equal(undefined); // no view was set
+
+      await setContainerSize(400, 400);
+
+      expect(map.getBounds().contains([-1.29, 36.82])).to.equal(true);
+      expect(map.getBounds().contains([-1.31, 36.79])).to.equal(true);
+    });
+
     it('should keep the view the user chose when the container resizes', async () => {
       await render({ markers });
       const map = fixture.componentInstance.map;
 
-      map.setView([0, 0], 5); // the user panned and zoomed away
+      map.setView([0, 0], 5, { animate: false }); // the user panned and zoomed away
       expect(map.getZoom()).to.equal(5);
 
       await setContainerSize(400, 600);

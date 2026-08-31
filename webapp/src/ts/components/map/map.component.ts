@@ -50,6 +50,7 @@ export class MapComponent implements OnChanges, OnDestroy {
   private markersLayer;
   private userLocationLayer;
   private resizeObserver?: ResizeObserver;
+  private containerSize?: { width: number; height: number };
   private fitting = false;
   private userMoved = false;
   validMarkers: MapMarker[] = [];
@@ -88,6 +89,7 @@ export class MapComponent implements OnChanges, OnDestroy {
   private removeMap() {
     this.resizeObserver?.disconnect();
     this.resizeObserver = undefined;
+    this.containerSize = undefined;
     this.map?.remove();
     this.map = undefined;
     this.userMoved = false;
@@ -99,7 +101,7 @@ export class MapComponent implements OnChanges, OnDestroy {
     this.map.on('movestart', () => this.userMoved = this.userMoved || !this.fitting);
     // Leaflet only sizes itself on creation and on window resize. The container often isn't laid out yet when the
     // map is created (e.g. right after a page load) and Leaflet would keep rendering into that initial sliver.
-    this.resizeObserver = new ResizeObserver(() => this.onContainerResize());
+    this.resizeObserver = new ResizeObserver(([entry]) => this.onContainerResize(entry.contentRect));
     this.resizeObserver.observe(container);
     L.tileLayer(tileConfig.tiles[0], {
       attribution: tileConfig.attribution,
@@ -122,25 +124,39 @@ export class MapComponent implements OnChanges, OnDestroy {
   }
 
   private fitView() {
+    // read the DOM rather than map.getSize(), which would cache the empty size until the first view is set
+    const container = this.map.getContainer();
+    if (!container.clientWidth || !container.clientHeight) {
+      return; // not laid out yet, the resize observer will fit the view once it is
+    }
+
     const positions = this.validMarkers.map(marker => this.toLatLng(marker.geolocation));
     if (this.hasUserLocation()) {
       positions.push(this.toLatLng(this.userLocation));
     }
 
+    // not animated: animated moves fire their events asynchronously (so they'd be taken for user moves) and a
+    // fit requested during an animation is dropped by Leaflet
     this.fitting = true;
     try {
       if (positions.length === 1) {
-        this.map.setView(positions[0], ZOOM);
+        this.map.setView(positions[0], ZOOM, { animate: false });
       } else {
-        this.map.fitBounds(L.latLngBounds(positions), { padding: [MARKER_SIZE, MARKER_SIZE], maxZoom: ZOOM });
+        this.map.fitBounds(L.latLngBounds(positions), {
+          padding: [MARKER_SIZE, MARKER_SIZE],
+          maxZoom: ZOOM,
+          animate: false,
+        });
       }
     } finally {
       this.fitting = false;
     }
   }
 
-  private onContainerResize() {
-    if (!this.map) {
+  private onContainerResize({ width, height }) {
+    const unchanged = this.containerSize?.width === width && this.containerSize?.height === height;
+    this.containerSize = { width, height };
+    if (!this.map || unchanged) {
       return;
     }
     this.map.invalidateSize({ animate: false });
