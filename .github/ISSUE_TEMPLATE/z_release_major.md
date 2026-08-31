@@ -62,7 +62,7 @@ curl -s https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view
   - [ ] Edit the `values.yaml` file so `cht_image_tag` and `chtversion` properties have the new tag value `<major>.<minor>.<patch>`.
   - [ ] Use helm to upgrade the instance: `helm upgrade demo-cht . --namespace demo-cht -f values.yaml`
   - [ ] Refresh the "App Management" page and verify the instance upgraded. You may need to wait 5+ minutes until the upgrade succeeds.  Until then, you may see `50x` errors in the browser - be patient!
-- [ ] Use cht-conf to upload the configuration from the `cht-core/config/demo` folder to the `demo-cht.dev` server.
+- [ ] Use cht-conf to upload the configuration from the `cht-core/config/default` folder to the `demo-cht.dev` server.
 - [ ] Announce the release on the Forum under the "Announcements - Releases" category by using this [template](https://forum.communityhealthtoolkit.org/new-topic?title=Announcing%20the%20release%20of%20%3Cmajor%3E.%3Cminor%3E.%3Cpatch%3E%20of%20the%20CHT%20Core%20Framework&body=%2AAnnouncing%20the%20release%20of%20%7B%7Bversion%7D%7D%20of%20%7B%7Bproduct%7D%7D%2A%0AThis%20release%20fixes%20%7B%7Bnumber%20of%20bugs%7D%7D.%20Read%20the%20%5Brelease%20notes%5D%28%7B%7Burl%7D%7D%29%20for%20full%20details.&category=releases).
 - [ ] Go over the list of commits and individually notify contributing / interested community members about the release. 
 - [ ] Mark this issue "done" and close the Milestone.
