@@ -5,20 +5,6 @@ const registrationUtils = require('@medic/registration-utils');
 const constants = require('@medic/constants');
 const DOC_TYPES = constants.DOC_TYPES;
 
-const collect = function(generator) {
-  const results = [];
-  const iterate = function() {
-    return generator.next().then(function(result) {
-      if (result.done) {
-        return results;
-      }
-      results.push(result.value);
-      return iterate();
-    });
-  };
-  return iterate();
-};
-
 angular.module('services').factory('MessageQueueUtils',
   function(
     $q,
@@ -41,7 +27,6 @@ angular.module('services').factory('MessageQueue',
     $q,
     $translate,
     DB,
-    DataContext,
     GetSummaries,
     Languages,
     MessageQueueUtils,
@@ -106,22 +91,18 @@ angular.module('services').factory('MessageQueue',
         return row.sms && row.sms.to;
       }));
 
-      // Drop the padded numbers rather than let one malformed recipient fail the whole lookup.
-      const qualifiablePhones = phoneNumbers.map(String).filter(function(phone) {
-        return phone === phone.trim();
-      });
-
-      if (!qualifiablePhones.length) {
+      if (!phoneNumbers.length) {
         return messages;
       }
 
-      return DataContext
-        .then(function(dataContext) {
-          const contact = dataContext.getDatasource().v1.contact;
-          return collect(contact.getUuidsByPhones(qualifiablePhones));
-        })
-        .then(function(ids) {
-          return GetSummaries.getContacts(compactUnique(ids));
+      return DB({ remote: true })
+        .query('medic-client/contacts_by_phone', { keys: phoneNumbers })
+        .then(function(contactsByPhone) {
+          const ids = contactsByPhone.rows.map(function(row) {
+            return row.id;
+          });
+
+          return GetSummaries.getContacts(ids);
         })
         .then(function(summaries) {
           messages.forEach(function(message) {

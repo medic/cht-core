@@ -16,19 +16,12 @@ describe('Enketo: Phone Widget', () => {
   let phoneNumberValidate;
   let phoneNumberNormalize;
   let settingsService;
-  let getUuidsByPhones;
-  let datasourceGet;
-  let chtDatasourceService;
+  let dbQuery;
+  let dbService;
   let originalCHTCore;
 
   const inputSelector = (name) => $('input[name="' + name + '"]');
   const proxySelector = (name) => inputSelector(name).prev();
-
-  const asyncGeneratorOf = (values) => (async function* () {
-    for (const value of values) {
-      yield value;
-    }
-  })();
 
 
   const buildHtml = (chtUniqueTel?: string) => {
@@ -69,12 +62,11 @@ describe('Enketo: Phone Widget', () => {
     phoneNumberValidate = sinon.stub(phoneNumber, 'validate');
     phoneNumberNormalize = sinon.stub(phoneNumber, 'normalize').returns(NORMALIZED_NUMBER);
     settingsService = { get: sinon.stub().resolves(SETTINGS) };
-    getUuidsByPhones = sinon.stub().returns(asyncGeneratorOf([]));
-    datasourceGet = sinon.stub().resolves({ v1: { contact: { getUuidsByPhones } } });
-    chtDatasourceService = { get: datasourceGet };
+    dbQuery = sinon.stub().resolves({ rows: [] });
+    dbService = { get: sinon.stub().returns({ query: dbQuery }) };
     window.CHTCore = {
       Settings: settingsService,
-      CHTDatasource: chtDatasourceService
+      DB: dbService
     };
   });
 
@@ -233,8 +225,8 @@ describe('Enketo: Phone Widget', () => {
       expect(settingsService.get.calledOnceWithExactly()).to.be.true;
       expect(phoneNumberValidate.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
       expect(phoneNumberNormalize.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
-      expect(datasourceGet.calledOnceWithExactly()).to.be.true;
-      expect(getUuidsByPhones.calledOnceWithExactly([NORMALIZED_NUMBER])).to.be.true;
+      expect(dbService.get.calledOnceWithExactly()).to.be.true;
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_phone', { key: NORMALIZED_NUMBER })).to.be.true;
       expect(consoleError.notCalled).to.be.true;
     });
 
@@ -247,15 +239,15 @@ describe('Enketo: Phone Widget', () => {
       expect(settingsService.get.calledOnceWithExactly()).to.be.true;
       expect(phoneNumberValidate.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
       expect(phoneNumberNormalize.notCalled).to.be.true;
-      expect(datasourceGet.notCalled).to.be.true;
-      expect(getUuidsByPhones.notCalled).to.be.true;
+      expect(dbService.get.notCalled).to.be.true;
+      expect(dbQuery.notCalled).to.be.true;
       expect(consoleError.calledOnceWithExactly(`invalid phone number: "${DENORMALIZED_NUMBER}"`)).to.be.true;
     });
 
     it('returns false for duplicate phone number', async () => {
       buildContactFormHtml('my-contact-id');
       phoneNumberValidate.returns(true);
-      getUuidsByPhones.returns(asyncGeneratorOf(['some-id']));
+      dbQuery.resolves({ rows: [{ id: 'some-id' }] });
 
       const result = await FormModel.prototype.types.unique_tel.validate(DENORMALIZED_NUMBER);
 
@@ -263,8 +255,8 @@ describe('Enketo: Phone Widget', () => {
       expect(settingsService.get.calledOnceWithExactly()).to.be.true;
       expect(phoneNumberValidate.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
       expect(phoneNumberNormalize.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
-      expect(datasourceGet.calledOnceWithExactly()).to.be.true;
-      expect(getUuidsByPhones.calledOnceWithExactly([NORMALIZED_NUMBER])).to.be.true;
+      expect(dbService.get.calledOnceWithExactly()).to.be.true;
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_phone', { key: NORMALIZED_NUMBER })).to.be.true;
       expect(consoleError.calledOnceWithExactly(`phone number not unique: "${DENORMALIZED_NUMBER}"`)).to.be.true;
     });
 
@@ -272,7 +264,7 @@ describe('Enketo: Phone Widget', () => {
       const contactId = 'my-contact-id';
       buildContactFormHtml(contactId);
       phoneNumberValidate.returns(true);
-      getUuidsByPhones.returns(asyncGeneratorOf([contactId]));
+      dbQuery.resolves({ rows: [{ id: contactId }] });
 
       const result = await FormModel.prototype.types.unique_tel.validate(DENORMALIZED_NUMBER);
 
@@ -280,8 +272,8 @@ describe('Enketo: Phone Widget', () => {
       expect(settingsService.get.calledOnceWithExactly()).to.be.true;
       expect(phoneNumberValidate.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
       expect(phoneNumberNormalize.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
-      expect(datasourceGet.calledOnceWithExactly()).to.be.true;
-      expect(getUuidsByPhones.calledOnceWithExactly([NORMALIZED_NUMBER])).to.be.true;
+      expect(dbService.get.calledOnceWithExactly()).to.be.true;
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_phone', { key: NORMALIZED_NUMBER })).to.be.true;
       expect(consoleError.notCalled).to.be.true;
     });
   });
@@ -296,7 +288,7 @@ describe('Enketo: Phone Widget', () => {
       expect(settingsService.get.calledOnceWithExactly()).to.be.true;
       expect(phoneNumberValidate.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
       expect(phoneNumberNormalize.notCalled).to.be.true;
-      expect(datasourceGet.notCalled).to.be.true;
+      expect(dbService.get.notCalled).to.be.true;
       expect(consoleError.notCalled).to.be.true;
     });
 
@@ -309,7 +301,7 @@ describe('Enketo: Phone Widget', () => {
       expect(settingsService.get.calledOnceWithExactly()).to.be.true;
       expect(phoneNumberValidate.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
       expect(phoneNumberNormalize.notCalled).to.be.true;
-      expect(datasourceGet.notCalled).to.be.true;
+      expect(dbService.get.notCalled).to.be.true;
       expect(consoleError.calledOnceWithExactly(`invalid phone number: "${DENORMALIZED_NUMBER}"`)).to.be.true;
     });
   });

@@ -10,7 +10,6 @@ import { DbService } from '@mm-services/db.service';
 import { EnketoService } from '@mm-services/enketo.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
-import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +26,6 @@ export class IntegrationApiService {
   AndroidApi;
   DB;
   InteractionTracking;
-  CHTDatasource;
 
   constructor(
     private dbService:DbService,
@@ -40,7 +38,6 @@ export class IntegrationApiService {
     private settingsService:SettingsService,
     private androidApiService:AndroidApiService,
     private readonly interactionTrackingService:InteractionTrackingService,
-    private readonly chtDatasourceService:CHTDatasourceService,
   ) {
     this.DB = dbService;
     this.AndroidAppLauncher = androidAppLauncherService;
@@ -52,7 +49,6 @@ export class IntegrationApiService {
     this.AndroidApi = androidApiService;
     this.Translate = translateService;
     this.InteractionTracking = interactionTrackingService;
-    this.CHTDatasource = chtDatasourceService;
   }
 
   get(service) {

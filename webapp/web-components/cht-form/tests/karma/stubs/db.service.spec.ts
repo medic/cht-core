@@ -16,7 +16,17 @@ describe('DB Service', () => {
   });
 
   describe('query', () => {
-    it('throws error for any query', async () => {
+    it('returns empty rows for medic-client/contacts_by_phone', async () => {
+      const selector = 'medic-client/contacts_by_phone';
+
+      const result = await service
+        .get()
+        .query(selector);
+
+      expect(result).to.deep.equal({ rows: [] });
+    });
+
+    it('throws error for other queries', async () => {
       const selector = 'anythingelse';
       const options = { hello: 'world' };
 

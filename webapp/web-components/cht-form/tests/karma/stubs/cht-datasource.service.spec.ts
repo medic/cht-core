@@ -29,27 +29,6 @@ describe('CHT Datasource Service', () => {
     expect(result).to.be.undefined;
   });
 
-  describe('get', () => {
-    it('exposes a contact datasource', async () => {
-      const chtApi = await service.get();
-
-      expect(chtApi).to.have.keys(['v1']);
-      expect(chtApi.v1).to.have.keys(['contact']);
-      expect(chtApi.v1.contact.getUuidsByPhones).to.be.a('function');
-    });
-
-    it('getUuidsByPhones yields no contacts', async () => {
-      const chtApi = await service.get();
-
-      const uuids: string[] = [];
-      for await (const uuid of chtApi.v1.contact.getUuidsByPhones(['+254712345678'])) {
-        uuids.push(uuid);
-      }
-
-      expect(uuids).to.deep.equal([]);
-    });
-  });
-
   describe('addExtensionLib', () => {
     it('adds new function to extension library', () => {
       const extensionFn = `module.exports = () => 'hello world'`;

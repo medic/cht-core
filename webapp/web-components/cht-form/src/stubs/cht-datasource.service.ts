@@ -13,22 +13,6 @@ export class CHTDatasourceService {
     } };
   }
 
-  async get() {
-    return {
-      v1: {
-        contact: {
-          // Used by phone-widget to find duplicate numbers. The standalone cht-form has no contacts,
-          // so nothing ever matches.
-          getUuidsByPhones: (_phones: string[]): AsyncIterable<string> => ({
-            [Symbol.asyncIterator]: () => ({
-              next: () => Promise.resolve({ done: true as const, value: undefined })
-            })
-          })
-        }
-      }
-    };
-  }
-
   bind<R, F extends (arg?: unknown) => Promise<R>>(
     _: (ctx: DataContext) => F
   ): (...p: Parameters<F>) => ReturnType<F> {
