@@ -230,6 +230,14 @@ describe('utils', () => {
       const doc = {};
       utils.addError(doc, 'some error message');
       assert.equal(doc.errors.length, 1);
+      assert.equal(doc.errors[0].code, 'some error message');
+      assert.equal(doc.errors[0].message, 'some error message');
+    });
+
+    it('addError uses invalid_report as default code when object has no code', () => {
+      const doc = { errors: [] };
+      utils.addError(doc, { message: 'some error message' });
+      assert.equal(doc.errors.length, 1);
       assert.equal(doc.errors[0].code, 'invalid_report');
       assert.equal(doc.errors[0].message, 'some error message');
     });

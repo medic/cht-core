@@ -14,7 +14,7 @@ function(doc) {
     return;
   }
 
-  const indexableFields = ['key', 'type', 'subject'];
+  const indexableFields = ['key', 'type', 'subject', 'submitter'];
   const isTruthy = (value) => value === true || value === 'true';
   const maxLength = 1000;
 

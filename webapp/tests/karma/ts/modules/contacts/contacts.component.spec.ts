@@ -630,6 +630,24 @@ describe('Contacts component', () => {
       );
     }));
 
+    it('displays the existing translation key when the last visit is unknown', fakeAsync(() => {
+      authService.has.resolves(true);
+      contactTypesService.getAll.resolves([{ id: 'childType', count_visits: true }]);
+      searchService.search.resolves([
+        { _id: 'never-visited', type: 'contact', contact_type: 'childType', lastVisitedDate: 0 },
+      ]);
+      searchService.search.resetHistory();
+      const updateContactsList = sinon.stub(ContactsActions.prototype, 'updateContactsList');
+      component.ngOnInit();
+      flush();
+
+      // the missing-translation fallback echoes the key back, so the summary pins the exact key requested (#11372)
+      expect(updateContactsList.callCount).to.equal(1);
+      const neverVisited = updateContactsList.args[0][0].find(contact => contact._id === 'never-visited');
+      expect(neverVisited.summary).to.equal('contact.last.visited.unknown');
+      expect(neverVisited.overdue).to.equal(true);
+    }));
+
     it('saves uhc home_visits settings and default sort when correct', fakeAsync(() => {
       authService.has.resolves(true);
       settingsService.get.resolves({
