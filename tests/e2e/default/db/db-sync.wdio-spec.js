@@ -236,4 +236,39 @@ describe('db-sync', () => {
       await browser.waitUntil(async () => await reportsPage.getUnreadCount() === '2');
     });
   });
+  describe('offline data bundle device keys', () => {
+    const getDeviceKeys = async () => {
+      const userDoc = await utils.usersDb.get(`${PREFIXES.COUCH_USER}${restrictedUserName}`);
+      return userDoc.keys_by_device;
+    };
+
+    after(async () => {
+      await utils.revertSettings(true);
+    });
+
+    it('should register this device keys with the server after a successful sync', async () => {
+      expect(await getDeviceKeys()).to.be.undefined;
+
+      await utils.updatePermissions(['chw'], ['can_send_offline_data_bundle'], [], { ignoreReload: true });
+      await commonElements.refresh();
+      await commonElements.sync();
+
+      let keysByDevice;
+      await browser.waitUntil(async () => {
+        keysByDevice = await getDeviceKeys();
+        return !!keysByDevice;
+      }, { timeout: 20000, timeoutMsg: 'Device keys were never registered' });
+
+      const deviceIds = Object.keys(keysByDevice);
+      expect(deviceIds).to.have.lengthOf(1);
+      const entry = keysByDevice[deviceIds[0]];
+      expect(entry.encryption_public_key).to.match(/^age1/);
+      expect(entry.signing_public_key).to.include({ kty: 'OKP', crv: 'Ed25519' });
+      // the server public keys the device needs to seal bundles, and no server private key
+      expect(entry.server_encryption_public_key).to.match(/^age1/);
+      expect(entry.server_signing_public_key).to.include({ kty: 'OKP', crv: 'Ed25519' });
+      expect(entry.server_encryption_private_key).to.be.undefined;
+      expect(entry.server_signing_private_key).to.be.undefined;
+    });
+  });
 });

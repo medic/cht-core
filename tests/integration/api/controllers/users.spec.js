@@ -2588,6 +2588,26 @@ describe('Users API', () => {
       chai.expect(userDoc.keys_by_device['device-A'].signing_public_key).to.deep.equal(signingKeyB);
     });
 
+    // The webapp cannot use Web Crypto for Ed25519 (not in Chrome 107, the minimum browser), so it
+    // hand-builds the JWK from @noble/curves: kty, crv and x only, none of the extra members
+    // Web Crypto's exportKey adds. This asserts the server accepts that minimal client shape.
+    it('accepts a signing key built the way the webapp builds it', async () => {
+      const exported = await generateSigningKey();
+      const signingKey = { kty: exported.kty, crv: exported.crv, x: exported.x };
+
+      const response = await utils.request({
+        path: `/api/v1/users/${senderUser.username}/devices/device-webapp/keys`,
+        method: 'POST',
+        body: { encryption_key: deviceKeyA, signing_key: signingKey },
+        auth: { username: senderUser.username, password },
+      });
+
+      chai.expect(response.server_encryption_public_key).to.match(/^age1/);
+
+      const userDoc = await utils.usersDb.get(getUserId(senderUser.username));
+      chai.expect(userDoc.keys_by_device['device-webapp'].signing_public_key).to.deep.equal(signingKey);
+    });
+
     it('403s when the user lacks the offline-data-bundle permission', async () => {
       await chai.expect(utils.request({
         path: `/api/v1/users/${otherUser.username}/devices/device-C/keys`,
