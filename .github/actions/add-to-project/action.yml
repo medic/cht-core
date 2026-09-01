@@ -1,0 +1,28 @@
+name: 'Add issue to project'
+description: >
+  Keeps an issue on the organization project(s) (Projects v2) whose title matches a regex
+  in sync with assignment: added on `assigned` events, removed on `unassigned` events once
+  no assignees remain. Trigger the workflow only on `assigned` to disable removal.
+inputs:
+  github-token:
+    description: >
+      Token with the `project` scope — the default GITHUB_TOKEN cannot write to
+      organization Projects (v2).
+    required: true
+  project-title-regex:
+    description: 'Case-insensitive regular expression matched against organization project titles.'
+    required: false
+    default: 'activities'
+runs:
+  using: 'composite'
+  steps:
+    - name: Sync issue with matching projects
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+      env:
+        PROJECT_TITLE_REGEX: ${{ inputs.project-title-regex }}
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const path = require('node:path');
+          const addToProjectBot = require(path.join(process.env.GITHUB_ACTION_PATH, 'add-to-project-bot.js'));
+          await addToProjectBot({ github, context, core });

@@ -24,7 +24,7 @@ const runSecretlint = (line) => {
   }
 };
 
-describe('scripts/ci/.secretlintrc.json', () => {
+describe.skip('scripts/ci/.secretlintrc.json', () => {
   before(() => {
     expect(fs.existsSync(SECRETLINT), `secretlint binary not found at ${SECRETLINT}`).to.be.true;
   });

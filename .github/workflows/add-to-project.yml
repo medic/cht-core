@@ -1,0 +1,34 @@
+name: Add to project
+
+# Keeps issues on the organization project whose title matches the configured regex
+# in sync with assignment: added when assigned, removed once the last assignee is
+# removed. Uses a PAT because the default GITHUB_TOKEN cannot write to organization
+# Projects (v2); the token needs the `project` scope.
+on:
+  issues:
+    types:
+      - assigned
+      - unassigned
+
+permissions: {}
+
+concurrency:
+  group: add-to-project-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  add:
+    name: Sync issue with project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/actions
+      - name: Sync issue with matching projects
+        uses: ./.github/actions/add-to-project
+        with:
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+          project-title-regex: activities
