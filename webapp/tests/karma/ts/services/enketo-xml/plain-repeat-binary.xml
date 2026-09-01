@@ -1,0 +1,9 @@
+<my-form>
+  <name>Sally</name>
+  <my_repeat>
+    <photo type="binary">repeat_photo_data_0</photo>
+  </my_repeat>
+  <my_repeat>
+    <photo type="binary">repeat_photo_data_1</photo>
+  </my_repeat>
+</my-form>
