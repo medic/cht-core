@@ -3,7 +3,7 @@ import { provideMockStore } from '@ngrx/store/testing';
 import { Store } from '@ngrx/store';
 import sinon from 'sinon';
 import { assert, expect } from 'chai';
-import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DOC_IDS, PREFIXES, DOC_TYPES } from '@medic/constants';
 
 import { SessionService } from '@mm-services/session.service';
@@ -35,6 +35,7 @@ describe('RulesEngineService', () => {
   let userSettingsService;
   let changesService;
   let translateFromService;
+  let translateService;
   let rulesEngineCoreStubs;
   let pipesService;
   let chtDatasourceService;
@@ -112,6 +113,7 @@ describe('RulesEngineService', () => {
     contact: userContactDoc,
     user: userSettingsDoc,
     monthStartDate: 1,
+    useBikramSambatMonths: false,
     chtScriptApi
   };
 
@@ -126,7 +128,10 @@ describe('RulesEngineService', () => {
     translateFromService = { get: sinon.stub().resolves(settingsDoc) };
     userContactService = { get: sinon.stub().resolves(userContactDoc) };
     userSettingsService = { get: sinon.stub().resolves(userSettingsDoc) };
-    uhcSettingsService = { getMonthStartDate: sinon.stub().returns(1) };
+    uhcSettingsService = {
+      getMonthStartDate: sinon.stub().returns(1),
+      getUseBikramSambatMonths: sinon.stub().returns(false)
+    };
     telemetryService = { record: sinon.stub() };
     pipesService = {
       pipesMap: new Map(),
@@ -215,6 +220,7 @@ describe('RulesEngineService', () => {
         { provide: CHTDatasourceService, useValue: chtDatasourceService }
       ]
     });
+    translateService = TestBed.inject(TranslateService);
   });
 
   afterEach(() => {
@@ -1369,6 +1375,32 @@ describe('RulesEngineService', () => {
       expect(tag).to.equal('2024-12');
       expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
     });
+
+    it('should return current interval tag in BS-YYYY-MM format for CURRENT period when BS is enabled', () => {
+      uhcSettingsService.getUseBikramSambatMonths.returns(true);
+      service = TestBed.inject(RulesEngineService);
+
+      const tag = service.getTargetIntervalTag(settingsDoc, ReportingPeriod.CURRENT);
+
+      // 2025-02-15 is BS 2081-11-03 (Falgun 3). Since monthStartDate is 1, BS interval is Falgun 1 to Falgun 29.
+      // End of interval is 2025-03-13 (Falgun 29).
+      // So the tag is Falgun (month 11) of year 2081 -> '2081-11'.
+      expect(tag).to.equal('2081-11');
+      expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
+
+    it('should return previous interval tag in BS-YYYY-MM format for PREVIOUS period when BS is enabled', () => {
+      uhcSettingsService.getUseBikramSambatMonths.returns(true);
+      service = TestBed.inject(RulesEngineService);
+
+      const tag = service.getTargetIntervalTag(settingsDoc, ReportingPeriod.PREVIOUS);
+
+      // 2025-02-15 is BS 2081-11-03.
+      // Previous interval is BS 2081 Falgun - 1 month = BS 2081 Magh (month 10).
+      // Tag is '2081-10'.
+      expect(tag).to.equal('2081-10');
+      expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
   });
 
   describe('getReportingMonth', () => {
@@ -1392,6 +1424,28 @@ describe('RulesEngineService', () => {
 
       expect(month).to.equal('January');
       expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
+
+    it('should return BS month name for CURRENT period when BS is enabled (English locale)', () => {
+      uhcSettingsService.getUseBikramSambatMonths.returns(true);
+      service = TestBed.inject(RulesEngineService);
+
+      const month = service.getReportingMonth(settingsDoc, ReportingPeriod.CURRENT);
+
+      // 2025-02-15 is BS 2081-11-03 (Falgun 3). Since monthStartDate is 1, BS interval is Falgun 1 to Falgun 29.
+      // So the month is Falgun -> 'Falgun'.
+      expect(month).to.equal('Falgun');
+    });
+
+    it('should return BS month name for CURRENT period when BS is enabled (Nepali locale)', () => {
+      uhcSettingsService.getUseBikramSambatMonths.returns(true);
+      translateService.currentLang = 'ne';
+      service = TestBed.inject(RulesEngineService);
+
+      const month = service.getReportingMonth(settingsDoc, ReportingPeriod.CURRENT);
+
+      // 2025-02-15 is BS 2081-11-03. Month is Falgun -> 'फाल्गुन'.
+      expect(month).to.equal('फाल्गुन');
     });
 
     it('should return translated fallback when an error occurs', () => {

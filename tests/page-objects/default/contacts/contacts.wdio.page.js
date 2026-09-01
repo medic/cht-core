@@ -27,20 +27,19 @@ const rightPanelSelectors = {
   emptySelection: () => $('contacts-content .empty-selection'),
   childrenCards: () => $$('.right-pane .card.children'),
   contactCardTitle: () => $('.inbox .content-pane .material .body .action-header'),
+  primaryContactName: () => $('i[title="Primary contact"]').nextElement(),
+  personsCardList: () => $$('.card.children.persons h4 span'),
+  placesCardRows: () => $$('.card.children.places li.content-row'),
 };
 
 const contactCardSelectors = {
   contactCardName: () => $('h2[test-id="contact-name"]'),
   contactCardIcon: (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`),
+  contactCardProfileImage: () => $('.card .heading mm-contact-profile-image img'),
   contactSummaryContainer: () => $('#contact_summary'),
   contactMedicID: () => $('#contact_summary .cell.patient_id > div > p:not(.summary_label)'),
   contactDeceasedStatus: () => $('div[test-id="deceased-title"]'),
   contactMuted: () => $('.heading-content .muted'),
-};
-
-const peopleCardSelectors = {
-  primaryContactName: () => $('i[title="Primary contact"]').nextElement(),
-  rhsPeopleListSelector: () => $$('.card.children.persons h4 span'),
 };
 
 const RHS_TASK_LIST_CARD =  '.card.tasks';
@@ -299,7 +298,7 @@ const getContactSummaryField = async (fieldName) => {
 };
 
 const getPrimaryContactName = async () => {
-  return await peopleCardSelectors.primaryContactName().getText();
+  return await rightPanelSelectors.primaryContactName().getText();
 };
 
 const getAllLHSContactsNames = async () => {
@@ -308,7 +307,12 @@ const getAllLHSContactsNames = async () => {
 };
 
 const getAllRHSPeopleNames = () => {
-  return commonPage.getTextForElements(peopleCardSelectors.rhsPeopleListSelector);
+  return commonPage.getTextForElements(rightPanelSelectors.personsCardList);
+};
+
+const getAllRHSPlaceIds = async () => {
+  const placeRows = await rightPanelSelectors.placesCardRows();
+  return placeRows.map(row => row.getAttribute('data-record-id'));
 };
 
 const getAllRHSReportsNames = async () => {
@@ -397,6 +401,8 @@ const getCurrentContactId = async () => {
   return currentUrl.slice(contactBaseUrl.length);
 };
 
+const getContactCardProfileImage = () => contactCardSelectors.contactCardProfileImage();
+
 const getContactListLoadingStatus = async () => {
   await leftPanelSelectors.contactListLoadingStatus().waitForDisplayed();
   return await leftPanelSelectors.contactListLoadingStatus().getText();
@@ -480,6 +486,7 @@ module.exports = {
   addPlace,
   getPrimaryContactName,
   getAllRHSPeopleNames,
+  getAllRHSPlaceIds,
   waitForContactLoaded,
   waitForContactUnloaded,
   editPerson,
@@ -491,6 +498,7 @@ module.exports = {
   deletePerson,
   allContactsList,
   openReport,
+  getContactCardProfileImage,
   getContactCardTitle,
   getContactInfoName,
   getContactMedicID,

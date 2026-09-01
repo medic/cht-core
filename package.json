@@ -1,6 +1,6 @@
 {
   "name": "medic",
-  "version": "5.2.0",
+  "version": "5.3.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "repository": {
@@ -78,7 +78,6 @@
     "publish-for-testing": "./scripts/build/build-service-images.sh && mkdir -p images && node scripts/build/cli publishServiceImages && node ./scripts/build/ddoc-compile.js staging && node ./scripts/build/push-ddoc-to-staging.js",
     "test-config-covid-19": "cd config/covid-19 && npm run test",
     "test-config-default": "cd config/default && npm run test",
-    "test-config-demo": "cd config/demo && npm run test",
     "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js",
     "wdio-performance": "wdio run ./tests/performance/webapp/wdio.conf.js"
   },
@@ -144,7 +143,7 @@
     "csv": "^6.4.1",
     "csv-writer": "^1.6.0",
     "deep-equal-in-any-order": "^2.1.0",
-    "doctoc": "^2.2.1",
+    "doctoc": "^2.5.0",
     "eslint": "^9.36.0",
     "eslint-plugin-angular": "^4.1.0",
     "eslint-plugin-async": "^0.1.1",
