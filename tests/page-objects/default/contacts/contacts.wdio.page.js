@@ -441,9 +441,11 @@ const openFirstContact = async () => {
 };
 
 const openNthContact = async (n) => {
-  const nthContact = leftPanelSelectors.nthContact(n);
-  // center the row so the click isn't intercepted by the fast-action button overlaying the list bottom
-  await nthContact.scrollIntoView({ block: 'center', inline: 'center' });
+  const nthContact = await leftPanelSelectors.nthContact(n);
+  await nthContact.waitForExist();
+  // wdio's scrollIntoView doesn't scroll the inner list container, so the row stays hidden
+  // under the fast-action button and the click gets intercepted - scroll natively instead
+  await browser.execute((el) => el.scrollIntoView({ block: 'center' }), nthContact);
   await nthContact.click();
 };
 
