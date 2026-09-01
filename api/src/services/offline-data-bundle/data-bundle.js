@@ -25,6 +25,16 @@ const CHECKPOINT_PREFIX = '_local/offline-checkpoint:';
 // their order (order is meaningful in an array). Any non-object/array value is
 // serialised by JSON.stringify as-is.
 // ---------------------------------------------------------------------------
+// Keys sort by UTF-16 code unit, NOT localeCompare: the client and the server must
+// produce byte-identical canonical forms for the signature to verify, and locale
+// collation varies by platform and locale.
+const byCodeUnit = (a, b) => {
+  if (a === b) {
+    return 0;
+  }
+  return a < b ? -1 : 1;
+};
+
 const canonicalize = (value) => {
   if (Array.isArray(value)) {
     return `[${value.map(canonicalize).join(',')}]`;
@@ -32,7 +42,7 @@ const canonicalize = (value) => {
   if (value && typeof value === 'object') {
     const entries = Object
       .keys(value)
-      .sort()
+      .sort(byCodeUnit)
       .map(key => `${JSON.stringify(key)}:${canonicalize(value[key])}`);
     return `{${entries.join(',')}}`;
   }
@@ -83,7 +93,7 @@ const buildUserCtx = async (username) => auth.getUserSettings({ name: username }
 // FAILED, so accepted = total - errors.
 const writeDocs = async (docs) => {
   const results = await db.medic.bulkDocs(docs, { new_edits: false });
-  const errors = (results || []).filter(result => result && result.error).length;
+  const errors = (results || []).filter(result => result?.error).length;
   return docs.length - errors;
 };
 
@@ -131,16 +141,16 @@ const advanceCheckpoint = (startCheckpoint, ingestedBundles) => {
 
 const persistCheckpoint = async (id, existing, checkpoint) => {
   const doc = { _id: id, seq: checkpoint };
-  if (existing && existing._rev) {
+  if (existing?._rev) {
     doc._rev = existing._rev;
   }
   await db.medic.put(doc);
 };
 
 const rejected = (envelope, reason) => ({
-  user: envelope && envelope.user,
-  device_id: envelope && envelope.device_id,
-  bundle_seq: envelope && envelope.bundle_seq,
+  user: envelope?.user,
+  device_id: envelope?.device_id,
+  bundle_seq: envelope?.bundle_seq,
   status: 'rejected',
   reason,
 });
@@ -159,7 +169,7 @@ const verifyAndDecrypt = async (envelope, payload, signature, deviceEntry) => {
   }
 
   const serverPrivateKeys = await serverKey.getServerPrivateKeys(envelope.user, envelope.device_id);
-  if (!serverPrivateKeys || !serverPrivateKeys.encryption) {
+  if (!serverPrivateKeys?.encryption) {
     return { reason: 'unknown device' };
   }
 
@@ -184,7 +194,7 @@ const processBundle = async (bundle) => {
   }
 
   const userDoc = await getUserDoc(envelope.user);
-  const deviceEntry = userDoc && userDoc.keys_by_device && userDoc.keys_by_device[envelope.device_id];
+  const deviceEntry = userDoc?.keys_by_device?.[envelope.device_id];
   if (!deviceEntry) {
     return rejected(envelope, 'unknown device');
   }
@@ -294,7 +304,7 @@ module.exports = {
         perBundle.push(await processBundle(bundle));
       } catch (err) {
         logger.error('offline-data-bundle: unexpected error processing bundle: %o', err);
-        perBundle.push(rejected(bundle && bundle.envelope, 'processing error'));
+        perBundle.push(rejected(bundle?.envelope, 'processing error'));
       }
     }
 
