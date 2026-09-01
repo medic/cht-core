@@ -32,7 +32,7 @@ interface ServerKeys {
 }
 
 const toBase64Url = (bytes: Uint8Array): string => {
-  const binary = Array.from(bytes, byte => String.fromCharCode(byte)).join('');
+  const binary = Array.from(bytes, byte => String.fromCodePoint(byte)).join('');
   return window.btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 };
 
@@ -54,12 +54,12 @@ const toBase64Url = (bytes: Uint8Array): string => {
 })
 export class DeviceKeyService {
   constructor(
-    private authService: AuthService,
-    private dbService: DbService,
-    private dbSyncService: DBSyncService,
-    private http: HttpClient,
-    private sessionService: SessionService,
-    private telemetryService: TelemetryService,
+    private readonly authService: AuthService,
+    private readonly dbService: DbService,
+    private readonly dbSyncService: DBSyncService,
+    private readonly http: HttpClient,
+    private readonly sessionService: SessionService,
+    private readonly telemetryService: TelemetryService,
   ) {
   }
 
@@ -154,7 +154,7 @@ export class DeviceKeyService {
       device_id: deviceId,
       ...deviceKeys,
       ...serverKeys,
-      updated_date: new Date().getTime(),
+      updated_date: Date.now(),
     });
   }
 }
