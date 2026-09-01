@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import * as moment from 'moment';
 import { isObject as _isObject, uniq as _uniq } from 'lodash-es';
 import * as CalendarInterval from '@medic/calendar-interval';
+import { VisitCountSettings } from './uhc-settings.service';
 
 import { DbService } from '@mm-services/db.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -137,7 +138,7 @@ export class UHCStatsService {
       return;
     }
 
-    return CalendarInterval.getCurrent(visitCountSettings.monthStartDate);
+    return CalendarInterval.getCurrent(visitCountSettings.monthStartDate, visitCountSettings.useBikramSambatMonths);
   }
 
   async getHomeVisitStats(contact, visitCountSettings: VisitCountSettings): Promise<VisitStats | undefined> {
@@ -222,11 +223,6 @@ type DateRange = {
   start: number; // Timestamp
   end: number;
 };
-
-interface VisitCountSettings {
-  monthStartDate?: number; // Ex: 26
-  visitCountGoal?: number;
-}
 
 interface VisitStats {
   // a contact with no row in the view (e.g. free-form type not indexed by it) has no date at all,

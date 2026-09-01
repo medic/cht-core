@@ -12,6 +12,7 @@ import { ContactsActions } from '@mm-actions/contacts';
 import { Selectors } from '@mm-selectors/index';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { CustomResourceService } from '@mm-services/custom-resource.service';
+import { DbService } from '@mm-services/db.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
@@ -130,6 +131,7 @@ describe('Contacts content component', () => {
           { provide: Router, useValue: router },
           { provide: ResourceIconPipe, useValue: { transform: sinon.stub() } },
           { provide: CustomResourceService, useValue: { getImg: sinon.stub() } },
+          { provide: DbService, useValue: { get: () => ({ getAttachment: sinon.stub().resolves() }) } },
           { provide: ContactChangeFilterService, useValue: contactChangeFilterService },
           { provide: ChangesService, useValue: changesService },
           { provide: ChangesService, useValue: changesService },
@@ -165,6 +167,15 @@ describe('Contacts content component', () => {
 
   it('should create ContactsContentComponent', () => {
     expect(component).to.exist;
+  });
+
+  it('renders mm-contact-profile-image in the profile heading', () => {
+    selectedContact.doc = { _id: 'c-1', name: 'Amina' };
+    selectedContact.type = { icon: 'medic-person' };
+    store.overrideSelector(Selectors.getSelectedContact, selectedContact);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.row.heading mm-contact-profile-image')).to.exist;
   });
 
   it('ngOnDestroy() should unsubscribe from observables and reset state', () => {
