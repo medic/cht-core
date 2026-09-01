@@ -59,10 +59,10 @@ Place your script in the `/migrations` folder and it will get picked up by medic
 
 See [`migrations.js`](https://github.com/medic/cht-core/tree/master/api/src/migrations).
 
-Importantly, the record of which migrations have been run is stored in the `migrations` array of an arbitrarily named document in CouchDB with the `.type` of `meta`. Because of this it can be a hard document to find, but you can get it using `curl`, and pretty print it with `jq`:
+Importantly, the record of which migrations have been run is stored in the `migrations` array of a CouchDB document with the `_id` of `migration-log` and `.type` of `meta`. You can get it using `curl`, and pretty print it with `jq`:
 
 ```
-curl 'http://myadminuser:myadminpass@localhost:5984/medic/_design/medic-client/_view/doc_by_type?key=\["meta"\]&include_docs=true' | jq .rows[].doc
+curl 'http://myadminuser:myadminpass@localhost:5984/medic/migration-log' | jq .
 ```
 
 So, if you want to re-run a migration, delete its entry in the `migrations` list and re-run api.

@@ -44,7 +44,7 @@ describe('Replication Failure Log Controller', () => {
     expect(serverUtils.error.callCount).to.equal(1);
     const error = serverUtils.error.args[0][0];
     expect(error.message).to.equal('User is not an admin');
-    expect(error.code).to.equal(401);
+    expect(error.code).to.equal(403);
   });
 
   it('should default reporting_period to the current month when no user or period is provided', async () => {

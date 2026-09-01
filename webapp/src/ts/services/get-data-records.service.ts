@@ -46,7 +46,19 @@ export class GetDataRecordsService {
     return await this.getSubjectSummariesService.get(summaries);
   }
 
-  async get(ids: string[], options: { hydrateContactNames?: boolean, include_docs?: boolean } = {}) {
+  getContacts(ids: string[], options: { hydrateContactNames?: boolean, include_docs?: boolean } = {}) {
+    return this.getRecords(ids, 'contact', options);
+  }
+
+  getReports(ids: string[], options: { hydrateContactNames?: boolean, include_docs?: boolean } = {}) {
+    return this.getRecords(ids, 'report', options);
+  }
+
+  private async getRecords(
+    ids: string[],
+    type: 'contact' | 'report',
+    options: { hydrateContactNames?: boolean, include_docs?: boolean }
+  ) {
     if (!ids?.length) {
       return Promise.resolve([]);
     }
@@ -56,7 +68,9 @@ export class GetDataRecordsService {
       return this.getDocs(ids);
     }
 
-    const summaries = await this.getSummariesService.get(ids);
+    const summaries = type === 'report'
+      ? await this.getSummariesService.getReports(ids)
+      : await this.getSummariesService.getContacts(ids);
     return this.prepareSummaries(summaries, opts);
   }
 

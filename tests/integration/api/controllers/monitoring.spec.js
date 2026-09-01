@@ -1,4 +1,5 @@
 const utils = require('@utils');
+const moment = require('moment');
 const sentinelUtils = require('@utils/sentinel');
 
 const VIEW_INDEXES_BY_DB = {
@@ -286,12 +287,48 @@ describe('monitoring', () => {
         replication_limit: {
           count: 0,
         },
+        replication_failure: {
+          count: 0,
+        },
         connected_users: {
           count: 0,
         },
       });
 
       assertIndeterminateFields(result);
+    });
+
+    it('should count distinct users with replication failures in the configured window', async () => {
+      const today = moment();
+      const recent = today.clone().subtract(2, 'days');
+      const onBoundary = today.clone().subtract(7, 'days');
+      const tooOld = today.clone().subtract(14, 'days');
+      const failureDoc = (period, user, dailyFailures) => ({
+        _id: `replication-fail-${period}-${user}`,
+        user,
+        date: today.valueOf(),
+        total_failures: Object.values(dailyFailures).reduce((a, b) => a + b, 0),
+        failures: [],
+        daily_failures: dailyFailures,
+      });
+      const dayKey = (m) => m.format('YYYY-MM-DD');
+      const periodKey = (m) => m.format('YYYY-MM');
+
+      const seedDocs = [
+        failureDoc(periodKey(today), 'alice', { [dayKey(recent)]: 3 }),
+        failureDoc(periodKey(onBoundary), 'alice', { [dayKey(onBoundary)]: 2 }),
+        failureDoc(periodKey(recent), 'bob', { [dayKey(recent)]: 1 }),
+        failureDoc(periodKey(onBoundary), 'clare', { [dayKey(onBoundary)]: 2 }),
+        failureDoc(periodKey(tooOld), 'dan', { [dayKey(tooOld)]: 99 }),
+      ];
+
+      await utils.logsDb.bulkDocs(seedDocs);
+
+      const defaultWindow = await utils.request({ path: '/api/v2/monitoring' });
+      chai.expect(defaultWindow.replication_failure).to.deep.equal({ count: 3 });
+
+      const widerWindow = await utils.request({ path: '/api/v2/monitoring?connected_user_interval=30' });
+      chai.expect(widerWindow.replication_failure).to.deep.equal({ count: 4 });
     });
   });
 });

@@ -4,6 +4,7 @@ import * as RulesEngineCore from '@medic/rules-engine';
 import { Subject, Subscription } from 'rxjs';
 import { debounce as _debounce, uniq as _uniq } from 'lodash-es';
 import * as moment from 'moment';
+import { toBik } from 'bikram-sambat';
 import { DOC_IDS, DOC_TYPES } from '@medic/constants';
 
 import { AuthService } from '@mm-services/auth.service';
@@ -45,6 +46,20 @@ interface TaskDoc {
   stateHistory: Array<{ state: string, timestamp: number }>;
 }
 
+interface RulesSettings {
+  rules?: string;
+  taskSchedules?: any[];
+  targets?: any[];
+  enableTasks?: boolean;
+  enableTargets?: boolean;
+  contact?: any;
+  user?: any;
+  rulesAreDeclarative?: boolean;
+  monthStartDate?: number;
+  useBikramSambatMonths?: boolean;
+  chtScriptApi?: any;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -72,6 +87,7 @@ export class RulesEngineService implements OnDestroy {
   private subscriptions: Subscription = new Subscription();
   private initialized;
   private uhcMonthStartDate;
+  private useBikramSambatMonths;
   private debounceActive: DebounceActive = {};
   private observable = new Subject();
   private readonly taskActions: TasksActions;
@@ -220,7 +236,7 @@ export class RulesEngineService implements OnDestroy {
       !!this.parseProvider.parse(target.context)({ user: rulesEngineContext.userContactDoc }) : true;
     const targets = settingsTasks?.targets?.items || [];
 
-    return {
+    const settings: RulesSettings = {
       rules: settingsTasks.rules,
       taskSchedules: settingsTasks.schedules,
       targets: targets.filter(filterTargetByContext),
@@ -230,8 +246,15 @@ export class RulesEngineService implements OnDestroy {
       user: rulesEngineContext.userSettingsDoc,
       rulesAreDeclarative: !!rulesEngineContext.settingsDoc?.tasks?.isDeclarative,
       monthStartDate: this.uhcSettingsService.getMonthStartDate(rulesEngineContext.settingsDoc),
+      useBikramSambatMonths: this.uhcSettingsService.getUseBikramSambatMonths(rulesEngineContext.settingsDoc),
       chtScriptApi: rulesEngineContext.chtScriptApi
     };
+
+    if (this.uhcSettingsService.getUseBikramSambatMonths(rulesEngineContext.settingsDoc)) {
+      settings.useBikramSambatMonths = true;
+    }
+
+    return settings;
   }
 
   private isReport(doc) {
@@ -376,6 +399,8 @@ export class RulesEngineService implements OnDestroy {
       const dueDate = moment(emission.dueDate, 'YYYY-MM-DD');
       emission.overdue = dueDate.isBefore(moment());
       emission.date = new Date(dueDate.valueOf());
+      // Preserve the unresolved title key for non-PII analytics
+      emission.titleKey = typeof emission.title === 'string' ? emission.title : undefined;
       emission.title = this.translateProperty(emission.title, emission);
       emission.priorityLabel = this.translateProperty(emission.priorityLabel, emission);
       emission.owner = taskDoc.owner;
@@ -386,6 +411,7 @@ export class RulesEngineService implements OnDestroy {
 
   private assignMonthStartDate(settingsDoc) {
     this.uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settingsDoc);
+    this.useBikramSambatMonths = this.uhcSettingsService.getUseBikramSambatMonths(settingsDoc);
   }
 
   isEnabled() {
@@ -538,7 +564,10 @@ export class RulesEngineService implements OnDestroy {
     this.cancelDebounce(this.FRESHNESS_KEY);
     await this.waitForDebounce(this.CHANGE_WATCHER_KEY);
 
-    const relevantInterval = this.calendarIntervalService.getCurrent(this.uhcMonthStartDate);
+    const relevantInterval = this.calendarIntervalService.getCurrent(
+      this.uhcMonthStartDate,
+      this.useBikramSambatMonths
+    );
     const targets = await this.rulesEngineCore
       .fetchTargets(relevantInterval)
       .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
@@ -568,24 +597,63 @@ export class RulesEngineService implements OnDestroy {
     monthsAgo = 1
   ): string {
     const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
-    const currentInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate);
+    const useBikramSambatMonths = this.uhcSettingsService.getUseBikramSambatMonths(settings);
+    const currentInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate, useBikramSambatMonths);
 
     if (reportingPeriod === ReportingPeriod.CURRENT) {
+      if (useBikramSambatMonths) {
+        const bsEnd = toBik(moment(currentInterval.end).format('YYYY-MM-DD'));
+        return `${bsEnd.year}-${String(bsEnd.month).padStart(2, '0')}`;
+      }
       return moment(currentInterval.end)
         .locale('en')
         .format(this.INTERVAL_TAG_FORMAT);
     }
 
-    const previousMonthDate = moment(currentInterval.end).subtract(monthsAgo, 'months');
-    const previousInterval = this.calendarIntervalService.getInterval(uhcMonthStartDate, previousMonthDate.valueOf());
-    return moment(previousInterval.end)
+    let interval = currentInterval;
+    for (let i = 0; i < monthsAgo; i++) {
+      const previousDate = moment(interval.start).subtract(1, 'day');
+      interval = this.calendarIntervalService.getInterval(
+        uhcMonthStartDate,
+        previousDate.valueOf(),
+        useBikramSambatMonths
+      );
+    }
+
+    if (useBikramSambatMonths) {
+      const bsEnd = toBik(moment(interval.end).format('YYYY-MM-DD'));
+      return `${bsEnd.year}-${String(bsEnd.month).padStart(2, '0')}`;
+    }
+    return moment(interval.end)
       .locale('en')
       .format(this.INTERVAL_TAG_FORMAT);
+  }
+
+  getBSMonthName(monthNumber: number): string {
+    const isNepali = this.translateService.currentLang === 'ne';
+    const nepaliMonths = [
+      'बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ', 'असोज', 'कार्तिक', 'मंसिर', 'पौष', 'माघ', 'फाल्गुन', 'चैत'
+    ];
+    const englishMonths = [
+      'Baisakh', 'Jestha', 'Ashadh', 'Shrawan', 'Bhadra', 'Ashwin',
+      'Kartik', 'Mangsir', 'Poush', 'Magh', 'Falgun', 'Chaitra'
+    ];
+    const index = monthNumber - 1;
+    if (index >= 0 && index < 12) {
+      return isNepali ? nepaliMonths[index] : englishMonths[index];
+    }
+    return '';
   }
 
   getReportingMonth(settings: Record<string, unknown>, reportingPeriod:ReportingPeriod) {
     try {
       const tag = this.getTargetIntervalTag(settings, reportingPeriod);
+      const useBikramSambatMonths = this.uhcSettingsService.getUseBikramSambatMonths(settings);
+      if (useBikramSambatMonths) {
+        const parts = tag.split('-');
+        const monthNum = Number.parseInt(parts[1], 10);
+        return this.getBSMonthName(monthNum);
+      }
       return moment(tag, this.INTERVAL_TAG_FORMAT).format('MMMM');
     } catch (error) {
       console.error('Error getting reporting month:', error);

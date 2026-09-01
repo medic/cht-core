@@ -9,21 +9,24 @@ import { AndroidApiService } from '@mm-services/android-api.service';
 import { DbService } from '@mm-services/db.service';
 import { EnketoService } from '@mm-services/enketo.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
+import { GeolocationService } from '@mm-services/geolocation.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class IntegrationApiService {
-  AndroidAppLauncher;
-  Language;
-  Select2Search;
-  Enketo;
-  Translate;
-  MRDT;
-  Markdown;
-  Settings;
-  AndroidApi;
-  DB;
+  readonly AndroidAppLauncher;
+  readonly Language;
+  readonly Select2Search;
+  readonly Enketo;
+  readonly Translate;
+  readonly MRDT;
+  readonly Settings;
+  readonly AndroidApi;
+  readonly DB;
+  readonly InteractionTracking;
+  readonly Geolocation;
 
   constructor(
     private dbService:DbService,
@@ -35,6 +38,8 @@ export class IntegrationApiService {
     private mrdtService:MRDTService,
     private settingsService:SettingsService,
     private androidApiService:AndroidApiService,
+    private readonly interactionTrackingService:InteractionTrackingService,
+    private readonly geolocationService:GeolocationService,
   ) {
     this.DB = dbService;
     this.AndroidAppLauncher = androidAppLauncherService;
@@ -45,6 +50,8 @@ export class IntegrationApiService {
     this.Settings = settingsService;
     this.AndroidApi = androidApiService;
     this.Translate = translateService;
+    this.InteractionTracking = interactionTrackingService;
+    this.Geolocation = this.geolocationService;
   }
 
   get(service) {

@@ -57,6 +57,38 @@ export const isUuidQualifier = (identifier: unknown): identifier is UuidQualifie
 };
 
 /**
+ * A qualifier that identifies entities by their identifiers.
+ */
+export type IdsQualifier = Readonly<{ ids: string[] }>;
+
+/**
+ * Returns `true` if the given qualifier is an {@link IdsQualifier}, otherwise `false`. An empty array of identifiers is
+ * considered valid.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is an {@link IdsQualifier}, otherwise `false`
+ */
+export const isIdsQualifier = (qualifier: unknown): qualifier is IdsQualifier => {
+  return isRecord(qualifier)
+    && hasField(qualifier, { name: 'ids', type: 'object' })
+    && Array.isArray(qualifier.ids)
+    && qualifier.ids.every(id => isString(id) && id.length > 0);
+};
+
+/**
+ * Builds a qualifier that identifies entities by their identifiers.
+ * @param ids the identifiers of the entities
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the identifiers are not an array of non-empty strings
+ */
+export const byIds = (ids: string[]): IdsQualifier => {
+  const qualifier = { ids };
+  if (!isIdsQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid identifiers [${JSON.stringify(ids)}].`);
+  }
+  return { ids: [...new Set(ids)] };
+};
+
+/**
  * A qualifier that identifies contacts based on type.
  */
 export type ContactTypeQualifier = Readonly<{ contactType: string }>;
@@ -142,6 +174,51 @@ export const isKeyedFreetextQualifier = (qualifier: FreetextQualifier): boolean 
   }
 
   return false;
+};
+
+/**
+ * A qualifier that identifies entities based on the codes of the forms used to record them.
+ */
+export type FormsQualifier = Readonly<{ forms: [string, ...string[]] }>;
+
+/**
+ * Builds a qualifier for finding entities recorded with any of the given forms.
+ * @param forms the form codes to search with (e.g. `['pregnancy']`). Each is matched verbatim against
+ * the document's `form` field: they are not normalized, so a code with leading or trailing whitespace
+ * is rejected rather than silently matching nothing. Duplicates are removed.
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the form codes are not a non-empty array of non-blank strings with no
+ * leading or trailing whitespace
+ */
+export const byForms = (forms: [string, ...string[]]): FormsQualifier => {
+  const qualifier = { forms };
+  if (!isFormsQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid forms [${JSON.stringify(forms)}].`);
+  }
+
+  // Deduping a non-empty array can only ever keep it non-empty, so the tuple shape survives the Set
+  // round-trip; TS just cannot see that on its own.
+  return { forms: [...new Set(forms)] as [string, ...string[]] };
+};
+
+/**
+ * Returns `true` if the given qualifier is a {@link FormsQualifier} otherwise `false`.
+ *
+ * The qualifier must have a `forms` key holding a non-empty array of strings, none of which is empty,
+ * blank, or padded with leading/trailing whitespace. Unlike {@link isIdsQualifier}, an empty array is
+ * rejected: it can only ever match nothing, which is never what the caller meant, and silently
+ * returning an empty page would hide the mistake. A padded code is rejected for the same reason: it
+ * would otherwise pass validation but match nothing, since the value is compared verbatim rather than
+ * trimmed.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link FormsQualifier}, otherwise `false`.
+ */
+export const isFormsQualifier = (qualifier: unknown): qualifier is FormsQualifier => {
+  return isRecord(qualifier)
+    && hasField(qualifier, { name: 'forms', type: 'object' })
+    && Array.isArray(qualifier.forms)
+    && qualifier.forms.length > 0
+    && qualifier.forms.every(form => isString(form) && form.length > 0 && form === form.trim());
 };
 
 /**
@@ -278,7 +355,13 @@ export const byContactIds = (contactIds: [string, ...string[]]): ContactIdsQuali
 };
 
 // https://stackoverflow.com/a/50375286
-type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+/**
+ * The intersection of the specified types.
+ * @internal
+ */
+export type UnionToIntersection<U> = (
+  U extends unknown ? (k: U) => void : never
+) extends (k: infer I) => void ? I : never;
 
 /**
  * Combines multiple qualifiers into a single object.

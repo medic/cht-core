@@ -264,6 +264,7 @@
     "can_view_tasks_group": [
       "chw"
     ],
+    "can_track_task_interactions": [],
     "can_view_unallocated_data_records": [
       "gateway",
       "program_officer",
@@ -296,7 +297,8 @@
     "contacts_default_sort": "",
     "visit_count": {
       "month_start_date": 1,
-      "visit_count_goal": 0
+      "visit_count_goal": 0,
+      "use_bikram_sambat_months": false
     }
   },
   "death_reporting": {

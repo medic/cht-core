@@ -8,7 +8,9 @@ describe('remote report', () => {
   const remoteContext = {} as RemoteDataContext;
   const sandbox = sinon.createSandbox();
   const postResourceOuter = sandbox.stub();
+  const postSummaryResourceOuter = sandbox.stub();
   const putResourceOuter = sandbox.stub();
+  let postResourceStub: SinonStub;
 
   let Report: typeof import('../../src/remote/report');
   let getResourceInner: SinonStub;
@@ -16,13 +18,13 @@ describe('remote report', () => {
   let getResourcesInner: SinonStub;
   let getResourcesOuter: SinonStub;
   let postResourceInner: SinonStub;
+  let postSummaryResourceInner: SinonStub;
   let putResourceInner: SinonStub;
 
   before(() => {
-    sinon
-      .stub(RemoteEnv, 'postResource')
-      .withArgs('api/v1/report')
-      .returns(postResourceOuter);
+    postResourceStub = sinon.stub(RemoteEnv, 'postResource');
+    postResourceStub.withArgs('api/v1/report').returns(postResourceOuter);
+    postResourceStub.withArgs('api/v1/report/summary').returns(postSummaryResourceOuter);
     sinon
       .stub(RemoteEnv, 'putResource')
       .withArgs('api/v1/report')
@@ -39,6 +41,8 @@ describe('remote report', () => {
     getResourcesOuter = sinon.stub(RemoteEnv, 'getResources').returns(getResourcesInner);
     postResourceInner = sinon.stub();
     postResourceOuter.returns(postResourceInner);
+    postSummaryResourceInner = sinon.stub();
+    postSummaryResourceOuter.returns(postSummaryResourceInner);
     putResourceInner = sinon.stub();
     putResourceOuter.returns(putResourceInner);
   });
@@ -147,6 +151,125 @@ describe('remote report', () => {
           limit: limit.toString(),
           freetext: freetext,
         })).to.be.true;
+      });
+
+      describe('with a form qualifier', () => {
+        it('sends the form codes as a query param on the shared uuid endpoint', async () => {
+          const expectedResponse = { data: ['uuid1', 'uuid2'], cursor };
+          getResourcesInner.resolves(expectedResponse);
+
+          const result = await Report.v1.getUuidsPage(remoteContext)(
+            { forms: ['pregnancy', 'delivery'] }, cursor, limit
+          );
+
+          expect(result).to.equal(expectedResponse);
+          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/uuid')).to.be.true;
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            form: 'pregnancy,delivery',
+            cursor,
+          })).to.be.true;
+        });
+
+        it('sends a single form code without a trailing separator', async () => {
+          getResourcesInner.resolves({ data: [], cursor: null });
+
+          await Report.v1.getUuidsPage(remoteContext)({ forms: ['pregnancy'] }, null, limit);
+
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            form: 'pregnancy',
+          })).to.be.true;
+        });
+
+        it('omits cursor param when cursor is null', async () => {
+          const expectedResponse = { data: [], cursor: null };
+          getResourcesInner.resolves(expectedResponse);
+
+          const result = await Report.v1.getUuidsPage(remoteContext)({ forms: ['pregnancy'] }, null, limit);
+
+          expect(result).to.equal(expectedResponse);
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            form: 'pregnancy',
+          })).to.be.true;
+        });
+
+        it('does not normalize the form codes', async () => {
+          getResourcesInner.resolves({ data: [], cursor: null });
+
+          await Report.v1.getUuidsPage(remoteContext)({ forms: ['ANC_FollowUp'] }, null, limit);
+
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            form: 'ANC_FollowUp',
+          })).to.be.true;
+        });
+
+        it('prefers freetext when a qualifier satisfies both', async () => {
+          getResourcesInner.resolves({ data: [], cursor: null });
+
+          await Report.v1.getUuidsPage(remoteContext)({ freetext, forms: ['pregnancy'] }, null, limit);
+
+          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/uuid')).to.be.true;
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            freetext,
+          })).to.be.true;
+        });
+      });
+    });
+
+    describe('getPage', () => {
+      const limit = 3;
+      const cursor = '1';
+
+      it('returns a page of reports for the given ids', async () => {
+        const expectedResponse = { data: [{ type: DOC_TYPES.DATA_RECORD, form: 'yes' }], cursor };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Report.v1.getPage(remoteContext)({ ids: ['a', 'b'] }, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          ids: 'a,b',
+          cursor,
+        })).to.be.true;
+      });
+
+      it('omits the cursor param when cursor is null', async () => {
+        const expectedResponse = { data: [], cursor: null };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Report.v1.getPage(remoteContext)({ ids: ['a', 'b'] }, null, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString(), ids: 'a,b' })).to.be.true;
+      });
+    });
+
+    describe('getSummaries', () => {
+      it('POSTs empty ids to the report summary endpoint', async () => {
+        postSummaryResourceInner.resolves([]);
+
+        const result = await Report.v1.getSummaries(remoteContext)({ ids: [] });
+
+        expect(result).to.deep.equal([]);
+        expect(postSummaryResourceOuter.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(postSummaryResourceInner.calledOnceWithExactly({ ids: [] })).to.be.true;
+      });
+
+      it('POSTs the ids array to the report summary endpoint', async () => {
+        const summaries = [{ _id: 'a' }, { _id: 'b' }];
+        postSummaryResourceInner.resolves(summaries);
+
+        const result = await Report.v1.getSummaries(remoteContext)({ ids: ['a', 'b'] });
+
+        expect(result).to.equal(summaries);
+        expect(postSummaryResourceOuter.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(postSummaryResourceInner.calledOnceWithExactly({ ids: ['a', 'b'] })).to.be.true;
       });
     });
 

@@ -1,0 +1,1 @@
+While these checks fail, the PR carries the `Waiting for contributor` label. The checks run again automatically whenever the PR is edited or updated, and the label is replaced with `Ready for review` once everything above is addressed.

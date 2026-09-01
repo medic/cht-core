@@ -1,13 +1,14 @@
-import { Component, OnDestroy, OnInit, ViewChild, Input } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BaseMenuComponent } from '@mm-components/base-menu/base-menu.component';
 import { MatSidenav, MatSidenavContainer, MatSidenavContent } from '@angular/material/sidenav';
 import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
-import { NgFor, NgIf, NgClass } from '@angular/common';
-import { RouterLink, NavigationStart, Router } from '@angular/router';
+import { NgClass, NgFor, NgIf } from '@angular/common';
+import { NavigationStart, Router, RouterLink } from '@angular/router';
 import { AuthDirective } from '@mm-directives/auth.directive';
 import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
+import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 
 import { GlobalActions } from '@mm-actions/global';
 
@@ -19,6 +20,7 @@ import { StorageInfoService } from '@mm-services/storage-info.service';
 
 import { filter } from 'rxjs/operators';
 import { Selectors } from '@mm-selectors/index';
+import { HeaderTabsService, SidebarTab } from '@mm-services/header-tabs.service';
 
 @Component({
   selector: 'mm-sidebar-menu',
@@ -36,6 +38,7 @@ import { Selectors } from '@mm-selectors/index';
     NgClass,
     TranslatePipe,
     RelativeDatePipe,
+    ResourceIconPipe,
   ],
 })
 export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, OnDestroy {
@@ -43,8 +46,8 @@ export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, O
   @ViewChild('sidebar') sidebar!: MatSidenav;
   private globalActions: GlobalActions;
   replicationStatus;
-  moduleOptions: MenuOption[] = [];
-  secondaryOptions: MenuOption[] = [];
+  showPrivacyPolicy: boolean = false;
+  headerTabsForSidebar: SidebarTab[] = [];
   adminAppPath: string = '';
 
   constructor(
@@ -54,6 +57,7 @@ export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, O
     protected modalService: ModalService,
     private router: Router,
     protected readonly storageInfoService: StorageInfoService,
+    private readonly headerTabsService: HeaderTabsService
   ) {
     super(store, dbSyncService, modalService, storageInfoService);
     this.globalActions = new GlobalActions(store);
@@ -62,10 +66,11 @@ export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, O
   ngOnInit() {
     super.ngOnInit();
     this.adminAppPath = this.locationService.adminPath;
-    this.setModuleOptions();
-    this.setSecondaryOptions();
     this.additionalSubscriptions();
     this.subscribeToRouter();
+    this.headerTabsService
+      .getSidebarTabs()
+      .then(tabs => this.headerTabsForSidebar = tabs);
   }
 
   ngOnDestroy() {
@@ -83,6 +88,13 @@ export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, O
     super.replicate();
   }
 
+  onTabClick(tab: SidebarTab) {
+    if (tab.name === 'bug') {
+      this.openFeedback();
+    }
+    this.close();
+  }
+
   private subscribeToRouter() {
     const routerSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationStart))
@@ -98,86 +110,7 @@ export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, O
 
     const subscribePrivacyPolicy = this.store
       .select(Selectors.getShowPrivacyPolicy)
-      .subscribe(showPrivacyPolicy => this.setSecondaryOptions(showPrivacyPolicy));
+      .subscribe(showPrivacyPolicy => this.showPrivacyPolicy = showPrivacyPolicy);
     this.subscriptions.add(subscribePrivacyPolicy);
   }
-
-  private setModuleOptions() {
-    this.moduleOptions = [
-      {
-        routerLink: 'messages',
-        icon: 'fa-envelope',
-        translationKey: 'Messages',
-        hasPermissions: 'can_view_messages,!can_view_messages_tab'
-      },
-      {
-        routerLink: 'tasks',
-        icon: 'fa-flag',
-        translationKey: 'Tasks',
-        hasPermissions: 'can_view_tasks,!can_view_tasks_tab'
-      },
-      {
-        routerLink: 'reports',
-        icon: 'fa-list-alt',
-        translationKey: 'Reports',
-        hasPermissions: 'can_view_reports,!can_view_reports_tab'
-      },
-      {
-        routerLink: 'contacts',
-        icon: 'fa-user',
-        translationKey: 'Contacts',
-        hasPermissions: 'can_view_contacts,!can_view_contacts_tab'
-      },
-      {
-        routerLink: 'analytics',
-        icon: 'fa-bar-chart-o',
-        translationKey: 'Analytics',
-        hasPermissions: 'can_view_analytics,!can_view_analytics_tab',
-      },
-    ];
-  }
-
-  private setSecondaryOptions(showPrivacyPolicy = false) {
-    this.secondaryOptions = [
-      {
-        routerLink: 'trainings',
-        icon: 'fa-graduation-cap',
-        translationKey: 'training_materials.page.title',
-        canDisplay: true,
-      },
-      {
-        routerLink: 'about',
-        icon: 'fa-question',
-        translationKey: 'about',
-        canDisplay: true,
-      },
-      {
-        routerLink: 'user',
-        icon: 'fa-user',
-        translationKey: 'edit.user.settings',
-        hasPermissions: 'can_edit_profile'
-      },
-      {
-        routerLink: 'privacy-policy',
-        icon: 'fa-lock',
-        translationKey: 'privacy.policy',
-        canDisplay: showPrivacyPolicy,
-      },
-      {
-        icon: 'fa-bug',
-        translationKey: 'Report Bug',
-        canDisplay: true,
-        click: () => this.openFeedback()
-      },
-    ];
-  }
-}
-
-interface MenuOption {
-  icon: string;
-  translationKey: string;
-  routerLink?: string;
-  hasPermissions?: string;
-  canDisplay?: boolean;
-  click?: () => void;
 }
