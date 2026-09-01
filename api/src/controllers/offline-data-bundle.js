@@ -5,6 +5,12 @@ const dataBundle = require('../services/offline-data-bundle/data-bundle');
 
 const RELAY_PERMISSION = 'can_relay_offline_data_bundle';
 
+/**
+ * @openapi
+ * tags:
+ *   - name: Replication
+ *     description: Operations for replicating data to and from offline devices
+ */
 module.exports = {
   /**
    * @openapi
