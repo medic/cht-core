@@ -442,6 +442,8 @@ const openFirstContact = async () => {
 
 const openNthContact = async (n) => {
   const nthContact = leftPanelSelectors.nthContact(n);
+  // center the row so the click isn't intercepted by the fast-action button overlaying the list bottom
+  await nthContact.scrollIntoView({ block: 'center', inline: 'center' });
   await nthContact.click();
 };
 
