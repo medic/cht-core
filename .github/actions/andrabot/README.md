@@ -54,7 +54,7 @@ branch instead of `master`.
 
 | Input | Default | Description |
 | ----- | ------- | ----------- |
-| `token` | `${{ github.token }}` | Token used for the API calls. Needs `pull-requests: write` and `issues: read`. |
+| `token` | `${{ github.token }}` | Token used for the API calls. Needs `contents: read` (PR template), `issues: read` and `pull-requests: write`. |
 | `pr-template` | `.github/PULL_REQUEST_TEMPLATE.md` | Path of the PR template on the default branch of the repository the PR targets. |
 | `failure-label` | `Waiting for contributor` | Label set on the PR while any check fails. |
 | `success-label` | `Ready for review` | Label set on the PR once every check passes. |

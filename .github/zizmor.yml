@@ -17,6 +17,20 @@ rules:
       # NOTE: ignore entries must be the workflow basename, not a path.
       - andra-bot.yml
 
+  unpinned-uses:
+    config:
+      policies:
+        # andra-bot.yml references this repository's own AndraBot action as
+        # medic/cht-core/.github/actions/andrabot@master. The reference is
+        # same-repo: under pull_request_target the workflow file itself is
+        # already resolved from the default branch, so anyone able to move
+        # master already controls the workflow — a SHA pin adds no security
+        # boundary, while it would freeze the action (and its message files)
+        # behind a workflow bump on every change. Risk accepted: 2026-09-01.
+        medic/cht-core/.github/actions/andrabot: ref-pin
+        # Everything else keeps zizmor's strictest policy: pin to a SHA.
+        "*": hash-pin
+
   template-injection:
     ignore:
       # release-notes.yml passes workflow_dispatch inputs through env: vars.

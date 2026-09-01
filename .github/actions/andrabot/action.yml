@@ -6,7 +6,7 @@ author: Medic
 
 inputs:
   token:
-    description: 'GitHub token with `pull-requests: write` (and `issues: read`) on the repository.'
+    description: 'GitHub token with `contents: read`, `issues: read` and `pull-requests: write` on the repository.'
     default: ${{ github.token }}
   pr-template:
     description: Path of the pull request template on the default branch of the repository.
