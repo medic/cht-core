@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-When development is ready to begin on a [Feature Release](https://docs.communityhealthtoolkit.org/core/releases/feature_releases/#release-names), a maintainer should be nominated as a Release Manager. They will be responsible for making sure the following tasks are followed, though not necessarily doing the work themselves.
+When development is ready to begin on a [Feature Release](https://docs.communityhealthtoolkit.org/core/releases/#feature-releases), a maintainer should be nominated as a Release Manager. They will be responsible for making sure the following tasks are followed, though not necessarily doing the work themselves.
 
 # Planning
 
