@@ -22,6 +22,34 @@ const extractParentIds = current => selfAndParents(current)
   .map(parent => parent._id)
   .filter(id => id);
 
+// Walks a parent chain, emitting one id per link and stopping at the first link without an `_id`
+const chainIds = start => {
+  const ids = [];
+  let current = start;
+  while (current?._id) {
+    ids.push(current._id);
+    current = current.parent;
+  }
+  return ids;
+};
+
+const lineageIds = doc => {
+  if (utils.isContact(doc)) {
+    return chainIds(doc);
+  }
+  if (utils.isReport(doc) && doc.form) {
+    return [ doc._id, ...chainIds(doc.contact) ];
+  }
+  return [];
+};
+
+// One entry per id, in the given order. Ids with no matching doc yield null - as `include_docs` did for an emitted
+// id with no document - so that positions in the lineage, and therefore ancestor depth, are preserved.
+const orderDocsByIds = (ids, docs) => {
+  const docsById = new Map(docs.map(doc => [ doc._id, doc ]));
+  return ids.map(id => docsById.get(id) || null);
+};
+
 const getContactById = (contacts, id) => id && contacts.find(contact => contact && contact._id === id);
 
 const getContactIds = (contacts) => {
@@ -228,19 +256,31 @@ module.exports = function(Promise, DB) {
       });
   };
 
-  const fetchLineageById = function(id) {
-    const options = {
-      startkey: [id],
-      endkey: [id, {}],
-      include_docs: true
-    };
-    return DB.query('medic-client/docs_by_id_lineage', options)
-      .then(function(result) {
-        return result.rows.map(function(row) {
-          return row.doc;
-        });
+  const fetchDocWithLineage = function(id) {
+    return DB.get(id)
+      .then(function(doc) {
+        const ids = lineageIds(doc);
+        if (!ids.length) {
+          return { doc, lineage: [] };
+        }
+
+        const parentIds = ids.slice(1);
+        if (!parentIds.length) {
+          return { doc, lineage: [doc] };
+        }
+
+        return fetchDocs(parentIds)
+          .then(ancestors => ({ doc, lineage: [ doc, ...orderDocsByIds(parentIds, ancestors) ] }));
+      })
+      .catch(function(err) {
+        if (err.status === 404) {
+          return { doc: null, lineage: [], missing: err };
+        }
+        throw err;
       });
   };
+
+  const fetchLineageById = id => fetchDocWithLineage(id).then(({ lineage }) => lineage);
 
   const fetchLineageByIds = function(ids) {
     return fetchDocs(ids).then(function(docs) {
@@ -256,16 +296,6 @@ module.exports = function(Promise, DB) {
     });
   };
 
-  const fetchDoc = function(id) {
-    return DB.get(id)
-      .catch(function(err) {
-        if (err.status === 404) {
-          err.statusCode = 404;
-        }
-        throw err;
-      });
-  };
-
   const fetchHydratedDoc = function(id, options = {}, callback = undefined) {
     let lineage;
     let patientLineage;
@@ -279,19 +309,22 @@ module.exports = function(Promise, DB) {
       throwWhenMissingLineage: false,
     });
 
-    return fetchLineageById(id)
+    return fetchDocWithLineage(id)
       .then(function(result) {
-        lineage = result;
+        lineage = result.lineage;
 
         if (lineage.length === 0) {
           if (options.throwWhenMissingLineage) {
             const err = new Error(`Document not found: ${id}`);
             err.code = 404;
             throw err;
-          } else {
-            // Not a doc that has lineage, just do a normal fetch.
-            return fetchDoc(id);
           }
+          if (result.missing) {
+            result.missing.statusCode = 404;
+            throw result.missing;
+          }
+          // Not a doc that has lineage, so nothing to hydrate. Reuse the doc we already have.
+          return result.doc;
         }
 
         return fetchSubjectLineage(lineage[0])

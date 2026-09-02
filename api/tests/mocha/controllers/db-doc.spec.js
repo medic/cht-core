@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 require('chai').should();
 const controller = require('../../../src/controllers/db-doc');
-const service = require('../../../src/services/db-doc');
+const service = require('../../../src/services/replication/db-doc');
 const serverUtils = require('../../../src/server-utils');
 const _ = require('lodash');
 

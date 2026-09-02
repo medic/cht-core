@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 require('chai').should();
 const controller = require('../../../src/controllers/all-docs');
-const service = require('../../../src/services/all-docs');
+const service = require('../../../src/services/replication/all-docs');
 const serverUtils = require('../../../src/server-utils');
 
 let testReq;

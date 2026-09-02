@@ -17,7 +17,8 @@ describe('GetDataRecords service', () => {
     allDocs = sinon.stub();
     hydrateContactNamesService = { get: sinon.stub() };
     getSummariesService = {
-      get: sinon.stub(),
+      getContacts: sinon.stub(),
+      getReports: sinon.stub(),
       getByDocs: sinon.stub(),
     };
 
@@ -37,7 +38,7 @@ describe('GetDataRecords service', () => {
   });
 
   it('returns empty array when given empty array', () => {
-    return service.get([]).then(actual => expect(actual).to.deep.equal([]));
+    return service.getContacts([]).then(actual => expect(actual).to.deep.equal([]));
   });
 
   describe('getDocsSummaries()', () => {
@@ -111,12 +112,12 @@ describe('GetDataRecords service', () => {
     });
   });
 
-  describe('get() - summaries', () => {
+  describe('getContacts() - summaries', () => {
     it('db errors', () => {
-      getSummariesService.get.rejects('missing');
+      getSummariesService.getContacts.rejects('missing');
 
       return service
-        .get([ '5' ])
+        .getContacts([ '5' ])
         .then(() => {
           throw new Error('expected error to be thrown');
         })
@@ -124,15 +125,16 @@ describe('GetDataRecords service', () => {
     });
 
     it('no result', () => {
-      getSummariesService.get.resolves(null);
+      getSummariesService.getContacts.resolves(null);
       hydrateContactNamesService.get.resolves([]);
 
       return service
-        .get([ '5' ])
+        .getContacts([ '5' ])
         .then(actual => {
           expect(actual).to.deep.equal([]);
-          expect(getSummariesService.get.callCount).to.equal(1);
-          expect(getSummariesService.get.args[0][0]).to.deep.equal(['5']);
+          expect(getSummariesService.getContacts.callCount).to.equal(1);
+          expect(getSummariesService.getContacts.args[0][0]).to.deep.equal(['5']);
+          expect(getSummariesService.getReports.callCount).to.equal(0);
           expect(allDocs.callCount).to.equal(0);
         });
     });
@@ -144,7 +146,7 @@ describe('GetDataRecords service', () => {
         contact: 'jim',
         lineage: [ 'area', 'center' ]
       };
-      getSummariesService.get.resolves([
+      getSummariesService.getContacts.resolves([
         {
           _id: '5',
           name: 'five',
@@ -155,10 +157,10 @@ describe('GetDataRecords service', () => {
       hydrateContactNamesService.get.resolves([ expected ]);
 
       return service
-        .get([ '5' ], { hydrateContactNames: true })
+        .getContacts([ '5' ], { hydrateContactNames: true })
         .then(actual => {
           expect(actual).to.deep.equal([ expected ]);
-          expect(getSummariesService.get.callCount).to.equal(1);
+          expect(getSummariesService.getContacts.callCount).to.equal(1);
           expect(allDocs.callCount).to.equal(0);
           expect(hydrateContactNamesService.get.callCount).to.equal(1);
           expect(hydrateContactNamesService.get.args[0][0]).to.deep.equal([{
@@ -176,7 +178,7 @@ describe('GetDataRecords service', () => {
         { _id: '6', name: 'six' },
         { _id: '7', name: 'seven' }
       ];
-      getSummariesService.get.resolves([
+      getSummariesService.getContacts.resolves([
         { _id: '5', name: 'five' },
         { _id: '6', name: 'six' },
         { _id: '7', name: 'seven' }
@@ -184,22 +186,40 @@ describe('GetDataRecords service', () => {
       hydrateContactNamesService.get.resolves(expected);
 
       return service
-        .get([ '5', '6', '7' ], { hydrateContactNames: true })
+        .getContacts([ '5', '6', '7' ], { hydrateContactNames: true })
         .then(actual => {
           expect(actual).to.deep.equal(expected);
-          expect(getSummariesService.get.callCount).to.equal(1);
-          expect(getSummariesService.get.args[0][0]).to.deep.equal([ '5', '6', '7' ]);
+          expect(getSummariesService.getContacts.callCount).to.equal(1);
+          expect(getSummariesService.getContacts.args[0][0]).to.deep.equal([ '5', '6', '7' ]);
           expect(allDocs.callCount).to.equal(0);
         });
     });
   });
 
-  describe('get() - details', () => {
+  describe('getReports() - summaries', () => {
+    it('only loads report summaries', () => {
+      const summaries = [{ _id: '5', form: 'delivery' }];
+      getSummariesService.getReports.resolves(summaries);
+      hydrateContactNamesService.get.resolves(summaries);
+
+      return service
+        .getReports([ '5' ])
+        .then(actual => {
+          expect(actual).to.deep.equal(summaries);
+          expect(getSummariesService.getReports.callCount).to.equal(1);
+          expect(getSummariesService.getReports.args[0][0]).to.deep.equal(['5']);
+          expect(getSummariesService.getContacts.callCount).to.equal(0);
+          expect(allDocs.callCount).to.equal(0);
+        });
+    });
+  });
+
+  describe('getContacts() - details', () => {
     it('db errors', () => {
       allDocs.rejects('missing');
 
       return service
-        .get([ '5' ], { include_docs: true })
+        .getContacts([ '5' ], { include_docs: true })
         .then(() => {
           throw new Error('expected error to be thrown');
         })
@@ -210,12 +230,12 @@ describe('GetDataRecords service', () => {
       allDocs.resolves({ rows: [] });
 
       return service
-        .get([ '5' ], { include_docs: true })
+        .getContacts([ '5' ], { include_docs: true })
         .then(actual => {
           expect(actual).to.deep.equal([]);
           expect(allDocs.callCount).to.equal(1);
           expect(allDocs.args[0][0]).to.deep.equal({ keys: [ '5' ], include_docs: true });
-          expect(getSummariesService.get.callCount).to.equal(0);
+          expect(getSummariesService.getContacts.callCount).to.equal(0);
         });
     });
 
@@ -226,12 +246,12 @@ describe('GetDataRecords service', () => {
         ] });
 
       return service
-        .get([ '5' ], { include_docs: true })
+        .getContacts([ '5' ], { include_docs: true })
         .then(actual => {
           expect(actual).to.deep.equal([ { _id: '5', name: 'five' } ]);
           expect(allDocs.callCount).to.equal(1);
           expect(allDocs.args[0][0]).to.deep.equal({ keys: [ '5' ], include_docs: true });
-          expect(getSummariesService.get.callCount).to.equal(0);
+          expect(getSummariesService.getContacts.callCount).to.equal(0);
         });
     });
 
@@ -244,7 +264,7 @@ describe('GetDataRecords service', () => {
         ] });
 
       return service
-        .get([ '5', '6', '7' ], { include_docs: true })
+        .getReports([ '5', '6', '7' ], { include_docs: true })
         .then(actual => {
           expect(actual).to.deep.equal([
             { _id: '5', name: 'five' },
@@ -253,7 +273,7 @@ describe('GetDataRecords service', () => {
           ]);
           expect(allDocs.callCount).to.equal(1);
           expect(allDocs.args[0][0]).to.deep.equal({ keys: [ '5', '6', '7' ], include_docs: true });
-          expect(getSummariesService.get.callCount).to.equal(0);
+          expect(getSummariesService.getReports.callCount).to.equal(0);
         });
     });
   });

@@ -37,6 +37,7 @@ exports.config = Object.assign(wdioBaseConfig.config, {
       'reports/report-main-list-details.wdio-spec.js',
       'reports/report-action-bar.wdio-spec.js',
       'targets/targets-overview.wdio-spec.js',
+      'targets/targets-widgets.wdio-spec.js',
       'reports/report-search.wdio-spec.js',
     ],
     mobileTests: [
@@ -48,6 +49,7 @@ exports.config = Object.assign(wdioBaseConfig.config, {
       'reports/report-main-list-details.wdio-spec.js',
       'reports/report-action-bar.wdio-spec.js',
       'targets/targets-overview.wdio-spec.js',
+      'targets/targets-widgets.wdio-spec.js',
       'reports/report-search.wdio-spec.js',
     ]
   },

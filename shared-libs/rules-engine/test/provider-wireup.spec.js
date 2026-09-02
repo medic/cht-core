@@ -122,6 +122,7 @@ describe('provider-wireup integration tests', () => {
           calculatedAt: NOW,
           contactState: {},
           monthStartDate: 1,
+          useBikramSambatMonths: false,
         },
       }]);
 
@@ -141,6 +142,7 @@ describe('provider-wireup integration tests', () => {
             },
             calculatedAt: NOW,
             monthStartDate: 1,
+            useBikramSambatMonths: false,
           },
         }]);
       expect(db.put.args[0][0].rulesStateStore.rulesConfigHash)
@@ -404,7 +406,7 @@ describe('provider-wireup integration tests', () => {
       expect(actual).to.be.empty;
       expect(rulesEmitter.getEmissionsFor.callCount).to.eq(1);
       expect(db.query.callCount).to.eq(3);
-      expect(db.query.args[2][0]).to.eq('medic-client/tasks_by_contact');
+      expect(db.query.args[2][0]).to.eq('medic-offline-tasks/tasks_by_contact');
       expect(db.query.args[2][1]).to.not.have.property('keys');
     });
 
@@ -941,6 +943,34 @@ describe('provider-wireup integration tests', () => {
         expect(provider.commitTargetDoc.callCount).to.equal(2);
         expect(provider.commitTargetDoc.args[1][1]).to.equal('2020-04');
         expect(provider.commitTargetDoc.args[1][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
+      });
+
+      it('should write target docs with Bikram Sambat tags when BS months are enabled', async () => {
+        const settings = {
+          rules: defaultConfigSettingsDoc.tasks.rules,
+          enableTargets: true,
+          targets: [{
+            id: 'uhc',
+          }],
+          monthStartDate: 1,
+          rulesAreDeclarative: true,
+          useBikramSambatMonths: true,
+        };
+
+        clock.setSystemTime(moment('2020-04-23').valueOf());
+        await wireup.initialize(provider, settings, {});
+        expect(provider.commitTargetDoc.callCount).to.equal(0);
+
+        const emissions = [
+          mockTargetEmission('uhc', 'doc1', moment('2020-04-23').valueOf(), true), // passes within interval
+        ];
+        const refreshRulesEmissions = sinon.stub().resolves({ targetEmissions: emissions });
+        const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
+
+        await withMockRefresher(() => wireup.fetchTasksFor(provider));
+        expect(provider.commitTargetDoc.callCount).to.equal(1);
+        expect(provider.commitTargetDoc.args[0][1]).to.equal('2077-01');
+        expect(provider.commitTargetDoc.args[0][0]).to.deep.equal([{ id: 'uhc', value: { pass: 1, total: 1 }}]);
       });
     });
   });

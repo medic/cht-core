@@ -38,8 +38,17 @@ export class OverdueFilterComponent {
     if (this.disabled) {
       return;
     }
-
     this.filter.clear();
+  }
+
+  toggle(status: string) {
+    if (this.filter.selected.has(status)) {
+      this.filter.clear();
+    } else {
+      this.filter.clear();
+      this.filter.selected.add(status);
+      this.filter.apply();
+    }
   }
 
   countSelected() {

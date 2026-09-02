@@ -13,6 +13,7 @@ let selectedLocale;
 let translations;
 
 const PASSWORD_INPUT_ID = 'password';
+const PASSWORD_CONTAINER_ID = 'password-container'; //NoSONAR
 
 const setTokenState = className => {
   document.getElementById('wrapper').className = `has-error ${className}`;
@@ -167,19 +168,21 @@ const checkSession = function() {
   }
 };
 
-const isUsingSupportedBrowser = () => {
-  if (!globalThis.bowser || !globalThis.bowser.getParser) {
-    return false;
+const getBowserParser = () => {
+  if (!globalThis.bowser?.getParser) {
+    return null;
   }
-
-  const parser = globalThis.bowser.getParser(globalThis.navigator.userAgent);
-  return parser.satisfies({
-    chrome: '>=107', // Chrome 107 was released on 25 Oct 2022; for desktop and Android.
-    firefox: '>=98', // Firefox 98 was released on March 8, 2022; for desktop and Android.
-  });
+  return globalThis.bowser.getParser(globalThis.navigator.userAgent);
 };
 
+const isUsingSupportedBrowser = () => getBowserParser()?.satisfies({
+  chrome: '>=107', // Chrome 107 was released on 25 Oct 2022; for desktop and Android.
+  firefox: '>=98', // Firefox 98 was released on March 8, 2022; for desktop and Android.
+}) ?? false;
+
 const isSafariBrowser = () => /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
+
+const isUsingUnsupportedChrome = () => getBowserParser()?.satisfies({ chrome: '<90' }) ?? false;
 
 const isUsingChtAndroid = () => typeof window.medicmobile_android !== 'undefined';
 
@@ -198,9 +201,10 @@ const isUsingChtAndroidV1 = () => {
   return androidAppVersion.startsWith('v1.');
 };
 
-// It will return true if the browser should be blocked from using the app i.e. Safari
+// It will return true if the browser should be blocked from using the app
+// (Safari, or an unsupported Chrome version)
 const shouldBlockBrowser = () => {
-  return isSafariBrowser();
+  return isSafariBrowser() || isUsingUnsupportedChrome();
 };
 
 const checkUnsupportedBrowser = () => {
@@ -210,7 +214,7 @@ const checkUnsupportedBrowser = () => {
 
   let outdatedComponentKey;
   const isSafari = isSafariBrowser();
-  
+
   if (isUsingChtAndroid()) {
     if (!isUsingChtAndroidV1()) {
       outdatedComponentKey = 'login.unsupported_browser.outdated_cht_android';
@@ -229,7 +233,7 @@ const checkUnsupportedBrowser = () => {
       translations[selectedLocale][outdatedComponentKey];
     document.getElementById('unsupported-browser')?.classList.remove('hidden');
 
-    if (isSafari) {
+    if (shouldBlockBrowser()) {
       document.getElementById('login-fields')?.classList.add('hidden');
       document.querySelector('.locale-wrapper .loading')?.classList.add('hidden');
     }
@@ -261,7 +265,7 @@ const handlePasswordInputFocus = () => {
 const handlePasswordToggle = () => {
   const passwordToggle = document.getElementById('password-toggle');
   if (passwordToggle) {
-    passwordToggle.addEventListener('click', () => togglePassword(PASSWORD_INPUT_ID), false);
+    passwordToggle.addEventListener('click', () => togglePassword(PASSWORD_INPUT_ID, PASSWORD_CONTAINER_ID), false);
   }
 };
 

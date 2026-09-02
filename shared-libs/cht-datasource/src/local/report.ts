@@ -1,12 +1,22 @@
 import { LocalDataContext } from './libs/data-context';
 import {
   createDoc,
+  fetchAndFilter,
   fetchAndFilterIds,
   getDocById, getDocIdsByIdRange, getDocsByIds,
   queryDocIdsByKey,
-  queryDocIdsByRange, updateDoc
+  queryDocIdsByKeys,
+  queryDocIdsByRange,
+  updateDoc
 } from './libs/doc';
-import { FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
+import {
+  FormsQualifier,
+  FreetextQualifier,
+  IdsQualifier,
+  isFreetextQualifier,
+  isKeyedFreetextQualifier,
+  UuidQualifier
+} from '../qualifier';
 import { assertHasRequiredField, hasStringFieldWithValue, Nullable, Page } from '../libs/core';
 import * as Report from '../report';
 import * as LocalContact from './contact';
@@ -26,6 +36,7 @@ import { fetchHydratedDoc, getContactIdForUpdate, getUpdatedContact, minifyDoc }
 import { queryByFreetext, useNouveauIndexes } from './libs/nouveau';
 import { InvalidArgumentError, ResourceNotFoundError } from '../libs/error';
 import { assertReportInput } from '../libs/parameter-validators';
+import { summariseReport } from '@medic/summaries';
 
 const FORM_DOC_ID_PREFIX = 'form:';
 
@@ -107,26 +118,74 @@ export namespace v1 {
   };
 
   /** @internal */
+  export const getSummaries = ({ medicDb }: LocalDataContext) => {
+    const getMedicDocsByIds = getDocsByIds(medicDb);
+    return async ({ ids }: IdsQualifier): Promise<Report.v1.ReportSummary[]> => {
+      const docs = await getMedicDocsByIds(ids);
+      return docs
+        .filter(isReport)
+        .map(doc => summariseReport(doc));
+    };
+  };
+
+  /** @internal */
   export const getUuidsPage = ({ medicDb }: LocalDataContext) => {
     const queryNouveauFreetext = queryByFreetext(medicDb, 'reports_by_freetext');
     const getOfflineFreetextQueryPageFn = getOfflineFreetextQueryFn(medicDb);
     const promisedUseNouveau = useNouveauIndexes(medicDb);
+    // The form branch below returns without awaiting promisedUseNouveau, so a binding that only ever
+    // serves form queries would leave a rejection unobserved. The freetext branch still awaits (and
+    // so still surfaces) the real error.
+    promisedUseNouveau.catch(() => { /* no-op */ });
+    const queryViewByForms = queryDocIdsByKeys(medicDb, 'medic-client/reports_by_form');
 
     return async (
-      qualifier: FreetextQualifier,
+      qualifier: FreetextQualifier | FormsQualifier,
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<string>> => {
-      const freetextQualifier = normalizeFreetextQualifier(qualifier);
-      if (await promisedUseNouveau) {
-        // Running server-side. Use Nouveau indexes.
-        return await queryNouveauFreetext(freetextQualifier, cursor, limit);
+      // Freetext is matched first so the behavior of existing freetext callers is unchanged.
+      if (isFreetextQualifier(qualifier)) {
+        const freetextQualifier = normalizeFreetextQualifier(qualifier);
+        if (await promisedUseNouveau) {
+          // Running server-side. Use Nouveau indexes.
+          return await queryNouveauFreetext(freetextQualifier, cursor, limit);
+        }
+
+        // Use client-side offline freetext views.
+        const skip = validateCursor(cursor);
+        const getPageFn = getOfflineFreetextQueryPageFn(freetextQualifier);
+        return fetchAndFilterIds(getPageFn, limit)(limit, skip);
       }
 
-      // Use client-side offline freetext views.
+      // The view emits [doc.form], so each form code is a complete key on its own. Duplicates are
+      // dropped here rather than trusted from the qualifier, since a hand-built FormsQualifier can
+      // reach this point without going through byForms(). Order is preserved, which is what keeps
+      // `skip` meaningful from one page to the next: the view returns rows grouped by key in the
+      // order supplied.
       const skip = validateCursor(cursor);
-      const getPageFn = getOfflineFreetextQueryPageFn(freetextQualifier);
+      const keys = [...new Set(qualifier.forms)].map(form => [form]);
+      const getPageFn = (limit: number, skip: number) => queryViewByForms(keys, limit, skip);
       return fetchAndFilterIds(getPageFn, limit)(limit, skip);
+    };
+  };
+
+  /** @internal */
+  export const getPage = ({ medicDb }: LocalDataContext) => {
+    const getMedicDocsByIds = getDocsByIds(medicDb);
+
+    return async (
+      qualifier: IdsQualifier,
+      cursor: Nullable<string>,
+      limit: number,
+    ): Promise<Page<Report.v1.Report>> => {
+      const skip = validateCursor(cursor);
+      const getPageFn = (
+        limit: number,
+        skip: number
+      ) => getMedicDocsByIds(qualifier.ids.slice(skip, skip + limit));
+
+      return await fetchAndFilter(getPageFn, isReport, limit)(limit, skip) as Page<Report.v1.Report>;
     };
   };
 

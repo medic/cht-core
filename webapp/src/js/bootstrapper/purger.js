@@ -65,7 +65,12 @@ const batchedMetaPurge = (localDb, sinceSeq = 0, untilSeq = '', iterations = 0) 
 
   let nextSeq;
 
-  const isFeedbackOrTelemetryDoc = change => change.id.startsWith('telemetry-') || change.id.startsWith('feedback-');
+  const isReplicableMetaDoc = change => {
+    return change.id.startsWith('telemetry-') ||
+           change.id.startsWith('feedback-') ||
+           change.id.startsWith('interaction-');
+  };
+
   return localDb
     .changes({ since: sinceSeq, limit: BATCH_SIZE })
     .then(changes => {
@@ -76,7 +81,7 @@ const batchedMetaPurge = (localDb, sinceSeq = 0, untilSeq = '', iterations = 0) 
       const changesToPurge = changes.results.filter(change => (
         !change.deleted && // ignore deletes
         change.seq <= untilSeq && // skip docs that we have not yet synced
-        isFeedbackOrTelemetryDoc(change) // skip docs that are not feedback or telemetry docs
+        isReplicableMetaDoc(change) // skip docs that aren't replicated to users-meta
       ));
 
       if (!changesToPurge.length) {

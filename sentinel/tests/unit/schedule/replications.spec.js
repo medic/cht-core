@@ -94,7 +94,7 @@ describe('replications', () => {
       });
     });
 
-    it('should only replicate feedback and telemetry docs', () => {
+    it('should only replicate feedback, telemetry, and interaction docs', () => {
       sinon.stub(db, 'get');
       sinon.stub(db, 'close');
       db.get.withArgs('target').returns(target);
@@ -108,9 +108,11 @@ describe('replications', () => {
         assert.equal(filter({ _id: 'design/medic-user', _rev: 'a', views: { read: 'fn' } }), false);
         assert.equal(filter({ _id: 'feedback-2020-02-13-time-user', meta: { user: { name: 'admin' } } }), true);
         assert.equal(filter({ _id: 'telemetry-2020-02-admin-whatever', metrics: { search: {} } }), true);
+        assert.equal(filter({ _id: 'interaction-2026-03-27T10:00:00.000Z-uuid', type: 'interaction-log' }), true);
         assert.equal(filter({ _id: 'telemotry-2020-02-admin-whatever', metrics: { search: {} } }), false);
         assert.equal(filter({ _id: 'telemetrised-2020-02-admin-whatever', metrics: { search: {} } }), false);
         assert.equal(filter({ _id: 'telemetryyyy-2020-02-admin-whatever', metrics: { search: {} } }), false);
+        assert.equal(filter({ _id: 'interactive-something' }), false);
 
         assert.equal(source.get.callCount, 1);
         assert.deepEqual(source.get.args[0], [SENTINEL_METADATA.PURGE_LOG]);

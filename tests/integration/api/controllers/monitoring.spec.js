@@ -1,4 +1,5 @@
 const utils = require('@utils');
+const moment = require('moment');
 const sentinelUtils = require('@utils/sentinel');
 
 const VIEW_INDEXES_BY_DB = {
@@ -87,10 +88,6 @@ describe('monitoring', () => {
   beforeEach(async () => {
     await sentinelUtils.waitForSentinel();
     await utils.waitForIndexes();
-    // the v1 test was flaking, returning different values for the nouveau index counts.
-    // the v2 test, which calls the exactly same code, never failed!
-    // assuming that calling this endpoint actually does some calculating, call it before the test
-    await getExpectedNouveauIndexes('medic-test');
   });
 
   afterEach(() => utils.revertDb([], true));
@@ -102,7 +99,13 @@ describe('monitoring', () => {
       const usersMetaInfo = await getInfo('medic-test-users-meta');
       const usersInfo = await getInfo('_users');
 
-      const result = await utils.request({ path: '/api/v1/monitoring' });
+      const [result, medicNouveau, sentinelNouveau, usersMetaNouveau, usersNouveau] = await Promise.all([
+        utils.request({ path: '/api/v1/monitoring' }),
+        getExpectedNouveauIndexes('medic-test'),
+        getExpectedNouveauIndexes('medic-test-sentinel'),
+        getExpectedNouveauIndexes('medic-test-users-meta'),
+        getExpectedNouveauIndexes('_users'),
+      ]);
 
       chai.expect(result).excludingEvery(INDETERMINATE_FIELDS).to.deep.equal({
         version: {
@@ -116,7 +119,7 @@ describe('monitoring', () => {
             doc_count: medicInfo.doc_count,
             doc_del_count: medicInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test'),
-            nouveau_indexes: await getExpectedNouveauIndexes('medic-test'),
+            nouveau_indexes: medicNouveau,
           },
           sentinel: {
             name: 'medic-test-sentinel',
@@ -124,7 +127,7 @@ describe('monitoring', () => {
             doc_count: sentinelInfo.doc_count,
             doc_del_count: sentinelInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test-sentinel'),
-            nouveau_indexes: await getExpectedNouveauIndexes('medic-test-sentinel'),
+            nouveau_indexes: sentinelNouveau,
           },
           usersmeta: {
             name: 'medic-test-users-meta',
@@ -132,7 +135,7 @@ describe('monitoring', () => {
             doc_count: usersMetaInfo.doc_count,
             doc_del_count: usersMetaInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test-users-meta'),
-            nouveau_indexes: await getExpectedNouveauIndexes('medic-test-users-meta'),
+            nouveau_indexes: usersMetaNouveau,
           },
           users: {
             name: '_users',
@@ -140,7 +143,7 @@ describe('monitoring', () => {
             doc_count: usersInfo.doc_count,
             doc_del_count: usersInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('_users'),
-            nouveau_indexes: await getExpectedNouveauIndexes('_users'),
+            nouveau_indexes: usersNouveau
           },
         },
         sentinel: {
@@ -185,7 +188,14 @@ describe('monitoring', () => {
       const usersMetaInfo = await getInfo('medic-test-users-meta');
       const usersInfo = await getInfo('_users');
 
-      const result = await utils.request({ path: '/api/v2/monitoring' });
+      const [result, medicNouveau, sentinelNouveau, usersMetaNouveau, usersNouveau] = await Promise.all([
+        utils.request({ path: '/api/v2/monitoring' }),
+        getExpectedNouveauIndexes('medic-test'),
+        getExpectedNouveauIndexes('medic-test-sentinel'),
+        getExpectedNouveauIndexes('medic-test-users-meta'),
+        getExpectedNouveauIndexes('_users'),
+      ]);
+
       chai.expect(result).excludingEvery(INDETERMINATE_FIELDS).to.deep.equal({
         version: {
           app: await getAppVersion(),
@@ -198,7 +208,7 @@ describe('monitoring', () => {
             doc_count: medicInfo.doc_count,
             doc_del_count: medicInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test'),
-            nouveau_indexes: await getExpectedNouveauIndexes('medic-test'),
+            nouveau_indexes: medicNouveau,
           },
           sentinel: {
             name: 'medic-test-sentinel',
@@ -206,7 +216,7 @@ describe('monitoring', () => {
             doc_count: sentinelInfo.doc_count,
             doc_del_count: sentinelInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test-sentinel'),
-            nouveau_indexes: await getExpectedNouveauIndexes('medic-test-sentinel'),
+            nouveau_indexes: sentinelNouveau,
           },
           usersmeta: {
             name: 'medic-test-users-meta',
@@ -214,7 +224,7 @@ describe('monitoring', () => {
             doc_count: usersMetaInfo.doc_count,
             doc_del_count: usersMetaInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test-users-meta'),
-            nouveau_indexes: await getExpectedNouveauIndexes('medic-test-users-meta'),
+            nouveau_indexes: usersMetaNouveau,
           },
           users: {
             name: '_users',
@@ -222,7 +232,7 @@ describe('monitoring', () => {
             doc_count: usersInfo.doc_count,
             doc_del_count: usersInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('_users'),
-            nouveau_indexes: await getExpectedNouveauIndexes('_users'),
+            nouveau_indexes: usersNouveau,
           },
         },
         sentinel: {
@@ -277,12 +287,48 @@ describe('monitoring', () => {
         replication_limit: {
           count: 0,
         },
+        replication_failure: {
+          count: 0,
+        },
         connected_users: {
           count: 0,
         },
       });
 
       assertIndeterminateFields(result);
+    });
+
+    it('should count distinct users with replication failures in the configured window', async () => {
+      const today = moment();
+      const recent = today.clone().subtract(2, 'days');
+      const onBoundary = today.clone().subtract(7, 'days');
+      const tooOld = today.clone().subtract(14, 'days');
+      const failureDoc = (period, user, dailyFailures) => ({
+        _id: `replication-fail-${period}-${user}`,
+        user,
+        date: today.valueOf(),
+        total_failures: Object.values(dailyFailures).reduce((a, b) => a + b, 0),
+        failures: [],
+        daily_failures: dailyFailures,
+      });
+      const dayKey = (m) => m.format('YYYY-MM-DD');
+      const periodKey = (m) => m.format('YYYY-MM');
+
+      const seedDocs = [
+        failureDoc(periodKey(today), 'alice', { [dayKey(recent)]: 3 }),
+        failureDoc(periodKey(onBoundary), 'alice', { [dayKey(onBoundary)]: 2 }),
+        failureDoc(periodKey(recent), 'bob', { [dayKey(recent)]: 1 }),
+        failureDoc(periodKey(onBoundary), 'clare', { [dayKey(onBoundary)]: 2 }),
+        failureDoc(periodKey(tooOld), 'dan', { [dayKey(tooOld)]: 99 }),
+      ];
+
+      await utils.logsDb.bulkDocs(seedDocs);
+
+      const defaultWindow = await utils.request({ path: '/api/v2/monitoring' });
+      chai.expect(defaultWindow.replication_failure).to.deep.equal({ count: 3 });
+
+      const widerWindow = await utils.request({ path: '/api/v2/monitoring?connected_user_interval=30' });
+      chai.expect(widerWindow.replication_failure).to.deep.equal({ count: 4 });
     });
   });
 });

@@ -1,3 +1,4 @@
+const _ = require('lodash'); // #8494 don't use eslint/core as it throws an exception
 const lineageFactory = require('@medic/lineage');
 const messageUtils = require('@medic/message-utils');
 const registrationUtils = require('@medic/registration-utils');
@@ -26,6 +27,7 @@ angular.module('services').factory('MessageQueue',
     $q,
     $translate,
     DB,
+    GetSummaries,
     Languages,
     MessageQueueUtils,
     Settings
@@ -39,11 +41,9 @@ angular.module('services').factory('MessageQueue',
         return;
       }
 
-      const summary = summaries.rows.find(function(summary) {
-        return summary.value && summary.value.phone === message.sms.to;
+      return summaries.find(function(summary) {
+        return summary && summary.phone === message.sms.to;
       });
-
-      return summary && summary.value;
     };
 
     const findIdByKey = (contactsByReference, key) => {
@@ -60,9 +60,10 @@ angular.module('services').factory('MessageQueue',
     };
 
     const findRegistrations = (registrations, message, shortcodeField) => {
-      return registrations
+      const docs = registrations
         .filter((row) => row.key === message.context[shortcodeField])
         .map((row) => row.doc);
+      return _.uniqBy(docs, '_id');
     };
 
     const findContactById = function(hydratedContacts, contactId) {
@@ -101,7 +102,7 @@ angular.module('services').factory('MessageQueue',
             return row.id;
           });
 
-          return DB({ remote: true }).query('medic/doc_summaries_by_id', { keys: ids });
+          return GetSummaries.getContacts(ids);
         })
         .then(function(summaries) {
           messages.forEach(function(message) {
@@ -132,7 +133,7 @@ angular.module('services').factory('MessageQueue',
       return $q
         .all([
           DB({ remote: true }).query('medic-client/contacts_by_reference', { keys: referenceKeys }),
-          DB({ remote: true }).query('medic-client/registered_patients', { keys: shortcodes, include_docs: true }),
+          DB({ remote: true }).query('medic-client/reports_by_subject', { keys: shortcodes, include_docs: true }),
         ])
         .then(([contactsByReference, registrations]) => {
           registrations = getValidRegistrations(registrations, settings);

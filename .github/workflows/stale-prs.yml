@@ -5,16 +5,18 @@ on:
     - cron: '0 0 * * *'
 
 permissions:
+  actions: write
   pull-requests: write
 
 jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@5bef64f19d7facfb25b37b414482c7164d639639  # v9
+      - uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93  # v11.0.0
         with:
           stale-pr-message: 'This PR is now marked "stale" after 30 days without activity. It will be closed automatically in 10 days unless you add a comment, push new changes or remove the "stale" label.'
           days-before-pr-stale: 30
           days-before-pr-close: 10
+          operations-per-run: 100
           days-before-issue-stale: -1 # don't mark issues as stale
           days-before-issue-close: -1 # don't close stale issues

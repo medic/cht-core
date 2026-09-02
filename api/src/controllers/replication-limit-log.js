@@ -1,6 +1,6 @@
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
-const replicationLimitLog = require('../services/replication-limit-log');
+const replicationLimitLog = require('../services/replication/replication-limit-log');
 
 module.exports = {
   /**
@@ -53,22 +53,13 @@ module.exports = {
    *       '401':
    *         $ref: '#/components/responses/Unauthorized'
    */
-  get: (req, res) => {
-    return auth
-      .getUserCtx(req)
-      .then((userCtx) => {
-        if (!auth.isDbAdmin(userCtx)) {
-          throw {
-            code: 401,
-            message: 'User is not an admin'
-          };
-        }
-
-        return replicationLimitLog.get(req.query.user);
-      })
-      .then(logs => res.json(logs))
-      .catch(err => {
-        serverUtils.error(err, req, res, true);
-      });
+  get: async (req, res) => {
+    try {
+      await auth.assertDbAdmin(req);
+      const logs = await replicationLimitLog.get(req.query.user);
+      res.json(logs);
+    } catch (err) {
+      serverUtils.error(err, req, res, true);
+    }
   }
 };

@@ -121,6 +121,16 @@ const DEFAULT_CONNECTED_USER_INTERVAL = 7;
  *         count:
  *           type: number
  *           description: Number of users that exceeded the replication limit of documents.
+ *     MonitoringReplicationFailure:
+ *       type: object
+ *       properties:
+ *         count:
+ *           type: number
+ *           description: >
+ *             Number of distinct users that had at least one replication failure in the
+ *             reporting window. The window defaults to 7 days but can be changed via the
+ *             `connected_user_interval` query parameter (the same parameter that drives
+ *             `connected_users.count`).
  *     MonitoringConnectedUsers:
  *       type: object
  *       properties:
@@ -243,7 +253,9 @@ module.exports = {
    *         schema:
    *           type: number
    *           default: 7
-   *         description: The number of days to use when counting connected users
+   *         description: >
+   *           The number of days to use when counting connected users and users with replication
+   *           failures.
    *     responses:
    *       '200':
    *         description: Monitoring metrics
@@ -372,6 +384,8 @@ module.exports = {
    *                   $ref: '#/components/schemas/MonitoringConflict'
    *                 replication_limit:
    *                   $ref: '#/components/schemas/MonitoringReplicationLimit'
+   *                 replication_failure:
+   *                   $ref: '#/components/schemas/MonitoringReplicationFailure'
    *                 connected_users:
    *                   $ref: '#/components/schemas/MonitoringConnectedUsers'
    */

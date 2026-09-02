@@ -11,7 +11,7 @@ import sinon from 'sinon';
 import { AboutComponent } from '@mm-modules/about/about.component';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
-import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { SessionService } from '@mm-services/session.service';
 import { VersionService } from '@mm-services/version.service';
 import { DbService } from '@mm-services/db.service';
@@ -22,7 +22,7 @@ describe('About Component', () => {
   let component:AboutComponent;
   let fixture:ComponentFixture<AboutComponent>;
   let dbService;
-  let resourceIconsService;
+  let customResourceService;
   let sessionService;
   let versionService;
   let navigationService;
@@ -44,7 +44,7 @@ describe('About Component', () => {
     dbInfo = sinon.stub().resolves('db-info');
     dbService = { get: sinon.stub().returns({ info: dbInfo }) };
     navigationService = { goBack: sinon.stub() };
-    resourceIconsService = { getDocResources: sinon.stub().resolves() };
+    customResourceService = { getDocResources: sinon.stub().resolves() };
     sessionService = { userCtx: sinon.stub().returns('userctx') };
     router = { navigate: sinon.stub() };
 
@@ -67,7 +67,7 @@ describe('About Component', () => {
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
-          { provide: ResourceIconsService, useValue: resourceIconsService },
+          { provide: CustomResourceService, useValue: customResourceService },
           { provide: SessionService, useValue: sessionService },
           { provide: VersionService, useValue: versionService },
           { provide: DbService, useValue: dbService },
@@ -162,7 +162,7 @@ describe('About Component', () => {
   }));
 
   it('should display partner logo if it exists', fakeAsync(() => {
-    resourceIconsService.getDocResources.resolves(['Medic']);
+    customResourceService.getDocResources.resolves(['Medic']);
     versionService.getLocal.resolves({ version: '3.5.0', rev: '12' });
     versionService.getRemoteRev.resolves('15');
 
@@ -182,7 +182,7 @@ describe('About Component', () => {
   });
 
   it('should handle missing partners resource - #7100', waitForAsync(async () => {
-    resourceIconsService.getDocResources.rejects({ status: 404 });
+    customResourceService.getDocResources.rejects({ status: 404 });
     component.ngOnInit();
     await fixture.whenStable();
     // no error thrown
@@ -190,7 +190,7 @@ describe('About Component', () => {
 
   it('should log non 404 errors when getting partners resource - #7100', fakeAsync(() => {
     const consoleErrorMock = sinon.stub(console, 'error');
-    resourceIconsService.getDocResources.rejects({ status: 403 });
+    customResourceService.getDocResources.rejects({ status: 403 });
 
     component.ngOnInit();
     flush();

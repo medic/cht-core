@@ -51,7 +51,6 @@ module.exports = defineConfig([
     'shared-libs/cht-datasource/docs/**/*',
     'tests/scalability/report*/**/*',
     'tests/scalability/jmeter/**/*',
-    'webapp/src/ts/providers/xpath-element-path.provider.ts',
     'webapp/dist/**/*',
     '.github/**/compiled/index.js'
   ]),
@@ -377,6 +376,7 @@ module.exports = defineConfig([
         $: true,
         $$: true,
         document: true,
+        DOMParser: true,
         caches: true,
         navigator: true,
       },
@@ -612,7 +612,7 @@ module.exports = defineConfig([
       }],
 
       ['jsdoc/check-tag-names']: ['error', {
-        definedTags: ['typeParam'],
+        definedTags: ['typeParam', 'packageDocumentation'],
       }],
     },
   },
@@ -624,6 +624,12 @@ module.exports = defineConfig([
     rules: {
       ['@typescript-eslint/no-unused-expressions']: 'off',
       ['@typescript-eslint/no-require-imports']: 'off'
+    },
+  },
+  {
+    files: ['webapp/src/js/enketo/widgets/bikram-sambat-picker-shared.js'],
+    languageOptions: {
+      ecmaVersion: 2020,
     },
   }
 ]);
