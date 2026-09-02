@@ -1,18 +1,25 @@
 import { Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, ViewChild } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 
+import { leafletLayer } from 'protomaps-leaflet';
+
 import { isValidGeolocation } from '@mm-services/contact-geolocation.service';
+import {
+  getLabelRules,
+  getPaintRules,
+  MAP_ATTRIBUTION,
+  MAP_BACKGROUND,
+  MAP_MAX_DATA_ZOOM,
+  MAP_TILES_URL,
+} from '@mm-components/map/map-style';
 
 const L = require('leaflet');
-const enketoConfig = require('../../../js/enketo/config');
 
 const OSM_URL = 'https://www.openstreetmap.org';
 const ZOOM = 17;
 const MAX_ZOOM = 19;
 const MARKER_SIZE = 32;
 const USER_LOCATION_SIZE = 16;
-// same tile server the enketo geopoint widget uses, so the CSP img-src rules already cover it
-const [ tileConfig ] = enketoConfig.maps;
 
 export interface MapMarker {
   geolocation: { latitude: number; longitude: number };
@@ -103,12 +110,16 @@ export class MapComponent implements OnChanges, OnDestroy {
     // map is created (e.g. right after a page load) and Leaflet would keep rendering into that initial sliver.
     this.resizeObserver = new ResizeObserver(([entry]) => this.onContainerResize(entry.contentRect));
     this.resizeObserver.observe(container);
-    L.tileLayer(tileConfig.tiles[0], {
-      attribution: tileConfig.attribution,
+    // Shortbread vector tiles rendered on canvas; the service worker caches the tile responses for offline use
+    // (see api/src/generate-service-worker.js)
+    leafletLayer({
+      url: MAP_TILES_URL,
+      maxDataZoom: MAP_MAX_DATA_ZOOM,
       maxZoom: MAX_ZOOM,
-      // CORS responses are cacheable by the service worker for offline use; opaque ones are not (see
-      // api/src/generate-service-worker.js)
-      crossOrigin: true,
+      attribution: MAP_ATTRIBUTION,
+      backgroundColor: MAP_BACKGROUND,
+      paintRules: getPaintRules(),
+      labelRules: getLabelRules(),
     }).addTo(this.map);
     this.markersLayer = L.layerGroup().addTo(this.map);
     this.userLocationLayer = L.layerGroup().addTo(this.map);

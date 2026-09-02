@@ -93,7 +93,7 @@ describe('generate service worker', () => {
       },
       maximumFileSizeToCacheInBytes: 31457280,
       runtimeCaching: [{
-        urlPattern: /^https:\/\/[a-z]\.tile\.openstreetmap\.org\//,
+        urlPattern: /^https:\/\/vector\.openstreetmap\.org\//,
         handler: 'CacheFirst',
         options: {
           cacheName: 'cht-map-tiles',

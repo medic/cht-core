@@ -11,9 +11,9 @@ const { DOC_IDS } = require('@medic/constants');
 
 const SWMETA_DOC_ID = DOC_IDS.SERVICE_WORKER_META;
 
-// tile server used by the webapp maps, see webapp/src/js/enketo/config.js
-const MAP_TILES_URL_PATTERN = /^https:\/\/[a-z]\.tile\.openstreetmap\.org\//;
-const MAP_TILES_MAX_ENTRIES = 2000; // ~30MB at the typical 15KB per tile
+// vector tile server used by the webapp maps, see webapp/src/ts/components/map/map-style.ts
+const MAP_TILES_URL_PATTERN = /^https:\/\/vector\.openstreetmap\.org\//;
+const MAP_TILES_MAX_ENTRIES = 2000; // tiles are typically a few KB to ~200KB in dense cities
 const MAP_TILES_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 
 const staticDirectoryPath = resources.staticPath;

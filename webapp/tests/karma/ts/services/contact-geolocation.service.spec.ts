@@ -2,7 +2,11 @@ import { TestBed } from '@angular/core/testing';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
-import { ContactGeolocationService, GeolocationEditState } from '@mm-services/contact-geolocation.service';
+import {
+  ContactGeolocationService,
+  GeolocationEditState,
+  getDistanceInMeters,
+} from '@mm-services/contact-geolocation.service';
 
 describe('ContactGeolocationService', () => {
   let service: ContactGeolocationService;

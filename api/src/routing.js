@@ -227,7 +227,7 @@ app.use(
           `'self'`,
           `${environment.buildsUrl}/`,
           'maps.googleapis.com', // used for enketo geopoint widget
-          '*.tile.openstreetmap.org', // service worker caching of map tiles, see generate-service-worker.js
+          'vector.openstreetmap.org', // map tiles, fetched by the webapp and cached by the service worker
         ],
         childSrc: [`'self'`],
         formAction: [`'self'`],

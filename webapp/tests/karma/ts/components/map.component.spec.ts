@@ -67,10 +67,9 @@ describe('MapComponent', () => {
       expect(center.lng).to.be.closeTo(36.8219, 0.0001);
       expect(fixture.componentInstance.map.getZoom()).to.equal(17);
 
-      const tiles = map.querySelectorAll('.leaflet-tile-pane img');
+      // vector tiles are rendered onto canvas elements
+      const tiles = map.querySelectorAll('.leaflet-tile-pane canvas.leaflet-tile');
       expect(tiles.length).to.be.greaterThan(0);
-      expect(tiles[0].src).to.match(/^https:\/\/[abc]\.tile\.openstreetmap\.org\/17\/\d+\/\d+\.png$/);
-      expect(tiles[0].getAttribute('crossorigin')).to.equal('');
 
       const marker = map.querySelector('.leaflet-marker-icon.map-marker');
       expect(marker.querySelector('i.fa.fa-map-marker')).to.not.equal(null);
