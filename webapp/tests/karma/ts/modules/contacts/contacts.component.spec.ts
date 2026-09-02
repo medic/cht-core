@@ -71,7 +71,15 @@ describe('Contacts component', () => {
       isOnlineOnly: sinon.stub().returns(false),
     };
     authService = {
-      has: sinon.stub().resolves(false),
+      has: sinon.stub().callsFake(permission => {
+        if (permission === 'can_view_last_visited_date') {
+          return Promise.resolve(false);
+        }
+        if (permission === 'can_view_tasks') {
+          return Promise.resolve(false);
+        }
+        return Promise.resolve(false);
+      }),
       online: sinon.stub().resolves(false),
       any: sinon.stub().resolves(false)
     };
@@ -606,7 +614,8 @@ describe('Contacts component', () => {
     });
 
     it('enables LastVisitedDate features when allowed', fakeAsync(() => {
-      authService.has.resolves(true);
+      authService.has.withArgs('can_view_last_visited_date').resolves(true);
+      authService.has.withArgs('can_view_tasks').resolves(false);
       searchService.search.resetHistory();
       userSettingsService.get.resetHistory();
       component.ngOnInit();
@@ -649,7 +658,8 @@ describe('Contacts component', () => {
     }));
 
     it('saves uhc home_visits settings and default sort when correct', fakeAsync(() => {
-      authService.has.resolves(true);
+      authService.has.withArgs('can_view_last_visited_date').resolves(true);
+      authService.has.withArgs('can_view_tasks').resolves(false);
       settingsService.get.resolves({
         uhc: {
           contacts_default_sort: false,
@@ -664,7 +674,7 @@ describe('Contacts component', () => {
       component.ngOnInit();
       flush();
 
-      expect(authService.has.callCount).equal(1);
+      expect(authService.has.callCount).equal(2);
       expect(authService.has.args[0]).to.deep.equal(['can_view_last_visited_date']);
       expect(component.lastVisitedDateExtras).to.equal(true);
       expect(component.visitCountSettings).to.deep.equal({
@@ -687,7 +697,8 @@ describe('Contacts component', () => {
     }));
 
     it('always saves default sort', fakeAsync(() => {
-      authService.has.resolves(true);
+      authService.has.withArgs('can_view_last_visited_date').resolves(true);
+      authService.has.withArgs('can_view_tasks').resolves(false);
       settingsService.get.resolves({
         uhc: {
           contacts_default_sort: 'something',
@@ -702,8 +713,9 @@ describe('Contacts component', () => {
       component.ngOnInit();
       flush();
 
-      expect(authService.has.callCount).equal(1);
-      expect(authService.has.args[0]).to.deep.equal(['can_view_last_visited_date']);
+      expect(authService.has.callCount).equal(2);
+      expect(authService.has.firstCall.args).to.deep.equal(['can_view_last_visited_date']);
+      expect(authService.has.secondCall.args).to.deep.equal(['can_view_tasks']);
       expect(component.lastVisitedDateExtras).to.equal(true);
       expect(component.visitCountSettings).to.deep.equal({
         monthStartDate: false,
@@ -728,7 +740,8 @@ describe('Contacts component', () => {
     }));
 
     it('saves uhc default sorting', fakeAsync(() => {
-      authService.has.resolves(true);
+      authService.has.withArgs('can_view_last_visited_date').resolves(true);
+      authService.has.withArgs('can_view_tasks').resolves(false);
       settingsService.get.resolves({
         uhc: {
           contacts_default_sort: 'last_visited_date',
@@ -743,8 +756,9 @@ describe('Contacts component', () => {
       component.ngOnInit();
       flush();
 
-      expect(authService.has.callCount).equal(1);
-      expect(authService.has.args[0]).to.deep.equal(['can_view_last_visited_date']);
+      expect(authService.has.callCount).equal(2);
+      expect(authService.has.firstCall.args).to.deep.equal(['can_view_last_visited_date']);
+      expect(authService.has.secondCall.args).to.deep.equal(['can_view_tasks']);
       expect(component.lastVisitedDateExtras).to.equal(true);
       expect(component.visitCountSettings).to.deep.equal({
         monthStartDate: 25,
@@ -897,7 +911,8 @@ describe('Contacts component', () => {
 
       describe('uhc visits enabled', () => {
         beforeEach(() => {
-          authService.has.resolves(true);
+          authService.has.withArgs('can_view_last_visited_date').resolves(true);
+          authService.has.withArgs('can_view_tasks').resolves(false);
           contactListContains.withArgs(4).returns(true);
         });
 
