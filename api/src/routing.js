@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const morgan = require('morgan');
 const helmet = require('helmet');
+const csp = require('./csp');
 const environment = require('@medic/environment');
 const resources = require('./resources');
 const config = require('./config');
@@ -219,44 +220,7 @@ app.use(
     // runs with a bunch of defaults: https://github.com/helmetjs/helmet
     hpkp: false, // explicitly block dangerous header
     contentSecurityPolicy: {
-      directives: {
-        defaultSrc: [`'none'`],
-        fontSrc: [`'self'`],
-        manifestSrc: [`'self'`],
-        connectSrc: [
-          `'self'`,
-          `${environment.buildsUrl}/`,
-          'maps.googleapis.com', // used for enketo geopoint widget
-          'vector.openstreetmap.org', // map tiles, fetched by the webapp and cached by the service worker
-        ],
-        childSrc: [`'self'`],
-        formAction: [`'self'`],
-        imgSrc: [
-          `'self'`,
-          'data:', // unsafe
-          'blob:',
-          '*.openstreetmap.org', // used for enketo geopoint widget
-        ],
-        mediaSrc: [
-          `'self'`,
-          'blob:',
-        ],
-        scriptSrc: [
-          `'self'`,
-          // Explicitly allow the telemetry script setting startupTimes
-          `'sha256-B5cfIVb4/wnv2ixHP03bHeMXZDszDL610YG5wdDq/Tc='`,
-          // AngularJS and several dependencies require this
-          `'unsafe-eval'`,
-          // Allow Enketo onsubmit form attribute
-          // https://github.com/medic/cht-core/issues/6988
-          `'unsafe-hashes'`,
-          `'sha256-2rvfFrggTCtyF5WOiTri1gDS8Boibj4Njn0e+VCBmDI='`,
-        ],
-        styleSrc: [
-          `'self'`,
-          `'unsafe-inline'` // angular-ui-bootstrap
-        ],
-      },
+      directives: csp.getDirectives(),
       browserSniff: false,
     },
   })

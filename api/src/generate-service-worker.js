@@ -4,6 +4,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 
 const resources = require('./resources.js');
+const csp = require('./csp');
 const db = require('./db');
 const logger = require('@medic/logger');
 const loginController = require('./controllers/login');
@@ -62,8 +63,13 @@ const getPasswordResetPageContents = async () => {
   return await loginController.renderPasswordReset();
 };
 
+const readTemplate = (file) => fs.promises.readFile(path.join(staticDirectoryPath, file), 'utf8');
+
 // Use the workbox library to generate a service-worker script
 const writeServiceWorkerFile = async () => {
+  // Precached pages are stored and replayed together with their response headers, so the CSP a client enforces is
+  // the one cached with the page. Mixing the CSP into each page's revision forces a refetch when the CSP changes.
+  const cspRevision = JSON.stringify(csp.getDirectives());
   const config = {
     cacheId: 'cht',
     clientsClaim: true,
@@ -94,10 +100,11 @@ const writeServiceWorkerFile = async () => {
       'login/images/*.svg',
     ],
     templatedURLs: {
-      '/': ['webapp/index.html'], // Webapp's entry point
-      '/medic/login': await getLoginPageContents(),
-      '/medic/password-reset': await getPasswordResetPageContents(),
-      '/medic/_design/medic/_rewrite/': ['webapp/appcache-upgrade.html']
+      // Webapp's entry point
+      '/': `${await readTemplate('webapp/index.html')}${cspRevision}`,
+      '/medic/login': `${await getLoginPageContents()}${cspRevision}`,
+      '/medic/password-reset': `${await getPasswordResetPageContents()}${cspRevision}`,
+      '/medic/_design/medic/_rewrite/': `${await readTemplate('webapp/appcache-upgrade.html')}${cspRevision}`,
     },
     ignoreURLParametersMatching: [/redirect/, /username/],
     modifyURLPrefix: {
