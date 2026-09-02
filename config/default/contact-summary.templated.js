@@ -181,14 +181,14 @@ const cards = [
     }
   },
   {
-    label: 'geolocation',
+    label: 'Location',
     appliesToType: 'clinic',
     appliesIf: function () {
       return thisContact.geolocation && thisContact.geolocation.latitude;
     },
     fields: function () {
       return [{
-        label: 'geolocation',
+        label: '',
         value: thisContact.geolocation,
         filter: 'map'
       }];
