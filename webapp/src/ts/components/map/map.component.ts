@@ -1,7 +1,7 @@
 import { Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, ViewChild } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 
-import { leafletLayer } from 'protomaps-leaflet';
+import { leafletLayer, LeafletLayerOptions, SourceOptions } from 'protomaps-leaflet';
 
 import { isValidGeolocation } from '@mm-services/contact-geolocation.service';
 import {
@@ -18,6 +18,10 @@ const L = require('leaflet');
 const OSM_URL = 'https://www.openstreetmap.org';
 const ZOOM = 17;
 const MAX_ZOOM = 19;
+// protomaps renders display zoom z from data zoom z - levelDiff, capped at maxDataZoom
+const LEVEL_DIFF = 1;
+// offline tiles are only prefetched at the data zoom, so don't offer views the prefetched area couldn't render
+const MIN_ZOOM = MAP_MAX_DATA_ZOOM + LEVEL_DIFF;
 const MARKER_SIZE = 32;
 const USER_LOCATION_SIZE = 16;
 
@@ -103,7 +107,7 @@ export class MapComponent implements OnChanges, OnDestroy {
   }
 
   private initMap(container: HTMLElement) {
-    this.map = L.map(container, { scrollWheelZoom: false });
+    this.map = L.map(container, { scrollWheelZoom: false, minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM });
     // any move we didn't trigger ourselves is the user taking control of the view
     this.map.on('movestart', () => this.userMoved = this.userMoved || !this.fitting);
     // Leaflet only sizes itself on creation and on window resize. The container often isn't laid out yet when the
@@ -112,15 +116,17 @@ export class MapComponent implements OnChanges, OnDestroy {
     this.resizeObserver.observe(container);
     // Shortbread vector tiles rendered on canvas; the service worker caches the tile responses for offline use
     // (see api/src/generate-service-worker.js)
-    leafletLayer({
+    const layerOptions: LeafletLayerOptions & SourceOptions = {
       url: MAP_TILES_URL,
       maxDataZoom: MAP_MAX_DATA_ZOOM,
+      levelDiff: LEVEL_DIFF,
       maxZoom: MAX_ZOOM,
       attribution: MAP_ATTRIBUTION,
       backgroundColor: MAP_BACKGROUND,
       paintRules: getPaintRules(),
       labelRules: getLabelRules(),
-    }).addTo(this.map);
+    };
+    leafletLayer(layerOptions).addTo(this.map);
     this.markersLayer = L.layerGroup().addTo(this.map);
     this.userLocationLayer = L.layerGroup().addTo(this.map);
     this.render();

@@ -13,15 +13,17 @@ const RUN_INTERVAL = 24 * 60 * 60 * 1000;
 const RADIUS_METERS = 5 * 1000;
 const METERS_PER_DEGREE = 111195;
 const CONCURRENCY = 4;
-// ~140 tiles cover the default radius around one facility; this is a safety valve against odd configurations
+// ~50 tiles cover the default radius around one facility; this is a safety valve against odd configurations
 const MAX_TILES = 1000;
 const MAX_CONSECUTIVE_FAILURES = 3;
 const CACHE_NAME = 'cht-map-tiles';
 
 /**
  * Downloads the map tiles covering the area around the user's facilities, so maps work in the field even for
- * households never viewed while online. Runs at most once a day, after a successful sync: the requests go through
- * the service worker, whose runtime caching route stores the responses (see api/src/generate-service-worker.js).
+ * households never viewed while online. Only the maximum data zoom is downloaded: the maps don't offer lower zooms
+ * and the renderer overzooms these same tiles for anything closer. Runs at most once a day, after a successful
+ * sync: the requests go through the service worker, whose runtime caching route stores the responses (see
+ * api/src/generate-service-worker.js).
  */
 @Injectable({
   providedIn: 'root'
@@ -83,6 +85,17 @@ export class MapTilesPrefetchService {
     }
   }
 
+  async getCacheSize() {
+    const cache = await window.caches.open(CACHE_NAME);
+    const requests = await cache.keys();
+    let bytes = 0;
+    for (const request of requests) {
+      const response = await cache.match(request);
+      bytes += (await response!.blob()).size;
+    }
+    return { tiles: requests.length, bytes };
+  }
+
   private isDue() {
     const lastRun = Number(window.localStorage.getItem(LAST_PREFETCH_DATE_KEY));
     return !lastRun || Date.now() - lastRun >= RUN_INTERVAL;
@@ -108,9 +121,7 @@ export class MapTilesPrefetchService {
   private getTileUrls(geolocations) {
     const urls = new Set<string>();
     for (const geolocation of geolocations) {
-      for (let zoom = 0; zoom <= MAP_MAX_DATA_ZOOM; zoom++) {
-        this.addTileUrls(urls, geolocation, zoom);
-      }
+      this.addTileUrls(urls, geolocation, MAP_MAX_DATA_ZOOM);
     }
 
     if (urls.size > MAX_TILES) {

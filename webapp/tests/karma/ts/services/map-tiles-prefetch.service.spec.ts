@@ -68,14 +68,12 @@ describe('MapTilesPrefetchService', () => {
     await sync();
 
     const urls = fetchStub.args.map(([url]) => url);
-    expect(urls.length).to.be.within(30, 120); // zooms 0-14 for a 5km radius
+    expect(urls.length).to.be.within(16, 50); // a 5km radius at the only offered data zoom
     expect(new Set(urls).size).to.equal(urls.length); // no duplicates
     urls.forEach(url => {
-      expect(url).to.match(/^https:\/\/vector\.openstreetmap\.org\/shortbread_v1\/\d+\/\d+\/\d+\.mvt$/);
+      expect(url).to.match(/^https:\/\/vector\.openstreetmap\.org\/shortbread_v1\/14\/\d+\/\d+\.mvt$/);
     });
-    // the world at low zoom and the facility's own tile at max data zoom
-    expect(urls).to.include('https://vector.openstreetmap.org/shortbread_v1/0/0/0.mvt');
-    expect(urls).to.include('https://vector.openstreetmap.org/shortbread_v1/14/9867/8250.mvt');
+    expect(urls).to.include('https://vector.openstreetmap.org/shortbread_v1/14/9867/8250.mvt'); // the facility tile
 
     expect(window.localStorage.getItem(LAST_PREFETCH_DATE_KEY)).to.be.ok;
     expect(telemetryService.record.args).to.deep.equal([['map:tiles-prefetch', urls.length]]);
@@ -96,13 +94,14 @@ describe('MapTilesPrefetchService', () => {
 
   it('should skip tiles that are already cached', async () => {
     const cache = await window.caches.open('cht-map-tiles');
-    await cache.put('https://vector.openstreetmap.org/shortbread_v1/0/0/0.mvt', new Response(new Blob(['cached'])));
+    const cached = 'https://vector.openstreetmap.org/shortbread_v1/14/9867/8250.mvt';
+    await cache.put(cached, new Response(new Blob(['cached'])));
 
     await sync();
 
     const urls = fetchStub.args.map(([url]) => url);
-    expect(urls).to.not.include('https://vector.openstreetmap.org/shortbread_v1/0/0/0.mvt');
-    expect(urls).to.include('https://vector.openstreetmap.org/shortbread_v1/1/1/1.mvt');
+    expect(urls).to.not.include(cached);
+    expect(urls).to.include('https://vector.openstreetmap.org/shortbread_v1/14/9866/8250.mvt');
   });
 
   it('should do nothing without a facility with a valid geolocation', async () => {
@@ -126,6 +125,16 @@ describe('MapTilesPrefetchService', () => {
     isControlled.returns(false);
     await sync();
     expect(fetchStub.callCount).to.equal(0);
+  });
+
+  it('should report the tile cache size', async () => {
+    expect(await service.getCacheSize()).to.deep.equal({ tiles: 0, bytes: 0 });
+
+    const cache = await window.caches.open('cht-map-tiles');
+    await cache.put('https://vector.openstreetmap.org/shortbread_v1/14/1/1.mvt', new Response(new Blob(['abcd'])));
+    await cache.put('https://vector.openstreetmap.org/shortbread_v1/14/1/2.mvt', new Response(new Blob(['abcdef'])));
+
+    expect(await service.getCacheSize()).to.deep.equal({ tiles: 2, bytes: 10 });
   });
 
   it('should stop and not mark the run after repeated download failures', async () => {
