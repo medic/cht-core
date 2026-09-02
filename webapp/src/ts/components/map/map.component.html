@@ -1,0 +1,8 @@
+@if (isValid) {
+  <div class="map-container">
+    <div #map class="map"></div>
+    @if (linkUrl) {
+      <a class="map-link" [href]="linkUrl" target="_blank" rel="noopener noreferrer">{{ 'geolocation.map.open' | translate }}</a>
+    }
+  </div>
+}

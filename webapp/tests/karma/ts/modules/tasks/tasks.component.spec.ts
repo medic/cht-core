@@ -385,8 +385,9 @@ describe('TasksComponent', () => {
     const taskLineages = [
       {
         _id: 'a',
+        doc: { _id: 'a', geolocation: { latitude: 1.5, longitude: 36.5 } },
         lineage: [
-          { name: 'Amy Johnsons Household' },
+          { name: 'Amy Johnsons Household', geolocation: { latitude: -1.2, longitude: 36.8 } },
           { name: 'St Elmos Concession' },
           { name: 'Chattanooga Village' },
           { name: 'CHW Bettys Area' },
@@ -395,11 +396,20 @@ describe('TasksComponent', () => {
       },
       {
         _id: 'b',
+        doc: { _id: 'b', geolocation: { latitude: 'not', longitude: 'valid' } },
         lineage: [
-          { name: 'Amy Johnsons Household' },
+          { name: 'Amy Johnsons Household', geolocation: { latitude: -1.2, longitude: 36.8 } },
           { name: 'St Elmos Concession' },
           { name: 'Chattanooga Village' },
           null,
+          null,
+        ],
+      },
+      {
+        _id: 'c',
+        doc: { _id: 'c' },
+        lineage: [
+          { name: 'Chattanooga Village' },
           null,
         ],
       },
@@ -417,9 +427,15 @@ describe('TasksComponent', () => {
         forId: 'b',
         owner: 'b'
       },
+      {
+        _id: '3',
+        emission: { _id: 'e3', dueDate: '2020-10-20', date: moment('2020-10-20').toDate(), overdue: true, owner: 'c' },
+        forId: 'c',
+        owner: 'c'
+      },
     ];
 
-    it('should set lineage data on tasks', async () => {
+    it('should set lineage data and geolocation on tasks', async () => {
       const expectedTasks = [
         {
           _id: 'e1',
@@ -429,6 +445,7 @@ describe('TasksComponent', () => {
           lineageIds: ['a'],
           overdue: true,
           owner: 'a',
+          geolocation: { latitude: 1.5, longitude: 36.5 }, // the subject's own location wins
         },
         {
           _id: 'e2',
@@ -438,6 +455,16 @@ describe('TasksComponent', () => {
           lineageIds: ['b'],
           overdue: true,
           owner: 'b',
+          geolocation: { latitude: -1.2, longitude: 36.8 }, // invalid subject location falls back to the household
+        },
+        {
+          _id: 'e3',
+          date: moment('2020-10-20').toDate(),
+          dueDate: '2020-10-20',
+          lineage: [ 'Chattanooga Village' ],
+          lineageIds: ['c'],
+          overdue: true,
+          owner: 'c',
         },
       ];
       rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
