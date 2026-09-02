@@ -183,7 +183,8 @@ describe('Contacts effects', () => {
       expect(settingSelected.args[0]).to.deep.equal([]);
       expect(setContactIdToLoadStub.calledOnce).to.be.true;
       expect(setContactIdToLoadStub.args[0][0]).to.equal('contactid');
-      expect(performanceService.track.callCount).to.equal(7);
+      // the children visit stats span is started but only stopped when stats are displayed
+      expect(performanceService.track.callCount).to.equal(8);
       expect(stopPerformanceTrackStub.callCount).to.equal(7);
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
         name: 'contact_detail:person:load:contact_data',
@@ -237,7 +238,8 @@ describe('Contacts effects', () => {
       expect(settingSelected.args[0]).to.deep.equal([]);
       expect(setContactIdToLoadStub.calledOnce).to.be.true;
       expect(setContactIdToLoadStub.args[0][0]).to.equal('contactid');
-      expect(performanceService.track.callCount).to.equal(7);
+      // the children visit stats span is started but only stopped when stats are displayed
+      expect(performanceService.track.callCount).to.equal(8);
       expect(stopPerformanceTrackStub.callCount).to.equal(7);
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
         name: 'contact_detail:person:load:contact_data',
@@ -382,6 +384,8 @@ describe('Contacts effects', () => {
         expect(updateSelectedContactsVisitStats.args[0]).to.deep.equal([ visitDetails ]);
         const receiveSelectedContactChildren:any = ContactsActions.prototype.receiveSelectedContactChildren;
         expect(receiveSelectedContactChildren.callCount).to.equal(1);
+        const stoppedSpans = stopPerformanceTrackStub.args.map(args => args[0]?.name);
+        expect(stoppedSpans).to.include('contact_detail:load_children_visit_stats');
       });
 
       it('should still update visit stats when the children were replaced in the meantime', async () => {
@@ -456,6 +460,9 @@ describe('Contacts effects', () => {
         expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
         expect(consoleErrorMock.callCount).to.equal(1);
         expect(consoleErrorMock.args[0][0]).to.equal('Error loading visit stats for children');
+        expect(consoleErrorMock.args[0][1]).to.be.an.instanceOf(Error);
+        const stoppedSpans = stopPerformanceTrackStub.args.map(args => args[0]?.name);
+        expect(stoppedSpans).to.not.include('contact_detail:load_children_visit_stats');
       });
 
       it('should not receive children if the selected contact changes', async () => {

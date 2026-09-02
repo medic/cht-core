@@ -185,11 +185,14 @@ export class ContactsEffects {
   }
 
   private async loadChildrenVisitStats(contactId, children) {
+    const trackPerformance = this.performanceService.track();
     try {
       const visitStats = await this.uhcVisitDisplayService.getChildrenVisitStats(children);
       if (!visitStats) {
         return;
       }
+      // recorded only when stats were displayed, so the metric measures the UHC query fan-out
+      trackPerformance?.stop({ name: 'contact_detail:load_children_visit_stats' });
       // merged by contact id in the reducer, so concurrent children updates (e.g. task counts) are kept
       await this.verifySelectedContactNotChanged(contactId);
       this.contactsActions.updateSelectedContactsVisitStats(visitStats);

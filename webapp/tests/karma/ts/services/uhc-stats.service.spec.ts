@@ -515,6 +515,8 @@ describe('UHCStats Service', () => {
       expect(consoleError.args[0][0]).to.contain('2 contact(s)');
       expect(consoleError.args[0][0]).to.contain('3c');
       expect(consoleError.args[0][0]).to.contain('4d');
+      // the error object itself is logged, not just the message
+      expect(consoleError.args[0][1]).to.be.an.instanceOf(Error);
     });
 
     it('should query fresh stats on every call', async () => {
@@ -539,6 +541,7 @@ describe('UHCStats Service', () => {
       await service.getVisitStats([ '2b' ], visitCountSettings);
 
       expect(authService.has.callCount).to.equal(1);
+      expect(authService.has.args[0]).to.deep.equal([ 'can_view_last_visited_date' ]);
     });
 
     it('should not cache a failed permission check', async () => {
@@ -554,6 +557,10 @@ describe('UHCStats Service', () => {
       await service.getVisitStats([ '2b' ], visitCountSettings);
       await service.getVisitStats([ '2b' ], visitCountSettings);
       expect(authService.has.callCount).to.equal(2);
+      expect(authService.has.args).to.deep.equal([
+        [ 'can_view_last_visited_date' ],
+        [ 'can_view_last_visited_date' ],
+      ]);
     });
   });
 });
