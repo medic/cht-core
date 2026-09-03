@@ -2,6 +2,8 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const chai = require('chai');
 const moment = require('moment');
+const http = require('http');
+const net = require('net');
 
 const outboundConfig = (port, minute, hour) => ({
   working: {
@@ -58,7 +60,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const destinationApp = express();
 const jsonParser = bodyParser.json({ limit: '32mb' });
-const inboxes = { working: [], broken: [], headers: [] };
 destinationApp.use(jsonParser);
 destinationApp.post('/test-working', (req, res) => inboxes.working.push(req.body) && res.json('true'));
 destinationApp.post('/test-broken', (req, res) => inboxes.broken.push(req.body) && res.status(500).end());
@@ -68,6 +69,7 @@ let port;
 let sentinelDate;
 let minute;
 let hour;
+let inboxes;
 
 const waitForPushes = (expectedTasks = 1) => {
   return getTasks().then(result => {
@@ -79,6 +81,19 @@ const waitForPushes = (expectedTasks = 1) => {
 };
 
 const getTasks = () => utils.sentinelDb.allDocs({ start_key: 'task:outbound:', end_key: 'task:outbound:\ufff0' });
+
+const waitForInbox = (inbox) => {
+  if (inbox.length) {
+    return Promise.resolve();
+  }
+  return utils.delayPromise(() => waitForInbox(inbox), 100);
+};
+
+const startDestinationServer = () => {
+  if (!server.listening) {
+    server = destinationApp.listen(port);
+  }
+};
 
 const wipeTasks = () => {
   return getTasks().then(result => {
@@ -101,14 +116,13 @@ describe('Outbound', () => {
     hour = twoMinutesAgo.get('hour');
   });
 
+  beforeEach(() => inboxes = { working: [], broken: [], headers: [] });
+
   after(() => {
     server.close();
   });
 
-  afterEach(() => {
-    inboxes.headers.length = 0;
-    return utils.revertDb([], true).then(() => wipeTasks());
-  });
+  afterEach(() => utils.revertDb([], true).then(() => wipeTasks()));
 
   it('should find existing outbound tasks and execute them, leaving them if the send was unsuccessful', () => {
     const settings = {
@@ -161,13 +175,6 @@ describe('Outbound', () => {
   });
 
   it('should send configured custom headers', () => {
-    const waitForHeaderPush = () => {
-      if (inboxes.headers.length) {
-        return Promise.resolve();
-      }
-      return utils.delayPromise(waitForHeaderPush, 100);
-    };
-
     const settings = {
       outbound: {
         with_headers: {
@@ -189,19 +196,92 @@ describe('Outbound', () => {
       }
     };
 
-    if (!server.listening) {
-      server = destinationApp.listen(port);
-    }
+    startDestinationServer();
 
     return utils
       .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDocs([{ _id: 'header-test' }]))
       .then(() => sentinelUtils.waitForSentinel(['header-test']))
-      .then(() => waitForHeaderPush())
+      .then(() => waitForInbox(inboxes.headers))
       .then(() => {
         chai.expect(inboxes.headers).to.have.lengthOf(1);
         chai.expect(inboxes.headers[0]['x-source']).to.equal('CHT');
       });
+  });
+
+  describe('proxy', () => {
+    const proxiedInbox = [];
+    destinationApp.post('/test-proxy', (req, res) => proxiedInbox.push(req.body) && res.json('true'));
+
+    // Minimal forward proxy. undici's ProxyAgent always tunnels, so only CONNECT needs supporting.
+    const tunnelledHosts = [];
+    const openTunnels = [];
+    const proxyApp = http.createServer((req, res) => res.writeHead(405).end());
+    proxyApp.on('connect', (req, clientSocket, head) => {
+      tunnelledHosts.push(req.url);
+      const [host, destinationPort] = req.url.split(':');
+      const destinationSocket = net.connect(Number(destinationPort), host, () => {
+        clientSocket.write('HTTP/1.1 200 Connection Established\r\n\r\n');
+        destinationSocket.write(head);
+        destinationSocket.pipe(clientSocket);
+        clientSocket.pipe(destinationSocket);
+      });
+      openTunnels.push(clientSocket, destinationSocket);
+      clientSocket.on('error', () => destinationSocket.destroy());
+      destinationSocket.on('error', () => clientSocket.destroy());
+    });
+
+    let proxyServer;
+    let proxyPort;
+
+    before(() => {
+      proxyServer = proxyApp.listen();
+      proxyPort = proxyServer.address().port;
+    });
+
+    after(() => {
+      openTunnels.forEach(socket => socket.destroy());
+      proxyServer.close();
+    });
+
+    afterEach(() => {
+      proxiedInbox.length = 0;
+      tunnelledHosts.length = 0;
+    });
+
+    it('should send the payload through the configured proxy', () => {
+      const settings = {
+        outbound: {
+          with_proxy: {
+            destination: {
+              base_url: utils.hostURL(port),
+              path: '/test-proxy',
+              proxy: utils.hostURL(proxyPort)
+            },
+            mapping: {
+              id: 'doc._id'
+            },
+            relevant_to: 'doc._id === "proxy-test"'
+          }
+        },
+        transitions: {
+          mark_for_outbound: true,
+        }
+      };
+
+      startDestinationServer();
+
+      return utils
+        .updateSettings(settings, { ignoreReload: 'sentinel' })
+        .then(() => utils.saveDocs([{ _id: 'proxy-test' }]))
+        .then(() => sentinelUtils.waitForSentinel(['proxy-test']))
+        .then(() => waitForInbox(proxiedInbox))
+        .then(() => {
+          chai.expect(proxiedInbox).to.deep.equal([{ id: 'proxy-test' }]);
+          // without the proxy config the payload would reach the destination directly, untunnelled
+          chai.expect(tunnelledHosts).to.deep.equal([new URL(utils.hostURL(port)).host]);
+        });
+    });
   });
 
   const checkInfoDocs = (retry = 10) => {
