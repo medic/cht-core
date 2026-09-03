@@ -940,7 +940,7 @@ const getUserSettings = ({ contactId, name }) => {
 };
 
 const waitForApiCrash = async () => {
-  let retryCount = 180;
+  const deadline = Date.now() + 90_000; // 90 seconds
   do {
     try {
       await request({ path: '/api/info' });
@@ -948,7 +948,7 @@ const waitForApiCrash = async () => {
     } catch {
       return;
     }
-  } while (retryCount-- > 0);
+  } while (Date.now() < deadline);
   throw new Error('API expected to crash, but still running after 1.5 minutes');
 };
 
@@ -966,24 +966,21 @@ const logApiContainerDiagnostics = async () => {
 };
 
 const listenForApi = async () => {
-  const totalTries = 180; // 3 minutes
-  let retryCount = totalTries;
+  const deadline = Date.now() + 180_000; // 3 minutes
   do {
     try {
-      console.log(`Checking API, retries left ${retryCount}`);
+      console.log(`Checking API, trying for another ${parseInt((deadline - Date.now()) / 1000)} seconds`);
       await request({ path: '/api/info' });
-      if (retryCount < totalTries) {
-        // if api request failed at least once, make sure that it's stable
-        await delayPromise(1000);
-        await request({ path: '/api/info' });
-      }
+      // make sure that it's stable
+      await delayPromise(1000);
+      await request({ path: '/api/info' });
       return;
     } catch (err) {
       console.log('API check failed, trying again in 1 second');
       console.log(err.message);
       await delayPromise(1000);
     }
-  } while (--retryCount > 0);
+  } while (Date.now() < deadline);
   await logApiContainerDiagnostics();
   throw new Error('API failed to start after 3 minutes');
 };
@@ -997,16 +994,14 @@ const waitForNginxContainerRunning = async () => {
     return;
   }
   const containerName = getContainerName('nginx');
-  const maxTries = 30;
-  for (let i = 0; i < maxTries; i++) {
-    let state;
-    try {
-      const rawState = await runCommand(
-        `docker inspect -f '{{json .State}}' ${containerName}`,
-        { verbose: false }
-      );
-      state = JSON.parse(rawState);
-    } catch (err) {
+  const deadline = Date.now() + 30_000; // try for 30 seconds
+  do {
+    if (await isContainerRunning('nginx')) {
+      return;
+    }
+
+    const state = await getContainerState('nginx');
+    if (!state) {
       throw new Error(
         `Expected nginx container "${containerName}" was not found after docker compose up ` +
         `(${err.message}). ${NGINX_PORT_HINT}`
@@ -1029,15 +1024,11 @@ const waitForNginxContainerRunning = async () => {
       );
     }
 
-    if (state.Status === 'running') {
-      return;
-    }
+    await delayPromise(250);
+  } while (Date.now() < deadline);
+  for (let i = 0; i < maxTries; i++) {
 
-    await delayPromise(1000);
   }
-  throw new Error(
-    `nginx container "${containerName}" did not become running within ${maxTries} tries. ${NGINX_PORT_HINT}`
-  );
 };
 
 const dockerComposeCmd = (params) => {
@@ -1060,22 +1051,42 @@ const sendSignal = async (service, signal) => {
   await runCommand(`kubectl ${KUBECTL_CONTEXT} exec deployments/cht-${service} -- ${killCmd(pid)}`);
 };
 
+const waitForContainerRunning = async (service, running = true) => {
+  const deadline = Date.now() + 5_000; // 5 seconds
+  do {
+    const isRunning = await isContainerRunning(service);
+    if (isRunning === running) {
+      return true;
+    }
+    await delayPromise(250);
+  } while (Date.now() < deadline);
+
+  return false;
+}
+
+const stopServiceInDocker = async (service) => {
+  await dockerComposeCmd(`stop -t 0 ${service}`);
+  if (!await waitForContainerRunning(service, false)) {
+    throw new Error(`Container for service ${service} failed to stop`);
+  }
+};
+
 const stopService = async (service) => {
   if (isDocker()) {
-    return await dockerComposeCmd(`stop -t 0 ${service}`);
+    return await stopServiceInDocker(service);
   }
   await saveLogs(); // we lose logs when a pod crashes or is stopped.
   await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=0`);
-  let tries = 100;
+  const deadline = Date.now() + 10_000; // 10 seconds
+
   do {
     try {
       await getPodName(service, false);
       await delayPromise(100);
-      tries--;
     } catch {
       return;
     }
-  } while (tries > 0);
+  } while (Date.now() < deadline);
 };
 
 const waitForService = async (service) => {
@@ -1084,7 +1095,7 @@ const waitForService = async (service) => {
     return;
   }
 
-  let tries = 100;
+  const deadline = Date.now() + 5_000; // 5 seconds
   do {
     try {
       const podName = await getPodName(service);
@@ -1094,10 +1105,9 @@ const waitForService = async (service) => {
       );
       return;
     } catch {
-      tries--;
       await delayPromise(500);
     }
-  } while (tries > 0);
+  } while (Date.now() < deadline);
 };
 
 const stopSentinel = () => stopService('sentinel');
@@ -1132,13 +1142,9 @@ const startServiceInDocker = async (service, retry = 3) => {
   }
 
   await dockerComposeCmd(`start ${service}`);
-  let pollRetries = 5;
-  do {
-    if (await isContainerRunning(service)) {
-      return;
-    }
-    await delayPromise(1000);
-  } while (pollRetries-- > 0);
+  if (await waitForContainerRunning(service, true)) {
+    return;
+  }
 
   await startServiceInDocker(service, retry - 1);
 };
