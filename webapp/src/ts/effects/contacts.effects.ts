@@ -26,6 +26,7 @@ export class ContactsEffects {
   private contactIdToLoad;
   private userFacilityIds;
   private userContactId;
+  private latestVisitStatsRequest = 0;
 
   constructor(
     private actions$: Actions,
@@ -185,6 +186,7 @@ export class ContactsEffects {
   }
 
   private async loadChildrenVisitStats(contactId, children) {
+    const request = ++this.latestVisitStatsRequest;
     const trackPerformance = this.performanceService.track();
     try {
       const visitStats = await this.uhcVisitDisplayService.getChildrenVisitStats(children);
@@ -195,6 +197,11 @@ export class ContactsEffects {
       trackPerformance?.stop({ name: 'contact_detail:load_children_visit_stats' });
       // merged by contact id in the reducer, so concurrent children updates (e.g. task counts) are kept
       await this.verifySelectedContactNotChanged(contactId);
+      if (request !== this.latestVisitStatsRequest) {
+        // a newer load started while this one was in flight (e.g. a sync-triggered refresh queried
+        // after the sync landed) — its data is fresher, so only the latest request may dispatch
+        return;
+      }
       this.contactsActions.updateSelectedContactsVisitStats(visitStats);
     } catch (error) {
       if ((error as any)?.code === 'SELECTED_CONTACT_CHANGED') {

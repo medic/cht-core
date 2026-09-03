@@ -444,6 +444,38 @@ describe('Contacts effects', () => {
         expect(updateSelectedContactsVisitStats.callCount).to.equal(0);
       });
 
+      it('should not let a slow initial stats load clobber a fresher sync-triggered refresh', fakeAsync(() => {
+        const children = [
+          { type: { id: 'place', count_visits: true }, contacts: [{ id: 'place1', doc: { _id: 'place1' } }] },
+        ];
+        contactViewModelGeneratorService.loadChildren.resolves(children);
+        let resolveInitial;
+        let resolveRefresh;
+        uhcVisitDisplayService.getChildrenVisitStats.onCall(0).returns(new Promise(r => resolveInitial = r));
+        uhcVisitDisplayService.getChildrenVisitStats.onCall(1).returns(new Promise(r => resolveRefresh = r));
+
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        effects.selectContact.subscribe();
+        tick();
+        expect(uhcVisitDisplayService.getChildrenVisitStats.callCount).to.equal(1);
+
+        // a visit report syncs in while the initial stats query is still in flight
+        actions$ = of(ContactActionList.refreshChildrenVisitStats());
+        effects.refreshChildrenVisitStats.subscribe();
+        tick(500);
+        expect(uhcVisitDisplayService.getChildrenVisitStats.callCount).to.equal(2);
+
+        resolveRefresh({ place1: { lastVisitedDate: 200 } }); // fresh post-sync data resolves first
+        tick();
+        resolveInitial({ place1: { lastVisitedDate: 100 } }); // stale pre-sync data resolves last
+        tick();
+
+        const updateSelectedContactsVisitStats: any = ContactsActions.prototype.updateSelectedContactsVisitStats;
+        // the reducer merge is last-write-wins per contact, so the stale response must not be dispatched at all
+        expect(updateSelectedContactsVisitStats.callCount).to.equal(1);
+        expect(updateSelectedContactsVisitStats.lastCall.args).to.deep.equal([{ place1: { lastVisitedDate: 200 } }]);
+      }));
+
       it('should still load the profile when getting children visit stats fails', async () => {
         contactViewModelGeneratorService.loadChildren.resolves([
           { type: { id: 'place' }, contacts: [{ _id: 'place1' }] },
