@@ -282,16 +282,7 @@ const getClientMutingEventsToReplay = (contacts, reportId) => {
   return clientMutingEvents;
 };
 
-const isMutedInLineage = (doc, beforeMillis) => {
-  let parent = doc && doc.parent;
-  while (parent) {
-    if (parent.muted && (beforeMillis ? new Date(parent.muted).getTime() <= beforeMillis : true)) {
-      return parent._id;
-    }
-    parent = parent.parent;
-  }
-  return false;
-};
+const { isMutedInLineage } = require('./muted-lineage');
 
 const unmuteMessages = doc => {
   // only schedule tasks that have a due date in the present or future
