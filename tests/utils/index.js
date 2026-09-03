@@ -940,7 +940,7 @@ const getUserSettings = ({ contactId, name }) => {
 };
 
 const waitForApiCrash = async () => {
-  const deadline = Date.now() + 90_000; // 90 seconds
+  const deadline = Date.now() + 90 * 1000; // 90 seconds
   do {
     try {
       await request({ path: '/api/info' });
@@ -948,7 +948,7 @@ const waitForApiCrash = async () => {
     } catch {
       return;
     }
-  } while (Date.now() < deadline);
+  } while (Date.now() <= deadline);
   throw new Error('API expected to crash, but still running after 1.5 minutes');
 };
 
@@ -966,7 +966,7 @@ const logApiContainerDiagnostics = async () => {
 };
 
 const listenForApi = async () => {
-  const deadline = Date.now() + 180_000; // 3 minutes
+  const deadline = Date.now() + 180 * 1000; // 3 minutes
   do {
     try {
       console.log(`Checking API, trying for another ${parseInt((deadline - Date.now()) / 1000)} seconds`);
@@ -980,7 +980,7 @@ const listenForApi = async () => {
       console.log(err.message);
       await delayPromise(1000);
     }
-  } while (Date.now() < deadline);
+  } while (Date.now() <= deadline);
   await logApiContainerDiagnostics();
   throw new Error('API failed to start after 3 minutes');
 };
@@ -994,7 +994,7 @@ const waitForNginxContainerRunning = async () => {
     return;
   }
   const containerName = getContainerName('nginx');
-  const deadline = Date.now() + 30_000; // try for 30 seconds
+  const deadline = Date.now() + 30 * 1000; // try for 30 seconds
   do {
     if (await isContainerRunning('nginx')) {
       return;
@@ -1003,8 +1003,7 @@ const waitForNginxContainerRunning = async () => {
     const state = await getContainerState('nginx');
     if (!state) {
       throw new Error(
-        `Expected nginx container "${containerName}" was not found after docker compose up ` +
-        `(${err.message}). ${NGINX_PORT_HINT}`
+        `Expected nginx container "${containerName}" was not found after docker compose up. ${NGINX_PORT_HINT}`
       );
     }
 
@@ -1025,10 +1024,7 @@ const waitForNginxContainerRunning = async () => {
     }
 
     await delayPromise(250);
-  } while (Date.now() < deadline);
-  for (let i = 0; i < maxTries; i++) {
-
-  }
+  } while (Date.now() <= deadline);
 };
 
 const dockerComposeCmd = (params) => {
@@ -1052,17 +1048,17 @@ const sendSignal = async (service, signal) => {
 };
 
 const waitForContainerRunning = async (service, running = true) => {
-  const deadline = Date.now() + 5_000; // 5 seconds
+  const deadline = Date.now() + 5 * 1000; // 5 seconds
   do {
     const isRunning = await isContainerRunning(service);
     if (isRunning === running) {
       return true;
     }
     await delayPromise(250);
-  } while (Date.now() < deadline);
+  } while (Date.now() <= deadline);
 
   return false;
-}
+};
 
 const stopServiceInDocker = async (service) => {
   await dockerComposeCmd(`stop -t 0 ${service}`);
@@ -1077,7 +1073,7 @@ const stopService = async (service) => {
   }
   await saveLogs(); // we lose logs when a pod crashes or is stopped.
   await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=0`);
-  const deadline = Date.now() + 10_000; // 10 seconds
+  const deadline = Date.now() + 10 * 1000; // 10 seconds
 
   do {
     try {
@@ -1086,7 +1082,7 @@ const stopService = async (service) => {
     } catch {
       return;
     }
-  } while (Date.now() < deadline);
+  } while (Date.now() <= deadline);
 };
 
 const waitForService = async (service) => {
@@ -1095,7 +1091,7 @@ const waitForService = async (service) => {
     return;
   }
 
-  const deadline = Date.now() + 5_000; // 5 seconds
+  const deadline = Date.now() + 5 * 1000; // 5 seconds
   do {
     try {
       const podName = await getPodName(service);
@@ -1107,7 +1103,7 @@ const waitForService = async (service) => {
     } catch {
       await delayPromise(500);
     }
-  } while (Date.now() < deadline);
+  } while (Date.now() <= deadline);
 };
 
 const stopSentinel = () => stopService('sentinel');
