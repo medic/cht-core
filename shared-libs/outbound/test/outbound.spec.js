@@ -771,7 +771,7 @@ describe('outbound shared library', () => {
         await handleHeaderAuth({ name: 'X-Custom' }, {});
         assert.fail('should have thrown');
       } catch (err) {
-        assert.include(err.message, 'Unsupported header name');
+        assert.include(err.message, `auth.type 'header' only supports the Authorization header.`);
       }
     });
   });
