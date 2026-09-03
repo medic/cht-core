@@ -427,6 +427,40 @@ describe('docs_by_replication_key', () => {
     });
   });
 
+  describe('Documents associated with submitter', () => {
+    const getBySubmitter = async (submitter) => {
+      const opts = {
+        limit: nouveau.RESULTS_LIMIT,
+        q: `submitter:${nouveau.escapeKeys(submitter)}`,
+      };
+
+      return await utils
+        .requestOnTestDb({
+          path: '/_design/medic/_nouveau/docs_by_replication_key',
+          method: 'POST',
+          body: opts,
+        })
+        .then(response => response.hits.map(doc => doc.id));
+    };
+
+    it('should return reports submitted by the contact', async () => {
+      const submitted = await getBySubmitter('testuser');
+      expect(submitted).to.include('report_with_contact');
+      expect(submitted).to.include('report_with_unknown_patient_id');
+      expect(submitted).to.include('report_with_invalid_patient_id');
+
+      expect(submitted).to.not.include('report_about_patient');
+      expect(submitted).to.not.include('test_kujua_message');
+      expect(submitted).to.not.include('test_data_record_wrong_user');
+      expect(submitted).to.not.include('report_with_contact_deleted____tombstone');
+    });
+
+    it('should not return reports for a submitter with no reports', async () => {
+      const submitted = await getBySubmitter('not_the_testuser');
+      expect(submitted).to.be.empty;
+    });
+  });
+
   describe('Documents associated with user id', () => {
     it('should return task docs', () => {
       expect(docByPlaceIds).to.include('task_created_by_user');

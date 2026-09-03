@@ -33,6 +33,7 @@ import { FastActionButtonComponent } from '@mm-components/fast-action-button/fas
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { PerformanceService } from '@mm-services/performance.service';
+import { UHCStatsService } from '@mm-services/uhc-stats.service';
 import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
 
 describe('Contacts component', () => {
@@ -152,6 +153,9 @@ describe('Contacts component', () => {
           { provide: NavigationService, useValue: {} },
           { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
           { provide: PerformanceService, useValue: performanceService },
+          // keeps the real UHCVisitDisplayService (whose formatting the list tests assert) from
+          // pulling in the real DbService through UHCStatsService
+          { provide: UHCStatsService, useValue: {} },
           { provide: MatDialog, useValue: { open: sinon.stub() } },
         ]
       })
@@ -628,6 +632,24 @@ describe('Contacts component', () => {
           },
         ]
       );
+    }));
+
+    it('displays the existing translation key when the last visit is unknown', fakeAsync(() => {
+      authService.has.resolves(true);
+      contactTypesService.getAll.resolves([{ id: 'childType', count_visits: true }]);
+      searchService.search.resolves([
+        { _id: 'never-visited', type: 'contact', contact_type: 'childType', lastVisitedDate: 0 },
+      ]);
+      searchService.search.resetHistory();
+      const updateContactsList = sinon.stub(ContactsActions.prototype, 'updateContactsList');
+      component.ngOnInit();
+      flush();
+
+      // the missing-translation fallback echoes the key back, so the summary pins the exact key requested (#11372)
+      expect(updateContactsList.callCount).to.equal(1);
+      const neverVisited = updateContactsList.args[0][0].find(contact => contact._id === 'never-visited');
+      expect(neverVisited.summary).to.equal('contact.last.visited.unknown');
+      expect(neverVisited.overdue).to.equal(true);
     }));
 
     it('saves uhc home_visits settings and default sort when correct', fakeAsync(() => {

@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const fs = require('fs');
 const path = require('path');
 
-const andraBot = require('../../../../../scripts/ci/andra-bot');
+const andraBot = require('../../../../../.github/actions/andrabot/andra-bot');
 
 const TEMPLATE = fs.readFileSync(
   path.resolve(__dirname, '../../../../../.github/PULL_REQUEST_TEMPLATE.md'),
@@ -12,16 +12,32 @@ const TEMPLATE = fs.readFileSync(
 const COMMENT_MARKER = '<!-- andra-bot -->';
 const FAILURE_LABEL = 'Waiting for contributor';
 const SUCCESS_LABEL = 'Ready for review';
-const MESSAGES_DIR = path.resolve(__dirname, '../../../../../scripts/ci/andra-bot-messages');
+const TEMPLATE_PATH = '.github/PULL_REQUEST_TEMPLATE.md';
+const TEMPLATE_URL = `https://github.com/medic/cht-core/blob/master/${TEMPLATE_PATH}`;
+const MESSAGES_DIR = path.resolve(__dirname, '../../../../../.github/actions/andrabot/andra-bot-messages');
 
 // Mirrors the message rendering in andra-bot.js so assertions track the message
 // files instead of hardcoding prose that editors are free to change.
 const getMessage = (name, replacements = {}) => {
   const template = fs.readFileSync(path.join(MESSAGES_DIR, `${name}.md`), 'utf8').trim();
   return Object
-    .entries(replacements)
+    .entries({
+      author: 'external-dev',
+      templateUrl: TEMPLATE_URL,
+      failureLabel: FAILURE_LABEL,
+      successLabel: SUCCESS_LABEL,
+      ...replacements,
+    })
     .reduce((text, [key, value]) => text.replaceAll(`{{${key}}}`, value), template);
 };
+
+// The REST shape returned by repos.getContent for a file.
+const templateFile = (content, url = TEMPLATE_URL) => ({
+  type: 'file',
+  encoding: 'base64',
+  content: Buffer.from(content).toString('base64'),
+  html_url: url,
+});
 
 const stripComments = (text) => {
   let previous;
@@ -56,6 +72,7 @@ describe('AndraBot', () => {
   const graphqlCalls = (fragment) => github.graphql.args.filter(([query]) => query.includes(fragment));
 
   const getContext = (pr) => ({
+    eventName: 'pull_request_target',
     repo: { owner: 'medic', repo: 'cht-core' },
     payload: { pull_request: pr },
   });
@@ -63,6 +80,14 @@ describe('AndraBot', () => {
   const filledTemplate = TEMPLATE
     .replace('<!-- DESCRIPTION -->', 'Fixes the date conversion by using the local format.')
     .replace('<!-- ISSUE NUMBER -->', 'Closes #1234');
+
+  // Same as filledTemplate but with no issue reference at all, for the cases that need a body
+  // the closing-keyword fallback cannot resolve.
+  const bodyWithoutIssue = TEMPLATE
+    .replace('<!-- DESCRIPTION -->', 'Fixes the date conversion by using the local format.')
+    .replace('<!-- ISSUE NUMBER -->', 'No issue for this one.');
+
+  const withIssueReference = (reference) => filledTemplate.replace('Closes #1234', reference);
 
   const linkedIssue = (number, assigneeLogins, repo = 'medic/cht-core') => ({
     number,
@@ -76,6 +101,26 @@ describe('AndraBot', () => {
     });
   };
 
+  // The REST shape returned by issues.get, which the fallback normalizes.
+  // GitHub resolves owner/repo case-insensitively, so the stub matches the same way — the
+  // action passes through whatever the contributor typed.
+  const matchesIssue = (owner, repo, number) => sinon.match(args => {
+    return args.owner.toLowerCase() === owner.toLowerCase() &&
+      args.repo.toLowerCase() === repo.toLowerCase() &&
+      args.issue_number === number;
+  });
+
+  const setReferencedIssue = ({ owner = 'medic', repo = 'cht-core', number, assignees = [], isPr = false }) => {
+    return github.rest.issues.get
+      .withArgs(matchesIssue(owner, repo, number))
+      .resolves({ data: {
+        number,
+        repository_url: `https://api.github.com/repos/${owner}/${repo}`,
+        assignees: assignees.map(login => ({ login })),
+        ...(isPr ? { pull_request: { url: 'https://api.github.com/pulls/1' } } : {}),
+      } });
+  };
+
   const setComments = (comments) => github.paginate
     .withArgs(github.rest.issues.listComments)
     .resolves(comments);
@@ -84,13 +129,16 @@ describe('AndraBot', () => {
     .withArgs(github.rest.issues.listLabelsOnIssue)
     .resolves(names.map(name => ({ name })));
 
-  const run = (pr) => andraBot({ github, context: getContext(pr), core });
+  const run = (pr, options) => andraBot({ github, context: getContext(pr), core }, options);
 
   beforeEach(() => {
     github = {
       graphql: sinon.stub(),
       paginate: sinon.stub().resolves([]),
       rest: {
+        repos: {
+          getContent: sinon.stub().resolves({ data: templateFile(TEMPLATE) }),
+        },
         issues: {
           createComment: sinon.stub().resolves(),
           deleteComment: sinon.stub().resolves(),
@@ -98,6 +146,8 @@ describe('AndraBot', () => {
           listLabelsOnIssue: sinon.stub(),
           addLabels: sinon.stub().resolves(),
           removeLabel: sinon.stub().resolves(),
+          // Not found by default; tests that exercise the fallback opt in via setReferencedIssue.
+          get: sinon.stub().rejects(Object.assign(new Error('Not Found'), { status: 404 })),
         },
       },
     };
@@ -216,13 +266,7 @@ describe('AndraBot', () => {
 
     it('should pick up changes to the PR template without script changes', async () => {
       const customTemplate = '# Summary\n<!-- fill me in -->\n\n# Testing\nDescribe the steps taken.\n';
-      const realRead = fs.readFileSync;
-      sinon.stub(fs, 'readFileSync').callsFake((filePath, ...args) => {
-        if (String(filePath).endsWith('PULL_REQUEST_TEMPLATE.md')) {
-          return customTemplate;
-        }
-        return realRead(filePath, ...args);
-      });
+      github.rest.repos.getContent.resolves({ data: templateFile(customTemplate) });
       setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
 
       await run(getPr({ body: '# Summary\nI did things.\n\n# Testing\nRan the tests.\n' }));
@@ -232,6 +276,86 @@ describe('AndraBot', () => {
       expect(core.setFailed.calledOnce).to.be.true;
       const commentBody = github.rest.issues.createComment.args[0][0].body;
       expect(commentBody).to.contain(getMessage('template-mismatch', { sections: 'Summary, Testing' }));
+    });
+
+    it('should read the template from the default branch of the target repository', async () => {
+      await run(getPr());
+
+      expect(github.rest.repos.getContent.calledOnce).to.be.true;
+      expect(github.rest.repos.getContent.args[0][0]).to.deep.equal({
+        owner: 'medic',
+        repo: 'cht-core',
+        path: TEMPLATE_PATH,
+      });
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(`(${TEMPLATE_URL})`);
+    });
+
+    it('should read the template from the configured path and link to it', async () => {
+      const url = 'https://github.com/medic/cht-core/blob/main/docs/pull_request_template.md';
+      github.rest.repos.getContent.resolves({ data: templateFile(TEMPLATE, url) });
+
+      await run(getPr(), { prTemplatePath: 'docs/pull_request_template.md' });
+
+      expect(github.rest.repos.getContent.args[0][0].path).to.equal('docs/pull_request_template.md');
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('template-mismatch', {
+        sections: TEMPLATE_SECTIONS,
+        templateUrl: url,
+      }));
+      expect(commentBody).to.not.contain(TEMPLATE_URL);
+    });
+
+    it('should fail the job with a clear error when the template cannot be read', async () => {
+      github.rest.repos.getContent.rejects(Object.assign(new Error('Not Found'), { status: 404 }));
+
+      await expect(run(getPr()))
+        .to.be.rejectedWith(`Could not read the PR template at medic/cht-core:${TEMPLATE_PATH}: Not Found`);
+      expect(github.rest.issues.createComment.called).to.be.false;
+      expect(github.rest.issues.addLabels.called).to.be.false;
+    });
+
+    it('should fail the job with a clear error when the template path is a directory', async () => {
+      github.rest.repos.getContent.resolves({ data: [templateFile(TEMPLATE)] });
+
+      await expect(run(getPr(), { prTemplatePath: '.github' }))
+        .to.be.rejectedWith('The PR template at medic/cht-core:.github is not a file.');
+      expect(github.rest.issues.createComment.called).to.be.false;
+    });
+  });
+
+  describe('configuration', () => {
+    it('should fail without running any check when not triggered by a pull request event', async () => {
+      const context = { eventName: 'push', repo: { owner: 'medic', repo: 'cht-core' }, payload: {} };
+      await andraBot({ github, context, core });
+
+      expect(core.setFailed.calledOnce).to.be.true;
+      expect(core.setFailed.args[0][0]).to.contain('"push"');
+      expect(github.rest.repos.getContent.called).to.be.false;
+      expect(github.graphql.called).to.be.false;
+      expect(github.rest.issues.createComment.called).to.be.false;
+    });
+
+    it('should use the configured labels', async () => {
+      const options = { failureLabel: 'needs work', successLabel: 'ready' };
+      setLabels(['ready']);
+      await run(getPr(), options);
+
+      expect(github.rest.issues.addLabels.args[0][0].labels).to.deep.equal(['needs work']);
+      expect(github.rest.issues.removeLabel.args[0][0].name).to.equal('ready');
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('outro', options));
+      expect(commentBody).to.not.contain(FAILURE_LABEL);
+      expect(commentBody).to.not.contain(SUCCESS_LABEL);
+
+      sinon.resetHistory();
+      setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
+      setLabels(['needs work']);
+      await run(getPr({ body: filledTemplate }), options);
+
+      expect(core.setFailed.called).to.be.false;
+      expect(github.rest.issues.addLabels.args[0][0].labels).to.deep.equal(['ready']);
+      expect(github.rest.issues.removeLabel.args[0][0].name).to.equal('needs work');
     });
   });
 
@@ -305,7 +429,7 @@ describe('AndraBot', () => {
 
   describe('linked issue check', () => {
     it('should fail when no issue is linked', async () => {
-      await run(getPr({ body: filledTemplate }));
+      await run(getPr({ body: bodyWithoutIssue }));
 
       expect(core.setFailed.calledOnce).to.be.true;
       const commentBody = github.rest.issues.createComment.args[0][0].body;
@@ -322,6 +446,7 @@ describe('AndraBot', () => {
         owner: 'medic',
         repo: 'cht-core',
         number: 42,
+        limit: 20,
       });
     });
 
@@ -334,11 +459,183 @@ describe('AndraBot', () => {
 
     it('should not count an issue linked from a repo outside the org', async () => {
       setLinkedIssues([linkedIssue(1234, ['external-dev'], 'external-dev/cht-core')]);
+      await run(getPr({ body: bodyWithoutIssue }));
+
+      expect(core.setFailed.calledOnce).to.be.true;
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('missing-linked-issue'));
+    });
+  });
+
+  // GitHub only populates closingIssuesReferences for PRs targeting the default branch, so a
+  // correctly keyword-linked PR on any other base arrives here with an empty list.
+  describe('closing-keyword fallback for non-default-branch PRs', () => {
+    it('should accept a keyword-linked issue when GitHub reports no linkage', async () => {
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+
+      await run(getPr({ body: filledTemplate }));
+
+      expect(core.setFailed.called).to.be.false;
+      expect(github.rest.issues.get.calledOnceWithExactly({
+        owner: 'medic',
+        repo: 'cht-core',
+        issue_number: 1234,
+      })).to.be.true;
+    });
+
+    it('should still report the assignee failure for a keyword-linked issue', async () => {
+      setReferencedIssue({ number: 1234, assignees: ['someone-else'] });
+
+      await run(getPr({ body: filledTemplate }));
+
+      expect(core.setFailed.calledOnce).to.be.true;
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('not-assigned', { issueList: '#1234' }));
+    });
+
+    ['Closes #1234', 'closes: #1234', 'Fixes #1234', 'resolved #1234'].forEach(reference => {
+      it(`should recognise "${reference}"`, async () => {
+        setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+
+        await run(getPr({ body: withIssueReference(reference) }));
+
+        expect(core.setFailed.called).to.be.false;
+      });
+    });
+
+    it('should recognise an owner/repo#number reference in the same org', async () => {
+      setReferencedIssue({ repo: 'cht-android', number: 99, assignees: ['external-dev'] });
+
+      await run(getPr({ body: withIssueReference('Closes medic/cht-android#99') }));
+
+      expect(core.setFailed.called).to.be.false;
+    });
+
+    it('should recognise a full issue URL', async () => {
+      setReferencedIssue({ repo: 'cht-android', number: 99, assignees: ['external-dev'] });
+
+      await run(getPr({ body: withIssueReference('Closes https://github.com/medic/cht-android/issues/99') }));
+
+      expect(core.setFailed.called).to.be.false;
+    });
+
+    it('should ignore a reference to a repo outside the org', async () => {
+      await run(getPr({ body: withIssueReference('Closes external-dev/cht-core#1234') }));
+
+      expect(core.setFailed.calledOnce).to.be.true;
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('missing-linked-issue'));
+      // Reaching out to a repo outside the org is itself the thing to avoid, not just an
+      // implementation detail — the token has no business reading it.
+      expect(github.rest.issues.get.called).to.be.false;
+    });
+
+    it('should ignore references inside HTML comments', async () => {
+      await run(getPr({ body: withIssueReference('<!-- Closes #1234 -->') }));
+
+      expect(core.setFailed.calledOnce).to.be.true;
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('missing-linked-issue'));
+    });
+
+    it('should ignore the example reference in the unfilled template', async () => {
+      // The template's own comment block contains "feat(#1234): add hat wobble"; an empty
+      // template must not read as a linked PR.
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+
+      await run(getPr({ body: TEMPLATE }));
+
+      expect(core.setFailed.calledOnce).to.be.true;
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('missing-linked-issue'));
+    });
+
+    it('should ignore a reference that points at a pull request', async () => {
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'], isPr: true });
+
       await run(getPr({ body: filledTemplate }));
 
       expect(core.setFailed.calledOnce).to.be.true;
       const commentBody = github.rest.issues.createComment.args[0][0].body;
       expect(commentBody).to.contain(getMessage('missing-linked-issue'));
+    });
+
+    it('should ignore a reference to an issue that does not exist', async () => {
+      await run(getPr({ body: filledTemplate }));
+
+      expect(github.rest.issues.get.called).to.be.true;
+      expect(core.setFailed.calledOnce).to.be.true;
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('missing-linked-issue'));
+    });
+
+    // GitHub owner and repo names are case-insensitive, so a reference that differs only in
+    // case is still a valid link and must not be dropped.
+    ['Closes Medic/cht-core#1234', 'Closes MEDIC/CHT-Core#1234'].forEach(reference => {
+      it(`should accept "${reference}" regardless of case`, async () => {
+        setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+
+        await run(getPr({ body: withIssueReference(reference) }));
+
+        expect(core.setFailed.called).to.be.false;
+      });
+    });
+
+    it('should report a same-repo issue as #number even when referenced with different case', async () => {
+      setReferencedIssue({ number: 1234, assignees: ['someone-else'] });
+
+      await run(getPr({ body: withIssueReference('Closes MEDIC/CHT-Core#1234') }));
+
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('not-assigned', { issueList: '#1234' }));
+    });
+
+    it('should ignore a reference to an issue that was deleted or transferred', async () => {
+      github.rest.issues.get.rejects(Object.assign(new Error('Gone'), { status: 410 }));
+
+      await run(getPr({ body: filledTemplate }));
+
+      expect(github.rest.issues.get.called).to.be.true;
+      expect(core.setFailed.calledOnce).to.be.true;
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('missing-linked-issue'));
+    });
+
+    /*
+     * Anything other than "the issue is not there" is left to throw, so the job goes red with
+     * no comment and no label change and the next synchronize re-runs it. Swallowing these is
+     * the one path that could hand a genuinely unlinked PR its Ready for review label.
+     */
+    describe('when the issue lookup fails for another reason', () => {
+      [500, 403].forEach(status => {
+        it(`should propagate a ${status.toString()} rather than treat it as unlinked`, async () => {
+          const err = Object.assign(new Error('Server Error'), { status });
+          github.rest.issues.get.rejects(err);
+
+          await expect(run(getPr({ body: filledTemplate }))).to.be.rejectedWith('Server Error');
+
+          expect(github.rest.issues.createComment.called).to.be.false;
+          expect(github.rest.issues.addLabels.called).to.be.false;
+          expect(github.rest.issues.removeLabel.called).to.be.false;
+        });
+      });
+    });
+
+    it('should look each referenced issue up only once', async () => {
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+
+      await run(getPr({ body: withIssueReference('Closes #1234, closes #1234') }));
+
+      expect(github.rest.issues.get.calledOnce).to.be.true;
+    });
+
+    it('should not fall back when GitHub already reports a linked issue', async () => {
+      setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
+
+      await run(getPr({ body: filledTemplate }));
+
+      expect(github.rest.issues.get.called).to.be.false;
+      expect(core.setFailed.called).to.be.false;
     });
   });
 
@@ -597,6 +894,161 @@ describe('AndraBot', () => {
       expect(core.setFailed.called).to.be.false;
       expect(github.rest.issues.addLabels.args[0][0].labels).to.deep.equal([SUCCESS_LABEL]);
       expect(github.rest.issues.removeLabel.args[0][0].name).to.equal(FAILURE_LABEL);
+    });
+  });
+
+  describe('review follow-ups on #11332', () => {
+    it('does not treat a reference inside a code span as a link', async () => {
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+
+      await run(getPr({ body: withIssueReference('Write `Closes #1234` in the description.') }));
+
+      expect(github.rest.issues.get.called).to.be.false;
+      expect(core.setFailed.calledOnce).to.be.true;
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('missing-linked-issue'));
+    });
+
+    it('does not treat a reference inside a fenced block as a link', async () => {
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+      const body = withIssueReference('Example:\n\n```\nCloses #1234\n```');
+
+      await run(getPr({ body }));
+
+      expect(github.rest.issues.get.called).to.be.false;
+      expect(core.setFailed.calledOnce).to.be.true;
+    });
+
+    it('reads the body when the linked issue is assigned to someone else', async () => {
+      // A sidebar-linked epic fills closingIssuesReferences on any base branch. Short-
+      // circuiting on it would hide the contributor's own keyword link behind a failure
+      // they cannot clear.
+      setLinkedIssues([linkedIssue(999, ['someone-else'])]);
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+
+      await run(getPr({ body: filledTemplate }));
+
+      expect(github.rest.issues.get.called).to.be.true;
+      expect(core.setFailed.called).to.be.false;
+    });
+
+    it('lists an issue once when both sources name it', async () => {
+      setLinkedIssues([linkedIssue(1234, ['someone-else'])]);
+      setReferencedIssue({ number: 1234, assignees: ['someone-else'] });
+
+      await run(getPr({ body: filledTemplate }));
+
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('not-assigned', { issueList: '#1234' }));
+    });
+
+    it('does not bind a keyword across a newline', async () => {
+      await run(getPr({ body: withIssueReference('Closes\n#1234') }));
+
+      expect(github.rest.issues.get.called).to.be.false;
+      expect(core.setFailed.calledOnce).to.be.true;
+    });
+
+    ['Closes #01234', 'Closes #99999999999999999999999'].forEach(reference => {
+      it(`ignores the malformed number in "${reference}"`, async () => {
+        await run(getPr({ body: withIssueReference(reference) }));
+
+        expect(github.rest.issues.get.called).to.be.false;
+        expect(core.setFailed.calledOnce).to.be.true;
+      });
+    });
+
+    it('ignores a repo name made only of dots', async () => {
+      await run(getPr({ body: withIssueReference('Closes medic/..#1234') }));
+
+      expect(github.rest.issues.get.called).to.be.false;
+      expect(core.setFailed.calledOnce).to.be.true;
+    });
+
+    // Each of these is a body whose issue link is genuine but which an over-eager code
+    // stripper discarded, failing a contributor with no way to clear it — the link they are
+    // told to add is the link already there. Only a fence that is actually closed delimits a
+    // block, so an unpaired marker cannot reach past itself to swallow any of them.
+    [
+      ['an unbalanced <!-- inside a fenced block', '```xml\n<instance> <!-- see docs\n</instance>\n```'],
+      ['a fence marker whose info string holds backticks', '```bash npm test```'],
+      ['an unpaired fence marker', 'How to link:\n\n```'],
+      ['a ~~~ marker that only backticks follow', '~~~\nsample\n```'],
+    ].forEach(([name, sample]) => {
+      it(`still passes a PR whose link follows ${name}`, async () => {
+        setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+
+        await run(getPr({ body: withIssueReference(`${sample}\n\nCloses #1234`) }));
+
+        expect(core.setFailed.called).to.be.false;
+        expect(github.rest.issues.addLabels.args[0][0].labels).to.deep.equal([SUCCESS_LABEL]);
+      });
+    });
+
+    it('still passes a PR whose link sits between markers of unequal length', async () => {
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+      // A closing fence is at least as long as its opener, so these two do not pair and the
+      // line between them is ordinary prose. Letting the opening run be retried shorter finds
+      // a pair anyway and deletes the link — and costs a rescan of the line per candidate
+      // length, which is what makes a body of backticks quadratic.
+
+      await run(getPr({ body: withIssueReference('`````\nCloses #1234\n```') }));
+
+      expect(core.setFailed.called).to.be.false;
+      expect(github.rest.issues.addLabels.args[0][0].labels).to.deep.equal([SUCCESS_LABEL]);
+    });
+
+    it('still passes a PR whose body reaches GitHub\'s size limit', async () => {
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+      // Two 32k path segments either side of a `/`, and deliberately *no* trailing `#number`:
+      // the cost is in the failed match, so a reference that resolves never reaches it. A
+      // repo-name pattern requiring a non-dot character (`[\w.-]*[\w-][\w.-]*`) lets its two
+      // quantifiers divide that run between them, which is cubic — ~29s at 8k, and hours at
+      // the 65536-character body limit this sits just inside, on a pull_request_target body
+      // re-parsed on every edit. The keyword cannot bind across the newline, so this stays a
+      // failed match. Mocha's own timeout cannot fire on a blocked event loop, so the process
+      // watchdog is the real assertion; the linear form returns in about a millisecond.
+      const segment = 'a'.repeat(32000);
+
+      await run(getPr({ body: withIssueReference(`Closes ${segment}/${segment}\n\nCloses #1234`) }));
+
+      expect(core.setFailed.called).to.be.false;
+      expect(github.rest.issues.addLabels.args[0][0].labels).to.deep.equal([SUCCESS_LABEL]);
+    });
+
+    it('does not splice prose either side of a removed span into a reference', async () => {
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+
+      await run(getPr({ body: 'This does not fix `anything` #1234 related.' }));
+
+      expect(github.rest.issues.get.called).to.be.false;
+      expect(core.setFailed.calledOnce).to.be.true;
+    });
+
+    it('still finds a real link when an unbalanced backtick appears above it', async () => {
+      // One stray backtick used to pair with the next one anywhere below and delete the
+      // reference in between — a false failure the contributor could not clear.
+      setReferencedIssue({ number: 1234, assignees: ['external-dev'] });
+      const body = filledTemplate.replace(
+        'Fixes the date conversion by using the local format.',
+        'Switch to `Intl.DateTimeFormat for parsing.'
+      );
+
+      await run(getPr({ body }));
+
+      expect(github.rest.issues.get.called).to.be.true;
+      expect(core.setFailed.called).to.be.false;
+    });
+
+    it('warns rather than silently dropping references past the limit', async () => {
+      const refs = Array.from({ length: 22 }, (_, i) => `Closes #${(i + 1).toString()}`).join(' ');
+      github.rest.issues.get.rejects(Object.assign(new Error('Not Found'), { status: 404 }));
+
+      await run(getPr({ body: withIssueReference(refs) }));
+
+      expect(github.rest.issues.get.callCount).to.equal(20);
+      expect(core.warning.args.some(([msg]) => msg.includes('2 later reference(s) were ignored')))
+        .to.be.true;
     });
   });
 });

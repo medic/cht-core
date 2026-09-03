@@ -70,6 +70,7 @@ const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-senti
 const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 const auditDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-audit`, { auth });
+const archiveDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-archive`, { auth });
 const existingFeedbackDocIds = [];
 const MINIMUM_BROWSER_VERSION = '107';
 const KUBECTL_CONTEXT = `-n ${PROJECT_NAME} --context k3d-${PROJECT_NAME}`;
@@ -939,7 +940,7 @@ const getUserSettings = ({ contactId, name }) => {
 };
 
 const waitForApiCrash = async () => {
-  let retryCount = 180;
+  const deadline = Date.now() + 90 * 1000; // 90 seconds
   do {
     try {
       await request({ path: '/api/info' });
@@ -947,29 +948,40 @@ const waitForApiCrash = async () => {
     } catch {
       return;
     }
-  } while (retryCount-- > 0);
+  } while (Date.now() <= deadline);
   throw new Error('API expected to crash, but still running after 1.5 minutes');
 };
 
+const logApiContainerDiagnostics = async () => {
+  if (!isDocker()) {
+    return;
+  }
+  try {
+    const state = await getContainerState('api');
+    console.log('api container state:', state ? JSON.stringify(state) : 'container not found');
+    await runCommand(`docker logs --tail 20 ${getContainerName('api')}`);
+  } catch (err) {
+    console.log('Could not collect api container diagnostics:', err.message);
+  }
+};
+
 const listenForApi = async () => {
-  const totalTries = 180; // 3 minutes
-  let retryCount = totalTries;
+  const deadline = Date.now() + 180 * 1000; // 3 minutes
   do {
     try {
-      console.log(`Checking API, retries left ${retryCount}`);
+      console.log(`Checking API, trying for another ${parseInt((deadline - Date.now()) / 1000)} seconds`);
       await request({ path: '/api/info' });
-      if (retryCount < totalTries) {
-        // if api request failed at least once, make sure that it's stable
-        await delayPromise(1000);
-        await request({ path: '/api/info' });
-      }
+      // make sure that it's stable
+      await delayPromise(1000);
+      await request({ path: '/api/info' });
       return;
     } catch (err) {
       console.log('API check failed, trying again in 1 second');
       console.log(err.message);
       await delayPromise(1000);
     }
-  } while (--retryCount > 0);
+  } while (Date.now() <= deadline);
+  await logApiContainerDiagnostics();
   throw new Error('API failed to start after 3 minutes');
 };
 
@@ -982,19 +994,16 @@ const waitForNginxContainerRunning = async () => {
     return;
   }
   const containerName = getContainerName('nginx');
-  const maxTries = 30;
-  for (let i = 0; i < maxTries; i++) {
-    let state;
-    try {
-      const rawState = await runCommand(
-        `docker inspect -f '{{json .State}}' ${containerName}`,
-        { verbose: false }
-      );
-      state = JSON.parse(rawState);
-    } catch (err) {
+  const deadline = Date.now() + 30 * 1000; // try for 30 seconds
+  do {
+    if (await isContainerRunning('nginx')) {
+      return;
+    }
+
+    const state = await getContainerState('nginx');
+    if (!state) {
       throw new Error(
-        `Expected nginx container "${containerName}" was not found after docker compose up ` +
-        `(${err.message}). ${NGINX_PORT_HINT}`
+        `Expected nginx container "${containerName}" was not found after docker compose up. ${NGINX_PORT_HINT}`
       );
     }
 
@@ -1014,15 +1023,8 @@ const waitForNginxContainerRunning = async () => {
       );
     }
 
-    if (state.Status === 'running') {
-      return;
-    }
-
-    await delayPromise(1000);
-  }
-  throw new Error(
-    `nginx container "${containerName}" did not become running within ${maxTries} tries. ${NGINX_PORT_HINT}`
-  );
+    await delayPromise(250);
+  } while (Date.now() <= deadline);
 };
 
 const dockerComposeCmd = (params) => {
@@ -1045,22 +1047,42 @@ const sendSignal = async (service, signal) => {
   await runCommand(`kubectl ${KUBECTL_CONTEXT} exec deployments/cht-${service} -- ${killCmd(pid)}`);
 };
 
+const waitForContainerRunning = async (service, running = true) => {
+  const deadline = Date.now() + 5 * 1000; // 5 seconds
+  do {
+    const isRunning = await isContainerRunning(service);
+    if (isRunning === running) {
+      return true;
+    }
+    await delayPromise(250);
+  } while (Date.now() <= deadline);
+
+  return false;
+};
+
+const stopServiceInDocker = async (service) => {
+  await dockerComposeCmd(`stop -t 0 ${service}`);
+  if (!await waitForContainerRunning(service, false)) {
+    throw new Error(`Container for service ${service} failed to stop`);
+  }
+};
+
 const stopService = async (service) => {
   if (isDocker()) {
-    return await dockerComposeCmd(`stop -t 0 ${service}`);
+    return await stopServiceInDocker(service);
   }
   await saveLogs(); // we lose logs when a pod crashes or is stopped.
   await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=0`);
-  let tries = 100;
+  const deadline = Date.now() + 10 * 1000; // 10 seconds
+
   do {
     try {
       await getPodName(service, false);
       await delayPromise(100);
-      tries--;
     } catch {
       return;
     }
-  } while (tries > 0);
+  } while (Date.now() <= deadline);
 };
 
 const waitForService = async (service) => {
@@ -1069,7 +1091,7 @@ const waitForService = async (service) => {
     return;
   }
 
-  let tries = 100;
+  const deadline = Date.now() + 5 * 1000; // 5 seconds
   do {
     try {
       const podName = await getPodName(service);
@@ -1079,17 +1101,53 @@ const waitForService = async (service) => {
       );
       return;
     } catch {
-      tries--;
       await delayPromise(500);
     }
-  } while (tries > 0);
+  } while (Date.now() <= deadline);
 };
 
 const stopSentinel = () => stopService('sentinel');
 
+const getContainerState = async (service) => {
+  try {
+    const rawState = await runCommand(
+      `docker inspect -f '{{json .State}}' ${getContainerName(service)}`,
+      { verbose: false }
+    );
+    return JSON.parse(rawState);
+  } catch {
+    // container does not exist
+  }
+};
+
+const isContainerRunning = async (service) => {
+  const state = await getContainerState(service);
+  return !!state && state.Status === 'running';
+};
+
+// `docker compose start` can exit 0 without actually starting the container when docker still
+// considers it running or mid-restart (e.g. racing the `restart: always` policy right after a
+// `stop -t 0`).
+const startServiceInDocker = async (service, retry = 3) => {
+  if (retry <= 0) {
+    const state = await getContainerState(service);
+    throw new Error(
+      `Container for "${service}" failed to start. ` +
+      `Last state: ${state ? JSON.stringify(state) : 'container not found'}`
+    );
+  }
+
+  await dockerComposeCmd(`start ${service}`);
+  if (await waitForContainerRunning(service, true)) {
+    return;
+  }
+
+  await startServiceInDocker(service, retry - 1);
+};
+
 const startService = async (service) => {
   if (isDocker()) {
-    return await dockerComposeCmd(`start ${service}`);
+    return await startServiceInDocker(service);
   }
   await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=1`);
 };
@@ -1870,6 +1928,7 @@ module.exports = {
   logsDb,
   usersDb,
   auditDb,
+  archiveDb,
 
   SW_SUCCESSFUL_REGEX,
   ONE_YEAR_IN_S,
