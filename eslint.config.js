@@ -405,7 +405,6 @@ module.exports = defineConfig([
         ...globalsPlugin.jquery,
       },
 
-      ecmaVersion: 2018,
       sourceType: 'commonjs',
     },
     rules: {

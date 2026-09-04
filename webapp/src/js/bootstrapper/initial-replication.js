@@ -78,7 +78,7 @@ const getDownloadList = async (localDb = true) => {
 
 const toRevMap = (rows) => {
   const revMap = {};
-  rows.forEach(row => revMap[row.id] = row.value && row.value.rev);
+  rows.forEach(row => (revMap[row.id] = row.value?.rev));
   return revMap;
 };
 
