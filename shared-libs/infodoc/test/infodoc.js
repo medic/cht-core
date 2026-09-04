@@ -689,6 +689,22 @@ describe('infodoc', () => {
           });
       });
 
+      it('fills in the initial replication date when sentinel created the infodoc without one', async () => {
+        const now = new Date('2026-01-01T00:00:00.000Z');
+        clock = sinon.useFakeTimers({ now: now.valueOf() });
+        sentinelGet.resolves({
+          _id: 'blah-info',
+          initial_replication_date: 'unknown',
+          latest_replication_date: 'unknown'
+        });
+        sentinelPut.resolves();
+
+        await lib.recordDocumentWrite('blah');
+
+        assert.deepEqual(sentinelPut.args[0][0].initial_replication_date, now);
+        assert.deepEqual(sentinelPut.args[0][0].latest_replication_date, now);
+      });
+
       it('it handles 409s correctly when editing an infodoc', () => {
         sentinelGet.onFirstCall().resolves({
           _id: 'blah-info',
@@ -785,6 +801,37 @@ describe('infodoc', () => {
             assert.equal(sentinelBulkDocs.args[0][0][1].initial_replication_date, 'ages ago');
           });
       });
+
+      it('fills in initial replication dates when sentinel created the infodocs without them', async () => {
+        const now = new Date('2026-01-01T00:00:00.000Z');
+        clock = sinon.useFakeTimers({ now: now.valueOf() });
+        sentinelAllDocs.resolves({
+          rows: [
+            {
+              id: 'sentinel-created-info',
+              key: 'sentinel-created-info',
+              doc: {
+                _id: 'sentinel-created-info',
+                initial_replication_date: 'unknown',
+                latest_replication_date: 'unknown'
+              }
+            }
+          ]
+        });
+        sentinelBulkDocs.resolves([
+          {
+            ok: true,
+            id: 'sentinel-created-info',
+            rev: '2-abc'
+          }
+        ]);
+
+        await lib.recordDocumentWrites(['sentinel-created']);
+
+        assert.deepEqual(sentinelBulkDocs.args[0][0][0].initial_replication_date, now);
+        assert.deepEqual(sentinelBulkDocs.args[0][0][0].latest_replication_date, now);
+      });
+
       it('Correctly works through and resolves conflicts when editing or creating infodocs', () => {
         // Attempting against two new docs and two existing
         sentinelAllDocs.onFirstCall().resolves({
