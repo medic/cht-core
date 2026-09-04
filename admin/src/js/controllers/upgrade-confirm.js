@@ -10,6 +10,7 @@ angular.module('controllers').controller('UpgradeConfirmCtrl',
     'ngInject';
 
     $scope.status = { };
+    $scope.isCollapsed = true;
 
     $scope.cancel = () => {
       $uibModalInstance.dismiss();
@@ -21,6 +22,7 @@ angular.module('controllers').controller('UpgradeConfirmCtrl',
       }
 
       $scope.status.processing = true;
+
       return $scope.model
         .confirmCallback()
         .then(() => $uibModalInstance.close(true))

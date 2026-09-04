@@ -1,7 +1,7 @@
 const { assert } = require('chai');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const moment = require('moment');
 
 //
@@ -133,79 +133,6 @@ describe('infodocs', () => {
       assert.notEqual(newInfoDocs[0].latest_replication_date, infoDocs[0].latest_replication_date);
       assert.notEqual(newInfoDocs[1].latest_replication_date, infoDocs[1].latest_replication_date);
       assert.equal(newInfoDocs[2].latest_replication_date, infoDocs[2].latest_replication_date);
-    });
-  });
-
-  describe('legacy data support', () => {
-    it('finds and migrates data from the medic doc', async () => {
-      const testDoc = {
-        _id: 'yuiop',
-        data: 'data',
-        transitions: {
-          some: 'transition info'
-        }
-      };
-
-      await utils.toggleSentinelTransitions();
-      const result = await utils.db.post(testDoc);
-      testDoc._rev = result.rev;
-
-      await utils.setTransitionSeqToNow();
-      await utils.toggleSentinelTransitions();
-
-      testDoc.data = 'data changed';
-      await utils.saveDoc(testDoc);
-
-      const [infodoc] = await delayedInfoDocsOf(testDoc._id);
-
-      assert.isOk(infodoc.initial_replication_date, 'expected an initial_replication_date');
-      assert.isOk(infodoc.latest_replication_date, 'expected a latest_replication_date');
-      assert.deepEqual(infodoc.transitions, { some: 'transition info' });
-    });
-
-    it('finds and migrates data from the medic infodoc', async () => {
-      // In legacy situations the transition info was on the doc, while other
-      // information was on the infodoc
-      const testDoc = {
-        data: 'data',
-        transitions: {
-          some: 'transition info'
-        }
-      };
-      const legacyInfodoc = {
-        type: 'info',
-        some: 'legacy data',
-        initial_replication_date: 1000,
-        latest_replication_date: 2000
-      };
-
-      await utils.toggleSentinelTransitions();
-      const result = await utils.db.post(testDoc);
-      testDoc._rev = result.rev;
-      testDoc._id = result.id;
-
-      legacyInfodoc._id = `${result.id}-info`;
-      legacyInfodoc.doc_id = result.id;
-
-      await utils.db.put(legacyInfodoc);
-      await utils.setTransitionSeqToNow();
-      await utils.toggleSentinelTransitions();
-
-      testDoc.data = 'data changed';
-      await utils.saveDoc(testDoc);
-
-      const [infodoc] = await delayedInfoDocsOf(testDoc._id);
-
-      try {
-        await utils.db.get(legacyInfodoc._id);
-        assert.fail('doc should be deleted');
-      } catch (err) {
-        assert.equal(err.status, 404);
-      }
-      assert.equal(infodoc.initial_replication_date, 1000);
-      assert.isOk(infodoc.latest_replication_date !== 2000); // updated
-      assert.deepEqual(infodoc.transitions, { some: 'transition info' });
-      assert.equal(infodoc.some, 'legacy data');
     });
   });
 

@@ -11,6 +11,7 @@ import { Select2SearchService } from '@mm-services/select2-search.service';
 import { UpdateFacilityService } from '@mm-services/update-facility.service';
 import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('EditReportComponent', () => {
   let component: EditReportComponent;
@@ -112,7 +113,7 @@ describe('EditReportComponent', () => {
     it('should pass report from as fallback', async () => {
       component.report = {
         _id: 'report',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         from: 'the_phone',
         fields: { patient_id: 'the_patient' },
       };
@@ -135,7 +136,7 @@ describe('EditReportComponent', () => {
     it('should pass report contact as initialValue', async () => {
       component.report = {
         _id: 'report',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         from: 'the_phone',
         contact: { _id: 'the_contact', phone: 'the_phone' },
         fields: { patient_id: 'the_patient' },

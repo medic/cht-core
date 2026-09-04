@@ -12,7 +12,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
-import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { UpdateServiceWorkerService } from '@mm-services/update-service-worker.service';
 import { LocationService } from '@mm-services/location.service';
@@ -38,6 +38,7 @@ import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-clo
 import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-matcher.provider';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TranslateService } from '@mm-services/translate.service';
@@ -49,12 +50,14 @@ import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/browser-compatibility.component';
 import { PerformanceService } from '@mm-services/performance.service';
 import { UserSettings, UserSettingsService } from '@mm-services/user-settings.service';
-import { OLD_NAV_PERMISSION, HeaderComponent } from '@mm-components/header/header.component';
+import { HeaderComponent, OLD_NAV_PERMISSION } from '@mm-components/header/header.component';
 import { NgIf } from '@angular/common';
 import { PrivacyPolicyComponent } from '@mm-modules/privacy-policy/privacy-policy.component';
 import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
 import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
-import { DOC_IDS, DOC_TYPES } from '@medic/constants';
+import { TasksNotificationService } from '@mm-services/task-notifications.service';
+import { HTTP_HEADERS, DOC_IDS, DOC_TYPES, PREFIXES } from '@medic/constants';
+import { MobileTooltipDirective } from '@mm-directives/mobile-tooltip.directive';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -78,6 +81,13 @@ const SYNC_STATUS = {
   }
 };
 
+const DOC_IDS_TRIGGER_UPDATE = new Set([
+  '_design/medic',
+  '_design/medic-client',
+  DOC_IDS.SERVICE_WORKER_META,
+  DOC_IDS.SETTINGS,
+  DOC_IDS.EXTENSION_LIBS
+]);
 
 @Component({
   selector: 'app-root',
@@ -89,11 +99,12 @@ const SYNC_STATUS = {
     HeaderComponent,
     RouterOutlet,
     SnackbarComponent,
+    MobileTooltipDirective,
   ],
 })
 export class AppComponent implements OnInit, AfterViewInit {
-  private globalActions: GlobalActions;
-  private analyticsActions: AnalyticsActions;
+  private readonly globalActions: GlobalActions;
+  private readonly analyticsActions: AnalyticsActions;
   setupPromise;
   translationsLoaded;
   currentTab = '';
@@ -117,46 +128,48 @@ export class AppComponent implements OnInit, AfterViewInit {
   ]);
 
   constructor (
-    private dbSyncService:DBSyncService,
-    private store:Store,
-    private translateService:TranslateService,
-    private languageService:LanguageService,
-    private setLanguageService:SetLanguageService,
-    private sessionService:SessionService,
-    private authService:AuthService,
-    private resourceIconsService:ResourceIconsService,
-    private changesService:ChangesService,
-    private updateServiceWorker:UpdateServiceWorkerService,
-    private locationService:LocationService,
-    private modalService:ModalService,
-    private router:Router,
-    private domSanitizer: DomSanitizer,
-    private feedbackService:FeedbackService,
-    private formatDateService:FormatDateService,
-    private xmlFormsService:XmlFormsService,
-    private jsonFormsService:JsonFormsService,
-    private translateFromService:TranslateFromService,
-    private countMessageService:CountMessageService,
-    private privacyPoliciesService:PrivacyPoliciesService,
-    private routeSnapshotService:RouteSnapshotService,
-    private checkDateService:CheckDateService,
-    private unreadRecordsService:UnreadRecordsService,
-    private rulesEngineService:RulesEngineService,
-    private recurringProcessManagerService:RecurringProcessManagerService,
-    private wealthQuintilesWatcherService: WealthQuintilesWatcherService,
-    private databaseConnectionMonitorService: DatabaseConnectionMonitorService,
-    private translateLocaleService:TranslateLocaleService,
-    private telemetryService:TelemetryService,
-    private performanceService:PerformanceService,
-    private transitionsService:TransitionsService,
-    private ngZone:NgZone,
-    private chtDatasourceService: CHTDatasourceService,
-    private analyticsModulesService: AnalyticsModulesService,
-    private trainingCardsService: TrainingCardsService,
-    private matIconRegistry: MatIconRegistry,
-    private browserDetectorService: BrowserDetectorService,
-    private userSettingsService: UserSettingsService,
-    private formService: FormService,
+    private readonly dbSyncService:DBSyncService,
+    private readonly store:Store,
+    private readonly translateService:TranslateService,
+    private readonly languageService:LanguageService,
+    private readonly setLanguageService:SetLanguageService,
+    private readonly sessionService:SessionService,
+    private readonly authService:AuthService,
+    private readonly customResourceService:CustomResourceService,
+    private readonly changesService:ChangesService,
+    private readonly updateServiceWorker:UpdateServiceWorkerService,
+    private readonly locationService:LocationService,
+    private readonly modalService:ModalService,
+    private readonly router:Router,
+    private readonly domSanitizer: DomSanitizer,
+    private readonly feedbackService:FeedbackService,
+    private readonly formatDateService:FormatDateService,
+    private readonly xmlFormsService:XmlFormsService,
+    private readonly jsonFormsService:JsonFormsService,
+    private readonly translateFromService:TranslateFromService,
+    private readonly countMessageService:CountMessageService,
+    private readonly privacyPoliciesService:PrivacyPoliciesService,
+    private readonly routeSnapshotService:RouteSnapshotService,
+    private readonly checkDateService:CheckDateService,
+    private readonly unreadRecordsService:UnreadRecordsService,
+    private readonly rulesEngineService:RulesEngineService,
+    private readonly recurringProcessManagerService:RecurringProcessManagerService,
+    private readonly wealthQuintilesWatcherService: WealthQuintilesWatcherService,
+    private readonly databaseConnectionMonitorService: DatabaseConnectionMonitorService,
+    private readonly translateLocaleService:TranslateLocaleService,
+    private readonly telemetryService:TelemetryService,
+    private readonly performanceService:PerformanceService,
+    private readonly transitionsService:TransitionsService,
+    private readonly ngZone:NgZone,
+    private readonly chtDatasourceService: CHTDatasourceService,
+    private readonly analyticsModulesService: AnalyticsModulesService,
+    private readonly trainingCardsService: TrainingCardsService,
+    private readonly matIconRegistry: MatIconRegistry,
+    private readonly browserDetectorService: BrowserDetectorService,
+    private readonly userSettingsService: UserSettingsService,
+    private readonly formService: FormService,
+    private readonly taskNotificationService: TasksNotificationService,
+    private readonly interactionTrackingService: InteractionTrackingService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
@@ -240,7 +253,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         .apply(dbFetch, args)
         .then((response) => {
           // ignore 401 that could come through other channels than CHT API
-          if (response.status === 401 && response.headers?.get('logout-authorization') === 'CHT-Core API') {
+          if (response.status === 401 && response.headers?.get(HTTP_HEADERS.LOGOUT_AUTHORIZATION) === 'CHT-Core API') {
             this.showSessionExpired();
             setTimeout(() => {
               console.info('Redirect to login after 1 minute of inactivity');
@@ -310,10 +323,11 @@ export class AppComponent implements OnInit, AfterViewInit {
       .then(() => this.checkPrivacyPolicy())
       .then(() => (this.initialisationComplete = true))
       .then(() => this.initUser())
+      .then(() => this.interactionTrackingService.init())
       .then(() => this.initRulesEngine())
       .then(() => this.initTransitions())
       .then(() => this.initForms())
-      .then(() => this.initUnreadCount())
+      .then(() => this.initBubbleCounter())
       .then(() => this.checkDateService.check(true))
       .then(() => this.startRecurringProcesses())
       .catch(err => {
@@ -333,12 +347,21 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.requestPersistentStorage();
     this.startWealthQuintiles();
     this.initAnalyticsModules();
+    this.initAndroidTaskNotifications();
+  }
+
+  private initAndroidTaskNotifications() {
+    if (typeof globalThis?.medicmobile_android?.updateTaskNotificationStore === 'function') {
+      this.taskNotificationService.initOnAndroid();
+    }
   }
 
   private async initUser() {
     const userSettings:UserSettings = await this.userSettingsService.get();
     this.globalActions.setUserContactId(userSettings.contact_id);
     this.globalActions.setUserFacilityIds(userSettings.facility_id);
+    this.globalActions.setUserFacilities(await this.userSettingsService.getUserFacilities());
+    this.globalActions.setIsOnlineOnly(this.authService.online(true));
   }
 
   ngAfterViewInit() {
@@ -383,24 +406,16 @@ export class AppComponent implements OnInit, AfterViewInit {
   private watchBrandingChanges() {
     this.changesService.subscribe({
       key: 'branding-icon',
-      filter: change => change.id === 'branding',
+      filter: change => change.id === DOC_IDS.BRANDING,
       callback: () => this.setAppTitle(),
     });
   }
 
   private watchDDocChanges() {
     this.updateServiceWorker.update(() => this.ngZone.run(() => this.showUpdateReady()));
-
     this.changesService.subscribe({
       key: 'ddoc',
-      filter: (change) => {
-        return (
-          change.id === '_design/medic' ||
-          change.id === '_design/medic-client' ||
-          change.id === DOC_IDS.SERVICE_WORKER_META ||
-          change.id === 'settings'
-        );
-      },
+      filter: ({ id }) => DOC_IDS_TRIGGER_UPDATE.has(id) || id.startsWith(PREFIXES.UI_EXTENSION),
       callback: (change) => {
         if (change.id === DOC_IDS.SERVICE_WORKER_META) {
           this.updateServiceWorker.update(() => this.ngZone.run(() => this.showUpdateReady()));
@@ -421,7 +436,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         return (
           userCtx &&
           userCtx.name &&
-          change.id === `org.couchdb.user:${userCtx.name}`
+          change.id === `${PREFIXES.COUCH_USER}${userCtx.name}`
         );
       },
       callback: () => {
@@ -465,7 +480,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.databaseConnectionMonitorService
       .listenForDatabaseClosed()
       .subscribe(() => {
-        this.modalService.show(DatabaseClosedComponent);
+        this.modalService.show(DatabaseClosedComponent, { closeOnNavigation: false });
         this.closeDropdowns();
       });
   }
@@ -569,7 +584,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private setAppTitle() {
-    this.resourceIconsService
+    this.customResourceService
       .getAppTitle()
       .then(title => {
         document.title = title;
@@ -607,13 +622,13 @@ export class AppComponent implements OnInit, AfterViewInit {
       .catch(err => console.error('Failed to load privacy policy', err));
   }
 
-  private initUnreadCount() {
+  private initBubbleCounter() {
     this.unreadRecordsService.init((err, data) => {
       if (err) {
         console.error('Error fetching read status', err);
         return;
       }
-      this.globalActions.setUnreadCount(data);
+      this.globalActions.setBubbleCounter(data);
     });
   }
 
@@ -714,6 +729,11 @@ export class AppComponent implements OnInit, AfterViewInit {
   private stopWatchingChanges() {
     // avoid Failed to fetch errors being logged when the browser window is reloaded
     this.changesService.killWatchers();
+  }
+
+  @HostListener('window:visibilitychange')
+  private onVisibilityChange() {
+    this.interactionTrackingService.persistBuffer();
   }
 
   @HostListener('window:pageshow', ['$event'])

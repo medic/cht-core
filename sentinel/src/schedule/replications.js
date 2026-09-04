@@ -3,8 +3,10 @@ const db = require('../db');
 const logger = require('@medic/logger');
 const environment = require('@medic/environment');
 const request = require('@medic/couch-request');
+const { SENTINEL_METADATA } = require('@medic/constants');
 
-const PURGE_LOG_ID = '_local/purge_log';
+const PURGE_LOG_ID = SENTINEL_METADATA.PURGE_LOG;
+// Note: distinct from _local/purgelog (no underscore) used in webapp purger
 // default CouchDB purge max_document_id_number
 // https://docs.couchdb.org/en/master/cluster/purging.html#config-settings
 const BATCH_SIZE = 100;
@@ -83,7 +85,7 @@ const batchedPurge = (sourceDb, targetDb, lastSeq = 0) => {
       }
 
       const idsToPurge = result.results
-        .filter(change => !change.deleted && isTelemetryOrFeedback(change.id))
+        .filter(change => !change.deleted && isReplicableDoc(change.id))
         .map(change => change.id);
 
       if (!idsToPurge) {
@@ -100,14 +102,16 @@ const batchedPurge = (sourceDb, targetDb, lastSeq = 0) => {
     .then(nextSeq => nextSeq && batchedPurge(sourceDb, targetDb, nextSeq));
 };
 
-const isTelemetryOrFeedback = (docId) => docId.startsWith('telemetry-') || docId.startsWith('feedback-');
+const isReplicableDoc = (docId) => {
+  return docId.startsWith('telemetry-') || docId.startsWith('feedback-') || docId.startsWith('interaction-');
+};
 
 const replicateDb = (sourceDb, targetDb) => {
-  // Replicate only telemetry and feedback docs
+  // Replicate telemetry, feedback, and interaction-log docs
   return sourceDb.info().then(info => {
     return sourceDb.replicate
       .to(targetDb, {
-        filter: doc => !doc._deleted && isTelemetryOrFeedback(doc._id),
+        filter: doc => !doc._deleted && isReplicableDoc(doc._id),
       })
       .then(() => purgeFeedback(sourceDb, info, targetDb));
   });

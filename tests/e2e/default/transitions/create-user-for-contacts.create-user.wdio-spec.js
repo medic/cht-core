@@ -9,13 +9,14 @@ const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page'
 const { BASE_URL } = require('@constants');
 const { cookieLogin } = require('@page-objects/default/login/login.wdio.page');
 const createUserForContactsPage = require('@page-objects/default/enketo/create-user-for-contacts');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Create user when adding contact', () => {
   const NEW_USERS = [];
   const CONTACT_NAME = 'Bob_chw';
   const FORM_NAME = 'add_chw';
 
-  const district = utils.deepFreeze( placeFactory.place().build({ type: 'district_hospital' }) );
+  const district = utils.deepFreeze( placeFactory.place().build({ type: CONTACT_TYPES.DISTRICT_HOSPITAL }) );
 
   const createSettings = (create_user_for_contacts) => utils.deepFreeze({
     transitions: { create_user_for_contacts },
@@ -108,7 +109,7 @@ describe('Create user when adding contact', () => {
     await cookieLogin();
     await commonPage.goToPeople(district._id);
     await contactsPage.addPlace({
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       placeName: 'HC1',
       contactName: CONTACT_NAME,
       phone: '+40755696969'

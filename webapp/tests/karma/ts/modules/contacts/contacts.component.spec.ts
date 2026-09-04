@@ -33,6 +33,8 @@ import { FastActionButtonComponent } from '@mm-components/fast-action-button/fas
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { PerformanceService } from '@mm-services/performance.service';
+import { UHCStatsService } from '@mm-services/uhc-stats.service';
+import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -61,7 +63,7 @@ describe('Contacts component', () => {
     district = {
       _id: 'district-id',
       name: 'My District',
-      type: 'district_hospital'
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL
     };
     searchService = { search: sinon.stub().resolves([]) };
     settingsService = { get: sinon.stub().resolves([]) };
@@ -79,7 +81,7 @@ describe('Contacts component', () => {
       get: sinon.stub().resolves({ facility_id: district._id })
     };
     getDataRecordsService = {
-      get: sinon.stub().resolves([ district ])
+      getContacts: sinon.stub().resolves([ district ])
     };
     contactTypesService = {
       getChildren: sinon.stub().resolves([
@@ -151,6 +153,9 @@ describe('Contacts component', () => {
           { provide: NavigationService, useValue: {} },
           { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
           { provide: PerformanceService, useValue: performanceService },
+          // keeps the real UHCVisitDisplayService (whose formatting the list tests assert) from
+          // pulling in the real DbService through UHCStatsService
+          { provide: UHCStatsService, useValue: {} },
           { provide: MatDialog, useValue: { open: sinon.stub() } },
         ]
       })
@@ -274,7 +279,7 @@ describe('Contacts component', () => {
       sinon.resetHistory();
       sessionService.isOnlineOnly.returns(true);
       userSettingsService.get.resolves({ facility_id: undefined });
-      getDataRecordsService.get.resolves(undefined);
+      getDataRecordsService.getContacts.resolves(undefined);
       searchResults = [{ _id: 'search-result' }];
       searchService.search.resolves(searchResults);
       component.contactsActions.updateContactsList = sinon.stub();
@@ -302,7 +307,7 @@ describe('Contacts component', () => {
     it('when paginating, does not skip the extra place for admins #4085', fakeAsync(() => {
       sinon.resetHistory();
       userSettingsService.get.resolves({ facility_id: undefined });
-      getDataRecordsService.get.resolves(undefined);
+      getDataRecordsService.getContacts.resolves(undefined);
       const searchResult = { _id: 'search-result' };
       searchResults = Array(50).fill(searchResult);
       searchService.search.resolves(searchResults);
@@ -364,7 +369,7 @@ describe('Contacts component', () => {
     it('when refreshing list as admin, does not modify limit #4085', fakeAsync(() => {
       sinon.resetHistory();
       userSettingsService.get.resolves({ facility_id: undefined });
-      getDataRecordsService.get.resolves(undefined);
+      getDataRecordsService.getContacts.resolves(undefined);
       const searchResult = { _id: 'search-result' };
       searchResults = Array(60).fill(searchResult);
       searchService.search.resolves(searchResults);
@@ -525,15 +530,15 @@ describe('Contacts component', () => {
       expect(changesService.subscribe.callCount).to.equal(1);
       const changesFilter = changesService.subscribe.args[0][0].filter;
       expect(!!changesFilter({ doc: { type: 'person' } })).to.equal(true);
-      expect(!!changesFilter({ doc: { type: 'clinic' } })).to.equal(true);
+      expect(!!changesFilter({ doc: { type: CONTACT_TYPES.CLINIC } })).to.equal(true);
       expect(!!changesFilter({ doc: { type: 'health_center' } })).to.equal(true);
-      expect(!!changesFilter({ doc: { type: 'district_hospital' } })).to.equal(true);
+      expect(!!changesFilter({ doc: { type: CONTACT_TYPES.DISTRICT_HOSPITAL } })).to.equal(true);
     });
 
     it('filtering returns false for non-`contact` type documents #4080', () => {
       const changesFilter = changesService.subscribe.args[0][0].filter;
       expect(!!changesFilter({ doc: {} })).to.equal(false);
-      expect(!!changesFilter({ doc: { type: 'data_record' } })).to.equal(false);
+      expect(!!changesFilter({ doc: { type: DOC_TYPES.DATA_RECORD } })).to.equal(false);
       expect(!!changesFilter({ doc: { type: '' } })).to.equal(false);
     });
 
@@ -627,6 +632,24 @@ describe('Contacts component', () => {
           },
         ]
       );
+    }));
+
+    it('displays the existing translation key when the last visit is unknown', fakeAsync(() => {
+      authService.has.resolves(true);
+      contactTypesService.getAll.resolves([{ id: 'childType', count_visits: true }]);
+      searchService.search.resolves([
+        { _id: 'never-visited', type: 'contact', contact_type: 'childType', lastVisitedDate: 0 },
+      ]);
+      searchService.search.resetHistory();
+      const updateContactsList = sinon.stub(ContactsActions.prototype, 'updateContactsList');
+      component.ngOnInit();
+      flush();
+
+      // the missing-translation fallback echoes the key back, so the summary pins the exact key requested (#11372)
+      expect(updateContactsList.callCount).to.equal(1);
+      const neverVisited = updateContactsList.args[0][0].find(contact => contact._id === 'never-visited');
+      expect(neverVisited.summary).to.equal('contact.last.visited.unknown');
+      expect(neverVisited.overdue).to.equal(true);
     }));
 
     it('saves uhc home_visits settings and default sort when correct', fakeAsync(() => {
@@ -756,31 +779,31 @@ describe('Contacts component', () => {
       component.ngOnInit();
       flush();
       const relevantReport = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'home_visit',
         fields: { visited_contact_uuid: 'something' },
       };
       const deletedReport = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'home_visit',
         fields: { visited_contact_uuid: 'something' },
         _deleted: true,
       };
       const irrelevantReports = [
         {
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'home_visit',
           fields: { visited_contact_uuid: 'else' },
         },
-        { type: 'data_record', form: 'home_visit', fields: { uuid: 'bla' } },
-        { type: 'data_record', form: 'home_visit' },
+        { type: DOC_TYPES.DATA_RECORD, form: 'home_visit', fields: { uuid: 'bla' } },
+        { type: DOC_TYPES.DATA_RECORD, form: 'home_visit' },
         {
           type: 'something',
           form: 'home_visit',
           fields: { visited_contact_uuid: 'something' },
         },
         {
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'home_visit',
           fields: { visited_contact_uuid: 'irrelevant' },
           _deleted: true
@@ -804,7 +827,7 @@ describe('Contacts component', () => {
       component.ngOnInit();
       flush();
       const deletedReport = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'home_visit',
         fields: { visited_contact_uuid: 'deleted' },
         _deleted: true,
@@ -822,18 +845,18 @@ describe('Contacts component', () => {
       flush();
 
       const relevantReport = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'home_visit',
         fields: { visited_contact_uuid: 'something' },
       };
       const irrelevantReports = [
         {
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'home_visit',
           fields: { visited_contact_uuid: 'else' },
         },
-        { type: 'data_record', form: 'home_visit', fields: { uuid: 'bla' } },
-        { type: 'data_record', form: 'home_visit' },
+        { type: DOC_TYPES.DATA_RECORD, form: 'home_visit', fields: { uuid: 'bla' } },
+        { type: DOC_TYPES.DATA_RECORD, form: 'home_visit' },
         {
           type: 'something',
           form: 'home_visit',
@@ -854,22 +877,22 @@ describe('Contacts component', () => {
 
     describe('fully refreshing LHS list', () => {
       const relevantVisitReport = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'home_visit',
         fields: { visited_contact_uuid: 4 },
       };
       const irrelevantReport = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'somethibg',
         fields: {},
       };
       const irrelevantVisitReport = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'home_visit',
         fields: { visited_contact_uuid: 122 },
       };
       const deletedVisitReport = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'home_visit',
         fields: { visited_contact_uuid: 122 },
         _deleted: true,
@@ -1174,16 +1197,16 @@ describe('Contacts component', () => {
       const multi_facility = [{
         _id: 'district-id-1',
         name: 'My District 1',
-        type: 'district_hospital'
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL
       },
       {
         _id: 'district-id-2',
         name: 'My District 2',
-        type: 'district_hospital'
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL
       }];
 
       userSettingsService.get.resolves({ facility_id: [multi_facility[0]._id, multi_facility[1]._id] });
-      getDataRecordsService.get.resolves(multi_facility);
+      getDataRecordsService.getContacts.resolves(multi_facility);
 
       sinon.stub(ContactsActions.prototype, 'updateContactsList');
       component.ngOnInit();

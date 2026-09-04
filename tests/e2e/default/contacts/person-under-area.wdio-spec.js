@@ -5,6 +5,7 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
 const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Create Person Under Area, ', () => {
   const username = 'jack_test';
@@ -13,11 +14,11 @@ describe('Create Person Under Area, ', () => {
 
   const places = placeFactory.generateHierarchy();
   const districtHospital = places.get('district_hospital');
-  const healthCenters = places.get('health_center');
+  const healthCenters = places.get(CONTACT_TYPES.HEALTH_CENTER);
 
   const healthCenter2 = placeFactory.place().build({
     name: 'HealthCenter-2',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: districtHospital._id, parent: { _id: '' } }
   });
 

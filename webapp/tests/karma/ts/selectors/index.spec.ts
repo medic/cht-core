@@ -32,10 +32,12 @@ const globalState: GlobalState = {
   title: 'the title',
   privacyPolicyAccepted: false,
   showPrivacyPolicy: true,
-  unreadCount: { report: 2 },
+  bubbleCounter: { report: 2 },
   translationsLoaded: false,
   userFacilityIds: ['facility_uuid'],
   userContactId: 'contact_uuid',
+  userFacilities: [{ _id: 'facility_uuid', name: 'Test Facility' }],
+  isOnlineOnly: false,
   enketoStatus: { edited: true, saving: false, error: 'has error', form: true },
   sidebarMenu: { isOpen: false },
   lastChangedDoc: { _id: '1234' },
@@ -116,6 +118,7 @@ const state = {
   },
   tasks: {
     tasksList: [{ _id: 'task1' }, { _id: 'task2' }],
+    overdue: [],
     loaded: 'are tasks loaded?',
     selected: { _id: 'selected task' },
     taskGroup: {
@@ -213,8 +216,11 @@ describe('Selectors', () => {
       expect(Selectors.getShowPrivacyPolicy.projector(state.global)).to.equal(clonedState.global.showPrivacyPolicy);
     });
 
-    it('should getUnreadCount', () => {
-      expect(Selectors.getUnreadCount.projector(state.global)).to.deep.equal(clonedState.global.unreadCount);
+    it('should getBubbleCounter', () => {
+      expect(Selectors.getBubbleCounter.projector(state.global, state.tasks)).to.deep.equal({
+        ...clonedState.global.bubbleCounter,
+        task: clonedState.tasks.overdue.length || 0
+      });
     });
 
     it('should getTranslationsLoaded', () => {
@@ -227,6 +233,14 @@ describe('Selectors', () => {
 
     it('should getUserContactId', () => {
       expect(Selectors.getUserContactId.projector(state.global)).to.equal(clonedState.global.userContactId);
+    });
+
+    it('should getUserFacilities', () => {
+      expect(Selectors.getUserFacilities.projector(state.global)).to.deep.equal(clonedState.global.userFacilities);
+    });
+
+    it('should getIsOnlineOnly', () => {
+      expect(Selectors.getIsOnlineOnly.projector(state.global)).to.equal(clonedState.global.isOnlineOnly);
     });
 
     it('should getEnketoStatus', () => {
@@ -257,6 +271,16 @@ describe('Selectors', () => {
     it('should null check global state', () => {
       // @ts-ignore
       expect(Selectors.getUserFacilityIds.projector({})).to.equal(undefined);
+    });
+
+    it('should null check getUserFacilities', () => {
+      // @ts-ignore
+      expect(Selectors.getUserFacilities.projector({})).to.equal(undefined);
+    });
+
+    it('should null check getIsOnlineOnly', () => {
+      // @ts-ignore
+      expect(Selectors.getIsOnlineOnly.projector({})).to.equal(undefined);
     });
 
     it('should null check enketo state', () => {
@@ -475,6 +499,333 @@ describe('Selectors', () => {
         .to.deep.equal(clonedState.tasks.taskGroup.loadingContact);
       const alternativeState = { tasks: { taskGroup: {} } };
       expect(Selectors.getTaskGroupLoadingContact.projector(alternativeState.tasks)).to.equal(undefined);
+    });
+
+    it('should getOverdueTasks', () => {
+      expect(Selectors.getOverdueTasks.projector(state.tasks)).to.deep.equal([]);
+    });
+
+    it('should getOverdueTasks with overdue tasks', () => {
+      const stateWithOverdue = {
+        ...state.tasks,
+        overdue: [{ _id: 'task1' }, { _id: 'task2' }],
+      };
+      expect(Selectors.getOverdueTasks.projector(stateWithOverdue)).to.deep.equal([
+        { _id: 'task1' },
+        { _id: 'task2' }
+      ]);
+    });
+
+    it('should null check overdue tasks', () => {
+      expect(Selectors.getOverdueTasks.projector({})).to.equal(undefined);
+    });
+
+    describe('getFilteredTasksList', () => {
+      it('should return all tasks when no global filters are set', () => {
+        const tasksState = {
+          tasksList: [
+            { _id: 'task1', overdue: true, title: 'Follow up', lineageIds: [] },
+            { _id: 'task2', overdue: false, title: 'Vaccination', lineageIds: [] },
+          ],
+        };
+        const globalState = { filters: {} } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal(tasksState.tasksList);
+      });
+
+      it('should filter by overdue', () => {
+        const tasksState = {
+          tasksList: [
+            { _id: 'task1', overdue: true, title: 'follow_up', lineageIds: ['contact1', 'facility1'] },
+            { _id: 'task2', overdue: false, title: 'vaccination', lineageIds: ['contact2', 'facility2'] },
+            { _id: 'task3', overdue: true, title: 'follow_up', lineageIds: ['contact1', 'facility1'] },
+          ],
+        };
+        const globalState = { filters: { taskOverdue: true } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([
+          { _id: 'task1', overdue: true, title: 'follow_up', lineageIds: ['contact1', 'facility1'] },
+          { _id: 'task3', overdue: true, title: 'follow_up', lineageIds: ['contact1', 'facility1'] },
+        ]);
+      });
+
+      it('should filter by task type', () => {
+        const tasksState = {
+          tasksList: [
+            { _id: 'task1', title: 'Follow up', lineageIds: [] },
+            { _id: 'task2', title: 'Vaccination', lineageIds: [] },
+            { _id: 'task3', title: 'Follow up', lineageIds: [] },
+          ],
+        };
+        const globalState = { filters: { taskTypes: { selected: ['Follow up'] } } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([
+          { _id: 'task1', title: 'Follow up', lineageIds: [] },
+          { _id: 'task3', title: 'Follow up', lineageIds: [] },
+        ]);
+      });
+
+      it('should filter by facility using lineageIds', () => {
+        const tasksState = {
+          tasksList: [
+            { _id: 'task1', lineageIds: ['contact1', 'facility1', 'district1'] },
+            { _id: 'task2', lineageIds: ['contact2', 'facility2', 'district1'] },
+            { _id: 'task3', lineageIds: ['contact3', 'facility1', 'district1'] },
+          ],
+        };
+        const globalState = { filters: { facilities: { selected: ['facility1'] } } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([
+          { _id: 'task1', lineageIds: ['contact1', 'facility1', 'district1'] },
+          { _id: 'task3', lineageIds: ['contact3', 'facility1', 'district1'] },
+        ]);
+      });
+
+      it('should combine multiple filters', () => {
+        const tasksState = {
+          tasksList: [
+            { _id: 'task1', overdue: true, title: 'Follow up', lineageIds: ['contact1', 'facility1'] },
+            { _id: 'task2', overdue: false, title: 'Follow up', lineageIds: ['contact2', 'facility1'] },
+            { _id: 'task3', overdue: true, title: 'Vaccination', lineageIds: ['contact3', 'facility1'] },
+            { _id: 'task4', overdue: true, title: 'Follow up', lineageIds: ['contact4', 'facility2'] },
+          ],
+        };
+        const globalState = {
+          filters: {
+            taskOverdue: true,
+            taskTypes: { selected: ['Follow up'] },
+            facilities: { selected: ['facility1'] },
+          }
+        } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([
+          { _id: 'task1', overdue: true, title: 'Follow up', lineageIds: ['contact1', 'facility1'] }
+        ]);
+      });
+
+      it('should return empty array for empty tasks list', () => {
+        const tasksState = { tasksList: [] };
+        const globalState = { filters: { taskOverdue: true } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([]);
+      });
+
+      it('should filter by freetext matching contact name, lineage, or title', () => {
+        const tasksState = {
+          tasksList: [
+            {
+              _id: 'task1',
+              title: 'Follow up',
+              contact: { name: 'Alice Johnson' },
+              lineage: ['Village Alpha'],
+              lineageIds: ['contact1']
+            },
+            {
+              _id: 'task2',
+              title: 'Vaccination',
+              contact: { name: 'Bob Smith' },
+              lineage: ['Village Beta'],
+              lineageIds: ['contact2']
+            },
+            {
+              _id: 'task3',
+              title: 'ANC Visit',
+              contact: { name: 'Carol' },
+              lineage: ['Village Gamma'],
+              lineageIds: ['contact3']
+            },
+          ],
+        };
+
+        const globalStateByName = { filters: { search: 'alice' } } as any;
+        const resultByName = Selectors.getFilteredTasksList.projector(tasksState, globalStateByName);
+        expect(resultByName).to.deep.equal([tasksState.tasksList[0]]);
+
+        const globalStateByLineage = { filters: { search: 'beta' } } as any;
+        const resultByLineage = Selectors.getFilteredTasksList.projector(tasksState, globalStateByLineage);
+        expect(resultByLineage).to.deep.equal([tasksState.tasksList[1]]);
+
+        const globalStateByTitle = { filters: { search: 'anc' } } as any;
+        const resultByTitle = Selectors.getFilteredTasksList.projector(tasksState, globalStateByTitle);
+        expect(resultByTitle).to.deep.equal([tasksState.tasksList[2]]);
+      });
+
+      it('should support search with Nepali and Arabic characters', () => {
+        const tasksState = {
+          tasksList: [
+            {
+              _id: 'task1',
+              title: 'Follow up',
+              contact: { name: 'रामकुमारी' },   
+              lineage: ['गाउँपालिका'],           
+              lineageIds: ['contact1']
+            },
+            {
+              _id: 'task2',
+              title: 'ANC Visit',
+              contact: { name: 'فاطمة' },        
+              lineage: ['مستشفى المدينة'],       
+              lineageIds: ['contact2']
+            },
+          ],
+        };
+
+        const nepaliState = { filters: { search: 'रामकुमारी' } } as any;
+        const nepaliResult = Selectors.getFilteredTasksList.projector(tasksState, nepaliState);
+        expect(nepaliResult).to.deep.equal([tasksState.tasksList[0]]);
+
+        const arabicState = { filters: { search: 'فاطمة' } } as any;
+        const arabicResult = Selectors.getFilteredTasksList.projector(tasksState, arabicState);
+        expect(arabicResult).to.deep.equal([tasksState.tasksList[1]]);
+
+        const byLineageState = { filters: { search: 'गाउँपालिका' } } as any;
+        const byLineageResult = Selectors.getFilteredTasksList.projector(tasksState, byLineageState);
+        expect(byLineageResult).to.deep.equal([tasksState.tasksList[0]]);
+      });
+
+      it('should normalize diacritics in search', () => {
+        const tasksState = {
+          tasksList: [
+            {
+              _id: 'task1',
+              title: 'Follow up',
+              contact: { name: 'Élodie' },
+              lineage: ['Village Alpha'],
+              lineageIds: ['contact1']
+            },
+          ],
+        };
+
+        const globalState = { filters: { search: 'elodie' } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([tasksState.tasksList[0]]);
+      });
+
+      it('should fuzzy-match contact names with minor typos', () => {
+        const tasksState = {
+          tasksList: [
+            {
+              _id: 'task1',
+              title: 'ANC Visit',
+              contact: { name: 'Alice Johnson' },
+              lineage: ['Village Alpha'],
+              lineageIds: ['c1']
+            },
+            {
+              _id: 'task2',
+              title: 'Vaccination',
+              contact: { name: 'Bob Smith' },
+              lineage: ['Village Beta'],
+              lineageIds: ['c2']
+            },
+          ],
+        };
+
+        // 'jonson' is not a substring of any candidate, so this exercises the Fuse fuzzy pass.
+        const globalState = { filters: { search: 'jonson' } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([tasksState.tasksList[0]]);
+      });
+
+      it('should fuzzy-match diacritic names ignoring accents', () => {
+        const tasksState = {
+          tasksList: [
+            {
+              _id: 'task1',
+              title: 'Follow up',
+              contact: { name: 'Élodie Laurent' },
+              lineage: ['Village Alpha'],
+              lineageIds: ['c1']
+            },
+            {
+              _id: 'task2',
+              title: 'Vaccination',
+              contact: { name: 'Bob Smith' },
+              lineage: ['Village Beta'],
+              lineageIds: ['c2']
+            },
+          ],
+        };
+
+        // 'elodei' transposes letters AND drops the accent, so it only matches once the Fuse
+        // index normalizes its candidates - this guards the diacritic-insensitive fuzzy path.
+        const globalState = { filters: { search: 'elodei' } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([tasksState.tasksList[0]]);
+      });
+
+      it('should return substring matches before fuzzy matches', () => {
+        const tasksState = {
+          tasksList: [
+            {
+              _id: 'task1',
+              title: 'Follow up',
+              contact: { name: 'Alice Johnson' }, // matches 'jonson' only by fuzzy
+              lineage: ['Village Alpha'],
+              lineageIds: ['c1']
+            },
+            {
+              _id: 'task2',
+              title: 'Vaccination',
+              contact: { name: 'Bob Jonson' }, // matches 'jonson' by substring
+              lineage: ['Village Beta'],
+              lineageIds: ['c2']
+            },
+          ],
+        };
+        
+        const globalState = { filters: { search: 'jonson' } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([tasksState.tasksList[1], tasksState.tasksList[0]]);
+      });
+
+      it('should return all tasks when search is empty', () => {
+        const tasksState = {
+          tasksList: [
+            { _id: 'task1', title: 'Follow up', contact: { name: 'Alice' }, lineage: [], lineageIds: ['c1'] },
+            { _id: 'task2', title: 'ANC Visit', contact: { name: 'Bob' }, lineage: [], lineageIds: ['c2'] },
+          ],
+        };
+
+        const globalState = { filters: { search: '' } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal(tasksState.tasksList);
+      });
+
+      it('should return empty array when no tasks match the search', () => {
+        const tasksState = {
+          tasksList: [
+            { _id: 'task1', title: 'Follow up', contact: { name: 'Alice' }, lineage: ['Village'], lineageIds: ['c1'] },
+          ],
+        };
+
+        const globalState = { filters: { search: 'zzzznotfound' } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([]);
+      });
+
+      it('should combine search with other filters', () => {
+        const tasksState = {
+          tasksList: [
+            {
+              _id: 'task1', title: 'Home Visit', overdue: true,
+              contact: { name: 'Alice' }, lineage: [], lineageIds: ['c1'],
+            },
+            {
+              _id: 'task2', title: 'Home Visit', overdue: false,
+              contact: { name: 'Alice' }, lineage: [], lineageIds: ['c2'],
+            },
+            {
+              _id: 'task3', title: 'Assessment', overdue: true,
+              contact: { name: 'Bob' }, lineage: [], lineageIds: ['c3'],
+            },
+          ],
+        };
+
+        const globalState = { filters: { search: 'alice', taskOverdue: true } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([tasksState.tasksList[0]]);
+      });
     });
   });
 });

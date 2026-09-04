@@ -17,6 +17,7 @@ const sidebarFilter = {
   optionsContainer: () => $$('.filter-options-container'),
   optionContainerByTitle: (title) => $('.filter-options-container').$(`span*=${title}`).parentElement(),
   optionRadioBtn: (optionLabel) => $(`span*=${optionLabel}`).parentElement(),
+  filterCounter: () => $('.filter-counter')
 };
 
 const targetDetail = {
@@ -73,13 +74,13 @@ const checkContentDisabled = async () => {
   await $(CONTENT_DISABLED).waitForDisplayed();
 };
 
-const getTargetItem = async (target, period, place) => {
+const getTargetItem = async (target, place) => {
   const item = lineItem(target.id);
   return {
     title: await item.$('h4').getText(),
     counter: await item.$('.aggregate-status span').getText(),
     place: await item.$(`li*=${place}`).isDisplayed(),
-    period: await item.$(`li*=${period}`).isDisplayed(),
+    period: await item.$(`li*=${target.period}`).isDisplayed(),
   };
 };
 
@@ -139,6 +140,15 @@ const selectFilterOption = async (option) => {
   await sidebarFilter.optionRadioBtn(option).click();
 };
 
+const getFilterCount = async () => {
+  const counter = sidebarFilter.filterCounter();
+  if (await counter.isDisplayed()) {
+    return Number(await counter.getText());
+  }
+
+  return 0;
+};
+
 module.exports = {
   expectModulesToBeAvailable,
   goToTargetAggregates,
@@ -156,5 +166,6 @@ module.exports = {
   checkContentDisabled,
   openSidebarFilter,
   selectFilterOption,
+  getFilterCount,
 };
 

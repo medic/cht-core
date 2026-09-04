@@ -12,16 +12,17 @@ const sentinelUtils = require('@utils/sentinel');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const chtDbUtils = require('@utils/cht-db');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Tasks', () => {
 
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
-  const healthCenter1 = places.get('health_center');
+  const healthCenter1 = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const districtHospital = places.get('district_hospital');
   const healthCenter2 = placeFactory.place().build({
     name: 'health_center_2',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: districtHospital._id },
   });
   const chwContact = personFactory.build({
@@ -62,57 +63,62 @@ describe('Tasks', () => {
   });
 
   it('should remove task from list when CHW completes a task successfully', async () => {
-    await tasksPage.compileTasks('tasks-breadcrumbs-config.js', true);
+    const CONFIG_PATH = 'tasks-breadcrumbs-config.js';
+    const taskConfig = require(`./config/${CONFIG_PATH}`);
 
+    await tasksPage.compileTasks(CONFIG_PATH, true);
     await commonPage.goToTasks();
-    let list = await tasksPage.getTasks();
-    expect(list).to.have.length(3);
-    const task = await tasksPage.getTaskByContactAndForm('patient1', 'person_create');
+    expect(await tasksPage.getTasks()).to.have.length(3);
+
+    const task = await tasksPage.getTaskByContactAndForm(patient.name, taskConfig[0].name);
     await task.click();
     await tasksPage.waitForTaskContentLoaded('Home Visit');
-    const taskElement = await tasksPage.getOpenTaskElement();
+    const initialTaskCount = await tasksPage.getTaskListCount();
     await genericForm.submitForm();
-    await taskElement.waitForDisplayed({ reverse: true });
-    list = await tasksPage.getTasks();
-    expect(list).to.have.length(2);
+
+    await tasksPage.waitForTaskListCountChange(initialTaskCount);
+    await commonPage.sync();
+    expect(await tasksPage.getTasks()).to.have.length(2);
   });
 
   it('should add a task when CHW completes a task successfully, and that task creates another task', async () => {
-    await tasksPage.compileTasks('tasks-breadcrumbs-config.js', true);
+    const CONFIG_PATH = 'infinite-tasks-config.js';
+    const taskConfig = require(`./config/${CONFIG_PATH}`);
+
+    await tasksPage.compileTasks(CONFIG_PATH, true);
 
     await commonPage.goToTasks();
-    let list = await tasksPage.getTasks();
-    expect(list).to.have.length(2);
-    let task = await tasksPage.getTaskByContactAndForm('Megan Spice', 'person_create');
+    expect(await tasksPage.getTasks()).to.have.length(2);
+    const task = await tasksPage.getTaskByContactAndForm(chwContact.name, taskConfig[0].name);
     await task.click();
     await tasksPage.waitForTaskContentLoaded('Home Visit');
-    const taskElement = await tasksPage.getOpenTaskElement();
     await genericForm.submitForm();
-    await taskElement.waitForDisplayed();
-    await commonPage.sync({ expectReload: true });
-    task = await tasksPage.getTaskByContactAndForm('Megan Spice', 'person_create_follow_up');
-    list = await tasksPage.getTasks();
-    expect(list).to.have.length(3);
+    await commonPage.sync();
+    expect(await tasksPage.getTasks()).to.have.length(3);
   });
 
-  it('should load multiple pages of tasks on infinite scrolling', async () => {
+  it('should load all tasks at once', async () => {
+    const CONFIG_PATH = 'tasks-multiple-config.js';
+    const taskConfig = require(`./config/${CONFIG_PATH}`);
     await tasksPage.compileTasks('tasks-multiple-config.js', true);
 
     await commonPage.goToTasks();
     const list = await tasksPage.getTasks();
     const infos = await tasksPage.getTasksListInfos(list);
-    expect(infos).to.have.length(134);
-    for (let i = 0; i < (infos.length/2); i++) {
+    const nbrContacts = 2;
+    expect(infos).to.have.length(taskConfig.length * nbrContacts);
+
+    for (let i = 0; i < (infos.length/nbrContacts); i++) {
       expect(infos).to.include.deep.members([
         {
-          contactName: 'Megan Spice',
+          contactName: chwContact.name,
           formTitle: `person_create_${i + 1}`,
           lineage: '',
           dueDateText: 'Due today',
           overdue: true
         },
         {
-          contactName: 'patient2',
+          contactName: patient2.name,
           formTitle: `person_create_${i + 1}`,
           lineage: '',
           dueDateText: 'Due today',
@@ -120,12 +126,14 @@ describe('Tasks', () => {
         },
       ]);
     }
-    await commonPage.loadNextInfiniteScrollPage();
+    await commonPage.loadNextInfiniteScrollPage('tasks');
     expect(await tasksPage.isTaskElementDisplayed('p', 'No more tasks')).to.be.true;
   });
 
   it('Should show error message for bad config', async () => {
-    await tasksPage.compileTasks('tasks-error-config.js', true);
+    await commonPage.reloadSession();
+    await tasksPage.compileTasks('tasks-error-config.js', false);
+    await loginPage.login(chw);
 
     await commonPage.goToTasks();
     const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();

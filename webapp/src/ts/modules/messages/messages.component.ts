@@ -15,12 +15,10 @@ import { SendMessageComponent } from '@mm-modals/send-message/send-message.compo
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { PerformanceService } from '@mm-services/performance.service';
-import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { ButtonType, FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
-import { UserContactService } from '@mm-services/user-contact.service';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { MessagesMoreMenuComponent } from '@mm-modules/messages/messages-more-menu.component';
-import { NgIf, NgFor, NgClass } from '@angular/common';
+import { NgClass, NgFor, NgIf } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LineagePipe } from '@mm-pipes/message.pipe';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
@@ -42,8 +40,8 @@ import { RelativeDatePipe } from '@mm-pipes/date.pipe';
   ]
 })
 export class MessagesComponent implements OnInit, OnDestroy {
-  private globalActions: GlobalActions;
-  private messagesActions: MessagesActions;
+  private readonly globalActions: GlobalActions;
+  private readonly messagesActions: MessagesActions;
   private destroyed = false;
   readonly buttonType = ButtonType;
 
@@ -54,20 +52,17 @@ export class MessagesComponent implements OnInit, OnDestroy {
   conversations: Record<string, any>[] = [];
   error = false;
   trackPerformance;
-  userLineageLevel;
 
   constructor(
     private readonly router: Router,
     private readonly store: Store,
     private readonly changesService: ChangesService,
-    private readonly fastActionButtonService:FastActionButtonService,
+    private readonly fastActionButtonService: FastActionButtonService,
     private readonly messageContactService: MessageContactService,
     private readonly exportService: ExportService,
     private readonly modalService: ModalService,
     private readonly responsiveService: ResponsiveService,
     private readonly performanceService: PerformanceService,
-    private readonly extractLineageService: ExtractLineageService,
-    private readonly userContactService: UserContactService
   ) {
     this.globalActions = new GlobalActions(store);
     this.messagesActions = new MessagesActions(store);
@@ -75,7 +70,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.trackPerformance = this.performanceService.track();
-    this.userLineageLevel = this.userContactService.getUserLineageToRemove();
     this.subscribeToStore();
     this.updateConversations().then(() => this.displayFirstConversation(this.conversations));
     this.watchForChanges();
@@ -151,17 +145,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
     });
   }
 
-  private openSendMessageModal(modalService:ModalService, event) {
-    const target = $(event.target).closest('.send-message');
-
-    if (target.hasClass('mm-icon-disabled')) {
-      return;
-    }
-
-    event.preventDefault();
-    modalService.show(SendMessageComponent);
-  }
-
   private setConversations(conversations: Record<string, any>[] = [], {merge = false} = {}) {
     if (merge) {
       this.removeDeleted(this.conversations, conversations);
@@ -182,15 +165,9 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   updateConversations({ merge = false } = {}) {
-    return Promise
-      .all([ this.messageContactService.getList(), this.userLineageLevel ])
-      .then(([ conversations, userLineageLevel ]) => {
-        conversations?.forEach(conversation => {
-          const lineage = this.extractLineageService.removeUserFacility(conversation.lineage, userLineageLevel);
-          if (lineage) {
-            conversation.lineage = lineage;
-          }
-        });
+    return this.messageContactService
+      .getList()
+      .then(conversations => {
         this.setConversations(conversations, { merge });
         this.loading = false;
       });
@@ -226,7 +203,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   listTrackBy(index, message) {
-    const identifier = message.doc ? message.doc.id + message.doc._rev : message.id;
+    const identifier = message.doc ? message.doc._id + message.doc._rev : message.id;
     return message.key + identifier;
   }
 

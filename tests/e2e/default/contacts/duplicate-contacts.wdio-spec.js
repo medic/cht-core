@@ -8,20 +8,19 @@ const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdi
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const moment = require('moment');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
-const { getTelemetryDbName, destroyDbInBrowser, getTelemetryFromBrowser } = require('@utils/telemetry');
-const { USERNAME } = require('@constants');
+const { getTelemetry, destroyTelemetryDb } = require('@utils/telemetry');
+const { CONTACT_TYPES } = require('@medic/constants');
+const { extensionLibDoc } = require('@page-objects/default/enketo/custom-doc.wdio.page');
 
 describe('Duplicate contact detection', () => {
   const CREATED_ON = '4 Apr, 2025';
-  const TELEMETRY_DB_NAME= getTelemetryDbName(USERNAME, new Date());
   const CREATE_PERSON_FORM_ID = 'form:contact:person:create';
-  const getTelemetry = key => getTelemetryFromBrowser(TELEMETRY_DB_NAME, key);
 
   const places = placeFactory.generateHierarchy();
   const districtHospital = places.get('district_hospital');
   districtHospital.reported_date = moment(CREATED_ON);
   districtHospital.external_id = '1234567890';
-  const household = places.get('clinic');
+  const household = places.get(CONTACT_TYPES.CLINIC);
   const patients = Array
     .from({ length: 4 })
     .map((_, i) => personFactory.build({
@@ -43,6 +42,8 @@ describe('Duplicate contact detection', () => {
   };
 
   before(async () => {
+    await utils.saveDoc(extensionLibDoc);
+    await commonPage.reloadSession();
     await cookieLogin();
     originalCreatePersonFormDoc = await utils.getDoc(CREATE_PERSON_FORM_ID);
   });
@@ -52,8 +53,8 @@ describe('Duplicate contact detection', () => {
   });
 
   afterEach(async () => {
-    await destroyDbInBrowser(TELEMETRY_DB_NAME);
-    await utils.revertDb([/^form:/], true);
+    await destroyTelemetryDb();
+    await utils.revertDb([/^form:/, 'extension-libs'], true);
     await updateCreatePersonFormDoc({});
   });
 
@@ -162,7 +163,8 @@ describe('Duplicate contact detection', () => {
   it('detects duplicates from a custom duplicate expression', async () => {
     await updateCreatePersonFormDoc({
       duplicate_check: {
-        expression: 'current.external_id === existing.patient_id',
+        // Use a custom extension-libs function in the duplicate expression
+        expression: 'extensionLib(\'starts-with.js\', existing.patient_id, current.external_id)',
       }
     });
 
@@ -171,7 +173,7 @@ describe('Duplicate contact detection', () => {
       {
         name: 'Totally different name',
         dob: '1984-01-01',
-        externalID: patients[3].patient_id,
+        externalID: `${patients[3].patient_id} external`,
       },
       { waitForComplete: false }
     );

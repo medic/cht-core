@@ -11,7 +11,8 @@ import { ContactsContentComponent } from '@mm-modules/contacts/contacts-content.
 import { ContactsActions } from '@mm-actions/contacts';
 import { Selectors } from '@mm-selectors/index';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
-import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
+import { DbService } from '@mm-services/db.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
@@ -30,6 +31,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
 import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
 
 describe('Contacts content component', () => {
   let component: ContactsContentComponent;
@@ -60,6 +62,8 @@ describe('Contacts content component', () => {
       matchContact: sinon.stub(),
       isRelevantChange: sinon.stub(),
       isDeleted: sinon.stub(),
+      // dependency-free predicate: use the real logic so filter tests can exercise realistic docs
+      isVisitReport: ContactChangeFilterService.prototype.isVisitReport,
     };
     settings = {};
     settingsService = { get: sinon.stub().resolves(settings) };
@@ -126,7 +130,8 @@ describe('Contacts content component', () => {
           { provide: ActivatedRoute, useValue: activatedRoute },
           { provide: Router, useValue: router },
           { provide: ResourceIconPipe, useValue: { transform: sinon.stub() } },
-          { provide: ResourceIconsService, useValue: { getImg: sinon.stub() } },
+          { provide: CustomResourceService, useValue: { getImg: sinon.stub() } },
+          { provide: DbService, useValue: { get: () => ({ getAttachment: sinon.stub().resolves() }) } },
           { provide: ContactChangeFilterService, useValue: contactChangeFilterService },
           { provide: ChangesService, useValue: changesService },
           { provide: ChangesService, useValue: changesService },
@@ -162,6 +167,15 @@ describe('Contacts content component', () => {
 
   it('should create ContactsContentComponent', () => {
     expect(component).to.exist;
+  });
+
+  it('renders mm-contact-profile-image in the profile heading', () => {
+    selectedContact.doc = { _id: 'c-1', name: 'Amina' };
+    selectedContact.type = { icon: 'medic-person' };
+    store.overrideSelector(Selectors.getSelectedContact, selectedContact);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.row.heading mm-contact-profile-image')).to.exist;
   });
 
   it('ngOnDestroy() should unsubscribe from observables and reset state', () => {
@@ -275,7 +289,7 @@ describe('Contacts content component', () => {
     beforeEach(() => {
       selectedContact.doc = {
         _id: 'districtsdistrict',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         contact: { _id: 'mario' },
         children: { persons: [ ] }
       };
@@ -345,7 +359,8 @@ describe('Contacts content component', () => {
       expect(changesFilter(change)).to.equal(true);
       expect(selectContact.callCount).to.equal(0);
       changesCallback(change);
-      expect(contactChangeFilterService.isRelevantChange.callCount).to.equal(1);
+      // consulted once by the filter and once by the callback to pick full reload over stats refresh
+      expect(contactChangeFilterService.isRelevantChange.callCount).to.equal(2);
       expect(selectContact.callCount).to.equal(1);
       expect(!!component.summaryErrorStack).to.be.false;
     });
@@ -361,5 +376,226 @@ describe('Contacts content component', () => {
       expect(selectContact.callCount).to.equal(0);
       expect(!!component.summaryErrorStack).to.be.false;
     });
+
+    describe('visit report changes', () => {
+      const visitReportChange = (visitedContactUuid) => ({
+        doc: {
+          type: DOC_TYPES.DATA_RECORD,
+          form: 'home_visit',
+          fields: { visited_contact_uuid: visitedContactUuid },
+        },
+      });
+
+      beforeEach(() => {
+        contactChangeFilterService.isRelevantChange.returns(false);
+        selectedContact.children = [
+          { type: { id: 'clinic', count_visits: true }, contacts: [ { doc: { _id: 'a-displayed-child' } } ] },
+          { type: { id: 'person', person: true }, contacts: [ { doc: { _id: 'a-person-child' } } ] },
+        ];
+      });
+
+      it('should update information when a visit report to a displayed child is received', () => {
+        const changesFilter = changesService.subscribe.args[0][0].filter;
+
+        expect(changesFilter(visitReportChange('a-displayed-child'))).to.equal(true);
+      });
+
+      it('should update information when a visit report to the selected contact is received', () => {
+        const changesFilter = changesService.subscribe.args[0][0].filter;
+
+        expect(changesFilter(visitReportChange(selectedContact.doc._id))).to.equal(true);
+      });
+
+      it('should ignore visit reports to contacts that are not displayed', () => {
+        const changesFilter = changesService.subscribe.args[0][0].filter;
+
+        expect(changesFilter(visitReportChange('some-other-contact'))).to.equal(false);
+      });
+
+      it('should ignore visit reports to children whose type does not count visits', () => {
+        const changesFilter = changesService.subscribe.args[0][0].filter;
+
+        expect(changesFilter(visitReportChange('a-person-child'))).to.equal(false);
+      });
+
+      it('should ignore non-report docs carrying a visited_contact_uuid field', () => {
+        const changesFilter = changesService.subscribe.args[0][0].filter;
+        const change = {
+          doc: {
+            type: 'contact',
+            fields: { visited_contact_uuid: 'a-displayed-child' },
+          },
+        };
+
+        expect(changesFilter(change)).to.equal(false);
+      });
+
+      it('should refresh only the visit stats when a visit report to a displayed child is received', () => {
+        const changesCallback = changesService.subscribe.args[0][0].callback;
+        const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
+        const refreshChildrenVisitStats = sinon.stub(ContactsActions.prototype, 'refreshChildrenVisitStats');
+
+        changesCallback(visitReportChange('a-displayed-child'));
+
+        expect(refreshChildrenVisitStats.callCount).to.equal(1);
+        expect(selectContact.callCount).to.equal(0);
+      });
+
+      it('should reload the profile when a visit report to the selected contact is received', () => {
+        const changesCallback = changesService.subscribe.args[0][0].callback;
+        const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
+        const refreshChildrenVisitStats = sinon.stub(ContactsActions.prototype, 'refreshChildrenVisitStats');
+
+        changesCallback(visitReportChange(selectedContact.doc._id));
+
+        expect(selectContact.callCount).to.equal(1);
+        expect(refreshChildrenVisitStats.callCount).to.equal(0);
+      });
+
+      it('should refresh the visit stats when a deletion arrives while visit stats are displayed', () => {
+        const changesFilter = changesService.subscribe.args[0][0].filter;
+        const changesCallback = changesService.subscribe.args[0][0].callback;
+        const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
+        const refreshChildrenVisitStats = sinon.stub(ContactsActions.prototype, 'refreshChildrenVisitStats');
+        contactChangeFilterService.matchContact.returns(false);
+        contactChangeFilterService.isDeleted.returns(true);
+        // the deleted doc may have been a visit report: deletions carry no doc content to tell
+        const change = { deleted: true, id: 'some-deleted-doc' };
+
+        expect(changesFilter(change)).to.equal(true);
+        changesCallback(change);
+
+        expect(refreshChildrenVisitStats.callCount).to.equal(1);
+        expect(selectContact.callCount).to.equal(0);
+      });
+
+      it('should ignore deletions when no children visit stats are displayed', () => {
+        const changesFilter = changesService.subscribe.args[0][0].filter;
+        selectedContact.children = [
+          { type: { id: 'person', person: true }, contacts: [ { doc: { _id: 'a-person-child' } } ] },
+        ];
+
+        expect(changesFilter({ deleted: true, id: 'some-deleted-doc' })).to.equal(false);
+      });
+    });
   });
+  describe('Quick page switches / Null safety', () => {
+    it('should not crash if selectedContact is null when updating fast actions', async () => {
+      (component as any).selectedContact = null;
+      fastActionButtonService.getContactRightSideActions.resetHistory();
+      await (component as any).updateFastActions();
+      expect(fastActionButtonService.getContactRightSideActions.notCalled).to.be.true;
+    });
+
+    it('should not crash if selectedContact.doc is missing when processing contact deletion', () => {
+      (component as any).selectedContact = { _id: 'some_id' }; // No .doc property
+      contactChangeFilterService.matchContact.returns(true);
+      contactChangeFilterService.isDeleted.returns(true);
+
+      const changesCallback = changesService.subscribe.args[0][0].callback;
+      changesCallback({ doc: { _id: 'some_id' } });
+
+      expect(router.navigate.notCalled).to.be.true;
+    });
+
+    it('should not update contact types if selectedContact is missing', () => {
+      (component as any).selectedContact = null;
+      contactTypesService.getChildren.resetHistory();
+
+      // Trigger the internal update method
+      (component as any).updateContactTypes(null, []);
+
+      expect(contactTypesService.getChildren.notCalled).to.be.true;
+    });
+
+    it('should not update fast actions from forms subscription if selectedContact is missing', () => {
+      (component as any).selectedContact = null;
+      fastActionButtonService.getContactRightSideActions.resetHistory();
+      (component as any).updateReportForms(null, []);
+      expect(fastActionButtonService.getContactRightSideActions.notCalled).to.be.true;
+    });
+
+    it('should not update fast actions from forms subscription if selectedContact.doc is missing', () => {
+      (component as any).selectedContact = { _id: 'some_id' }; // No .doc
+      fastActionButtonService.getContactRightSideActions.resetHistory();
+      (component as any).updateReportForms(null, []);
+      expect(fastActionButtonService.getContactRightSideActions.notCalled).to.be.true;
+    });
+  });
+
+  describe('collapsible contact summary cards', () => {
+    let cardSummary;
+
+    beforeEach(() => {
+      cardSummary = {
+        cards: [
+          { label: 'test-card', fields: [{ label: 'field1', value: 'val1' }] }
+        ]
+      };
+      store.overrideSelector(Selectors.getSelectedContact, {
+        ...selectedContact,
+        summary: cardSummary
+      });
+      store.refreshState();
+      fixture.detectChanges();
+    });
+
+    it('should default to expanded when collapsed is undefined', () => {
+      const compiled = fixture.nativeElement;
+      expect(compiled.querySelector('.card.compact-card .row.flex.grid')).to.exist;
+      expect(compiled.querySelector('.action-header').getAttribute('aria-expanded')).to.equal('true');
+    });
+
+    it('should start collapsed when collapsed: true is set in config', () => {
+      cardSummary.cards[0].collapsed = true;
+      store.overrideSelector(Selectors.getSelectedContact, {
+        ...selectedContact,
+        summary: cardSummary
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement;
+      expect(compiled.querySelector('.card.compact-card .row.flex.grid')).to.not.exist;
+      expect(compiled.querySelector('.action-header').getAttribute('aria-expanded')).to.equal('false');
+    });
+
+    it('should toggle collapsed state when header is clicked', () => {
+      const compiled = fixture.nativeElement;
+      const header = compiled.querySelector('.action-header');
+
+      // click to collapse
+      header.click();
+      fixture.detectChanges();
+      expect(compiled.querySelector('.card.compact-card .row.flex.grid')).to.not.exist;
+      expect(compiled.querySelector('.action-header').getAttribute('aria-expanded')).to.equal('false');
+
+      // click to expand
+      header.click();
+      fixture.detectChanges();
+      expect(compiled.querySelector('.card.compact-card .row.flex.grid')).to.exist;
+      expect(compiled.querySelector('.action-header').getAttribute('aria-expanded')).to.equal('true');
+    });
+
+    it('should reset collapsed state when selected contact changes', () => {
+      const compiled = fixture.nativeElement;
+      const header = compiled.querySelector('.card.compact-card .action-header');
+
+      // collapse the card
+      header.click();
+      fixture.detectChanges();
+      expect(compiled.querySelector('.card.compact-card .row.flex.grid')).to.not.exist;
+
+      // change selected contact - new object resets state
+      store.overrideSelector(Selectors.getSelectedContact, {
+        ...selectedContact,
+        _id: 'new-contact',
+        summary: cardSummary
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(compiled.querySelector('.card.compact-card .row.flex.grid')).to.exist;
+    });
+  }); 
 });

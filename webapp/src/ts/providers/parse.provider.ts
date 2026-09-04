@@ -13,6 +13,10 @@ import {
   KeyedRead,
   LiteralMap,
   LiteralArray,
+  ParseSourceSpan,
+  ParseSourceFile,
+  ParseLocation,
+  ParenthesizedExpression,
 } from '@angular/compiler';
 import { Injectable } from '@angular/core';
 import { PipesService } from '@mm-services/pipes.service';
@@ -349,6 +353,8 @@ class ASTCompiler {
       return this.processConditional();
     } else if (ast instanceof Call) {
       return this.processMethod();
+    } else if (ast instanceof ParenthesizedExpression) {
+      return this.build(ast.expression, this.cStmts);
     } else if (ast instanceof BindingPipe) {
       return this.processPipe();
     }
@@ -428,7 +434,10 @@ export class ParseProvider {
     }
 
     const parser = new Parser(new Lexer());
-    const ast = parser.parseBinding(expr, '', 0);
+    const sourceFile = new ParseSourceFile(expr, '');
+    const startLocation = new ParseLocation(sourceFile, 0, 0, 0);
+    const sourceSpan = new ParseSourceSpan(startLocation, startLocation);
+    const ast = parser.parseBinding(expr, sourceSpan, 0);
     let boundFn;
 
     if (ast.errors.length) {

@@ -58,11 +58,15 @@ export class SessionService {
    */
   userCtx () {
     if (!this.userCtxCookieValue) {
-      try {
-        this.userCtxCookieValue = JSON.parse(this.cookieService.get(COOKIE_NAME));
-      } catch (error) {
-        console.error('Cookie parsing error', error);
-        this.userCtxCookieValue = null;
+      const cookieValue = this.cookieService.get(COOKIE_NAME);
+      // An absent cookie is an expected state
+      if (cookieValue) {
+        try {
+          this.userCtxCookieValue = JSON.parse(cookieValue);
+        } catch (error) {
+          console.error('Cookie parsing error', error);
+          this.userCtxCookieValue = null;
+        }
       }
     }
 
@@ -117,7 +121,7 @@ export class SessionService {
   }
 
   isAdmin(userCtx?) {
-    return this.hasRole('_admin', userCtx);
+    return this.hasRole(USER_ROLES.COUCHDB_ADMIN, userCtx);
   }
 
   /**

@@ -4,19 +4,30 @@ const chtConfUtils = require('@utils/cht-conf');
 
 const TASK_LIST_SELECTOR = '#tasks-list';
 const TASK_FORM_SELECTOR = '#task-report';
-const TASKS_GROUP_SELECTOR = '#tasks-group .item-content';
+const TASKS_GROUP_SELECTOR = '#tasks-group .material';
 const FORM_TITLE_SELECTOR = `${TASK_FORM_SELECTOR} h3#form-title`;
 const NO_SELECTED_TASK_SELECTOR = '.empty-selection';
 
-const getTaskById = (emissionId) => $(`${TASK_LIST_SELECTOR} li[data-record-id="${emissionId}"`);
-const getTasks = async () => {
+const sidebarFilterSelectors = {
+  openBtn: () => $('mm-search-bar .open-filter, .mm-search-bar-container .btn.open-filter'),
+  resetBtn: () => $('.sidebar-reset'),
+  overdueAccordionHeader: () => $('#overdue-filter-accordion mat-expansion-panel-header'),
+  overdueAccordionBody: () => $('#overdue-filter-accordion mat-panel-description'),
+  taskTypeAccordionHeader: () => $('#task-type-filter-accordion mat-expansion-panel-header'),
+  taskTypeAccordionBody: () => $('#task-type-filter-accordion mat-panel-description'),
+  placeAccordionHeader: () => $('#place-filter-accordion mat-expansion-panel-header'),
+  placeAccordionBody: () => $('#place-filter-accordion mat-panel-description'),
+};
+
+const getTaskById = (emissionId) => $(`${TASK_LIST_SELECTOR} li[data-record-id="${emissionId}"]`);
+const getTasks = async (timeout = 10000) => {
   let tasks;
   await browser.waitUntil(async () => {
     const tasksList = await $(TASK_LIST_SELECTOR);
     tasks = await $$(`${TASK_LIST_SELECTOR} li.content-row`);
     return await tasksList.isDisplayed() && tasks.length > 0;
   }, {
-    timeout: 10000,
+    timeout,
     timeoutMsg: 'Expected tasks list to be displayed with at least one task'
   });
 
@@ -71,9 +82,16 @@ const waitForTaskContentLoaded = async (name) => {
   }, { timeout: 2000 });
 };
 
-const getOpenTaskElement = async () => {
-  const emissionId = (await browser.getUrl()).split('/').slice(-1)[0];
-  return getTaskById(emissionId);
+const getTaskListCount = async () => {
+  const tasks = await $$(`${TASK_LIST_SELECTOR} li.content-row`);
+  return tasks.length;
+};
+
+const waitForTaskListCountChange = async (initialCount) => {
+  await browser.waitUntil(
+    async () => (await getTaskListCount()) !== initialCount,
+    { timeout: 10000, timeoutMsg: `Task list count did not change from ${initialCount}.` }
+  );
 };
 
 const waitForTasksGroupLoaded = async () => {
@@ -92,15 +110,86 @@ const openTaskById = async (id, taskType) => {
   await $(TASK_FORM_SELECTOR).waitForDisplayed();
 };
 
+const openTaskByIndex = async (idx = 0) => {
+  const task = await (await getTasks())[idx];
+  await task.click();
+  await $(TASK_FORM_SELECTOR).waitForDisplayed();
+};
+
 const compileTasks = async (tasksFileName, sync) => {
   await chtConfUtils.initializeConfigDir();
   const tasksFilePath = path.join(__dirname, `../../../e2e/default/tasks/config/${tasksFileName}`);
   const settings = await chtConfUtils.compileConfig({ tasks: tasksFilePath });
-  await utils.updateSettings(settings, { ignoreReload: 'api', sync, refresh: sync, revert: true });
+  await utils.updateSettings(settings, { sync, refresh: sync, ignoreReload: !sync });
 };
 
 const isTaskElementDisplayed = async (type, text) => {
   return await $(TASK_LIST_SELECTOR).$(`${type}*=${text}`).isDisplayed();
+};
+
+const openSidebarFilter = async () => {
+  if (!await sidebarFilterSelectors.resetBtn().isDisplayed()) {
+    await sidebarFilterSelectors.openBtn().click();
+  }
+  return await sidebarFilterSelectors.resetBtn().waitForDisplayed();
+};
+
+const filterByOverdue = async (overdueOption) => {
+  if (!await sidebarFilterSelectors.overdueAccordionBody().isDisplayed()) {
+    await sidebarFilterSelectors.overdueAccordionHeader().click();
+    await sidebarFilterSelectors.overdueAccordionBody().waitForDisplayed();
+  }
+
+  const option = sidebarFilterSelectors.overdueAccordionBody().$(`label*=${overdueOption}`);
+  const radio = await option.$('input[type="radio"]');
+  await radio.click();
+};
+
+const filterByTaskType = async (taskType) => {
+  if (!await sidebarFilterSelectors.taskTypeAccordionBody().isDisplayed()) {
+    await sidebarFilterSelectors.taskTypeAccordionHeader().click();
+    await sidebarFilterSelectors.taskTypeAccordionBody().waitForDisplayed();
+  }
+
+  const option = sidebarFilterSelectors.taskTypeAccordionBody().$(`a*=${taskType}`);
+  await option.click();
+};
+
+const filterByPlace = async (facility, parentFacility) => {
+  if (!await sidebarFilterSelectors.placeAccordionBody().isDisplayed()) {
+    await sidebarFilterSelectors.placeAccordionHeader().click();
+    await sidebarFilterSelectors.placeAccordionBody().waitForDisplayed();
+  }
+
+  if (parentFacility) {
+    const parent = sidebarFilterSelectors.placeAccordionBody().$(`a*=${parentFacility}`);
+    await parent.click();
+  }
+
+  const facilityOption = sidebarFilterSelectors
+    .placeAccordionBody()
+    .$(`a*=${facility}`);
+  await facilityOption.waitForDisplayed();
+  const checkbox = facilityOption.previousElement();
+  await checkbox.click();
+};
+
+const resetFilters = async () => {
+  await sidebarFilterSelectors.resetBtn().click();
+};
+
+const isPlaceFilterDisplayed = async () => {
+  return await sidebarFilterSelectors.placeAccordionHeader().isDisplayed();
+};
+
+const scrollTaskList = async () => {
+  await browser.execute(() => {
+    const el = document.getElementById('tasks-list');
+    if (el) {
+      el.scrollTop += 300;
+      el.dispatchEvent(new Event('scroll'));
+    }
+  });
 };
 
 module.exports = {
@@ -109,11 +198,21 @@ module.exports = {
   waitForTaskContentLoaded,
   getTaskInfo,
   getTasksListInfos,
-  getOpenTaskElement,
+  getTaskListCount,
+  waitForTaskListCountChange,
   waitForTasksGroupLoaded,
   getTasksInGroup,
   noSelectedTask,
   openTaskById,
   compileTasks,
   isTaskElementDisplayed,
+  sidebarFilterSelectors,
+  openSidebarFilter,
+  filterByOverdue,
+  filterByTaskType,
+  filterByPlace,
+  resetFilters,
+  isPlaceFilterDisplayed,
+  openTaskByIndex,
+  scrollTaskList,
 };

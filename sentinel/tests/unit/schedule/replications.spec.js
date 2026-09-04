@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const request = require('@medic/couch-request');
 const rewire = require('rewire');
+const { SENTINEL_METADATA } = require('@medic/constants');
 
 const db = require('../../../src/db');
 const environment = require('@medic/environment');
@@ -89,11 +90,11 @@ describe('replications', () => {
         assert.deepEqual(Object.keys(options), ['filter']);
         assert.isFunction(options.filter);
         assert.equal(source.get.callCount, 1);
-        assert.deepEqual(source.get.args[0], ['_local/purge_log']);
+        assert.deepEqual(source.get.args[0], [SENTINEL_METADATA.PURGE_LOG]);
       });
     });
 
-    it('should only replicate feedback and telemetry docs', () => {
+    it('should only replicate feedback, telemetry, and interaction docs', () => {
       sinon.stub(db, 'get');
       sinon.stub(db, 'close');
       db.get.withArgs('target').returns(target);
@@ -107,12 +108,14 @@ describe('replications', () => {
         assert.equal(filter({ _id: 'design/medic-user', _rev: 'a', views: { read: 'fn' } }), false);
         assert.equal(filter({ _id: 'feedback-2020-02-13-time-user', meta: { user: { name: 'admin' } } }), true);
         assert.equal(filter({ _id: 'telemetry-2020-02-admin-whatever', metrics: { search: {} } }), true);
+        assert.equal(filter({ _id: 'interaction-2026-03-27T10:00:00.000Z-uuid', type: 'interaction-log' }), true);
         assert.equal(filter({ _id: 'telemotry-2020-02-admin-whatever', metrics: { search: {} } }), false);
         assert.equal(filter({ _id: 'telemetrised-2020-02-admin-whatever', metrics: { search: {} } }), false);
         assert.equal(filter({ _id: 'telemetryyyy-2020-02-admin-whatever', metrics: { search: {} } }), false);
+        assert.equal(filter({ _id: 'interactive-something' }), false);
 
         assert.equal(source.get.callCount, 1);
-        assert.deepEqual(source.get.args[0], ['_local/purge_log']);
+        assert.deepEqual(source.get.args[0], [SENTINEL_METADATA.PURGE_LOG]);
       });
     });
 
@@ -152,7 +155,8 @@ describe('replications', () => {
         assert.deepEqual(db.close.args, [[source], [source], [source], [target]]);
 
         assert.equal(source.get.callCount, 3);
-        assert.deepEqual(source.get.args, [['_local/purge_log'], ['_local/purge_log'], ['_local/purge_log']]);
+        assert.deepEqual(source.get.args, 
+          [[SENTINEL_METADATA.PURGE_LOG], [SENTINEL_METADATA.PURGE_LOG], [SENTINEL_METADATA.PURGE_LOG]]);
       });
     });
 
@@ -212,7 +216,7 @@ describe('replications', () => {
 
         return replications.replicateDbs(['source'], 'target').then(() => {
           assert.equal(source.get.callCount, 1);
-          assert.deepEqual(source.get.args[0], ['_local/purge_log']);
+          assert.deepEqual(source.get.args[0], [SENTINEL_METADATA.PURGE_LOG]);
           assert.equal(source.changes.callCount, 5);
           assert.deepEqual(source.changes.args[0], [{ since: 0, limit: 100, batch_size: 100 }]);
           assert.deepEqual(source.changes.args[1], [{ since: 100, limit: 100, batch_size: 100 }]);
@@ -252,7 +256,7 @@ describe('replications', () => {
           assert.deepEqual(target.changes.args[2], [{ doc_ids: ['telemetry-4', 'telemetry-5'] }]);
 
           assert.equal(source.put.callCount, 1);
-          assert.deepEqual(source.put.args[0], [{ _id: '_local/purge_log', seq: 400 }]);
+          assert.deepEqual(source.put.args[0], [{ _id: SENTINEL_METADATA.PURGE_LOG, seq: 400 }]);
         });
       });
 
@@ -261,7 +265,7 @@ describe('replications', () => {
         sinon.stub(db, 'close');
         target.changes = sinon.stub();
         db.get.withArgs('target').returns(target);
-        source.get.resolves({ _id: '_local/purge_log', seq: 100 });
+        source.get.resolves({ _id: SENTINEL_METADATA.PURGE_LOG, seq: 100 });
         source.info.resolves({ db_name: 'source', update_seq: 100 });
         db.get.withArgs('source').returns(source);
 
@@ -269,13 +273,13 @@ describe('replications', () => {
 
         return replications.replicateDbs(['source'], 'target').then(() => {
           assert.equal(source.get.callCount, 1);
-          assert.deepEqual(source.get.args[0], ['_local/purge_log']);
+          assert.deepEqual(source.get.args[0], [SENTINEL_METADATA.PURGE_LOG]);
           assert.equal(source.changes.callCount, 1);
           assert.deepEqual(source.changes.args[0], [{ since: 100, limit: 100, batch_size: 100 }]);
 
           assert.equal(target.changes.callCount, 0);
           assert.equal(source.put.callCount, 1);
-          assert.deepEqual(source.put.args[0], [{ _id: '_local/purge_log', seq: 100 }]);
+          assert.deepEqual(source.put.args[0], [{ _id: SENTINEL_METADATA.PURGE_LOG, seq: 100 }]);
         });
       });
 
@@ -286,7 +290,7 @@ describe('replications', () => {
         db.get.withArgs('target').returns(target);
         source.changes = sinon.stub();
         source.put = sinon.stub();
-        source.get.resolves({ _id: '_local/purge_log', seq: 100 });
+        source.get.resolves({ _id: SENTINEL_METADATA.PURGE_LOG, seq: 100 });
         source.info = sinon.stub().resolves({ db_name: 'source', update_seq: 500 });
         db.get.withArgs('source').returns(source);
 
@@ -334,7 +338,7 @@ describe('replications', () => {
 
         return replications.replicateDbs(['source'], 'target').then(() => {
           assert.equal(source.get.callCount, 1);
-          assert.deepEqual(source.get.args[0], ['_local/purge_log']);
+          assert.deepEqual(source.get.args[0], [SENTINEL_METADATA.PURGE_LOG]);
           assert.equal(source.changes.callCount, 5);
           assert.deepEqual(source.changes.args[0], [{ since: 100, limit: 100, batch_size: 100 }]);
           assert.deepEqual(source.changes.args[1], [{ since: 200, limit: 100, batch_size: 100 }]);
@@ -374,7 +378,7 @@ describe('replications', () => {
           assert.deepEqual(target.changes.args[2], [{ doc_ids: ['telemetry-4', 'telemetry-5'] }]);
 
           assert.equal(source.put.callCount, 1);
-          assert.deepEqual(source.put.args[0], [{ _id: '_local/purge_log', seq: 500 }]);
+          assert.deepEqual(source.put.args[0], [{ _id: SENTINEL_METADATA.PURGE_LOG, seq: 500 }]);
         });
       });
 
@@ -423,7 +427,7 @@ describe('replications', () => {
 
         return replications.replicateDbs(['source'], 'target').then(() => {
           assert.equal(source.get.callCount, 1);
-          assert.deepEqual(source.get.args[0], ['_local/purge_log']);
+          assert.deepEqual(source.get.args[0], [SENTINEL_METADATA.PURGE_LOG]);
           assert.equal(source.changes.callCount, 4);
           assert.deepEqual(source.changes.args[0], [{ since: 0, limit: 100, batch_size: 100 }]);
           assert.deepEqual(source.changes.args[1], [{ since: 100, limit: 100, batch_size: 100 }]);
@@ -451,7 +455,7 @@ describe('replications', () => {
           assert.deepEqual(target.changes.args[1], [{ doc_ids: ['feedback-2', 'feedback-3', 'telemetry-3'] }]);
 
           assert.equal(source.put.callCount, 1);
-          assert.deepEqual(source.put.args[0], [{ _id: '_local/purge_log', seq: 200 }]);
+          assert.deepEqual(source.put.args[0], [{ _id: SENTINEL_METADATA.PURGE_LOG, seq: 200 }]);
         });
       });
 
@@ -514,7 +518,7 @@ describe('replications', () => {
           .catch((err) => {
             assert.deepEqual(err, { some: 'error' });
             assert.equal(source.get.callCount, 1);
-            assert.deepEqual(source.get.args[0], ['_local/purge_log']);
+            assert.deepEqual(source.get.args[0], [SENTINEL_METADATA.PURGE_LOG]);
             assert.equal(source.changes.callCount, 2);
             assert.deepEqual(source.changes.args[0], [{ since: 0, limit: 100, batch_size: 100 }]);
             assert.deepEqual(source.changes.args[1], [{ since: 100, limit: 100, batch_size: 100 }]);

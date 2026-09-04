@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { flattenDeep as _flattenDeep } from 'lodash-es';
 import * as partialParse from 'partial-json-parser';
 import * as utilsFactory from '@medic/bulk-docs-utils';
+import { DOC_TYPES } from '@medic/constants';
 
 import { ChangesService } from '@mm-services/changes.service';
 import { DbService } from '@mm-services/db.service';
@@ -43,7 +44,7 @@ export class DeleteDocsService {
 
   minifyLineage(docs) {
     docs.forEach((doc) => {
-      if (doc.type === 'data_record' && doc.contact) {
+      if (doc.type === DOC_TYPES.DATA_RECORD && doc.contact) {
         doc.contact = this.extractLineageService.extract(doc.contact);
       }
     });

@@ -11,12 +11,13 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Tasks group landing page', () => {
   const todayDate = Date.now();
 
-  const places = placeFactory.generateHierarchy(['district_hospital', 'health_center']);
-  const healthCenter = places.get('health_center');
+  const places = placeFactory.generateHierarchy(['district_hospital', CONTACT_TYPES.HEALTH_CENTER]);
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
 
   const politiciansClinic = placeFactory.place().build({
     type: 'clinic',
@@ -164,9 +165,9 @@ describe('Tasks group landing page', () => {
       const task = await tasksPage.getTaskByContactAndForm('Queen Victoria', 'person_create');
       await task.click();
       await tasksPage.waitForTaskContentLoaded('Home Visit');
-      const taskElement = await tasksPage.getOpenTaskElement();
+      const initialTaskCount = await tasksPage.getTaskListCount();
       await genericForm.submitForm();
-      await taskElement.waitForDisplayed({ reverse: true });
+      await tasksPage.waitForTaskListCountChange(initialTaskCount);
 
       // tasks group is displayed
       await tasksPage.waitForTasksGroupLoaded();
@@ -195,9 +196,9 @@ describe('Tasks group landing page', () => {
       }
 
       await tasksPage.waitForTaskContentLoaded('Home Visit');
-      const taskElement = await tasksPage.getOpenTaskElement();
+      const initialTaskCount = await tasksPage.getTaskListCount();
       await genericForm.submitForm();
-      await taskElement.waitForDisplayed({ reverse: true });
+      await tasksPage.waitForTaskListCountChange(initialTaskCount);
       // tasks group is displayed again
       await tasksPage.waitForTasksGroupLoaded();
       const secondGroupTasks = await tasksPage.getTasksInGroup();
@@ -224,9 +225,9 @@ describe('Tasks group landing page', () => {
       await modalPage.submit();
 
       await tasksPage.waitForTaskContentLoaded('Place Home Visit');
-      const taskElement = await tasksPage.getOpenTaskElement();
+      const initialTaskCount = await tasksPage.getTaskListCount();
       await genericForm.submitForm();
-      await taskElement.waitForDisplayed({ reverse: true });
+      await tasksPage.waitForTaskListCountChange(initialTaskCount);
 
       await tasksPage.waitForTasksGroupLoaded();
       const groupTasksAndTitles = await getGroupTasksNamesAndTitles();
@@ -242,9 +243,9 @@ describe('Tasks group landing page', () => {
       const task = await tasksPage.getTaskByContactAndForm('Francisco Goya', 'person_create');
       await task.click();
       await tasksPage.waitForTaskContentLoaded('Home Visit');
-      const taskElement = await tasksPage.getOpenTaskElement();
+      const initialTaskCount = await tasksPage.getTaskListCount();
       await genericForm.submitForm();
-      await taskElement.waitForDisplayed({ reverse: true });
+      await tasksPage.waitForTaskListCountChange(initialTaskCount);
 
       await tasksPage.waitForTasksGroupLoaded();
 
@@ -264,9 +265,9 @@ describe('Tasks group landing page', () => {
       await task.click();
 
       await tasksPage.waitForTaskContentLoaded('Home Visit');
-      const taskElementHomeVisit = await tasksPage.getOpenTaskElement();
+      const initialTaskCountHomeVisit = await tasksPage.getTaskListCount();
       await genericForm.submitForm();
-      await taskElementHomeVisit.waitForDisplayed({ reverse: true });
+      await tasksPage.waitForTaskListCountChange(initialTaskCountHomeVisit);
 
       await tasksPage.waitForTasksGroupLoaded();
       const tasksInGroup = await tasksPage.getTasksInGroup();
@@ -276,9 +277,9 @@ describe('Tasks group landing page', () => {
       await lastTask.click();
 
       await tasksPage.waitForTaskContentLoaded('Place Home Visit');
-      const taskElementPlaceHomeVisit = await tasksPage.getOpenTaskElement();
+      const initialTaskCountPlaceHomeVisit = await tasksPage.getTaskListCount();
       await genericForm.submitForm();
-      await taskElementPlaceHomeVisit.waitForDisplayed({ reverse: true });
+      await tasksPage.waitForTaskListCountChange(initialTaskCountPlaceHomeVisit);
 
       const emptySelection = await tasksPage.noSelectedTask();
       await (emptySelection).waitForDisplayed();
@@ -290,9 +291,9 @@ describe('Tasks group landing page', () => {
       const task = await tasksPage.getTaskByContactAndForm('Bob', 'person_create');
       await task.click();
       await tasksPage.waitForTaskContentLoaded('Home Visit');
-      const taskElement = await tasksPage.getOpenTaskElement();
+      const initialTaskCount = await tasksPage.getTaskListCount();
       await genericForm.submitForm();
-      await taskElement.waitForDisplayed({ reverse: true });
+      await tasksPage.waitForTaskListCountChange(initialTaskCount);
 
       const emptySelection = await tasksPage.noSelectedTask();
       await (emptySelection).waitForDisplayed();
@@ -328,9 +329,9 @@ describe('Tasks group landing page', () => {
       await task.click();
 
       await tasksPage.waitForTaskContentLoaded('Home Visit');
-      const taskElement = await tasksPage.getOpenTaskElement();
+      const initialTaskCount = await tasksPage.getTaskListCount();
       await genericForm.submitForm();
-      await taskElement.waitForDisplayed({ reverse: true });
+      await tasksPage.waitForTaskListCountChange(initialTaskCount);
 
       const emptySelection = await tasksPage.noSelectedTask();
       await (emptySelection).waitForDisplayed();

@@ -421,7 +421,7 @@ describe('db', () => {
       const headers = PouchDB.fetch.args.map(arg => arg[1].headers);
       expect(headers.length).to.equal(2);
       headers.forEach((header) => {
-        expect(header.get('X-Medic-Service')).to.equal('api');
+        expect(header.get(HTTP_HEADERS.MEDIC_SERVICE)).to.equal('api');
         expect(header.get(HTTP_HEADERS.REQUEST_ID)).to.equal('the_id');
       });
     });
@@ -438,7 +438,7 @@ describe('db', () => {
       const headers = PouchDB.fetch.args.map(arg => arg[1].headers);
       expect(headers.length).to.equal(2);
       headers.forEach((header) => {
-        expect(header.get('X-Medic-Service')).to.equal('api');
+        expect(header.get(HTTP_HEADERS.MEDIC_SERVICE)).to.equal('api');
       });
     });
   });

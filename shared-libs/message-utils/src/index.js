@@ -2,7 +2,7 @@
  * @module message-utils
  */
 const _ = require('lodash/core');
-const uuid = require('uuid');
+const { v7: uuid } = require('uuid');
 const gsm = require('gsm');
 const mustache = require('mustache');
 const objectPath = require('object-path');
@@ -10,6 +10,7 @@ const moment = require('moment');
 const toBikramSambatLetters = require('bikram-sambat').toBik_text;
 const phoneNumber = require('@medic/phone-number');
 const logger = require('@medic/logger');
+const { CONTACT_TYPES } = require('@medic/constants');
 const SMS_TRUNCATION_SUFFIX = '...';
 const DEFAULT_LOCALE = 'en';
 
@@ -33,15 +34,15 @@ const getLinkedDoc = (doc, tag) => {
 };
 
 const getClinic = function(doc) {
-  return doc && getParent(doc, 'clinic');
+  return doc && getParent(doc, CONTACT_TYPES.CLINIC);
 };
 
 const getHealthCenter = function(doc) {
-  return doc && getParent(doc, 'health_center');
+  return doc && getParent(doc, CONTACT_TYPES.HEALTH_CENTER);
 };
 
 const getDistrict = function(doc) {
-  return doc && getParent(doc, 'district_hospital');
+  return doc && getParent(doc, CONTACT_TYPES.DISTRICT_HOSPITAL);
 };
 
 const getClinicPhone = function(doc) {
@@ -96,34 +97,63 @@ const applyPhoneFilters = function(config, phone) {
   return phone;
 };
 
+const stripCountryCode = function(config, phone) {
+  if (!phone) {
+    return phone;
+  }
+  const countryCode = config?.default_country_code;
+  if (!countryCode) {
+    return phone;
+  }
+  const prefix = '+' + String(countryCode);
+  if (phone.startsWith(prefix)) {
+    return phone.slice(prefix.length);
+  }
+  return phone;
+};
+
+const normalizeRecipient= function(recipient) {
+  const recipientArray = Array.isArray(recipient) ? recipient : [recipient];  
+  const isValid = r => typeof r === 'string' || typeof r === 'number';
+  return recipientArray
+    .map(r => isValid(r) && String(r).trim())
+    .filter(Boolean);
+};
+
 const getRecipient = function(context, recipient, defaultToSender = true) {
   if (!context) {
     return;
   }
 
   const from = context.from || context.contact?.phone;
-  recipient = recipient?.trim();
+  recipient = normalizeRecipient(recipient);
 
-  if (!recipient) {
+  if (!recipient.length) {
     return from;
   }
 
-  const phone = resolveRecipient(context, recipient);
+  const phone = resolveMany(context, recipient);
+  return phone || (defaultToSender && from) || recipient[0];
+};
 
-  return phone || (defaultToSender && from) || recipient;
+const resolveMany = (context, recipients) => {
+  for (const recipient of recipients) {
+    const phone = resolveRecipient(context, recipient);
+    if (phone) {
+      return phone;
+    }    
+  }
 };
 
 const resolveRecipient = function(context, recipient) {
-  if (!recipient) {
-    return null;
-  }
-
   const resolvers = [
     {
+      name: 'reporting_unit',
       match: r => r === 'reporting_unit',
       resolve: () => context.from || context.contact?.phone,
     },
     {
+      name: 'ancestor',
       match: r => r.startsWith('ancestor:'),
       resolve: r => {
         const type = r.split(':')[1];
@@ -135,6 +165,7 @@ const resolveRecipient = function(context, recipient) {
       },
     },
     {
+      name: 'linked',
       match: r => r.startsWith('link:'),
       resolve: r => {
         const tag = r.split(':')[1];
@@ -149,45 +180,54 @@ const resolveRecipient = function(context, recipient) {
       },
     },
     {
+      name: 'parent',
       match: r => r === 'parent',
       resolve: () => resolveAncestor(context, 2),
     },
     {
+      name: 'grandparent',
       match: r => r === 'grandparent',
       resolve: () => resolveAncestor(context, 3),
     },
     {
-      match: r => r === 'clinic',
+      name: CONTACT_TYPES.CLINIC,
+      match: r => r === CONTACT_TYPES.CLINIC,
       resolve: () => getClinicPhone(context.patient) ||
         getClinicPhone(context.place) ||
         getClinicPhone(context) ||
         context.contact?.phone,
     },
     {
-      match: r => r === 'health_center',
+      name: CONTACT_TYPES.HEALTH_CENTER,
+      match: r => r === CONTACT_TYPES.HEALTH_CENTER,
       resolve: () => getHealthCenterPhone(context.patient) ||
         getHealthCenterPhone(context.place) ||
         getHealthCenterPhone(context),
     },
     {
+      name: 'district',
       match: r => r === 'district',
       resolve: () => getDistrictPhone(context.patient) ||
         getDistrictPhone(context.place) ||
         getDistrictPhone(context),
     },
     {
+      name: 'field',
       match: r => context.fields?.[r],
       resolve: r => context.fields[r],
     },
     {
+      name: 'property',
       match: r => context[r],
       resolve: r => context[r],
     },
     {
+      name: 'object_path',
       match: r => r.includes('.'),
       resolve: r => objectPath.get(context, r),
     },
     {
+      name: 'phone_number',
       match: r => phoneNumber.validate({}, r),
       resolve: r => r,
     }
@@ -309,6 +349,12 @@ const render = function(config, template, view, locale) {
       return function(text) {
         return formatDate(config, text, view, config.reported_date_format, locale);
       };
+    },
+    local_phone: function() {
+      return function(text) {
+        const phone = render(config, text, view);
+        return stripCountryCode(config, phone.trim());
+      };
     }
   }));
 };
@@ -325,10 +371,12 @@ const truncateMessage = function(parts, max) {
  * @param {Object} doc The couchdb document this message relates to
  * @param {Object} content An object with one of `translationKey` or a `messages`
  *        array for translation, or an already prepared `message` string.
- * @param {String} recipient A string to determine who the message should be sent to.
- *        One of: 'reporting_unit', 'clinic', 'parent', 'grandparent',
- *        the name of a property in `fields` or on the doc, a path to a
+ * @param {String|String[]} recipient A recipient definition. This can be a string or an array of recipients.
+ *        String or String value can be one of: 'reporting_unit', 'clinic', 'parent', 'grandparent',
+ *        the name of a property in `fields` or on the doc, a valid phone number directly, a path to a
  *        property on the doc.
+ *        If an array is provided, each entry is tried in order and the first successfully resolved phone number 
+ *       is used.
  * @param {Object} [extraContext={}] An object with additional values to
  *        provide as a context for templating. Properties: `patient` (object),
  *        `registrations` (array), `place` (object), `placeRegistrations` (array),
@@ -341,7 +389,7 @@ exports.generate = function(config, translate, doc, content, recipient, extraCon
   const context = extendedTemplateContext(doc, extraContext || {});
 
   const result = {
-    uuid: uuid.v4(),
+    uuid: uuid(),
     to: getPhone(config, context, recipient)
   };
 

@@ -1,64 +1,53 @@
-name: Release Helm Charts
+name: Push Helm Charts→Docs Site
 
 on:
+
+  # CHT Core only pushes new tags when we do a release
   push:
     tags:
-      - 'v*'
+      - '*'
+  # allow this to be run manually in case a change is made outside
+  # of a release
+  workflow_dispatch:
 
 jobs:
-  package-helm-charts:
-    name: Package Helm Charts
+  checkout-repo-upload-chart-artifacts:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout CHT Core Repo 🛎️
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
-      - name: Setup Helm
-        uses: azure/setup-helm@v4.1.0
+      - name: Setup Pages ⚙️
+        id: pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Upload artifact 📡
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          node-version: '22.15'
+          # Upload just helm charts
+          path: './scripts/build/helm-releases'
 
-      - name: Install dependencies
-        run: npm ci
+  copy-artifacts-to-gh-pages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: checkout-repo-upload-chart-artifacts
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
-      - name: Generate Helm Chart
-        working-directory: scripts/build/helm
-        run: |
-          TAG_VERSION="${GITHUB_REF#refs/tags/}"
-          TAG_VERSION="${TAG_VERSION#v}"
-          sed -i "s/version: .*/version: $TAG_VERSION/" Chart.yaml
-          sed -i "s/appVersion: .*/appVersion: \"$TAG_VERSION\"/" Chart.yaml
-          sed -i "s/{{cht_version}}/$TAG_VERSION/g" values/base.yaml
-          sed -i "s/{{cht_image_tag}}/$TAG_VERSION/g" values/base.yaml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
 
-      - name: Package Helm Chart
-        working-directory: scripts/build/helm
-        run: |
-          mkdir -p ../../helm-packages
-          helm package . --destination ../../helm-packages
-          ls -la ../../helm-packages/
-
-      - name: Create Release Assets
-        run: |
-          mkdir -p release-assets
-          cp helm-packages/*.tgz release-assets/
-          ls -la release-assets/
-
-      - name: Upload Release Assets
-        uses: actions/upload-artifact@v4
-        with:
-          name: helm-charts-${{ github.ref_name }}
-          path: release-assets/
-          retention-days: 30
-
-      - name: Attach Helm Chart to Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: release-assets/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+    steps:
+      - name: Publish to GitHub Pages 🚀
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5

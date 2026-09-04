@@ -264,6 +264,7 @@
     "can_view_tasks_group": [
       "chw"
     ],
+    "can_track_task_interactions": [],
     "can_view_unallocated_data_records": [
       "gateway",
       "program_officer",
@@ -284,6 +285,10 @@
     "can_default_facility_filter": [],
     "can_have_multiple_places": [],
     "can_skip_password_change": [],
+    "can_get_task_notifications": [
+      "chw",
+      "chw_supervisor"
+    ],
     "can_export_devices_details": [
       "national_admin"
     ]
@@ -292,7 +297,8 @@
     "contacts_default_sort": "",
     "visit_count": {
       "month_start_date": 1,
-      "visit_count_goal": 0
+      "visit_count_goal": 0,
+      "use_bikram_sambat_months": false
     }
   },
   "death_reporting": {

@@ -1,0 +1,132 @@
+const db = require('../../db');
+const dbWatcher = require('../db-watcher');
+const environment = require('@medic/environment');
+const purgingUtils = require('@medic/purging-utils');
+const config = require('../../config');
+const configWatcher = require('../config-watcher');
+const purgedDocsCache = require('./purged-docs-cache');
+const { PREFIXES } = require('@medic/constants');
+const _ = require('lodash');
+
+const DB_NOT_FOUND_ERROR = new Error('not_found');
+const USER_DOC_PREFIX = PREFIXES.COUCH_USER;
+const getPurgeDb = (roles) => {
+  const hash = purgingUtils.getRoleHash(roles);
+  const dbName = purgingUtils.getPurgeDbName(environment.db, hash);
+  return db.exists(dbName).then(purgeDb => {
+    if (!purgeDb) {
+      throw DB_NOT_FOUND_ERROR;
+    }
+    return purgeDb;
+  });
+};
+
+const catchDbNotFoundError = (err, purgeDb) => {
+  if (err !== DB_NOT_FOUND_ERROR) {
+    db.close(purgeDb);
+    throw err;
+  }
+};
+const getPurgedIdsFromAllDocs = result => {
+  const purgedIds = [];
+  if (!result || !result.rows) {
+    return purgedIds;
+  }
+
+  result.rows.forEach(row => {
+    if (row.value && !row.value.deleted) {
+      purgedIds.push(purgingUtils.extractId(row.id));
+    }
+  });
+  return purgedIds;
+};
+
+const getPurgedIds = async (userCtx, docIds, useCache = true) => {
+  let purgeIds = [];
+  if (!docIds?.length || !userCtx.roles?.length) {
+    return Promise.resolve(purgeIds);
+  }
+
+  if (useCache) {
+    const cachedIds = await purgedDocsCache.get(userCtx.name);
+    if (cachedIds) {
+      return Promise.resolve(cachedIds);
+    }
+  }
+
+  const ids = docIds.map(purgingUtils.getPurgedId);
+  let purgeDb;
+
+  try {
+    purgeDb = await getPurgeDb(userCtx.roles);
+    const allDocsResult = await purgeDb.allDocs({ keys: ids });
+    purgeIds = getPurgedIdsFromAllDocs(allDocsResult);
+    useCache && await purgedDocsCache.set(userCtx.name, purgeIds);
+    db.close(purgeDb);
+  } catch (err) {
+    catchDbNotFoundError(err, purgeDb);
+  }
+
+  return purgeIds;
+};
+
+const getUnPurgedIds = (userCtx, docIds) => {
+  docIds.sort();
+  return getPurgedIds(userCtx, docIds).then(purgedIds => _.difference(docIds, purgedIds));
+};
+
+const listen = () => {
+  watchSentinel();
+  watchUsers();
+  watchMedic();
+  watchSettings();
+};
+
+const watchSentinel = () => {
+  dbWatcher.sentinel(change => {
+    if (change.id.startsWith('purgelog:') && change.changes[0].rev.startsWith('1-')) {
+      return purgedDocsCache.wipe();
+    }
+  });
+};
+
+const watchUsers = () => {
+  dbWatcher.users(({ id }) => {
+    if (id.startsWith(USER_DOC_PREFIX)) {
+      const name = id.replace(USER_DOC_PREFIX, '');
+      return purgedDocsCache.clear(name);
+    }
+  });
+};
+
+const watchMedic = () => {
+  dbWatcher.medic(({ id }) => {
+    if (id.startsWith(USER_DOC_PREFIX)) {
+      const name = id.replace(USER_DOC_PREFIX, '');
+      return purgedDocsCache.clear(name);
+    }
+  });
+};
+
+const watchSettings = () => {
+  const key = 'district_admins_access_unallocated_messages';
+  let district_admins_access_unallocated_messages = config.get(key);
+  configWatcher.watch(() => {
+    const newConfigValue = config.get(key);
+    if (newConfigValue !== district_admins_access_unallocated_messages) {
+      district_admins_access_unallocated_messages = newConfigValue;
+      purgedDocsCache.wipe();
+    }
+  });
+};
+
+if (!process.env.UNIT_TEST_ENV) {
+  purgedDocsCache.wipe();
+  listen();
+}
+
+module.exports = {
+  getPurgedIds,
+  getUnPurgedIds,
+};
+

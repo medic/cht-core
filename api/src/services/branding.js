@@ -1,6 +1,7 @@
 const fs = require('fs');
 const { promisify } = require('util');
 const path = require('path');
+const { DOC_IDS } = require('@medic/constants');
 
 const db = require('../db');
 const logger = require('@medic/logger');
@@ -12,7 +13,7 @@ const getInlineImage = ({ data, contentType }) => `data:${contentType};base64,${
 
 const getBrandingDoc = async () => {
   try {
-    return await db.medic.get('branding', { attachments: true });
+    return await db.medic.get(DOC_IDS.BRANDING, { attachments: true });
   } catch (e) {
     if (e.status !== 404) {
       logger.error('Error fetching branding doc from CouchDB: %o', e);

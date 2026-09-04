@@ -9,6 +9,7 @@ const messageUtils = require('@medic/message-utils');
 const db = require('../db');
 const config = require('../config');
 const logger = require('@medic/logger');
+const { DOC_TYPES } = require('@medic/constants');
 
 /*
  * Get desired locale
@@ -39,7 +40,8 @@ const addError = (doc, error) => {
     return;
   }
   if (_.isString(error)) {
-    error = { code: 'invalid_report', message: error };
+    // Use the string as both code and message so analytics can identify it
+    error = { code: error, message: error };
   } else if (_.isObject(error)) {
     if (!error.code) {
       // set error code if missing
@@ -150,23 +152,7 @@ module.exports = {
    *     is not a valid way of determining if the patient with that id exists
    */
   getRegistrations: (options) => {
-    const viewOptions = {
-      include_docs: true,
-    };
-    if (options.id) {
-      viewOptions.key = options.id;
-    } else if (options.ids) {
-      viewOptions.keys = options.ids;
-    } else {
-      return Promise.resolve([]);
-    }
-    return db.medic
-      .query('medic-client/registered_patients', viewOptions)
-      .then(data => {
-        return data.rows
-          .map(row => row.doc)
-          .filter(doc => registrationUtils.isValidRegistration(doc, config.getAll()));
-      });
+    return module.exports.getReportsBySubject({ ...options, registrations: true });
   },
   getForm: formCode => {
     const forms = config.get('forms');
@@ -236,7 +222,7 @@ module.exports = {
 
   getSubjectIds: contact => registrationUtils.getSubjectIds(contact),
 
-  isXFormReport: doc => doc && doc.type === 'data_record' && doc.content_type === 'xml',
+  isXFormReport: doc => doc && doc.type === DOC_TYPES.DATA_RECORD && doc.content_type === 'xml',
 
   /**
    * Validates if a cron expression is valid and is active within an offset timeframe at the current time.

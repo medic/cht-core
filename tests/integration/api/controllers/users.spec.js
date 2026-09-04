@@ -1,18 +1,18 @@
 const utils = require('@utils');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const querystring = require('querystring');
 const sentinelUtils = require('@utils/sentinel');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const chai = require('chai');
-const { USER_ROLES } = require('@medic/constants');
+const { USER_ROLES, CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
-const getUserId = n => `org.couchdb.user:${n}`;
+const getUserId = n => `${PREFIXES.COUCH_USER}${n}`;
 const password = 'passwordSUP3RS3CR37!';
 const parentPlace = {
   _id: 'PARENT_PLACE',
-  type: 'district_hospital',
+  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
   name: 'Big Parent Hospital'
 };
 
@@ -100,7 +100,7 @@ describe('Users API', () => {
       },
       {
         _id: newPlaceId,
-        type: 'clinic'
+        type: CONTACT_TYPES.CLINIC
       },
       {
         _id: newContactId,
@@ -275,7 +275,7 @@ describe('Users API', () => {
       const parentPlace = {
         _id: 'PARENT_PLACE',
         name: 'Parent place',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         reported_date: new Date().getTime()
       };
       return utils
@@ -295,7 +295,7 @@ describe('Users API', () => {
               roles: ['district_admin'],
               name: 'Philip',
               contact: { name: 'Philip' },
-              place: { name: 'PhilipPlace', type: 'health_center', parent: 'PARENT_PLACE' },
+              place: { name: 'PhilipPlace', type: CONTACT_TYPES.HEALTH_CENTER, parent: 'PARENT_PLACE' },
             },
           };
 
@@ -303,15 +303,15 @@ describe('Users API', () => {
         })
         .then(result => {
           chai.expect(result).to.deep.nested.include({
-            'user.id': 'org.couchdb.user:philip',
-            'user-settings.id': 'org.couchdb.user:philip',
+            'user.id': PREFIXES.COUCH_USER + 'philip',
+            'user-settings.id': PREFIXES.COUCH_USER + 'philip',
           });
           chai.expect(result.contact.id).to.not.be.undefined;
         })
         .then(() => sentinelUtils.waitForSentinel())
         .then(() => Promise.all([
-          utils.getDoc('org.couchdb.user:philip'),
-          utils.request('/_users/org.couchdb.user:philip')
+          utils.getDoc(PREFIXES.COUCH_USER + 'philip'),
+          utils.request(`/_users/${PREFIXES.COUCH_USER}philip`)
         ]))
         .then(([userSettings, user]) => {
           chai.expect(userSettings).to.include({ name: 'philip', type: 'user-settings' });
@@ -333,7 +333,7 @@ describe('Users API', () => {
             contact: { _id: contact._id, parent: contact.parent },
             name: 'PhilipPlace',
             parent: { _id: 'PARENT_PLACE' },
-            type: 'health_center',
+            type: CONTACT_TYPES.HEALTH_CENTER,
           });
         });
 
@@ -362,7 +362,7 @@ describe('Users API', () => {
         password: password,
         place: {
           _id: 'fixture:offline',
-          type: 'health_center',
+          type: CONTACT_TYPES.HEALTH_CENTER,
           name: 'Offline place',
           parent: 'PARENT_PLACE'
         },
@@ -377,7 +377,7 @@ describe('Users API', () => {
         password: password,
         place: {
           _id: 'fixture:online',
-          type: 'health_center',
+          type: CONTACT_TYPES.HEALTH_CENTER,
           name: 'Online place',
           parent: 'PARENT_PLACE'
         },
@@ -392,7 +392,7 @@ describe('Users API', () => {
         password: password,
         place: {
           _id: 'fixture:offlineonline',
-          type: 'health_center',
+          type: CONTACT_TYPES.HEALTH_CENTER,
           name: 'Online place',
           parent: 'PARENT_PLACE'
         },
@@ -408,7 +408,7 @@ describe('Users API', () => {
     let onlineRequestOptions;
     const nbrOfflineDocs = 30;
     const nbrTasks = 20;
-    // _design/medic-client + org.couchdb.user:offline + fixture:offline + OfflineUser
+    // _design/medic-client + ${PREFIXES.COUCH_USER}offline + fixture:offline + OfflineUser
     let expectedNbrDocs = nbrOfflineDocs + 4;
     let docsForAll;
 
@@ -421,15 +421,15 @@ describe('Users API', () => {
         parent: { _id: 'fixture:offline' }
       }));
       docs.push(...Array.from(Array(nbrTasks), () => ({
-        _id: `task~org.couchdb.user:offline~${uuid()}`,
+        _id: `task~${PREFIXES.COUCH_USER}offline~${uuid()}`,
         type: 'task',
-        user: 'org.couchdb.user:offline'
+        user: PREFIXES.COUCH_USER + 'offline'
       })));
       await utils.saveDocs(docs);
       const resp = await utils.requestOnTestDb(
         '/_design/medic/_nouveau/docs_by_replication_key?limit=100000&q=key:_all'
       );
-      docsForAll = resp.hits.length + 2; // _design/medic-client + org.couchdb.user:doc
+      docsForAll = resp.hits.length + 2; // _design/medic-client + ${PREFIXES.COUCH_USER}doc
       expectedNbrDocs += resp.hits.length;
     });
 
@@ -600,7 +600,7 @@ describe('Users API', () => {
 
     const parentPlace = {
       _id: 'PARENT_PLACE',
-      type: 'district_hospital',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       name: 'Big Parent Hostpital'
     };
 
@@ -615,7 +615,7 @@ describe('Users API', () => {
         roles: ['district_admin'],
         place: {
           _id: 'fixture:test',
-          type: 'health_center',
+          type: CONTACT_TYPES.HEALTH_CENTER,
           name: 'TestVille',
           parent: 'PARENT_PLACE'
         },
@@ -847,7 +847,7 @@ describe('Users API', () => {
             password: password,
             place: {
               _id: 'fixture:offline4',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Offline4 place',
               parent: 'PARENT_PLACE'
             },
@@ -862,7 +862,7 @@ describe('Users API', () => {
             password: password,
             place: {
               _id: 'fixture:offline5',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Offline5 place',
               parent: 'PARENT_PLACE'
             },
@@ -901,7 +901,7 @@ describe('Users API', () => {
             password: 'password',
             place: {
               _id: 'fixture:offline5',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Offline5 place',
               parent: 'PARENT_PLACE'
             },
@@ -915,7 +915,7 @@ describe('Users API', () => {
             username: 'offline6',
             place: {
               _id: 'fixture:offline6',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Offline6 place',
               parent: 'PARENT_PLACE'
             },
@@ -930,7 +930,7 @@ describe('Users API', () => {
             password,
             place: {
               _id: 'fixture:offline7',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Offline7 place',
               parent: 'PARENT_PLACE'
             },
@@ -973,7 +973,7 @@ describe('Users API', () => {
             password_change_required: false,
             place: {
               _id: 'fixture:offline2',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Offline2 place',
               parent: 'PARENT_PLACE'
             },
@@ -989,7 +989,7 @@ describe('Users API', () => {
             password_change_required: false,
             place: {
               _id: 'fixture:online2',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Online2 place',
               parent: 'PARENT_PLACE'
             },
@@ -1005,7 +1005,7 @@ describe('Users API', () => {
             password_change_required: false,
             place: {
               _id: 'fixture:offlineonline2',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Online2 place',
               parent: 'PARENT_PLACE'
             },
@@ -1078,7 +1078,7 @@ describe('Users API', () => {
             token_login: true,
             place: {
               _id: 'fixture:offline3',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Offline2 place',
               parent: 'PARENT_PLACE'
             },
@@ -1095,7 +1095,7 @@ describe('Users API', () => {
             token_login: true,
             place: {
               _id: 'fixture:online3',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Online2 place',
               parent: 'PARENT_PLACE'
             },
@@ -1112,7 +1112,7 @@ describe('Users API', () => {
             phone: '+40756898989',
             place: {
               _id: 'fixture:offlineonline3',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Online2 place',
               parent: 'PARENT_PLACE'
             },
@@ -1306,7 +1306,7 @@ describe('Users API', () => {
           .then(loginTokenDoc => {
             chai.expect(loginTokenDoc).to.include({
               type: 'token_login',
-              user: 'org.couchdb.user:testuser',
+              user: PREFIXES.COUCH_USER + 'testuser',
             });
             chai.expect(loginTokenDoc.tasks).to.be.ok;
             chai.expect(loginTokenDoc.tasks.length).to.equal(2);
@@ -1384,7 +1384,7 @@ describe('Users API', () => {
           .then(loginTokenDoc => {
             chai.expect(loginTokenDoc).to.include({
               type: 'token_login',
-              user: 'org.couchdb.user:testuser',
+              user: PREFIXES.COUCH_USER + 'testuser',
             });
             chai.expect(loginTokenDoc.tasks).to.be.ok;
             chai.expect(loginTokenDoc.tasks.length).to.equal(2);
@@ -1555,7 +1555,7 @@ describe('Users API', () => {
         roles: ['national_manager'],
         place: {
           _id: 'fixture:online',
-          type: 'health_center',
+          type: CONTACT_TYPES.HEALTH_CENTER,
           name: 'TestVille',
           parent: 'PARENT_PLACE'
         },
@@ -1578,7 +1578,7 @@ describe('Users API', () => {
           return utils.getDoc(tokenLoginDocId);
         })
         .then(tokenLoginDoc => {
-          chai.expect(tokenLoginDoc.user).to.equal('org.couchdb.user:testuser');
+          chai.expect(tokenLoginDoc.user).to.equal(PREFIXES.COUCH_USER + 'testuser');
 
           const onlineRequestOpts = {
             auth: { username: 'onlineuser', password },
@@ -1607,7 +1607,7 @@ describe('Users API', () => {
     let userProgramOfficer;
 
     before(async () => {
-      facility = placeFactory.place().build({ type: 'district_hospital', reported_date: null });
+      facility = placeFactory.place().build({ type: CONTACT_TYPES.DISTRICT_HOSPITAL, reported_date: null });
       person = utils.deepFreeze(
         personFactory.build({ role: 'chw', parent: { _id: facility._id }, reported_date: null })
       );
@@ -1625,7 +1625,7 @@ describe('Users API', () => {
 
       await utils.saveDocs([ facility, person ]);
       await utils.createUsers([{ ...user, password }, { ...userProgramOfficer, password }]);
-
+      await utils.updateSettings({ roles: { program_officer: { name: 'Program Officer' } } }, { ignoreReload: true });
       await utils.updatePermissions(['program_officer'], ['can_view_users'], [], { ignoreReload: true });
     });
 
@@ -1719,7 +1719,7 @@ describe('Users API', () => {
         username: uuid(),
         password: password,
         place: {
-          type: 'health_center',
+          type: CONTACT_TYPES.HEALTH_CENTER,
           name: 'Online place',
           parent: 'PARENT_PLACE'
         },
@@ -1735,7 +1735,7 @@ describe('Users API', () => {
       for (const user of users) {
         const savedUser = savedUsers.find(savedUser => savedUser.username === user.username);
         expect(savedUser).to.deep.nested.include({
-          id: `org.couchdb.user:${user.username}`,
+          id: `${PREFIXES.COUCH_USER}${user.username}`,
           'place[0].type': user.place.type,
           'place[0].name': user.place.name,
           'place[0].parent._id': parentPlace._id,
@@ -1748,12 +1748,12 @@ describe('Users API', () => {
       const facilityE = await utils.request({
         path: '/api/v1/places',
         method: 'POST',
-        body: { type: 'health_center', name: 'Facility E', parent: 'PARENT_PLACE' },
+        body: { type: CONTACT_TYPES.HEALTH_CENTER, name: 'Facility E', parent: 'PARENT_PLACE' },
       });
       const facilityF = await utils.request({
         path: '/api/v1/places',
         method: 'POST',
-        body: { type: 'health_center', name: 'Facility F', parent: 'PARENT_PLACE' },
+        body: { type: CONTACT_TYPES.HEALTH_CENTER, name: 'Facility F', parent: 'PARENT_PLACE' },
       });
       const contactA = await utils.request({
         path: '/api/v1/people',
@@ -1789,7 +1789,7 @@ describe('Users API', () => {
         body: [user1, user2, user3, user4, user5],
       });
 
-      const user5Name = user5Response.user.id.replace('org.couchdb.user:', '');
+      const user5Name = user5Response.user.id.replace(PREFIXES.COUCH_USER, '');
       await utils.request({
         path: `/api/v1/users/${user5Name}`,
         method: 'DELETE',
@@ -1897,7 +1897,7 @@ describe('Users API', () => {
     before(async () => {
       const placeAttributes = {
         parent: { _id: parentPlace._id },
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
       };
       places = [
         placeFactory.place().build({ ...placeAttributes, name: 'place1' }),
@@ -2072,7 +2072,7 @@ describe('Users API', () => {
     before(async () => {
       const placeAttributes = {
         parent: { _id: parentPlace._id },
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
       };
       places = [
         placeFactory.place().build({ ...placeAttributes, name: 'place1' }),
@@ -2124,7 +2124,7 @@ describe('Users API', () => {
     ];
     const placeAttributes = {
       parent: { _id: parentPlace._id },
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
     };
     const places = [
       placeFactory.place().build({ ...placeAttributes, name: 'place1' }),
@@ -2188,7 +2188,7 @@ describe('Users API', () => {
         });
 
         expect(user).excluding(['contact', 'place', 'rev']).to.deep.equal({
-          id: `org.couchdb.user:${existingUser.username}`,
+          id: `${PREFIXES.COUCH_USER}${existingUser.username}`,
           username: existingUser.username,
           roles: existingUser.roles,
           oidc_username: existingUser.oidc_username,

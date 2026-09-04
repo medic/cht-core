@@ -1,20 +1,26 @@
 import { Injectable, NgZone } from '@angular/core';
-import { v4 as uuid } from 'uuid';
+import { v7 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
 import type JQuery from 'jquery';
-import * as FileManager from '../../js/enketo/file-manager.js';
+import events from 'enketo-core/src/js/event';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
-import { AttachmentService } from '@mm-services/attachment.service';
 import { DbService } from '@mm-services/db.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
-import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
-import { REPORT_ATTACHMENT_NAME } from '@mm-services/get-report-content.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
-import { Qualifier, Report } from '@medic/cht-datasource';
+import { Contact, Qualifier } from '@medic/cht-datasource';
+import { DOC_TYPES } from '@medic/constants';
+import { FormConfig } from '@mm-services/form/form-config';
+import {
+  EnketoContactFormData,
+  EnketoFormData,
+  EnketoReportFormData
+} from '@mm-services/form/form-data';
+import { isHardcodedType } from '@medic/contact-types-utils';
+import { REPORT_ATTACHMENT_NAME } from '@mm-services/get-report-content.service';
 
 /**
  * Service for interacting with Enketo forms. This code is intended for displaying forms in the CHT as well as being
@@ -27,21 +33,19 @@ import { Qualifier, Report } from '@medic/cht-datasource';
 })
 export class EnketoService {
   constructor(
-    private attachmentService: AttachmentService,
-    private dbService: DbService,
-    private enketoPrepopulationDataService: EnketoPrepopulationDataService,
-    private enketoTranslationService: EnketoTranslationService,
-    private extractLineageService: ExtractLineageService,
-    private translateFromService: TranslateFromService,
-    private translateService: TranslateService,
+    private readonly dbService: DbService,
+    private readonly enketoPrepopulationDataService: EnketoPrepopulationDataService,
+    private readonly extractLineageService: ExtractLineageService,
+    private readonly translateFromService: TranslateFromService,
+    private readonly translateService: TranslateService,
+    private readonly ngZone: NgZone,
     chtDatasourceService: CHTDatasourceService,
-    private ngZone: NgZone,
   ) {
-    this.getReport = chtDatasourceService.bind(Report.v1.get);
+    this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
   }
 
   private readonly objUrls: string[] = [];
-  private readonly getReport: ReturnType<typeof Report.v1.get>;
+  private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
   private currentForm;
 
   getCurrentForm() {
@@ -150,7 +154,7 @@ export class EnketoService {
     };
 
     try {
-      const summaries:ContactSummaryXml[] = [];
+      const summaries:ExternalInstance[] = [];
       for (const contactSummary of contactSummaries) {
         const contactSummaryXml = convertSummary(contactSummary?.context);
         if (contactSummary && contactSummaryXml) {
@@ -171,23 +175,26 @@ export class EnketoService {
   private async getEnketoForm(xmlFormContext:XmlFormContext, userSettings) {
     const instanceStr = this.enketoPrepopulationDataService.get(
       userSettings,
-      xmlFormContext.doc.model,
+      xmlFormContext.formConfig.model,
       xmlFormContext.instanceData
     );
     const options: EnketoOptions = {
-      modelStr: xmlFormContext.doc.model,
+      modelStr: xmlFormContext.formConfig.model,
       instanceStr: instanceStr,
-      external: this.convertContactSummaryToXML([xmlFormContext.contactSummary, xmlFormContext.userContactSummary]),
+      external: [
+        ...this.convertContactSummaryToXML([xmlFormContext.contactSummary, xmlFormContext.userContactSummary]),
+        ...(xmlFormContext.externalInstances ?? []),
+      ],
     };
     const form = xmlFormContext.wrapper.find('form')[0];
     return new window.EnketoForm(form, options, { language: userSettings.language });
   }
 
   private renderFromXmls(xmlFormContext: XmlFormContext, userSettings) {
-    const { doc, titleKey, wrapper, isFormInModal } = xmlFormContext;
+    const { formConfig, $formHtml, titleKey, wrapper, isFormInModal } = xmlFormContext;
 
     const formContainer = wrapper.find('.container').first();
-    formContainer.html(doc.html.get(0)!);
+    formContainer.html($formHtml.get(0)!);
 
     return this
       .getEnketoForm(xmlFormContext, userSettings)
@@ -198,7 +205,7 @@ export class EnketoService {
           return Promise.reject(new Error(JSON.stringify(loadErrors)));
         }
       })
-      .then(() => this.getFormTitle(titleKey, doc))
+      .then(() => this.getFormTitle(titleKey, formConfig.doc))
       .then((title) => {
         this.setFormTitle(wrapper, title);
         wrapper.show();
@@ -325,214 +332,47 @@ export class EnketoService {
   }
 
   private registerEnketoListeners($selector, form, formContext: EnketoFormContext) {
-    this.registerAddrepeatListener($selector, formContext.formDoc);
+    this.registerAddrepeatListener($selector, formContext.formConfig.doc);
     this.registerEditedListener($selector, formContext.editedListener);
     this.registerValuechangeListener($selector, formContext.valuechangeListener);
     this.registerValuechangeListener($selector,
       () => this.setupNavButtons($selector, form.pages._getCurrentIndex()));
   }
 
-  public async renderForm(formContext: EnketoFormContext, doc, userSettings) {
+  public async renderForm(
+    formContext: EnketoFormContext,
+    userSettings,
+    onBeforeInit?: (formHtml: HTMLElement) => void,
+  ): Promise<EnketoForm> {
     const {
-      formDoc,
+      formConfig,
       instanceData,
       selector,
       titleKey,
       isFormInModal,
     } = formContext;
 
-    this.replaceDataI18nTranslations(doc.html);
-    this.replaceJavarosaMediaWithLoaders(doc.html);
+    const $formHtml = $(formConfig.html);
+    this.replaceDataI18nTranslations($formHtml);
+    this.replaceJavarosaMediaWithLoaders($formHtml);
+    onBeforeInit?.($formHtml.get(0)!);
     const xmlFormContext: XmlFormContext = {
-      doc,
+      formConfig,
+      $formHtml,
       wrapper: $(selector),
       instanceData,
       titleKey,
       isFormInModal,
       contactSummary: formContext.contactSummary,
       userContactSummary: formContext.userContactSummary,
+      externalInstances: formContext.externalInstances,
     };
     const form = await this.renderFromXmls(xmlFormContext, userSettings);
     const formContainer = xmlFormContext.wrapper.find('.container').first();
-    this.replaceMediaLoaders(formContainer, formDoc);
+    this.replaceMediaLoaders(formContainer, formConfig.doc);
     this.registerEnketoListeners(xmlFormContext.wrapper, form, formContext);
     window.CHTCore.debugFormModel = () => form.model.getStr();
-    return form;
-  }
-
-  private xmlToDocs(doc, formXml, xmlVersion, record) {
-    const recordDoc = $.parseXML(record);
-    const $record = $($(recordDoc).children()[0]);
-    const repeatPaths = this.enketoTranslationService.getRepeatPaths(formXml);
-
-    const mapOrAssignId = (e, id?) => {
-      if (!id) {
-        const $id = $(e).children('_id');
-        if ($id.length) {
-          id = $id.text();
-        }
-        if (!id) {
-          id = uuid();
-        }
-      }
-      e._couchId = id;
-    };
-
-    mapOrAssignId($record[0], doc._id || uuid());
-
-    const getId = (xpath) => {
-      const xPathResult = recordDoc.evaluate(xpath, recordDoc, null, XPathResult.ANY_TYPE, null);
-      let node = xPathResult.iterateNext();
-      while (node) {
-        if (node._couchId) {
-          return node._couchId;
-        }
-        node = xPathResult.iterateNext();
-      }
-    };
-
-    const getRelativePath = (path) => {
-      if (!path) {
-        return;
-      }
-      path = path.trim();
-
-      const repeatReference = repeatPaths?.find(repeatPath => path === repeatPath || path.startsWith(`${repeatPath}/`));
-      if (repeatReference) {
-        if (repeatReference === path) {
-          // when the path is the repeat element itself, return the repeat element node name
-          return path.split('/').slice(-1)[0];
-        }
-
-        return path.replace(`${repeatReference}/`, '');
-      }
-
-      if (path.startsWith('./')) {
-        return path.replace('./', '');
-      }
-    };
-
-    const getClosestPath = (element, $element, path) => {
-      const relativePath = getRelativePath(path);
-      if (!relativePath) {
-        return;
-      }
-
-      // assign a unique id for xpath context, since the element can be inside a repeat
-      if (!element.id) {
-        element.id = uuid();
-      }
-      const uniqueElementSelector = `${element.nodeName}[@id="${element.id}"]`;
-
-      const closestPath = `//${uniqueElementSelector}/ancestor-or-self::*/descendant-or-self::${relativePath}`;
-      try {
-        recordDoc.evaluate(closestPath, recordDoc);
-        return closestPath;
-      } catch (err) {
-        console.error('Error while evaluating closest path', closestPath, err);
-      }
-    };
-
-    // Chrome 30 doesn't support $xml.outerHTML: #3880
-    const getOuterHTML = (xml) => {
-      if (xml.outerHTML) {
-        return xml.outerHTML;
-      }
-      return $('<temproot>').append($(xml).clone()).html();
-    };
-
-    const dbDocTags: string[] = [];
-    $record
-      .find('[db-doc]')
-      .filter((idx, element) => {
-        return $(element).attr('db-doc')?.toLowerCase() === 'true';
-      })
-      .each((idx, element) => {
-        mapOrAssignId(element);
-        dbDocTags.push(element.tagName);
-      });
-
-    $record
-      .find('[db-doc-ref]')
-      .each((idx, element) => {
-        const $element = $(element);
-        const reference = $element.attr('db-doc-ref');
-        const path = getClosestPath(element, $element, reference);
-
-        const refId = (path && getId(path)) || getId(reference);
-        $element.text(refId);
-      });
-
-    const docsToStore = $record
-      .find('[db-doc=true]')
-      .map((idx, element) => {
-        const docToStore: any = this.enketoTranslationService.reportRecordToJs(getOuterHTML(element));
-        docToStore._id = getId(Xpath.getElementXPath(element));
-        docToStore.reported_date = Date.now();
-        return docToStore;
-      })
-      .get();
-
-    doc._id = getId('/*');
-    if (xmlVersion) {
-      doc.form_version = xmlVersion;
-    }
-    doc.hidden_fields = this.enketoTranslationService.getHiddenFieldList(record, dbDocTags);
-
-    FileManager
-      .getCurrentFiles()
-      .forEach(file => this.attachmentService.add(doc, `user-file-${file.name}`, file, file.type, false));
-
-    const attachLegacyFile = (elem, file, type, alreadyEncoded) => {
-      const xpath = Xpath.getElementXPath(elem);
-      // replace instance root element node name with form internal ID
-      const filename = 'user-file' +
-        (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^/]+/, '/' + doc.form));
-      this.attachmentService.add(doc, filename, file, type, alreadyEncoded);
-    };
-
-    $record
-      .find('[type=binary]')
-      .each((idx, element) => {
-        const file = $(element).text();
-        if (file) {
-          // Attach binary file with legacy-style filename because the actual filename is not stored as the question
-          // value in the form model (and so there is currently no way to map the answer in a saved report to the
-          // associated file attachment).
-          attachLegacyFile(element, file, 'image/png', true);
-        }
-      });
-
-    record = getOuterHTML($record[0]);
-
-    // remove old style content attachment
-    this.attachmentService.remove(doc, REPORT_ATTACHMENT_NAME);
-    docsToStore.unshift(doc);
-
-    doc.fields = this.enketoTranslationService.reportRecordToJs(record, formXml);
-    return docsToStore;
-  }
-
-  private async update(docId) {
-    // update an existing doc.  For convenience, get the latest version
-    // and then modify the content.  This will avoid most concurrent
-    // edits, but is not ideal.
-    const doc = await this.getReport(Qualifier.byUuid(docId));
-    // previously XML was stored in the content property
-    // TODO delete this and other "legacy" code support commited against
-    //      the same git commit at some point in the future?
-    return { ...doc, content: undefined };
-  }
-
-  private create(formInternalId, contact) {
-    return {
-      form: formInternalId,
-      type: 'data_record',
-      content_type: 'xml',
-      reported_date: Date.now(),
-      contact: this.extractLineageService.extract(contact),
-      from: contact?.phone
-    };
+    return { form, config: formConfig };
   }
 
   private forceRecalculate(form) {
@@ -562,34 +402,176 @@ export class EnketoService {
     }
   }
 
-  private async prepareForSave(form) {
+  public async saveContact({ config, form }: EnketoForm, defaultData: Record<string, any>) {
+    return this.ngZone.runOutsideAngular(async () => {
+      await this.validate(form);
+      const contactDoc: Record<string, any> = { _id: uuid(), ...defaultData };
+      const formData = new EnketoContactFormData(
+        this.getFormDataXml(form),
+        contactDoc._id,
+        isHardcodedType(contactDoc.type) ? contactDoc.type : contactDoc.contact_type
+      );
+      const reportedDate = Date.now();
+      const rootOutputDoc: Record<string, any> = {
+        ...formData.getContactData().deserializeDoc(config, reportedDate, contactDoc),
+        type: contactDoc.type,
+        contact_type: contactDoc.contact_type,
+      };
+      const siblings = this.initializeContactSiblings(formData, config, rootOutputDoc, reportedDate);
+      await this.setSiblingValuesOnRoot(siblings, rootOutputDoc, defaultData);
+      const outputSiblings = siblings
+        .filter(({ fieldName, doc }) => doc && rootOutputDoc[fieldName] === doc)
+        .map(({ doc }) => doc!);
+      const childDocs = formData
+        .getChildData()
+        .map(data => ({ ...data.deserializeDoc(config, reportedDate), parent: rootOutputDoc }));
+      return {
+        docId: rootOutputDoc._id,
+        preparedDocs: [rootOutputDoc, ...outputSiblings, ...childDocs].map(doc => this.minifyContactLineage(doc))
+      };
+    });
+  }
+
+  public async saveReport(
+    { config, form }: EnketoForm,
+    defaultData: Record<string, any>
+  ): Promise<Record<string, any>[]> {
+    return this.ngZone.runOutsideAngular(async () => {
+      await this.validate(form);
+      const { internalId, xmlVersion } = config.doc;
+      const reportDoc: Record<string, any> = this.initializeReportDoc(internalId, xmlVersion, defaultData);
+      const formData = new EnketoReportFormData(this.getFormDataXml(form), reportDoc._id);
+      const subDocsData = formData.getDbDocData();
+
+      // As of 4.0.0, content is no longer stored in legacy fields
+      delete reportDoc[REPORT_ATTACHMENT_NAME];
+      delete reportDoc._attachments?.[REPORT_ATTACHMENT_NAME];
+
+      const hiddenFields = this.getHiddenFields([
+        ...formData.hiddenElements,
+        ...subDocsData.map(({ rootElement }) => rootElement)
+      ]);
+
+      const reportedDate = Date.now();
+      // Unpack the db-docs before deserializing the report so the db-doc-refs are all populated first.
+      const dbDocObjects = subDocsData.map(docData => docData.deserializeDoc(config, reportedDate));
+      const rootOutputDoc: Record<string, any> = {
+        ...formData.deserializeDoc(config, reportedDate, reportDoc),
+        hidden_fields: hiddenFields,
+      };
+
+      return [rootOutputDoc, ...dbDocObjects];
+    });
+  }
+
+  private async validate(form: Record<string, any>) {
     const valid = await form.validate();
     if (!valid) {
-      throw new Error('Form is invalid');
+      throw new FormValidationError();
+    }
+    form.view.html.dispatchEvent(events.BeforeSave());
+  }
+
+  private getFormDataXml(form: Record<string, any>) {
+    const formString = form.getDataStr({ irrelevant: false });
+    return new DOMParser().parseFromString(formString, 'text/xml');
+  }
+
+  private initializeContactSiblings(
+    formData: EnketoContactFormData,
+    config: FormConfig,
+    rootOutputDoc: Record<string, any>,
+    reportedDate: number,
+  ) {
+    return EnketoContactFormData.SIBLING_FIELD_NAMES.map((fieldName) => {
+      const siblingData = formData.getSiblingData(fieldName);
+      const doc = this.initializeContactSibling(config, rootOutputDoc, reportedDate, siblingData);
+      return { fieldName, doc, };
+    });
+  }
+
+  private async setSiblingValuesOnRoot(
+    siblings: { fieldName: typeof EnketoContactFormData.SIBLING_FIELD_NAMES[number], doc?: Record<string, any>}[],
+    rootOutputDoc: Record<string, any>,
+    defaultData: Record<string, any>,
+  ) {
+    return Promise.all(siblings.map(async ({ fieldName, doc }) => {
+      rootOutputDoc[fieldName] = await this.getContactSiblingValue(
+        doc,
+        rootOutputDoc[fieldName],
+        defaultData[fieldName]
+      );
+    }));
+  }
+
+  private initializeContactSibling(
+    config: FormConfig,
+    rootContactDoc: Record<string, any>,
+    reportedDate: number,
+    siblingData: EnketoFormData | null
+  ) {
+    const rawSibling = siblingData?.deserializeDoc(config, reportedDate);
+    if (!rawSibling) {
+      return;
+    }
+    return {
+      type: 'person', // legacy support - form data should override this
+      ...rawSibling,
+      parent: rawSibling.parent === 'PARENT' ? rootContactDoc : rawSibling.parent
+    };
+  }
+
+  private async getContactSiblingValue(
+    sibling?: Record<string, any>,
+    currentValue?: Record<string, string>,
+    defaultValue?: Record<string, unknown>
+  ) {
+    if (!currentValue?._id) {
+      return undefined;
+    }
+    if (currentValue._id === 'NEW') {
+      return sibling;
+    }
+    if (currentValue._id === defaultValue?._id) {
+      return defaultValue;
     }
 
-    $('form.or').trigger('beforesave');
+    return await this.getContactFromDatasource(Qualifier.byUuid(currentValue._id));
   }
 
-  async completeNewReport(formInternalId, form, formDoc, contact) {
-    await this.prepareForSave(form);
-    return this.ngZone.runOutsideAngular(async () => {
-      const doc = this.create(formInternalId, contact);
-      return this._save(form, formDoc, doc);
-    });
+  private minifyContactLineage(contactDoc: Record<string, any>) {
+    return {
+      ...contactDoc,
+      parent: this.extractLineageService.extract(contactDoc.parent),
+      contact: this.extractLineageService.extract(contactDoc.contact)
+    };
   }
 
-  async completeExistingReport(form, formDoc, docId) {
-    await this.prepareForSave(form);
-    return this.ngZone.runOutsideAngular(async () => {
-      const doc = await this.update(docId);
-      return this._save(form, formDoc, doc);
-    });
+  private getHiddenFields(elements: Element[]) {
+    const hiddenXpaths = new Set(elements.map((element) => Xpath.getElementXPath(element)));
+    const hasHiddenAncestor = (
+      segments: string[]
+    ) => (_: string, i: number) => i > 0 && hiddenXpaths.has(segments.slice(0, i).join('/'));
+    return [...hiddenXpaths]
+      .map(xpath => xpath.split('/'))
+      .filter(segments => !segments.some(hasHiddenAncestor(segments)))
+      .map(segments => segments
+        .filter(Boolean)
+        .slice(1)
+        .join('.'));
   }
 
-  private async _save(form, formDoc, doc) {
-    const dataString = form.getDataStr({ irrelevant: false });
-    return this.xmlToDocs(doc, formDoc.xml, formDoc.doc.xmlVersion, dataString);
+  private initializeReportDoc(form: string, formVersion: string, defaultData: Record<string, any>) {
+    return {
+      _id: uuid(),
+      form,
+      type: DOC_TYPES.DATA_RECORD,
+      content_type: 'xml',
+      from: defaultData.contact?.phone,
+      ...defaultData,
+      contact: this.extractLineageService.extract(defaultData.contact),
+      form_version: formVersion
+    };
   }
 
   unload(form) {
@@ -614,7 +596,8 @@ export interface ContactSummary {
   id: string;
   context: Record<string, any>;
 }
-interface ContactSummaryXml {
+
+export interface ExternalInstance {
   id: string;
   xml: Document;
 }
@@ -622,29 +605,24 @@ interface ContactSummaryXml {
 interface EnketoOptions {
   modelStr: string;
   instanceStr: string;
-  external: ContactSummaryXml[];
+  external: ExternalInstance[];
 }
 
 interface XmlFormContext {
-  doc: {
-    html: JQuery;
-    model: string;
-    title: string;
-  };
+  formConfig: FormConfig;
+  $formHtml: JQuery;
   wrapper: JQuery;
   instanceData?: string | Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey?: string;
   isFormInModal?: boolean;
   contactSummary?: ContactSummary;
   userContactSummary?: ContactSummary;
+  externalInstances?: ExternalInstance[];
 }
-
-export type FormType = 'contact' | 'report' | 'task' | 'training-card';
 
 export interface EnketoFormContext {
   readonly selector: string;
-  readonly formDoc: Record<string, any>;
-  readonly type: FormType;
+  readonly formConfig: FormConfig;
   readonly instanceData?: string | Record<string, any>;
   readonly editedListener?: () => void;
   readonly valuechangeListener?: () => void;
@@ -652,4 +630,17 @@ export interface EnketoFormContext {
   readonly isFormInModal?: boolean;
   readonly contactSummary?: ContactSummary;
   readonly userContactSummary?: ContactSummary;
+  readonly externalInstances?: ExternalInstance[];
+}
+
+export interface EnketoForm {
+  form: Record<string, any>
+  config: FormConfig
+}
+
+export class FormValidationError extends Error {
+  constructor(message = 'Form is invalid') {
+    super(message);
+    this.name = 'FormValidationError';
+  }
 }

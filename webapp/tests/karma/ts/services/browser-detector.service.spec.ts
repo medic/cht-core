@@ -20,7 +20,7 @@ const spoofUserAgent = (userAgent: string) => {
 
 const restoreUserAgent = () => spoofUserAgent(baseUserAgent);
 
-const getChtAndroidUserAgent = (androidAppVersion: string, webviewVersion = '90.0.3987') => {
+const getChtAndroidUserAgent = (androidAppVersion: string, webviewVersion = '107.0.5384') => {
   return 'Mozilla/5.0 (Linux; Android 5.1.1; One S Build/LMY49J; wv) ' +
          'AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 ' +
          `Chrome/${webviewVersion} Mobile Safari/537.36 ` +
@@ -97,7 +97,7 @@ describe('Browser Detector Service', () => {
 
   it('runs with outdated Browser version', () => {
     const chtAndroidVersion = 'v1.0.1-alpha.1';
-    spoofUserAgent(getChtAndroidUserAgent(chtAndroidVersion, '76.0.2743.116'));
+    spoofUserAgent(getChtAndroidUserAgent(chtAndroidVersion, '90.0.2743.116'));
     androidAppVersion.next(chtAndroidVersion);
 
     expect(service.isUsingOutdatedBrowser()).to.be.true;

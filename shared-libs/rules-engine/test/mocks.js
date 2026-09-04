@@ -1,5 +1,6 @@
 const rewire = require('rewire');
 const defaultConfigSettingsDoc = require('../../../config/default/app_settings.json');
+const { CONTACT_TYPES, PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 const MS_IN_DAY = 24 * 60 * 60 * 1000;
 
@@ -15,13 +16,13 @@ const chtDocs = {
   place: {
     _id: 'place',
     name: 'cht_mock_place',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     place_id: 'place_id',
   },
 
   pregnancyReport: {
     _id: 'pregReport',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     form: 'pregnancy',
     fields: {
       t_pregnancy_follow_up_date: '2000-01-01',
@@ -41,7 +42,7 @@ const chtDocs = {
 };
 
 const userContactDoc = { _id: 'user' };
-const userSettingsDoc = { _id: 'org.couchdb.user:username' };
+const userSettingsDoc = { _id: PREFIXES.COUCH_USER + 'username' };
 
 module.exports = {
   MS_IN_DAY,

@@ -2,13 +2,14 @@ const chai = require('chai');
 const utils = require('@utils');
 const _ = require('lodash');
 const chaiExclude = require('chai-exclude');
+const { CONTACT_TYPES } = require('@medic/constants');
 chai.use(chaiExclude);
 
 const password = 'passwordSUP3RS3CR37!';
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
-  type: 'district_hospital',
+  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
   name: 'Big Parent Hospital',
 };
 
@@ -18,7 +19,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:offline',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Offline place',
       parent: 'PARENT_PLACE',
     },
@@ -33,7 +34,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:online',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Online place',
       parent: 'PARENT_PLACE',
     },
@@ -53,7 +54,7 @@ const contacts = [
   parentPlace,
   {
     _id: 'hc1',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     name: 'hc1',
     parent: { _id: 'PARENT_PLACE' },
     contact: { _id: 'supervisor1', parent: { _id: 'hc1', parent: { _id: 'PARENT_PLACE' } } },
@@ -67,7 +68,7 @@ const contacts = [
   },
   {
     _id: 'clinic1',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     name: 'clinic1',
     parent: { _id: 'hc1', parent: { _id: 'PARENT_PLACE' } },
     contact: { _id: 'chw1', parent: { _id: 'clinic1', parent: { _id: 'hc1', parent: { _id: 'PARENT_PLACE' } } } },
@@ -95,7 +96,7 @@ const contacts = [
   },
   {
     _id: 'DISTRICT_2',
-    type: 'district_hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     name: 'District2',
     contact: { _id: 'supervisor2', parent: { _id: 'DISTRICT_2' } },
   },
@@ -108,7 +109,7 @@ const contacts = [
   },
   {
     _id: 'hc2',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     name: 'hc1',
     parent: { _id: 'DISTRICT_2' },
     contact: { _id: 'chw2', parent: { _id: 'hc2', parent: { _id: 'DISTRICT_2' } } },
@@ -122,7 +123,7 @@ const contacts = [
   },
   {
     _id: 'clinic2',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     name: 'clinic2',
     parent: { _id: 'hc2', parent: { _id: 'DISTRICT_2' } },
     contact: { _id: 'patient3', parent: { _id: 'clinic2', parent: { _id: 'hc2', parent: { _id: 'DISTRICT_2' } } } },

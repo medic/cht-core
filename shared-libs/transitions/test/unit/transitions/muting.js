@@ -7,6 +7,7 @@ const utils = require('../../../src/lib/utils');
 const transitionsIndex = require('../../../src/transitions/index');
 const dataContext = require('../../../src/data-context');
 const { Qualifier, Report } = require('@medic/cht-datasource');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 describe('Muting transition', () => {
   let transitionUtils;
@@ -65,12 +66,14 @@ describe('Muting transition', () => {
       chai.expect(transition.filter({})).to.equal(false);
       chai.expect(transition.filter({ doc: {} })).to.equal(false);
       chai.expect(transition.filter({ doc: { type: 'person' } })).to.equal(false);
-      chai.expect(transition.filter({ doc: { type: 'data_record' } })).to.equal(false);
-      chai.expect(transition.filter({ doc: { type: 'data_record', form: 'test' } })).to.equal(false);
-      chai.expect(transition.filter({ doc: { type: 'data_record', form: 'test', fields: {} } })).to.equal(false);
-      chai.expect(transition.filter({ doc: { type: 'data_record', form: 'test', fields: { patient_id: 'a' } } }))
+      chai.expect(transition.filter({ doc: { type: DOC_TYPES.DATA_RECORD } })).to.equal(false);
+      chai.expect(transition.filter({ doc: { type: DOC_TYPES.DATA_RECORD, form: 'test' } })).to.equal(false);
+      chai.expect(transition.filter({ doc: { type: DOC_TYPES.DATA_RECORD, 
+        form: 'test', fields: {} } })).to.equal(false);
+      chai.expect(transition.filter({ doc: { type: DOC_TYPES.DATA_RECORD, 
+        form: 'test', fields: { patient_id: 'a' } } }))
         .to.equal(false);
-      chai.expect(transition.filter({ doc: { type: 'data_record', form: 'test', fields: { place_id: 'a' } } }))
+      chai.expect(transition.filter({ doc: { type: DOC_TYPES.DATA_RECORD, form: 'test', fields: { place_id: 'a' } } }))
         .to.equal(false);
     });
 
@@ -80,8 +83,8 @@ describe('Muting transition', () => {
       transitionUtils.hasRun.returns(false);
       sinon.stub(utils, 'isValidSubmission').returns(false);
 
-      chai.expect(transition.filter({ doc: { type: 'data_record', form: 'formC'} })).to.equal(false);
-      chai.expect(transition.filter({ doc: { type: 'data_record', form: 'formA'} })).to.equal(false);
+      chai.expect(transition.filter({ doc: { type: DOC_TYPES.DATA_RECORD, form: 'formC'} })).to.equal(false);
+      chai.expect(transition.filter({ doc: { type: DOC_TYPES.DATA_RECORD, form: 'formA'} })).to.equal(false);
       chai.expect(utils.isValidSubmission.callCount).to.equal(2);
     });
 
@@ -90,8 +93,8 @@ describe('Muting transition', () => {
       transitionUtils.hasRun.returns(false);
       sinon.stub(utils, 'isValidSubmission').returns(true);
 
-      chai.expect(transition.filter({ doc: { type: 'data_record', form: 'formC'} })).to.equal(true);
-      chai.expect(transition.filter({ doc: { type: 'data_record', form: 'formA'} })).to.equal(true);
+      chai.expect(transition.filter({ doc: { type: DOC_TYPES.DATA_RECORD, form: 'formC'} })).to.equal(true);
+      chai.expect(transition.filter({ doc: { type: DOC_TYPES.DATA_RECORD, form: 'formA'} })).to.equal(true);
       chai.expect(utils.isValidSubmission.callCount).to.equal(2);
     });
 
@@ -103,7 +106,8 @@ describe('Muting transition', () => {
         .to.equal(false); // not a contact
       chai.expect(transition.filter({ doc: { muted: false, type: 'person'}, info: { initial_replication_date: 1 } }))
         .to.equal(false);
-      chai.expect(transition.filter({ doc: { muted: false, type: 'clinic'}, info: { initial_replication_date: 2 } }))
+      chai.expect(transition.filter({ doc: { muted: false, 
+        type: CONTACT_TYPES.CLINIC}, info: { initial_replication_date: 2 } }))
         .to.equal(false);
       chai.expect(transition.filter({
         doc: { muted: false, type: 'thing', contact_type: 'other thing'},
@@ -116,45 +120,56 @@ describe('Muting transition', () => {
       chai.expect(mutingUtils.isMutedInLineage.callCount).to.equal(2);
       chai.expect(mutingUtils.isMutedInLineage.args).to.deep.equal([
         [{ muted: false, type: 'person' }, 1],
-        [{ muted: false, type: 'clinic' }, 2]
+        [{ muted: false, type: CONTACT_TYPES.CLINIC }, 2]
       ]);
     });
 
     it('should return true for new contacts under muted parents', () => {
       config.getAll.returns({
-        contact_types: [{ id: 'person' }, { id: 'clinic' }, { id: 'health_center' }, { id: 'district_hospital' } ]
+        contact_types: [
+          { id: 'person' },
+          { id: 'clinic' },
+          { id: 'health_center' },
+          { id: 'district_hospital' }
+        ]
       });
       mutingUtils.isMutedInLineage.returns(true);
       chai.expect(transition.filter({ doc: { muted: false, type: 'person' }, info: { initial_replication_date: 1 } }))
         .to.equal(true);
-      chai.expect(transition.filter({ doc: { muted: false, type: 'clinic' }, info: { initial_replication_date: 2 }}))
+      chai.expect(transition.filter({ doc: { muted: false, 
+        type: CONTACT_TYPES.CLINIC }, info: { initial_replication_date: 2 }}))
         .to.equal(true);
       chai.expect(transition.filter({
-        doc: { muted: false, type: 'district_hospital' },
+        doc: { muted: false, type: CONTACT_TYPES.DISTRICT_HOSPITAL },
         info: {initial_replication_date: 3 }
       })).to.equal(true);
       chai.expect(transition.filter({
-        doc: { muted: false, type: 'health_center' },
+        doc: { muted: false, type: CONTACT_TYPES.HEALTH_CENTER },
         info: { initial_replication_date: 4 }
       })).to.equal(true);
       chai.expect(transition.filter({
-        doc: { muted: false, type: 'clinic', contact_type: 'm' },
+        doc: { muted: false, type: CONTACT_TYPES.CLINIC, contact_type: 'm' },
         info: { initial_replication_date: 7 }
       })).to.equal(true);
 
       chai.expect(mutingUtils.isMutedInLineage.callCount).to.equal(5);
       chai.expect(mutingUtils.isMutedInLineage.args).to.deep.equal([
         [{ muted: false, type: 'person' }, 1],
-        [{ muted: false, type: 'clinic' }, 2],
-        [{ muted: false, type: 'district_hospital' }, 3],
-        [{ muted: false, type: 'health_center' }, 4],
-        [{ muted: false, type: 'clinic', contact_type: 'm' }, 7]
+        [{ muted: false, type: CONTACT_TYPES.CLINIC  }, 2],
+        [{ muted: false, type: CONTACT_TYPES.DISTRICT_HOSPITAL }, 3],
+        [{ muted: false, type: CONTACT_TYPES.HEALTH_CENTER }, 4],
+        [{ muted: false, type: CONTACT_TYPES.CLINIC, contact_type: 'm' }, 7]
       ]);
     });
 
     it('should return true for contacts muted client_side', () => {
       config.getAll.returns({
-        contact_types: [{ id: 'person' }, { id: 'clinic' }, { id: 'health_center' }, { id: 'district_hospital' } ]
+        contact_types: [
+          { id: 'person' },
+          { id: 'clinic' },
+          { id: 'health_center' },
+          { id: 'district_hospital' }
+        ]
       });
       const contactMutedByClient = {
         type: 'person',
@@ -487,8 +502,8 @@ describe('Muting transition', () => {
       });
 
       it('should load the contact', () => {
-        const contact = { _id: 'contact', patient_id: 'patient', type: 'data_record', };
-        const doc = { _id: 'report', type: 'data_record', patient_id: 'patient', patient: contact };
+        const contact = { _id: 'contact', patient_id: 'patient', type: DOC_TYPES.DATA_RECORD, };
+        const doc = { _id: 'report', type: DOC_TYPES.DATA_RECORD, patient_id: 'patient', patient: contact };
         config.get.returns(mutingConfig);
 
         return transition.onMatch({ doc }).then(result => {
@@ -498,20 +513,21 @@ describe('Muting transition', () => {
       });
 
       it('should add an error when contact is not found', () => {
-        const doc = { _id: 'report', type: 'data_record' };
+        const doc = { _id: 'report', type: DOC_TYPES.DATA_RECORD };
         config.get.returns(mutingConfig);
 
         return transition.onMatch({ doc }).then(result => {
           chai.expect(result).to.equal(true);
           chai.expect(doc.errors.length).to.equal(1);
           chai.expect(doc.errors[0].message).to.equal('Contact was not found');
+          chai.expect(doc.errors[0].code).to.equal('muting_error');
           chai.expect(mutingUtils.updateMuteState.callCount).to.equal(0);
         });
       });
 
       it('should add message if contact is already unmuted', () => {
         const contact = { _id: 'contact' };
-        const doc = { _id: 'report', type: 'data_record', form: 'unmute', place: contact };
+        const doc = { _id: 'report', type: DOC_TYPES.DATA_RECORD, form: 'unmute', place: contact };
         config.get.returns(mutingConfig);
 
         return transition.onMatch({ doc }).then(result => {
@@ -524,7 +540,7 @@ describe('Muting transition', () => {
 
       it('should add message if contact is already muted', () => {
         const contact = { _id: 'contact', muted: 12345 };
-        const doc = { _id: 'report', type: 'data_record', form: 'mute', patient: contact };
+        const doc = { _id: 'report', type: DOC_TYPES.DATA_RECORD, form: 'mute', patient: contact };
         config.get.returns(mutingConfig);
 
         return transition.onMatch({ doc }).then(result => {
@@ -542,7 +558,7 @@ describe('Muting transition', () => {
         };
         const doc = {
           _id: 'report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           patient: contact,
           client_side_transitions: { muting: true },
@@ -562,7 +578,7 @@ describe('Muting transition', () => {
 
       it('should add message when muting', () => {
         const contact = { _id: 'contact' };
-        const doc = { _id: 'report', type: 'data_record', form: 'mute', place: contact };
+        const doc = { _id: 'report', type: DOC_TYPES.DATA_RECORD, form: 'mute', place: contact };
 
         config.get.returns(mutingConfig);
         mutingUtils.updateMuteState.resolves([]);
@@ -580,7 +596,7 @@ describe('Muting transition', () => {
         const contact = { _id: 'contact' };
         const doc = {
           _id: 'report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           place: contact,
           tasks: [{ messages: [{ to: 'reporting_unit', message: 'Muting successful' }] }],
@@ -602,7 +618,7 @@ describe('Muting transition', () => {
         const contact = { _id: 'contact' };
         const doc = {
           _id: 'report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           place: contact,
           tasks: [{ messages: [{ to: 'reporting_unit', message: 'Muting successful' }] }],
@@ -623,7 +639,7 @@ describe('Muting transition', () => {
 
       it('should add message when unmuting', () => {
         const contact = { _id: 'contact', muted: 1234 };
-        const doc = { _id: 'report', type: 'data_record', form: 'unmute', patient: contact };
+        const doc = { _id: 'report', type: DOC_TYPES.DATA_RECORD, form: 'unmute', patient: contact };
 
         config.get.returns(mutingConfig);
         mutingUtils.updateMuteState.resolves([]);
@@ -639,7 +655,7 @@ describe('Muting transition', () => {
 
       it('should throw updateMuteState errors', () => {
         const contact = { _id: 'contact', muted: 1234 };
-        const doc = { _id: 'report', type: 'data_record', form: 'unmute', patient: contact };
+        const doc = { _id: 'report', type: DOC_TYPES.DATA_RECORD, form: 'unmute', patient: contact };
 
         config.get.returns(mutingConfig);
         mutingUtils.updateMuteState.rejects({ some: 'error' });
@@ -659,7 +675,7 @@ describe('Muting transition', () => {
       it('should skip processing client_side muting queue when report not processed client_side', () => {
         const doc = {
           _id: 'report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           patient: { _id: 'patient', name: 'mary' },
           client_side_transitions: {
@@ -686,7 +702,7 @@ describe('Muting transition', () => {
       it('should do nothing when client_side muting queue is empty', () => {
         const doc = {
           _id: 'report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           patient: { _id: 'patient', name: 'mary' },
           client_side_transitions: {
@@ -714,7 +730,7 @@ describe('Muting transition', () => {
       it('should process client_side muting queue when report was processed client_side', () => {
         const doc = {
           _id: 'report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           patient: { _id: 'patient', name: 'mary' },
           client_side_transitions: {
@@ -728,11 +744,12 @@ describe('Muting transition', () => {
         mutingUtils.updateMuteState.resolves(['a', 'b', 'c', 'd', 'e', 'f']);
         sinon.stub(utils, 'isValidSubmission').returns(true);
         getReportWithLineage
-          .withArgs(Qualifier.byUuid('a')).resolves({ _id: 'a', some: 'data', form: 'mute', type: 'data_record' })
+          .withArgs(Qualifier.byUuid('a')).resolves({ _id: 'a', 
+            some: 'data', form: 'mute', type: DOC_TYPES.DATA_RECORD })
           .withArgs(Qualifier.byUuid('b')).resolves(null) // not found
           .withArgs(Qualifier.byUuid('c')).resolves({ _id: 'c', irrelevant: true })
-          .withArgs(Qualifier.byUuid('d')).resolves({ _id: 'd', form: 'not-mute', type: 'data_record' })
-          .withArgs(Qualifier.byUuid('e')).resolves({ _id: 'e', form: 'unmute', type: 'data_record' })
+          .withArgs(Qualifier.byUuid('d')).resolves({ _id: 'd', form: 'not-mute', type: DOC_TYPES.DATA_RECORD })
+          .withArgs(Qualifier.byUuid('e')).resolves({ _id: 'e', form: 'unmute', type: DOC_TYPES.DATA_RECORD })
           .withArgs(Qualifier.byUuid('f')).resolves(null); // not found
 
         sinon.stub(mutingUtils.infodoc, 'get')
@@ -755,8 +772,8 @@ describe('Muting transition', () => {
           );
           chai.expect(mutingUtils.infodoc.get.callCount).to.equal(2);
           chai.expect(mutingUtils.infodoc.get.args).to.deep.equal([
-            [{ id: 'a', doc: { _id: 'a', some: 'data', form: 'mute', type: 'data_record' } }],
-            [{ id: 'e', doc: { _id: 'e', form: 'unmute', type: 'data_record' } }],
+            [{ id: 'a', doc: { _id: 'a', some: 'data', form: 'mute', type: DOC_TYPES.DATA_RECORD } }],
+            [{ id: 'e', doc: { _id: 'e', form: 'unmute', type: DOC_TYPES.DATA_RECORD } }],
           ]);
 
           chai.expect(transitionsIndex.applyTransition.callCount).to.equal(2);
@@ -765,7 +782,7 @@ describe('Muting transition', () => {
             transition,
             change: {
               id: 'a',
-              doc: { _id: 'a', some: 'data', form: 'mute', type: 'data_record' },
+              doc: { _id: 'a', some: 'data', form: 'mute', type: DOC_TYPES.DATA_RECORD },
               info: { doc_id: 'a' },
               skipReplay: true,
             },
@@ -776,7 +793,7 @@ describe('Muting transition', () => {
             transition,
             change: {
               id: 'e',
-              doc: { _id: 'e', form: 'unmute', type: 'data_record' },
+              doc: { _id: 'e', form: 'unmute', type: DOC_TYPES.DATA_RECORD },
               info: { doc_id: 'e' },
               skipReplay: true,
             },
@@ -786,7 +803,7 @@ describe('Muting transition', () => {
           chai.expect(transitionsIndex.finalize.args[0][0]).to.deep.equal({
             change: {
               id: 'a',
-              doc: { _id: 'a', some: 'data', form: 'mute', type: 'data_record' },
+              doc: { _id: 'a', some: 'data', form: 'mute', type: DOC_TYPES.DATA_RECORD },
               info: { doc_id: 'a' },
               skipReplay: true,
             },
@@ -795,7 +812,7 @@ describe('Muting transition', () => {
           chai.expect(transitionsIndex.finalize.args[1][0]).to.deep.equal({
             change: {
               id: 'e',
-              doc: { _id: 'e', form: 'unmute', type: 'data_record' },
+              doc: { _id: 'e', form: 'unmute', type: DOC_TYPES.DATA_RECORD },
               info: { doc_id: 'e' },
               skipReplay: true,
             },
@@ -807,7 +824,7 @@ describe('Muting transition', () => {
       it('should skip replaying client-side muting when skipReplay is passed', () => {
         const doc = {
           _id: 'report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           patient: { _id: 'patient', name: 'mary' },
           client_side_transitions: {
@@ -841,7 +858,7 @@ describe('Muting transition', () => {
       it('should throw lineage errors when processing muting queue', () => {
         const doc = {
           _id: 'report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           patient: { _id: 'patient', name: 'mary' },
           client_side_transitions: {
@@ -875,7 +892,7 @@ describe('Muting transition', () => {
       it('should throw "onMatch" error when processing muting queue and stop further processing', () => {
         const doc = {
           _id: 'report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           patient: { _id: 'patient', name: 'mary' },
           client_side_transitions: {
@@ -889,9 +906,9 @@ describe('Muting transition', () => {
         mutingUtils.updateMuteState.resolves(['a', 'b', 'c', 'd', 'e', 'f']);
         sinon.stub(utils, 'isValidSubmission').returns(true);
         getReportWithLineage
-          .withArgs(Qualifier.byUuid('a')).resolves({ _id: 'a', type: 'data_record', form: 'mute' })
-          .withArgs(Qualifier.byUuid('b')).resolves({ _id: 'b', type: 'data_record', form: 'mute' })
-          .withArgs(Qualifier.byUuid('c')).resolves({ _id: 'c', type: 'data_record', form: 'mute' });
+          .withArgs(Qualifier.byUuid('a')).resolves({ _id: 'a', type: DOC_TYPES.DATA_RECORD, form: 'mute' })
+          .withArgs(Qualifier.byUuid('b')).resolves({ _id: 'b', type: DOC_TYPES.DATA_RECORD, form: 'mute' })
+          .withArgs(Qualifier.byUuid('c')).resolves({ _id: 'c', type: DOC_TYPES.DATA_RECORD, form: 'mute' });
         sinon.stub(mutingUtils.infodoc, 'get').callsFake(change => Promise.resolve({ doc_id: change.id }));
 
         sinon.stub(transitionsIndex, 'applyTransition').callsArgWith(1, null, true);
@@ -919,7 +936,7 @@ describe('Muting transition', () => {
   describe('validation', () => {
     it('failure adds error and response', () => {
       const doc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         fields: { patient_id: 'x' },
         contact: { phone: 'x' },
         patient: { _id: 'patient' },
@@ -961,7 +978,7 @@ describe('Muting transition', () => {
 
     it('success should continue execution', () => {
       const doc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'mute',
         fields: { patient_id: '12345' },
         contact: { phone: 'x' },

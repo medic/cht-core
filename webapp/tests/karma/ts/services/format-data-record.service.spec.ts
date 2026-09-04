@@ -12,6 +12,7 @@ import { FormatDateService } from '@mm-services/format-date.service';
 import { LanguageService } from '@mm-services/language.service';
 import { DbService } from '@mm-services/db.service';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('FormatDataRecord service', () => {
   let Settings;
@@ -118,6 +119,31 @@ describe('FormatDataRecord service', () => {
         { label: 'report.my-form.group3.field4', value: 3, depth: 1, target: undefined, imagePath: undefined },
       ]);
     });
+  });
+
+  it('hides the field of every repeat instance', async () => {
+    const report = {
+      _id: 'my-report',
+      form: 'my-form',
+      content_type: 'xml',
+      hidden_fields: ['my_repeat.hidden_field', 'my_repeat.hidden_group'],
+      fields: {
+        my_repeat: [
+          { shown_field: 1, hidden_field: 2, hidden_group: { nested_field: 3 } },
+          { shown_field: 4, hidden_field: 5, hidden_group: { nested_field: 6 } },
+        ],
+      }
+    };
+
+    const result = await service.format(report);
+
+    expect(result.fields).to.deep.equal([
+      { label: 'report.my-form.my_repeat', depth: 0 },
+      { label: 'report.my-form.my_repeat.0', depth: 1 },
+      { label: 'report.my-form.my_repeat.0.shown_field', value: 1, depth: 2, target: undefined, imagePath: undefined },
+      { label: 'report.my-form.my_repeat.1', depth: 1 },
+      { label: 'report.my-form.my_repeat.1.shown_field', value: 4, depth: 2, target: undefined, imagePath: undefined },
+    ]);
   });
 
   it('returns correct deep display fields', () => {
@@ -240,6 +266,140 @@ describe('FormatDataRecord service', () => {
           target: undefined
         }
       ]);
+    });
+
+    it('returns the path-based image path for a binary field', async () => {
+      const report = {
+        _id: 'my-report',
+        form: 'my-form',
+        content_type: 'xml',
+        fields: {
+          photo: '',
+          group: { nested_photo: '' },
+        },
+        _attachments: {
+          'user-file/fields/photo': { content_type: 'image/png' },
+          'user-file/fields/group/nested_photo': { content_type: 'image/png' },
+        },
+      };
+
+      const result = await service.format(report);
+
+      expect(result.fields).to.deep.equal([
+        {
+          label: 'report.my-form.photo',
+          value: '',
+          depth: 0,
+          imagePath: 'user-file/fields/photo',
+          target: undefined,
+        },
+        { label: 'report.my-form.group', depth: 0 },
+        {
+          label: 'report.my-form.group.nested_photo',
+          value: '',
+          depth: 1,
+          imagePath: 'user-file/fields/group/nested_photo',
+          target: undefined,
+        },
+      ]);
+    });
+
+    it('returns the image path for a binary field inside a repeat', async () => {
+      const report = {
+        _id: 'my-report',
+        form: 'my-form',
+        content_type: 'xml',
+        fields: {
+          my_repeat: [
+            { photo: '' },
+            { photo: '' },
+          ],
+        },
+        _attachments: {
+          'user-file/fields/my_repeat[1]/photo': { content_type: 'image/png' },
+          'user-file/fields/my_repeat[2]/photo': { content_type: 'image/png' },
+        },
+      };
+
+      const result = await service.format(report);
+
+      expect(result.fields).to.deep.equal([
+        { label: 'report.my-form.my_repeat', depth: 0 },
+        { label: 'report.my-form.my_repeat.0', depth: 1 },
+        {
+          label: 'report.my-form.my_repeat.0.photo',
+          value: '',
+          depth: 2,
+          imagePath: 'user-file/fields/my_repeat[1]/photo',
+          target: undefined,
+        },
+        { label: 'report.my-form.my_repeat.1', depth: 1 },
+        {
+          label: 'report.my-form.my_repeat.1.photo',
+          value: '',
+          depth: 2,
+          imagePath: 'user-file/fields/my_repeat[2]/photo',
+          target: undefined,
+        },
+      ]);
+    });
+
+    it('returns the image path for a binary field inside nested repeats', async () => {
+      const report = {
+        _id: 'my-report',
+        form: 'my-form',
+        content_type: 'xml',
+        fields: {
+          my_repeat: [
+            { inner: [{ photo: '' }, { photo: '' }] },
+          ],
+        },
+        _attachments: {
+          'user-file/fields/my_repeat[1]/inner[1]/photo': { content_type: 'image/png' },
+          'user-file/fields/my_repeat[1]/inner[2]/photo': { content_type: 'image/png' },
+        },
+      };
+
+      const result = await service.format(report);
+
+      expect(result.fields).to.deep.equal([
+        { label: 'report.my-form.my_repeat', depth: 0 },
+        { label: 'report.my-form.my_repeat.0', depth: 1 },
+        { label: 'report.my-form.my_repeat.0.inner', depth: 2 },
+        { label: 'report.my-form.my_repeat.0.inner.0', depth: 3 },
+        {
+          label: 'report.my-form.my_repeat.0.inner.0.photo',
+          value: '',
+          depth: 3,
+          imagePath: 'user-file/fields/my_repeat[1]/inner[1]/photo',
+          target: undefined,
+        },
+        { label: 'report.my-form.my_repeat.0.inner.1', depth: 3 },
+        {
+          label: 'report.my-form.my_repeat.0.inner.1.photo',
+          value: '',
+          depth: 3,
+          imagePath: 'user-file/fields/my_repeat[1]/inner[2]/photo',
+          target: undefined,
+        }
+      ]);
+    });
+
+    it('prefers the path-based name over the legacy form-prefixed name', async () => {
+      const report = {
+        _id: 'my-report',
+        form: 'my-form',
+        content_type: 'xml',
+        fields: { photo: '' },
+        _attachments: {
+          'user-file/fields/photo': { content_type: 'image/png' },
+          'user-file/my-form/photo': { content_type: 'image/gif' },
+        },
+      };
+
+      const result = await service.format(report);
+
+      expect((result.fields as any[])[0].imagePath).to.equal('user-file/fields/photo');
     });
 
     it('returns empty image path if attachment does not exist for image name', async () => {
@@ -452,7 +612,7 @@ describe('FormatDataRecord service', () => {
       const registration = {
         _id: 'reg',
         form: 'reg',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         fields: { registered_at: 'mar 11', age: '22' },
       };
@@ -462,7 +622,7 @@ describe('FormatDataRecord service', () => {
       return service.format(report).then(formatted => {
         expect(db.query.callCount).to.equal(1);
         expect(db.query.args[0]).to.deep.equal([
-          'medic-client/registered_patients',
+          'medic-client/reports_by_subject',
           { key: '12345', include_docs: true }
         ]);
 
@@ -528,7 +688,7 @@ describe('FormatDataRecord service', () => {
       const registration = {
         _id: 'reg',
         form: 'reg',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         fields: { registered_at: 'mar 21', population: '5000' },
       };
@@ -538,7 +698,7 @@ describe('FormatDataRecord service', () => {
       return service.format(report).then(formatted => {
         expect(db.query.callCount).to.equal(1);
         expect(db.query.args[0]).to.deep.equal([
-          'medic-client/registered_patients',
+          'medic-client/reports_by_subject',
           { key: '789', include_docs: true }
         ]);
 
@@ -605,7 +765,7 @@ describe('FormatDataRecord service', () => {
       const placeRegistration = {
         _id: 'reg',
         form: 'reg',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         fields: { registered_at: 'mar 21', population: '5000' },
       };
@@ -613,7 +773,7 @@ describe('FormatDataRecord service', () => {
       const patientRegistration = {
         _id: 'reg',
         form: 'reg',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         fields: { registered_at: 'mar 11', age: '22' },
       };
@@ -625,11 +785,11 @@ describe('FormatDataRecord service', () => {
       return service.format(report).then(formatted => {
         expect(db.query.callCount).to.equal(2);
         expect(db.query.args[0]).to.deep.equal([
-          'medic-client/registered_patients',
+          'medic-client/reports_by_subject',
           { key: '123456', include_docs: true }
         ]);
         expect(db.query.args[1]).to.deep.equal([
-          'medic-client/registered_patients',
+          'medic-client/reports_by_subject',
           { key: '789', include_docs: true }
         ]);
 

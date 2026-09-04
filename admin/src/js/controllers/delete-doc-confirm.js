@@ -1,3 +1,6 @@
+const constants = require('@medic/constants');
+const DOC_TYPES = constants.DOC_TYPES;
+
 angular.module('controllers').controller('DeleteDocConfirm',
   function (
     $scope,
@@ -13,7 +16,7 @@ angular.module('controllers').controller('DeleteDocConfirm',
       const doc = $scope.model.doc;
 
       doc._deleted = true;
-      if (doc.type === 'data_record' && doc.contact) {
+      if (doc.type === DOC_TYPES.DATA_RECORD && doc.contact) {
         doc.contact = ExtractLineage(doc.contact);
       }
 

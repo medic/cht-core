@@ -3,8 +3,10 @@ import { RouterModule } from '@angular/router';
 import { expect } from 'chai';
 import { By } from '@angular/platform-browser';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { provideMockStore } from '@ngrx/store/testing';
 
 import { SenderComponent } from '@mm-components/sender/sender.component';
+import { Selectors } from '@mm-selectors/index';
 
 describe('sender directive', function() {
   let fixture;
@@ -19,6 +21,14 @@ describe('sender directive', function() {
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         RouterModule.forRoot([]),
         SenderComponent,
+      ],
+      providers: [
+        provideMockStore({
+          selectors: [
+            { selector: Selectors.getIsOnlineOnly, value: false },
+            { selector: Selectors.getUserFacilities, value: [] },
+          ]
+        }),
       ]
     });
     fixture = TestBed.createComponent(SenderComponent);

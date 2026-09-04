@@ -1,6 +1,7 @@
 const utils = require('@utils');
 const querystring = require('querystring');
 const constants = require('@constants');
+const { PREFIXES } = require('@medic/constants');
 const _ = require('lodash');
 const {
   SENTINEL_METADATA: {
@@ -98,8 +99,9 @@ const getPurgeDbs = () => {
 const waitForPurgeCompletion = async (seq) => {
   const waitForWipe = await utils.waitForApiLogs(/Wiping purged docs cache/);
   await utils.runSentinelTasks();
-  await waitForPurgeLog(seq);
+  const purgeLog = await waitForPurgeLog(seq);
   await waitForWipe.promise;
+  return purgeLog;
 };
 
 const waitForPurgeLog = seq => {
@@ -109,8 +111,9 @@ const waitForPurgeLog = seq => {
   };
   return requestOnSentinelTestDb('/_changes?' + querystring.stringify(params))
     .then(result => {
-      if (result.results && result.results.find(change => change.id.startsWith('purgelog:'))) {
-        return;
+      const change = result?.results?.find(change => change.id.startsWith('purgelog:'));
+      if (change) {
+        return utils.sentinelDb.get(change.id);
       }
 
       return waitForPurgeLog(result.last_seq);
@@ -134,6 +137,22 @@ const skipToSeq = async (seq) => {
   await utils.sentinelDb.put(backlogDoc);
 };
 
+const getArchivingJobs = async () => {
+  const result = await utils.sentinelDb.allDocs({
+    startkey: PREFIXES.ARCHIVE_JOB,
+    endkey: `${PREFIXES.ARCHIVE_JOB}\ufff0`,
+  });
+  return result.rows.filter(row => row.value && !row.value.deleted);
+};
+
+const waitForArchiveCompletion = async () => {
+  let jobs;
+  do {
+    await utils.delayPromise(1000);
+    jobs = await getArchivingJobs();
+  } while (jobs.length > 0);
+};
+
 module.exports = {
   waitForSentinel: docIds => waitForSeq(TRANSITIONS_SEQ, docIds),
   waitForBackgroundCleanup: docIds => waitForSeq(BACKGROUND_SEQ, docIds),
@@ -146,4 +165,5 @@ module.exports = {
   getPurgeDbs: getPurgeDbs,
   getBacklogCount: getBacklogCount,
   skipToSeq: skipToSeq,
+  waitForArchiveCompletion,
 };

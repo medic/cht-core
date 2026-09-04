@@ -1,9 +1,9 @@
 const _ = require('lodash');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const constants = require('@constants');
-const { DOC_IDS } = require('@medic/constants');
+const { DOC_IDS, CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 const { expect } = require('chai');
 
 const assertChangeIds = (changes, ...expectedIds) => {
@@ -29,7 +29,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:bobville',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Bobville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:bobville',
@@ -46,7 +46,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:clareville',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Clareville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:clareville',
@@ -63,7 +63,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:chw-bossville',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'CHW Bossville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:chw-bossville',
@@ -80,7 +80,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:chwville',
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       name: 'Chwville',
       parent: 'fixture:chw-bossville',
       place_id: 'shortcode:chwville',
@@ -108,7 +108,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:steveville',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Steveville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:steveville',
@@ -125,7 +125,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:managerville',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Managerville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:managerville',
@@ -141,11 +141,11 @@ const users = [
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
-  type: 'district_hospital',
+  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
   name: 'Big Parent Hostpital'
 };
 
-const bobUserId = 'org.couchdb.user:bob';
+const bobUserId = PREFIXES.COUCH_USER + 'bob';
 
 const createSomeContacts = (nbr, parent) => {
   const docs = [];
@@ -225,7 +225,7 @@ describe('changes handler', () => {
     const changesIDs = [
       DOC_IDS.SERVICE_WORKER_META,
       '_design/medic-client',
-      'settings'
+      DOC_IDS.SETTINGS
     ];
 
     beforeEach(async () => {

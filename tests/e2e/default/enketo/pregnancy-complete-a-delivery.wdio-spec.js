@@ -15,6 +15,7 @@ const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdi
 const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 const deliveryReport = require('@page-objects/default/enketo/default-delivery-report.wdio.page');
 const sentinelUtils = require('@utils/sentinel');
+const { CONTACT_TYPES } = require('@medic/constants');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Contact Delivery Form', () => {
@@ -24,7 +25,7 @@ describe('Contact Delivery Form', () => {
   const pregnantWomanDateOfBirth = moment().subtract(25, 'years').format('YYYY-MM-DD');
 
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get('health_center');
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
   const pregnantWoman = personFactory.build({
     date_of_birth: pregnantWomanDateOfBirth,
@@ -199,13 +200,8 @@ describe('Contact Delivery Form', () => {
     }
 
     // Verify alive babies UUIDs are unique
-    const aliveBabyUUIds = [];
-    for (let i = 0; i < noOfAliveBabies; i++) {
-      aliveBabyUUIds.push((await reportsPage
-        .getDetailReportRowContent(
-          `report.delivery.babys_condition.baby_repeat.${i}.baby_details.child_doc`
-        )).rowValues[0]);
-    }
+    const aliveBabyUUIds = initialReport.fields.babys_condition.baby_repeat
+      .map(({ baby_details }) => baby_details.child_doc);
 
     expect(deadBabyUUIds.length).to.equal(noOfDeadBabies);
     expect(aliveBabyUUIds.length).to.deep.equal(noOfAliveBabies);
@@ -278,13 +274,8 @@ describe('Contact Delivery Form', () => {
     }
 
     // Verify alive babies UUIDs are unique
-    const updatedAliveBabyUUIds = [];
-    for (let i = 0; i < noOfAliveBabies; i++) {
-      updatedAliveBabyUUIds.push((await reportsPage
-        .getDetailReportRowContent(
-          `report.delivery.babys_condition.baby_repeat.${i}.baby_details.child_doc`
-        )).rowValues[0]);
-    }
+    const updatedAliveBabyUUIds = updatedReport.fields.babys_condition.baby_repeat
+      .map(({ baby_details }) => baby_details.child_doc);
 
     expect(updatedDeadBabyUUIds.length).to.equal(noOfDeadBabies);
     expect(updatedAliveBabyUUIds.length).to.deep.equal(noOfAliveBabies);

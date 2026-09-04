@@ -18,6 +18,10 @@ spec:
     spec:
       containers:
         - env:
+            - name: NODE_ENV
+              value: '{{ (default (dict) .Values.sentinel).node_env | default "production" }}'
+            - name: LOG_LEVEL
+              value: '{{ (default (dict) .Values.sentinel).log_level | default "info" }}'
             - name: API_HOST
               value: api.{{ .Values.namespace }}.svc.cluster.local
             - name: COUCH_URL
@@ -27,9 +31,10 @@ spec:
                   key: COUCH_URL
             - name: API_PORT
               value: '5988'
-          image: '{{ .Values.upstream_servers.docker_registry }}/cht-sentinel:{{ .Values.cht_image_tag }}'
+          image: '{{ .Values.upstream_servers.docker_registry | default "public.ecr.aws/medic" }}/cht-sentinel:{{ .Values.cht_image_tag }}'
           {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
           name: cht-sentinel
           resources: {}
       restartPolicy: Always
 status: {}
+

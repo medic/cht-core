@@ -1,0 +1,32 @@
+name: AndraBot
+
+# pull_request_target is required so the workflow has a write token to comment
+# on PRs from forks. It is safe here because nothing from the PR is checked out
+# or executed: the action reads the PR template and the PR data through the API
+# only. The action itself is resolved from the default branch.
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions: {}
+
+concurrency:
+  group: andra-bot-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check external contributor PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: write
+    steps:
+      - name: Run PR checks
+        uses: medic/cht-core/.github/actions/andrabot@master

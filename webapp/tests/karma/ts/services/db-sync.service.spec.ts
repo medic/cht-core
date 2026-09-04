@@ -1188,23 +1188,33 @@ describe('DBSync service', () => {
       expect(actual).to.equal(false);
     });
 
+    it('does not replicate ui-extensions', () => {
+      const actual = filterFunction({ _id: '1', type: DOC_TYPES.UI_EXTENSION });
+      expect(actual).to.equal(false);
+    });
+
     it('does not replicate translations', () => {
       const actual = filterFunction({ _id: '1', type: DOC_TYPES.TRANSLATIONS });
       expect(actual).to.equal(false);
     });
 
     it('does replicate reports', () => {
-      const actual = filterFunction({ _id: '1', type: 'data_record' });
+      const actual = filterFunction({ _id: '1', type: DOC_TYPES.DATA_RECORD });
       expect(actual).to.equal(true);
     });
 
     it('does not replicate the branding doc', () => {
-      const actual = filterFunction({ _id: 'branding' });
+      const actual = filterFunction({ _id: DOC_IDS.BRANDING });
       expect(actual).to.equal(false);
     });
 
     it('does not replicate the partners doc', () => {
       const actual = filterFunction({ _id: 'partners' });
+      expect(actual).to.equal(false);
+    });
+
+    it('does not replicate the extension-libs doc', () => {
+      const actual = filterFunction({ _id: DOC_IDS.EXTENSION_LIBS });
       expect(actual).to.equal(false);
     });
   });

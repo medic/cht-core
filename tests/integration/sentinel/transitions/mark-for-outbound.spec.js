@@ -2,7 +2,8 @@ const { expect } = require('chai');
 
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
+const { DOC_TYPES } = require('@medic/constants');
 
 // Mock server code, consider moving this elsewhere?
 const express = require('express');
@@ -41,7 +42,7 @@ const stopMockApp = () => {
 
 const makeReport = () => ({
   _id: uuid(),
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'test'
 });
 
@@ -632,9 +633,9 @@ describe('mark_for_outbound', () => {
 
       return utils
         .updateSettings(config, { ignoreReload: 'sentinel' })
-        .then(() => utils.saveDoc(report))
         .then(() => utils.collectSentinelLogs(/Mapping error.+_idddddddddddddddd/))
         .then((result) => collect = result)
+        .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(() => collect())
         .then(logs => {
@@ -666,9 +667,9 @@ describe('mark_for_outbound', () => {
 
       return utils
         .updateSettings(config, { ignoreReload: 'sentinel' })
-        .then(() => utils.saveDoc(report))
         .then(() => utils.collectSentinelLogs(/Failed to push/, /body.+error response/))
         .then((result) => collect = result)
+        .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(() => collect())
         .then(logs => {
@@ -700,10 +701,10 @@ describe('mark_for_outbound', () => {
       let collect;
 
       return utils
-        .updateSettings(config, { ignoreReload: 'sentinel' })
-        .then(() => utils.saveDoc(report))
+        .updateSettings(config, { ignoreReload: true })
         .then(() => utils.collectSentinelLogs(/Failed to push/, /cause.*ECONNREFUSED/))
         .then((result) => collect = result)
+        .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(() => collect())
         .then(logs => {

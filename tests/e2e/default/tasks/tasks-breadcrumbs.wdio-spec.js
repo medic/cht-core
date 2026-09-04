@@ -1,4 +1,4 @@
-const { v4: uuid } = require('uuid');
+const { v7: uuid } = require('uuid');
 const path = require('path');
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
@@ -9,16 +9,16 @@ const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
 const chtConfUtils = require('@utils/cht-conf');
 const sentinelUtils = require('@utils/sentinel');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
-const commonElements = require('@page-objects/default/common/common.wdio.page');
+const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 describe('Tasks tab breadcrumbs', () => {
   const places = placeFactory.generateHierarchy();
-  const clinic = places.get('clinic');
-  const healthCenter1 = places.get('health_center');
+  const clinic = places.get(CONTACT_TYPES.CLINIC);
+  const healthCenter1 = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const districtHospital = places.get('district_hospital');
   const healthCenter2 = placeFactory.place().build({
     name: 'health_center_2',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: districtHospital._id },
   });
 
@@ -55,7 +55,7 @@ describe('Tasks tab breadcrumbs', () => {
   const contactWithManyPlaces = personFactory.build({ parent: healthCenter1 });
 
   const userWithManyPlaces = {
-    _id: 'org.couchdb.user:offline_many_facilities',
+    _id: PREFIXES.COUCH_USER + 'offline_many_facilities',
     language: 'en',
     known: true,
     type: 'user-settings',
@@ -84,23 +84,13 @@ describe('Tasks tab breadcrumbs', () => {
     await tasksPage.compileTasks('tasks-breadcrumbs-config.js', false);
   });
 
-  after(async () => {
-    await utils.deleteUsers([ chw, supervisor ]);
-    await utils.revertDb([/^form:/], true);
-    await utils.revertSettings(true);
+  afterEach(async () => {
+    await commonPage.reloadSession();
   });
 
   describe('for chw', () => {
-    afterEach(async () => await commonElements.logout());
-
-    after(async () => {
-      await browser.deleteCookies();
-      await browser.refresh();
-    });
-
     it('should not remove facility from breadcrumbs when offline user has many facilities associated', async () => {
       await loginPage.login({ password: userWithManyPlacesPass, username: userWithManyPlaces.name });
-      await commonPage.waitForPageLoaded();
       await commonPage.goToTasks();
       const infos = await tasksPage.getTasksListInfos(await tasksPage.getTasks());
 
@@ -131,7 +121,6 @@ describe('Tasks tab breadcrumbs', () => {
 
     it('should display correct tasks with breadcrumbs for chw', async () => {
       await loginPage.login(chw);
-      await commonPage.waitForPageLoaded();
       await commonPage.goToTasks();
       const infos = await tasksPage.getTasksListInfos(await tasksPage.getTasks());
 
@@ -162,7 +151,6 @@ describe('Tasks tab breadcrumbs', () => {
 
     it('should open task with expression', async () => {
       await loginPage.login(chw);
-      await commonPage.waitForPageLoaded();
       await commonPage.goToTasks();
       const task = await tasksPage.getTaskByContactAndForm('patient1', 'person_create');
       await task.click();
@@ -171,16 +159,8 @@ describe('Tasks tab breadcrumbs', () => {
   });
 
   describe('for supervisor', () => {
-    before(async () => {
-      await loginPage.login(supervisor);
-    });
-
-    after(async () => {
-      await browser.deleteCookies();
-      await browser.refresh();
-    });
-
     it('should display correct tasks with breadcrumbs for supervisor', async () => {
+      await loginPage.login(supervisor);
       await commonPage.goToTasks();
       const infos = await tasksPage.getTasksListInfos(await tasksPage.getTasks());
 

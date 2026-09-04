@@ -1,6 +1,6 @@
 import { ComponentFixture, discardPeriodicTasks, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Router, ActivationEnd } from '@angular/router';
+import { ActivationEnd, Router } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 import sinon from 'sinon';
@@ -13,7 +13,7 @@ import { DBSyncService } from '@mm-services/db-sync.service';
 import { LanguageService, SetLanguageService } from '@mm-services/language.service';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
-import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { UpdateServiceWorkerService } from '@mm-services/update-service-worker.service';
 import { LocationService } from '@mm-services/location.service';
@@ -51,6 +51,11 @@ import { OLD_NAV_PERMISSION } from '@mm-components/header/header.component';
 import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 import { StorageInfoService } from '@mm-services/storage-info.service';
+import { TasksNotificationService } from '@mm-services/task-notifications.service';
+import { DOC_IDS, PREFIXES } from '@medic/constants';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
+import { UiExtensionsService } from '@mm-services/ui-extensions.service';
+import { HeaderTabsService } from '@mm-services/header-tabs.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -64,7 +69,7 @@ describe('AppComponent', () => {
   let languageService;
   let sessionService;
   let authService;
-  let resourceIconsService;
+  let customResourceService;
   let changesService;
   let locationService;
   let xmlFormsService;
@@ -85,6 +90,7 @@ describe('AppComponent', () => {
   let databaseConnectionMonitorService;
   let translateLocaleService;
   let telemetryService;
+  let interactionTrackingService;
   let transitionsService;
   let chtDatasourceService;
   let analyticsModulesService;
@@ -93,6 +99,9 @@ describe('AppComponent', () => {
   let formService;
   let updateServiceWorkerService;
   let storageInfoService;
+  let tasksNotificationService;
+  let uiExtensionsService;
+  let headerTabsService;
   // End Services
 
   let globalActions;
@@ -100,6 +109,7 @@ describe('AppComponent', () => {
   let originalPouchDB;
   const changesListener:any = {};
   let consoleErrorStub;
+  let originalMedicMobileAndroid;
 
   const getComponent = () => {
     fixture = TestBed.createComponent(AppComponent);
@@ -111,7 +121,7 @@ describe('AppComponent', () => {
     // set this in index.html
     window.startupTimes = {};
 
-    authService = { has: sinon.stub().resolves(true) };
+    authService = { has: sinon.stub().resolves(true), online: sinon.stub().returns(false) };
     locationService = { path: 'localhost' };
     checkDateService = { check: sinon.stub() };
     countMessageService = { init: sinon.stub() };
@@ -120,13 +130,14 @@ describe('AppComponent', () => {
     jsonFormsService = { get: sinon.stub().resolves([]) };
     languageService = { get: sinon.stub().resolves({}) };
     rulesEngineService = { isEnabled: sinon.stub().resolves(true) };
-    resourceIconsService = { getAppTitle: sinon.stub().resolves() };
+    customResourceService = { getAppTitle: sinon.stub().resolves() };
     privacyPoliciesService = { hasAccepted: sinon.stub().resolves() };
     formatDateService = { init: sinon.stub() };
     wealthQuintilesWatcherService = { start: sinon.stub() };
     unreadRecordsService = { init: sinon.stub() };
     setLanguageService = { set: sinon.stub() };
     translateService = { instant: sinon.stub().returnsArg(0) };
+    tasksNotificationService = { initOnAndroid: sinon.stub() };
     modalService = {
       show: sinon.stub().returns({
         afterClosed: sinon.stub().returns(of())
@@ -173,19 +184,31 @@ describe('AppComponent', () => {
       setForms: sinon.stub(GlobalActions.prototype, 'setForms'),
       setUserFacilityIds: sinon.stub(GlobalActions.prototype, 'setUserFacilityIds'),
       setUserContactId: sinon.stub(GlobalActions.prototype, 'setUserContactId'),
+      setUserFacilities: sinon.stub(GlobalActions.prototype, 'setUserFacilities'),
+      setIsOnlineOnly: sinon.stub(GlobalActions.prototype, 'setIsOnlineOnly'),
     };
     analyticsActions = {
       setAnalyticsModules: sinon.stub(AnalyticsActions.prototype, 'setAnalyticsModules')
     };
+    originalMedicMobileAndroid = window.medicmobile_android;
     originalPouchDB = window.PouchDB;
     window.PouchDB = {
       fetch: sinon.stub()
     };
     telemetryService = { record: sinon.stub() };
+    interactionTrackingService = { init: sinon.stub(), persistBuffer: sinon.stub() };
     trainingCardsService = { initTrainingCards: sinon.stub() };
-    userSettingsService = { get: sinon.stub().resolves({ facility_id: ['facility'], contact_id: 'contact' }) };
+    userSettingsService = {
+      get: sinon.stub().resolves({ facility_id: ['facility'], contact_id: 'contact' }),
+      getUserFacilities: sinon.stub().resolves([]),
+    };
     formService = { setUserContext: sinon.stub() };
     updateServiceWorkerService = { update: sinon.stub() };
+    uiExtensionsService = { getPropertiesByType: sinon.stub().resolves([]) };
+    headerTabsService = {
+      getAuthorizedTabs: sinon.stub().resolves([]),
+      getSidebarTabs: sinon.stub().resolves([]),
+    };
     consoleErrorStub = sinon.stub(console, 'error');
 
     const mockedSelectors = [
@@ -210,7 +233,7 @@ describe('AppComponent', () => {
           { provide: SetLanguageService, useValue: setLanguageService },
           { provide: SessionService, useValue: sessionService },
           { provide: AuthService, useValue: authService },
-          { provide: ResourceIconsService, useValue: resourceIconsService },
+          { provide: CustomResourceService, useValue: customResourceService },
           { provide: ChangesService, useValue: changesService },
           { provide: UpdateServiceWorkerService, useValue: updateServiceWorkerService },
           { provide: LocationService, useValue: locationService },
@@ -240,6 +263,10 @@ describe('AppComponent', () => {
           { provide: FormService, useValue: formService },
           { provide: StorageInfoService, useValue: storageInfoService },
           { provide: Router, useValue: router },
+          { provide: TasksNotificationService, useValue: tasksNotificationService },
+          { provide: InteractionTrackingService, useValue: interactionTrackingService },
+          { provide: UiExtensionsService, useValue: uiExtensionsService },
+          { provide: HeaderTabsService, useValue: headerTabsService },
         ]
       })
       .overrideComponent(SidebarMenuComponent, {
@@ -258,6 +285,7 @@ describe('AppComponent', () => {
     clock && clock.restore();
     window.PouchDB = originalPouchDB;
     window.localStorage.removeItem('medic-last-replicated-date');
+    window.medicmobile_android = originalMedicMobileAndroid;
   });
 
   it('should create component and init services', async () => {
@@ -274,13 +302,15 @@ describe('AppComponent', () => {
     expect(countMessageService.init.callCount).to.equal(1);
     // init feedback service
     expect(feedbackService.init.callCount).to.equal(1);
+    // init interaction tracking service
+    expect(interactionTrackingService.init.callCount).to.equal(1);
     // check privacy policy
     expect(privacyPoliciesService.hasAccepted.callCount).to.equal(1);
     // init rules engine
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
     // init CHTScriptApiService
     expect(chtDatasourceService.isInitialized.callCount).to.equal(1);
-    // init unread count
+    // init bubble counter
     expect(unreadRecordsService.init.callCount).to.equal(1);
     expect(unreadRecordsService.init.args[0][0]).to.be.a('Function');
     // check date service
@@ -295,6 +325,19 @@ describe('AppComponent', () => {
     expect(updateServiceWorkerService.update.callCount).to.equal(1);
     // init storage info service
     expect(storageInfoService.init.callCount).to.equal(1);
+    expect(tasksNotificationService.initOnAndroid.callCount).to.equal(0);
+    // init user
+    expect(userSettingsService.getUserFacilities.calledOnce).to.equal(true);
+    expect(globalActions.setUserFacilities.calledOnceWith([])).to.equal(true);
+    expect(authService.online.calledOnceWith(true)).to.equal(true);
+    expect(globalActions.setIsOnlineOnly.calledOnceWith(false)).to.equal(true);
+  });
+
+  it('should init task notifications on android', async () => {
+    window.medicmobile_android = { updateTaskNotificationStore: sinon.stub().returns(true) };
+    await getComponent();
+    await component.setupPromise;
+    expect(tasksNotificationService.initOnAndroid.callCount).to.equal(1);
   });
 
   it('should show reload popup when service worker is updated', async () => {
@@ -466,12 +509,12 @@ describe('AppComponent', () => {
   });
 
   it('should set app title', async () => {
-    resourceIconsService.getAppTitle.resolves('My App');
+    customResourceService.getAppTitle.resolves('My App');
 
     await getComponent();
     await Promise.resolve();
 
-    expect(resourceIconsService.getAppTitle.callCount).to.equal(1);
+    expect(customResourceService.getAppTitle.callCount).to.equal(1);
     expect(document.title).to.equal('My App');
   });
 
@@ -486,8 +529,39 @@ describe('AppComponent', () => {
 
     expect(databaseConnectionMonitorService.listenForDatabaseClosed.callCount).to.equal(1);
     expect(modalService.show.callCount).to.equal(1);
-    expect(modalService.show.args[0]).to.have.deep.members([DatabaseClosedComponent]);
+    expect(modalService.show.args[0][0]).to.equal(DatabaseClosedComponent);
+    expect(modalService.show.args[0][1]).to.deep.equal({ closeOnNavigation: false });
   }));
+
+  describe('visibilitychange', () => {
+    let originalHiddenDescriptor;
+
+    beforeEach(() => {
+      originalHiddenDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'hidden');
+    });
+
+    afterEach(() => {
+      if (originalHiddenDescriptor) {
+        Object.defineProperty(Document.prototype, 'hidden', originalHiddenDescriptor);
+      }
+    });
+
+    const setHidden = (hidden: boolean) => {
+      Object.defineProperty(document, 'hidden', { configurable: true, value: hidden });
+    };
+
+    it('persists the interaction buffer on every visibilitychange', async () => {
+      await getComponent();
+      setHidden(true);
+      window.dispatchEvent(new Event('visibilitychange'));
+      setHidden(false);
+      window.dispatchEvent(new Event('visibilitychange'));
+
+      // On hide the buffer flushes; on show persistBuffer is still called so
+      // the service detects a day rollover and aggregates yesterday's DB.
+      expect(interactionTrackingService.persistBuffer.callCount).to.equal(2);
+    });
+  });
 
   describe('Setup DB', () => {
     it('should disable dbsync in replication status', async () => {
@@ -599,8 +673,8 @@ describe('AppComponent', () => {
 
       expect(changesListener['user-context'].filter({ id: 'something' })).to.equal(false);
       expect(changesListener['user-context'].filter({ id: 'someperson' })).to.equal(false);
-      expect(changesListener['user-context'].filter({ id: 'org.couchdb.user:someone' })).to.equal(false);
-      expect(changesListener['user-context'].filter({ id: 'org.couchdb.user:adm' })).to.equal(true);
+      expect(changesListener['user-context'].filter({ id: PREFIXES.COUCH_USER + 'someone' })).to.equal(false);
+      expect(changesListener['user-context'].filter({ id: PREFIXES.COUCH_USER + 'adm' })).to.equal(true);
 
       sessionService.userCtx.returns(false);
 
@@ -616,6 +690,48 @@ describe('AppComponent', () => {
       expect(sessionService.init.callCount).to.equal(1);
       changesListener['user-context'].callback();
       expect(sessionService.init.callCount).to.equal(2);
+    });
+
+    it('ddoc change listener should filter design docs, service worker meta, settings and ui-extensions', async () => {
+      await getComponent();
+
+      const filter = changesListener.ddoc.filter;
+      expect(filter).to.be.a('function');
+
+      expect(filter({ id: '_design/medic' })).to.equal(true);
+      expect(filter({ id: '_design/medic-client' })).to.equal(true);
+      expect(filter({ id: DOC_IDS.SERVICE_WORKER_META })).to.equal(true);
+      expect(filter({ id: DOC_IDS.SETTINGS })).to.equal(true);
+      expect(filter({ id: DOC_IDS.EXTENSION_LIBS })).to.equal(true);
+      expect(filter({ id: `${PREFIXES.UI_EXTENSION}foo` })).to.equal(true);
+      expect(filter({ id: PREFIXES.UI_EXTENSION })).to.equal(true);
+      expect(filter({ id: 'something-else' })).to.equal(false);
+      expect(filter({ id: 'not-ui-extension:foo' })).to.equal(false);
+      expect(filter({ id: '_design/medic-not' })).to.equal(false);
+    });
+
+    it('ddoc change listener callback should trigger service worker update for service worker meta', async () => {
+      await getComponent();
+      sinon.resetHistory();
+
+      changesListener.ddoc.callback({ id: DOC_IDS.SERVICE_WORKER_META });
+
+      expect(updateServiceWorkerService.update.callCount).to.equal(1);
+      const callback = updateServiceWorkerService.update.args[0][0];
+      callback();
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.have.deep.members([ReloadingComponent]);
+    });
+
+    it('ddoc change listener callback should show update ready for ui-extension changes', async () => {
+      await getComponent();
+      sinon.resetHistory();
+
+      changesListener.ddoc.callback({ id: `${PREFIXES.UI_EXTENSIONS}my-extension` });
+
+      expect(updateServiceWorkerService.update.callCount).to.equal(0);
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.have.deep.members([ReloadingComponent]);
     });
 
     it('sync-status change listener callback should do nothing if sync in progress', async () => {

@@ -18,13 +18,13 @@
     <error-log [errorStack]="summaryErrorStack" [errorFor]="'contacts'"></error-log>
   </div>
 
-  <div class="col-sm-8 item-content" *ngIf="!selectedContact?.error && !loadingContent && !summaryErrorStack">
+  <div class="col-sm-8 item-content" *ngIf="!selectedContact?.error && !loadingContent && !summaryErrorStack && selectedContact">
     <mm-fast-action-button [fastActions]="fastActionList"></mm-fast-action-button>
     <div class="material">
       <div class="body meta">
         <div class="card">
           <div class="row heading" [ngClass]="{'deceased': selectedContact?.doc?.date_of_death, 'muted':selectedContact?.doc?.muted }">
-            <span [innerHTML]="selectedContact?.type?.icon | resourceIcon"></span>
+            <mm-contact-profile-image></mm-contact-profile-image>
             <div class="heading-content">
               <h2 [attr.test-id]="'contact-name'">{{selectedContact?.doc?.name}}</h2>
               <div [attr.test-id]="'deceased-title'" *ngIf="selectedContact?.doc?.date_of_death">{{'contact.deceased.title' | translate}}</div>
@@ -44,12 +44,18 @@
         </div>
 
         <ng-container *ngIf="selectedContact?.summary">
-          <div *ngFor="let card of selectedContact?.summary?.cards">
+          <div *ngFor="let card of summaryCards">
             <div class="card compact-card" [attr.test-id]="card.label">
-              <div class="action-header cell">
+              <button
+                type="button"
+                class="action-header cell"
+                (click)="card.collapsed = !card.collapsed"
+                [attr.aria-expanded]="!card.collapsed"
+              >
                 <h3>{{card.label | translate}}</h3>
-              </div>
-              <div class="row flex grid">
+                <i class="fa" [ngClass]="card.collapsed ? 'fa-chevron-down' : 'fa-chevron-up'"></i>
+              </button>
+              <div class="row flex grid" *ngIf="!card.collapsed">
                 <div class="col col-xs-12 col-sm-{{field.width || 12}}" *ngFor="let field of card.fields">
                   <div class="cell">
                     <span *ngIf="field.icon" class="field-icon" [innerHTML]="field.icon | resourceIcon"></span>
@@ -67,21 +73,29 @@
         </ng-container>
       </div>
 
-      <div class="card compact-card children" [ngClass]="group?.type?.person ? 'persons' : 'places'" *ngFor="let group of selectedContact?.children">
+      <div
+        class="card compact-card children"
+        [ngClass]="group?.type?.person ? 'persons' : 'places'"
+        *ngFor="let group of selectedContact?.children; trackBy: trackByGroup">
         <div class="action-header cell">
           <div class="col-xs-10">
-            <h3>{{group?.type?.group_key | translate}}</h3>
+            <h3>
+              <span>{{group?.type?.group_key | translate}}</span>
+              <span *ngIf="group?.activeCount > 0" class="children-count">{{group.activeCount | localizeNumber}}</span>
+            </h3>
           </div>
           <div *ngIf="group?.type?.person" mmAuth="can_view_tasks" class="col-xs-2 tasks-title">{{'Tasks' | translate}}</div>
         </div>
 
         <ul>
-          <ng-container *ngFor="let child of group?.contacts" >
+          <ng-container *ngFor="let child of group?.contacts; trackBy: trackByChildContact" >
             <mm-content-row *ngIf="!child.deceased"
               [id]="child.doc._id"
               [route]="['/', 'contacts', child.doc._id]"
               [heading]="child.doc.name"
-              [summary]="''"
+              [summary]="child.summary || ''"
+              [overdue]="child.overdue"
+              [visits]="child.visits"
               [primaryContact]="child.isPrimaryContact"
               [dob]="child.doc.date_of_birth"
               [taskCount]="child.taskCount"

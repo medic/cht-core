@@ -7,11 +7,11 @@
 <div
   class="inbox page target-aggregates"
   *ngIf="enabled && !loading"
-  [ngClass]="{'sidebar-open': !!sidebarFilter.isOpen, 'sidebar-closed': !sidebarFilter.isOpen}">
+  [ngClass]="{'sidebar-open': sidebarFilter.isOpen, 'sidebar-closed': !sidebarFilter.isOpen}">
   <div
     id="target-aggregates-list"
     class="inbox-items left-pane"
-    [ngClass]="{ 'col-sm-3': !!sidebarFilter.isOpen, 'col-sm-4': !sidebarFilter.isOpen }">
+    [ngClass]="{ 'col-sm-3': sidebarFilter.isOpen, 'col-sm-4': !sidebarFilter.isOpen }">
     <ul>
       <mm-content-row
         *ngFor="let aggregate of aggregates" [id]="aggregate.id"
@@ -35,14 +35,15 @@
   </div>
 
   <div class="content-pane right-pane">
-    <div class="item-content" [ngClass]="{ 'col-sm-6': !!sidebarFilter.isOpen, 'col-sm-8': !sidebarFilter.isOpen }">
+    <div class="item-content" [ngClass]="{ 'col-sm-6': sidebarFilter.isOpen, 'col-sm-8': !sidebarFilter.isOpen }">
       <router-outlet></router-outlet>
     </div>
-    <mm-analytics-target-aggregates-sidebar-filter
-      class="col-sm-3 sidebar-filter-wrapper" [userFacilities]="userFacilities"
-      (facilitySelectionChanged)="getTargetAggregates($event, reportingPeriodFilter)"
-      (reportingPeriodSelectionChanged)="getTargetAggregates(facilityFilter, $event)">
-    </mm-analytics-target-aggregates-sidebar-filter>
+    <mm-analytics-sidebar-filter
+      class="col-sm-3 sidebar-filter-wrapper"
+      [userFacilities]="userFacilities"
+      (facilitySelectionChanged)="getTargetAggregates($event, sidebarFilter.reportingPeriod)"
+      (reportingPeriodSelectionChanged)="getTargetAggregates(sidebarFilter.facility, $event)">
+    </mm-analytics-sidebar-filter>
   </div>
 </div>
 

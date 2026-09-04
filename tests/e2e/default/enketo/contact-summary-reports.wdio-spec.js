@@ -7,11 +7,12 @@ const path = require('path');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const reportsFactory = require('@factories/cht/reports/generic-report');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Contact summary', () => {
 
   const places = placeFactory.generateHierarchy();
-  const clinic = places.get('clinic');
+  const clinic = places.get(CONTACT_TYPES.CLINIC);
   const patient = personFactory.build({
     name: 'Patient',
     phone: '+50683444444',

@@ -1,39 +1,40 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
   <h:head>
     <h:title>Dynamic URL</h:title>
-    <model>
+    <model odk:xforms-version="1.0.0">
       <itext>
         <translation lang="en">
-          <text id="/dynamic-url-widget/query_text:label">
+          <text id="/data/query_text:label">
             <value>Enter your search query</value>
           </text>
-          <text id="/dynamic-url-widget/search_link:label">
-            <value>Click the link to search: [<output value=" /dynamic-url-widget/query_text "/>](http://google.com?q=<output value=" /dynamic-url-widget/query_text "/>)</value>
+          <text id="/data/search_link:label">
+            <value> Click the link to search: [<output value=" /data/query_text "/>](http://google.com?q=<output value=" /data/query_text "/>)</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <dynamic-url-widget delimiter="#" id="dynamic-url-widget" prefix="J1!dynamic-url-widget!" version="2024-09-06 00:00:00">
+        <data id="dynamic-url-widget" version="2024-09-06 00:00:00" prefix="J1!dynamic-url-widget!" delimiter="#">
           <query_text/>
           <search_link/>
           <meta tag="hidden">
             <instanceID/>
           </meta>
-        </dynamic-url-widget>
+        </data>
       </instance>
       <instance id="contact-summary"/>
-      <bind nodeset="/dynamic-url-widget/query_text" type="string"/>
-      <bind nodeset="/dynamic-url-widget/search_link" readonly="true()" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/dynamic-url-widget/meta/instanceID" readonly="true()" type="string"/>
+      <instance id="user-contact-summary"/>
+      <bind nodeset="/data/query_text" type="string"/>
+      <bind nodeset="/data/search_link" readonly="true()" type="string"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
   <h:body class="pages">
-    <input ref="/dynamic-url-widget/query_text">
-      <label ref="jr:itext('/dynamic-url-widget/query_text:label')"/>
+    <input ref="/data/query_text">
+      <label ref="jr:itext('/data/query_text:label')"/>
     </input>
-    <input ref="/dynamic-url-widget/search_link">
-      <label ref="jr:itext('/dynamic-url-widget/search_link:label')"/>
+    <input ref="/data/search_link">
+      <label ref="jr:itext('/data/search_link:label')"/>
     </input>
   </h:body>
 </h:html>

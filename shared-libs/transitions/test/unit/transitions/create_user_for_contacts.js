@@ -8,6 +8,7 @@ const { Person, Qualifier } = require('@medic/cht-datasource');
 const { people } = require('@medic/contacts')(config, db, dataContext);
 const { users } = require('@medic/user-management')(config, db, dataContext);
 const contactTypeUtils = require('@medic/contact-types-utils');
+const { PREFIXES } = require('@medic/constants');
 
 const deepFreeze = obj => {
   Object
@@ -30,7 +31,7 @@ const NEW_CONTACT = deepFreeze({
 });
 
 const ORIGINAL_USER = deepFreeze({
-  _id: 'org.couchdb.user:original-user-id', name: `original-user`, contact: ORIGINAL_CONTACT, roles: ['chw'],
+  _id: PREFIXES.COUCH_USER + 'original-user-id', name: `original-user`, contact: ORIGINAL_CONTACT, roles: ['chw'],
 });
 
 const getCreatedContact = ({ create = 'true', roles, role = 'chw', name = NEW_CONTACT.name } = {}) => ({
@@ -312,7 +313,7 @@ describe('create_user_for_contacts', () => {
       expect(resetPassword.args).to.deep.equal(expectedResetPasswordArgs);
     };
 
-    const stripCouchdbUserPrefix = username => username.replace('org.couchdb.user:', '');
+    const stripCouchdbUserPrefix = username => username.replace(PREFIXES.COUCH_USER, '');
 
     it(`creates user for new contact with create flag of 'true' and multiple roles`, async () => {
       const doc = getCreatedContact({ roles: ['nurse', 'chw'], role: null });

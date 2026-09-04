@@ -2,6 +2,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const chai = require('chai');
 const moment = require('moment');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const reportedDate = moment().valueOf();
 const oneMonthAgo = moment().subtract(1, 'month').toISOString();
@@ -13,14 +14,14 @@ const contacts = [
     _id: 'district_hospital',
     name: 'District',
     type: 'contact',
-    contact_type: 'district_hospital',
+    contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     reported_date: reportedDate,
   },
   {
     _id: 'health_center',
     name: 'Health Center',
     type: 'contact',
-    contact_type: 'health_center',
+    contact_type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: 'district_hospital' },
     contact: { _id: 'supervisor1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     reported_date: reportedDate,
@@ -29,7 +30,7 @@ const contacts = [
     _id: 'clinic1',
     name: 'clinic1',
     type: 'contact',
-    contact_type: 'clinic',
+    contact_type: CONTACT_TYPES.CLINIC,
     place_id: 'the_clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
@@ -61,7 +62,7 @@ const contacts = [
 const reports = [  
   {
     _id: 'report1',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     contact: {
       _id: 'chw1',
       parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }

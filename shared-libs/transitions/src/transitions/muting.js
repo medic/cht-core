@@ -10,6 +10,7 @@ const contactTypesUtils = require('@medic/contact-types-utils');
 const transitions = require('./index');
 const dataContext = require('../data-context');
 const { Report, Qualifier } = require('@medic/cht-datasource');
+const { DOC_TYPES } = require('@medic/constants');
 
 const TRANSITION_NAME = 'muting';
 const CONFIG_NAME = 'muting';
@@ -37,7 +38,7 @@ const isContact = doc => !!contactTypesUtils.getContactType(config.getAll(), doc
 const isRelevantReport = (doc, info = {}) => {
   return Boolean(doc &&
                  doc.form &&
-                 doc.type === 'data_record' &&
+                 doc.type === DOC_TYPES.DATA_RECORD &&
                  ( isMuteForm(doc.form) || isUnmuteForm(doc.form) ) &&
                  !transitionUtils.hasRun(info, TRANSITION_NAME) &&
                  utils.isValidSubmission(doc));
@@ -202,7 +203,7 @@ module.exports = {
   },
 
   onMatch: change => {
-    if (change.doc.type !== 'data_record') {
+    if (change.doc.type !== DOC_TYPES.DATA_RECORD) {
       return processContact(change);
     }
 
@@ -244,12 +245,8 @@ module.exports = {
   _addErr: (eventType, doc) => {
     const locale = utils.getLocale(doc);
     const evConf = _.find(getConfig().messages, { event_type: eventType });
-
-    const msg = messages.getMessage(evConf, locale);
-    if (msg) {
-      messages.addError(doc, msg);
-    } else {
-      messages.addError(doc, `Failed to complete muting request, event type "${eventType}" misconfigured.`);
-    }
+    const msg = messages.getMessage(evConf, locale) ||
+      `Failed to complete muting request, event type "${eventType}" misconfigured.`;
+    messages.addError(doc, { code: 'muting_error', message: msg });
   }
 };

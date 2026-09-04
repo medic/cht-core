@@ -42,5 +42,5 @@ module.exports = {
    * @param {String} [gatewayRef] The gateway ID
    * @returns {boolean} Returns true if task state or task history is changed, otherwise returns false.
    */
-  setTaskState: (task, state, details, gatewayRef) => setTaskState(task, state, details, gatewayRef)
+  setTaskState: (task, state, details, gatewayRef) => setTaskState(task, state, details, gatewayRef),
 };

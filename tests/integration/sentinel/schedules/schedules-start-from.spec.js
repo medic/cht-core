@@ -1,15 +1,16 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const moment = require('moment');
 const chai = require('chai');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
     _id: 'district_hospital',
     name: 'District hospital',
     type: 'contact',
-    contact_type: 'district_hospital',
+    contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     place_id: 'the_district_hospital',
     reported_date: new Date().getTime()
   },
@@ -17,7 +18,7 @@ const contacts = [
     _id: 'health_center',
     name: 'Health Center',
     type: 'contact',
-    contact_type: 'health_center',
+    contact_type: CONTACT_TYPES.HEALTH_CENTER,
     place_id: 'the_health_center',
     parent: { _id: 'district_hospital' },
     reported_date: new Date().getTime()
@@ -30,7 +31,11 @@ const contacts = [
     place_id: 'the_clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
-      _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      _id: 'person',
+      parent: {
+        _id: 'clinic',
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+      }
     },
     reported_date: new Date().getTime()
   },
@@ -198,7 +203,7 @@ describe('schedules alternative start_from', () => {
 
     const patient = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+97798261',
       fields: {
@@ -216,7 +221,7 @@ describe('schedules alternative start_from', () => {
 
     const clinic = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+11111111',
       fields: {

@@ -12,6 +12,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const fs = require('fs');
+const { CONTACT_TYPES } = require('@medic/constants');
 const {
   destroyDbInBrowser,
   getTelemetryFromBrowser,
@@ -23,13 +24,13 @@ const { BRANCH, TAG } = process.env;
 
 describe('Telemetry', () => {
   const places = placeFactory.generateHierarchy();
-  const clinic = places.get('clinic');
+  const clinic = places.get(CONTACT_TYPES.CLINIC);
   const patient = personFactory.build({
     phone: '+12068881234',
     parent: { _id: clinic._id, parent: clinic.parent },
   });
 
-  const healthCenter = places.get('health_center');
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const contact = personFactory.build({
     name: Faker.person.firstName(),
     parent: { _id: healthCenter._id },

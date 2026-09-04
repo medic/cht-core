@@ -32,11 +32,10 @@ module.exports = {
     try {
       return await db.medic.getAttachment(docId, name);
     } catch (error) {
-      if (error.status === 404) {
-        logger.error(error);
-        return null;
+      if (error.status !== 404) {
+        throw error;
       }
-      throw error;
+      logger.warn(`Form attachment ${name} not found for doc ${docId}`);
     }
   },
   /**

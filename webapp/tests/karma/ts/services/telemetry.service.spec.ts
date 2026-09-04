@@ -82,7 +82,6 @@ describe('TelemetryService', () => {
     medicDb = {
       info: sinon.stub(),
       get: sinon.stub(),
-      query: sinon.stub(),
       allDocs: sinon.stub()
     };
     const getStub = sinon.stub();
@@ -137,7 +136,7 @@ describe('TelemetryService', () => {
 
   describe('record()', () => {
     it('should record a piece of telemetry', async () => {
-      medicDb.query.resolves({ rows: [] });
+      medicDb.allDocs.resolves({ rows: [] });
       telemetryDb.query.resolves({ rows: [] });
       const oldTelemetryDBNames = [
         '_pouch_medic-user-koko-telemetry-98y7c3a1-5a1a-4d3f-a076-d86ec38b1d87',
@@ -171,8 +170,33 @@ describe('TelemetryService', () => {
       expect(telemetryDb.destroy.callCount).to.equal(4);
     });
 
+    it('should use separate telemetry DBs for different users on the same day', async () => {
+      medicDb.allDocs.resolves({ rows: [] });
+      telemetryDb.query.resolves({ rows: [] });
+
+      // Simulate switching from user 'greg' to user 'jane' on the same day
+      // with existing telemetry DB for 'greg' but not 'jane'
+      windowMock.indexedDB.databases.resolves([
+        '_pouch_telemetry-2018-11-10-greg',  // greg's telemetry DB exists
+        '_pouch_some-other-db',
+      ]);
+
+      // First, simulate that current user is 'jane', not 'greg'
+      sessionService.userCtx.returns({ name: 'jane' });
+
+      await service.record('test', 100);
+
+      expect(consoleErrorSpy.notCalled).to.be.true;
+      expect(telemetryDb.post.calledOnce).to.be.true;
+      expect(telemetryDb.post.args[0][0]).to.deep.include({ key: 'test', value: 100 });
+      
+      // Should create a new DB for 'jane', not reuse 'greg's DB
+      expect(windowMock.PouchDB.callCount).to.equal(1);
+      expect(windowMock.PouchDB.args[0]).to.deep.equal(['telemetry-2018-11-10-jane']);
+    });
+
     it('should default the value to 1 if not passed', async () => {
-      medicDb.query.resolves({ rows: [] });
+      medicDb.allDocs.resolves({ rows: [] });
       telemetryDb.query.resolves({ rows: [] });
       windowMock.indexedDB.databases.resolves([
         'telemetry-2018-11-10-greg',
@@ -208,26 +232,30 @@ describe('TelemetryService', () => {
           _id: '_design/medic-client',
           build_info: { version: '3.0.0' }
         });
-      medicDb.query.resolves({
-        rows: [
-          {
-            id: 'form:anc_followup',
-            key: 'anc_followup',
-            doc: {
-              _id: 'form:anc_followup',
-              _rev: '1-abc',
-              internalId: 'anc_followup'
+      medicDb.allDocs
+        .withArgs({ start_key: 'form:', end_key: 'form:\ufff0', include_docs: true })
+        .resolves({
+          rows: [
+            {
+              id: 'form:anc_followup',
+              key: 'anc_followup',
+              doc: {
+                _id: 'form:anc_followup',
+                _rev: '1-abc',
+                internalId: 'anc_followup'
+              }
             }
-          }
-        ]
-      });
-      medicDb.allDocs.resolves({
-        rows: [{
-          value: {
-            rev: 'somerandomrevision'
-          }
-        }]
-      });
+          ]
+        });
+      medicDb.allDocs
+        .withArgs({ key: 'settings' })
+        .resolves({
+          rows: [{
+            value: {
+              rev: 'somerandomrevision'
+            }
+          }]
+        });
     };
 
     it('should aggregate once a day and delete previous telemetry databases', async () => {
@@ -293,9 +321,14 @@ describe('TelemetryService', () => {
         deviceInfo: {}
       });
 
-      expect(medicDb.query.calledTwice).to.be.true;
-      expect(medicDb.query.args[0][0]).to.equal('medic-client/doc_by_type');
-      expect(medicDb.query.args[0][1]).to.deep.equal({ key: [ 'form' ], include_docs: true });
+      const formsAllDocsCalls = medicDb.allDocs.getCalls()
+        .filter(call => call.args[0]?.start_key === 'form:');
+      expect(formsAllDocsCalls).to.have.lengthOf(2);
+      expect(formsAllDocsCalls[0].args[0]).to.deep.equal({
+        start_key: 'form:',
+        end_key: 'form:\ufff0',
+        include_docs: true,
+      });
       expect(telemetryDb.destroy.calledTwice).to.be.true;
       expect(telemetryDb.close.notCalled).to.be.true;
 
@@ -431,14 +464,18 @@ describe('TelemetryService', () => {
           version: '3.0.0'
         }
       });
-      medicDb.allDocs.resolves({
-        rows: [{
-          value: {
-            rev: 'randomrev'
-          }
-        }]
-      });
-      medicDb.query.resolves({ rows: [] });
+      medicDb.allDocs
+        .withArgs({ start_key: 'form:', end_key: 'form:\ufff0', include_docs: true })
+        .resolves({ rows: [] });
+      medicDb.allDocs
+        .withArgs({ key: 'settings' })
+        .resolves({
+          rows: [{
+            value: {
+              rev: 'randomrev'
+            }
+          }]
+        });
 
       await service.record('test', 1);
 

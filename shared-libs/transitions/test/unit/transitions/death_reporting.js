@@ -6,6 +6,7 @@ const utils = require('../../../src/lib/utils');
 const config = require('../../../src/config');
 const dataContext = require('../../../src/data-context');
 const { Person, Qualifier } = require('@medic/cht-datasource');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('death_reporting', () => {
   let transition;
@@ -23,6 +24,28 @@ describe('death_reporting', () => {
     sinon.reset();
     sinon.restore();
     done();
+  });
+
+  describe('init', () => {
+    it('should throw when mark_deceased_forms is not configured', () => {
+      config.get.returns({});
+      expect(() => transition.init()).to.throw('Configuration error');
+    });
+
+    it('should throw when mark_deceased_forms is empty array', () => {
+      config.get.returns({ mark_deceased_forms: [] });
+      expect(() => transition.init()).to.throw('Configuration error');
+    });
+
+    it('should throw when mark_deceased_forms is not an array', () => {
+      config.get.returns({ mark_deceased_forms: 'not-array' });
+      expect(() => transition.init()).to.throw('Configuration error');
+    });
+
+    it('should not throw when mark_deceased_forms is valid', () => {
+      config.get.returns({ mark_deceased_forms: ['form-a'] });
+      expect(() => transition.init()).to.not.throw();
+    });
   });
 
   describe('onMatch', () => {
@@ -282,7 +305,7 @@ describe('death_reporting', () => {
 
     it('no patient returns false', () => {
       config.get.returns({ mark_deceased_forms: ['x', 'y'] });
-      transition.filter({ doc: { form: 'x', type: 'data_record' }}).should.equal(false);
+      transition.filter({ doc: { form: 'x', type: DOC_TYPES.DATA_RECORD }}).should.equal(false);
     });
 
     it('invalid submission returns false', () => {
@@ -295,7 +318,7 @@ describe('death_reporting', () => {
       transition
         .filter({
           doc: {
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'z',
             fields: {},
             patient: {}
@@ -305,7 +328,7 @@ describe('death_reporting', () => {
         .should.equal(false);
       utils.isValidSubmission.callCount.should.equal(1);
       utils.isValidSubmission.args[0]
-        .should.deep.equal([{ type: 'data_record', form: 'z', fields: { }, patient: { } }]);
+        .should.deep.equal([{ type: DOC_TYPES.DATA_RECORD, form: 'z', fields: { }, patient: { } }]);
     });
 
     it('returns true', () => {
@@ -318,7 +341,7 @@ describe('death_reporting', () => {
       transition
         .filter({
           doc: {
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'z',
             fields: { patient_id: '12' },
             patient: { patient_id: '12' }
@@ -329,7 +352,7 @@ describe('death_reporting', () => {
       transition
         .filter({
           doc: {
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 't',
             fields: { patient_id: '12' },
             patient: { patient_id: '12' }
@@ -339,10 +362,10 @@ describe('death_reporting', () => {
         .should.equal(true);
       utils.isValidSubmission.callCount.should.equal(2);
       utils.isValidSubmission.args[0].should.deep.equal([
-        { type: 'data_record', form: 'z', fields: { patient_id: '12' }, patient: { patient_id: '12' } }
+        { type: DOC_TYPES.DATA_RECORD, form: 'z', fields: { patient_id: '12' }, patient: { patient_id: '12' } }
       ]);
       utils.isValidSubmission.args[1].should.deep.equal([
-        { type: 'data_record', form: 't', fields: { patient_id: '12' }, patient: { patient_id: '12' } }
+        { type: DOC_TYPES.DATA_RECORD, form: 't', fields: { patient_id: '12' }, patient: { patient_id: '12' } }
       ]);
     });
   });

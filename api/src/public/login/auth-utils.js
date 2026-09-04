@@ -53,7 +53,7 @@ window.AuthUtils = (function() {
 
   const getLocale = (translations) => {
     const selectedLocale = getCookie('locale');
-    const defaultLocale = document.body.getAttribute('data-default-locale');
+    const defaultLocale = document.body.dataset.defaultLocale;
     const locale = selectedLocale || defaultLocale;
     if (translations[locale]) {
       return locale;
@@ -65,7 +65,7 @@ window.AuthUtils = (function() {
   };
 
   const parseTranslations = () => {
-    const raw = document.body.getAttribute('data-translations');
+    const raw = document.body.dataset.translations;
     return JSON.parse(decodeURIComponent(raw));
   };
 
@@ -85,10 +85,16 @@ window.AuthUtils = (function() {
     }
   };
 
+  const setDirection = (locale) => {
+    const localeLink = document.querySelector(`.locale[name="${locale}"]`);
+    document.documentElement.dir = localeLink?.dataset.rtl ? 'rtl' : 'ltr';
+  };
+
   const baseTranslate = (selectedLocale, translations) => {
     if (!selectedLocale) {
       return console.error('No enabled locales found - not translating');
     }
+    setDirection(selectedLocale);
     document
       .querySelectorAll('[translate]')
       .forEach(elem => {
@@ -124,5 +130,6 @@ window.AuthUtils = (function() {
     parseTranslations,
     baseTranslate,
     togglePassword,
+    setDirection,
   };
 })();

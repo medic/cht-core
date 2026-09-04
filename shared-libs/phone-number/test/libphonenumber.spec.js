@@ -2,9 +2,12 @@ const assert = require('chai').assert;
 const phonenumber = require('../src/phone-number');
 
 const NZ_DOMESTIC_VALID = '0275552636';
+const NZ_DOMESTIC_VALID_FORMATTED = '+64 27 555 2636';
 const NZ_DOMESTIC_INVALID = '5155556442123'; // right number of digits but invalid number!
 const NZ_INTERNATIONAL_VALID = '+64275552636';
+
 const US_INTERNATIONAL_VALID = '+15155556442';
+const US_INTERNATIONAL_VALID_FORMATTED= '+1 515-555-6442';
 const COUNTRY_CODES = {
   new_zealand: 64,
   uganda: 256
@@ -236,6 +239,29 @@ describe('libphonenumber', () => {
 
   });
 
+  describe('format', () => {
+    it('returns formatted number for valid domestic number', () => {
+      const actual = phonenumber.format(settings, NZ_DOMESTIC_VALID);
+      assert.equal(actual, NZ_DOMESTIC_VALID_FORMATTED);
+    });
+
+    it('returns formatted international number when country code does not match', () => {
+      const actual = phonenumber.format(settings, US_INTERNATIONAL_VALID);
+      assert.equal(actual, US_INTERNATIONAL_VALID_FORMATTED);
+    });
+
+    it('returns false for empty number', () => {
+      const actual = phonenumber.format(settings, '');
+      assert.isFalse(actual);
+    });
+
+    it('returns false for invalid number', () => {
+      const actual = phonenumber.format(settings, 'not-a-number');
+      assert.isFalse(actual);
+    });
+
+  });
+
   describe('same', () => {
 
     it('returns true for different formats', () => {
@@ -251,6 +277,11 @@ describe('libphonenumber', () => {
     it('missing country code matches default', () => {
       const actual = phonenumber.same('+41446681800', '446681800');
       assert.isTrue(actual);
+    });
+
+    it('returns false for invalid input', () => {
+      const actual = phonenumber.same(null, undefined);
+      assert.isFalse(actual);
     });
 
   });

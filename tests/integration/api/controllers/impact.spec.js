@@ -3,6 +3,7 @@ const utils = require('@utils');
 const reportFactory = require('@factories/cht/reports/generic-report');
 const placeFactory = require('@factories/cht/contacts/place');
 const dataFactory = require('@factories/cht/generate');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('impact', () => {
 
@@ -14,7 +15,7 @@ describe('impact', () => {
     return docs;
   };
 
-  afterEach(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb());
 
   describe('v1', () => {
     it('return impact data on expected format', async () => {
@@ -26,7 +27,9 @@ describe('impact', () => {
             { type: 'person', count: 1 }
           ]
         },
-        users: { count: 0 },
+        users: {
+          count: 1
+        },
         reports: {
           by_form: [],
           count: 0
@@ -44,13 +47,15 @@ describe('impact', () => {
         contacts: {
           count: 6,
           by_type: [
-            { type: 'clinic', count: 1 },
-            { type: 'district_hospital', count: 1 },
-            { type: 'health_center', count: 1 },
+            { type: CONTACT_TYPES.CLINIC, count: 1 },
+            { type: CONTACT_TYPES.DISTRICT_HOSPITAL, count: 1 },
+            { type: CONTACT_TYPES.HEALTH_CENTER, count: 1 },
             { type: 'person', count: 3 }
           ]
         },
-        users: { count: 1 },
+        users: {
+          count: 2
+        },
         reports: {
           by_form: [],
           count: 0
@@ -69,7 +74,9 @@ describe('impact', () => {
 
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
-        users: { count: 0 },
+        users: {
+          count: 1
+        },
         contacts:
         {
           count: 4,
@@ -95,7 +102,9 @@ describe('impact', () => {
       await utils.saveDocs(reports);
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
-        users: { count: 0 },
+        users: {
+          count: 1
+        },
         contacts: {
           count: 1,
           by_type: [
@@ -122,7 +131,7 @@ describe('impact', () => {
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equalInAnyOrder({
         users: {
-          count: 0
+          count: 1
         },
         contacts: {
           count: 1,

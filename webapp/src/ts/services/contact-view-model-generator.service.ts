@@ -223,7 +223,8 @@ export class ContactViewModelGeneratorService {
         return {
           contacts: groups[typeId],
           type: this.contactTypesService.getTypeById(types, typeId),
-          deceasedCount: 0
+          deceasedCount: 0,
+          activeCount: 0
         };
       });
   }
@@ -236,6 +237,7 @@ export class ContactViewModelGeneratorService {
           child.deceased = true;
         }
       });
+      group.activeCount = group.contacts.length - group.deceasedCount;
     });
     return childModels;
   }

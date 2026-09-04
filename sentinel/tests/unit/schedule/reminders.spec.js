@@ -9,6 +9,7 @@ const rewire = require('rewire');
 const db = require('../../../src/db');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 let reminders;
 let clock;
@@ -846,7 +847,7 @@ describe('reminders', () => {
         form: 'frm',
         mute_after_form_for: '10 minute',
         message: 'I shot the sheriff',
-        contact_types: [ 'health_center' ]
+        contact_types: [ CONTACT_TYPES.HEALTH_CENTER ]
       };
       sinon.stub(config, 'getAll').returns({}); // no configured contact types
       sinon.stub(request, 'get')

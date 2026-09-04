@@ -1,5 +1,5 @@
 import { provideMockActions } from '@ngrx/effects/testing';
-import { fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
+import { fakeAsync, flush, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { Observable, of } from 'rxjs';
 import { expect } from 'chai';
@@ -10,6 +10,7 @@ import { TranslateService } from '@ngx-translate/core';
 
 import { Actions as ContactActionList, ContactsActions } from '@mm-actions/contacts';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
+import { UHCVisitDisplayService } from '@mm-services/uhc-visit-display.service';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
@@ -25,6 +26,7 @@ describe('Contacts effects', () => {
   let effects: ContactsEffects;
   let actions$;
   let contactViewModelGeneratorService;
+  let uhcVisitDisplayService;
   let translateService;
   let contactSummaryService;
   let store;
@@ -49,6 +51,7 @@ describe('Contacts effects', () => {
       loadChildren: sinon.stub().resolves([]),
       loadReports: sinon.stub().resolves([]),
     };
+    uhcVisitDisplayService = { getChildrenVisitStats: sinon.stub().resolves(undefined) };
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     translateService = { instant: sinon.stub().returnsArg(0) };
@@ -65,6 +68,7 @@ describe('Contacts effects', () => {
         provideMockActions(() => actions$),
         provideMockStore({ selectors: mockedSelectors }),
         { provide: ContactViewModelGeneratorService, useValue: contactViewModelGeneratorService },
+        { provide: UHCVisitDisplayService, useValue: uhcVisitDisplayService },
         { provide: TranslateService, useValue: translateService },
         { provide: ContactSummaryService, useValue: contactSummaryService },
         { provide: TargetAggregatesService, useValue: targetAggregateService },
@@ -128,6 +132,8 @@ describe('Contacts effects', () => {
         refreshState();
       });
 
+      sinon.stub(ContactsActions.prototype, 'updateSelectedContactsVisitStats');
+
       sinon.stub(ContactsActions.prototype, 'updateSelectedContactSummary').callsFake(summary => {
         selectedContact = { ...selectedContact, summary };
         refreshState();
@@ -161,14 +167,14 @@ describe('Contacts effects', () => {
       const setLoadingShowContent = sinon.stub(GlobalActions.prototype, 'setLoadingShowContent');
       const settingSelected = sinon.stub(GlobalActions.prototype, 'settingSelected');
 
-      contactViewModelGeneratorService.getContact.resolves({ _id: 'contactid', model: 'contact model' });
+      contactViewModelGeneratorService.getContact.resolves({ _id: 'contactid', doc: {}, model: 'contact model' });
 
       await effects.selectContact.toPromise();
 
       expect(contactViewModelGeneratorService.getContact.callCount).to.equal(1);
       expect(contactViewModelGeneratorService.getContact.args[0]).to.deep.equal(['contactid', { merge: false }]);
       expect(setSelected.callCount).to.equal(1);
-      expect(setSelected.args[0]).to.deep.equal([{ _id: 'contactid', model: 'contact model' }]);
+      expect(setSelected.args[0]).to.deep.equal([{ _id: 'contactid', doc: {}, model: 'contact model' }]);
       expect(setLoadingShowContent.callCount).to.equal(1);
       expect(setLoadingSelectedContact.callCount).to.equal(1);
       expect(setContactsLoadingSummary.callCount).to.equal(2);
@@ -177,7 +183,8 @@ describe('Contacts effects', () => {
       expect(settingSelected.args[0]).to.deep.equal([]);
       expect(setContactIdToLoadStub.calledOnce).to.be.true;
       expect(setContactIdToLoadStub.args[0][0]).to.equal('contactid');
-      expect(performanceService.track.callCount).to.equal(7);
+      // the children visit stats span is started but only stopped when stats are displayed
+      expect(performanceService.track.callCount).to.equal(8);
       expect(stopPerformanceTrackStub.callCount).to.equal(7);
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
         name: 'contact_detail:person:load:contact_data',
@@ -231,7 +238,8 @@ describe('Contacts effects', () => {
       expect(settingSelected.args[0]).to.deep.equal([]);
       expect(setContactIdToLoadStub.calledOnce).to.be.true;
       expect(setContactIdToLoadStub.args[0][0]).to.equal('contactid');
-      expect(performanceService.track.callCount).to.equal(7);
+      // the children visit stats span is started but only stopped when stats are displayed
+      expect(performanceService.track.callCount).to.equal(8);
       expect(stopPerformanceTrackStub.callCount).to.equal(7);
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({
         name: 'contact_detail:person:load:contact_data',
@@ -355,6 +363,138 @@ describe('Contacts effects', () => {
         expect(receiveSelectedContactChildren.args[0]).to.deep.equal([[
           { type: { id: 'patient' }, contacts: [{ _id: 'person1' }] },
         ]]);
+      });
+
+      it('should update children visit stats once loaded', async () => {
+        const children = [
+          { type: { id: 'place', count_visits: true }, contacts: [{ id: 'place1', doc: { _id: 'place1' } }] },
+        ];
+        const visitDetails = { place1: { lastVisitedDate: 100, overdue: false, summary: 'a-summary' } };
+        contactViewModelGeneratorService.loadChildren.resolves(children);
+        uhcVisitDisplayService.getChildrenVisitStats.resolves(visitDetails);
+
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
+        await new Promise(resolve => setTimeout(resolve));
+
+        expect(uhcVisitDisplayService.getChildrenVisitStats.callCount).to.equal(1);
+        expect(uhcVisitDisplayService.getChildrenVisitStats.args[0]).to.deep.equal([ children ]);
+        const updateSelectedContactsVisitStats: any = ContactsActions.prototype.updateSelectedContactsVisitStats;
+        expect(updateSelectedContactsVisitStats.callCount).to.equal(1);
+        expect(updateSelectedContactsVisitStats.args[0]).to.deep.equal([ visitDetails ]);
+        const receiveSelectedContactChildren:any = ContactsActions.prototype.receiveSelectedContactChildren;
+        expect(receiveSelectedContactChildren.callCount).to.equal(1);
+        const stoppedSpans = stopPerformanceTrackStub.args.map(args => args[0]?.name);
+        expect(stoppedSpans).to.include('contact_detail:load_children_visit_stats');
+      });
+
+      it('should still update visit stats when the children were replaced in the meantime', async () => {
+        const children = [
+          { type: { id: 'place', count_visits: true }, contacts: [{ id: 'place1', doc: { _id: 'place1' } }] },
+        ];
+        contactViewModelGeneratorService.loadChildren.resolves(children);
+        let resolveVisitStats;
+        uhcVisitDisplayService.getChildrenVisitStats.returns(
+          new Promise(resolve => resolveVisitStats = resolve)
+        );
+
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
+
+        // the tasks update rebuilds the children array with new identities while the stats are loading:
+        // the stats are merged by contact id, so they must survive it
+        store.overrideSelector(Selectors.getSelectedContact, {
+          _id: 'contact',
+          children: [
+            {
+              type: { id: 'place', count_visits: true },
+              contacts: [{ id: 'place1', doc: { _id: 'place1' }, taskCount: 2 }],
+            },
+          ],
+        });
+        store.refreshState();
+        resolveVisitStats({ place1: { lastVisitedDate: 100 } });
+        await new Promise(resolve => setTimeout(resolve));
+
+        const updateSelectedContactsVisitStats: any = ContactsActions.prototype.updateSelectedContactsVisitStats;
+        expect(updateSelectedContactsVisitStats.callCount).to.equal(1);
+        expect(updateSelectedContactsVisitStats.args[0]).to.deep.equal([{ place1: { lastVisitedDate: 100 } }]);
+      });
+
+      it('should not update visit stats when the selected contact changed in the meantime', async () => {
+        const children = [
+          { type: { id: 'place', count_visits: true }, contacts: [{ id: 'place1', doc: { _id: 'place1' } }] },
+        ];
+        contactViewModelGeneratorService.loadChildren.resolves(children);
+        let resolveVisitStats;
+        uhcVisitDisplayService.getChildrenVisitStats.returns(
+          new Promise(resolve => resolveVisitStats = resolve)
+        );
+
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
+
+        // a different contact starts loading while the stats are still being queried
+        store.overrideSelector(Selectors.getContactIdToLoad, 'contact2');
+        store.refreshState();
+        resolveVisitStats({ place1: { lastVisitedDate: 100 } });
+        await new Promise(resolve => setTimeout(resolve));
+
+        const updateSelectedContactsVisitStats: any = ContactsActions.prototype.updateSelectedContactsVisitStats;
+        expect(updateSelectedContactsVisitStats.callCount).to.equal(0);
+      });
+
+      it('should not let a slow initial stats load clobber a fresher sync-triggered refresh', fakeAsync(() => {
+        const children = [
+          { type: { id: 'place', count_visits: true }, contacts: [{ id: 'place1', doc: { _id: 'place1' } }] },
+        ];
+        contactViewModelGeneratorService.loadChildren.resolves(children);
+        let resolveInitial;
+        let resolveRefresh;
+        uhcVisitDisplayService.getChildrenVisitStats.onCall(0).returns(new Promise(r => resolveInitial = r));
+        uhcVisitDisplayService.getChildrenVisitStats.onCall(1).returns(new Promise(r => resolveRefresh = r));
+
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        effects.selectContact.subscribe();
+        tick();
+        expect(uhcVisitDisplayService.getChildrenVisitStats.callCount).to.equal(1);
+
+        // a visit report syncs in while the initial stats query is still in flight
+        actions$ = of(ContactActionList.refreshChildrenVisitStats());
+        effects.refreshChildrenVisitStats.subscribe();
+        tick(500);
+        expect(uhcVisitDisplayService.getChildrenVisitStats.callCount).to.equal(2);
+
+        resolveRefresh({ place1: { lastVisitedDate: 200 } }); // fresh post-sync data resolves first
+        tick();
+        resolveInitial({ place1: { lastVisitedDate: 100 } }); // stale pre-sync data resolves last
+        tick();
+
+        const updateSelectedContactsVisitStats: any = ContactsActions.prototype.updateSelectedContactsVisitStats;
+        // the reducer merge is last-write-wins per contact, so the stale response must not be dispatched at all
+        expect(updateSelectedContactsVisitStats.callCount).to.equal(1);
+        expect(updateSelectedContactsVisitStats.lastCall.args).to.deep.equal([{ place1: { lastVisitedDate: 200 } }]);
+      }));
+
+      it('should still load the profile when getting children visit stats fails', async () => {
+        contactViewModelGeneratorService.loadChildren.resolves([
+          { type: { id: 'place' }, contacts: [{ _id: 'place1' }] },
+        ]);
+        uhcVisitDisplayService.getChildrenVisitStats.rejects(new Error('boom'));
+        const consoleErrorMock = sinon.stub(console, 'error');
+
+        actions$ = of(ContactActionList.selectContact({ id: 'contact' }));
+        await effects.selectContact.toPromise();
+        await new Promise(resolve => setTimeout(resolve));
+
+        const receiveSelectedContactChildren:any = ContactsActions.prototype.receiveSelectedContactChildren;
+        expect(receiveSelectedContactChildren.callCount).to.equal(1);
+        expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
+        expect(consoleErrorMock.callCount).to.equal(1);
+        expect(consoleErrorMock.args[0][0]).to.equal('Error loading visit stats for children');
+        expect(consoleErrorMock.args[0][1]).to.be.an.instanceOf(Error);
+        const stoppedSpans = stopPerformanceTrackStub.args.map(args => args[0]?.name);
+        expect(stoppedSpans).to.not.include('contact_detail:load_children_visit_stats');
       });
 
       it('should not receive children if the selected contact changes', async () => {
@@ -608,6 +748,15 @@ describe('Contacts effects', () => {
         expect(setSnackbarContent.callCount).to.equal(0);
         expect(unsetSelected.callCount).to.equal(1);
       });
+
+      it('should handle missing contact doc', async () => {
+        contactViewModelGeneratorService.getContact.resolves({ _id: 'person', doc: undefined });
+
+        actions$ = of(ContactActionList.selectContact({ id: 'person' }));
+        await effects.selectContact.toPromise();
+
+        expect(targetAggregateService.getTargetDocs.callCount).to.equal(0);
+      });
     });
 
     describe('loading contact summary', () => {
@@ -711,6 +860,21 @@ describe('Contacts effects', () => {
         expect(tasksForContactService.get.callCount).to.equal(0);
         expect(setSnackbarContent.callCount).to.equal(0);
         expect(unsetSelected.callCount).to.equal(1);
+      });
+
+      it('should handle missing contact doc', async () => {
+        const updateSelectedContactSummary: any = ContactsActions.prototype.updateSelectedContactSummary;
+        const setContactsLoadingSummary: any = ContactsActions.prototype.setContactsLoadingSummary;
+
+        contactViewModelGeneratorService.getContact.resolves({ _id: 'person', doc: undefined });
+
+        actions$ = of(ContactActionList.selectContact({ id: 'person' }));
+        await effects.selectContact.toPromise();
+
+        expect(contactSummaryService.get.callCount).to.equal(0);
+        expect(updateSelectedContactSummary.callCount).to.equal(1);
+        expect(updateSelectedContactSummary.args[0][0]).to.be.undefined;
+        expect(setContactsLoadingSummary.calledWith(false)).to.be.true;
       });
     });
 
@@ -853,5 +1017,43 @@ describe('Contacts effects', () => {
         expect(setTitle.args[0]).to.deep.equal(['this is the title']);
       });
     });
+  });
+
+  describe('refreshChildrenVisitStats', () => {
+    it('should reload the visit stats of the current children, coalescing bursts', fakeAsync(() => {
+      const children = [
+        { type: { id: 'place', count_visits: true }, contacts: [{ id: 'place1', doc: { _id: 'place1' } }] },
+      ];
+      store.overrideSelector(Selectors.getSelectedContact, { _id: 'contact', children });
+      store.overrideSelector(Selectors.getContactIdToLoad, 'contact');
+      store.refreshState();
+      const visitDetails = { place1: { lastVisitedDate: 100 } };
+      uhcVisitDisplayService.getChildrenVisitStats.resolves(visitDetails);
+      const updateSelectedContactsVisitStats = sinon
+        .stub(ContactsActions.prototype, 'updateSelectedContactsVisitStats');
+
+      actions$ = of(
+        ContactActionList.refreshChildrenVisitStats(),
+        ContactActionList.refreshChildrenVisitStats(),
+      );
+      effects.refreshChildrenVisitStats.subscribe();
+      tick(500);
+
+      // the burst is debounced into a single refresh
+      expect(uhcVisitDisplayService.getChildrenVisitStats.callCount).to.equal(1);
+      expect(uhcVisitDisplayService.getChildrenVisitStats.args[0]).to.deep.equal([ children ]);
+
+      tick();
+      expect(updateSelectedContactsVisitStats.callCount).to.equal(1);
+      expect(updateSelectedContactsVisitStats.args[0]).to.deep.equal([ visitDetails ]);
+    }));
+
+    it('should do nothing without a selected contact', fakeAsync(() => {
+      actions$ = of(ContactActionList.refreshChildrenVisitStats());
+      effects.refreshChildrenVisitStats.subscribe();
+      tick(500);
+
+      expect(uhcVisitDisplayService.getChildrenVisitStats.callCount).to.equal(0);
+    }));
   });
 });

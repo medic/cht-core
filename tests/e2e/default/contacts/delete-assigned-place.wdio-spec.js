@@ -5,6 +5,7 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('User Test Cases -> Creating Users ->', () => {
   const offlineUserRole = 'chw';
@@ -14,7 +15,7 @@ describe('User Test Cases -> Creating Users ->', () => {
   const districtHospital = places.get('district_hospital');
   const districtHospital2 = placeFactory.place().build({
     name: 'district_hospital',
-    type: 'district_hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL,
   });
   const NEW_PASSWORD = 'Pa33word1';
 

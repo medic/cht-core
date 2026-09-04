@@ -1,3 +1,4 @@
+const { DOC_IDS, PREFIXES } = require('@medic/constants');
 const utils = require('./utils');
 const { setUiStatus, displayTooManyDocsWarning } = require('./ui-status');
 
@@ -125,8 +126,8 @@ const getReplicationLog = async (localDb) => {
 const isReplicationNeeded = async (localDb, userCtx) => {
   const requiredDocs = [
     '_design/medic-client',
-    'settings',
-    `org.couchdb.user:${userCtx.name}`,
+    DOC_IDS.SETTINGS,
+    `${PREFIXES.COUCH_USER}${userCtx.name}`,
   ];
   const results = await localDb.allDocs({ keys: requiredDocs });
   const missingDocs = results.rows.some(row => row.error);

@@ -1,10 +1,11 @@
 const { buildViewMapFn } = require('./utils');
 const medicOfflineFreetext = require('../../../../src/js/bootstrapper/offline-ddocs/medic-offline-freetext');
 const { expect } = require('chai');
+const { DOC_TYPES } = require('@medic/constants');
 
 const createReport = (data = {}) => {
   return {
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     form: 'test',
     reported_date: 1466466049001,
     ...data,
@@ -174,6 +175,16 @@ describe('reports_by_freetext', () => {
       { key: ['बुद्ध'], value: doc.reported_date },
       { key: ['élève'], value: doc.reported_date },
       { key: ['name:बुद्ध élève'], value: doc.reported_date }
+    ]);
+  });
+  it('normalizes Devanagari numerals to Latin in emitted keys', () => {
+    const doc = createReport({ phone: '१२३४५' });
+    const emitted = mapFn(doc, true);
+    expect(emitted).to.deep.equal([
+      { key: ['test'], value: doc.reported_date },
+      { key: ['form:test'], value: doc.reported_date },
+      { key: ['12345'], value: doc.reported_date },
+      { key: ['phone:12345'], value: doc.reported_date }
     ]);
   });
 });

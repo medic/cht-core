@@ -19,19 +19,26 @@ const updatePrivacyPolicy = async (updatedPolicy) => {
   await utils.saveDoc({ ...existingPolicy, ...updatedPolicy });
 };
 
-const waitForPolicy = async (elm, { header, paragraph, language }) => {
+const waitForPolicy = async ({ header, paragraph, language }) => {
   const timeoutOpts = {
     timeout: 10 * 1000,
     timeoutMsg: `Timed out waiting for ${language} Privacy Policy to Display`
   };
-  await browser.waitUntil(async () => {
-    const wrapperText = await elm.getText();
-    return wrapperText.includes(header) && wrapperText.includes(paragraph);
-  }, timeoutOpts);
+  await privacyWrapper().waitForDisplayed(timeoutOpts);
+  const wrapperText = await privacyWrapper().getText();
+  expect(wrapperText).to.include(header);
+  expect(wrapperText).to.include(paragraph);
 };
 
-const waitAndAcceptPolicy = async (elm, { header, paragraph, language }, sync = false) => {
-  await waitForPolicy(elm, { header, paragraph, language });
+const waitForPolicyOnPage = async (englishTexts) => {
+  await privacyConfig().waitForDisplayed();
+  const wrapperText = await privacyConfig().getText();
+  expect(wrapperText).to.include(englishTexts.header);
+  expect(wrapperText).to.include(englishTexts.paragraph);
+};
+
+const waitAndAcceptPolicy = async ({ header, paragraph, language }, sync = false) => {
+  await waitForPolicy({ header, paragraph, language });
   await acceptPrivacyPolicy();
   const timeoutOpts = {
     timeout: 15 * 1000,
@@ -50,5 +57,6 @@ module.exports = {
   privacyWrapper,
   privacyConfig,
   waitForPolicy,
+  waitForPolicyOnPage,
   waitAndAcceptPolicy
 };

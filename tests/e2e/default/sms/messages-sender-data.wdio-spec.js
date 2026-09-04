@@ -1,4 +1,4 @@
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const utils = require('@utils');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
@@ -7,15 +7,16 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 describe('Message Tab - Sender Data', () => {
   const places = placeFactory.generateHierarchy();
-  const clinic = places.get('clinic');
-  const healthCenter1 = places.get('health_center');
+  const clinic = places.get(CONTACT_TYPES.CLINIC);
+  const healthCenter1 = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const districtHospital = places.get('district_hospital');
   const healthCenter2 = placeFactory.place().build({
     name: 'health_center_2',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: districtHospital._id }
   });
 
@@ -39,7 +40,7 @@ describe('Message Tab - Sender Data', () => {
   });
 
   const userWithManyPlaces = {
-    _id: 'org.couchdb.user:offline_many_facilities',
+    _id: PREFIXES.COUCH_USER + 'offline_many_facilities',
     language: 'en',
     known: true,
     type: 'user-settings',

@@ -1,8 +1,8 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
-import { debounce as _debounce } from 'lodash-es';
-import * as moment from 'moment';
+import { DOC_TYPES } from '@medic/constants';
+import { debounce as _debounce, throttle as _throttle } from 'lodash-es';
 
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -12,16 +12,18 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { PerformanceService } from '@mm-services/performance.service';
-import { ExtractLineageService } from '@mm-services/extract-lineage.service';
-import { UserContactService } from '@mm-services/user-contact.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
-import { NgIf, NgFor } from '@angular/common';
+import { NgClass, NgFor, NgIf } from '@angular/common';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { ErrorLogComponent } from '@mm-components/error-log/error-log.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LineagePipe } from '@mm-pipes/message.pipe';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { TaskDueDatePipe } from '@mm-pipes/date.pipe';
+import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
+import { TasksSidebarFilterComponent } from './tasks-sidebar-filter.component';
 
 @Component({
   templateUrl: './tasks.component.html',
@@ -29,6 +31,7 @@ import { TaskDueDatePipe } from '@mm-pipes/date.pipe';
     ToolBarComponent,
     NgIf,
     NgFor,
+    NgClass,
     RouterLink,
     ErrorLogComponent,
     RouterOutlet,
@@ -36,9 +39,14 @@ import { TaskDueDatePipe } from '@mm-pipes/date.pipe';
     LineagePipe,
     ResourceIconPipe,
     TaskDueDatePipe,
+    SearchBarComponent,
+    TasksSidebarFilterComponent,
   ],
 })
-export class TasksComponent implements OnInit, OnDestroy {
+export class TasksComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild(TasksSidebarFilterComponent) tasksSidebarFilter?: TasksSidebarFilterComponent;
+  @ViewChild('taskListContainer', { read: ElementRef }) taskListContainer?: ElementRef;
+
   constructor(
     private readonly store: Store,
     private readonly changesService: ChangesService,
@@ -46,8 +54,8 @@ export class TasksComponent implements OnInit, OnDestroy {
     private readonly rulesEngineService: RulesEngineService,
     private readonly performanceService: PerformanceService,
     private readonly lineageModelGeneratorService: LineageModelGeneratorService,
-    private readonly extractLineageService: ExtractLineageService,
-    private readonly userContactService: UserContactService
+    private readonly interactionTrackingService: InteractionTrackingService,
+    private readonly telemetryService: TelemetryService,
   ) {
     this.tasksActions = new TasksActions(store);
     this.globalActions = new GlobalActions(store);
@@ -65,10 +73,11 @@ export class TasksComponent implements OnInit, OnDestroy {
   hasTasks;
   loading;
   tasksDisabled;
-  userLineageLevel;
+  isSidebarFilterOpen = false;
 
   private tasksLoaded;
   private debouncedReload;
+  private scrollHandler;
 
   private subscribeToStore() {
     const assignment$ = this.store
@@ -77,21 +86,33 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.subscription.add(assignment$);
 
     const taskList$ = combineLatest([
-      this.store.select(Selectors.getTasksList),
+      this.store.select(Selectors.getFilteredTasksList),
       this.store.select(Selectors.getSelectedTask),
     ]).subscribe(([
       tasksList = [],
       selectedTask,
     ]) => {
       this.selectedTask = selectedTask;
-      // Make new reference because the one from store is read-only. Fixes: ExpressionChangedAfterItHasBeenCheckedError
+      // Make new reference because the one from store is read-only
       this.tasksList = tasksList.map(task => ({ ...task, selected: task._id === this.selectedTask?._id }));
+      this.hasTasks = this.tasksList.length > 0;
     });
     this.subscription.add(taskList$);
+
+    const sidebarFilter$ = this.store
+      .select(Selectors.getSidebarFilter)
+      .subscribe(sidebarFilter => {
+        this.isSidebarFilterOpen = !!sidebarFilter?.isOpen;
+      });
+    this.subscription.add(sidebarFilter$);
+  }
+
+  toggleFilter() {
+    this.tasksSidebarFilter?.toggleSidebarFilter();
   }
 
   private subscribeToChanges() {
-    const isReport = doc => doc.type === 'data_record' && !!doc.form;
+    const isReport = doc => doc.type === DOC_TYPES.DATA_RECORD && !!doc.form;
     const changesSubscription = this.changesService.subscribe({
       key: 'refresh-task-list',
       filter: change => !!change.doc && (
@@ -117,40 +138,53 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.trackLoadPerformance = this.performanceService.track();
+    this.globalActions.clearFilters();
     this.tasksActions.setSelectedTask(null);
     this.subscribeToStore();
     this.subscribeToChanges();
     this.subscribeToRulesEngine();
-    this.hasTasks = false;
     this.loading = true;
     this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, { maxWait: 10 * 1000 });
-    this.userLineageLevel = this.userContactService.getUserLineageToRemove();
     this.refreshTasks();
+
+    this.interactionTrackingService.startSession('tasks');
+    this.interactionTrackingService.record('task_list:open');
+  }
+
+  ngAfterViewInit() {
+    this.initScrollTracking();
   }
 
   ngOnDestroy() {
+    this.removeScrollTracking();
+    this.interactionTrackingService.record('task_list:leave');
+    this.interactionTrackingService.endSession();
     this.subscription.unsubscribe();
-    this.tasksActions.setTasksList([]);
+    this.tasksActions.clearTaskList();
     this.tasksActions.setTasksLoaded(false);
     this.tasksActions.setSelectedTask(null);
     this.globalActions.unsetSelected();
     this.tasksActions.clearTaskGroup();
   }
 
-  refreshTaskList() {
-    window.location.reload();
+  private initScrollTracking() {
+    this.scrollHandler = _throttle(() => {
+      this.interactionTrackingService.record('task_list:scroll');
+    }, 2000);
+
+    const el = this.taskListContainer?.nativeElement;
+    el?.addEventListener('scroll', this.scrollHandler, { passive: true });
   }
 
-  private hydrateEmissions(taskDocs) {
-    return taskDocs.map(taskDoc => {
-      const emission = { ...taskDoc.emission };
-      const dueDate = moment(emission.dueDate, 'YYYY-MM-DD');
-      emission.date = new Date(dueDate.valueOf());
-      emission.overdue = dueDate.isBefore(moment());
-      emission.owner = taskDoc.owner;
+  private removeScrollTracking() {
+    if (this.scrollHandler) {
+      const el = this.taskListContainer?.nativeElement;
+      el?.removeEventListener('scroll', this.scrollHandler);
+    }
+  }
 
-      return emission;
-    });
+  refreshTaskList() {
+    window.location.reload();
   }
 
   private async refreshTasks() {
@@ -161,29 +195,25 @@ export class TasksComponent implements OnInit, OnDestroy {
       const isEnabled = await this.rulesEngineService.isEnabled();
       this.tasksDisabled = !isEnabled;
       const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
-      this.hasTasks = taskDocs.length > 0;
 
-      const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];
-      const subjects = await this.getLineagesFromTaskDocs(hydratedTasks);
-      if (subjects?.size) {
-        const userLineageLevel = await this.userLineageLevel;
-        hydratedTasks.forEach(task => {
-          task.lineage = this.getTaskLineage(subjects, task, userLineageLevel);
-        });
-      }
-
-      this.tasksActions.setTasksList(hydratedTasks);
-
+      const emissions = taskDocs.map(taskDoc => taskDoc.emission);
+      const subjects = await this.getLineagesFromTaskDocs(emissions);
+      const tasksWithLineage = emissions.map(task => ({
+        ...task,
+        ...this.getTaskLineage(subjects, task)
+      }));
+      this.tasksActions.setTasksList(tasksWithLineage);
+      this.telemetryService.record('tasks:all-tasks', tasksWithLineage.length);
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
       this.errorStack = exception.stack;
-      this.hasTasks = false;
       this.tasksActions.setTasksList([]);
     } finally {
       this.loading = false;
       this.recordPerformance();
       if (!this.tasksLoaded) {
         this.tasksActions.setTasksLoaded(true);
+        this.interactionTrackingService.record('task_list:loaded', undefined, String(this.tasksList?.length || 0));
       }
     }
   }
@@ -214,10 +244,14 @@ export class TasksComponent implements OnInit, OnDestroy {
       .then(subjects => new Map(subjects.map(subject => [subject._id, subject.lineage])));
   }
 
-  private getTaskLineage(subjects, task, userLineageLevel) {
-    const lineage = subjects
-      .get(task.owner)
-      ?.map(lineage => lineage?.name);
-    return this.extractLineageService.removeUserFacility(lineage, userLineageLevel);
+  private getTaskLineage(subjects, task) {
+    const lineageData = (subjects.get(task.owner) || []).filter(Boolean);
+    const lineageNames = lineageData.map(item => item?.name).filter(Boolean);
+    const lineageIds = lineageData.map(item => item?._id).filter(Boolean);
+
+    return {
+      lineage: lineageNames,
+      lineageIds: [task.owner, ...lineageIds],
+    };
   }
 }

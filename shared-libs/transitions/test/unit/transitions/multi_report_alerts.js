@@ -1,9 +1,11 @@
 const _ = require('lodash');
 const config = require('../../../src/config');
+const logger = require('@medic/logger');
 const messages = require('../../../src/lib/messages');
 const sinon = require('sinon');
 const assert = require('chai').assert;
 const utils = require('../../../src/lib/utils');
+const { DOC_TYPES } = require('@medic/constants');
 
 let alertConfig;
 
@@ -72,7 +74,7 @@ describe('multi report alerts', () => {
     }), false);
     assert.equal(transition.filter({
       doc: {
-        type: 'data_record'
+        type: DOC_TYPES.DATA_RECORD
       }
     }), false);
     assert.equal(transition.filter({
@@ -84,7 +86,7 @@ describe('multi report alerts', () => {
     assert.equal(transition.filter({
       doc: {
         form: 'x',
-        type: 'data_record'
+        type: DOC_TYPES.DATA_RECORD
       },
       info: {}
     }), false);
@@ -93,13 +95,13 @@ describe('multi report alerts', () => {
     assert.equal(transition.filter({
       doc: {
         form: 'x',
-        type: 'data_record'
+        type: DOC_TYPES.DATA_RECORD
       },
       info: {}
     }), true);
 
     assert.equal(utils.isValidSubmission.callCount, 2);
-    assert(utils.isValidSubmission.calledWithExactly({ form: 'x', type: 'data_record'}));
+    assert(utils.isValidSubmission.calledWithExactly({ form: 'x', type: DOC_TYPES.DATA_RECORD}));
   });
 
   it('filter validation hasRun', () => {
@@ -107,7 +109,7 @@ describe('multi report alerts', () => {
     assert.equal(transition.filter({
       doc: {
         form: 'x',
-        type: 'data_record'
+        type: DOC_TYPES.DATA_RECORD
       },
       info: {
         transitions: {
@@ -403,6 +405,23 @@ describe('multi report alerts', () => {
     });
   });
 
+  it('adds phone_number_error code when phone error occurs', () => {
+    const recipient = 'new_report.contact.phonekkk'; // field doesn't exist
+    alertConfig.recipients = [recipient];
+    config.get.returns([alertConfig]);
+    sinon.stub(utils, 'isValidSubmission').callsFake(r => r.contact && r.contact.phone);
+    sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
+    stubFetchHydratedDocs();
+    sinon.spy(messages, 'addError');
+    sinon.stub(messages, 'addMessage');
+
+    return transition.onMatch({ doc: doc }).then(() => {
+      assert.equal(messages.addError.getCalls().length, 3);
+      const errorArg = messages.addError.getCall(0).args[1];
+      assert.equal(errorArg.code, 'phone_number_error');
+    });
+  });
+
   it('does not add message when recipient is bad', () => {
     const recipient = 'ssdfds';
     alertConfig.recipients = [recipient];
@@ -687,5 +706,54 @@ describe('multi report alerts', () => {
         assert.equal(countedReportsIds.length, 151);
         assert.equal(newReports.length, 151);
       });
+  });
+
+  it('validates config : num_reports_threshold > MAX_NUM_REPORTS_THRESHOLD includes threshold in error', () => {
+    sinon.stub(logger, 'error');
+    alertConfig.num_reports_threshold = 101;
+    config.get.returns([alertConfig]);
+    try {
+      transition.init();
+      assert.fail('Expected error to be thrown');
+    } catch (err) {
+      assert.include(err.message, 'Validation failed for multi_report_alerts transition');
+      assert.equal(logger.error.callCount, 2);
+      assert.include(
+        logger.error.args[1][0],
+        '"num_reports_threshold" should be less than 100. Found 101'
+      );
+    }
+  });
+
+  it('validates config : warns and nullifies forms when forms is not an array', () => {
+    sinon.stub(logger, 'warn');
+    alertConfig.forms = 'not-an-array';
+    config.get.returns([alertConfig]);
+    transition.init();
+    assert.equal(alertConfig.forms, null);
+    assert.equal(logger.warn.callCount, 1);
+    assert.include(logger.warn.args[0][0], 'Bad config for multi_report_alerts');
+    assert.include(logger.warn.args[0][0], alertConfig.name);
+    assert.include(logger.warn.args[0][0], 'Expecting "forms" to be an array of form codes');
+  });
+
+  it('validates correct config', () => {
+    alertConfig.forms = ['A', 'B'];
+    config.get.returns([alertConfig]);
+    transition.init();
+    assert.deepEqual(alertConfig.forms, ['A', 'B']);
+  });
+
+  it('onMatch collects errors from runOneAlert and throws with changed=true', () => {
+    config.get.returns([alertConfig]);
+
+    // Make runOneAlert reject by having getReportsWithinTimeWindow fail.
+    sinon.stub(utils, 'getReportsWithinTimeWindow').rejects(new Error('db connection failed'));
+    return transition.onMatch({ doc: doc }).then(() => {
+      assert.fail('Expected error to be thrown');
+    }).catch(err => {
+      assert.instanceOf(err, TypeError);
+      assert.equal(err.message, 'Cannot convert undefined or null to object');
+    });
   });
 });

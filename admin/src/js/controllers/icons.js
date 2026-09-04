@@ -1,6 +1,7 @@
 const _ = require('lodash/core');
 _.toPairs = require('lodash/toPairs');
-
+const constants = require('@medic/constants');
+const DOC_IDS = constants.DOC_IDS;
 
 angular.module('controllers').controller('IconsCtrl',
   function(
@@ -36,7 +37,7 @@ angular.module('controllers').controller('IconsCtrl',
     };
 
     const getResourcesDoc = function() {
-      return DB().get('resources', { attachments: true });
+      return DB().get(DOC_IDS.RESOURCES, { attachments: true });
     };
 
     getResourcesDoc()
@@ -51,7 +52,7 @@ angular.module('controllers').controller('IconsCtrl',
     const addAttachment = function(file) {
       $scope.submitting = true;
       DB()
-        .putAttachment('resources', file.name, $scope.doc._rev, file, file.type)
+        .putAttachment(DOC_IDS.RESOURCES, file.name, $scope.doc._rev, file, file.type)
         .then(getResourcesDoc)
         .then(function(doc) {
           doc.resources[$scope.name] = file.name;

@@ -4,6 +4,7 @@ const assert = require('chai').assert;
 const utils = require('../../src/lib/utils');
 const config = require('../../src/config');
 const registrationUtils = require('@medic/registration-utils');
+const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
 
 describe('utils', () => {
   beforeEach(() => {
@@ -41,7 +42,7 @@ describe('utils', () => {
         contact: {
           parent: {
             _id: clinicId,
-            type: 'clinic'
+            type: CONTACT_TYPES.CLINIC
           }
         }
       }
@@ -149,7 +150,7 @@ describe('utils', () => {
         assert.equal(query.callCount, 1);
         assert.equal(registrationUtils.isValidRegistration.callCount, 1);
         assert.deepEqual(registrationUtils.isValidRegistration.args[0], [expectedDoc, { config: 'all' }]);
-        assert.equal(query.args[0][0], 'medic-client/registered_patients');
+        assert.equal(query.args[0][0], 'medic-client/reports_by_subject');
         assert.equal(query.args[0][1].key, given);
         assert.equal(query.args[0][1].include_docs, true);
       });
@@ -158,8 +159,8 @@ describe('utils', () => {
     it('queries by ids if given', () => {
       sinon.stub(registrationUtils, 'isValidRegistration').returns(true);
       config.getAll.returns({ config: 'all' });
-      const expectedDoc1 = { id: 'a' };
-      const expectedDoc2 = { id: 'b' };
+      const expectedDoc1 = { _id: 'a' };
+      const expectedDoc2 = { _id: 'b' };
       const expected = [ { doc: expectedDoc1 }, { doc: expectedDoc2 } ];
       const given = ['11111', '22222'];
       const view = db.medic.query.resolves({ rows: expected });
@@ -169,7 +170,7 @@ describe('utils', () => {
         assert.deepEqual(registrationUtils.isValidRegistration.args[1], [expectedDoc2, { config: 'all' }]);
         assert.deepEqual(actual, [expectedDoc1, expectedDoc2 ]);
         assert.equal(view.callCount, 1);
-        assert.equal(view.args[0][0], 'medic-client/registered_patients');
+        assert.equal(view.args[0][0], 'medic-client/reports_by_subject');
         assert.equal(view.args[0][1].keys, given);
         assert.equal(view.args[0][1].include_docs, true);
       });
@@ -204,6 +205,44 @@ describe('utils', () => {
     });
   });
 
+  describe('addError', () => {
+    it('addError does nothing when error is falsy', () => {
+      const doc = { errors: [] };
+      utils.addError(doc, null);
+      utils.addError(doc, undefined);
+      assert.equal(doc.errors.length, 0);
+    });
+
+    it('addError does nothing when error object has no message', () => {
+      const doc = { errors: [] };
+      utils.addError(doc, { code: 'some_code' });
+      assert.equal(doc.errors.length, 0);
+    });
+
+    it('addError does nothing for non-string non-object error', () => {
+      const doc = { errors: [] };
+      utils.addError(doc, 42);
+      utils.addError(doc, true);
+      assert.equal(doc.errors.length, 0);
+    });
+
+    it('addError converts string error to object with code', () => {
+      const doc = {};
+      utils.addError(doc, 'some error message');
+      assert.equal(doc.errors.length, 1);
+      assert.equal(doc.errors[0].code, 'some error message');
+      assert.equal(doc.errors[0].message, 'some error message');
+    });
+
+    it('addError uses invalid_report as default code when object has no code', () => {
+      const doc = { errors: [] };
+      utils.addError(doc, { message: 'some error message' });
+      assert.equal(doc.errors.length, 1);
+      assert.equal(doc.errors[0].code, 'invalid_report');
+      assert.equal(doc.errors[0].message, 'some error message');
+    });
+  });
+
   describe('isValidSubmission', () => {
     it('should return false with invalid params', () => {
       assert(!utils.isValidSubmission());
@@ -211,7 +250,7 @@ describe('utils', () => {
     });
 
     it('returns false for reports for unknown json form', () => {
-      const doc = { form: 'R', type: 'data_record' };
+      const doc = { form: 'R', type: DOC_TYPES.DATA_RECORD };
       config.get.withArgs('forms').resolves({ F: { public_form: true } });
       sinon.spy(utils, 'getForm');
       assert(!utils.isValidSubmission(doc));
@@ -221,7 +260,7 @@ describe('utils', () => {
     });
 
     it('returns false for reports from unknown clinic', () => {
-      const doc = { form: 'R', type: 'data_record' };
+      const doc = { form: 'R', type: DOC_TYPES.DATA_RECORD };
       config.get.withArgs('forms').returns({ R: { public_form: false }});
       sinon.spy(utils, 'hasKnownSender');
       assert(!utils.isValidSubmission(doc));
@@ -232,7 +271,7 @@ describe('utils', () => {
     });
 
     it('returns true for reports for public forms from unknown clinic', () => {
-      const doc = { form: 'R', type: 'data_record' };
+      const doc = { form: 'R', type: DOC_TYPES.DATA_RECORD };
       config.get.withArgs('forms').returns({ R: { public_form: true } });
       sinon.spy(utils, 'hasKnownSender');
       assert(utils.isValidSubmission(doc));
@@ -242,7 +281,7 @@ describe('utils', () => {
     });
 
     it('returns true for xforms reports', () => {
-      const doc = { form: 'R', content_type: 'xml', type: 'data_record' };
+      const doc = { form: 'R', content_type: 'xml', type: DOC_TYPES.DATA_RECORD };
       config.get.withArgs('forms').returns({ OTHER: {} });
       assert(utils.isValidSubmission(doc));
       assert.equal(config.get.callCount, 1);
@@ -250,7 +289,7 @@ describe('utils', () => {
     });
 
     it('returns true for reports for non-public forms from known clinics', () => {
-      const doc = { form: 'R', type: 'data_record' };
+      const doc = { form: 'R', type: DOC_TYPES.DATA_RECORD };
       config.get.withArgs('forms').returns({ R: { public_form: false } });
       sinon.stub(utils, 'hasKnownSender').returns(true);
       assert(utils.isValidSubmission(doc));
@@ -259,7 +298,7 @@ describe('utils', () => {
     });
 
     it('returns true for reports for non-public forms from known submitters', () => {
-      const doc = { form: 'R', type: 'data_record', contact: { phone: '12345' } };
+      const doc = { form: 'R', type: DOC_TYPES.DATA_RECORD, contact: { phone: '12345' } };
       config.get.withArgs('forms').returns({ R: { public_form: false } });
       sinon.spy(utils, 'hasKnownSender');
       assert(utils.isValidSubmission(doc));

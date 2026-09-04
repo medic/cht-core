@@ -5,11 +5,11 @@ const db = require('../db');
 const resources = require('../resources');
 const { info } = require('@medic/logger');
 const config = require('../config');
+const { DOC_IDS } = require('@medic/constants');
 
 const isObject = obj => obj === Object(obj) && !Array.isArray(obj);
 
-const SETTINGS_DOC_ID = 'settings';
-const getDoc = () => db.medic.get(SETTINGS_DOC_ID);
+const getDoc = () => db.medic.get(DOC_IDS.SETTINGS);
 
 const doReplace = (target, source) => {
   Object.keys(source).forEach(k => {
@@ -80,7 +80,7 @@ module.exports = {
     return getDoc()
       .catch(err => {
         if (err.status === 404) {
-          return { _id: SETTINGS_DOC_ID };
+          return { _id: DOC_IDS.SETTINGS };
         }
         throw err;
       })
@@ -115,5 +115,4 @@ module.exports = {
       });
   },
   getDeprecatedTransitions: getDeprecatedTransitions,
-  SETTINGS_DOC_ID: SETTINGS_DOC_ID,
 };

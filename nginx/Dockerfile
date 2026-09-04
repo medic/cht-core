@@ -1,5 +1,5 @@
 # base build
-FROM nginx:1.29.4-alpine AS base_nginx
+FROM nginx:1.31.1-alpine AS base_nginx
 RUN apk add --update --no-cache \
     curl \
     socat \
@@ -17,4 +17,3 @@ COPY nginx_error_pages/ /usr/share/nginx/nginx_error_pages/
 
 # Final
 FROM base_nginx AS cht-nginx
-LABEL Authors="MEDIC SRE TEAM<devops@medic.org>"

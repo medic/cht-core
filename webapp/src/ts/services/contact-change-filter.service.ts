@@ -5,6 +5,7 @@ import { Injectable } from '@angular/core';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import * as registrationUtils from '@medic/registration-utils';
+import { DOC_TYPES } from '@medic/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +20,15 @@ export class ContactChangeFilterService {
   }
 
   private isReport(change) {
-    return !!change.doc.form && change.doc.type === 'data_record';
+    return !!change.doc.form && change.doc.type === DOC_TYPES.DATA_RECORD;
+  }
+
+  /**
+   * Whether the doc is a visit report, i.e. a report the UHC views (visits_by_date and
+   * contacts_by_last_visited) index. Mirrors the condition those views' map functions use.
+   */
+  isVisitReport(doc) {
+    return !!doc?.form && doc.type === DOC_TYPES.DATA_RECORD && !!doc.fields?.visited_contact_uuid;
   }
 
   private matchReportSubject(report, contact) {
@@ -80,8 +89,8 @@ export class ContactChangeFilterService {
   }
 
   isRelevantChange(change, contact) {
-    return this.matchContact(change, contact) ??
-      this.isRelevantContact(change, contact) ??
+    return this.matchContact(change, contact) ||
+      this.isRelevantContact(change, contact) ||
       this.isRelevantReport(change, contact);
   }
 }

@@ -6,6 +6,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Contact Search', () => {
   const places = placeFactory.generateHierarchy();
@@ -17,14 +18,14 @@ describe('Contact Search', () => {
 
   const sittuHealthCenter = placeFactory.place().build({
     name: 'Sittu Health Center',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: districtHospitalId, parent: { _id: '' } },
     short_name: searchWord
   });
 
   const potuHealthCenter = placeFactory.place().build({
     name: 'Potu Health Center',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: districtHospitalId, parent: { _id: '' } }
   });
 
@@ -37,6 +38,16 @@ describe('Contact Search', () => {
   const potuPerson = personFactory.build({
     name: 'Potu',
     parent: { _id: sittuHealthCenter._id, parent: sittuHealthCenter.parent }
+  });
+
+  const devanagariPatient = personFactory.build({
+    name: 'Devanagari १२३४५',
+    parent: { _id: districtHospitalId }
+  });
+
+  const latinPatient = personFactory.build({
+    name: 'Latin 12345',
+    parent: { _id: districtHospitalId }
   });
 
   const supervisorPerson = personFactory.build({
@@ -59,7 +70,8 @@ describe('Contact Search', () => {
 
   before(async () => {
     await utils.saveDocs([
-      ...places.values(), sittuHealthCenter, sittuPerson, potuHealthCenter, potuPerson, supervisorPerson
+      ...places.values(), sittuHealthCenter, sittuPerson, potuHealthCenter, potuPerson,
+      devanagariPatient, latinPatient, supervisorPerson,
     ]);
     await utils.createUsers([offlineUser, onlineUser]);
   });
@@ -77,6 +89,26 @@ describe('Contact Search', () => {
 
     after(commonPage.logout);
 
+    it('search by Devanagari numerals should cross-match Latin numeral contacts', async () => {
+      await contactPage.getAllLHSContactsNames();
+      await searchPage.performSearch('१२३४५');
+      expect(await contactPage.getAllLHSContactsNames()).to.include.members([
+        'Devanagari १२३४५',
+        'Latin 12345',
+      ]);
+      await searchPage.clearSearch();
+    });
+
+    it('search by Latin numerals should cross-match Devanagari numeral contacts', async () => {
+      await contactPage.getAllLHSContactsNames();
+      await searchPage.performSearch('12345');
+      expect(await contactPage.getAllLHSContactsNames()).to.include.members([
+        'Devanagari १२३४५',
+        'Latin 12345',
+      ]);
+      await searchPage.clearSearch();
+    });
+
     it('search by NON empty string should display results which contains match and clears search', async () => {
       await contactPage.getAllLHSContactsNames();
 
@@ -91,7 +123,7 @@ describe('Contact Search', () => {
         potuHealthCenter.name,
         sittuHealthCenter.name,
         places.get('district_hospital').name,
-        places.get('health_center').name,
+        places.get(CONTACT_TYPES.HEALTH_CENTER).name,
       ]);
     });
 
@@ -119,7 +151,7 @@ describe('Contact Search', () => {
         potuHealthCenter.name,
         sittuHealthCenter.name,
         places.get('district_hospital').name,
-        places.get('health_center').name,
+        places.get(CONTACT_TYPES.HEALTH_CENTER).name,
       ]);
     });
 
@@ -134,7 +166,7 @@ describe('Contact Search', () => {
         potuHealthCenter.name,
         sittuHealthCenter.name,
         places.get('district_hospital').name,
-        places.get('health_center').name,
+        places.get(CONTACT_TYPES.HEALTH_CENTER).name,
       ]);
     });
 
@@ -152,7 +184,7 @@ describe('Contact Search', () => {
         potuHealthCenter.name,
         sittuHealthCenter.name,
         places.get('district_hospital').name,
-        places.get('health_center').name,
+        places.get(CONTACT_TYPES.HEALTH_CENTER).name,
       ]);
     });
   }));

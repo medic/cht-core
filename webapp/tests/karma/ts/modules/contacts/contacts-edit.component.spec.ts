@@ -1,4 +1,4 @@
-import { fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
+import { fakeAsync, flushMicrotasks, TestBed, tick } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { Subject } from 'rxjs';
 import { expect } from 'chai';
@@ -8,8 +8,10 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClient } from '@angular/common/http';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { GeolocationService } from '@mm-services/geolocation.service';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { FileReaderService } from '@mm-services/file-reader.service';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { ContactsEditComponent } from '@mm-modules/contacts/contacts-edit.component';
 import { TranslateService } from '@mm-services/translate.service';
@@ -18,9 +20,12 @@ import { DbService } from '@mm-services/db.service';
 import { Selectors } from '@mm-selectors/index';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { DuplicatesFoundError, FormService } from '@mm-services/form.service';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { FormValidationError } from '@mm-services/enketo.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
+import { CONTACT_TYPES } from '@medic/constants';
 
 
 describe('ContactsEdit component', () => {
@@ -29,6 +34,7 @@ describe('ContactsEdit component', () => {
   let router;
   let route;
   let dbGet;
+  let dbService;
   let createComponent;
   let fixture;
   let component;
@@ -40,6 +46,9 @@ describe('ContactsEdit component', () => {
   let telemetryService;
   let chtDatasourceService;
   let getContact;
+  let getFormConfig;
+  let fileReaderService;
+  let geolocationService;
   const loadContactSummary = sinon.stub();
 
   beforeEach(() => {
@@ -51,6 +60,14 @@ describe('ContactsEdit component', () => {
     };
     translateService = { get: sinon.stub().resolvesArg(0) };
     dbGet = sinon.stub().resolves();
+    dbService = {
+      get: sinon.stub().returns({
+        get: dbGet,
+        getAttachment: sinon.stub()
+      })
+    };
+    fileReaderService = { base64: sinon.stub() };
+    geolocationService = { init: sinon.stub() };
     router = { navigate: sinon.stub() };
     routeSnapshot = { params: {}, queryParams: {} };
     route = {
@@ -66,6 +83,7 @@ describe('ContactsEdit component', () => {
       saveContact: sinon.stub(),
       loadContactSummary: loadContactSummary,
     };
+    getFormConfig = sinon.stub().resolves({ doc: {}, type: 'contact' });
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     lineageModelGeneratorService = { contact: sinon.stub().resolves({ doc: {} }) };
@@ -95,7 +113,7 @@ describe('ContactsEdit component', () => {
       providers: [
         provideMockStore({ selectors: mockedSelectors }),
         { provide: TranslateService, useValue: translateService },
-        { provide: DbService, useValue: { get: () => ({ get: dbGet }) } },
+        { provide: DbService, useValue: dbService },
         { provide: Router, useValue: router },
         { provide: ActivatedRoute, useValue: route },
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
@@ -104,6 +122,9 @@ describe('ContactsEdit component', () => {
         { provide: PerformanceService, useValue: performanceService },
         { provide: TelemetryService, useValue: telemetryService },
         { provide: CHTDatasourceService, useValue: chtDatasourceService },
+        { provide: XmlFormsService, useValue: { getFormConfig } },
+        { provide: FileReaderService, useValue: fileReaderService },
+        { provide: GeolocationService, useValue: geolocationService },
         { provide: HttpClient, useValue: {} },
       ],
     });
@@ -184,7 +205,7 @@ describe('ContactsEdit component', () => {
       await createComponent();
       component.contact = {
         parent: 'missing_parent_uuid',
-        contact_type: 'clinic'
+        contact_type: CONTACT_TYPES.CLINIC
       };
       getContact.withArgs(Qualifier.byUuid('missing_parent_uuid')).resolves(null);
 
@@ -274,6 +295,23 @@ describe('ContactsEdit component', () => {
       expect(formService.unload.args[0]).to.deep.equal(['form instance']);
     });
 
+    it('should cancel its own geolocation handle on destroy when one exists', async () => {
+      await createComponent();
+
+      const cancel = sinon.stub();
+      component.geoHandle = { cancel };
+      component.ngOnDestroy();
+
+      expect(cancel.callCount).to.equal(1);
+    });
+
+    it('should not throw on destroy when no geolocation watcher is active', async () => {
+      await createComponent();
+
+      component.geoHandle = undefined;
+      expect(() => component.ngOnDestroy()).to.not.throw();
+    });
+
     it('should respond to url changes', fakeAsync(async () => {
       routeSnapshot.params = { type: 'random', parent_id: 'the_district' };
       route.params.next({ type: 'random', parent_id: 'the_district' });
@@ -293,11 +331,13 @@ describe('ContactsEdit component', () => {
           create_form: 'other_create',
           create_key: 'other_key',
         });
-      dbGet
-        .withArgs('random_create')
-        .resolves({ _id: 'random_create', the: 'form' })
-        .withArgs('other_create')
-        .resolves({ _id: 'other_create' });
+      const randomConfig = { doc: { _id: 'random_create', the: 'form' }, type: 'contact' };
+      const otherConfig = { doc: { _id: 'other_create' }, type: 'contact' };
+      getFormConfig
+        .withArgs('contact', 'random_create')
+        .resolves(randomConfig)
+        .withArgs('contact', 'other_create')
+        .resolves(otherConfig);
 
       await createComponent();
       await fixture.whenStable();
@@ -306,7 +346,7 @@ describe('ContactsEdit component', () => {
       expect(formService.render.callCount).to.equal(1);
       expect(formService.render.args[0][0]).to.deep.include({
         selector: '#contact-form',
-        formDoc: { _id: 'random_create', the: 'form' },
+        formConfig: randomConfig,
         instanceData: { random: { type: 'contact', contact_type: 'random', parent: 'the_district' } },
         titleKey: 'random',
       });
@@ -317,17 +357,61 @@ describe('ContactsEdit component', () => {
       await fixture.whenStable();
       flushMicrotasks();
 
-      expect(dbGet.args).to.deep.equal([['random_create'], ['other_create']]);
+      expect(getFormConfig.args).to.deep.equal([['contact', 'random_create'], ['contact', 'other_create']]);
       expect(getContact.args).to.deep.equal([[Qualifier.byUuid('the_district')], [Qualifier.byUuid('the_district')]]);
       expect(contactTypesService.get.callCount).to.equal(2);
       expect(formService.render.callCount).to.equal(2);
       expect(formService.render.args[1][0]).to.deep.include({
         selector: '#contact-form',
-        formDoc: { _id: 'other_create' },
+        formConfig: otherConfig,
         instanceData: { other: { type: 'contact', contact_type: 'other', parent: 'the_district' } },
         titleKey: 'other_key',
       });
     }));
+  });
+
+  describe('geolocation handle lifecycle', () => {
+    it('should call geolocationService.init() and store the result as its own handle', async () => {
+      const handle = { cancel: sinon.stub() };
+      geolocationService.init.returns(handle);
+
+      await createComponent();
+      await fixture.whenStable();
+
+      expect(geolocationService.init.callCount).to.equal(1);
+      expect(component.geoHandle).to.equal(handle);
+    });
+
+    it('should cancel the previous geo handle and acquire a new one when navigating to a different contact',
+      fakeAsync(async () => {
+        routeSnapshot.params = { id: 'contact_a' };
+        route.params.next({ id: 'contact_a' });
+
+        const handleA = { cancel: sinon.stub() };
+        const handleB = { cancel: sinon.stub() };
+        geolocationService.init.onFirstCall().returns(handleA).onSecondCall().returns(handleB);
+
+        lineageModelGeneratorService.contact
+          .withArgs('contact_a', { merge: true }).resolves({ doc: { _id: 'contact_a', type: 'clinic' } })
+          .withArgs('contact_b', { merge: true }).resolves({ doc: { _id: 'contact_b', type: 'clinic' } });
+        contactTypesService.get.resolves({ edit_form: 'clinic_edit_form_id', edit_key: 'clinic_edit_key' });
+        dbGet.resolves({ _id: 'clinic_edit_form_id', the: 'form' });
+
+        await createComponent();
+        await fixture.whenStable();
+
+        expect(component.geoHandle).to.equal(handleA);
+        expect(handleA.cancel.callCount).to.equal(0);
+
+        routeSnapshot = { params: { id: 'contact_b' } };
+        route.params.next({ id: 'contact_b' });
+
+        await fixture.whenStable();
+        flushMicrotasks();
+
+        expect(handleA.cancel.callCount).to.equal(1);
+        expect(component.geoHandle).to.equal(handleB);
+      }));
   });
 
   describe('loading form', () => {
@@ -340,7 +424,7 @@ describe('ContactsEdit component', () => {
 
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal([undefined]);
-        expect(dbGet.callCount).to.equal(0);
+        expect(getFormConfig.callCount).to.equal(0);
         expect(formService.render.callCount).to.equal(0);
         expect(component.enketoContact).to.deep.equal(undefined);
       });
@@ -353,7 +437,7 @@ describe('ContactsEdit component', () => {
 
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['random']);
-        expect(dbGet.callCount).to.equal(0);
+        expect(getFormConfig.callCount).to.equal(0);
         expect(formService.render.callCount).to.equal(0);
         expect(component.enketoContact).to.deep.equal(undefined);
       });
@@ -388,22 +472,21 @@ describe('ContactsEdit component', () => {
           create_form: 'person_create_form_id',
           create_key: 'person_create_key',
         });
-        dbGet.rejects({ status: 404 });
+        getFormConfig.rejects({ status: 404 });
 
         await createComponent();
         await fixture.whenStable();
 
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['person']);
-        expect(dbGet.callCount).to.equal(1);
-        expect(dbGet.args[0]).to.deep.equal(['person_create_form_id']);
+        expect(getFormConfig.args).to.deep.equal([['contact', 'person_create_form_id']]);
         expect(formService.render.callCount).to.equal(0);
         expect(component.enketoContact).to.deep.equal(undefined);
         expect(component.contentError).to.equal(true);
       });
 
       it('should render form with parent', async () => {
-        routeSnapshot.params = { type: 'clinic', parent_id: 'the_district' };
+        routeSnapshot.params = { type: CONTACT_TYPES.CLINIC, parent_id: 'the_district' };
         contactTypesService.getChildren.resolves([{ id: 'clinic' }]);
         contactTypesService.get.resolves({
           create_form: 'clinic_create_form_id',
@@ -411,26 +494,27 @@ describe('ContactsEdit component', () => {
         });
         getContact
           .withArgs(Qualifier.byUuid('the_district'))
-          .resolves({ _id: 'the_district', type: 'clinic' });
-        dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
+          .resolves({ _id: 'the_district', type: CONTACT_TYPES.CLINIC });
+        const formConfig = { doc: { _id: 'clinic_create_form_id', the: 'form' }, type: 'contact' };
+        getFormConfig.resolves(formConfig);
 
         await createComponent();
         await fixture.whenStable();
 
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['clinic']);
-        expect(dbGet.calledOnceWithExactly('clinic_create_form_id')).to.be.true;
+        expect(getFormConfig.calledOnceWithExactly('contact', 'clinic_create_form_id')).to.be.true;
         expect(getContact.calledOnceWithExactly(Qualifier.byUuid('the_district'))).to.be.true;
         expect(component.enketoContact).to.deep.equal({
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           formInstance: undefined,
           docId: null,
         });
         expect(formService.render.callCount).to.equal(1);
         expect(formService.render.args[0][0]).to.deep.include({
           selector: '#contact-form',
-          formDoc: { _id: 'clinic_create_form_id', the: 'form' },
-          instanceData: { clinic: { type: 'contact', contact_type: 'clinic', parent: 'the_district' } },
+          formConfig,
+          instanceData: { clinic: { type: 'contact', contact_type: CONTACT_TYPES.CLINIC, parent: 'the_district' } },
           titleKey: 'clinic_create_key',
         });
         expect(component.contentError).to.equal(false);
@@ -443,13 +527,14 @@ describe('ContactsEdit component', () => {
       });
 
       it('should render form without parent', async () => {
-        routeSnapshot.params = { type: 'district_hospital' };
+        routeSnapshot.params = { type: CONTACT_TYPES.DISTRICT_HOSPITAL };
         contactTypesService.getChildren.resolves([{ id: 'district_hospital' }]);
         contactTypesService.get.resolves({
           create_form: 'district_create_form_id',
           create_key: 'district_create_key',
         });
-        dbGet.resolves({ _id: 'district_create_form_id', the: 'form' });
+        const formConfig = { doc: { _id: 'district_create_form_id', the: 'form' }, type: 'contact' };
+        getFormConfig.resolves(formConfig);
 
         await createComponent();
         await fixture.whenStable();
@@ -457,18 +542,18 @@ describe('ContactsEdit component', () => {
 
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['district_hospital']);
-        expect(dbGet.callCount).to.equal(1);
-        expect(dbGet.args[0]).to.deep.equal(['district_create_form_id']);
+        expect(getFormConfig.args).to.deep.equal([['contact', 'district_create_form_id']]);
         expect(component.enketoContact).to.deep.equal({
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           formInstance: undefined,
           docId: null,
         });
         expect(formService.render.callCount).to.equal(1);
         expect(formService.render.args[0][0]).to.deep.include({
           selector: '#contact-form',
-          formDoc: { _id: 'district_create_form_id', the: 'form' },
-          instanceData: { district_hospital: { type: 'contact', contact_type: 'district_hospital', parent: '' } },
+          formConfig,
+          instanceData: { district_hospital: { type: 'contact',
+            contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL, parent: '' } },
           titleKey: 'district_create_key',
         });
         expect(component.contentError).to.equal(false);
@@ -498,7 +583,7 @@ describe('ContactsEdit component', () => {
 
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['missing_clinic_type']);
-        expect(dbGet.callCount).to.equal(0);
+        expect(getFormConfig.callCount).to.equal(0);
         expect(formService.render.callCount).to.equal(0);
         expect(component.enketoContact).to.deep.equal(undefined);
       });
@@ -518,7 +603,7 @@ describe('ContactsEdit component', () => {
 
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['person_type']);
-        expect(dbGet.callCount).to.equal(0);
+        expect(getFormConfig.callCount).to.equal(0);
         expect(formService.render.callCount).to.equal(0);
         expect(component.enketoContact).to.deep.equal(undefined);
       });
@@ -536,14 +621,13 @@ describe('ContactsEdit component', () => {
           create_form: 'patient_create_form',
           edit_key: 'patient_edit_key',
         });
-        dbGet.rejects({ status: 404 });
+        getFormConfig.rejects({ status: 404 });
         await createComponent();
         await fixture.whenStable();
 
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['patient']);
-        expect(dbGet.callCount).to.equal(1);
-        expect(dbGet.args[0]).to.deep.equal(['patient_edit_form']);
+        expect(getFormConfig.args).to.deep.equal([['contact', 'patient_edit_form']]);
         expect(formService.render.callCount).to.equal(0);
         expect(component.enketoContact).to.deep.equal(undefined);
         expect(component.contentError).to.equal(true);
@@ -562,18 +646,18 @@ describe('ContactsEdit component', () => {
           create_form: 'patient_create_form',
           edit_key: 'patient_edit_key',
         });
-        dbGet.resolves({ _id: 'patient_edit_form', form: true });
+        const formConfig = { doc: { _id: 'patient_edit_form', form: true }, type: 'contact' };
+        getFormConfig.resolves(formConfig);
         await createComponent();
         await fixture.whenStable();
 
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['patient']);
-        expect(dbGet.callCount).to.equal(1);
-        expect(dbGet.args[0]).to.deep.equal(['patient_edit_form']);
+        expect(getFormConfig.args).to.deep.equal([['contact', 'patient_edit_form']]);
         expect(formService.render.callCount).to.equal(1);
         expect(formService.render.args[0][0]).to.deep.include({
           selector: '#contact-form',
-          formDoc: { _id: 'patient_edit_form', form: true },
+          formConfig,
           instanceData: { patient: { type: 'patient', _id: 'the_patient' } },
           titleKey: 'patient_edit_key',
         });
@@ -604,18 +688,18 @@ describe('ContactsEdit component', () => {
           create_form: 'a_clinic_type_create_form',
           edit_key: 'edit_key',
         });
-        dbGet.resolves({ _id: 'a_clinic_type_create_form', data: true });
+        const formConfig = { doc: { _id: 'a_clinic_type_create_form', data: true }, type: 'contact' };
+        getFormConfig.resolves(formConfig);
         await createComponent();
         await fixture.whenStable();
 
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['a_clinic_type']);
-        expect(dbGet.callCount).to.equal(1);
-        expect(dbGet.args[0]).to.deep.equal(['a_clinic_type_create_form']);
+        expect(getFormConfig.args).to.deep.equal([['contact', 'a_clinic_type_create_form']]);
         expect(formService.render.callCount).to.equal(1);
         expect(formService.render.args[0][0]).to.deep.include({
           selector: '#contact-form',
-          formDoc: { _id: 'a_clinic_type_create_form', data: true },
+          formConfig,
           instanceData: { a_clinic_type: { type: 'contact', contact_type: 'a_clinic_type', _id: 'the_clinic' } },
           titleKey: 'edit_key',
         });
@@ -638,7 +722,7 @@ describe('ContactsEdit component', () => {
         lineageModelGeneratorService.contact.resolves({
           doc: {
             _id: 'the_clinic',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact_type: 'a_clinic_type',
           },
         });
@@ -648,20 +732,21 @@ describe('ContactsEdit component', () => {
           edit_form: 'the correct_edit_form',
           edit_key: 'edit_key',
         });
-        dbGet.resolves({ _id: 'the correct_edit_form', data: true });
+        const formConfig = { doc: { _id: 'the correct_edit_form', data: true }, type: 'contact' };
+        getFormConfig.resolves(formConfig);
 
         await createComponent();
         await fixture.whenStable();
 
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['the correct type']);
-        expect(dbGet.callCount).to.equal(1);
-        expect(dbGet.args[0]).to.deep.equal(['the correct_edit_form']);
+        expect(getFormConfig.args).to.deep.equal([['contact', 'the correct_edit_form']]);
         expect(formService.render.callCount).to.equal(1);
         expect(formService.render.args[0][0]).to.deep.include({
           selector: '#contact-form',
-          formDoc: { _id: 'the correct_edit_form', data: true },
-          instanceData: { 'the correct type': { type: 'clinic', contact_type: 'a_clinic_type', _id: 'the_clinic' } },
+          formConfig,
+          instanceData: { 'the correct type': { type: CONTACT_TYPES.CLINIC,
+            contact_type: 'a_clinic_type', _id: 'the_clinic' } },
           titleKey: 'edit_key',
         });
         expect(component.enketoContact).to.deep.equal({
@@ -677,6 +762,186 @@ describe('ContactsEdit component', () => {
           recordApdex: true,
         });
       });
+    });
+  });
+
+  describe('loading attachments', () => {
+    const imageElementName = '/contact_form/photo';
+    const imageAttachmentName = 'photo.jpg';
+    const getFileInputHTML = (accept: string, loadedFileName?: string) => $.parseHTML(`<input
+      type="file"
+      name="${imageElementName}"
+      accept="${accept}"
+      ${loadedFileName ? `data-loaded-file-name="${loadedFileName}"` : ''}
+    >`);
+    const fileInputSelector = '#contact-form input[type="file"]:not(.draw-widget__load)';
+
+    let jqStub;
+    let jqMap;
+    let jqFeedbackElement;
+    let jqPreviewElement;
+    let jqPickerElement;
+    let getAttachment;
+    let mockJQueryElement;
+
+    beforeEach(() => {
+      jqFeedbackElement = { empty: sinon.stub() };
+      jqPreviewElement = { empty: sinon.stub(), append: sinon.stub() };
+      jqPickerElement = { find: sinon.stub() };
+      jqPickerElement.find.withArgs('.file-feedback').returns(jqFeedbackElement);
+      jqPickerElement.find.withArgs('.file-preview').returns(jqPreviewElement);
+
+      jqMap = sinon.stub();
+      jqStub = sinon.stub(window as any, '$');
+      jqStub.parseXML = $.parseXML;
+      jqStub.parseHTML = $.parseHTML;
+      jqStub.withArgs(fileInputSelector).returns({ map: jqMap });
+
+      mockJQueryElement = {
+        attr: sinon.stub().returnsArg(0),
+        data: sinon.stub(),
+        closest: sinon.stub().returns({
+          find: sinon.stub().returns(jqPickerElement)
+        })
+      };
+      jqStub.returns(mockJQueryElement);
+
+      getAttachment = dbService.get().getAttachment;
+    });
+
+    describe('for new contact', () => {
+      it('does not load attachments when creating new contact', fakeAsync(async () => {
+        routeSnapshot.params = { type: 'person' };
+        contactTypesService.getChildren.resolves([{ id: 'person' }]);
+        contactTypesService.get.resolves({
+          create_form: 'person_create_form',
+          create_key: 'person_create_key',
+        });
+        getFormConfig.resolves({ doc: { _id: 'person_create_form', form: true }, type: 'contact' });
+
+        await createComponent();
+        tick();
+
+        expect(getAttachment.notCalled).to.be.true;
+        expect(fileReaderService.base64.notCalled).to.be.true;
+      }));
+    });
+
+    describe('for existing contact', () => {
+      it('renders existing image attachment preview when editing contact', fakeAsync(async () => {
+        routeSnapshot.params = { id: 'the_person' };
+        const doc = {
+          _id: 'the_person',
+          type: 'person',
+          _attachments: {
+            [`user-file-${imageAttachmentName}`]: { content_type: 'image/png' }
+          }
+        };
+        lineageModelGeneratorService.contact.resolves({ doc });
+        contactTypesService.get.resolves({
+          edit_form: 'person_edit_form',
+          edit_key: 'person_edit_key',
+        });
+        getFormConfig.resolves({ doc: { _id: 'person_edit_form', form: true }, type: 'contact' });
+        const attachmentBlob = { attachment: 'blob' };
+        getAttachment.resolves(attachmentBlob);
+        const base64 = 'base64';
+        fileReaderService.base64.resolves(base64);
+
+        await createComponent();
+        tick();
+
+        expect(jqStub.calledWith(fileInputSelector)).to.be.true;
+        expect(jqMap.calledOnce).to.be.true;
+
+        const renderAttachmentPreview = jqMap.args[0][0];
+        const inputElement = getFileInputHTML('image/*', imageAttachmentName)[0];
+
+        mockJQueryElement.attr.withArgs('accept').returns('image/*');
+        mockJQueryElement.attr.withArgs('name').returns(imageElementName);
+        mockJQueryElement.data.withArgs('loaded-file-name').returns(imageAttachmentName);
+
+        await renderAttachmentPreview(0, inputElement);
+
+        expect(jqFeedbackElement.empty.calledOnce).to.be.true;
+        expect(getAttachment.calledOnceWithExactly(doc._id, `user-file-${imageAttachmentName}`)).to.be.true;
+        expect(fileReaderService.base64.calledOnceWithExactly(attachmentBlob)).to.be.true;
+        expect(jqPreviewElement.empty.calledOnce).to.be.true;
+        expect(jqPreviewElement.append.calledOnceWithExactly(`<img src="data:${base64}">`)).to.be.true;
+      }));
+
+      it('does not load attachment when the attachment is a non-image attachment', fakeAsync(async () => {
+        routeSnapshot.params = { id: 'the_person' };
+        const doc = {
+          _id: 'the_person',
+          type: 'person',
+          _attachments: {
+            [`user-file-${imageAttachmentName}`]: { content_type: 'video/mp4' }
+          }
+        };
+        lineageModelGeneratorService.contact.resolves({ doc });
+        contactTypesService.get.resolves({
+          edit_form: 'person_edit_form',
+          edit_key: 'person_edit_key',
+        });
+        getFormConfig.resolves({ doc: { _id: 'person_edit_form', form: true }, type: 'contact' });
+
+        await createComponent();
+        tick();
+
+        expect(jqStub.calledWith(fileInputSelector)).to.be.true;
+        expect(jqMap.calledOnce).to.be.true;
+
+        const renderAttachmentPreview = jqMap.args[0][0];
+        const inputElement = getFileInputHTML('video/*', imageAttachmentName)[0];
+        await renderAttachmentPreview(0, inputElement);
+
+        expect(jqFeedbackElement.empty.calledOnce).to.be.true;
+        expect(getAttachment.notCalled).to.be.true;
+        expect(fileReaderService.base64.notCalled).to.be.true;
+        expect(jqPreviewElement.empty.notCalled).to.be.true;
+        expect(jqPreviewElement.append.notCalled).to.be.true;
+      }));
+
+      it('loads form successfully when there is an error retrieving the attachment', fakeAsync(async () => {
+        routeSnapshot.params = { id: 'the_person' };
+        const doc = {
+          _id: 'the_person',
+          type: 'person',
+          _attachments: {
+            [`user-file-${imageAttachmentName}`]: { content_type: 'image/png' }
+          }
+        };
+        lineageModelGeneratorService.contact.resolves({ doc });
+        contactTypesService.get.resolves({
+          edit_form: 'person_edit_form',
+          edit_key: 'person_edit_key',
+        });
+        getFormConfig.resolves({ doc: { _id: 'person_edit_form', form: true }, type: 'contact' });
+        const expectedError = new Error('some error');
+        getAttachment.onFirstCall().rejects(expectedError);
+
+        await createComponent();
+        tick();
+
+        expect(jqStub.calledWith(fileInputSelector)).to.be.true;
+        expect(jqMap.calledOnce).to.be.true;
+
+        const renderAttachmentPreview = jqMap.args[0][0];
+        const inputElement = getFileInputHTML('image/*', imageAttachmentName)[0];
+
+        mockJQueryElement.attr.withArgs('accept').returns('image/*');
+        mockJQueryElement.attr.withArgs('name').returns(imageElementName);
+        mockJQueryElement.data.withArgs('loaded-file-name').returns(imageAttachmentName);
+
+        await expect(renderAttachmentPreview(0, inputElement)).to.be.rejectedWith(expectedError);
+
+        expect(jqFeedbackElement.empty.calledOnce).to.be.true;
+        expect(getAttachment.calledOnceWithExactly(doc._id, `user-file-${imageAttachmentName}`)).to.be.true;
+        expect(fileReaderService.base64.notCalled).to.be.true;
+        expect(jqPreviewElement.empty.notCalled).to.be.true;
+        expect(jqPreviewElement.append.notCalled).to.be.true;
+      }));
     });
   });
 
@@ -700,23 +965,23 @@ describe('ContactsEdit component', () => {
       expect(setEnketoError.callCount).to.equal(0);
     });
 
-    it('should not save when invalid', async () => {
+    it('should handle form validation errors silently', async () => {
       await createComponent();
       await fixture.whenStable();
 
       component.enketoContact = {
-        formInstance: {
-          validate: sinon.stub().resolves(false),
-        },
+        formInstance: { the: 'form instance' },
+        type: 'some_contact',
       };
+      formService.saveContact.rejects(new FormValidationError());
 
       await component.save();
       expect(setEnketoSavingStatus.callCount).to.equal(2);
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
+      // Only the initial reset - no error message is shown for form validation errors
       expect(setEnketoError.callCount).to.equal(1);
       expect(setEnketoError.args).to.deep.equal([[null]]);
-      expect(component.enketoContact.formInstance.validate.callCount).to.equal(1);
-      expect(formService.saveContact.callCount).to.equal(0);
+      expect(formService.saveContact.callCount).to.equal(1);
       expect(telemetryService.record.notCalled).to.be.true;
     });
 
@@ -725,9 +990,7 @@ describe('ContactsEdit component', () => {
       await fixture.whenStable();
 
       component.enketoContact = {
-        formInstance: {
-          validate: sinon.stub().resolves(true),
-        },
+        formInstance: { the: 'form instance' },
         type: 'some_contact',
       };
       formService.saveContact.rejects({ some: 'error' });
@@ -736,7 +999,6 @@ describe('ContactsEdit component', () => {
       await component.save();
       expect(setEnketoSavingStatus.callCount).to.equal(2);
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
-      expect(component.enketoContact.formInstance.validate.callCount).to.equal(1);
       expect(formService.saveContact.callCount).to.equal(1);
       expect(setEnketoError.callCount).to.equal(2);
       expect(telemetryService.record.notCalled).to.be.true;
@@ -745,7 +1007,7 @@ describe('ContactsEdit component', () => {
     });
 
     it('when saving new contact', async () => {
-      routeSnapshot.params = { type: 'clinic', parent_id: 'the_district' };
+      routeSnapshot.params = { type: CONTACT_TYPES.CLINIC, parent_id: 'the_district' };
       contactTypesService.getChildren.resolves([{ id: 'clinic' }]);
       contactTypesService.get.resolves({
         create_form: 'clinic_create_form_id',
@@ -753,11 +1015,9 @@ describe('ContactsEdit component', () => {
       });
       getContact
         .withArgs(Qualifier.byUuid('the_district'))
-        .resolves({ _id: 'the_district', type: 'clinic' });
-      dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
-      const form = {
-        validate: sinon.stub().resolves(true),
-      };
+        .resolves({ _id: 'the_district', type: CONTACT_TYPES.CLINIC });
+      getFormConfig.resolves({ doc: { _id: 'clinic_create_form_id', the: 'form' }, type: 'contact' });
+      const form = { the: 'form instance' };
       formService.render.resolves(form);
 
       await createComponent();
@@ -779,17 +1039,17 @@ describe('ContactsEdit component', () => {
         name: 'enketo:contacts:clinic_create_form_id:add:save',
         recordApdex: true,
       });
-      expect(dbGet.calledOnceWithExactly('clinic_create_form_id')).to.be.true;
+      expect(getFormConfig.calledOnceWithExactly('contact', 'clinic_create_form_id')).to.be.true;
       expect(getContact.calledOnceWithExactly(Qualifier.byUuid('the_district'))).to.be.true;
       expect(setEnketoSavingStatus.callCount).to.equal(2);
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(setEnketoError.callCount).to.equal(1);
-      expect(formService.saveContact.callCount).to.equal(1);
-      expect(formService.saveContact.args[0]).to.deep.equal([
-        { docId: null, type: 'clinic' }, 
-        { form, xmlVersion: undefined, duplicateCheck: undefined }, 
-        false
-      ]);
+      expect(formService.saveContact.args).to.deep.equal([[
+        { docId: null, type: CONTACT_TYPES.CLINIC },
+        form,
+        false,
+        undefined,
+      ]]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'new_clinic_id']]);
       expect(telemetryService.record.notCalled).to.be.true;
@@ -808,10 +1068,8 @@ describe('ContactsEdit component', () => {
         edit_form: 'person_edit_form_id',
         create_key: 'person_create_key',
       });
-      dbGet.resolves({ _id: 'person_edit_form_id', the: 'form' });
-      const form = {
-        validate: sinon.stub().resolves(true),
-      };
+      getFormConfig.resolves({ doc: { _id: 'person_edit_form_id', the: 'form' }, type: 'contact' });
+      const form = { the: 'form instance' };
       formService.render.resolves(form);
 
       await createComponent();
@@ -826,9 +1084,10 @@ describe('ContactsEdit component', () => {
       expect(setEnketoError.callCount).to.equal(1);
       expect(formService.saveContact.callCount).to.equal(1);
       expect(formService.saveContact.args[0]).to.deep.equal([
-        { docId: 'the_person', type: 'person',  },
-        { form, xmlVersion: undefined, duplicateCheck: undefined }, 
-        false
+        { docId: 'the_person', type: 'person' },
+        form,
+        false,
+        undefined,
       ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_person']]);
@@ -861,10 +1120,8 @@ describe('ContactsEdit component', () => {
         create_form: 'patient_create_form_id',
         create_key: 'patient_create_key',
       });
-      dbGet.resolves({ _id: 'patient_create_form_id', the: 'form' });
-      const form = {
-        validate: sinon.stub().resolves(true),
-      };
+      getFormConfig.resolves({ doc: { _id: 'patient_create_form_id', the: 'form' }, type: 'contact' });
+      const form = { the: 'form instance' };
       formService.render.resolves(form);
 
       await createComponent();
@@ -879,9 +1136,10 @@ describe('ContactsEdit component', () => {
       expect(setEnketoError.callCount).to.equal(1);
       expect(formService.saveContact.callCount).to.equal(1);
       expect(formService.saveContact.args[0]).to.deep.equal([
-        { docId: 'the_patient', type: 'patient' }, 
-        { form, xmlVersion: undefined, duplicateCheck: undefined },
-        false
+        { docId: 'the_patient', type: 'patient' },
+        form,
+        false,
+        undefined,
       ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_patient']]);
@@ -902,7 +1160,7 @@ describe('ContactsEdit component', () => {
     });
 
     it('should catch duplicate siblings', async () => {
-      routeSnapshot.params = { type: 'clinic', parent_id: 'the_district' };
+      routeSnapshot.params = { type: CONTACT_TYPES.CLINIC, parent_id: 'the_district' };
       contactTypesService.getChildren.resolves([{ id: 'clinic' }]);
       contactTypesService.get.resolves({
         create_form: 'clinic_create_form_id',
@@ -910,11 +1168,9 @@ describe('ContactsEdit component', () => {
       });
       getContact
         .withArgs(Qualifier.byUuid('the_district'))
-        .resolves({ _id: 'the_district', type: 'clinic' });
-      dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
-      const form = {
-        validate: sinon.stub().resolves(true),
-      };
+        .resolves({ _id: 'the_district', type: CONTACT_TYPES.CLINIC });
+      getFormConfig.resolves({ doc: { _id: 'clinic_create_form_id', the: 'form' }, type: 'contact' });
+      const form = { the: 'form instance' };
       formService.render.resolves(form);
 
       await createComponent();
@@ -927,7 +1183,7 @@ describe('ContactsEdit component', () => {
           name: 'Sibling2',
           parent: { _id: 'parent1' },
           type: 'the_district',
-          reported_date: new Date(1736845534000)
+          reported_date: 1736845534000
         }
       ]));
 
@@ -936,8 +1192,7 @@ describe('ContactsEdit component', () => {
       expect(setEnketoSavingStatus.callCount).to.equal(2);
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(getContact.calledOnceWithExactly(Qualifier.byUuid('the_district'))).to.be.true;
-      expect(dbGet.calledOnceWithExactly('clinic_create_form_id')).to.be.true;
-      expect(component.enketoContact.formInstance.validate.callCount).to.equal(1);
+      expect(getFormConfig.calledOnceWithExactly('contact', 'clinic_create_form_id')).to.be.true;
       expect(formService.saveContact.callCount).to.equal(1);
       expect(setEnketoError.callCount).to.equal(2);
       expect(component.duplicates.length).to.equal(1);
@@ -947,7 +1202,7 @@ describe('ContactsEdit component', () => {
 
   describe('toggleDuplicatesAcknowledged', () => {
     it('should set acknowledge to true', async () => {
-      routeSnapshot.params = { type: 'clinic', parent_id: 'the_district' };
+      routeSnapshot.params = { type: CONTACT_TYPES.CLINIC, parent_id: 'the_district' };
       contactTypesService.getChildren.resolves([{ id: 'clinic' }]);
       contactTypesService.get.resolves({
         create_form: 'clinic_create_form_id',
@@ -955,11 +1210,9 @@ describe('ContactsEdit component', () => {
       });
       getContact
         .withArgs(Qualifier.byUuid('the_district'))
-        .resolves({ _id: 'the_district', type: 'clinic' });
-      dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
-      const form = {
-        validate: sinon.stub().resolves(true),
-      };
+        .resolves({ _id: 'the_district', type: CONTACT_TYPES.CLINIC });
+      getFormConfig.resolves({ doc: { _id: 'clinic_create_form_id', the: 'form' }, type: 'contact' });
+      const form = { the: 'form instance' };
       formService.render.resolves(form);
       const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
       await createComponent();
@@ -986,9 +1239,10 @@ describe('ContactsEdit component', () => {
 
       expect(component.duplicatesAcknowledged).to.equal(true);
       expect(formService.saveContact.args[0]).to.deep.equal([
-        { docId: null, type: 'clinic' },
-        { form, xmlVersion: undefined, duplicateCheck: undefined },
-        true
+        { docId: null, type: CONTACT_TYPES.CLINIC },
+        form,
+        true,
+        undefined,
       ]);
       expect(telemetryService.record.calledOnceWithExactly(
         'enketo:contacts:clinic:duplicates_acknowledged'
@@ -1006,7 +1260,7 @@ describe('ContactsEdit component', () => {
     });
 
     it('does nothing if no duplicates exist', async () => {
-      routeSnapshot.params = { type: 'clinic', parent_id: 'the_district' };
+      routeSnapshot.params = { type: CONTACT_TYPES.CLINIC, parent_id: 'the_district' };
       contactTypesService.getChildren.resolves([{ id: 'clinic' }]);
       contactTypesService.get.resolves({
         create_form: 'clinic_create_form_id',
@@ -1014,11 +1268,9 @@ describe('ContactsEdit component', () => {
       });
       getContact
         .withArgs(Qualifier.byUuid('the_district'))
-        .resolves({ _id: 'the_district', type: 'clinic' });
-      dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
-      const form = {
-        validate: sinon.stub().resolves(true),
-      };
+        .resolves({ _id: 'the_district', type: CONTACT_TYPES.CLINIC });
+      getFormConfig.resolves({ doc: { _id: 'clinic_create_form_id', the: 'form' }, type: 'contact' });
+      const form = { the: 'form instance' };
       formService.render.resolves(form);
       const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
       await createComponent();
@@ -1035,11 +1287,14 @@ describe('ContactsEdit component', () => {
 
       expect(component.duplicatesAcknowledged).to.equal(true);
       expect(formService.saveContact.args[0]).to.deep.equal([
-        { docId: null, type: 'clinic' },
-        { form, xmlVersion: undefined, duplicateCheck: undefined },
-        true
+        { docId: null, type: CONTACT_TYPES.CLINIC },
+        form,
+        true,
+        undefined,
       ]);
       expect(telemetryService.record.notCalled).to.be.true;
     });
   });
+
 });
+

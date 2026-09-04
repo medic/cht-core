@@ -1,9 +1,21 @@
+.targets-content {
+  &.sidebar-open {
+    flex: 1;
+    margin-right: 27%;
+  }
+}
+
 .targets {
   display: grid;
   grid-template-columns: repeat(3, 296px);
   gap: 0 @targets-column-gap;
   justify-content: center;
   padding: 35px 0;
+
+  .sidebar-open & {
+    grid-template-columns: repeat(2, 296px);
+    margin-right: 20px;
+  }
 
   .target {
     width: 296px;
@@ -57,6 +69,9 @@
         position: relative;
       }
       .count {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         text-align: center;
         .number {
           text-align: center;
@@ -66,11 +81,7 @@
           padding-bottom: 0;
         }
         .goal {
-          position: absolute;
-          right: 0;
-          padding-right: 20px;
           color: @label-color;
-          top: 15px;
           p {
             font-size: @font-small;
             font-weight: 400;
@@ -229,6 +240,10 @@
 @media (max-width: @media-tablet) {
   .targets {
     grid-template-columns: repeat(2, 296px);
+    .sidebar-open & {
+      grid-template-columns: repeat(1, 296px);
+      margin-right: 5px;
+    }
   }
 }
 

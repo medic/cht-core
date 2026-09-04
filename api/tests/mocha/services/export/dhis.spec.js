@@ -3,6 +3,7 @@ const path = require('path');
 const memdownMedic = require('@medic/memdown');
 const moment = require('moment');
 const sinon = require('sinon');
+const { PREFIXES } = require('@medic/constants');
 
 const defaultSettings = require('../../../../../config/default/app_settings.json');
 const service = require('../../../../src/services/export/dhis');
@@ -83,7 +84,57 @@ describe('dhis export service', () => {
       period: '200002',
     });
   });
-
+ 
+  it('supports exporting Bikram Sambat target doc tags when use_bikram_sambat_months is enabled', async () => {
+    const chu1 = mockContact('chu1');
+    const chw = mockContact('chw', { dhis: undefined, parent: { _id: chu1._id } });
+ 
+    // Enable useBikramSambatMonths settings
+    const customSettings = JSON.parse(JSON.stringify(defaultSettings));
+    customSettings.uhc = {
+      visit_count: {
+        use_bikram_sambat_months: true,
+      }
+    };
+    sinon.stub(config, 'get').returns(customSettings);
+ 
+    // 2000-02-21 is BS 2056-11-09 (Falgun 9). The target doc tag is BS month 2056-11
+    await medic.bulkDocs([
+      chu1,
+      chw,
+      mockTargetDoc('chw', '2056-11'),
+      mockTargetDoc('chu1', '2056-11'),
+      mockTargetDoc('ignore1', '2000-02'), // Gregorian-tagged doc, should be ignored in BS mode
+    ]);
+ 
+    const actual = await service({
+      date: {
+        from: moment(NOW).valueOf(),
+      },
+      dataSet,
+    });
+ 
+    expect(actual).to.deep.eq({
+      completeDate: '2000-02-21',
+      dataSet,
+      dataValues: [
+        {
+          dataElement: 'kB0ZBFisE0e',
+          orgUnit: 'ou-chu1',
+          value: 24,
+        },
+        {
+          dataElement: 'e22tIwy1nKR',
+          attributeOptionCombo: 'HllvX50cXC0',
+          categoryOptionCombo: 'HllvX50cXC0',
+          orgUnit: 'ou-chu1',
+          value: 8,
+        },
+      ],
+      period: '200002',
+    });
+  });
+ 
   it('yields 0s for an orgunit without any target docs', async () => {
     const chu = mockContact('chu');
     sinon.stub(config, 'get').returns(defaultSettings);
@@ -458,6 +509,50 @@ describe('dhis export service', () => {
       expect(err.message).to.include('has no dataElements');
     }
   });
+
+  it('queries target documents using Bikram Sambat months when enabled', async () => {
+    const chu1 = mockContact('chu1');
+    const chw = mockContact('chw', { dhis: undefined, parent: { _id: chu1._id } });
+
+    const customSettings = Object.assign({}, defaultSettings, {
+      uhc: {
+        visit_count: {
+          month_start_date: 1,
+          use_bikram_sambat_months: true,
+        }
+      }
+    });
+    sinon.stub(config, 'get').returns(customSettings);
+
+    // 2026-08-15 is BS 2083-04. So target doc is mocked with '2083-04'.
+    await medic.bulkDocs([
+      chu1,
+      chw,
+      mockTargetDoc('chw', '2083-04'),
+    ]);
+
+    const actual = await service({
+      dataSet,
+      date: {
+        from: moment('2026-08-15').valueOf(),
+      },
+    });
+
+    expect(actual.dataValues).to.deep.include.members([
+      {
+        dataElement: 'kB0ZBFisE0e',
+        orgUnit: 'ou-chu1',
+        value: 12,
+      },
+      {
+        dataElement: 'e22tIwy1nKR',
+        attributeOptionCombo: 'HllvX50cXC0',
+        categoryOptionCombo: 'HllvX50cXC0',
+        orgUnit: 'ou-chu1',
+        value: 4,
+      }
+    ]);
+  });
 });
 
 const mockContact = (username, override) => Object.assign({
@@ -471,10 +566,10 @@ const mockContact = (username, override) => Object.assign({
 }, override);
 
 const mockTargetDoc = (username, interval, override) => Object.assign({
-  _id: `target~${interval}~org.couchdb.user:${username}~${username}-guid`,
+  _id: `target~${interval}~${PREFIXES.COUCH_USER}${username}~${username}-guid`,
   type: 'target',
   owner: `${username}-guid`,
-  user: `org.couchdb.user:${username}`,
+  user: `${PREFIXES.COUCH_USER}${username}`,
   targets: [
     {
       id: 'births-this-month',

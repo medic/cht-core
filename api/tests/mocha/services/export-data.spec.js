@@ -4,6 +4,7 @@ const db = require('../../../src/db');
 const logger = require('@medic/logger');
 const service = require('../../../src/services/export-data');
 const sinon = require('sinon');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('Export Data Service', () => {
 
@@ -198,7 +199,7 @@ describe('Export Data Service', () => {
         _rev: '3-e361f7bce1a97799b3265336a2e68f11',
         fields: { patient_name: 'Babyale Elaijah' },
         form: 'assessment',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         reported_date: 1450959150540,
         contact: {
@@ -229,7 +230,7 @@ describe('Export Data Service', () => {
           _rev: '3-e361f7bce1a97799b3265336a2e68f11',
           fields: { patient_name: 'Babyale Elaijah' },
           form: 'assessment',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           content_type: 'xml',
           reported_date: 1450959150540,
           contact: {

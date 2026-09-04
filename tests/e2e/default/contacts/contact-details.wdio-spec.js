@@ -11,13 +11,14 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const reportFactory = require('@factories/cht/reports/generic-report');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Contact details page.', () => {
   describe('Permissions to show reports and tasks', () => {
     const DOCS_DISPLAY_LIMIT = 50;
     const ROLE = 'notchw';
 
-    const parent = placeFactory.place().build({_id: 'dist1', type: 'district_hospital'});
+    const parent = placeFactory.place().build({_id: 'dist1', type: CONTACT_TYPES.DISTRICT_HOSPITAL});
     const user = userFactory.build({username: 'offlineuser', roles: [ROLE]});
     const patient = personFactory.build({parent: {_id: user.place._id, parent: {_id: parent._id}}});
 
@@ -92,10 +93,6 @@ describe('Contact details page.', () => {
       await loginPage.login(user);
     });
 
-    after(async () => {
-      await utils.revertSettings(true);
-    });
-
     it('should show reports and tasks when permissions are enabled', async () => {
       await commonElements.goToPeople(patient._id, true);
       expect(await contactPage.contactCardSelectors.contactCardName().getText()).to.equal(patient.name);
@@ -143,7 +140,7 @@ describe('Contact details page.', () => {
 
   describe('Contact summary error', () => {
     const places = placeFactory.generateHierarchy();
-    const clinic = places.get('clinic');
+    const clinic = places.get(CONTACT_TYPES.CLINIC);
 
     const patient = personFactory.build({
       name: 'Patient',
@@ -159,14 +156,11 @@ describe('Contact details page.', () => {
       await utils.updateSettings({ contact_summary: contactSummary }, { ignoreReload: true });
 
       await utils.saveDocs([...places.values(), patient]);
-    });
 
-    after(async () => {
-      await utils.revertSettings(true);
+      await loginPage.cookieLogin();
     });
 
     it('should show error log for bad config', async () => {
-      await loginPage.cookieLogin();
       await commonPage.goToPeople(patient._id);
 
       const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();
@@ -177,6 +171,56 @@ describe('Contact details page.', () => {
       expect(await errorStack.isDisplayed()).to.be.true;
       expect(await errorStack.getText()).to
         .include('Error: Configuration error');
+    });
+  });
+  describe('Contact summary cards collapsing', () => {
+    const places = placeFactory.generateHierarchy();
+    const clinic = places.get('clinic');
+
+    const patient = personFactory.build({
+      name: 'Patient with cards',
+      phone: '+50683444445',
+      parent: { _id: clinic._id, parent: clinic.parent }
+    });
+
+    before(async () => {
+      await chtConfUtils.initializeConfigDir();
+      const contactSummaryFile = path.join(__dirname, 'config/contact-summary-config.js');
+
+      const { contactSummary } = await chtConfUtils.compileConfig({ contactSummary: contactSummaryFile });
+      await utils.updateSettings({ contact_summary: contactSummary }, { ignoreReload: true });
+
+      await utils.saveDocs([...places.values(), patient]);
+      await loginPage.cookieLogin();
+    });
+
+    it('should show contact summary cards expanded by default and allow collapsing', async () => {
+      await commonPage.goToPeople(patient._id);
+      await contactPage.waitForContactLoaded();
+
+      const firstCardSelectors = contactPage.contactSummaryCardSelectors('first.card');
+      const firstCardHeader = firstCardSelectors.header();
+      const firstCardField = firstCardSelectors.fieldValue('first.field');
+      const secondCardSelectors = contactPage.contactSummaryCardSelectors('second.card');
+      const secondCardHeader = secondCardSelectors.header();
+      const secondCardField = secondCardSelectors.fieldValue('second.field');
+
+      await firstCardHeader.waitForDisplayed();
+      await secondCardHeader.waitForDisplayed();
+      // First card expanded
+      await firstCardField.waitForDisplayed();
+      // Second card collapsed
+      await secondCardField.waitForDisplayed({ reverse: true });
+
+      await firstCardHeader.click();
+
+      await firstCardField.waitForDisplayed({ reverse: true });
+      await secondCardField.waitForDisplayed({ reverse: true });
+
+      await secondCardHeader.click();
+
+      await firstCardField.waitForDisplayed({ reverse: true });
+      await secondCardField.waitForDisplayed();
     });
   });
 });

@@ -1,108 +1,128 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
   <h:head>
     <h:title>New NGO</h:title>
-    <model>
+    <model odk:xforms-version="1.0.0">
       <itext>
         <translation lang="en">
-          <text id="/data/ngo/external_id:label">
-            <value>External ID</value>
-          </text>
-          <text id="/data/ngo/is_name_generated/false:label">
-            <value>No, I want to name it manually</value>
-          </text>
-          <text id="/data/ngo/is_name_generated/true:label">
+          <text id="yes_no-0">
             <value>Yes</value>
           </text>
-          <text id="/data/ngo/is_name_generated:label">
-            <value>Would you like to name the place after the primary contact: &quot;<output value=" /data/init/generated_name_translation "/>&quot;?</value>
+          <text id="yes_no-1">
+            <value>No</value>
           </text>
-          <text id="/data/ngo/name:label">
+          <text id="male_female-0">
+            <value>Female</value>
+          </text>
+          <text id="male_female-1">
+            <value>Male</value>
+          </text>
+          <text id="contact-0">
+            <value>Create a new person</value>
+          </text>
+          <text id="contact-1">
+            <value>Select an existing person</value>
+          </text>
+          <text id="contact-2">
+            <value>Skip this step</value>
+          </text>
+          <text id="select_dob_method-0">
+            <value>Date of birth unknown</value>
+          </text>
+          <text id="roles-0">
+            <value>CHW</value>
+          </text>
+          <text id="roles-1">
+            <value>CHW Supervisor</value>
+          </text>
+          <text id="roles-2">
+            <value>Nurse</value>
+          </text>
+          <text id="roles-3">
+            <value>Facility Manager</value>
+          </text>
+          <text id="roles-4">
+            <value>Patient</value>
+          </text>
+          <text id="roles-5">
+            <value>Other</value>
+          </text>
+          <text id="yes_no_generated_name-0">
+            <value>Yes</value>
+          </text>
+          <text id="yes_no_generated_name-1">
+            <value>No, I want to name it manually</value>
+          </text>
+          <text id="place_type-0">
+            <value>Health Facility</value>
+          </text>
+          <text id="place_type-1">
+            <value>Area</value>
+          </text>
+          <text id="place_type-2">
+            <value>Household</value>
+          </text>
+          <text id="generated_name-0">
+            <value><output value=" /data/init/contact_name "/>'s Health Facility</value>
+          </text>
+          <text id="generated_name-1">
+            <value><output value=" /data/init/contact_name "/>'s Area</value>
+          </text>
+          <text id="generated_name-2">
+            <value><output value=" /data/init/contact_name "/>'s Household</value>
+          </text>
+          <text id="translate_name_label-0">
             <value>Name</value>
           </text>
-          <text id="/data/ngo/notes:label">
-            <value>Notes</value>
+          <text id="/data/init/create_new_person:label">
+            <value>Set the Primary Contact</value>
           </text>
-          <text id="/data/ngo/use_cases/anc:label">
-            <value>Antenatal care</value>
+          <text id="/data/init/select_person:label">
+            <value>Select the Primary Contact</value>
           </text>
-          <text id="/data/ngo/use_cases/imm:label">
-            <value>Immunizations</value>
+          <text id="/data/init/custom_place_name:label">
+            <value><output value=" /data/init/custom_place_name_label "/></value>
           </text>
-          <text id="/data/ngo/use_cases/pnc:label">
-            <value>Postnatal care</value>
+          <text id="/data/init/place_type:label">
+            <value>Enter the name of this place</value>
           </text>
-          <text id="/data/ngo/use_cases:hint">
-            <value>Select all needed for this <output value=" /data/init/place_type_translation "/></value>
-          </text>
-          <text id="/data/ngo/use_cases:label">
-            <value>Health programs</value>
-          </text>
-          <text id="/data/ngo/vaccines/bcg:label">
-            <value>BCG</value>
-          </text>
-          <text id="/data/ngo/vaccines/cholera:label">
-            <value>Cholera</value>
-          </text>
-          <text id="/data/ngo/vaccines/flu:label">
-            <value>Influenza</value>
-          </text>
-          <text id="/data/ngo/vaccines/hep_a:label">
-            <value>Hepatitis A</value>
-          </text>
-          <text id="/data/ngo/vaccines/hpv:label">
-            <value>HPV (Human Papillomavirus)</value>
-          </text>
-          <text id="/data/ngo/vaccines/ipv:label">
-            <value>Inactivated Polio</value>
-          </text>
-          <text id="/data/ngo/vaccines/jap_enc:label">
-            <value>Japanese Encephalitis</value>
-          </text>
-          <text id="/data/ngo/vaccines/meningococcal:label">
-            <value>Meningococcal</value>
-          </text>
-          <text id="/data/ngo/vaccines/mmr:label">
-            <value>MMR (Measles, Mumps, Rubella)</value>
-          </text>
-          <text id="/data/ngo/vaccines/mmrv:label">
-            <value>MMRV (Measles, Mumps, Rubella, Varicella)</value>
-          </text>
-          <text id="/data/ngo/vaccines/penta:label">
-            <value>Pentavalent</value>
-          </text>
-          <text id="/data/ngo/vaccines/pneumococcal:label">
-            <value>Pneumococcal Pneumonia</value>
-          </text>
-          <text id="/data/ngo/vaccines/polio:label">
-            <value>Polio</value>
-          </text>
-          <text id="/data/ngo/vaccines/rotavirus:label">
-            <value>Rotavirus</value>
-          </text>
-          <text id="/data/ngo/vaccines/typhoid:label">
-            <value>Typhoid</value>
-          </text>
-          <text id="/data/ngo/vaccines/vitamin_a:label">
-            <value>Vitamin A</value>
-          </text>
-          <text id="/data/ngo/vaccines/yellow_fever:label">
-            <value>Yellow Fever</value>
-          </text>
-          <text id="/data/ngo/vaccines:hint">
-            <value>Select all needed for this <output value=" /data/init/place_type_translation "/></value>
-          </text>
-          <text id="/data/ngo/vaccines:label">
-            <value>Select vaccines</value>
-          </text>
-          <text id="/data/contact/external_id:label">
-            <value>External ID</value>
+          <text id="/data/contact:label">
+            <value>New Person</value>
           </text>
           <text id="/data/contact/name:label">
-            <value>Names</value>
+            <value>Full Name</value>
           </text>
-          <text id="/data/contact/notes:label">
-            <value>Notes</value>
+          <text id="/data/contact/short_name:label">
+            <value>Short name</value>
+          </text>
+          <text id="/data/contact/short_name:hint">
+            <value>Please enter a short name that is preferred by the person.</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_calendar:label">
+            <value>Age</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_calendar:hint">
+            <value>Date of Birth</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/age_label:label">
+            <value>**Age**</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/age_years:label">
+            <value>Years</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/age_months:label">
+            <value>Months</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_approx:label">
+            <value>DOB</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_iso:label">
+            <value>Date of Birth</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_debug:label">
+            <value> DOB Approx: <output value=" /data/contact/ephemeral_dob/dob_approx "/>
+DOB Calendar: <output value=" /data/contact/ephemeral_dob/dob_calendar "/>
+DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           </text>
           <text id="/data/contact/phone:label">
             <value>Phone Number</value>
@@ -110,23 +130,8 @@
           <text id="/data/contact/phone_alternate:label">
             <value>Alternate Phone Number</value>
           </text>
-          <text id="/data/contact/role/chw:label">
-            <value>CHW</value>
-          </text>
-          <text id="/data/contact/role/chw_supervisor:label">
-            <value>CHW Supervisor</value>
-          </text>
-          <text id="/data/contact/role/manager:label">
-            <value>Facility Manager</value>
-          </text>
-          <text id="/data/contact/role/nurse:label">
-            <value>Nurse</value>
-          </text>
-          <text id="/data/contact/role/other:label">
-            <value>Other</value>
-          </text>
-          <text id="/data/contact/role/patient:label">
-            <value>Patient</value>
+          <text id="/data/contact/sex:label">
+            <value>Sex</value>
           </text>
           <text id="/data/contact/role:label">
             <value>Role</value>
@@ -134,375 +139,109 @@
           <text id="/data/contact/role_other:label">
             <value>Specify other</value>
           </text>
-          <text id="/data/contact:label">
-            <value>New Person</value>
-          </text>
-          <text id="/data/init/create_new_person/new_person:label">
-            <value>Create a new person</value>
-          </text>
-          <text id="/data/init/create_new_person/none:label">
-            <value>Skip this step</value>
-          </text>
-          <text id="/data/init/create_new_person/old_person:label">
-            <value>Select an existing person</value>
-          </text>
-          <text id="/data/init/create_new_person:label">
-            <value>Set the Primary Contact</value>
-          </text>
-          <text id="/data/init/custom_place_name:label">
-            <value>Name of this <output value=" /data/init/place_type_translation "/></value>
-          </text>
-          <text id="/data/init/generated_name/Region:label">
-            <value><output value=" /data/init/contact_name "/>'s Region</value>
-          </text>
-          <text id="/data/init/generated_name/clinic:label">
-            <value><output value=" /data/init/contact_name "/>'s Area</value>
-          </text>
-          <text id="/data/init/generated_name/district_hospital:label">
-            <value><output value=" /data/init/contact_name "/>'s District</value>
-          </text>
-          <text id="/data/init/generated_name/family:label">
-            <value><output value=" /data/init/contact_name "/>'s Family</value>
-          </text>
-          <text id="/data/init/generated_name/health_center:label">
-            <value><output value=" /data/init/contact_name "/>'s Health Center</value>
-          </text>
-          <text id="/data/init/generated_name/ngo:label">
-            <value><output value=" /data/init/contact_name "/>'s NGO</value>
-          </text>
-          <text id="/data/init/generated_name/office:label">
-            <value><output value=" /data/init/contact_name "/>'s Office</value>
-          </text>
-          <text id="/data/init/place_type/clinic:label">
-            <value>Area</value>
-          </text>
-          <text id="/data/init/place_type/district_hospital:label">
-            <value>District</value>
-          </text>
-          <text id="/data/init/place_type/family:label">
-            <value>Family</value>
-          </text>
-          <text id="/data/init/place_type/health_center:label">
-            <value>Health Center</value>
-          </text>
-          <text id="/data/init/place_type/ngo:label">
-            <value>NGO</value>
-          </text>
-          <text id="/data/init/place_type/office:label">
-            <value>Office</value>
-          </text>
-          <text id="/data/init/place_type/region:label">
-            <value>Region</value>
-          </text>
-          <text id="/data/init/place_type:label">
-            <value>Enter the name of this place</value>
-          </text>
-          <text id="/data/init/select_person:label">
-            <value>Select the Primary Contact</value>
-          </text>
-        </translation>
-        <translation lang="fr">
-          <text id="/data/ngo/external_id:label">
-            <value>Identifiant externe</value>
-          </text>
-          <text id="/data/ngo/is_name_generated/false:label">
-            <value>Non, je veux nommer ça manuellement</value>
-          </text>
-          <text id="/data/ngo/is_name_generated/true:label">
-            <value>Oui</value>
-          </text>
-          <text id="/data/ngo/is_name_generated:label">
-            <value>Voulez-vous nommer l'endroit: &quot;<output value=" /data/init/generated_name_translation "/>&quot;?</value>
-          </text>
-          <text id="/data/ngo/name:label">
-            <value>Nom</value>
-          </text>
-          <text id="/data/ngo/notes:label">
-            <value>Notes</value>
-          </text>
-          <text id="/data/ngo/use_cases/anc:label">
-            <value>Soins prénataux</value>
-          </text>
-          <text id="/data/ngo/use_cases/imm:label">
-            <value>Vaccination</value>
-          </text>
-          <text id="/data/ngo/use_cases/pnc:label">
-            <value>Soins postnataux</value>
-          </text>
-          <text id="/data/ngo/use_cases:hint">
-            <value>Sélectionnez tout ce dont vous avez besoin pour <output value=" /data/init/place_type_translation "/></value>
-          </text>
-          <text id="/data/ngo/use_cases:label">
-            <value>Programmes de santé</value>
-          </text>
-          <text id="/data/ngo/vaccines/bcg:label">
-            <value>BCG</value>
-          </text>
-          <text id="/data/ngo/vaccines/cholera:label">
-            <value>Choléra</value>
-          </text>
-          <text id="/data/ngo/vaccines/flu:label">
-            <value>Grippe</value>
-          </text>
-          <text id="/data/ngo/vaccines/hep_a:label">
-            <value>Hépatite A</value>
-          </text>
-          <text id="/data/ngo/vaccines/hpv:label">
-            <value>HPV (virus du papillome humain)</value>
-          </text>
-          <text id="/data/ngo/vaccines/ipv:label">
-            <value>Polio inactivée</value>
-          </text>
-          <text id="/data/ngo/vaccines/jap_enc:label">
-            <value>Encéphalite japonaise</value>
-          </text>
-          <text id="/data/ngo/vaccines/meningococcal:label">
-            <value>Méningocoque</value>
-          </text>
-          <text id="/data/ngo/vaccines/mmr:label">
-            <value>MMR (rougeole, oreillons, rubéole)</value>
-          </text>
-          <text id="/data/ngo/vaccines/mmrv:label">
-            <value>MMRV (rougeole, oreillons, rubéole, varicelle)</value>
-          </text>
-          <text id="/data/ngo/vaccines/penta:label">
-            <value>Penta</value>
-          </text>
-          <text id="/data/ngo/vaccines/pneumococcal:label">
-            <value>Pneumo</value>
-          </text>
-          <text id="/data/ngo/vaccines/polio:label">
-            <value>Polio</value>
-          </text>
-          <text id="/data/ngo/vaccines/rotavirus:label">
-            <value>Rota</value>
-          </text>
-          <text id="/data/ngo/vaccines/typhoid:label">
-            <value>Typhoïde</value>
-          </text>
-          <text id="/data/ngo/vaccines/vitamin_a:label">
-            <value>Vitamine A</value>
-          </text>
-          <text id="/data/ngo/vaccines/yellow_fever:label">
-            <value>Fièvre jaune</value>
-          </text>
-          <text id="/data/ngo/vaccines:hint">
-            <value>Sélectionnez tout ce dont vous avez besoin pour <output value=" /data/init/place_type_translation "/></value>
-          </text>
-          <text id="/data/ngo/vaccines:label">
-            <value>Choisissez les vaccins</value>
-          </text>
           <text id="/data/contact/external_id:label">
-            <value>Identifiant externe</value>
-          </text>
-          <text id="/data/contact/meta:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/name:label">
-            <value>Nom</value>
+            <value>External ID</value>
           </text>
           <text id="/data/contact/notes:label">
             <value>Notes</value>
           </text>
-          <text id="/data/contact/phone:label">
-            <value>Téléphone</value>
+          <text id="/data/ngo/is_name_generated:label">
+            <value> Would you like to name the place after the primary contact: "<output value=" /data/init/generated_name_translation "/>"?</value>
           </text>
-          <text id="/data/contact/phone_alternate:label">
-            <value>Téléphone alternatif</value>
+          <text id="/data/ngo/name:label">
+            <value>Name</value>
           </text>
-          <text id="/data/contact/role/chw:label">
-            <value>ASC</value>
+          <text id="/data/ngo/external_id:label">
+            <value>External ID</value>
           </text>
-          <text id="/data/contact/role/chw_supervisor:label">
-            <value>Superviseur ASC</value>
-          </text>
-          <text id="/data/contact/role/manager:label">
-            <value>Staff médical</value>
-          </text>
-          <text id="/data/contact/role/nurse:label">
-            <value>Infirmier</value>
-          </text>
-          <text id="/data/contact/role/other:label">
-            <value>Autre</value>
-          </text>
-          <text id="/data/contact/role/patient:label">
-            <value>Patient</value>
-          </text>
-          <text id="/data/contact/role:label">
-            <value>Rôle</value>
-          </text>
-          <text id="/data/contact/role_other:label">
-            <value>Specifier</value>
-          </text>
-          <text id="/data/contact:label">
-            <value>Nouvelle personne</value>
-          </text>
-          <text id="/data/init/create_new_person/new_person:label">
-            <value>Créer une nouvelle personne</value>
-          </text>
-          <text id="/data/init/create_new_person/none:label">
-            <value>Sauter cette section</value>
-          </text>
-          <text id="/data/init/create_new_person/old_person:label">
-            <value>Selectiionner une personne existant</value>
-          </text>
-          <text id="/data/init/create_new_person:label">
-            <value>Contact primaire</value>
-          </text>
-          <text id="/data/init/custom_place_name:label">
-            <value>Nom pour <output value=" /data/init/place_type_translation "/></value>
-          </text>
-          <text id="/data/init/generated_name/Region:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/generated_name/clinic:label">
-            <value>Zone de <output value=" /data/init/contact_name "/></value>
-          </text>
-          <text id="/data/init/generated_name/district_hospital:label">
-            <value>District de <output value=" /data/init/contact_name "/></value>
-          </text>
-          <text id="/data/init/generated_name/family:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/generated_name/health_center:label">
-            <value>Centre de santé de <output value=" /data/init/contact_name "/></value>
-          </text>
-          <text id="/data/init/generated_name/ngo:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/generated_name/office:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/clinic:label">
-            <value>Zone</value>
-          </text>
-          <text id="/data/init/place_type/district_hospital:label">
-            <value>District</value>
-          </text>
-          <text id="/data/init/place_type/family:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/health_center:label">
-            <value>Centre de santé</value>
-          </text>
-          <text id="/data/init/place_type/ngo:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/office:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/region:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type:label">
-            <value>Nom de l'endroit</value>
-          </text>
-          <text id="/data/init/select_person:label">
-            <value>Choisisser le contact primaire</value>
+          <text id="/data/ngo/notes:label">
+            <value>Notes</value>
           </text>
         </translation>
         <translation lang="hi">
-          <text id="/data/ngo/external_id:label">
-            <value>बाहरी ID</value>
-          </text>
-          <text id="/data/ngo/is_name_generated/false:label">
-            <value>नहीं, मैं इसे मैन्युअल रूप से नाम देना चाहता हूं</value>
-          </text>
-          <text id="/data/ngo/is_name_generated/true:label">
+          <text id="yes_no-0">
             <value>हाँ</value>
           </text>
-          <text id="/data/ngo/is_name_generated:label">
-            <value>क्या आप इस स्थान को प्राथमिक कॉंटॅक्ट का नाम देना चाहेंगे?: <output value=" /data/init/generated_name_translation "/></value>
+          <text id="yes_no-1">
+            <value>नहीं</value>
           </text>
-          <text id="/data/ngo/name:label">
+          <text id="male_female-0">
+            <value>स्त्री</value>
+          </text>
+          <text id="male_female-1">
+            <value>पुरूष</value>
+          </text>
+          <text id="contact-0">
+            <value>एक नया व्यक्ति बनाएं</value>
+          </text>
+          <text id="contact-1">
+            <value>मौजूदा व्यक्ति चुनें</value>
+          </text>
+          <text id="contact-2">
+            <value>इस स्टेप को छोड़ दें</value>
+          </text>
+          <text id="roles-0">
+            <value>सामुदायिक स्वास्थ्य कर्मी</value>
+          </text>
+          <text id="roles-1">
+            <value>सामुदायिक स्वास्थ्य कर्मी के मैनेजर</value>
+          </text>
+          <text id="roles-2">
+            <value>नर्स</value>
+          </text>
+          <text id="roles-3">
+            <value>स्वास्थ्य केंद्र के मैनजर</value>
+          </text>
+          <text id="roles-4">
+            <value>मरीज़</value>
+          </text>
+          <text id="roles-5">
+            <value>अन्य</value>
+          </text>
+          <text id="yes_no_generated_name-0">
+            <value>हाँ</value>
+          </text>
+          <text id="yes_no_generated_name-1">
+            <value>नहीं, मैं इसे मैन्युअल रूप से नाम देना चाहता हूं</value>
+          </text>
+          <text id="place_type-0">
+            <value>ज़िला</value>
+          </text>
+          <text id="place_type-1">
+            <value>स्वास्थ्य केंद्र</value>
+          </text>
+          <text id="place_type-2">
+            <value>क्षेत्र</value>
+          </text>
+          <text id="generated_name-0">
+            <value><output value=" /data/init/contact_name "/> का ज़िला</value>
+          </text>
+          <text id="generated_name-1">
+            <value><output value=" /data/init/contact_name "/> का स्वास्थ्य केंद्र</value>
+          </text>
+          <text id="generated_name-2">
+            <value><output value=" /data/init/contact_name "/> का क्षेत्र</value>
+          </text>
+          <text id="translate_name_label-0">
             <value>नाम</value>
           </text>
-          <text id="/data/ngo/notes:label">
-            <value>नोट्स</value>
+          <text id="/data/init/create_new_person:label">
+            <value>प्राथमिक कॉंटॅक्ट चुनें</value>
           </text>
-          <text id="/data/ngo/use_cases/anc:label">
-            <value>गर्भावस्था की देखभाल</value>
+          <text id="/data/init/select_person:label">
+            <value>प्राथमिक कॉंटॅक्ट चुनें</value>
           </text>
-          <text id="/data/ngo/use_cases/imm:label">
-            <value>टीकाकरण</value>
+          <text id="/data/init/custom_place_name:label">
+            <value><output value=" /data/init/custom_place_name_label "/></value>
           </text>
-          <text id="/data/ngo/use_cases/pnc:label">
-            <value>गर्भावस्था के बाद की देखभाल</value>
+          <text id="/data/init/place_type:label">
+            <value>इस स्थान का नाम दर्ज करें</value>
           </text>
-          <text id="/data/ngo/use_cases:hint">
-            <value>इस <output value=" /data/init/place_type_translation "/> के लिए आवश्यक सभी का चयन करें</value>
-          </text>
-          <text id="/data/ngo/use_cases:label">
-            <value>स्वास्थ्य कार्यक्रम</value>
-          </text>
-          <text id="/data/ngo/vaccines/bcg:label">
-            <value>BCG</value>
-          </text>
-          <text id="/data/ngo/vaccines/cholera:label">
-            <value>Cholera</value>
-          </text>
-          <text id="/data/ngo/vaccines/flu:label">
-            <value>Influenza</value>
-          </text>
-          <text id="/data/ngo/vaccines/hep_a:label">
-            <value>Hepatitis A</value>
-          </text>
-          <text id="/data/ngo/vaccines/hpv:label">
-            <value>HPV (Human Papillomavirus)</value>
-          </text>
-          <text id="/data/ngo/vaccines/ipv:label">
-            <value>Inactivated Polio</value>
-          </text>
-          <text id="/data/ngo/vaccines/jap_enc:label">
-            <value>Japanese Encephalitis</value>
-          </text>
-          <text id="/data/ngo/vaccines/meningococcal:label">
-            <value>Meningococcal</value>
-          </text>
-          <text id="/data/ngo/vaccines/mmr:label">
-            <value>MMR (Measles, Mumps, Rubella)</value>
-          </text>
-          <text id="/data/ngo/vaccines/mmrv:label">
-            <value>MMRV (Measles, Mumps, Rubella, Varicella)</value>
-          </text>
-          <text id="/data/ngo/vaccines/penta:label">
-            <value>Pentavalent</value>
-          </text>
-          <text id="/data/ngo/vaccines/pneumococcal:label">
-            <value>Pneumococcal Pneumonia</value>
-          </text>
-          <text id="/data/ngo/vaccines/polio:label">
-            <value>Polio</value>
-          </text>
-          <text id="/data/ngo/vaccines/rotavirus:label">
-            <value>Rotavirus</value>
-          </text>
-          <text id="/data/ngo/vaccines/typhoid:label">
-            <value>Typhoid</value>
-          </text>
-          <text id="/data/ngo/vaccines/vitamin_a:label">
-            <value>Vitamin A</value>
-          </text>
-          <text id="/data/ngo/vaccines/yellow_fever:label">
-            <value>Yellow Fever</value>
-          </text>
-          <text id="/data/ngo/vaccines:hint">
-            <value>इस <output value=" /data/init/place_type_translation "/> के लिए आवश्यक सभी का चयन करें</value>
-          </text>
-          <text id="/data/ngo/vaccines:label">
-            <value>टीकाकरण चुनें</value>
-          </text>
-          <text id="/data/contact/external_id:label">
-            <value>बाहरी ID</value>
-          </text>
-          <text id="/data/contact/meta:label">
-            <value>-</value>
+          <text id="/data/contact:label">
+            <value>नया व्यक्ति</value>
           </text>
           <text id="/data/contact/name:label">
             <value>नाम</value>
-          </text>
-          <text id="/data/contact/notes:label">
-            <value>नोट्स</value>
           </text>
           <text id="/data/contact/phone:label">
             <value>फोन नंबर</value>
@@ -510,23 +249,8 @@
           <text id="/data/contact/phone_alternate:label">
             <value>अन्य फोन नंबर</value>
           </text>
-          <text id="/data/contact/role/chw:label">
-            <value>सामुदायिक स्वास्थ्य कर्मी</value>
-          </text>
-          <text id="/data/contact/role/chw_supervisor:label">
-            <value>सामुदायिक स्वास्थ्य कर्मी के मैनेजर</value>
-          </text>
-          <text id="/data/contact/role/manager:label">
-            <value>स्वास्थ्य केंद्र के मैनजर</value>
-          </text>
-          <text id="/data/contact/role/nurse:label">
-            <value>नर्स</value>
-          </text>
-          <text id="/data/contact/role/other:label">
-            <value>अन्य</value>
-          </text>
-          <text id="/data/contact/role/patient:label">
-            <value>मरीज़</value>
+          <text id="/data/contact/sex:label">
+            <value>लिंग</value>
           </text>
           <text id="/data/contact/role:label">
             <value>भूमिका</value>
@@ -534,175 +258,148 @@
           <text id="/data/contact/role_other:label">
             <value>अन्य का उल्‍लेख करें</value>
           </text>
-          <text id="/data/contact:label">
-            <value>नया व्यक्ति</value>
+          <text id="/data/contact/external_id:label">
+            <value>बाहरी ID</value>
           </text>
-          <text id="/data/init/create_new_person/new_person:label">
-            <value>एक नया व्यक्ति बनाएं</value>
-          </text>
-          <text id="/data/init/create_new_person/none:label">
-            <value>इस स्टेप को छोड़ दें</value>
-          </text>
-          <text id="/data/init/create_new_person/old_person:label">
-            <value>मौजूदा व्यक्ति चुनें</value>
-          </text>
-          <text id="/data/init/create_new_person:label">
-            <value>प्राथमिक कॉंटॅक्ट चुनें</value>
-          </text>
-          <text id="/data/init/custom_place_name:label">
-            <value>इस स्थान का नाम <output value=" /data/init/place_type_translation "/></value>
-          </text>
-          <text id="/data/init/generated_name/Region:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/generated_name/clinic:label">
-            <value><output value=" /data/init/contact_name "/> का क्षेत्र</value>
-          </text>
-          <text id="/data/init/generated_name/district_hospital:label">
-            <value><output value=" /data/init/contact_name "/> का ज़िला</value>
-          </text>
-          <text id="/data/init/generated_name/family:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/generated_name/health_center:label">
-            <value><output value=" /data/init/contact_name "/> का स्वास्थ्य केंद्र</value>
-          </text>
-          <text id="/data/init/generated_name/ngo:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/generated_name/office:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/clinic:label">
-            <value>क्षेत्र</value>
-          </text>
-          <text id="/data/init/place_type/district_hospital:label">
-            <value>ज़िला</value>
-          </text>
-          <text id="/data/init/place_type/family:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/health_center:label">
-            <value>स्वास्थ्य केंद्र</value>
-          </text>
-          <text id="/data/init/place_type/ngo:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/office:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/region:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type:label">
-            <value>इस स्थान का नाम दर्ज करें</value>
-          </text>
-          <text id="/data/init/select_person:label">
-            <value>प्राथमिक कॉंटॅक्ट चुनें</value>
-          </text>
-        </translation>
-        <translation lang="id">
-          <text id="/data/ngo/external_id:label">
-            <value>Eksternal ID</value>
-          </text>
-          <text id="/data/ngo/is_name_generated/false:label">
-            <value>Tidak, saya ingin nama itu secara manual</value>
-          </text>
-          <text id="/data/ngo/is_name_generated/true:label">
-            <value>Iya</value>
+          <text id="/data/contact/notes:label">
+            <value>नोट्स</value>
           </text>
           <text id="/data/ngo/is_name_generated:label">
-            <value>Apakah Anda ingin nama tempat setelah kontak utama: &quot;<output value=" /data/init/generated_name_translation "/>&quot;?</value>
+            <value> क्या आप इस स्थान को प्राथमिक कॉंटॅक्ट का नाम देना चाहेंगे?: <output value=" /data/init/generated_name_translation "/></value>
           </text>
           <text id="/data/ngo/name:label">
-            <value>Nama</value>
+            <value>नाम</value>
+          </text>
+          <text id="/data/ngo/external_id:label">
+            <value>बाहरी ID</value>
           </text>
           <text id="/data/ngo/notes:label">
-            <value>Catatan</value>
+            <value>नोट्स</value>
           </text>
-          <text id="/data/ngo/use_cases/anc:label">
-            <value>Perawatan Antenatal</value>
+          <text id="select_dob_method-0">
+            <value>-</value>
           </text>
-          <text id="/data/ngo/use_cases/imm:label">
-            <value>Imunisasi</value>
+          <text id="/data/contact/short_name:label">
+            <value>-</value>
           </text>
-          <text id="/data/ngo/use_cases/pnc:label">
-            <value>Perawatan Setelah Melahirkan</value>
+          <text id="/data/contact/short_name:hint">
+            <value>-</value>
           </text>
-          <text id="/data/ngo/use_cases:hint">
-            <value>Pilih semua yang diperlukan untuk ini <output value=" /data/init/place_type_translation "/></value>
+          <text id="/data/contact/ephemeral_dob/dob_calendar:label">
+            <value>-</value>
           </text>
-          <text id="/data/ngo/use_cases:label">
-            <value>Program Kesehatan</value>
+          <text id="/data/contact/ephemeral_dob/dob_calendar:hint">
+            <value>-</value>
           </text>
-          <text id="/data/ngo/vaccines/bcg:label">
-            <value>BCG</value>
+          <text id="/data/contact/ephemeral_dob/age_label:label">
+            <value>-</value>
           </text>
-          <text id="/data/ngo/vaccines/cholera:label">
-            <value>Kolera</value>
+          <text id="/data/contact/ephemeral_dob/age_years:label">
+            <value>-</value>
           </text>
-          <text id="/data/ngo/vaccines/flu:label">
-            <value>Influenza</value>
+          <text id="/data/contact/ephemeral_dob/age_months:label">
+            <value>-</value>
           </text>
-          <text id="/data/ngo/vaccines/hep_a:label">
-            <value>Hepatitis A</value>
+          <text id="/data/contact/ephemeral_dob/dob_method:label">
+            <value>-</value>
           </text>
-          <text id="/data/ngo/vaccines/hpv:label">
-            <value>HPV (Human Papillomavirus)</value>
+          <text id="/data/contact/ephemeral_dob/dob_approx:label">
+            <value>-</value>
           </text>
-          <text id="/data/ngo/vaccines/ipv:label">
-            <value>Inactivated Polio</value>
+          <text id="/data/contact/ephemeral_dob/dob_iso:label">
+            <value>-</value>
           </text>
-          <text id="/data/ngo/vaccines/jap_enc:label">
-            <value>Japanese Encephalitis</value>
-          </text>
-          <text id="/data/ngo/vaccines/meningococcal:label">
-            <value>Meningococcal</value>
-          </text>
-          <text id="/data/ngo/vaccines/mmr:label">
-            <value>MMR (Measles, Mumps, Rubella)</value>
-          </text>
-          <text id="/data/ngo/vaccines/mmrv:label">
-            <value>MMRV (Measles, Mumps, Rubella, Varicella)</value>
-          </text>
-          <text id="/data/ngo/vaccines/penta:label">
-            <value>Pentavalent</value>
-          </text>
-          <text id="/data/ngo/vaccines/pneumococcal:label">
-            <value>Pneumococcal Pneumonia</value>
-          </text>
-          <text id="/data/ngo/vaccines/polio:label">
-            <value>Polio</value>
-          </text>
-          <text id="/data/ngo/vaccines/rotavirus:label">
-            <value>Rotavirus</value>
-          </text>
-          <text id="/data/ngo/vaccines/typhoid:label">
-            <value>Typhoid</value>
-          </text>
-          <text id="/data/ngo/vaccines/vitamin_a:label">
-            <value>Vitamin A</value>
-          </text>
-          <text id="/data/ngo/vaccines/yellow_fever:label">
-            <value>Yellow Fever</value>
-          </text>
-          <text id="/data/ngo/vaccines:hint">
-            <value>Pilih semua yang diperlukan untuk ini <output value=" /data/init/place_type_translation "/></value>
-          </text>
-          <text id="/data/ngo/vaccines:label">
-            <value>Pilih Jenis Vaksin</value>
-          </text>
-          <text id="/data/contact/external_id:label">
-            <value>Eksternal ID</value>
+          <text id="/data/contact/ephemeral_dob/dob_debug:label">
+            <value>-</value>
           </text>
           <text id="/data/contact/meta:label">
             <value>-</value>
           </text>
-          <text id="/data/contact/name:label">
+        </translation>
+        <translation lang="id">
+          <text id="yes_no-0">
+            <value>Iya</value>
+          </text>
+          <text id="yes_no-1">
+            <value>Tidak</value>
+          </text>
+          <text id="male_female-0">
+            <value>Wanita</value>
+          </text>
+          <text id="male_female-1">
+            <value>Pria</value>
+          </text>
+          <text id="contact-0">
+            <value>Buat orang baru</value>
+          </text>
+          <text id="contact-1">
+            <value>Pilih orang yang ada</value>
+          </text>
+          <text id="contact-2">
+            <value>Lewati langkah ini</value>
+          </text>
+          <text id="roles-0">
+            <value>Kader</value>
+          </text>
+          <text id="roles-1">
+            <value>Kader Pengawas</value>
+          </text>
+          <text id="roles-2">
+            <value>Perawat</value>
+          </text>
+          <text id="roles-3">
+            <value>Manajer Fasilitas</value>
+          </text>
+          <text id="roles-4">
+            <value>Pasien</value>
+          </text>
+          <text id="roles-5">
+            <value>Lain</value>
+          </text>
+          <text id="yes_no_generated_name-0">
+            <value>Iya</value>
+          </text>
+          <text id="yes_no_generated_name-1">
+            <value>Tidak, saya ingin nama itu secara manual</value>
+          </text>
+          <text id="place_type-0">
+            <value>Kabupaten</value>
+          </text>
+          <text id="place_type-1">
+            <value>Fasilitas Kesehatan</value>
+          </text>
+          <text id="place_type-2">
+            <value>Daerah</value>
+          </text>
+          <text id="generated_name-0">
+            <value> Kabupaten <output value=" /data/init/contact_name "/></value>
+          </text>
+          <text id="generated_name-1">
+            <value> Fasilitas Kesehatan <output value=" /data/init/contact_name "/></value>
+          </text>
+          <text id="generated_name-2">
+            <value> Daerah <output value=" /data/init/contact_name "/></value>
+          </text>
+          <text id="translate_name_label-0">
             <value>Nama</value>
           </text>
-          <text id="/data/contact/notes:label">
-            <value>Catatan</value>
+          <text id="/data/init/create_new_person:label">
+            <value>Ditetapkan Sebagai Kontak Utama</value>
+          </text>
+          <text id="/data/init/select_person:label">
+            <value>Pilih Kontak Utama</value>
+          </text>
+          <text id="/data/init/custom_place_name:label">
+            <value><output value=" /data/init/custom_place_name_label "/></value>
+          </text>
+          <text id="/data/init/place_type:label">
+            <value>Masukkan nama tempat ini</value>
+          </text>
+          <text id="/data/contact:label">
+            <value>Orang Baru</value>
+          </text>
+          <text id="/data/contact/name:label">
+            <value>Nama</value>
           </text>
           <text id="/data/contact/phone:label">
             <value>Nomor Telepon</value>
@@ -710,23 +407,8 @@
           <text id="/data/contact/phone_alternate:label">
             <value>Nomor Telepon Alternatif</value>
           </text>
-          <text id="/data/contact/role/chw:label">
-            <value>Kader</value>
-          </text>
-          <text id="/data/contact/role/chw_supervisor:label">
-            <value>Kader Pengawas</value>
-          </text>
-          <text id="/data/contact/role/manager:label">
-            <value>Manajer Fasilitas</value>
-          </text>
-          <text id="/data/contact/role/nurse:label">
-            <value>Perawat</value>
-          </text>
-          <text id="/data/contact/role/other:label">
-            <value>Lain</value>
-          </text>
-          <text id="/data/contact/role/patient:label">
-            <value>Pasien</value>
+          <text id="/data/contact/sex:label">
+            <value>Jenis kelamin</value>
           </text>
           <text id="/data/contact/role:label">
             <value>Peran</value>
@@ -734,375 +416,148 @@
           <text id="/data/contact/role_other:label">
             <value>Tentukan lainnya</value>
           </text>
-          <text id="/data/contact:label">
-            <value>Orang Baru</value>
+          <text id="/data/contact/external_id:label">
+            <value>Eksternal ID</value>
           </text>
-          <text id="/data/init/create_new_person/new_person:label">
-            <value>Buat orang baru</value>
-          </text>
-          <text id="/data/init/create_new_person/none:label">
-            <value>Lewati langkah ini</value>
-          </text>
-          <text id="/data/init/create_new_person/old_person:label">
-            <value>Pilih orang yang ada</value>
-          </text>
-          <text id="/data/init/create_new_person:label">
-            <value>Ditetapkan Sebagai Kontak Utama</value>
-          </text>
-          <text id="/data/init/custom_place_name:label">
-            <value>Masukkan nama tempat ini</value>
-          </text>
-          <text id="/data/init/generated_name/Region:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/generated_name/clinic:label">
-            <value>Daerah <output value=" /data/init/contact_name "/></value>
-          </text>
-          <text id="/data/init/generated_name/district_hospital:label">
-            <value>Kabupaten <output value=" /data/init/contact_name "/></value>
-          </text>
-          <text id="/data/init/generated_name/family:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/generated_name/health_center:label">
-            <value>Fasilitas Kesehatan <output value=" /data/init/contact_name "/></value>
-          </text>
-          <text id="/data/init/generated_name/ngo:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/generated_name/office:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/clinic:label">
-            <value>Daerah</value>
-          </text>
-          <text id="/data/init/place_type/district_hospital:label">
-            <value>Kabupaten</value>
-          </text>
-          <text id="/data/init/place_type/family:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/health_center:label">
-            <value>Fasilitas Kesehatan</value>
-          </text>
-          <text id="/data/init/place_type/ngo:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/office:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/region:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type:label">
-            <value>Masukkan nama tempat ini</value>
-          </text>
-          <text id="/data/init/select_person:label">
-            <value>Pilih Kontak Utama</value>
-          </text>
-        </translation>
-        <translation lang="ne">
-          <text id="/data/ngo/external_id:label">
-            <value>बाहिरि ID</value>
-          </text>
-          <text id="/data/ngo/is_name_generated/false:label">
-            <value>होइन, म आफैँ नाम दिन चाहन्छु</value>
-          </text>
-          <text id="/data/ngo/is_name_generated/true:label">
-            <value>हो</value>
+          <text id="/data/contact/notes:label">
+            <value>Catatan</value>
           </text>
           <text id="/data/ngo/is_name_generated:label">
-            <value>के तपाइ यस स्थानकाे प्राथमिक सम्पर्क नाम दिन चाहानु हुन्छ?:<output value=" /data/init/generated_name_translation "/></value>
+            <value> Apakah Anda ingin nama tempat setelah kontak utama: "<output value=" /data/init/generated_name_translation "/>"?</value>
           </text>
           <text id="/data/ngo/name:label">
-            <value>नाम</value>
+            <value>Nama</value>
+          </text>
+          <text id="/data/ngo/external_id:label">
+            <value>Eksternal ID</value>
           </text>
           <text id="/data/ngo/notes:label">
-            <value>टिप्पणि</value>
+            <value>Catatan</value>
           </text>
-          <text id="/data/ngo/use_cases/anc:label">
-            <value>पूर्व प्रसुती स्याहार</value>
-          </text>
-          <text id="/data/ngo/use_cases/imm:label">
-            <value>खोप</value>
-          </text>
-          <text id="/data/ngo/use_cases/pnc:label">
-            <value>प्रसुती पश्चातको स्याहार</value>
-          </text>
-          <text id="/data/ngo/use_cases:hint">
-            <value>यस <output value=" /data/init/place_type_translation "/> का लागि आवश्यक सब छान्नुहोस्</value>
-          </text>
-          <text id="/data/ngo/use_cases:label">
-            <value>स्वास्थ्य कार्यक्रम</value>
-          </text>
-          <text id="/data/ngo/vaccines/bcg:label">
+          <text id="select_dob_method-0">
             <value>-</value>
           </text>
-          <text id="/data/ngo/vaccines/cholera:label">
+          <text id="/data/contact/short_name:label">
             <value>-</value>
           </text>
-          <text id="/data/ngo/vaccines/flu:label">
+          <text id="/data/contact/short_name:hint">
             <value>-</value>
           </text>
-          <text id="/data/ngo/vaccines/hep_a:label">
+          <text id="/data/contact/ephemeral_dob/dob_calendar:label">
             <value>-</value>
           </text>
-          <text id="/data/ngo/vaccines/hpv:label">
+          <text id="/data/contact/ephemeral_dob/dob_calendar:hint">
             <value>-</value>
           </text>
-          <text id="/data/ngo/vaccines/ipv:label">
+          <text id="/data/contact/ephemeral_dob/age_label:label">
             <value>-</value>
           </text>
-          <text id="/data/ngo/vaccines/jap_enc:label">
+          <text id="/data/contact/ephemeral_dob/age_years:label">
             <value>-</value>
           </text>
-          <text id="/data/ngo/vaccines/meningococcal:label">
+          <text id="/data/contact/ephemeral_dob/age_months:label">
             <value>-</value>
           </text>
-          <text id="/data/ngo/vaccines/mmr:label">
+          <text id="/data/contact/ephemeral_dob/dob_method:label">
             <value>-</value>
           </text>
-          <text id="/data/ngo/vaccines/mmrv:label">
+          <text id="/data/contact/ephemeral_dob/dob_approx:label">
             <value>-</value>
           </text>
-          <text id="/data/ngo/vaccines/penta:label">
+          <text id="/data/contact/ephemeral_dob/dob_iso:label">
             <value>-</value>
           </text>
-          <text id="/data/ngo/vaccines/pneumococcal:label">
+          <text id="/data/contact/ephemeral_dob/dob_debug:label">
             <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/polio:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/rotavirus:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/typhoid:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/vitamin_a:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/yellow_fever:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines:hint">
-            <value>यस <output value=" /data/init/place_type_translation "/> का लागि आवश्यक सब छान्नुहोस्</value>
-          </text>
-          <text id="/data/ngo/vaccines:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/external_id:label">
-            <value>बाहिरि ID</value>
           </text>
           <text id="/data/contact/meta:label">
             <value>-</value>
-          </text>
-          <text id="/data/contact/name:label">
-            <value>नाम</value>
-          </text>
-          <text id="/data/contact/notes:label">
-            <value>टिप्पणि</value>
-          </text>
-          <text id="/data/contact/phone:label">
-            <value>फाेन नम्बर</value>
-          </text>
-          <text id="/data/contact/phone_alternate:label">
-            <value>बैकल्पिक फाेन नम्बर</value>
-          </text>
-          <text id="/data/contact/role/chw:label">
-            <value>महिला स्वास्थ्य स्वयम् सेविका</value>
-          </text>
-          <text id="/data/contact/role/chw_supervisor:label">
-            <value>महिला स्वास्थ्य स्वयम् सेविकाको सुपरभाइजर</value>
-          </text>
-          <text id="/data/contact/role/manager:label">
-            <value>स्वास्थ्य सस्था प्रमुख</value>
-          </text>
-          <text id="/data/contact/role/nurse:label">
-            <value>नर्स</value>
-          </text>
-          <text id="/data/contact/role/other:label">
-            <value>अन्य</value>
-          </text>
-          <text id="/data/contact/role/patient:label">
-            <value>बिरामी</value>
-          </text>
-          <text id="/data/contact/role:label">
-            <value>भुमिका</value>
-          </text>
-          <text id="/data/contact/role_other:label">
-            <value>अन्य उल्लेख गर्नुहोस्</value>
-          </text>
-          <text id="/data/contact:label">
-            <value>नया व्यक्ति</value>
-          </text>
-          <text id="/data/init/create_new_person/new_person:label">
-            <value>एक नया व्यक्ति बनाउनुस</value>
-          </text>
-          <text id="/data/init/create_new_person/none:label">
-            <value>एख</value>
-          </text>
-          <text id="/data/init/create_new_person/old_person:label">
-            <value>व्यक्ति छान्नुहोस्</value>
-          </text>
-          <text id="/data/init/create_new_person:label">
-            <value>प्राथमिक सम्पर्क व्यक्ति</value>
-          </text>
-          <text id="/data/init/custom_place_name:label">
-            <value>यस स्थानको नाम लेख्नुहोस्</value>
-          </text>
-          <text id="/data/init/generated_name/Region:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/generated_name/clinic:label">
-            <value><output value=" /data/init/contact_name "/>को क्षेत्र</value>
-          </text>
-          <text id="/data/init/generated_name/district_hospital:label">
-            <value><output value=" /data/init/contact_name "/>को जिल्ला</value>
-          </text>
-          <text id="/data/init/generated_name/family:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/generated_name/health_center:label">
-            <value><output value=" /data/init/contact_name "/>को स्वास्थ्य केन्द्र</value>
-          </text>
-          <text id="/data/init/generated_name/ngo:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/generated_name/office:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/clinic:label">
-            <value>क्षेत्र</value>
-          </text>
-          <text id="/data/init/place_type/district_hospital:label">
-            <value>जिल्ला</value>
-          </text>
-          <text id="/data/init/place_type/family:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/health_center:label">
-            <value>स्वास्थ्य केन्द्र</value>
-          </text>
-          <text id="/data/init/place_type/ngo:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/office:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/region:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type:label">
-            <value>यस स्थानको नाम लेख्नुहोस्</value>
-          </text>
-          <text id="/data/init/select_person:label">
-            <value>प्राथमिक सम्पर्क व्यक्ति छान्नुहोस्</value>
           </text>
         </translation>
         <translation lang="sw">
-          <text id="/data/ngo/external_id:label">
-            <value>Namba ya nje</value>
-          </text>
-          <text id="/data/ngo/is_name_generated/false:label">
-            <value>Hapana, ningependa kuijaza mwenyewe</value>
-          </text>
-          <text id="/data/ngo/is_name_generated/true:label">
+          <text id="yes_no-0">
             <value>Ndio</value>
           </text>
-          <text id="/data/ngo/is_name_generated:label">
-            <value>Je, Ungependa kuita eneo hii kama mwasilishi mkuu wa eneo hii? &quot;<output value=" /data/init/generated_name_translation "/>&quot;?</value>
+          <text id="yes_no-1">
+            <value>Hapana</value>
           </text>
-          <text id="/data/ngo/name:label">
+          <text id="male_female-0">
+            <value>Kike</value>
+          </text>
+          <text id="male_female-1">
+            <value>Kiume</value>
+          </text>
+          <text id="contact-0">
+            <value>Ongeza mtumizi mpya</value>
+          </text>
+          <text id="contact-1">
+            <value>Chagua mtumizi aliyesajlishwa apo awali</value>
+          </text>
+          <text id="contact-2">
+            <value>Ruka hatua ii</value>
+          </text>
+          <text id="roles-0">
+            <value>Mhudumu wa afya</value>
+          </text>
+          <text id="roles-1">
+            <value>Mkuu wa wahudumu wa afya</value>
+          </text>
+          <text id="roles-2">
+            <value>Muuguzi</value>
+          </text>
+          <text id="roles-3">
+            <value>Meneja wa Kituo cha afya</value>
+          </text>
+          <text id="roles-4">
+            <value>Mgonjwa</value>
+          </text>
+          <text id="roles-5">
+            <value>Nyingine</value>
+          </text>
+          <text id="yes_no_generated_name-0">
+            <value>Ndio</value>
+          </text>
+          <text id="yes_no_generated_name-1">
+            <value>Hapana, ningependa kuijaza mwenyewe</value>
+          </text>
+          <text id="place_type-0">
+            <value>Wilaya</value>
+          </text>
+          <text id="place_type-1">
+            <value>Kituo cha afya</value>
+          </text>
+          <text id="place_type-2">
+            <value>Eneo</value>
+          </text>
+          <text id="generated_name-0">
+            <value> WIlaya ya  <output value=" /data/init/contact_name "/></value>
+          </text>
+          <text id="generated_name-1">
+            <value> Kituo cha afya cha  <output value=" /data/init/contact_name "/></value>
+          </text>
+          <text id="generated_name-2">
+            <value> Eneo ya  <output value=" /data/init/contact_name "/></value>
+          </text>
+          <text id="translate_name_label-0">
             <value>Jina</value>
           </text>
-          <text id="/data/ngo/notes:label">
-            <value>Maelezo</value>
+          <text id="/data/init/create_new_person:label">
+            <value>Weka mwasiliwa mkuu</value>
           </text>
-          <text id="/data/ngo/use_cases/anc:label">
-            <value>Huduma ya kabla ya kuzaa</value>
+          <text id="/data/init/select_person:label">
+            <value>Chagua Mwasiliwa mkuu</value>
           </text>
-          <text id="/data/ngo/use_cases/imm:label">
-            <value>Chanjo</value>
+          <text id="/data/init/custom_place_name:label">
+            <value><output value=" /data/init/custom_place_name_label "/></value>
           </text>
-          <text id="/data/ngo/use_cases/pnc:label">
-            <value>Huduma ya baada ya kuzaa</value>
+          <text id="/data/init/place_type:label">
+            <value>Jaza jina la eneo hii</value>
           </text>
-          <text id="/data/ngo/use_cases:hint">
-            <value>Chagua zote zinazohitajika kwa hii <output value=" /data/init/place_type_translation "/></value>
-          </text>
-          <text id="/data/ngo/use_cases:label">
-            <value>Huduma za afya</value>
-          </text>
-          <text id="/data/ngo/vaccines/bcg:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/cholera:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/flu:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/hep_a:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/hpv:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/ipv:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/jap_enc:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/meningococcal:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/mmr:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/mmrv:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/penta:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/pneumococcal:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/polio:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/rotavirus:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/typhoid:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/vitamin_a:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines/yellow_fever:label">
-            <value>-</value>
-          </text>
-          <text id="/data/ngo/vaccines:hint">
-            <value>Chagua zote zinazohitajika kwa hii <output value=" /data/init/place_type_translation "/></value>
-          </text>
-          <text id="/data/ngo/vaccines:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/external_id:label">
-            <value>Kitambulisho cha nje</value>
-          </text>
-          <text id="/data/contact/meta:label">
-            <value>-</value>
+          <text id="/data/contact:label">
+            <value>Mtu Mpya</value>
           </text>
           <text id="/data/contact/name:label">
             <value>Jina</value>
-          </text>
-          <text id="/data/contact/notes:label">
-            <value>Maelezo</value>
           </text>
           <text id="/data/contact/phone:label">
             <value>Namba ya Simi</value>
@@ -1110,23 +565,8 @@
           <text id="/data/contact/phone_alternate:label">
             <value>Namba Ya</value>
           </text>
-          <text id="/data/contact/role/chw:label">
-            <value>Mhudumu wa afya</value>
-          </text>
-          <text id="/data/contact/role/chw_supervisor:label">
-            <value>Mkuu wa wahudumu wa afya</value>
-          </text>
-          <text id="/data/contact/role/manager:label">
-            <value>Meneja wa Kituo cha afya</value>
-          </text>
-          <text id="/data/contact/role/nurse:label">
-            <value>Muuguzi</value>
-          </text>
-          <text id="/data/contact/role/other:label">
-            <value>Nyingine</value>
-          </text>
-          <text id="/data/contact/role/patient:label">
-            <value>Mgonjwa</value>
+          <text id="/data/contact/sex:label">
+            <value>Jinsia</value>
           </text>
           <text id="/data/contact/role:label">
             <value>Namba ya simu Nyingine</value>
@@ -1134,76 +574,383 @@
           <text id="/data/contact/role_other:label">
             <value>Fafanua vingine</value>
           </text>
-          <text id="/data/contact:label">
-            <value>Mtu Mpya</value>
+          <text id="/data/contact/external_id:label">
+            <value>Kitambulisho cha nje</value>
           </text>
-          <text id="/data/init/create_new_person/new_person:label">
-            <value>Ongeza mtumizi mpya</value>
+          <text id="/data/contact/notes:label">
+            <value>Maelezo</value>
           </text>
-          <text id="/data/init/create_new_person/none:label">
-            <value>Ruka hatua ii</value>
+          <text id="/data/ngo/is_name_generated:label">
+            <value> Je, Ungependa kuita eneo hii kama mwasilishi mkuu wa eneo hii? "<output value=" /data/init/generated_name_translation "/>"?</value>
           </text>
-          <text id="/data/init/create_new_person/old_person:label">
-            <value>Chagua mtumizi aliyesajlishwa apo awali</value>
+          <text id="/data/ngo/name:label">
+            <value>Jina</value>
+          </text>
+          <text id="/data/ngo/external_id:label">
+            <value>Namba ya nje</value>
+          </text>
+          <text id="/data/ngo/notes:label">
+            <value>Maelezo</value>
+          </text>
+          <text id="select_dob_method-0">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/short_name:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/short_name:hint">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_calendar:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_calendar:hint">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/age_label:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/age_years:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/age_months:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_method:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_approx:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_iso:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_debug:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/meta:label">
+            <value>-</value>
+          </text>
+        </translation>
+        <translation lang="ne">
+          <text id="yes_no-0">
+            <value>हो</value>
+          </text>
+          <text id="yes_no-1">
+            <value>होइन</value>
+          </text>
+          <text id="male_female-0">
+            <value>महिला</value>
+          </text>
+          <text id="male_female-1">
+            <value>पुरुष</value>
+          </text>
+          <text id="contact-0">
+            <value>एक नया व्यक्ति बनाउनुस</value>
+          </text>
+          <text id="contact-1">
+            <value>व्यक्ति छान्नुहोस्</value>
+          </text>
+          <text id="contact-2">
+            <value>एख</value>
+          </text>
+          <text id="roles-0">
+            <value>महिला स्वास्थ्य स्वयम् सेविका</value>
+          </text>
+          <text id="roles-1">
+            <value>महिला स्वास्थ्य स्वयम् सेविकाको सुपरभाइजर</value>
+          </text>
+          <text id="roles-2">
+            <value>नर्स</value>
+          </text>
+          <text id="roles-3">
+            <value>स्वास्थ्य सस्था प्रमुख</value>
+          </text>
+          <text id="roles-4">
+            <value>बिरामी</value>
+          </text>
+          <text id="roles-5">
+            <value>अन्य</value>
+          </text>
+          <text id="yes_no_generated_name-0">
+            <value>हो</value>
+          </text>
+          <text id="yes_no_generated_name-1">
+            <value>होइन, म आफैँ नाम दिन चाहन्छु</value>
+          </text>
+          <text id="place_type-0">
+            <value>जिल्ला</value>
+          </text>
+          <text id="place_type-1">
+            <value>स्वास्थ्य केन्द्र</value>
+          </text>
+          <text id="place_type-2">
+            <value>क्षेत्र</value>
+          </text>
+          <text id="generated_name-0">
+            <value><output value=" /data/init/contact_name "/>को जिल्ला</value>
+          </text>
+          <text id="generated_name-1">
+            <value><output value=" /data/init/contact_name "/>को स्वास्थ्य केन्द्र</value>
+          </text>
+          <text id="generated_name-2">
+            <value><output value=" /data/init/contact_name "/>को क्षेत्र</value>
+          </text>
+          <text id="translate_name_label-0">
+            <value>नाम</value>
           </text>
           <text id="/data/init/create_new_person:label">
-            <value>Weka mwasiliwa mkuu</value>
-          </text>
-          <text id="/data/init/custom_place_name:label">
-            <value>Jaza jina la eneo hii</value>
-          </text>
-          <text id="/data/init/generated_name/Region:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/generated_name/clinic:label">
-            <value>Eneo ya <output value=" /data/init/contact_name "/></value>
-          </text>
-          <text id="/data/init/generated_name/district_hospital:label">
-            <value>WIlaya ya <output value=" /data/init/contact_name "/></value>
-          </text>
-          <text id="/data/init/generated_name/family:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/generated_name/health_center:label">
-            <value>Kituo cha afya cha <output value=" /data/init/contact_name "/></value>
-          </text>
-          <text id="/data/init/generated_name/ngo:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/generated_name/office:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/clinic:label">
-            <value>Eneo</value>
-          </text>
-          <text id="/data/init/place_type/district_hospital:label">
-            <value>Wilaya</value>
-          </text>
-          <text id="/data/init/place_type/family:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/health_center:label">
-            <value>Kituo cha afya</value>
-          </text>
-          <text id="/data/init/place_type/ngo:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/office:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type/region:label">
-            <value>-</value>
-          </text>
-          <text id="/data/init/place_type:label">
-            <value>Jaza jina la eneo hii</value>
+            <value>प्राथमिक सम्पर्क व्यक्ति</value>
           </text>
           <text id="/data/init/select_person:label">
-            <value>Chagua Mwasiliwa mkuu</value>
+            <value>प्राथमिक सम्पर्क व्यक्ति छान्नुहोस्</value>
+          </text>
+          <text id="/data/init/custom_place_name:label">
+            <value><output value=" /data/init/custom_place_name_label "/></value>
+          </text>
+          <text id="/data/init/place_type:label">
+            <value>यस स्थानको नाम लेख्नुहोस्</value>
+          </text>
+          <text id="/data/contact:label">
+            <value>नया व्यक्ति</value>
+          </text>
+          <text id="/data/contact/name:label">
+            <value>नाम</value>
+          </text>
+          <text id="/data/contact/phone:label">
+            <value>फाेन नम्बर</value>
+          </text>
+          <text id="/data/contact/phone_alternate:label">
+            <value>बैकल्पिक फाेन नम्बर</value>
+          </text>
+          <text id="/data/contact/sex:label">
+            <value>लिंग</value>
+          </text>
+          <text id="/data/contact/role:label">
+            <value>भुमिका</value>
+          </text>
+          <text id="/data/contact/role_other:label">
+            <value>अन्य उल्लेख गर्नुहोस्</value>
+          </text>
+          <text id="/data/contact/external_id:label">
+            <value>बाहिरि ID</value>
+          </text>
+          <text id="/data/contact/notes:label">
+            <value>टिप्पणि</value>
+          </text>
+          <text id="/data/ngo/is_name_generated:label">
+            <value> के तपाइ यस स्थानकाे प्राथमिक सम्पर्क नाम दिन चाहानु हुन्छ?:<output value=" /data/init/generated_name_translation "/></value>
+          </text>
+          <text id="/data/ngo/name:label">
+            <value>नाम</value>
+          </text>
+          <text id="/data/ngo/external_id:label">
+            <value>बाहिरि ID</value>
+          </text>
+          <text id="/data/ngo/notes:label">
+            <value>टिप्पणि</value>
+          </text>
+          <text id="select_dob_method-0">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/short_name:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/short_name:hint">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_calendar:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_calendar:hint">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/age_label:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/age_years:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/age_months:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_method:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_approx:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_iso:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_debug:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/meta:label">
+            <value>-</value>
+          </text>
+        </translation>
+        <translation lang="fr">
+          <text id="yes_no-0">
+            <value>Oui</value>
+          </text>
+          <text id="yes_no-1">
+            <value>Non</value>
+          </text>
+          <text id="male_female-0">
+            <value>Femme</value>
+          </text>
+          <text id="male_female-1">
+            <value>Homme</value>
+          </text>
+          <text id="contact-0">
+            <value>Créer une nouvelle personne</value>
+          </text>
+          <text id="contact-1">
+            <value>Selectiionner une personne existant</value>
+          </text>
+          <text id="contact-2">
+            <value>Sauter cette section</value>
+          </text>
+          <text id="roles-0">
+            <value>ASC</value>
+          </text>
+          <text id="roles-1">
+            <value>Superviseur ASC</value>
+          </text>
+          <text id="roles-2">
+            <value>Infirmier</value>
+          </text>
+          <text id="roles-3">
+            <value>Staff médical</value>
+          </text>
+          <text id="roles-4">
+            <value>Patient</value>
+          </text>
+          <text id="roles-5">
+            <value>Autre</value>
+          </text>
+          <text id="yes_no_generated_name-0">
+            <value>Oui</value>
+          </text>
+          <text id="yes_no_generated_name-1">
+            <value>Non, je veux nommer ça manuellement</value>
+          </text>
+          <text id="place_type-0">
+            <value>District</value>
+          </text>
+          <text id="place_type-1">
+            <value>Centre de santé</value>
+          </text>
+          <text id="place_type-2">
+            <value>Zone</value>
+          </text>
+          <text id="generated_name-0">
+            <value> District de <output value=" /data/init/contact_name "/></value>
+          </text>
+          <text id="generated_name-1">
+            <value> Centre de santé de <output value=" /data/init/contact_name "/></value>
+          </text>
+          <text id="generated_name-2">
+            <value> Zone de <output value=" /data/init/contact_name "/></value>
+          </text>
+          <text id="translate_name_label-0">
+            <value>Nom</value>
+          </text>
+          <text id="/data/init/create_new_person:label">
+            <value>Contact primaire</value>
+          </text>
+          <text id="/data/init/select_person:label">
+            <value>Choisisser le contact primaire</value>
+          </text>
+          <text id="/data/init/custom_place_name:label">
+            <value><output value=" /data/init/custom_place_name_label "/></value>
+          </text>
+          <text id="/data/init/place_type:label">
+            <value>Nom de l'endroit</value>
+          </text>
+          <text id="/data/contact:label">
+            <value>Nouvelle personne</value>
+          </text>
+          <text id="/data/contact/name:label">
+            <value>Nom</value>
+          </text>
+          <text id="/data/contact/phone:label">
+            <value>Téléphone</value>
+          </text>
+          <text id="/data/contact/phone_alternate:label">
+            <value>Téléphone alternatif</value>
+          </text>
+          <text id="/data/contact/sex:label">
+            <value>Sexe</value>
+          </text>
+          <text id="/data/contact/role:label">
+            <value>Rôle</value>
+          </text>
+          <text id="/data/contact/role_other:label">
+            <value>Specifier</value>
+          </text>
+          <text id="/data/contact/external_id:label">
+            <value>Identifiant externe</value>
+          </text>
+          <text id="/data/contact/notes:label">
+            <value>Notes</value>
+          </text>
+          <text id="/data/ngo/is_name_generated:label">
+            <value> Voulez-vous nommer l'endroit: "<output value=" /data/init/generated_name_translation "/>"?</value>
+          </text>
+          <text id="/data/ngo/name:label">
+            <value>Nom</value>
+          </text>
+          <text id="/data/ngo/external_id:label">
+            <value>Identifiant externe</value>
+          </text>
+          <text id="/data/ngo/notes:label">
+            <value>Notes</value>
+          </text>
+          <text id="select_dob_method-0">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/short_name:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/short_name:hint">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_calendar:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_calendar:hint">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/age_label:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/age_years:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/age_months:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_method:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_approx:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_iso:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_debug:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/meta:label">
+            <value>-</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:ngo:create" prefix="J1!contact:ngo:create!" delimiter="#" version="2020-08-14_10-05">
+        <data id="contact:ngo:create" version="2025-10-15  17-33" prefix="J1!contact:ngo:create!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -1225,8 +972,6 @@
             <is_name_generated>true</is_name_generated>
             <name/>
             <external_id/>
-            <use_cases/>
-            <vaccines/>
             <notes/>
             <contact/>
             <geolocation/>
@@ -1241,22 +986,42 @@
             <select_person/>
             <name/>
             <contact_name/>
+            <custom_place_name_label_translator/>
+            <custom_place_name_label/>
             <custom_place_name/>
-            <place_type>ngo</place_type>
+            <place_type>PLACE_TYPE</place_type>
             <place_type_translation/>
-            <generated_name>ngo</generated_name>
+            <generated_name>PLACE_TYPE</generated_name>
             <generated_name_translation/>
           </init>
           <contact>
             <parent>PARENT</parent>
             <type>person</type>
             <name/>
+            <short_name/>
+            <date_of_birth/>
+            <date_of_birth_method/>
+            <ephemeral_dob>
+              <dob_calendar/>
+              <age_label/>
+              <age_years/>
+              <age_months/>
+              <dob_method/>
+              <dob_approx/>
+              <dob_raw/>
+              <dob_iso/>
+              <dob_debug/>
+            </ephemeral_dob>
             <phone/>
             <phone_alternate/>
+            <sex/>
             <role/>
             <role_other/>
             <external_id/>
             <notes/>
+            <user_for_contact>
+              <create/>
+            </user_for_contact>
             <meta tag="hidden">
               <created_by/>
               <created_by_person_uuid/>
@@ -1268,46 +1033,188 @@
           </meta>
         </data>
       </instance>
+      <instance id="yes_no">
+        <root>
+          <item>
+            <itextId>yes_no-0</itextId>
+            <name>true</name>
+          </item>
+          <item>
+            <itextId>yes_no-1</itextId>
+            <name>false</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="male_female">
+        <root>
+          <item>
+            <itextId>male_female-0</itextId>
+            <name>female</name>
+          </item>
+          <item>
+            <itextId>male_female-1</itextId>
+            <name>male</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="contact">
+        <root>
+          <item>
+            <itextId>contact-0</itextId>
+            <name>new_person</name>
+          </item>
+          <item>
+            <itextId>contact-1</itextId>
+            <name>old_person</name>
+          </item>
+          <item>
+            <itextId>contact-2</itextId>
+            <name>none</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_dob_method">
+        <root>
+          <item>
+            <itextId>select_dob_method-0</itextId>
+            <name>approx</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="roles">
+        <root>
+          <item>
+            <itextId>roles-0</itextId>
+            <name>chw</name>
+          </item>
+          <item>
+            <itextId>roles-1</itextId>
+            <name>chw_supervisor</name>
+          </item>
+          <item>
+            <itextId>roles-2</itextId>
+            <name>nurse</name>
+          </item>
+          <item>
+            <itextId>roles-3</itextId>
+            <name>manager</name>
+          </item>
+          <item>
+            <itextId>roles-4</itextId>
+            <name>patient</name>
+          </item>
+          <item>
+            <itextId>roles-5</itextId>
+            <name>other</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="yes_no_generated_name">
+        <root>
+          <item>
+            <itextId>yes_no_generated_name-0</itextId>
+            <name>true</name>
+          </item>
+          <item>
+            <itextId>yes_no_generated_name-1</itextId>
+            <name>false</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="place_type">
+        <root>
+          <item>
+            <itextId>place_type-0</itextId>
+            <name>district_hospital</name>
+          </item>
+          <item>
+            <itextId>place_type-1</itextId>
+            <name>health_center</name>
+          </item>
+          <item>
+            <itextId>place_type-2</itextId>
+            <name>clinic</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="generated_name">
+        <root>
+          <item>
+            <itextId>generated_name-0</itextId>
+            <name>district_hospital</name>
+          </item>
+          <item>
+            <itextId>generated_name-1</itextId>
+            <name>health_center</name>
+          </item>
+          <item>
+            <itextId>generated_name-2</itextId>
+            <name>clinic</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="translate_name_label">
+        <root>
+          <item>
+            <itextId>translate_name_label-0</itextId>
+            <name>name</name>
+          </item>
+        </root>
+      </instance>
       <bind nodeset="/data/inputs" relevant="false()"/>
       <bind nodeset="/data/inputs/user/contact_id" type="string"/>
       <bind nodeset="/data/inputs/user/facility_id" type="string"/>
       <bind nodeset="/data/inputs/user/name" type="string"/>
-      <bind nodeset="/data/init/create_new_person" type="select1" required="true()"/>
-      <bind nodeset="/data/init/select_person" type="db:person" relevant="selected( /data/init/create_new_person ,'old_person')" required="true()"/>
+      <bind nodeset="/data/init/create_new_person" type="string" required="true()"/>
+      <bind nodeset="/data/init/select_person" type="string" required="true()" relevant="selected( /data/init/create_new_person ,'old_person')"/>
       <bind nodeset="/data/init/name" type="string"/>
-      <bind nodeset="/data/init/contact_name" type="string" calculate="coalesce(../name, ../../contact/name)"/>
-      <bind nodeset="/data/init/custom_place_name" type="string" relevant="selected( /data/init/create_new_person ,'none') or selected( /data/ngo/is_name_generated , 'false') or selected( /data/ngo/is_name_generated , 'no')" required="true()"/>
-      <bind nodeset="/data/init/place_type" type="select1"/>
+      <bind nodeset="/data/init/contact_name" type="string" calculate="coalesce(../../contact/name, ../name)"/>
+      <bind nodeset="/data/init/custom_place_name_label_translator" type="string" relevant="selected( /data/init/create_new_person ,'none') or selected( /data/ngo/is_name_generated , 'false')" calculate="&quot;name&quot;"/>
+      <bind nodeset="/data/init/custom_place_name_label" type="string" calculate="jr:choice-name( /data/init/custom_place_name_label_translator ,' /data/init/custom_place_name_label_translator ')"/>
+      <bind nodeset="/data/init/custom_place_name" type="string" required="true()" relevant="selected( /data/init/create_new_person ,'none') or selected( /data/ngo/is_name_generated , 'false')"/>
+      <bind nodeset="/data/init/place_type" type="string"/>
       <bind nodeset="/data/init/place_type_translation" type="string" calculate="jr:choice-name( /data/init/place_type ,' /data/init/place_type ')"/>
-      <bind nodeset="/data/init/generated_name" type="select1"/>
+      <bind nodeset="/data/init/generated_name" type="string"/>
       <bind nodeset="/data/init/generated_name_translation" type="string" calculate="jr:choice-name( /data/init/generated_name ,' /data/init/generated_name ')"/>
       <bind nodeset="/data/contact" relevant="selected( /data/init/create_new_person ,'new_person')"/>
       <bind nodeset="/data/contact/parent" type="string"/>
       <bind nodeset="/data/contact/type" type="string"/>
       <bind nodeset="/data/contact/name" type="string" required="true()"/>
-      <bind nodeset="/data/contact/phone" type="tel" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" constraint="true()"/>
-      <bind nodeset="/data/contact/phone_alternate" type="tel" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" constraint="true()"/>
-      <bind nodeset="/data/contact/role" type="select1"/>
-      <bind nodeset="/data/contact/role_other" type="string" relevant="selected(  /data/contact/role ,'other')" required="true()"/>
-      <bind nodeset="/data/contact/external_id" type="string"/>
-      <bind nodeset="/data/contact/notes" type="string"/>
+      <bind nodeset="/data/contact/short_name" type="string" required="false()" constraint="string-length(.) &lt;= 10" jr:constraintMsg="Short name can not be more than 10 characters long."/>
+      <bind nodeset="/data/contact/date_of_birth" type="string" required="true()" calculate="../ephemeral_dob/dob_iso"/>
+      <bind nodeset="/data/contact/date_of_birth_method" type="string" calculate="../ephemeral_dob/dob_method"/>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_calendar" type="date" required="true()" relevant="not(selected(../dob_method,'approx'))" constraint=". &lt;= now()" jr:constraintMsg="Date must be before today"/>
+      <bind nodeset="/data/contact/ephemeral_dob/age_label" readonly="true()" type="string" relevant="selected(../dob_method,'approx')"/>
+      <bind nodeset="/data/contact/ephemeral_dob/age_years" type="int" required="true()" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 130" jr:constraintMsg="Age must be between 0 and 130"/>
+      <bind nodeset="/data/contact/ephemeral_dob/age_months" type="int" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 11" jr:constraintMsg="Months must between 0 and 11"/>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_method" type="string"/>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_approx" type="string" calculate="add-date(today(), 0- /data/contact/ephemeral_dob/age_years , 0- /data/contact/ephemeral_dob/age_months )"/>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected( ../dob_method,'approx')), &#10;../dob_calendar,&#10;../dob_approx)"/>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"/>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"/>
+      <bind nodeset="/data/contact/phone" type="tel" relevant="selected( /data/init/create_new_person ,'new_person')" constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678"/>
+      <bind nodeset="/data/contact/phone_alternate" type="tel" relevant="selected( /data/init/create_new_person ,'new_person')" constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678"/>
+      <bind nodeset="/data/contact/sex" type="string" required="true()" relevant="selected( /data/init/create_new_person ,'new_person')"/>
+      <bind nodeset="/data/contact/role" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"/>
+      <bind nodeset="/data/contact/role_other" type="string" required="true()" relevant="selected(  /data/contact/role ,'other')"/>
+      <bind nodeset="/data/contact/external_id" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"/>
+      <bind nodeset="/data/contact/notes" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"/>
+      <bind nodeset="/data/contact/user_for_contact/create" type="string" calculate=" /data/contact/phone  != '' and (selected(  /data/contact/role ,'chw') or selected(  /data/contact/role ,'chw_supervisor'))"/>
       <bind nodeset="/data/contact/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
       <bind nodeset="/data/contact/meta/created_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
       <bind nodeset="/data/contact/meta/created_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
       <bind nodeset="/data/ngo/parent" type="string"/>
       <bind nodeset="/data/ngo/type" type="string"/>
-      <bind nodeset="/data/ngo/is_name_generated" type="select1" relevant="not(selected( /data/init/create_new_person ,'none'))" required="true()"/>
-      <bind nodeset="/data/ngo/name" type="string" calculate="if( ( selected( /data/ngo/is_name_generated , 'true') or selected( /data/ngo/is_name_generated , 'yes') ),  /data/init/generated_name_translation ,  /data/init/custom_place_name )" required="true()"/>
+      <bind nodeset="/data/ngo/is_name_generated" type="string" required="true()" relevant="not(selected( /data/init/create_new_person ,'none'))"/>
+      <bind nodeset="/data/ngo/name" type="string" required="true()" calculate="if( ( selected( /data/ngo/is_name_generated , 'true') or selected( /data/ngo/is_name_generated , 'yes') ),  /data/init/generated_name_translation ,  /data/init/custom_place_name )"/>
       <bind nodeset="/data/ngo/external_id" type="string"/>
-      <bind nodeset="/data/ngo/use_cases" type="select" relevant="../type = 'health_center'"/>
-      <bind nodeset="/data/ngo/vaccines" type="select" relevant="../type = 'health_center' and selected( /data/ngo/use_cases ,'imm')"/>
       <bind nodeset="/data/ngo/notes" type="string"/>
       <bind nodeset="/data/ngo/contact" type="string" calculate="if(selected( /data/init/create_new_person ,'none'), &quot;&quot;, coalesce( /data/init/select_person ,&quot;NEW&quot;))"/>
       <bind nodeset="/data/ngo/geolocation" type="string" calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))"/>
       <bind nodeset="/data/ngo/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
       <bind nodeset="/data/ngo/meta/created_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
       <bind nodeset="/data/ngo/meta/created_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
-      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
   <h:body class="pages">
@@ -1319,147 +1226,109 @@
       </group>
     </group>
     <group appearance="field-list" ref="/data/init">
-      <select1 ref="/data/init/create_new_person">
+      <select1 ref="/data/init/create_new_person" appearance="columns-pack">
         <label ref="jr:itext('/data/init/create_new_person:label')"/>
-        <item>
-          <label ref="jr:itext('/data/init/create_new_person/new_person:label')"/>
-          <value>new_person</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/init/create_new_person/old_person:label')"/>
-          <value>old_person</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/init/create_new_person/none:label')"/>
-          <value>none</value>
-        </item>
+        <itemset nodeset="instance('contact')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
-      <input appearance="db-object" ref="/data/init/select_person">
+      <input ref="/data/init/select_person" appearance="select-contact type-person">
         <label ref="jr:itext('/data/init/select_person:label')"/>
       </input>
-      <input appearance="hidden" ref="/data/init/name"/>
-      <select1 appearance="hidden" ref="/data/init/place_type">
-        <label ref="jr:itext('/data/init/place_type:label')"/>
-        <item>
-          <label ref="jr:itext('/data/init/place_type/district_hospital:label')"/>
-          <value>district_hospital</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/init/place_type/health_center:label')"/>
-          <value>health_center</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/init/place_type/clinic:label')"/>
-          <value>clinic</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/init/place_type/ngo:label')"/>
-          <value>ngo</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/init/place_type/office:label')"/>
-          <value>office</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/init/place_type/family:label')"/>
-          <value>family</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/init/place_type/region:label')"/>
-          <value>region</value>
-        </item>
+      <input ref="/data/init/name" appearance="hidden"/>
+      <select1 ref="/data/init/custom_place_name_label_translator" appearance="hidden">
+        <itemset nodeset="instance('translate_name_label')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
-      <select1 appearance="hidden" ref="/data/init/generated_name">
-        <item>
-          <label ref="jr:itext('/data/init/generated_name/district_hospital:label')"/>
-          <value>district_hospital</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/init/generated_name/health_center:label')"/>
-          <value>health_center</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/init/generated_name/clinic:label')"/>
-          <value>clinic</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/init/generated_name/ngo:label')"/>
-          <value>ngo</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/init/generated_name/office:label')"/>
-          <value>office</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/init/generated_name/Region:label')"/>
-          <value>Region</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/init/generated_name/family:label')"/>
-          <value>family</value>
-        </item>
+      <select1 ref="/data/init/place_type" appearance="hidden">
+        <label ref="jr:itext('/data/init/place_type:label')"/>
+        <itemset nodeset="instance('place_type')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
+      </select1>
+      <select1 ref="/data/init/generated_name" appearance="hidden">
+        <itemset nodeset="instance('generated_name')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
       <group appearance="field-list" ref="/data/contact">
         <label ref="jr:itext('/data/contact:label')"/>
         <input ref="/data/contact/name">
           <label ref="jr:itext('/data/contact/name:label')"/>
         </input>
-        <input ref="/data/contact/phone">
-          <label ref="jr:itext('/data/contact/phone:label')"/>
+        <input ref="/data/contact/short_name">
+          <label ref="jr:itext('/data/contact/short_name:label')"/>
+          <hint ref="jr:itext('/data/contact/short_name:hint')"/>
         </input>
-        <input ref="/data/contact/phone_alternate">
-          <label ref="jr:itext('/data/contact/phone_alternate:label')"/>
-        </input>
-        <select1 ref="/data/contact/role">
-          <label ref="jr:itext('/data/contact/role:label')"/>
-          <item>
-            <label ref="jr:itext('/data/contact/role/chw:label')"/>
-            <value>chw</value>
-          </item>
-          <item>
-            <label ref="jr:itext('/data/contact/role/chw_supervisor:label')"/>
-            <value>chw_supervisor</value>
-          </item>
-          <item>
-            <label ref="jr:itext('/data/contact/role/nurse:label')"/>
-            <value>nurse</value>
-          </item>
-          <item>
-            <label ref="jr:itext('/data/contact/role/manager:label')"/>
-            <value>manager</value>
-          </item>
-          <item>
-            <label ref="jr:itext('/data/contact/role/patient:label')"/>
-            <value>patient</value>
-          </item>
-          <item>
-            <label ref="jr:itext('/data/contact/role/other:label')"/>
-            <value>other</value>
-          </item>
-        </select1>
-        <input ref="/data/contact/role_other">
-          <label ref="jr:itext('/data/contact/role_other:label')"/>
-        </input>
-        <input ref="/data/contact/external_id">
-          <label ref="jr:itext('/data/contact/external_id:label')"/>
-        </input>
-        <input appearance="multiline" ref="/data/contact/notes">
-          <label ref="jr:itext('/data/contact/notes:label')"/>
-        </input>
-        <group appearance="hidden" ref="/data/contact/meta"/>
+        <group ref="/data/contact/ephemeral_dob">
+          <input ref="/data/contact/ephemeral_dob/dob_calendar">
+            <label ref="jr:itext('/data/contact/ephemeral_dob/dob_calendar:label')"/>
+            <hint ref="jr:itext('/data/contact/ephemeral_dob/dob_calendar:hint')"/>
+          </input>
+          <input ref="/data/contact/ephemeral_dob/age_label">
+            <label ref="jr:itext('/data/contact/ephemeral_dob/age_label:label')"/>
+          </input>
+          <input ref="/data/contact/ephemeral_dob/age_years">
+            <label ref="jr:itext('/data/contact/ephemeral_dob/age_years:label')"/>
+          </input>
+          <input ref="/data/contact/ephemeral_dob/age_months">
+            <label ref="jr:itext('/data/contact/ephemeral_dob/age_months:label')"/>
+          </input>
+          <select ref="/data/contact/ephemeral_dob/dob_method" appearance="columns">
+            <itemset nodeset="instance('select_dob_method')/root/item">
+              <value ref="name"/>
+              <label ref="jr:itext(itextId)"/>
+            </itemset>
+          </select>
+          <input ref="/data/contact/ephemeral_dob/dob_debug">
+            <label ref="jr:itext('/data/contact/ephemeral_dob/dob_debug:label')"/>
+          </input>
         </group>
       </group>
+      <input ref="/data/contact/phone">
+        <label ref="jr:itext('/data/contact/phone:label')"/>
+      </input>
+      <input ref="/data/contact/phone_alternate">
+        <label ref="jr:itext('/data/contact/phone_alternate:label')"/>
+      </input>
+      <select1 ref="/data/contact/sex" appearance="columns">
+        <label ref="jr:itext('/data/contact/sex:label')"/>
+        <itemset nodeset="instance('male_female')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
+      </select1>
+      <select1 ref="/data/contact/role">
+        <label ref="jr:itext('/data/contact/role:label')"/>
+        <itemset nodeset="instance('roles')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
+      </select1>
+      <input ref="/data/contact/role_other">
+        <label ref="jr:itext('/data/contact/role_other:label')"/>
+      </input>
+      <input ref="/data/contact/external_id">
+        <label ref="jr:itext('/data/contact/external_id:label')"/>
+      </input>
+      <input ref="/data/contact/notes" appearance="multiline">
+        <label ref="jr:itext('/data/contact/notes:label')"/>
+      </input>
+      <group ref="/data/contact/user_for_contact"/>
+      <group appearance="hidden" ref="/data/contact/meta"/>
+    </group>
     <group appearance="field-list" ref="/data/ngo">
-      <select1 ref="/data/ngo/is_name_generated">
+      <select1 ref="/data/ngo/is_name_generated" appearance="columns-pack">
         <label ref="jr:itext('/data/ngo/is_name_generated:label')"/>
-        <item>
-          <label ref="jr:itext('/data/ngo/is_name_generated/true:label')"/>
-          <value>true</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/is_name_generated/false:label')"/>
-          <value>false</value>
-        </item>
+        <itemset nodeset="instance('yes_no_generated_name')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
       <input ref="/data/init/custom_place_name">
         <label ref="jr:itext('/data/init/custom_place_name:label')"/>
@@ -1467,95 +1336,7 @@
       <input ref="/data/ngo/external_id">
         <label ref="jr:itext('/data/ngo/external_id:label')"/>
       </input>
-      <select ref="/data/ngo/use_cases">
-        <label ref="jr:itext('/data/ngo/use_cases:label')"/>
-        <hint ref="jr:itext('/data/ngo/use_cases:hint')"/>
-        <item>
-          <label ref="jr:itext('/data/ngo/use_cases/anc:label')"/>
-          <value>anc</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/use_cases/pnc:label')"/>
-          <value>pnc</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/use_cases/imm:label')"/>
-          <value>imm</value>
-        </item>
-      </select>
-      <select ref="/data/ngo/vaccines">
-        <label ref="jr:itext('/data/ngo/vaccines:label')"/>
-        <hint ref="jr:itext('/data/ngo/vaccines:hint')"/>
-        <item>
-          <label ref="jr:itext('/data/ngo/vaccines/bcg:label')"/>
-          <value>bcg</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/vaccines/cholera:label')"/>
-          <value>cholera</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/vaccines/hep_a:label')"/>
-          <value>hep_a</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/vaccines/hpv:label')"/>
-          <value>hpv</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/vaccines/flu:label')"/>
-          <value>flu</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/vaccines/jap_enc:label')"/>
-          <value>jap_enc</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/vaccines/meningococcal:label')"/>
-          <value>meningococcal</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/vaccines/mmr:label')"/>
-          <value>mmr</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/vaccines/mmrv:label')"/>
-          <value>mmrv</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/vaccines/ipv:label')"/>
-          <value>ipv</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/vaccines/polio:label')"/>
-          <value>polio</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/vaccines/penta:label')"/>
-          <value>penta</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/vaccines/pneumococcal:label')"/>
-          <value>pneumococcal</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/vaccines/rotavirus:label')"/>
-          <value>rotavirus</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/vaccines/typhoid:label')"/>
-          <value>typhoid</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/vaccines/vitamin_a:label')"/>
-          <value>vitamin_a</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/ngo/vaccines/yellow_fever:label')"/>
-          <value>yellow_fever</value>
-        </item>
-      </select>
-      <input appearance="multiline" ref="/data/ngo/notes">
+      <input ref="/data/ngo/notes" appearance="multiline">
         <label ref="jr:itext('/data/ngo/notes:label')"/>
       </input>
       <group appearance="hidden" ref="/data/ngo/meta"/>

@@ -38,9 +38,9 @@ export class FormatDataRecordService {
     };
     return this.dbService
       .get()
-      .query('medic-client/registered_patients', options)
+      .query('medic-client/reports_by_subject', options)
       .then((result) => {
-        return result.rows.map(row => row.doc);
+        return _.uniqBy(result.rows.map(row => row.doc), '_id');
       });
   }
 
@@ -71,7 +71,7 @@ export class FormatDataRecordService {
     };
 
     _.forEach(keys, (key) => {
-      if (_.isArray(key)) {
+      if (Array.isArray(key)) {
         const result:any = this.fieldsToHtml(settings, doc, key[1], labels, locale, data[key[0]], def);
         result.isArray = true;
         fields.data.push(result);
@@ -184,12 +184,12 @@ export class FormatDataRecordService {
     let target: any[] = [].concat(array);
     const root: any[] = [];
 
-    while (_.isArray(_.last(target))) {
+    while (Array.isArray(_.last(target))) {
       root.push(_.first(target));
       target = _.last(target);
     }
 
-    return _.map(target, (item) => {
+    return target.map((item) => {
       return root.concat([item]).join('.');
     });
   }
@@ -391,7 +391,7 @@ export class FormatDataRecordService {
 
         if (_.isString(key)) {
           memo.push(this.translateKey(settings, key, field, locale));
-        } else if (_.isArray(key)) {
+        } else if (Array.isArray(key)) {
           _.forEach(this.unrollKey(key), (key) => {
             const field = fields && fields[key];
             memo.push(this.translateKey(settings, key, field, locale));
@@ -447,7 +447,7 @@ export class FormatDataRecordService {
         anyValue.translations[0] &&
         anyValue.translations[0].content) ||
       // 5) Look for the first value
-      value[_.first(_.keys(value))!];
+      value[_.first(Object.keys(value))!];
 
     if (test) {
       result = '-' + result + '-';
@@ -465,8 +465,19 @@ export class FormatDataRecordService {
     if (isImagePath(filePath)) {
       return filePath;
     }
+    const labelParts = label.split('.').slice(1);
+    const binaryFilePath = labelParts
+      .slice(1)
+      .reduce(
+        // Properly encode positional indicator
+        (path, part) => /^\d+$/.test(part) ? `${path}[${Number(part) + 1}]` : `${path}/${part}`,
+        'user-file/fields'
+      );
+    if (isImagePath(binaryFilePath)) {
+      return binaryFilePath;
+    }
     // Fall back to the old style of naming image attachments
-    const legacyFilePath = 'user-file/' + label.split('.').slice(1).join('/');
+    const legacyFilePath = 'user-file/' + labelParts.join('/');
     if (isImagePath(legacyFilePath)) {
       return legacyFilePath;
     }
@@ -506,14 +517,13 @@ export class FormatDataRecordService {
     const label = 'report.' + doc.form;
     const fields = this.getFields(doc, [], doc.fields, label, 0);
     this.includeNonFormFieldsXml(doc, fields);
-    const hide = doc.hidden_fields || [];
-    hide.push('inputs');
-    return _.filter(fields, (field) => {
-      return _.every(hide, (h) => {
-        const hiddenLabel = label + '.' + h;
-        return hiddenLabel !== field.label && field.label.indexOf(hiddenLabel + '.') !== 0;
-      });
-    });
+    const hiddenLabels = ['inputs', ...doc.hidden_fields || []].map(field => `${label}.${field}`);
+    const isHidden = (fieldLabel: string) => {
+      // Drop any position indicators for arrays (e.g. repeat.1.field > repeat.field)
+      const positionlessLabel = fieldLabel.replace(/\.\d+(?=\.|$)/g, '');
+      return hiddenLabels.some(hidden => positionlessLabel === hidden || positionlessLabel.startsWith(`${hidden}.`));
+    };
+    return fields.filter(field => !isHidden(field.label));
   }
 
   private formatXmlFields(doc) {

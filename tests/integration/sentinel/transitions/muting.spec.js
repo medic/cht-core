@@ -1,27 +1,28 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const _ = require('lodash');
 const chai = require('chai');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
     _id: 'district_hospital',
     name: 'District hospital',
-    type: 'district_hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     reported_date: new Date().getTime()
   },
   {
     _id: 'health_center',
     name: 'Health Center',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: 'district_hospital' },
     reported_date: new Date().getTime()
   },
   {
     _id: 'clinic',
     name: 'Clinic',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     place_id: 'the_clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
@@ -45,7 +46,7 @@ const extraContacts = [
   {
     _id: 'clinic2',
     name: 'Clinic',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     place_id: 'the_other_clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
@@ -117,7 +118,7 @@ describe('muting', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'mute',
       fields: {
         patient_uuid: 'person'
@@ -151,7 +152,7 @@ describe('muting', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'NOT_MUTE',
       fields: {
         patient_uuid: 'person'
@@ -206,7 +207,7 @@ describe('muting', () => {
 
     const doc1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'mute',
       from: '+444999',
       fields: {
@@ -221,7 +222,7 @@ describe('muting', () => {
 
     const doc2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'mute',
       from: '+444999',
       fields: {
@@ -273,6 +274,51 @@ describe('muting', () => {
       });
   });
 
+  it('should add muting_error code on errors when muting fails', () => {
+    const settings = {
+      transitions: { muting: true },
+      muting: {
+        mute_forms: ['mute'],
+        unmute_forms: ['unmute'],
+        messages: [{
+          event_type: 'contact_not_found',
+          recipient: '12345',
+          message: [{
+            locale: 'en',
+            content: 'Contact not found'
+          }],
+        }],
+      },
+      forms: { mute: { } }
+    };
+
+    const doc = {
+      _id: uuid(),
+      type: DOC_TYPES.DATA_RECORD,
+      form: 'mute',
+      from: '+444999',
+      fields: {
+        patient_id: 'unknown',
+      },
+      reported_date: new Date().getTime(),
+      contact: {
+        _id: 'person',
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
+
+    return utils
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
+      .then(() => utils.saveDoc(doc))
+      .then(() => sentinelUtils.waitForSentinel(doc._id))
+      .then(() => utils.getDoc(doc._id))
+      .then(updated => {
+        chai.expect(updated.errors).to.be.ok;
+        chai.expect(updated.errors).to.have.lengthOf(1);
+        chai.expect(updated.errors[0].code).to.equal('muting_error');
+      });
+  });
+
   it('should mute and unmute a person', () => {
     const settings = {
       transitions: { muting: true },
@@ -314,7 +360,7 @@ describe('muting', () => {
 
     const mute1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'mute',
       fields: {
         patient_id: 'person'
@@ -328,7 +374,7 @@ describe('muting', () => {
 
     const mute2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'mute',
       fields: {
         patient_id: 'person'
@@ -342,7 +388,7 @@ describe('muting', () => {
 
     const unmute1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'unmute',
       fields: {
         patient_id: 'person'
@@ -356,7 +402,7 @@ describe('muting', () => {
 
     const unmute2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'unmute',
       fields: {
         patient_id: 'person'
@@ -486,7 +532,7 @@ describe('muting', () => {
 
     const mute = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'mute',
       fields: {
         place_id: 'clinic'
@@ -500,7 +546,7 @@ describe('muting', () => {
 
     const unmute = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'unmute',
       fields: {
         place_id: 'clinic'
@@ -603,7 +649,7 @@ describe('muting', () => {
 
     const muteClinic = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'mute',
       fields: {
         place_id: 'clinic'
@@ -617,7 +663,7 @@ describe('muting', () => {
 
     const mutePerson = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'mute',
       fields: {
         patient_id: 'person',
@@ -707,7 +753,7 @@ describe('muting', () => {
 
     const mute = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'mute',
       fields: {
         patient_id: '99999'
@@ -721,7 +767,7 @@ describe('muting', () => {
 
     const muteHC = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'mute',
       fields: {
         place_id: 'health_center'
@@ -735,7 +781,7 @@ describe('muting', () => {
 
     const unmute = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'unmute',
       fields: {
         patient_id: '99999'
@@ -754,7 +800,7 @@ describe('muting', () => {
       .updateSettings(settings, { ignoreReload: 'sentinel' })
       .then(() => utils.saveDoc(mute))
       .then(() => sentinelUtils.waitForSentinel(mute._id))
-      .then(() => sentinelUtils.getInfoDocs([mute._id, 'person', 'clinic', 'health_center']))
+      .then(() => sentinelUtils.getInfoDocs([mute._id, 'person', 'clinic', CONTACT_TYPES.HEALTH_CENTER]))
       .then(infos => {
         chai.expect(infos[0].transitions).to.be.ok;
         chai.expect(infos[0].transitions.muting).to.be.ok;
@@ -769,7 +815,7 @@ describe('muting', () => {
         chai.expect(infos[2].muting_history).not.to.be.ok;
         chai.expect(infos[3].muting_history).not.to.be.ok;
       })
-      .then(() => utils.getDocs(['person', 'clinic', 'health_center']))
+      .then(() => utils.getDocs(['person', 'clinic', CONTACT_TYPES.HEALTH_CENTER]))
       .then(updated => {
         chai.expect(updated[0].muted).to.equal(mutePersonTime);
         chai.expect(updated[1].muted).not.to.be.ok;
@@ -777,7 +823,9 @@ describe('muting', () => {
       })
       .then(() => utils.saveDoc(muteHC))
       .then(() => sentinelUtils.waitForSentinel(muteHC._id))
-      .then(() => sentinelUtils.getInfoDocs([muteHC._id, 'person', 'health_center', 'clinic', 'district_hospital']))
+      .then(() => sentinelUtils.getInfoDocs([
+        muteHC._id, 'person', CONTACT_TYPES.HEALTH_CENTER, 'clinic', 'district_hospital'
+      ]))
       .then(infos => {
         chai.expect(infos[0].transitions).to.be.ok;
         chai.expect(infos[0].transitions.muting).to.be.ok;
@@ -813,7 +861,7 @@ describe('muting', () => {
 
         chai.expect(infos[4].muting_history).not.to.be.ok;
       })
-      .then(() => utils.getDocs(['person', 'health_center', 'clinic', 'district_hospital']))
+      .then(() => utils.getDocs(['person', CONTACT_TYPES.HEALTH_CENTER, 'clinic', 'district_hospital']))
       .then(updated => {
         chai.expect(updated[0].muted).to.equal(mutePersonTime);
         chai.expect(updated[1].muted).to.equal(muteHCTime);
@@ -822,7 +870,9 @@ describe('muting', () => {
       })
       .then(() => utils.saveDoc(unmute))
       .then(() => sentinelUtils.waitForSentinel(unmute._id))
-      .then(() => sentinelUtils.getInfoDocs([unmute._id, 'person', 'health_center', 'clinic', 'district_hospital']))
+      .then(() => sentinelUtils.getInfoDocs([
+        unmute._id, 'person', CONTACT_TYPES.HEALTH_CENTER, 'clinic', 'district_hospital'
+      ]))
       .then(infos => {
         chai.expect(infos[0].transitions).to.be.ok;
         chai.expect(infos[0].transitions.muting).to.be.ok;
@@ -845,7 +895,7 @@ describe('muting', () => {
 
         chai.expect(infos[4].muting_history).not.to.be.ok;
       })
-      .then(() => utils.getDocs(['person', 'health_center', 'clinic', 'district_hospital']))
+      .then(() => utils.getDocs(['person', CONTACT_TYPES.HEALTH_CENTER, 'clinic', 'district_hospital']))
       .then(() => updated => {
         chai.expect(updated[0].muted).not.to.be.ok;
         chai.expect(updated[1].muted).not.to.be.ok;
@@ -866,7 +916,7 @@ describe('muting', () => {
 
     const mute = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'mute',
       fields: {
         place_id: 'clinic'
@@ -882,7 +932,8 @@ describe('muting', () => {
       _id: 'person3',
       name: 'Person',
       type: 'person',
-      parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+      parent: { _id: 'clinic',
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
       phone: '+444999'
     };
 
@@ -891,7 +942,8 @@ describe('muting', () => {
       name: 'Person',
       type: 'person',
       contact_type: 'not a person',
-      parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+      parent: { _id: 'clinic',
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
       phone: '+444999'
     };
 
@@ -937,7 +989,7 @@ describe('muting', () => {
     const reports = [
       { // not a registration
         _id: 'no_registration_config',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         form: 'test_form',
         fields: {
@@ -951,7 +1003,7 @@ describe('muting', () => {
       },
       { // not a registration
         _id: 'incorrect_content',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'xml_form',
         fields: {
           patient_id: 'person'
@@ -964,7 +1016,7 @@ describe('muting', () => {
       },
       { // not a registration
         _id: 'sms_without_contact',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'sms_form_2',
         fields: {
           patient_id: 'person'
@@ -977,7 +1029,7 @@ describe('muting', () => {
       },
       { // valid registration
         _id: 'registration_1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         form: 'xml_form',
         fields: {
@@ -993,7 +1045,7 @@ describe('muting', () => {
       },
       { // valid registration
         _id: 'registration_2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'sms_form_1',
         fields: {
           patient_id: 'person'
@@ -1009,7 +1061,7 @@ describe('muting', () => {
       },
       { // valid registration
         _id: 'registration_3',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'sms_form_2',
         fields: {
           place_id: 'clinic'
@@ -1025,7 +1077,7 @@ describe('muting', () => {
       },
       { // valid registration from other "branch"
         _id: 'registration_4',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'sms_form_2',
         fields: {
           patient_id: 'person2'
@@ -1041,7 +1093,7 @@ describe('muting', () => {
       },
       { // not a registration for place
         _id: 'no_registration_config_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         form: 'test_form',
         fields: {
@@ -1055,7 +1107,7 @@ describe('muting', () => {
       },
       { // not a registration for place
         _id: 'incorrect_content_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'xml_form',
         fields: {
           place_id: 'the_clinic',
@@ -1068,7 +1120,7 @@ describe('muting', () => {
       },
       { // not a registration for place
         _id: 'sms_without_contact_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'sms_form_2',
         fields: {
           place_id: 'the_clinic',
@@ -1081,7 +1133,7 @@ describe('muting', () => {
       },
       { // valid registration for place
         _id: 'registration_1_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         form: 'xml_form',
         fields: {
@@ -1097,7 +1149,7 @@ describe('muting', () => {
       },
       { // valid registration for place
         _id: 'registration_3_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'sms_form_2',
         fields: {
           place_id: 'the_clinic',
@@ -1113,7 +1165,7 @@ describe('muting', () => {
       },
       { // valid registration from other "branch"
         _id: 'registration_4_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'sms_form_2',
         fields: {
           place_id: 'the_other_clinic',
@@ -1131,7 +1183,7 @@ describe('muting', () => {
 
     const mute = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'mute',
       fields: {
         place_id: 'clinic'
@@ -1142,7 +1194,7 @@ describe('muting', () => {
 
     const unmute = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'unmute',
       fields: {
         place_id: 'clinic'
@@ -1237,7 +1289,7 @@ describe('muting', () => {
       const reports = [
         {
           _id: uuid(),
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           content_type: 'xml',
           form: 'xml_form',
           fields: {
@@ -1250,7 +1302,7 @@ describe('muting', () => {
         },
         {
           _id: uuid(),
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           content_type: 'xml',
           form: 'xml_form',
           fields: {
@@ -1325,7 +1377,7 @@ describe('muting', () => {
       const reports = [
         {
           _id: uuid(),
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           content_type: 'xml',
           form: 'xml_form',
           fields: {
@@ -1338,7 +1390,7 @@ describe('muting', () => {
         },
         {
           _id: uuid(),
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           content_type: 'xml',
           form: 'xml_form',
           fields: {
@@ -1400,12 +1452,15 @@ describe('muting', () => {
       const clinic = {
         _id: 'new_clinic',
         name: 'new_clinic',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         place_id: 'the_new_clinic',
         parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
         contact: {
           _id: 'new_person',
-          parent: { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+          parent: {
+            _id: 'new_clinic',
+            parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+          }
         },
         reported_date: new Date().getTime(),
         muting_history: {
@@ -1423,7 +1478,10 @@ describe('muting', () => {
         type: 'person',
         name: 'new_person',
         patient_id: 'the_new_person',
-        parent: { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+        parent: {
+          _id: 'new_clinic',
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+        },
         reported_date: new Date().getTime(),
         muted: 3000,
         muting_history: {
@@ -1442,7 +1500,10 @@ describe('muting', () => {
         type: 'person',
         name: 'newnew_person',
         patient_id: 'the_newnew_person',
-        parent: { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+        parent: {
+          _id: 'new_clinic',
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+        },
         reported_date: new Date().getTime(),
         muting_history: {
           client_side: [
@@ -1457,7 +1518,7 @@ describe('muting', () => {
         {
           _id: 'mutes_person',
           content_type: 'xml',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           fields: {
             patient_id: 'the_new_person',
@@ -1469,7 +1530,7 @@ describe('muting', () => {
         },
         {
           _id: 'mutes_clinic',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           content_type: 'xml',
           form: 'mute',
           fields: {
@@ -1482,7 +1543,7 @@ describe('muting', () => {
         },
         {
           _id: 'unmutes_new_person',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           content_type: 'xml',
           form: 'unmute',
           fields: {
@@ -1496,7 +1557,7 @@ describe('muting', () => {
         {
           _id: 'mutes_person_again',
           content_type: 'xml',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           fields: {
             patient_id: 'the_new_person',
@@ -1618,12 +1679,15 @@ describe('muting', () => {
       const clinic = {
         _id: 'new_clinic',
         name: 'new_clinic',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         place_id: 'the_new_clinic',
         parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
         contact: {
           _id: 'new_person',
-          parent: { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+          parent: {
+            _id: 'new_clinic',
+            parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+          }
         },
         reported_date: new Date().getTime(),
         muting_history: {
@@ -1641,7 +1705,10 @@ describe('muting', () => {
         type: 'person',
         name: 'new_person',
         patient_id: 'the_new_person',
-        parent: { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+        parent: {
+          _id: 'new_clinic',
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+        },
         reported_date: new Date().getTime(),
         muted: 3000,
         muting_history: {
@@ -1660,7 +1727,10 @@ describe('muting', () => {
         type: 'person',
         name: 'newnew_person',
         patient_id: 'the_newnew_person',
-        parent: { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+        parent: {
+          _id: 'new_clinic',
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+        },
         reported_date: new Date().getTime(),
         muting_history: {
           client_side: [
@@ -1675,7 +1745,7 @@ describe('muting', () => {
         {
           _id: 'mutes_person_replay',
           content_type: 'xml',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           fields: {
             patient_id: 'the_new_person',
@@ -1687,7 +1757,7 @@ describe('muting', () => {
         },
         {
           _id: 'unmutes_new_person_replay',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           content_type: 'xml',
           form: 'unmute',
           fields: {
@@ -1701,7 +1771,7 @@ describe('muting', () => {
         {
           _id: 'mutes_person_again_replay',
           content_type: 'xml',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           fields: {
             patient_id: 'the_new_person',
@@ -1715,7 +1785,7 @@ describe('muting', () => {
 
       const mutesClinic = {
         _id: 'mutes_clinic_replay',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         form: 'mute',
         fields: {
@@ -1832,12 +1902,15 @@ describe('muting', () => {
       const clinic = {
         _id: 'new_clinic',
         name: 'new_clinic',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         place_id: 'the_new_clinic',
         parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
         contact: {
           _id: 'new_person',
-          parent: { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+          parent: {
+            _id: 'new_clinic',
+            parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+          }
         },
         reported_date: new Date().getTime(),
         muting_history: {
@@ -1856,7 +1929,10 @@ describe('muting', () => {
         type: 'person',
         name: 'new_person',
         patient_id: 'the_new_person',
-        parent: { _id: 'new_clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+        parent: {
+          _id: 'new_clinic',
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+        },
         reported_date: new Date().getTime(),
         muted: 3000,
         muting_history: {
@@ -1872,7 +1948,7 @@ describe('muting', () => {
       const reports = [
         {
           _id: 'unmutes_person',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           content_type: 'xml',
           form: 'unmute',
           fields: {
@@ -1887,7 +1963,7 @@ describe('muting', () => {
 
       const mutesClinic =  {
         _id: 'mutes_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         form: 'mute',
         fields: {

@@ -1,4 +1,4 @@
-const { getDatasource } = require('@medic/cht-datasource');
+const chtDatasource = require('@medic/cht-datasource');
 const logger = require('@medic/logger');
 
 const iterateGenerator = async (gen) => {
@@ -15,7 +15,7 @@ const iterateGenerator = async (gen) => {
 
 const queryFreetext = async (dataContext, request, type) => {
   try {
-    const datasource = getDatasource(dataContext);
+    const datasource = chtDatasource.getDatasource(dataContext);
     const generator = getGeneratorByType(datasource, request, type);
 
     return await iterateGenerator(generator);

@@ -12,8 +12,12 @@
     <span>{{'date.incorrect.reported' | translate}}</span>:
     <span>{{reportedLocalDate | simpleDateTime}}</span>
   </p>
-  <p *ngIf="expectedLocalDate">
-    <span>{{'date.incorrect.expected' | translate}}</span>:
-    <span>{{expectedLocalDate | simpleDateTime}}</span>
-  </p>
+
+  @if (expectedLocalDate) {
+    <p>
+      <span>{{'date.incorrect.expected' | translate}}</span>:
+      <span>{{expectedLocalDate | simpleDateTime}}</span>
+    </p>
+  }
+
 </mm-modal-layout>

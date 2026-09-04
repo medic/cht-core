@@ -20,26 +20,31 @@ const leftPanelSelectors = {
   contactName: () => $$(`${CONTENT_ROW_SELECTOR} .heading h4 span`),
   contactListLoadingStatus: () => $(`${CONTACT_LIST_SELECTOR} .loading-status`),
   firstContact: () => $(`${CONTACT_LIST_SELECTOR} li:first-child`),
+  nthContact: (n) => $(`${CONTACT_LIST_SELECTOR} li:nth-child(${n})`),
 };
 
 const rightPanelSelectors = {
   emptySelection: () => $('contacts-content .empty-selection'),
   childrenCards: () => $$('.right-pane .card.children'),
   contactCardTitle: () => $('.inbox .content-pane .material .body .action-header'),
+  primaryContactName: () => $('i[title="Primary contact"]').nextElement(),
+  personsCardList: () => $$('.card.children.persons h4 span'),
+  placesCardRows: () => $$('.card.children.places li.content-row'),
+};
+
+const childRowSelectors = {
+  childContactRow: (contactId) => $(`.right-pane .card.children li.content-row[data-record-id="${contactId}"]`),
+  childVisitBadge: (contactId) => childRowSelectors.childContactRow(contactId).$('.heading .visits'),
 };
 
 const contactCardSelectors = {
   contactCardName: () => $('h2[test-id="contact-name"]'),
   contactCardIcon: (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`),
+  contactCardProfileImage: () => $('.card .heading mm-contact-profile-image img'),
   contactSummaryContainer: () => $('#contact_summary'),
   contactMedicID: () => $('#contact_summary .cell.patient_id > div > p:not(.summary_label)'),
   contactDeceasedStatus: () => $('div[test-id="deceased-title"]'),
   contactMuted: () => $('.heading-content .muted'),
-};
-
-const peopleCardSelectors = {
-  primaryContactName: () => $('i[title="Primary contact"]').nextElement(),
-  rhsPeopleListSelector: () => $$('.card.children.persons h4 span'),
 };
 
 const RHS_TASK_LIST_CARD =  '.card.tasks';
@@ -62,24 +67,39 @@ const reportsCardSelectors = {
   rhsReportElementList: () => $$(RHS_REPORT_LIST_SELECTOR),
 };
 
-const PREG_CARD_TEST_ID = `div[test-id="contact.profile.pregnancy.active"]`;
+const contactSummaryCardSelector = (cardTestId) => `div[test-id="${cardTestId}"]`;
+const contactSummaryCardSelectors = (cardTestId) => {
+  return {
+    card: () => $(contactSummaryCardSelector(cardTestId)),
+    header: () => $(`${contactSummaryCardSelector(cardTestId)} button.action-header`),
+    fieldLabel: (fieldTestId) => $(
+      `${contactSummaryCardSelector(cardTestId)} div[test-id="${fieldTestId}"] label`
+    ),
+    fieldValue: (fieldTestId) => $(
+      `${contactSummaryCardSelector(cardTestId)} div[test-id="${fieldTestId}"] p.card-field-value`
+    ),
+  };
+};
+
+const pregCard = contactSummaryCardSelectors('contact.profile.pregnancy.active');
 const pregnancyCardSelectors = {
-  pregnancyCard: () => $(PREG_CARD_TEST_ID),
-  weeksPregnant: () => $(`${PREG_CARD_TEST_ID} div[test-id="Weeks Pregnant"] p.card-field-value`),
-  edd: () => $(`${PREG_CARD_TEST_ID} div[test-id="contact.profile.edd"] p.card-field-value`),
-  highRisk: () => $(`${PREG_CARD_TEST_ID} div[test-id="contact.profile.risk.high"] label`),
-  nextANCVisit: () => $(`${PREG_CARD_TEST_ID} div[test-id="contact.profile.anc.next"] p.card-field-value`),
+  pregnancyCard: () => pregCard.card(),
+  weeksPregnant: () => pregCard.fieldValue('Weeks Pregnant'),
+  edd: () => pregCard.fieldValue('contact.profile.edd'),
+  highRisk: () => pregCard.fieldLabel('contact.profile.risk.high'),
+  nextANCVisit: () => pregCard.fieldValue('contact.profile.anc.next'),
 };
 
-const DEATH_CARD_TEST_ID = 'div[test-id="contact.profile.death.title"]';
+const deathCard = contactSummaryCardSelectors('contact.profile.death.title');
 const deathCardSelectors = {
-  deathCard: () => $(DEATH_CARD_TEST_ID),
-  deathDate: () => $(`${DEATH_CARD_TEST_ID} div[test-id="contact.profile.death.date"] p.card-field-value`),
-  deathPlace: () => $(`${DEATH_CARD_TEST_ID} div[test-id="contact.profile.death.place"] p.card-field-value`),
+  deathCard: () => deathCard.card(),
+  deathDate: () => deathCard.fieldValue('contact.profile.death.date'),
+  deathPlace: () => deathCard.fieldValue('contact.profile.death.place'),
 };
 
+const immunizationCard = contactSummaryCardSelectors('contact.profile.immunizations');
 const inmunizationCardSelectors = {
-  inmunizationCard: () => $('div[test-id="contact.profile.immunizations"]'),
+  inmunizationCard: () => immunizationCard.card(),
 };
 
 const editDistrictHospitalSelectors = {
@@ -237,10 +257,11 @@ const addPerson = async (
   await commonEnketoPage.setInputValue('External ID', externalIDValue);
   await commonEnketoPage.setTextareaValue('Notes', notesValue);
   await genericForm.submitForm({ waitForPageLoaded: waitForComplete });
-  if (waitForSentinel) {
-    await sentinelUtils.waitForSentinel();
-  }
   if (waitForComplete) {
+    if (waitForSentinel) {
+      await sentinelUtils.waitForSentinel();
+    }
+
     await contactCardSelectors.contactCardIcon(type).waitForDisplayed();
     return contactCardSelectors.contactCardName().getText();
   }
@@ -282,7 +303,7 @@ const getContactSummaryField = async (fieldName) => {
 };
 
 const getPrimaryContactName = async () => {
-  return await peopleCardSelectors.primaryContactName().getText();
+  return await rightPanelSelectors.primaryContactName().getText();
 };
 
 const getAllLHSContactsNames = async () => {
@@ -291,7 +312,32 @@ const getAllLHSContactsNames = async () => {
 };
 
 const getAllRHSPeopleNames = () => {
-  return commonPage.getTextForElements(peopleCardSelectors.rhsPeopleListSelector);
+  return commonPage.getTextForElements(rightPanelSelectors.personsCardList);
+};
+
+const getAllRHSPlaceIds = async () => {
+  const placeRows = await rightPanelSelectors.placesCardRows();
+  return placeRows.map(row => row.getAttribute('data-record-id'));
+};
+
+const getChildVisitStats = async (contactId) => {
+  const row = childRowSelectors.childContactRow(contactId);
+  await row.waitForDisplayed();
+  const overdue = (await row.getAttribute('class')).includes('overdue');
+
+  const visitBadge = childRowSelectors.childVisitBadge(contactId);
+  if (!await visitBadge.isExisting()) {
+    return { hasVisitBadge: false, overdue };
+  }
+
+  const badgeClass = await visitBadge.getAttribute('class');
+  return {
+    hasVisitBadge: true,
+    overdue,
+    count: await visitBadge.$('span').getText(),
+    status: ['danger', 'warning', 'success'].find(status => badgeClass.includes(status)),
+    summary: await row.$('.summary p').getText(),
+  };
 };
 
 const getAllRHSReportsNames = async () => {
@@ -380,6 +426,8 @@ const getCurrentContactId = async () => {
   return currentUrl.slice(contactBaseUrl.length);
 };
 
+const getContactCardProfileImage = () => contactCardSelectors.contactCardProfileImage();
+
 const getContactListLoadingStatus = async () => {
   await leftPanelSelectors.contactListLoadingStatus().waitForDisplayed();
   return await leftPanelSelectors.contactListLoadingStatus().getText();
@@ -417,6 +465,15 @@ const openFirstContact = async () => {
   await firstContact.click();
 };
 
+const openNthContact = async (n) => {
+  const nthContact = await leftPanelSelectors.nthContact(n);
+  await nthContact.waitForExist();
+  // wdio's scrollIntoView doesn't scroll the inner list container, so the row stays hidden
+  // under the fast-action button and the click gets intercepted - scroll natively instead
+  await browser.execute((el) => el.scrollIntoView({ block: 'center' }), nthContact);
+  await nthContact.click();
+};
+
 const openPrimaryContactSearchDropdown = async () => {
   await editDistrictHospitalSelectors.primaryContactSearchDropdown().click();
 };
@@ -431,17 +488,25 @@ const selectPrimaryContactSearchFirstResult = async () => {
   await editDistrictHospitalSelectors.primaryContactSearchFirstResult().click();
 };
 
+const waitForContactsLoaded = async (timeout) => {
+  await browser.waitUntil(
+    async () => (await leftPanelSelectors.contentRows()).length > 0,
+    { timeout: timeout }
+  );
+};
 
 module.exports = {
   genericForm,
   leftPanelSelectors,
   rightPanelSelectors,
+  childRowSelectors,
   contactCardSelectors,
   tasksCardSelectors,
   reportsCardSelectors,
   pregnancyCardSelectors,
   deathCardSelectors,
   inmunizationCardSelectors,
+  contactSummaryCardSelectors,
   selectLHSRowByText,
   selectRHSRowById,
   getReportFiltersText,
@@ -451,6 +516,8 @@ module.exports = {
   addPlace,
   getPrimaryContactName,
   getAllRHSPeopleNames,
+  getChildVisitStats,
+  getAllRHSPlaceIds,
   waitForContactLoaded,
   waitForContactUnloaded,
   editPerson,
@@ -462,6 +529,7 @@ module.exports = {
   deletePerson,
   allContactsList,
   openReport,
+  getContactCardProfileImage,
   getContactCardTitle,
   getContactInfoName,
   getContactMedicID,
@@ -475,9 +543,11 @@ module.exports = {
   getCurrentPersonEditFormValues,
   filterReportViewAll,
   openFirstContact,
+  openNthContact,
   openPrimaryContactSearchDropdown,
   inputPrimaryContactSearchValue,
   selectPrimaryContactSearchFirstResult,
   openSortMenu,
   selectSortOrder,
+  waitForContactsLoaded,
 };

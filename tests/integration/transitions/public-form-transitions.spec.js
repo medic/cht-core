@@ -2,25 +2,26 @@ const sentinelUtils = require('@utils/sentinel');
 const utils = require('@utils');
 const apiUtils = require('./utils');
 const { expect } = require('chai');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
     _id: 'district_hospital',
     name: 'District hospital',
-    type: 'district_hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     reported_date: new Date().getTime()
   },
   {
     _id: 'health_center',
     name: 'Health Center',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: 'district_hospital' },
     reported_date: new Date().getTime()
   },
   {
     _id: 'clinic1',
     name: 'Clinic',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'chw1',

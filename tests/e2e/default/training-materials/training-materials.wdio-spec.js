@@ -7,11 +7,11 @@ const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const constants = require('@constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Training Materials Page', () => {
   it('admin User without contact should be able to complete training', async () => {
-    const trainingName = 'admin_welcome';
-    const trainingId = `training:${trainingName}`;
+    const trainingId = 'training:admin_welcome';
     const trainingTitle = 'Getting started';
 
     await utils.deleteDocs([constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id]);
@@ -19,11 +19,11 @@ describe('Training Materials Page', () => {
     await trainingCardsPage.waitForTrainingCards();
     expect(await trainingCardsPage.getTrainingTitle()).to.equal(trainingTitle);
 
-    const introCard = await trainingCardsPage.getCardContent(trainingName, 'welcome/instance_info:label"]');
+    const introCard = await trainingCardsPage.getCardContent('data', 'welcome/instance_info:label"]');
     expect(introCard).to.equal('Welcome to your new CHT instance! It is running the Maternal and Newborn Health app.');
-    const nextCard = await trainingCardsPage.getNextCardContent(trainingName, 'contacts/add_contacts:label"]');
+    const nextCard = await trainingCardsPage.getNextCardContent('data', 'contacts/add_contacts:label"]');
     expect(nextCard).to.equal('Get started by adding contacts and users.');
-    const lastCard = await trainingCardsPage.getNextCardContent(trainingName, 'community/intro:label"]');
+    const lastCard = await trainingCardsPage.getNextCardContent('data', 'community/intro:label"]');
     expect(lastCard).to.equal('The CHT is maintained by a community of people around the world.');
     await trainingCardsPage.submitTraining();
 
@@ -32,7 +32,6 @@ describe('Training Materials Page', () => {
 
     expect(await trainingCardsPage.getAllTrainingsText()).to.deep.equal([ trainingTitle ]);
     expect(await trainingCardsPage.isTrainingComplete(trainingId)).to.be.true;
-    await commonPage.logout();
   });
 
   describe('User with contact', () => {
@@ -46,8 +45,12 @@ describe('Training Materials Page', () => {
     const SECOND_TRAINING_ID = `training:${SECOND_TRAINING_NAME}`;
 
     before(async () => {
-      const facility = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
+      await commonPage.reloadSession();
+      const facility = placeFactory.place().build({ _id: 'dist1', type: CONTACT_TYPES.DISTRICT_HOSPITAL });
       const user = userFactory.build({ roles: [ 'pharmacist', 'chw' ] });
+
+      const ONE_MINUTE = 60 * 1000;
+      const TRAINING_START_DATE = Date.now() - ONE_MINUTE;
 
       const firstXML = fs.readFileSync(`${FORMS_FOLDER}/first-training.xml`, 'utf8');
       const firstTraining = {
@@ -55,7 +58,7 @@ describe('Training Materials Page', () => {
         internalId: FIRST_TRAINING_ID,
         title: FIRST_TRAINING_NAME,
         type: 'form',
-        context: { start_date: new Date().getTime(), user_roles: [ 'pharmacist' ], duration: 5 },
+        context: { start_date: TRAINING_START_DATE, user_roles: [ 'pharmacist' ], duration: 5 },
         _attachments: {
           xml: { content_type: 'application/octet-stream', data: Buffer.from(firstXML).toString('base64') },
         },
@@ -67,7 +70,7 @@ describe('Training Materials Page', () => {
         internalId: SECOND_TRAINING_ID,
         title: SECOND_TRAINING_NAME,
         type: 'form',
-        context: { start_date: new Date().getTime(), user_roles: [ 'pharmacist' ], duration: 5 },
+        context: { start_date: TRAINING_START_DATE, user_roles: [ 'pharmacist' ], duration: 5 },
         _attachments: {
           xml: { content_type: 'application/octet-stream', data: Buffer.from(secondXML).toString('base64') },
         },

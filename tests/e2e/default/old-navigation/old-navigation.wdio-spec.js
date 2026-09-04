@@ -11,10 +11,12 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const targetAggregatesPage = require('@page-objects/default/targets/target-aggregates.wdio.page');
+const { CONTACT_TYPES } = require('@medic/constants');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 describe('Old Navigation', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get('health_center');
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
 
   const offlineUser = userFactory.build({ place: healthCenter._id });
 
@@ -40,7 +42,7 @@ describe('Old Navigation', () => {
     const permissions = settings.permissions;
     permissions.can_aggregate_targets = offlineUser.roles;
     permissions.can_view_old_navigation = offlineUser.roles;
-    await utils.updateSettings({ tasks, permissions }, true);
+    await utils.updateSettings({ tasks, permissions }, { ignoreReload: true });
 
     await loginPage.login({ ...offlineUser, loadPage: false });
     await oldNavigationPage.waitForPageLoaded();
@@ -99,5 +101,41 @@ describe('Old Navigation', () => {
 
   it('should successfully sync', async () => {
     await oldNavigationPage.sync();
+  });
+
+  it('should display tab labels, when all tabs are enabled', async () => {
+    const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
+    expect(tabsButtonLabelsNames).to.deep.equal(['Messages', 'Tasks', 'Reports', 'People', 'Targets']);
+    const tabsButtonIcons = await commonPage.getAllButtonFaIconClasses();
+    expect(tabsButtonIcons).to.deep.equal(['fa-envelope', 'fa-flag', 'fa-list-alt', 'fa-user', 'fa-bar-chart-o']);
+  });
+
+  it('should display tabs according to permissions and header_tabs configuration', async () => {
+    const permissionsToRemove = [
+      'can_view_analytics',
+      'can_view_analytics_tab',
+      'can_view_tasks',
+      'can_view_tasks_tab'
+    ];
+    await utils.updatePermissions(offlineUser.roles, [], permissionsToRemove, { ignoreReload: true });
+    await utils.updateSettings({ header_tabs: {
+      messages: {
+        weight: 44,
+        icon: 'fa-flag',
+      },
+      reports: {
+        weight: 43,
+        icon: 'fa-user',
+      },
+      contacts: {
+        weight: 1,
+        icon: 'fa-bar-chart-o'
+      },
+    } }, { ignoreReload: false });
+
+    const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
+    expect(tabsButtonLabelsNames).to.deep.equal(['People', 'Reports', 'Messages']);
+    const tabsButtonIcons = await commonPage.getAllButtonFaIconClasses();
+    expect(tabsButtonIcons).to.deep.equal(['fa-bar-chart-o', 'fa-user', 'fa-flag']);
   });
 });

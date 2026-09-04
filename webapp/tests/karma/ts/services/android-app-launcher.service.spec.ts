@@ -3,12 +3,15 @@ import sinon from 'sinon';
 import { expect, assert } from 'chai';
 
 import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.service';
+import { PerformanceService } from '@mm-services/performance.service';
 
 describe('AndroidAppLauncherService', () => {
   let service: AndroidAppLauncherService;
   const medicMobileAndroid: any = {};
   let originalMedicMobileAndroid;
   let consoleErrorMock;
+  let performanceService;
+  let trackingStub;
 
   beforeEach(() => {
     consoleErrorMock = sinon.stub(console, 'error');
@@ -16,7 +19,14 @@ describe('AndroidAppLauncherService', () => {
     originalMedicMobileAndroid = window.medicmobile_android;
     window.medicmobile_android = medicMobileAndroid;
 
-    TestBed.configureTestingModule({});
+    trackingStub = { stop: sinon.stub() };
+    performanceService = { track: sinon.stub().returns(trackingStub) };
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: PerformanceService, useValue: performanceService },
+      ]
+    });
     service = TestBed.inject(AndroidAppLauncherService);
   });
 
@@ -28,17 +38,14 @@ describe('AndroidAppLauncherService', () => {
   describe('isEnabled()', () => {
     it('should return true if launchAndroidApp function is defined', () => {
       medicMobileAndroid.launchExternalApp = () => {};
-
       expect(service.isEnabled()).to.equal(true);
     });
 
     it('should return false if medicmobile_android or launchExternalApp function isnt defined', () => {
       medicMobileAndroid.launchExternalApp = undefined;
-
       expect(service.isEnabled()).to.equal(false);
 
       window.medicmobile_android = undefined;
-
       expect(service.isEnabled()).to.equal(false);
     });
   });
@@ -49,9 +56,7 @@ describe('AndroidAppLauncherService', () => {
         action: 'com.my-app.action.LOCATE',
         extras: {
           id: '1',
-          location: {
-            city: 'Tokyo'
-          }
+          location: { city: 'Tokyo' }
         },
       };
 
@@ -69,6 +74,7 @@ describe('AndroidAppLauncherService', () => {
       ]);
       expect(result instanceof Promise).to.equal(true);
       expect(consoleErrorMock.callCount).to.equal(0);
+      expect(performanceService.track.callCount).to.equal(1);
     });
 
     it('should launch android app with all parameters', () => {
@@ -78,9 +84,7 @@ describe('AndroidAppLauncherService', () => {
         type: 'a-type',
         extras: {
           id: '1',
-          location: {
-            city: 'Tokyo'
-          }
+          location: { city: 'Tokyo' }
         },
         uri: 'https://extample.com/action/locate',
         packageName: 'com.my-app',
@@ -101,6 +105,7 @@ describe('AndroidAppLauncherService', () => {
       ]);
       expect(result instanceof Promise).to.equal(true);
       expect(consoleErrorMock.callCount).to.equal(0);
+      expect(performanceService.track.callCount).to.equal(1);
     });
 
     it('should launch android app with all null parameters', () => {
@@ -108,32 +113,26 @@ describe('AndroidAppLauncherService', () => {
 
       expect(medicMobileAndroid.launchExternalApp.callCount).to.equal(1);
       expect(medicMobileAndroid.launchExternalApp.args[0]).to.have.members([
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
+        null, null, null, null, null, null, null,
       ]);
       expect(result instanceof Promise).to.equal(true);
       expect(consoleErrorMock.callCount).to.equal(0);
+      expect(performanceService.track.callCount).to.equal(1);
     });
 
-    it('should resolve android app response', async () => {
+    it('should resolve android app response and stop performance tracking', async () => {
       const androidApp = {
         action: 'com.my-app.action.LOCATE',
         extras: {
           id: '1',
-          location: {
-            city: 'Tokyo'
-          }
+          location: { city: 'Tokyo' }
         },
       };
 
       const promise = service.launchAndroidApp(androidApp);
 
       service.resolveAndroidAppResponse({
+        action: 'com.my-app.action.LOCATE',
         status: 'located',
         person: { name: 'Jack' }
       });
@@ -142,8 +141,14 @@ describe('AndroidAppLauncherService', () => {
 
       expect(promise instanceof Promise).to.equal(true);
       expect(response).to.deep.equal({
+        action: 'com.my-app.action.LOCATE',
         status: 'located',
         person: { name: 'Jack' }
+      });
+      expect(performanceService.track.callCount).to.equal(1);
+      expect(trackingStub.stop.callCount).to.equal(1);
+      expect(trackingStub.stop.args[0][0]).to.deep.equal({
+        name: 'enketo:external-app:com.my-app.action.LOCATE'
       });
     });
 
@@ -152,9 +157,7 @@ describe('AndroidAppLauncherService', () => {
         action: 'com.my-app.action.LOCATE',
         extras: {
           id: '1',
-          location: {
-            city: 'Tokyo'
-          }
+          location: { city: 'Tokyo' }
         },
       };
       medicMobileAndroid.launchExternalApp.throws(new Error('some error'));
@@ -177,8 +180,8 @@ describe('AndroidAppLauncherService', () => {
             null,
             null,
           ]);
+          expect(trackingStub.stop.callCount).to.equal(0);
         });
     });
   });
-
 });

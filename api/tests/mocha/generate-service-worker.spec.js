@@ -8,7 +8,6 @@ const db = require('../../src/db');
 const resources = require('../../src/resources');
 const logger = require('@medic/logger');
 const loginController = require('../../src/controllers/login');
-const extensionLibsService = require('../../src/services/extension-libs');
 const { DOC_IDS } = require('@medic/constants');
 
 describe('generate service worker', () => {
@@ -24,7 +23,6 @@ describe('generate service worker', () => {
     sinon.stub(loginController, 'renderPasswordReset');
     sinon.stub(db.medic, 'get');
     sinon.stub(db.medic, 'put');
-    sinon.stub(extensionLibsService, 'getAll');
     workboxGenerate = sinon.stub();
     clock = sinon.useFakeTimers();
 
@@ -49,7 +47,6 @@ describe('generate service worker', () => {
   it('should generate the service worker file and update the service worker meta doc', async () => {
     loginController.renderLogin.resolves('loginpage html');
     loginController.renderPasswordReset.resolves('passwordresetpage html');
-    extensionLibsService.getAll.resolves([{ name: 'bar.js', data: 'barcode' }]);
     sinon.stub(workbox, 'generateSW').returns();
     db.medic.get.resolves({ _id: DOC_IDS.SERVICE_WORKER_META });
     db.medic.put.resolves();
@@ -81,8 +78,6 @@ describe('generate service worker', () => {
         'webapp/fonts/NotoSans-Regular.ttf',
         'login/*.{css,js}',
         'login/images/*.svg',
-        '/extension-libs',
-        '/extension-libs/bar.js'
       ],
       templatedURLs: {
         '/': [ 'webapp/index.html' ],
@@ -91,8 +86,6 @@ describe('generate service worker', () => {
         '/medic/_design/medic/_rewrite/': [
           'webapp/appcache-upgrade.html'
         ],
-        '/extension-libs': '["bar.js"]',
-        '/extension-libs/bar.js': 'barcode'
       },
       ignoreURLParametersMatching: [/redirect/, /username/],
       modifyURLPrefix: {
@@ -115,7 +108,6 @@ describe('generate service worker', () => {
   it('should not update the service worker meta doc if the service-worker file is not changed', () => {
     getServiceWorkerHash.onCall(0).resolves('same');
     getServiceWorkerHash.onCall(1).resolves('same');
-    extensionLibsService.getAll.resolves([]);
 
     return generateServiceWorker.run(true).then(() => {
       chai.expect(loginController.renderLogin.callCount).to.equal(1);
@@ -128,7 +120,6 @@ describe('generate service worker', () => {
   it('should update the meta doc if the request to hash the old service worker file contents fails', () => {
     getServiceWorkerHash.onCall(0).resolves(undefined);
     getServiceWorkerHash.onCall(1).resolves('same');
-    extensionLibsService.getAll.resolves([]);
     db.medic.get.resolves({ _id: DOC_IDS.SERVICE_WORKER_META });
     db.medic.put.resolves();
 
@@ -148,7 +139,6 @@ describe('generate service worker', () => {
   it('should not update the meta doc if the request to hash the new service worker file fails', () => {
     getServiceWorkerHash.onCall(0).resolves('thing');
     getServiceWorkerHash.onCall(1).resolves(undefined);
-    extensionLibsService.getAll.resolves([]);
     db.medic.get.resolves({ _id: DOC_IDS.SERVICE_WORKER_META });
     db.medic.put.resolves();
 
@@ -163,7 +153,6 @@ describe('generate service worker', () => {
   it('should not update the meta doc if hashing both old and new service worker files fail', () => {
     getServiceWorkerHash.onCall(0).resolves(undefined);
     getServiceWorkerHash.onCall(1).resolves(undefined);
-    extensionLibsService.getAll.resolves([]);
     db.medic.get.resolves({ _id: DOC_IDS.SERVICE_WORKER_META });
     db.medic.put.resolves();
 
@@ -177,7 +166,6 @@ describe('generate service worker', () => {
 
   it('should throw error when generating the service worker fails', () => {
     loginController.renderLogin.resolves('aaa');
-    extensionLibsService.getAll.resolves([]);
     workboxGenerate.rejects({ an: 'error' });
 
     return generateServiceWorker
@@ -194,7 +182,6 @@ describe('generate service worker', () => {
   it('should handle sw doc get 404s', () => {
     db.medic.get.rejects({ status: 404 });
     db.medic.put.resolves();
-    extensionLibsService.getAll.resolves([]);
     sinon.stub(logger, 'error');
     loginController.renderLogin.resolves('aaa');
     workboxGenerate.resolves();
@@ -214,7 +201,6 @@ describe('generate service worker', () => {
   it('should handle sw doc put 409s', () => {
     db.medic.get.resolves({ _id: DOC_IDS.SERVICE_WORKER_META });
     db.medic.put.rejects({ status: 409 });
-    extensionLibsService.getAll.resolves([]);
     loginController.renderLogin.resolves('aaa');
     workboxGenerate.resolves();
 
@@ -227,7 +213,6 @@ describe('generate service worker', () => {
   it('should log other db get errors', () => {
     db.medic.get.rejects({ status: 500 });
     loginController.renderLogin.resolves('aaa');
-    extensionLibsService.getAll.resolves([]);
     workboxGenerate.resolves();
     sinon.stub(logger, 'error');
 
@@ -241,7 +226,6 @@ describe('generate service worker', () => {
     db.medic.get.resolves({});
     db.medic.put.rejects({ status: 502 });
     loginController.renderLogin.resolves('aaa');
-    extensionLibsService.getAll.resolves([]);
     workboxGenerate.resolves();
     sinon.stub(logger, 'error');
 

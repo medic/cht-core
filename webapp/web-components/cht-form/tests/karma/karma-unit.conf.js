@@ -10,7 +10,15 @@ module.exports = function (config) {
     logLevel: config.LOG_INFO,
     coverageReporter: {
       ...baseConfig.coverageReporter,
-      dir: path.join(__dirname, 'coverage')
+      dir: path.join(__dirname, 'coverage'),
+      check: {
+        global: {
+          statements: 98,
+          lines: 98,
+          branches: 100,
+          functions: 93,
+        },
+      },
     }
   });
 };

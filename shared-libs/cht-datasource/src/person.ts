@@ -1,4 +1,4 @@
-import { ContactTypeQualifier, UuidQualifier } from './qualifier';
+import { byContactType, byUuid, ContactTypeQualifier, UuidQualifier } from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import * as Contact from './contact';
 import * as Remote from './remote';
@@ -6,9 +6,19 @@ import * as Local from './local';
 import * as Place from './place';
 import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
-import { getPagedGenerator, NormalizedParent, Nullable, Page } from './libs/core';
+import {
+  DateTimeString,
+  getPagedGenerator,
+  isIdentifiable,
+  isRecord,
+  NormalizedParent,
+  Nullable,
+  Page
+} from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
+import * as Input from './input';
+import { InvalidArgumentError } from './libs/error';
 
 /** */
 export namespace v1 {
@@ -16,7 +26,7 @@ export namespace v1 {
    * Immutable data about a person contact.
    */
   export interface Person extends Contact.v1.Contact {
-    readonly date_of_birth?: Date;
+    readonly date_of_birth?: DateTimeString;
     readonly phone?: string;
     readonly patient_id?: string;
     readonly sex?: string;
@@ -115,5 +125,159 @@ export namespace v1 {
       return getPagedGenerator(getPage, personType);
     };
     return curriedGen;
+  };
+
+  /**
+   * Returns a function for creating a person from the given data context.
+   * @param context the current data context
+   * @returns a function for creating a person.
+   * @throws Error if a data context is not provided
+   */
+  export const create = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Person.v1.create, Remote.Person.v1.create);
+
+    /**
+     * Creates a new person record.
+     * @param input input fields for creating a person
+     * @returns the created person record
+     * @throws InvalidArgumentError if `type` is not provided or is not a supported person contact type
+     * @throws InvalidArgumentError if `name` is not provided
+     * @throws InvalidArgumentError if `parent` is not provided or is not the identifier of a valid contact. The parent
+     * contact's type must be one of the supported parent contact types for the new person.
+     * @throws InvalidArgumentError if the provided `reported_date` is not in a valid format. Valid formats are
+     * 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
+     */
+    const curriedFn = async (input: Input.v1.PersonInput): Promise<Person> => {
+      if (!isRecord(input)) {
+        throw new InvalidArgumentError('Person data not provided.');
+      }
+      return fn(input);
+    };
+    return curriedFn;
+  };
+
+  /**
+   * Returns a function for updating a person from the given data context.
+   * @param context the current data context
+   * @returns a function for updating a person
+   * @throws Error if a data context is not provided
+   */
+  export const update = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Person.v1.update, Remote.Person.v1.update);
+
+    /**
+     * Updates an existing person to have the provided data.
+     * @param updated the updated person data. The complete data for the person must be provided. Existing fields not
+     * included in the updated data will be removed from the person. If the provided parent lineage is hydrated (e.g.
+     * for a {@link PersonWithLineage}), the lineage will be properly dehydrated before being stored.
+     * @returns the updated person with the new `_rev` value
+     * @throws InvalidArgumentError if `_id` is not provided
+     * @throws ResourceNotFoundError if `_id` does not identify an existing person contact
+     * @throws InvalidArgumentError if `_rev` is not provided or does not match the person's current `_rev` value
+     * @throws InvalidArgumentError if `name` is not provided
+     * @throws InvalidArgumentError if any of the following read-only properties are changed: `reported_date`, `parent`,
+     * `type`, `contact_type`
+     */
+    const curriedFn = async <T extends Input.v1.UpdatePersonInput>(updated: T): Promise<T> => {
+      if (!isIdentifiable(updated)) {
+        throw new InvalidArgumentError('Updated person data not provided.');
+      }
+      return fn(updated);
+    };
+    return curriedFn;
+  };
+
+  /**
+   * Operations for working with people.
+   */
+  export interface Datasource {
+    /**
+     * Returns a person by their UUID.
+     * @param uuid the UUID of the person to retrieve
+     * @returns the person or `null` if no person is found for the UUID
+     * @throws InvalidArgumentError if no UUID is provided
+     */
+    getByUuid: (uuid: string) => Promise<Nullable<v1.Person>>;
+
+    /**
+     * Returns a person by their UUID along with the person's parent lineage.
+     * @param uuid the UUID of the person to retrieve
+     * @returns the person or `null` if no person is found for the UUID
+     * @throws InvalidArgumentError if no UUID is provided
+     */
+    getByUuidWithLineage: (uuid: string) => Promise<Nullable<v1.PersonWithLineage>>;
+
+    /**
+     * Returns an array of people for the provided page specifications.
+     * @param personType the type of people to return
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of people to return. Default is 100.
+     * @returns a page of people for the provided specifications
+     * @throws InvalidArgumentError if no type is provided or if the type is not for a person
+     * @throws InvalidArgumentError if the provided limit is `<= 0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     * @see {@link getByType} which provides the same data, but without having to manually account for paging
+     */
+    getPageByType: (
+      personType: string,
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<v1.Person>>;
+
+    /**
+     * Returns a generator for fetching all people with the given type.
+     * @param personType the type of people to return
+     * @returns a generator for fetching all people with the given type
+     * @throws InvalidArgumentError if no type is provided or if the type is not for a person
+     */
+    getByType: (personType: string) => AsyncGenerator<v1.Person, null>;
+
+    /**
+     * Creates a new person record.
+     * @param input input fields for creating a person
+     * @returns the created person record
+     * @throws InvalidArgumentError if `type` is not provided or is not a supported person contact type
+     * @throws InvalidArgumentError if `name` is not provided
+     * @throws InvalidArgumentError if `parent` is not provided or is not the identifier of a valid contact. The
+     * parent contact's type must be one of the supported parent contact types for the new person.
+     * @throws InvalidArgumentError if the provided `reported_date` is not in a valid format. Valid formats are
+     * 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
+     */
+    create: (input: Input.v1.PersonInput) => Promise<v1.Person>;
+
+    /**
+     * Updates an existing person to have the provided data.
+     * @param updated the updated person data. The complete data for the person must be provided. Existing fields
+     * not included in the updated data will be removed from the person. If the provided parent lineage is
+     * hydrated (e.g. for a {@link v1.PersonWithLineage}), the lineage will be properly dehydrated before being
+     * stored.
+     * @returns the updated person with the new `_rev` value
+     * @throws InvalidArgumentError if `_id` is not provided
+     * @throws ResourceNotFoundError if `_id` does not identify an existing person contact
+     * @throws InvalidArgumentError if `_rev` is not provided or does not match the person's current `_rev` value
+     * @throws InvalidArgumentError if `name` is not provided
+     * @throws InvalidArgumentError if any of the following read-only properties are changed: `reported_date`,
+     * `parent`, `type`, `contact_type`
+     */
+    update: <T extends v1.Person | v1.PersonWithLineage>(updated: T) => Promise<T>;
+  }
+
+  /** @internal */
+  export const getDatasource = (ctx: DataContext): Datasource => {
+    return {
+      getByUuid: (uuid) => ctx.bind(v1.get)(byUuid(uuid)),
+      getByUuidWithLineage: (uuid) => ctx.bind(v1.getWithLineage)(byUuid(uuid)),
+      getPageByType: (
+        personType,
+        cursor = null,
+        limit = DEFAULT_DOCS_PAGE_LIMIT
+      ) => ctx.bind(v1.getPage)(byContactType(personType), cursor, limit),
+      getByType: (personType) => ctx.bind(v1.getAll)(byContactType(personType)),
+      create: (input) => ctx.bind(v1.create)(input),
+      update: (updated) => ctx.bind(v1.update)(updated),
+    };
   };
 }

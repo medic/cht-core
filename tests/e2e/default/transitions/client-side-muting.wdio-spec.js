@@ -8,22 +8,23 @@ const formsUtils = require('./forms');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 /* global window */
 
 describe.skip('Muting', () => {
   const places = placeFactory.generateHierarchy();
   const district = places.get('district_hospital');
-  const healthCenter = places.get('health_center');
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
 
   const contact1 = personFactory.build({
     name: 'contact1', parent: { _id: healthCenter._id, parent: district._id } });
   const clinic1 = Object.assign({},
-    places.get('clinic'),
+    places.get(CONTACT_TYPES.CLINIC),
     { name: 'Clinic One', _id: 'clinic_1', contact: { _id: contact1._id }});
 
   const clinic2 = Object.assign({},
-    places.get('clinic'),
+    places.get(CONTACT_TYPES.CLINIC),
     { name: 'Clinic Two', _id: 'clinic_2', contact: { _id: contact1._id }});
 
   const onlineUser = userFactory.build({

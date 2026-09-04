@@ -6,6 +6,7 @@ import { findIndex as _findIndex } from 'lodash-es';
 
 import { GlobalActions } from '@mm-actions/global';
 import { ChangesService } from '@mm-services/changes.service';
+import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { ContactsActions } from '@mm-actions/contacts';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
@@ -16,11 +17,10 @@ import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 import { Selectors } from '@mm-selectors/index';
 import { Filter, SearchService } from '@mm-services/search.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
-import { RelativeDateService } from '@mm-services/relative-date.service';
+import { UHCVisitDisplayService } from '@mm-services/uhc-visit-display.service';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
-import { TranslateService } from '@mm-services/translate.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { ButtonType, FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
@@ -85,8 +85,8 @@ export class ContactsComponent implements OnInit, OnDestroy {
   constructor(
     private store: Store,
     private changesService: ChangesService,
+    private contactChangeFilterService: ContactChangeFilterService,
     private fastActionButtonService: FastActionButtonService,
-    private translateService: TranslateService,
     private searchService: SearchService,
     private contactTypesService: ContactTypesService,
     private userSettingsService: UserSettingsService,
@@ -96,7 +96,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
     private settingsService: SettingsService,
     private UHCSettings: UHCSettingsService,
     private scrollLoaderProvider: ScrollLoaderProvider,
-    private relativeDateService: RelativeDateService,
+    private uhcVisitDisplayService: UHCVisitDisplayService,
     private router: Router,
     private exportService: ExportService,
     private performanceService: PerformanceService,
@@ -229,10 +229,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
     return (
       doc &&
       this.lastVisitedDateExtras &&
-      doc.type === 'data_record' &&
-      doc.form &&
-      doc.fields &&
-      doc.fields.visited_contact_uuid &&
+      this.contactChangeFilterService.isVisitReport(doc) &&
       (this.listContains(doc.fields.visited_contact_uuid) || isRelevantDelete)
     );
   }
@@ -247,7 +244,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
       .getUserFacilityId(userSettings)
       .filter(id => !!id);
 
-    let homePlaces = await this.getDataRecordsService.get(facilityIds);
+    let homePlaces = await this.getDataRecordsService.getContacts(facilityIds);
     homePlaces = homePlaces?.filter(place => !!place);
     homePlaces?.forEach(homePlace => homePlace.home = true);
     return homePlaces;
@@ -293,56 +290,15 @@ export class ContactsComponent implements OnInit, OnDestroy {
   }
 
   private setVisitDetails(contact, type) {
-    if (!type?.count_visits || !Number.isInteger(contact.lastVisitedDate)) {
+    if (!type?.count_visits) {
       return;
     }
-    this.setVisitOverdue(contact);
-    this.setVisitCountDetails(contact);
-    this.evaluateVisitGoal(contact);
-  }
-
-  private setVisitOverdue(contact) {
-    if (contact.lastVisitedDate === 0) {
-      contact.overdue = true;
-      contact.summary = this.translateService.instant('contact.last.visit.unknown');
-      return;
-    }
-    const now = new Date().getTime();
-    const oneMonthAgo = now - (30 * 24 * 60 * 60 * 1000);
-    contact.overdue = contact.lastVisitedDate <= oneMonthAgo;
-    contact.summary = this.translateService.instant(
-      'contact.last.visited.date',
-      { date: this.relativeDateService.getRelativeDate(contact.lastVisitedDate, {}) }
-    );
-  }
-
-  private setVisitCountDetails(contact) {
-    const visitCount = Math.min(contact.visitCount, 99) + (contact.visitCount > 99 ? '+' : '');
-    contact.visits = {
-      count: this.translateService.instant('contacts.visits.count', { count: visitCount }),
-      summary: this.translateService.instant(
-        'contacts.visits.visits',
-        { VISITS: contact.visitCount }
-      )
-    };
-  }
-
-  private evaluateVisitGoal(contact) {
-    const { visitCountGoal, visitCount } = contact;
-    if (!visitCountGoal) {
-      return;
-    }
-    contact.visits.status = this.setVisitStatus(visitCount, visitCountGoal);
-  }
-
-  private setVisitStatus(visitCount, visitCountGoal) {
-    if (!visitCount) {
-      return 'pending';
-    }
-    if (visitCount < visitCountGoal) {
-      return 'started';
-    }
-    return 'done';
+    const visitDetails = this.uhcVisitDisplayService.getVisitDetails({
+      lastVisitedDate: contact.lastVisitedDate,
+      count: contact.visitCount,
+      countGoal: contact.visitCountGoal,
+    });
+    Object.assign(contact, visitDetails);
   }
 
   private getChildren() {

@@ -1,8 +1,9 @@
-const _ = require('lodash/core');
-
 /*
  * Get all enabled languages
  */
+const constants = require('@medic/constants');
+const PREFIXES = constants.PREFIXES;
+
 angular.module('inboxServices').factory('Languages',
   function(
     DB
@@ -11,9 +12,9 @@ angular.module('inboxServices').factory('Languages',
     'ngInject';
     return function() {
       return DB()
-        .query('medic-client/doc_by_type', { key: [ 'translations', true ] })
+        .allDocs({ start_key: PREFIXES.TRANSLATIONS, end_key: PREFIXES.TRANSLATIONS + '\ufff0', include_docs: true })
         .then(function(result) {
-          return _.map(result.rows, 'value');
+          return result.rows.map(row => ({ code: row.doc.code, name: row.doc.name }));
         });
     };
   });

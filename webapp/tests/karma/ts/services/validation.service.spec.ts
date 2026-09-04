@@ -9,6 +9,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { TranslateLocaleService } from '@mm-services//translate-locale.service';
 import { LanguageService} from '@mm-services/language.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('Validation Service', () => {
   let service:ValidationService;
@@ -101,7 +102,7 @@ describe('Validation Service', () => {
       validation.validate.resolves([]);
       languageService.get.resolves('es');
 
-      const doc = { _id: 'report', type: 'data_record' };
+      const doc = { _id: 'report', type: DOC_TYPES.DATA_RECORD };
       const config = {
         validations:
           {
@@ -117,21 +118,21 @@ describe('Validation Service', () => {
       expect(result).to.deep.equal([]);
       expect(validation.validate.callCount).to.equal(1);
       expect(validation.validate.args[0]).to.deep.equal([
-        { _id: 'report', type: 'data_record', locale: 'es' },
+        { _id: 'report', type: DOC_TYPES.DATA_RECORD, locale: 'es' },
         [
           { property: 'type', rule: 'equals("data_record")' },
           { property: '_id', rule: 'required' },
         ],
       ]);
       expect(languageService.get.callCount).to.equal(1);
-      expect(doc).to.deep.equal({ _id: 'report', type: 'data_record' }); // not mutated
+      expect(doc).to.deep.equal({ _id: 'report', type: DOC_TYPES.DATA_RECORD }); // not mutated
     });
 
     it('should pass correct data to validate when doc has locale', async () => {
       settingsService.get.resolves({ the: 'settings' });
       validation.validate.resolves([]);
 
-      const doc = { _id: 'report', type: 'data_record', locale: 'nl' };
+      const doc = { _id: 'report', type: DOC_TYPES.DATA_RECORD, locale: 'nl' };
       const config = {
         validations:
           {
@@ -147,14 +148,14 @@ describe('Validation Service', () => {
       expect(result).to.deep.equal([]);
       expect(validation.validate.callCount).to.equal(1);
       expect(validation.validate.args[0]).to.deep.equal([
-        { _id: 'report', type: 'data_record', locale: 'nl' },
+        { _id: 'report', type: DOC_TYPES.DATA_RECORD, locale: 'nl' },
         [
           { property: 'type', rule: 'equals("data_record")' },
           { property: '_id', rule: 'required' },
         ],
       ]);
       expect(languageService.get.callCount).to.equal(0);
-      expect(doc).to.deep.equal({ _id: 'report', type: 'data_record', locale: 'nl' }); // not mutated
+      expect(doc).to.deep.equal({ _id: 'report', type: DOC_TYPES.DATA_RECORD, locale: 'nl' }); // not mutated
     });
 
     it('should translate error messages with provided context', async () => {
@@ -163,7 +164,7 @@ describe('Validation Service', () => {
         patient: { name: 'the patient', patient_id: 'aaa' },
       };
 
-      const doc = { _id: 'report', type: 'data_record' };
+      const doc = { _id: 'report', type: DOC_TYPES.DATA_RECORD };
       const config = {
         validations:
           {
@@ -187,7 +188,7 @@ describe('Validation Service', () => {
     it('should skip validation with invalid config', async () => {
       settingsService.get.resolves({ the: 'settings' });
 
-      const doc = { _id: 'report', type: 'data_record' };
+      const doc = { _id: 'report', type: DOC_TYPES.DATA_RECORD };
       const result = await service.validate(doc, undefined);
 
       expect(result).to.deep.equal(undefined);
@@ -197,7 +198,7 @@ describe('Validation Service', () => {
     it('should skip validation whn config is missing validation rules', async () => {
       settingsService.get.resolves({ the: 'settings' });
 
-      const doc = { _id: 'report', type: 'data_record' };
+      const doc = { _id: 'report', type: DOC_TYPES.DATA_RECORD };
       const result = await service.validate(doc, {});
 
       expect(result).to.deep.equal(undefined);
@@ -207,7 +208,7 @@ describe('Validation Service', () => {
     it('should skip validation if no validation rules are defined', async () => {
       settingsService.get.resolves({ the: 'settings' });
 
-      const doc = { _id: 'report', type: 'data_record' };
+      const doc = { _id: 'report', type: DOC_TYPES.DATA_RECORD };
       const result = await service.validate(doc, { validations: {} });
 
       expect(result).to.deep.equal(undefined);
@@ -217,7 +218,7 @@ describe('Validation Service', () => {
     it('should skip validation if no validations', async () => {
       settingsService.get.resolves({ the: 'settings' });
 
-      const doc = { _id: 'report', type: 'data_record' };
+      const doc = { _id: 'report', type: DOC_TYPES.DATA_RECORD };
       const result = await service.validate(doc, { validations: { list: [] } });
 
       expect(result).to.deep.equal(undefined);

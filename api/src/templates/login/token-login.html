@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html dir="{{ defaultDir }}">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#323232">
@@ -12,6 +12,10 @@
 <div class="center">
   <div id="wrapper">
     <img class="logo" src="{{ branding.logo }}" title="{{ branding.name }}">
+    <p id="unsupported-browser" class="hidden">
+      <span translate="login.unsupported_browser"></span>
+      <span id="unsupported-browser-update"></span>
+    </p>
     <div class="locale-wrapper">
       <div class="loading">
         <p translate="login.token.loading"></p>
@@ -29,7 +33,7 @@
     </div>
     <div id="locale" class="wrapper">
       <% locales.forEach(function(locale) { %>
-      <a href="#" name="{{ locale.key }}" class="locale">{{ locale.label }}</a>
+      <a href="#" name="{{ locale.key }}" class="locale"<% if (locale.rtl) { %> data-rtl="true"<% } %>>{{ locale.label }}</a>
       <% }); %>
     </div>
     <% if(hasPrivacyPolicy) { %>
@@ -40,6 +44,7 @@
   </div>
 </div>
 <form id="tokenLogin" action="{{tokenUrl}}"></form>
+<script src="/login/lib-bowser.js"></script>
 <script src="/login/auth-utils.js"></script>
 <script src="/login/script.js"></script>
 </body>

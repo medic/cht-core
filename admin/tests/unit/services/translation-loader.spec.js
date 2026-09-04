@@ -1,6 +1,8 @@
 describe('TranslationLoader service', function() {
 
   'use strict';
+  
+  const { PREFIXES } = require('@medic/constants');
 
   let service;
   let Settings;
@@ -124,7 +126,7 @@ describe('TranslationLoader service', function() {
       chai.expect(service.test({})).to.equal(false);
       chai.expect(service.test(100)).to.equal(false);
       chai.expect(service.test('04aa1bfa-f87d-467e-bf46-51eeb367370b')).to.equal(false);
-      chai.expect(service.test('messages-')).to.equal(false);
+      chai.expect(service.test(PREFIXES.TRANSLATIONS)).to.equal(false);
     });
 
     it('should return true when matching', () => {
@@ -141,7 +143,7 @@ describe('TranslationLoader service', function() {
       chai.expect(service.getCode({})).to.equal(null);
       chai.expect(service.getCode(100)).to.equal(null);
       chai.expect(service.getCode('04aa1bfa-f87d-467e-bf46-51eeb367370b')).to.equal(null);
-      chai.expect(service.getCode('messages-')).to.equal(null);
+      chai.expect(service.getCode(PREFIXES.TRANSLATIONS)).to.equal(null);
     });
 
     it('should return code when matching', () => {

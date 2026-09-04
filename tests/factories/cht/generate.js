@@ -6,27 +6,37 @@ const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const pregnancyVisitFactory = require('@factories/cht/reports/pregnancy-visit');
 const immunizationFactory = require('@factories/cht/reports/inmunization');
 const { faker } = require('@faker-js/faker');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 // Fixed collection of real-world data
-const PRIMARY_CONTACT_FIRST_NAMES = [
-  'Amanda', 'Beatrice', 'Dana', 'Fatima',
-  'Gina', 'Helen', 'Isabelle', 'Jessica',
-  'Ivy', 'Sara'
+const FIRST_NAMES = [
+  'Abigail', 'Amanda', 'Ana', 'Andrew', 'Beatrice',
+  'Catherine', 'Charity', 'Dana', 'Daniel', 'David',
+  'Elias', 'Esther', 'Faith', 'Fatima', 'Florence',
+  'Gina', 'Grace', 'Hawa', 'Helen', 'Hope',
+  'Isabelle', 'Ivy', 'James', 'Jessica', 'John',
+  'Joseph', 'Joy', 'Leah', 'Lydia', 'Margaret',
+  'Martha', 'Mary', 'Mercy', 'Miriam', 'Moses',
+  'Naomi', 'Patricia', 'Peter', 'Philip', 'Priscilla',
+  'Rachel', 'Rose', 'Ruth', 'Samuel', 'Sara',
+  'Simon', 'Tania', 'Timmy'
 ];
-const ADDITIONAL_KID_FIRST_NAMES = ['John', 'Timmy', 'Elias'];
-const ADDITIONAL_WOMAN_FIRST_NAMES = ['Hawa', 'Ana', 'Tania'];
-const FAMILY_LAST_NAMES = [
-  'Allen', 'Bass', 'Dearborn', 'Flair',
-  'Gorman', 'Hamburg', 'Ivanas', 'James',
-  'Moore', 'Taylor'
+
+const LAST_NAMES = [
+  'Akinyi', 'Allen', 'Barasa', 'Bass',
+  'Chebet', 'Dearborn', 'Flair', 'Gorman',
+  'Hamburg', 'Ivanas', 'James', 'Kamau',
+  'Kariuki', 'Kimani', 'Kipchoge', 'Moore',
+  'Muthoni', 'Mutua', 'Mwangi', 'Ndungu',
+  'Njoroge', 'Nyambura', 'Ochieng', 'Oduya',
+  'Onyango', 'Otieno', 'Taylor', 'Waithera',
+  'Wambui', 'Wanjiku'
 ];
-const PHONE_NUMBERS = [
-  '+256414345783', '+256414345784', '+256414345785',
-  '+256414345786', '+256414345787', '+256414345788',
-  '+256414345789', '+256414345790', '+256414345791',
-  '+256414345792'
-];
-const PATIENT_IDS = [65421, 65422, 65423, 65424, 65425, 65426, 65427, 65428, 65429, 65430];
+
+const PATIENT_IDS = Array.from({ length: 1000 }, (_, i) => 123456 + i);
+const PHONE_NUMBERS = Array.from({ length: 1000 }, (_, i) => `+25641434${i.toString().padStart(4, '0')}`);
+
+const element = (array) => array[Math.floor(Math.random() * array.length)];
 
 const calculateDateOfBirth = (age) => {
   const today = new Date();
@@ -35,8 +45,8 @@ const calculateDateOfBirth = (age) => {
   const birthDay = today.getDate();
   return `${birthYear}-${String(birthMonth).padStart(2, '0')}-${String(birthDay).padStart(2, '0')}`;
 };
-const KIDS_AGES = [2, 7, 10];
-const ADULTS_AGES = [25, 35];
+const KIDS_AGES = Array.from({ length: 10 }, (_, i) => i + 1);
+const ADULTS_AGES = Array.from({ length: 20 }, (_, i) => i + 25);
 const DATE_OF_BIRTHS_KIDS = KIDS_AGES.map(calculateDateOfBirth);
 const DATE_OF_BIRTHS_ADULTS = ADULTS_AGES.map(calculateDateOfBirth);
 
@@ -64,7 +74,7 @@ const getReportContext = (patient, submitter) => {
   if (submitter) {
     context.contact = {
       _id: submitter.contact._id,
-      parent: submitter.contact.parent,
+      parent: submitter.contact.parent || patient.parent,
     };
   }
   return context;
@@ -74,7 +84,7 @@ const createDataWithFixedData = ({ healthCenter, user, nbrClinics = 10, nbrPerso
   const clinics = Array
     .from({ length: nbrClinics })
     .map((_, idx) => placeFactory.place().build({
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       parent: { _id: healthCenter._id, parent: healthCenter.parent },
       name: `clinic_${idx}`,
     }));
@@ -97,20 +107,19 @@ const createDataWithFixedData = ({ healthCenter, user, nbrClinics = 10, nbrPerso
   return { clinics, reports, persons };
 };
 
-const createClinic = (index, healthCenter) => {
-  const firstName = PRIMARY_CONTACT_FIRST_NAMES[index % PRIMARY_CONTACT_FIRST_NAMES.length];
-  const lastName = FAMILY_LAST_NAMES[index % FAMILY_LAST_NAMES.length];
+const createClinic = (healthCenter) => {
+  const firstName = element(FIRST_NAMES);
+  const lastName = element(LAST_NAMES);
   const personName = `${firstName} ${lastName}`;
-  const personPhoneNumber = PHONE_NUMBERS[index % PHONE_NUMBERS.length];
 
   const primaryContact = personFactory.build({
     name: personName,
-    phone: personPhoneNumber,
-    patient_id: PATIENT_IDS[0],
+    phone: element(PHONE_NUMBERS),
+    patient_id: element(PATIENT_IDS),
   });
 
   const clinic = placeFactory.place().build({
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     parent: { _id: healthCenter._id, parent: healthCenter.parent },
     name: `${personName} Family`,
     last_name: lastName,
@@ -122,17 +131,17 @@ const createClinic = (index, healthCenter) => {
   return { clinic, primaryContact };
 };
 
-const createAdditionalPersons = (nbrPersons, clinic, nameList, dateOfBirthList) => {
+const createAdditionalPersons = (nbrPersons, clinic, dateOfBirthList) => {
   return Array
     .from({ length: nbrPersons })
-    .map((_, i) => {
-      const additionalPhoneNumber = PHONE_NUMBERS[i % PHONE_NUMBERS.length];
-      const name = nameList[i % nameList.length];
-      const date_of_birth = dateOfBirthList[i % dateOfBirthList.length];
+    .map(() => {
+      const additionalPhoneNumber = element(PHONE_NUMBERS);
+      const name = element(FIRST_NAMES);
+      const date_of_birth = element(dateOfBirthList);
       return personFactory.build({
         parent: { _id: clinic._id, parent: clinic.parent },
         name: `${name} ${clinic.last_name}`,
-        patient_id: PATIENT_IDS[i % PATIENT_IDS.length],
+        patient_id: element(PATIENT_IDS),
         phone: additionalPhoneNumber,
         date_of_birth: date_of_birth,
       });
@@ -143,7 +152,6 @@ const createAdditionalKid = (nbrPersons, clinic) => {
   return createAdditionalPersons(
     nbrPersons,
     clinic,
-    ADDITIONAL_KID_FIRST_NAMES,
     DATE_OF_BIRTHS_KIDS
   );
 };
@@ -152,7 +160,6 @@ const createAdditionalWoman = (nbrPersons, clinic) => {
   return createAdditionalPersons(
     nbrPersons,
     clinic,
-    ADDITIONAL_WOMAN_FIRST_NAMES,
     DATE_OF_BIRTHS_ADULTS,
   );
 };
@@ -173,8 +180,8 @@ const createReportsForKid = (person, user) => {
 const createDataWithRealNames = ({ healthCenter, user, nbrClinics = 10, nbrPersons = 10 }) => {
   const clinicsData = Array
     .from({ length: nbrClinics })
-    .map((_, index) => {
-      const { clinic, primaryContact } = createClinic(index, healthCenter);
+    .map(() => {
+      const { clinic, primaryContact } = createClinic(healthCenter);
 
       const kids = createAdditionalKid( Math.floor(nbrPersons / 2), clinic);
       const adults = createAdditionalWoman( Math.floor(nbrPersons / 2), clinic);
@@ -209,7 +216,7 @@ const createData = ({ healthCenter, user, nbrClinics, nbrPersons, useRealNames =
 
 const createHierarchy = ({ name, user = false, nbrClinics = 50, nbrPersons = 10, useRealNames = false }) => {
   const hierarchy = placeFactory.generateHierarchy();
-  const healthCenter = hierarchy.get('health_center');
+  const healthCenter = hierarchy.get(CONTACT_TYPES.HEALTH_CENTER);
   healthCenter.name = `${name}'s Area`;
   const branch = hierarchy.get('district_hospital');
   branch.name = 'Kiambu Branch';
@@ -229,7 +236,7 @@ const createHierarchy = ({ name, user = false, nbrClinics = 50, nbrPersons = 10,
   user = user && userFactory.build({ place: healthCenter._id, roles: ['chw'], contact: contact });
 
   const places = [...hierarchy.values()].map(place => {
-    if (place.type === 'clinic') {
+    if (place.type === CONTACT_TYPES.CLINIC) {
       place.name = `${name} ${place.type}`;
     }
     return place;

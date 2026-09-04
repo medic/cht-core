@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const constants = require('@constants');
-const { DOC_IDS, DOC_TYPES, SENTINEL_METADATA } = require('@medic/constants');
+const { DOC_IDS, DOC_TYPES, SENTINEL_METADATA, PREFIXES } = require('@medic/constants');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -21,6 +21,16 @@ const { setTimeout: setTimeoutPromise } = require('node:timers/promises');
 process.env.COUCHDB_USER = constants.USERNAME;
 process.env.COUCHDB_PASSWORD = constants.PASSWORD;
 process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
+
+// Suppress the warning about NODE_TLS_REJECT_UNAUTHORIZED
+const originalEmitWarning = process.emitWarning;
+process.emitWarning = (warning, ...args) => {
+  if (typeof warning === 'string' && warning.includes('NODE_TLS_REJECT_UNAUTHORIZED')) {
+    return;
+  }
+  originalEmitWarning.call(process, warning, ...args);
+};
+
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; // allow self signed certificates
 const DEBUG = process.env.DEBUG;
 
@@ -51,16 +61,18 @@ const SERVICES = {
 };
 const CONTAINER_NAMES = {};
 const originalTranslations = {};
-const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
+const COUCH_USER_ID_PREFIX = PREFIXES.COUCH_USER;
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
+const COMPOSE_OVERRIDE_FILE = path.resolve(__dirname, '../cht-core-test.override.yml');
 const PERMANENT_TYPES = [DOC_TYPES.TRANSLATIONS, 'translations-backup', 'user-settings', 'info'];
 const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
 const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
 const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 const auditDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-audit`, { auth });
+const archiveDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-archive`, { auth });
 const existingFeedbackDocIds = [];
-const MINIMUM_BROWSER_VERSION = '90';
+const MINIMUM_BROWSER_VERSION = '107';
 const KUBECTL_CONTEXT = `-n ${PROJECT_NAME} --context k3d-${PROJECT_NAME}`;
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
@@ -126,6 +138,18 @@ const parseCookieResponse = (cookieString) => {
   });
 };
 
+const loginUser = async (username = constants.USERNAME, password = constants.PASSWORD) => {
+  await request({
+    path: '/medic/login',
+    body: { user: username, password: password },
+    method: 'POST',
+  });
+};
+
+const getUserDoc = (userName = constants.USERNAME) => {
+  return getDoc(COUCH_USER_ID_PREFIX + userName);
+};
+
 const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.build()) => {
   return getDoc(COUCH_USER_ID_PREFIX + userName)
     .then(doc => {
@@ -139,13 +163,18 @@ const randomIp = () => {
   return `${section()}.${section()}.${section()}.${section()}`;
 };
 
+const stringifyParam = (key, value) => {
+  if (key.startsWith('start') || key.startsWith('end') || key.startsWith('doc_ids') || Array.isArray(value)) {
+    return JSON.stringify(value);
+  }
+  return value;
+};
+
 const getRequestUri = (options) => {
   let uri = (options.uri || `${constants.BASE_URL}${options.path}`);
   if (options.qs) {
     Object.keys(options.qs).forEach((key) => {
-      if (Array.isArray(options.qs[key])) {
-        options.qs[key] = JSON.stringify(options.qs[key]);
-      }
+      options.qs[key] = stringifyParam(key, options.qs[key]);
     });
     uri = `${uri}?${new URLSearchParams(options.qs).toString()}`;
   }
@@ -415,13 +444,13 @@ const deleteDocs = ids => {
 const PROTECTED_DOCS = [
   DOC_IDS.SERVICE_WORKER_META,
   constants.USER_CONTACT_ID,
+  `${COUCH_USER_ID_PREFIX}${constants.USERNAME}`,
   constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id,
-  'migration-log',
+  DOC_IDS.MIGRATION_LOG,
   'resources',
-  'branding',
-  'partners',
-  'settings',
-  /^form:/,
+  DOC_IDS.BRANDING,
+  DOC_IDS.PARTNERS,
+  DOC_IDS.SETTINGS,
   /^_design/
 ];
 
@@ -485,6 +514,7 @@ const deleteSentinelDocs = async (docsToKeep) => {
  * @return     {Promise}  completion promise
  */
 const deleteAllDocs = async (except = []) => {
+  await getDefaultForms();
   const filters = createDocumentFilters(except);
   const { rows } = await db.allDocs({ include_docs: true });
 
@@ -510,42 +540,33 @@ const deleteAllDocs = async (except = []) => {
   await deleteSentinelDocs(docsToKeep);
 };
 
+const updateCustomSettings = async (updates) => {
+  const settings = await request({ path: '/api/v1/settings' });
+  originalSettings = originalSettings || settings;
+  // Make sure all updated fields are present in originalSettings, to enable reverting later.
+  Object.keys(updates).forEach(updatedField => {
+    if (!_.has(originalSettings, updatedField)) {
+      originalSettings[updatedField] = null;
+    }
+  });
 
-// Update both ddocs, to avoid instability in tests.
-// Note that API will be copying changes to medic over to medic-client, so change
-// medic-client first (api does nothing) and medic after (api copies changes over to
-// medic-client, but the changes are already there.)
-const updateCustomSettings = updates => {
-  if (originalSettings) {
-    throw new Error('A previous test did not call revertSettings');
-  }
-  return request({
-    path: '/api/v1/settings',
-    method: 'GET',
-  })
-    .then(settings => {
-      originalSettings = settings;
-      // Make sure all updated fields are present in originalSettings, to enable reverting later.
-      Object.keys(updates).forEach(updatedField => {
-        if (!_.has(originalSettings, updatedField)) {
-          originalSettings[updatedField] = null;
-        }
-      });
-    })
-    .then(() => {
-      return request({
-        path: '/api/v1/settings?replace=1',
-        method: 'PUT',
-        body: updates,
-      });
-    });
+  return await request({
+    path: '/api/v1/settings?replace=1',
+    method: 'PUT',
+    body: updates,
+  });
 };
 
-const waitForSettingsUpdateLogs = (type) => {
-  if (type === 'sentinel') {
-    return waitForSentinelLogs(true, /Reminder messages allowed between/);
-  }
-  return waitForApiLogs(/Settings updated/);
+const waitForSettingsUpdate = async () => {
+  const apiWatcher = await waitForApiLogs(/Settings updated/);
+  const sentinelWatcher = await waitForSentinelLogs(true, /Reminder messages allowed between/);
+  return {
+    promise: Promise.all([apiWatcher.promise, sentinelWatcher.promise]),
+    cancel: () => {
+      apiWatcher.cancel();
+      sentinelWatcher.cancel();
+    }
+  };
 };
 
 /**
@@ -569,10 +590,9 @@ const waitForSettingsUpdateLogs = (type) => {
  *                           The keys should correspond to the settings that need to be updated,
  *                           and the values should be the new values for those settings.
  * @param {Object} [options={}] - Options to control the behavior of the update.
- * @param {boolean} [options.ignoreReload=false] - if `false`, will wait for reload modal and reload. if `truthy`,
- *                                                 will tail service logs and resolve when new settings are loaded.
- *                                                 By default, watches api logs, if value equals 'sentinel', will
- *                                                 watch sentinel logs instead.
+ * @param {boolean|string} [options.ignoreReload=false] - if `false`, will wait for reload modal and reload.
+ *                                                 if `truthy`, will tail service logs and resolve when new
+ *                                                 settings are loaded. Both api and sentinel logs are watched.
  * @param {boolean} [options.sync=false] - If `true`, the function will perform a synchronization
  *                                         after updating the settings. Defaults to `false`.
  * @param {boolean} [options.refresh=false] - If `true`, the function will refresh the browser after
@@ -589,34 +609,44 @@ const updateSettings = async (updates, options = {}) => {
   if (revert) {
     await revertSettings(true);
   }
-  const watcher = ignoreReload && Object.keys(updates).length && await waitForSettingsUpdateLogs(ignoreReload);
-  await updateCustomSettings(updates);
-  if (!ignoreReload && !sync) {
-    return await commonElements.closeReloadModal(true);
-  }
+
+  const watcher = Object.keys(updates).length && await waitForSettingsUpdate();
+
+  const result = await updateCustomSettings(updates);
+  const needsRefresh = result && result.updated;
+
   if (watcher) {
-    await watcher.promise;
+    if (needsRefresh) {
+      await watcher.promise;
+    } else {
+      watcher.cancel();
+    }
+  }
+
+  if (!ignoreReload && !sync && (needsRefresh || await hasModal())) {
+    await commonElements.closeReloadModal(true);
   }
   if (sync) {
-    await commonElements.sync({ expectReload: true });
+    await commonElements.sync();
   }
   if (refresh) {
     await browser.refresh();
   }
 };
 
-const revertCustomSettings = () => {
+const revertCustomSettings = async () => {
   if (!originalSettings) {
-    return Promise.resolve(false);
+    return false;
   }
-  return request({
+
+  const result = await request({
     path: '/api/v1/settings?replace=1',
     method: 'PUT',
     body: originalSettings,
-  }).then((result) => {
-    originalSettings = null;
-    return result.updated;
   });
+
+  originalSettings = null;
+  return result.updated;
 };
 
 /**
@@ -627,11 +657,14 @@ const revertCustomSettings = () => {
  * @return {Promise}       completion promise
  */
 const revertSettings = async ignoreRefresh => {
-  const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
+  const watcher = ignoreRefresh && await waitForSettingsUpdate();
   const needsRefresh = await revertCustomSettings();
 
   if (!ignoreRefresh) {
-    return needsRefresh && await commonElements.closeReloadModal(true);
+    if (needsRefresh || await hasModal()) {
+      await commonElements.closeReloadModal(true);
+    }
+    return;
   }
 
   if (!needsRefresh) {
@@ -639,7 +672,8 @@ const revertSettings = async ignoreRefresh => {
     return;
   }
 
-  return await watcher.promise;
+  await watcher.promise;
+  return needsRefresh;
 };
 
 const revertTranslations = async () => {
@@ -680,15 +714,18 @@ const getDefaultForms = async () => {
   const docName = '_local/default-forms';
   try {
     const doc = await db.get(docName);
-    return doc.forms;
+    PROTECTED_DOCS.push(...doc.forms);
   } catch {
-    const result = await db.allDocs({ startkey: 'form:', endkey: 'form:\ufff0' });
+    const result = await db.allDocs({
+      startkey: PREFIXES.FORM,
+      endkey: PREFIXES.FORM + '\ufff0',
+    });
     const doc = {
       _id: docName,
       forms: result.rows.map(row => row.id),
     };
     await db.put(doc);
-    return doc.forms;
+    PROTECTED_DOCS.push(...doc.forms);
   }
 };
 
@@ -716,17 +753,27 @@ const deleteMetaDbs = async () => {
   }
 };
 
+const deleteCredentials = async () => {
+  const credentials = await request({ path: `/${constants.DB_NAME}-vault/_all_docs` });
+  const credentialsToDelete = credentials.rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
+  await request({
+    path: `/${constants.DB_NAME}-vault/_bulk_docs`,
+    method: 'POST',
+    body: { docs: credentialsToDelete }
+  });
+};
+
 /**
  * Deletes documents from the database, including Enketo forms. Use with caution.
  * @param {array} except - exeptions in the delete method. If this parameter is empty
  *                         everything will be deleted from the config, including all the enketo forms.
  * @param {boolean} ignoreRefresh
  */
-const revertDb = async (except, ignoreRefresh) => { //NOSONAR
+const revertDb = async (except = [], ignoreRefresh = true) => { //NOSONAR
   await deleteAllDocs(except);
   await revertTranslations();
   await deleteLocalDocs();
-  const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
+  const watcher = ignoreRefresh && await waitForSettingsUpdate();
   const needsRefresh = await revertCustomSettings();
 
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
@@ -740,9 +787,22 @@ const revertDb = async (except, ignoreRefresh) => { //NOSONAR
   }
 
   await deleteMetaDbs();
+  await deleteCredentials();
+  await clearReplicationFailureLogs();
 
   await setUserContactDoc();
 };
+
+const deleteLogsByPrefix = async (prefix) => {
+  const result = await logsDb.allDocs({ startkey: prefix, endkey: `${prefix}\ufff0` });
+  if (!result.rows.length) {
+    return;
+  }
+  const docs = result.rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
+  await logsDb.bulkDocs(docs);
+};
+
+const clearReplicationFailureLogs = () => deleteLogsByPrefix('replication-fail-');
 
 const getOrigin = () => `${constants.BASE_URL}`;
 
@@ -764,7 +824,6 @@ const getLoggedInUser = async () => {
     return userCtx.name;
   } catch (err) {
     console.warn('Error getting userCtx', err.message);
-    return;
   }
 };
 
@@ -859,7 +918,11 @@ const createUsers = async (users, meta = false, password_change_required = false
 };
 
 const getAllUserSettings = () => db
-  .query('medic-client/doc_by_type', { include_docs: true, key: ['user-settings'] })
+  .allDocs({
+    include_docs: true,
+    start_key: PREFIXES.COUCH_USER,
+    end_key: PREFIXES.COUCH_USER + '\ufff0',
+  })
   .then(response => response.rows.map(row => row.doc));
 
 /**
@@ -876,23 +939,97 @@ const getUserSettings = ({ contactId, name }) => {
     }));
 };
 
-const listenForApi = async () => {
-  let retryCount = 180;
+const waitForApiCrash = async () => {
+  const deadline = Date.now() + 90 * 1000; // 90 seconds
   do {
     try {
-      console.log(`Checking API, retries left ${retryCount}`);
-      return await request({ path: '/api/info' });
+      await request({ path: '/api/info' });
+      await delayPromise(500);
+    } catch {
+      return;
+    }
+  } while (Date.now() <= deadline);
+  throw new Error('API expected to crash, but still running after 1.5 minutes');
+};
+
+const logApiContainerDiagnostics = async () => {
+  if (!isDocker()) {
+    return;
+  }
+  try {
+    const state = await getContainerState('api');
+    console.log('api container state:', state ? JSON.stringify(state) : 'container not found');
+    await runCommand(`docker logs --tail 20 ${getContainerName('api')}`);
+  } catch (err) {
+    console.log('Could not collect api container diagnostics:', err.message);
+  }
+};
+
+const listenForApi = async () => {
+  const deadline = Date.now() + 180 * 1000; // 3 minutes
+  do {
+    try {
+      console.log(`Checking API, trying for another ${parseInt((deadline - Date.now()) / 1000)} seconds`);
+      await request({ path: '/api/info' });
+      // make sure that it's stable
+      await delayPromise(1000);
+      await request({ path: '/api/info' });
+      return;
     } catch (err) {
       console.log('API check failed, trying again in 1 second');
       console.log(err.message);
       await delayPromise(1000);
     }
-  } while (--retryCount > 0);
+  } while (Date.now() <= deadline);
+  await logApiContainerDiagnostics();
   throw new Error('API failed to start after 3 minutes');
+};
+
+const NGINX_PORT_HINT =
+  'Ports 80 and/or 443 are often already in use; stop the other service or set NGINX_HTTP_PORT ' +
+  'and NGINX_HTTPS_PORT (see tests/constants.js for HTTPS).';
+
+const waitForNginxContainerRunning = async () => {
+  if (!isDocker()) {
+    return;
+  }
+  const containerName = getContainerName('nginx');
+  const deadline = Date.now() + 30 * 1000; // try for 30 seconds
+  do {
+    if (await isContainerRunning('nginx')) {
+      return;
+    }
+
+    const state = await getContainerState('nginx');
+    if (!state) {
+      throw new Error(
+        `Expected nginx container "${containerName}" was not found after docker compose up. ${NGINX_PORT_HINT}`
+      );
+    }
+
+    // A failed port bind leaves the container in `created` state (never exited/dead) with the
+    // real reason in `State.Error`, so check it explicitly to fail fast on the issue #9491 case.
+    if (state.Error) {
+      throw new Error(
+        `nginx container "${containerName}" failed to start: ${state.Error} ` +
+        `(exitCode: ${state.ExitCode}). ${NGINX_PORT_HINT}`
+      );
+    }
+
+    if (state.Status === 'exited' || state.Status === 'dead') {
+      throw new Error(
+        `nginx container "${containerName}" failed to start ` +
+        `(status: ${state.Status}, exitCode: ${state.ExitCode}). ${NGINX_PORT_HINT}`
+      );
+    }
+
+    await delayPromise(250);
+  } while (Date.now() <= deadline);
 };
 
 const dockerComposeCmd = (params) => {
   const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
+  composeFiles.push('-f', COMPOSE_OVERRIDE_FILE);
   params = `docker compose ${composeFiles.join(' ')} -p ${PROJECT_NAME} ${params}`;
 
   return runCommand(params);
@@ -910,22 +1047,42 @@ const sendSignal = async (service, signal) => {
   await runCommand(`kubectl ${KUBECTL_CONTEXT} exec deployments/cht-${service} -- ${killCmd(pid)}`);
 };
 
+const waitForContainerRunning = async (service, running = true) => {
+  const deadline = Date.now() + 5 * 1000; // 5 seconds
+  do {
+    const isRunning = await isContainerRunning(service);
+    if (isRunning === running) {
+      return true;
+    }
+    await delayPromise(250);
+  } while (Date.now() <= deadline);
+
+  return false;
+};
+
+const stopServiceInDocker = async (service) => {
+  await dockerComposeCmd(`stop -t 0 ${service}`);
+  if (!await waitForContainerRunning(service, false)) {
+    throw new Error(`Container for service ${service} failed to stop`);
+  }
+};
+
 const stopService = async (service) => {
   if (isDocker()) {
-    return await dockerComposeCmd(`stop -t 0 ${service}`);
+    return await stopServiceInDocker(service);
   }
   await saveLogs(); // we lose logs when a pod crashes or is stopped.
   await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=0`);
-  let tries = 100;
+  const deadline = Date.now() + 10 * 1000; // 10 seconds
+
   do {
     try {
       await getPodName(service, false);
       await delayPromise(100);
-      tries--;
     } catch {
       return;
     }
-  } while (tries > 0);
+  } while (Date.now() <= deadline);
 };
 
 const waitForService = async (service) => {
@@ -934,7 +1091,7 @@ const waitForService = async (service) => {
     return;
   }
 
-  let tries = 100;
+  const deadline = Date.now() + 5 * 1000; // 5 seconds
   do {
     try {
       const podName = await getPodName(service);
@@ -944,17 +1101,53 @@ const waitForService = async (service) => {
       );
       return;
     } catch {
-      tries--;
       await delayPromise(500);
     }
-  } while (tries > 0);
+  } while (Date.now() <= deadline);
 };
 
 const stopSentinel = () => stopService('sentinel');
 
+const getContainerState = async (service) => {
+  try {
+    const rawState = await runCommand(
+      `docker inspect -f '{{json .State}}' ${getContainerName(service)}`,
+      { verbose: false }
+    );
+    return JSON.parse(rawState);
+  } catch {
+    // container does not exist
+  }
+};
+
+const isContainerRunning = async (service) => {
+  const state = await getContainerState(service);
+  return !!state && state.Status === 'running';
+};
+
+// `docker compose start` can exit 0 without actually starting the container when docker still
+// considers it running or mid-restart (e.g. racing the `restart: always` policy right after a
+// `stop -t 0`).
+const startServiceInDocker = async (service, retry = 3) => {
+  if (retry <= 0) {
+    const state = await getContainerState(service);
+    throw new Error(
+      `Container for "${service}" failed to start. ` +
+      `Last state: ${state ? JSON.stringify(state) : 'container not found'}`
+    );
+  }
+
+  await dockerComposeCmd(`start ${service}`);
+  if (await waitForContainerRunning(service, true)) {
+    return;
+  }
+
+  await startServiceInDocker(service, retry - 1);
+};
+
 const startService = async (service) => {
   if (isDocker()) {
-    return await dockerComposeCmd(`start ${service}`);
+    return await startServiceInDocker(service);
   }
   await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=1`);
 };
@@ -1058,12 +1251,31 @@ const waitForDocRev = (ids) => {
   });
 };
 
+const waitForAuditCount = async (docId, expectedCount, retries = 15) => {
+  const results = await auditDb.allDocs({
+    start_key: docId,
+    end_key: `${docId}\ufff0`,
+    include_docs: true
+  });
+  const totalHistory = results.rows.reduce((acc, row) => acc + (row.doc.history ? row.doc.history.length : 0), 0);
+  if (totalHistory >= expectedCount) {
+    return;
+  }
+  if (retries <= 0) {
+    throw new Error(`Timed out waiting for audit count to reach ${expectedCount} for doc ${docId}`);
+  }
+  await delayPromise(200);
+  return waitForAuditCount(docId, expectedCount, retries - 1);
+};
+
+
+
 const getDefaultSettings = () => {
   const pathToDefaultAppSettings = path.join(__dirname, '../config.default.json');
   return JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
 };
 
-const addTranslations = (languageCode, translations = {}) => {
+const addTranslations = async (languageCode, translations = {}) => {
   const builtinTranslations = [
     'bm',
     'en',
@@ -1082,7 +1294,6 @@ const addTranslations = (languageCode, translations = {}) => {
           type: DOC_TYPES.TRANSLATIONS,
           code: code,
           name: code,
-          enabled: true,
           generic: {}
         };
       }
@@ -1091,19 +1302,23 @@ const addTranslations = (languageCode, translations = {}) => {
     });
   };
 
-  return getTranslationsDoc(languageCode).then(translationsDoc => {
+  const saveTranslationsDoc = async () => {
+    const translationsDoc = await getTranslationsDoc(languageCode);
     if (builtinTranslations.includes(languageCode)) {
       originalTranslations[languageCode] = _.clone(translationsDoc.generic);
     }
 
     Object.assign(translationsDoc.generic, translations);
     return db.put(translationsDoc);
-  });
+  };
+
+  await saveTranslationsDoc();
 };
 
 const enableLanguage = (languageCode) => enableLanguages([languageCode]);
 
-const enableLanguages = async (languageCodes) => {
+const enableLanguages = async (languageCodes, options) => {
+
   const { languages } = await getSettings();
   for (const languageCode of languageCodes) {
     const language = languages.find(language => language.locale === languageCode);
@@ -1116,10 +1331,10 @@ const enableLanguages = async (languageCodes) => {
       });
     }
   }
-  await updateSettings({ languages });
+  await updateSettings({ languages }, options);
 };
 
-const getSettings = () => getDoc('settings').then(settings => settings.settings);
+const getSettings = () => getDoc(DOC_IDS.SETTINGS).then(settings => settings.settings);
 
 const getTemplateComposeFilePath = file => path.resolve(__dirname, '../..', 'scripts', 'build', `${file}.yml.template`);
 
@@ -1179,7 +1394,8 @@ const generateComposeFiles = async () => {
     const testComposePath = getTestComposeFilePath(file);
 
     const template = await fs.promises.readFile(templatePath, 'utf-8');
-    await fs.promises.writeFile(testComposePath, mustache.render(template, view));
+    const compiled = mustache.render(template, view);
+    await fs.promises.writeFile(testComposePath, compiled);
   }
 };
 
@@ -1214,6 +1430,7 @@ const startServices = async () => {
   env.COUCHDB_NOUVEAU_DATA = makeTempDir('ci-nouveaudata');
 
   await dockerComposeCmd('up -d');
+  await waitForNginxContainerRunning();
   const services = await dockerComposeCmd('ps -q');
   if (!services.length) {
     throw new Error('Errors when starting services');
@@ -1329,6 +1546,11 @@ const prepK3DServices = async (defaultSettings) => {
   }
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
   await runAndLogApiStartupMessage('Getting default forms', getDefaultForms);
+
+  await disableCompaction();
+
+  await loginUser();
+  await setupUserDoc();
 };
 
 const prepServices = async (defaultSettings) => {
@@ -1345,6 +1567,11 @@ const prepServices = async (defaultSettings) => {
   }
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
   await runAndLogApiStartupMessage('Getting default forms', getDefaultForms);
+
+  await disableCompaction();
+
+  await loginUser();
+  await setupUserDoc();
 };
 
 const getLogs = (container) => {
@@ -1368,6 +1595,20 @@ const getLogs = (container) => {
       logWriteStream.end();
     });
   });
+};
+
+// compaction will delete bodies from old revs
+// some tests specifically test loading older revs for offline users, which intermittenly fail when compaction runs.
+const disableCompaction = async () => {
+  const nodes = await request({ path: '/_membership' });
+  for (const node of nodes.cluster_nodes) {
+    await request({
+      path: `/_node/${node}/_config/smoosh.ratio_dbs/min_changes`,
+      method: 'PUT',
+      body: '"100000000000"',
+      json: false,
+    });
+  }
 };
 
 const saveLogs = async () => {
@@ -1412,34 +1653,54 @@ const killSpawnedProcess = (proc) => {
  * that contains the promise to resolve when logs lines are matched and a cancel function
  */
 
-const waitForLogs = (container, tail, ...regex) => {
+const waitForLogs = async (container, tail, ...regex) => {
   container = getContainerName(container);
   const cmd = isDocker() ? 'docker' : 'kubectl';
   let timeout;
   let logs = '';
-  let firstLine = false;
-  tail = (isDocker() || tail) ? '--tail=1' : '';
+  let isReady = false;
+  const startTime = Date.now() - 50; // Subtract a small buffer to account for any clock skew
+  tail = (isDocker() || tail) ? '--tail=20' : '';
 
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
   // after watching results in a race condition, where the log is created before watching started.
-  // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
-  // steps of testing afterward.
-  const params = `logs ${container} -f ${tail} ${isK3D() ? KUBECTL_CONTEXT : ''}`.split(' ').filter(Boolean);
+  // As a fix, watch the logs with tail=20 and use timestamps to ensure we only match logs produced after
+  // the watcher was ready (not historical logs from before the watcher started).
+  const params = `logs ${container} -f ${tail} --timestamps ${isK3D() ? KUBECTL_CONTEXT : ''}`
+    .split(' ')
+    .filter(Boolean);
   const proc = spawn(cmd, params, { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
-  const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
+  const ready = new Promise(resolve => receivedFirstLine = resolve);
 
   const checkOutput = (data) => {
-    if (!firstLine) {
-      firstLine = true;
-      receivedFirstLine();
-      return;
-    }
-
     data = data.toString();
     logs += data;
+
+    if (!isReady) {
+      isReady = true;
+      receivedFirstLine();
+    }
+
     const lines = data.split('\n');
-    const matchingLine = lines.find(line => regex.find(r => r.test(line)));
+    const matchingLine = lines.find(line => {
+      if (!regex.find(r => r.test(line))) {
+        return false;
+      }
+
+      // Parse timestamp from log line (format: 2026-01-29T11:17:14.437Z or 2026-01-29T11:17:14.437123456Z)
+      const timestampMatch = line.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z?)/);
+
+      if (!timestampMatch) {
+        return isReady;
+      }
+
+      // Docker/kubectl timestamps are in UTC. Add 'Z' suffix if not present to ensure proper UTC parsing
+      const timestampStr = timestampMatch[1].endsWith('Z') ? timestampMatch[1] : timestampMatch[1] + 'Z';
+      const logTime = new Date(timestampStr).getTime();
+      return logTime >= startTime;
+    });
+
     return matchingLine;
   };
 
@@ -1463,13 +1724,15 @@ const waitForLogs = (container, tail, ...regex) => {
     proc.stderr.on('data', check);
   });
 
-  return firstLineReceivedPromise.then(() => ({
+  await ready;
+
+  return {
     promise,
     cancel: () => {
       clearTimeout(timeout);
       killSpawnedProcess(proc);
     }
-  }));
+  };
 };
 
 const waitForApiLogs = (...regex) => waitForLogs('api', true, ...regex);
@@ -1527,7 +1790,7 @@ const collectLogs = (container, ...regex) => {
 
   const collect = async () => {
     if (isK3D()) {
-      await delayPromise(500);
+      await delayPromise(1000);
     }
     clearTimeout(timeout);
     if (errors.length) {
@@ -1535,6 +1798,10 @@ const collectLogs = (container, ...regex) => {
       error.errors = errors;
       error.logs = logs;
       throw error;
+    }
+
+    if (!matches.length) {
+      console.warn('No logs matched', logs);
     }
 
     return matches;
@@ -1574,6 +1841,9 @@ const updateContainerNames = (project = PROJECT_NAME) => {
 };
 
 const getContainerName = (service, project = PROJECT_NAME) => {
+  if (service.includes('nouveau')) {
+    service = 'nouveau'; // naming here is inconsistent between container and repository.
+  }
   return isDocker() ? `${project}-${service}-1` : `deployment/cht-${service}`;
 };
 
@@ -1658,6 +1928,7 @@ module.exports = {
   logsDb,
   usersDb,
   auditDb,
+  archiveDb,
 
   SW_SUCCESSFUL_REGEX,
   ONE_YEAR_IN_S,
@@ -1666,6 +1937,7 @@ module.exports = {
   hostURL,
   parseCookieResponse,
   setupUserDoc,
+  getUserDoc,
   request,
   requestOnTestDb,
   requestOnTestMetaDb,
@@ -1684,6 +1956,8 @@ module.exports = {
   updateSettings,
   revertSettings,
   revertDb,
+  clearReplicationFailureLogs,
+  deleteLogsByPrefix,
   getOrigin,
   getBaseUrl,
   getAdminBaseUrl,
@@ -1703,7 +1977,9 @@ module.exports = {
   delayPromise,
   setTransitionSeqToNow,
   waitForDocRev,
+  waitForAuditCount,
   getDefaultSettings,
+
   addTranslations,
   enableLanguage,
   enableLanguages,
@@ -1729,6 +2005,8 @@ module.exports = {
   isK3D,
   stopCouchDb,
   startCouchDb,
+  stopService,
+  startService,
   getDefaultForms,
   toggleSentinelTransitions,
   runSentinelTasks,
@@ -1736,4 +2014,5 @@ module.exports = {
   deletePurgeDbs,
   saveLogs,
   waitForIndexes,
+  waitForApiCrash,
 };

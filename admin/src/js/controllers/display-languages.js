@@ -1,7 +1,8 @@
 const _ = require('lodash/core');
 _.uniq = require('lodash/uniq');
 const constants = require('@medic/constants');
-const DOC_TYPES = constants.DOC_TYPES;
+const DOC_IDS = constants.DOC_IDS;
+const PREFIXES = constants.PREFIXES;
 
 angular.module('controllers').controller('DisplayLanguagesCtrl',
   function (
@@ -90,8 +91,9 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
       $scope.loading = true;
       $q
         .all([
-          DB().query('medic-client/doc_by_type', {
-            key: [ DOC_TYPES.TRANSLATIONS ],
+          DB().allDocs({
+            start_key: PREFIXES.TRANSLATIONS,
+            end_key: PREFIXES.TRANSLATIONS + '\ufff0',
             include_docs: true
           }),
           Settings()
@@ -118,7 +120,7 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
 
     const changeListener = Changes({
       key: 'update-languages',
-      filter: change => TranslationLoader.test(change.id) || change.id === 'settings',
+      filter: change => TranslationLoader.test(change.id) || change.id === DOC_IDS.SETTINGS,
       callback: () => getLanguages()
     });
 

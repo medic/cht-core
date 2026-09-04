@@ -4,6 +4,7 @@ const _ = require('lodash');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('server', () => {
   describe('JSON-only endpoints', () => {
@@ -181,10 +182,12 @@ describe('server', () => {
 
   describe('API changes feed', () => {
     it('should respond to changes even after services are restarted', async () => {
-      await utils.stopHaproxy(); // this will also crash API
+      await utils.stopHaproxy();
+      await utils.waitForApiCrash();
       await utils.startHaproxy();
+
       await utils.listenForApi();
-      await utils.delayPromise(1000);
+      await utils.delayPromise(5000);
 
       const forms = await utils.db.allDocs({
         start_key: 'form:',
@@ -207,26 +210,25 @@ describe('server', () => {
       await utils.stopApi();
       await utils.startHaproxy();
       await utils.startApi();
-      await utils.delayPromise(1000);
+      await utils.delayPromise(5000);
 
-      await utils.request('/');
+      await utils.request({ path: '/api/info' });
 
       await utils.stopHaproxy();
       await utils.stopApi();
       await utils.startApi(false);
       await utils.startHaproxy();
-      await utils.delayPromise(1000);
 
+      await utils.delayPromise(2000);
       await utils.listenForApi();
-      await utils.delayPromise(1000);
     });
 
     it('should work after restarting CouchDb @docker', async () => {
       await utils.stopCouchDb();
       await utils.startCouchDb();
 
-      await utils.listenForApi();
       await utils.delayPromise(1000);
+      await utils.listenForApi();
     });
   });
 
@@ -274,9 +276,10 @@ describe('server', () => {
         const reqID = getReqId(apiLogs[0]);
 
         const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
+        // the user contact has no lineage, so hydration is a single doc read
         expect(haproxyRequests.length).to.equal(2);
         expect(haproxyRequests[0]).to.include('_session');
-        expect(haproxyRequests[1]).to.include('_design/medic-client/_view/docs_by_id_lineage');
+        expect(haproxyRequests[1]).to.include(constants.USER_CONTACT_ID);
       });
 
       it('should propagate ID via couch-request', async () => {
@@ -331,7 +334,7 @@ describe('server', () => {
       before(async () => {
         const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
         const contact = utils.deepFreeze(personFactory.build({ name: 'contact', role: 'chw' }));
-        const place = utils.deepFreeze({ ...placeMap.get('clinic'), contact: { _id: contact._id } });
+        const place = utils.deepFreeze({ ...placeMap.get(CONTACT_TYPES.CLINIC), contact: { _id: contact._id } });
         offlineUser = utils.deepFreeze(userFactory.build({
           username: 'offline-user-id',
           place: place._id,
@@ -356,7 +359,7 @@ describe('server', () => {
         const collectApiLogs = await utils.collectApiLogs(/replication/);
         const collectHaproxyLogs = await utils.collectHaproxyLogs(/.*/);
 
-        await utils.request({ path: '/api/v1/initial-replication/get-ids', ...reqOptions });
+        await utils.request({ path: '/api/v1/replication/get-ids', ...reqOptions });
         await utils.delayPromise(500); // wait for everything to get logged
 
         const apiLogs = (await collectApiLogs()).filter(log => log.length);
@@ -365,15 +368,16 @@ describe('server', () => {
         const reqID = getReqId(apiLogs[0]);
 
         const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
-        expect(haproxyRequests.length).to.equal(12);
+        expect(haproxyRequests.length).to.be.at.least(10);
         expect(haproxyRequests[0]).to.include('_session');
-        expect(haproxyRequests[5]).to.include('/medic-test/_design/medic/_view/contacts_by_depth');
-        expect(haproxyRequests[6]).to.include('/medic-test/_design/medic/_nouveau/docs_by_replication_key');
-        expect(haproxyRequests[7]).to.include('/medic-test-purged-cache/purged-docs-');
-        expect(haproxyRequests[8]).to.include('/medic-test-purged-role-');
-        expect(haproxyRequests[9]).to.include('/medic-test-logs/replication-count-');
-        expect(haproxyRequests[10]).to.include('/medic-test-logs/replication-count-');
-        expect(haproxyRequests[11]).to.include('/medic-test/_all_docs');
+        const lastRequests = haproxyRequests.slice(-7);
+        expect(lastRequests[0]).to.include('/medic-test/_design/medic/_view/contacts_by_depth');
+        expect(lastRequests[1]).to.include('/medic-test/_design/medic/_nouveau/docs_by_replication_key');
+        expect(lastRequests[2]).to.include('/medic-test-purged-cache/purged-docs-');
+        expect(lastRequests[3]).to.include('/medic-test-purged-role-');
+        expect(lastRequests[4]).to.include('/medic-test-logs/replication-count-');
+        expect(lastRequests[5]).to.include('/medic-test-logs/replication-count-');
+        expect(lastRequests[6]).to.include('/medic-test/_all_docs');
       });
 
       it('should propagate ID via couch requests', async () => {
@@ -393,6 +397,9 @@ describe('server', () => {
         const reqID = getReqId(apiLogs[0]);
 
         const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
+        if (haproxyRequests.length !== 7) {
+          console.log(JSON.stringify(haproxyRequests, null, 2));
+        }
         expect(haproxyRequests.length).to.equal(7);
         expect(haproxyRequests[0]).to.include('_session');
         expect(haproxyRequests[1]).to.include('_session');

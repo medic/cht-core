@@ -4,5 +4,7 @@ export default function (p: typeof Promise, db: PouchDB.Database): {
     uuid: string,
     options?: { throwWhenMissingLineage?: boolean },
     callback?: (err: Error | null, result?: Record<string, unknown>) => void
-  ) => Promise<Record<string, unknown>>
+  ) => Promise<Record<string, unknown>>,
+  minify: (doc: Record<string, unknown>) => void,
+  minifyLineage: (parent: Record<string, unknown>) => Record<string, unknown>
 };

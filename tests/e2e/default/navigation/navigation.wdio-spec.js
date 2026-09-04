@@ -51,18 +51,17 @@ describe('Navigation tests', () => {
         await loginPage.cookieLogin();
       });
 
-      after(async () => {
-        await browser.deleteCookies();
-      });
-
       it('should display tab labels, when all tabs are enabled', async () => {
         const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
         expect(tabsButtonLabelsNames).to.deep.equal(['Messages', 'Tasks', 'Reports', 'People', 'Targets']);
+        const tabsButtonIcons = await commonPage.getAllButtonFaIconClasses();
+        expect(tabsButtonIcons).to.deep.equal(['fa-envelope', 'fa-flag', 'fa-list-alt', 'fa-user', 'fa-bar-chart-o']);
       });
     });
 
     describe('as chw', () => {
       before(async () => {
+        await commonPage.reloadSession();
         await utils.saveDocs([...places.values()]);
         await utils.createUsers([user]);
         const permissionsToRemove = [
@@ -72,7 +71,7 @@ describe('Navigation tests', () => {
           'can_view_tasks_tab'
         ];
 
-        await utils.updatePermissions(user.roles, [], permissionsToRemove);
+        await utils.updatePermissions(user.roles, [], permissionsToRemove, { ignoreReload: true });
         await loginPage.login(user);
       });
 
@@ -91,6 +90,27 @@ describe('Navigation tests', () => {
         await commonPage.goToPeople('missing');
         await commonPage.goToReports('missing');
         console.log('after loading missing person');
+      });
+
+      it('should display tabs according to header_tabs configuration', async () => {
+        await utils.updateSettings({ header_tabs: {
+          messages: {
+            weight: 44,
+            icon: 'fa-flag',
+          },
+          reports: {
+            weight: 43,
+            icon: 'fa-user',
+          },
+          contacts: {
+            weight: 1,
+            icon: 'fa-bar-chart-o'
+          },
+        } });
+        const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
+        expect(tabsButtonLabelsNames).to.deep.equal(['People', 'Reports', 'Messages']);
+        const tabsButtonIcons = await commonPage.getAllButtonFaIconClasses();
+        expect(tabsButtonIcons).to.deep.equal(['fa-bar-chart-o', 'fa-user', 'fa-flag']);
       });
     });
   });

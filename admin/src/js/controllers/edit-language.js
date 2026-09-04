@@ -1,6 +1,7 @@
 const _ = require('lodash/core');
 const constants = require('@medic/constants');
 const DOC_TYPES = constants.DOC_TYPES;
+const PREFIXES = constants.PREFIXES;
 
 angular.module('controllers').controller('EditLanguageCtrl',
   function (
@@ -43,7 +44,7 @@ angular.module('controllers').controller('EditLanguageCtrl',
       if (!$scope.errors) {
         $scope.setProcessing();
         if (!$scope.language._id) {
-          $scope.language._id = 'messages-' + $scope.language.code;
+          $scope.language._id = PREFIXES.TRANSLATIONS + $scope.language.code;
         }
         DB().put($scope.language)
           .then(function() {

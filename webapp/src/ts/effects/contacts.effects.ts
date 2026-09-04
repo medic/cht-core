@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { combineLatest, of } from 'rxjs';
-import { exhaustMap, withLatestFrom } from 'rxjs/operators';
+import { debounceTime, exhaustMap, tap, withLatestFrom } from 'rxjs/operators';
 
 import { Actions as ContactActionList, ContactsActions } from '@mm-actions/contacts';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
@@ -15,6 +15,7 @@ import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { UHCVisitDisplayService } from '@mm-services/uhc-visit-display.service';
 
 @Injectable()
 export class ContactsEffects {
@@ -25,6 +26,7 @@ export class ContactsEffects {
   private contactIdToLoad;
   private userFacilityIds;
   private userContactId;
+  private latestVisitStatsRequest = 0;
 
   constructor(
     private actions$: Actions,
@@ -37,6 +39,7 @@ export class ContactsEffects {
     private targetAggregateService: TargetAggregatesService,
     private translateService: TranslateService,
     private routeSnapshotService: RouteSnapshotService,
+    private uhcVisitDisplayService: UHCVisitDisplayService,
   ) {
     this.contactsActions = new ContactsActions(store);
     this.globalActions = new GlobalActions(store);
@@ -110,6 +113,19 @@ export class ContactsEffects {
     );
   }, { dispatch: false });
 
+  refreshChildrenVisitStats = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ContactActionList.refreshChildrenVisitStats),
+      // coalesce bursts of changes (e.g. a sync delivering many visit reports) into one refresh
+      debounceTime(500),
+      tap(() => {
+        if (this.selectedContact?._id) {
+          this.loadChildrenVisitStats(this.selectedContact._id, this.selectedContact.children);
+        }
+      }),
+    );
+  }, { dispatch: false });
+
   private setTitle() {
     const routeSnapshot = this.routeSnapshotService.get();
     const deceasedTitle = routeSnapshot?.data?.name === 'contacts.deceased'
@@ -158,11 +174,41 @@ export class ContactsEffects {
       .then(children => {
         return this
           .verifySelectedContactNotChanged(contactId)
-          .then(() => this.contactsActions.receiveSelectedContactChildren(children));
+          .then(() => {
+            this.contactsActions.receiveSelectedContactChildren(children);
+            // don't block the children (or the rest of the profile) on the visit stats queries
+            this.loadChildrenVisitStats(contactId, children);
+          });
       })
       .finally(() => {
         trackPerformance?.stop({ name: [ ...trackName, 'load_descendants' ].join(':') });
       });
+  }
+
+  private async loadChildrenVisitStats(contactId, children) {
+    const request = ++this.latestVisitStatsRequest;
+    const trackPerformance = this.performanceService.track();
+    try {
+      const visitStats = await this.uhcVisitDisplayService.getChildrenVisitStats(children);
+      if (!visitStats) {
+        return;
+      }
+      // recorded only when stats were displayed, so the metric measures the UHC query fan-out
+      trackPerformance?.stop({ name: 'contact_detail:load_children_visit_stats' });
+      // merged by contact id in the reducer, so concurrent children updates (e.g. task counts) are kept
+      await this.verifySelectedContactNotChanged(contactId);
+      if (request !== this.latestVisitStatsRequest) {
+        // a newer load started while this one was in flight (e.g. a sync-triggered refresh queried
+        // after the sync landed) — its data is fresher, so only the latest request may dispatch
+        return;
+      }
+      this.contactsActions.updateSelectedContactsVisitStats(visitStats);
+    } catch (error) {
+      if ((error as any)?.code === 'SELECTED_CONTACT_CHANGED') {
+        return;
+      }
+      console.error('Error loading visit stats for children', error);
+    }
   }
 
   private loadReports(contactId, forms, trackName) {
@@ -180,10 +226,15 @@ export class ContactsEffects {
   }
 
   private async loadTargetDoc(contactId, trackName) {
+    const selected = this.selectedContact;
+    if (!selected?.doc) {
+      return;
+    }
+
     const trackPerformance = this.performanceService.track();
 
     const targetDocs = await this.targetAggregateService.getTargetDocs(
-      this.selectedContact,
+      selected,
       this.userFacilityIds,
       this.userContactId
     );
@@ -207,25 +258,36 @@ export class ContactsEffects {
       });
   }
 
-  private loadContactSummary(contactId, trackName) {
-    const trackPerformance = this.performanceService.track();
+  private async loadContactSummary(contactId, trackName) {
     const selected = this.selectedContact;
-    return this.contactSummaryService
-      .get(selected.doc, selected.reports, selected.lineage, selected.targetDoc)
-      .catch(error => {
+    if (!selected?.doc) {
+      this.contactsActions.updateSelectedContactSummary(undefined);
+      this.contactsActions.setContactsLoadingSummary(false);
+      return;
+    }
+
+    const trackPerformance = this.performanceService.track();
+    let summary;
+
+    try {
+      summary = await this.contactSummaryService.get(
+        selected.doc,
+        selected.reports,
+        selected.lineage,
+        selected.targetDoc
+      );
+
+      await this.verifySelectedContactNotChanged(contactId);
+
+      this.contactsActions.setContactsLoadingSummary(false);
+      return this.contactsActions.updateSelectedContactSummary(summary);
+    } catch (error) {
+      if (error.code !== 'SELECTED_CONTACT_CHANGED') {
         this.contactsActions.updateSelectedContactSummary({ errorStack: error.stack });
-        throw error;
-      })
-      .then(summary => {
-        return this
-          .verifySelectedContactNotChanged(contactId)
-          .then(() => {
-            this.contactsActions.setContactsLoadingSummary(false);
-            return this.contactsActions.updateSelectedContactSummary(summary);
-          });
-      })
-      .finally(() => {
-        trackPerformance?.stop({ name: [ ...trackName, 'load_contact_summary' ].join(':') });
-      });
+      }
+      throw error;
+    } finally {
+      trackPerformance?.stop({ name: [ ...trackName, 'load_contact_summary' ].join(':') });
+    }
   }
 }

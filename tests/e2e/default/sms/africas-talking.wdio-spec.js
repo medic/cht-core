@@ -136,7 +136,46 @@ describe('Africas Talking api', () => {
 
   });
 
+  // the sandbox intermittently accepts authenticated requests but never responds (or rejects the
+  // sender), which would otherwise hang the api's outgoing loop and time the test out
+  const isSandboxUsable = async () => {
+    const body = querystring.stringify({
+      username: 'sandbox',
+      from: 'MEDIC',
+      to: '+254711111222',
+      message: 'sandbox availability probe',
+    });
+    try {
+      const response = await fetch('https://api.sandbox.africastalking.com/version1/messaging', {
+        method: 'POST',
+        headers: {
+          apikey: CREDENTIAL_PASS_OUTGOING,
+          accept: 'application/json',
+          'content-type': 'application/x-www-form-urlencoded',
+        },
+        body,
+        signal: AbortSignal.timeout(20 * 1000),
+      });
+      if (!response.ok) {
+        return false;
+      }
+      const result = await response.json();
+      const recipient = result.SMSMessageData && result.SMSMessageData.Recipients &&
+                        result.SMSMessageData.Recipients[0];
+      return !!recipient && [100, 101, 102].includes(recipient.statusCode);
+    } catch {
+      return false;
+    }
+  };
+
   (CREDENTIAL_PASS_OUTGOING ? describe : describe.skip)('Webapp submits new GT sms messages', () => {
+    before(async function() {
+      if (!await isSandboxUsable()) {
+        console.warn('Africa\'s Talking sandbox did not accept the probe message - skipping outgoing SMS tests');
+        this.skip();
+      }
+    });
+
     it('should update SMS statuses', async () => {
       const pregnancyReportWithTasks = pregnancyReportFactory.pregnancy().build({
         scheduled_tasks: [
@@ -151,9 +190,10 @@ describe('Africas Talking api', () => {
       await waitForLogs.promise;
       // make sure the requests were sent before loading reports
       await (await utils.waitForApiLogs(/Sending 0 messages/)).promise;
+      await (await utils.waitForApiLogs(/Sending 0 messages/)).promise;
 
       await commonPage.goToReports(pregnancyReportWithTasks._id);
-      expect(await reportsPage.rightPanelSelectors.reportTasks().isDisplayed()).to.be.true;
+      await reportsPage.rightPanelSelectors.reportTasks().waitForDisplayed();
       const task1 = await reportsPage.getTaskDetails(1, 1);
       expect(task1).to.deep.include({
         message: 'message1',

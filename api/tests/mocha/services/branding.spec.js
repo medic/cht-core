@@ -1,5 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
+const { DOC_IDS } = require('../../../../shared-libs/constants');
 
 const fs = require('fs');
 const path = require('path');
@@ -22,7 +23,7 @@ describe('branding service', () => {
       const readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'zyx');
       const result = await service.get();
       chai.expect(get.callCount).to.equal(1);
-      chai.expect(get.args[0][0]).to.equal('branding');
+      chai.expect(get.args[0][0]).to.equal(DOC_IDS.BRANDING);
       chai.expect(get.args[0][1].attachments).to.equal(true);
       chai.expect(readFile.callCount).to.equal(1);
       chai.expect(readFile.args[0][0]).to.equal(baseDir + '/resources/logo/cht-logo.png');
@@ -49,7 +50,7 @@ describe('branding service', () => {
       const readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'zyx');
       const result = await service.get();
       chai.expect(get.callCount).to.equal(1);
-      chai.expect(get.args[0][0]).to.equal('branding');
+      chai.expect(get.args[0][0]).to.equal(DOC_IDS.BRANDING);
       chai.expect(get.args[0][1].attachments).to.equal(true);
       chai.expect(readFile.callCount).to.equal(1);
       chai.expect(readFile.args[0][0]).to.equal(baseDir + '/resources/logo/cht-logo.png');
@@ -91,7 +92,7 @@ describe('branding service', () => {
       const readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'zyx');
       const result = await service.getFavicon();
       chai.expect(get.callCount).to.equal(1);
-      chai.expect(get.args[0][0]).to.equal('branding');
+      chai.expect(get.args[0][0]).to.equal(DOC_IDS.BRANDING);
       chai.expect(get.args[0][1].attachments).to.equal(true);
       chai.expect(readFile.callCount).to.equal(1);
       chai.expect(readFile.args[0][0]).to.equal(baseDir + '/resources/ico/favicon.ico');
@@ -115,7 +116,7 @@ describe('branding service', () => {
       const readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'zyx');
       const result = await service.getFavicon();
       chai.expect(get.callCount).to.equal(1);
-      chai.expect(get.args[0][0]).to.equal('branding');
+      chai.expect(get.args[0][0]).to.equal(DOC_IDS.BRANDING);
       chai.expect(get.args[0][1].attachments).to.equal(true);
       chai.expect(readFile.callCount).to.equal(1);
       chai.expect(readFile.args[0][0]).to.equal(baseDir + '/resources/ico/favicon.ico');

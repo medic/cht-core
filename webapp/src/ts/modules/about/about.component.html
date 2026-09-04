@@ -3,7 +3,6 @@
   <div class="col-sm-12 page about scrolling">
 
     <div>
-
       <mat-card>
         <mat-card-header>
           <mat-card-title translate>reload.app</mat-card-title>
@@ -27,46 +26,66 @@
           <div>
             <label translate>debug.supported_browser</label>
             <div>
-              <span class="fa fa-check-square browser-support-icon-green"></span>
-              <ng-template #unsupportedBrowser>
+              @if (browserSupport?.isUsingSupportedEnvironment) {
+                <span class="fa fa-check-square browser-support-icon-green"></span>
+              } @else {
                 <span class="fa fa-times browser-support-icon-red"></span>
                 <a target="_blank" rel="noopener noreferrer" href="https://docs.communityhealthtoolkit.org/core/releases/#requirements">
                   {{'debug.supported_browser.see_requirements' | translate}}
                 </a>
                 <p class="browser-support-message">
                   <span>{{'login.unsupported_browser' | translate}}</span>
-                  <ng-container [ngSwitch]="browserSupport.outdatedComponent">
-                    <span *ngSwitchCase="'chtAndroid'">{{'login.unsupported_browser.outdated_cht_android' | translate}}</span>
-                    <span *ngSwitchCase="'webviewApk'">{{'login.unsupported_browser.outdated_webview_apk' | translate}}</span>
-                    <span *ngSwitchCase="'browser'">{{'login.unsupported_browser.outdated_browser' | translate}}</span>
-                  </ng-container>
+                  @switch (browserSupport.outdatedComponent) {
+                    @case ('chtAndroid') {
+                      <span>{{'login.unsupported_browser.outdated_cht_android' | translate}}</span>
+                    }
+                    @case ('webviewApk') {
+                      <span>{{'login.unsupported_browser.outdated_webview_apk' | translate}}</span>
+                    }
+                    @case ('browser') {
+                      <span>{{'login.unsupported_browser.outdated_browser' | translate}}</span>
+                    }
+                    @default {
+                      <span>{{'login.unsupported_browser.outdated_browser' | translate}}</span>
+                    }
+                  }
                 </p>
-              </ng-template>
+              }
             </div>
           </div>
 
-          <div *ngIf="androidDeviceInfo?.app?.version">
-            <label translate>android_app.version.title</label>
-            <p>{{androidDeviceInfo.app.version}}</p>
-          </div>
+          @if (androidDeviceInfo?.app?.version) {
+            <div>
+              <label translate>android_app.version.title</label>
+              <p>{{androidDeviceInfo.app.version}}</p>
+            </div>
+          }
 
-          <div *ngIf="androidDeviceInfo?.app?.packageName">
-            <label translate>android_app.package_name.title</label>
-            <p>{{androidDeviceInfo.app.packageName}}</p>
-          </div>
+          @if (androidDeviceInfo?.app?.packageName) {
+            <div>
+              <label translate>android_app.package_name.title</label>
+              <p>{{androidDeviceInfo.app.packageName}}</p>
+            </div>
+          }
 
-          <div *ngIf="androidDeviceInfo?.app?.versionCode">
-            <label translate>android_app.version_code.title</label>
-            <p>{{androidDeviceInfo.app.versionCode}}</p>
-          </div>
+          @if (androidDeviceInfo?.app?.versionCode) {
+            <div>
+              <label translate>android_app.version_code.title</label>
+              <p>{{androidDeviceInfo.app.versionCode}}</p>
+            </div>
+          }
 
-          <div *ngIf="androidDeviceInfo?.software?.androidVersion">
-            <label translate>android_app.os_android_version.title</label>
-            <p>
-              {{androidDeviceInfo.software.androidVersion}}
-              <span *ngIf="androidDeviceInfo?.software?.osApiLevel">(SDK {{androidDeviceInfo.software.osApiLevel}})</span>
-            </p>
-          </div>
+          @if (androidDeviceInfo?.software?.androidVersion) {
+            <div>
+              <label translate>android_app.os_android_version.title</label>
+              <p>
+                {{androidDeviceInfo.software.androidVersion}}
+                @if (androidDeviceInfo?.software?.osApiLevel) {
+                  <span>(SDK {{androidDeviceInfo.software.osApiLevel}})</span>
+                }
+              </p>
+            </div>
+          }
 
           <div>
             <label translate>ddoc.version</label>
@@ -114,22 +133,31 @@
 
           <div>
             <label translate>replication.last.success.to</label>
-            <p *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessTo">{{replicationStatus.lastSuccessTo | simpleDateTime}}</p>
-            <p *ngIf="!replicationStatus.disabled && !replicationStatus.lastSuccessTo" translate>replication.last.success.unknown</p>
-            <p *ngIf="replicationStatus.disabled" translate>replication.disabled</p>
+            @if (replicationStatus.disabled) {
+              <p translate>replication.disabled</p>
+            } @else if (replicationStatus.lastSuccessTo) {
+              <p>{{replicationStatus.lastSuccessTo | simpleDateTime}}</p>
+            } @else {
+              <p translate>replication.last.success.unknown</p>
+            }
           </div>
 
           <div>
             <label translate>replication.last.success.from</label>
-            <p *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessFrom">{{replicationStatus.lastSuccessFrom | simpleDateTime}}</p>
-            <p *ngIf="!replicationStatus.disabled && !replicationStatus.lastSuccessFrom" translate>replication.last.success.unknown</p>
-            <p *ngIf="replicationStatus.disabled" translate>replication.disabled</p>
+            @if (replicationStatus.disabled) {
+              <p translate>replication.disabled</p>
+            } @else if (replicationStatus.lastSuccessFrom) {
+              <p>{{replicationStatus.lastSuccessFrom | simpleDateTime}}</p>
+            } @else {
+              <p translate>replication.last.success.unknown</p>
+            }
           </div>
 
         </mat-card-content>
       </mat-card>
 
-      <mat-card *ngIf="androidDataUsage">
+      @if (androidDataUsage) {
+      <mat-card>
         <mat-card-header>
           <mat-card-title translate>android_app.data_usage.title</mat-card-title>
           <mat-card-subtitle translate>android_app.data_usage.description</mat-card-subtitle>
@@ -163,19 +191,24 @@
 
         </mat-card-content>
       </mat-card>
+      }
 
-      <mat-card *ngIf="partners?.length" class="partners">
+      @if (partners?.length) {
+      <mat-card class="partners">
         <mat-card-header>
           <mat-card-title translate>partner.supporting</mat-card-title>
         </mat-card-header>
 
         <ul class="list-inline">
-          <li *ngFor="let partner of partners">
-            <span [innerHTML]="partner | partnerImage"></span>
-          </li>
+          @for (partner of partners; track $index) {
+            <li>
+              <span [innerHTML]="partner | partnerImage"></span>
+            </li>
+          }
         </ul>
 
       </mat-card>
+      }
 
       <div class="powered-by">
         <p translate>about.cht</p>

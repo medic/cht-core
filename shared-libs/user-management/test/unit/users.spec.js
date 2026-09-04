@@ -2,7 +2,7 @@ const chai = require('chai');
 chai.use(require('chai-as-promised'));
 const sinon = require('sinon');
 const rewire = require('rewire');
-const { USER_ROLES } = require('@medic/constants');
+const { USER_ROLES: { COUCHDB_ADMIN, ONLINE, ADMIN }, PREFIXES } = require('@medic/constants');
 
 const couchSettings = require('@medic/settings');
 const tokenLogin = require('../../src/token-login');
@@ -34,6 +34,7 @@ let addMessage;
 let getPerson;
 let getPlace;
 let getContact;
+let hasPermissions;
 const oneDayInMS = 24 * 60 * 60 * 1000;
 
 let service;
@@ -81,7 +82,10 @@ describe('Users service', () => {
       contact: { 'parent': 'x' },
       type: 'national-manager'
     };
+    config.get.withArgs('roles').returns({ 'national-manager': { offline: true } });
     clock = sinon.useFakeTimers();
+    hasPermissions = sinon.stub();
+    service.__set__('getDatasource', sinon.stub().returns({ v1: { hasPermissions }}));
   });
 
   afterEach(() => {
@@ -219,7 +223,7 @@ describe('Users service', () => {
           rows: [
             {
               doc: {
-                _id: 'org.couchdb.user:x',
+                _id: PREFIXES.COUCH_USER + 'x',
                 name: 'lucas',
                 facility_id: 'c',
                 roles: ['national-admin', 'data-entry'],
@@ -227,7 +231,7 @@ describe('Users service', () => {
             },
             {
               doc: {
-                _id: 'org.couchdb.user:y',
+                _id: PREFIXES.COUCH_USER + 'y',
                 name: 'marvin',
                 facility_id: ['c', 'd'],
                 roles: ['national-admin', 'data-entry'],
@@ -244,7 +248,7 @@ describe('Users service', () => {
           rows: [
             {
               doc: {
-                _id: 'org.couchdb.user:x',
+                _id: PREFIXES.COUCH_USER + 'x',
                 name: 'lucas',
                 fullname: 'Lucas M',
                 email: 'l@m.com',
@@ -254,7 +258,7 @@ describe('Users service', () => {
             },
             {
               doc: {
-                _id: 'org.couchdb.user:y',
+                _id: PREFIXES.COUCH_USER + 'y',
                 name: 'marvin',
                 fullname: 'Marvin Min',
                 email: 'l@m.com',
@@ -270,7 +274,7 @@ describe('Users service', () => {
         chai.expect(data.length).to.equal(2);
         const lucas = data[0];
         chai.expect(lucas).to.deep.include({
-          id: 'org.couchdb.user:x',
+          id: PREFIXES.COUCH_USER + 'x',
           username: 'lucas',
           fullname: 'Lucas M',
           email: 'l@m.com',
@@ -280,7 +284,7 @@ describe('Users service', () => {
         });
         const marvin = data[1];
         chai.expect(marvin).to.deep.include({
-          id: 'org.couchdb.user:y',
+          id: PREFIXES.COUCH_USER + 'y',
           username: 'marvin',
           fullname: 'Marvin Min',
           email: 'l@m.com',
@@ -295,7 +299,7 @@ describe('Users service', () => {
         const usersResponse = {
           rows: [{
             doc: {
-              _id: 'org.couchdb.user:y',
+              _id: PREFIXES.COUCH_USER + 'y',
               name: 'milan',
               facility_id: 'b',
               contact_id: 'milan-contact',
@@ -311,7 +315,7 @@ describe('Users service', () => {
         const userSettingsResponse = {
           rows: [{
             doc: {
-              _id: 'org.couchdb.user:y',
+              _id: PREFIXES.COUCH_USER + 'y',
               name: 'milan',
               fullname: 'Milan A',
               email: 'm@a.com',
@@ -322,12 +326,13 @@ describe('Users service', () => {
             },
           }],
         };
-        db.medic.allDocs.withArgs({ keys: ['org.couchdb.user:y'], include_docs: true }).resolves(userSettingsResponse);
+        db.medic.allDocs.withArgs({ keys: [PREFIXES.COUCH_USER + 'y'], 
+          include_docs: true }).resolves(userSettingsResponse);
 
         const data = await service.getList(filters);
         chai.expect(data.length).to.equal(1);
         const milan = data[0];
-        chai.expect(milan.id).to.equal('org.couchdb.user:y');
+        chai.expect(milan.id).to.equal(PREFIXES.COUCH_USER + 'y');
         chai.expect(milan.username).to.equal('milan');
         chai.expect(milan.fullname).to.equal('Milan A');
         chai.expect(milan.email).to.equal('m@a.com');
@@ -343,7 +348,7 @@ describe('Users service', () => {
           rows: [
             {
               doc: {
-                _id: 'org.couchdb.user:y',
+                _id: PREFIXES.COUCH_USER + 'y',
                 name: 'milan',
                 facility_id: ['b', 'c'],
                 contact_id: 'milan-contact',
@@ -352,7 +357,7 @@ describe('Users service', () => {
             },
             {
               doc: {
-                _id: 'org.couchdb.user:z',
+                _id: PREFIXES.COUCH_USER + 'z',
                 name: 'bill',
                 facility_id: 'a',
                 contact_id: 'milan-contact',
@@ -369,7 +374,7 @@ describe('Users service', () => {
         const userSettingsResponse = {
           rows: [{
             doc: {
-              _id: 'org.couchdb.user:y',
+              _id: PREFIXES.COUCH_USER + 'y',
               name: 'milan',
               fullname: 'Milan A',
               email: 'm@a.com',
@@ -380,13 +385,14 @@ describe('Users service', () => {
             },
           }],
         };
-        db.medic.allDocs.withArgs({ keys: ['org.couchdb.user:y'], include_docs: true }).resolves(userSettingsResponse);
+        db.medic.allDocs.withArgs({ keys: [PREFIXES.COUCH_USER + 'y'], 
+          include_docs: true }).resolves(userSettingsResponse);
 
         const data = await service.getList(filters);
         chai.expect(db.users.query.callCount).to.equal(1);
         chai.expect(data.length).to.equal(1);
         const milan = data[0];
-        chai.expect(milan.id).to.equal('org.couchdb.user:y');
+        chai.expect(milan.id).to.equal(PREFIXES.COUCH_USER + 'y');
         chai.expect(milan.username).to.equal('milan');
         chai.expect(milan.fullname).to.equal('Milan A');
         chai.expect(milan.email).to.equal('m@a.com');
@@ -401,13 +407,13 @@ describe('Users service', () => {
       it('collects user infos', async () => {
         const allUsers = [
           {
-            _id: 'org.couchdb.user:x',
+            _id: PREFIXES.COUCH_USER + 'x',
             name: 'lucas',
             facility_id: 'c',
             roles: ['national-admin', 'data-entry']
           },
           {
-            _id: 'org.couchdb.user:y',
+            _id: PREFIXES.COUCH_USER + 'y',
             name: 'milan',
             facility_id: 'b',
             roles: ['district-admin']
@@ -415,7 +421,7 @@ describe('Users service', () => {
         ];
         const allUsersSettings = [
           {
-            _id: 'org.couchdb.user:x',
+            _id: PREFIXES.COUCH_USER + 'x',
             name: 'lucas',
             fullname: 'Lucas M',
             email: 'l@m.com',
@@ -423,7 +429,7 @@ describe('Users service', () => {
             facility_id: 'c',
           },
           {
-            _id: 'org.couchdb.user:y',
+            _id: PREFIXES.COUCH_USER + 'y',
             name: 'milan',
             fullname: 'Milan A',
             email: 'm@a.com',
@@ -437,14 +443,14 @@ describe('Users service', () => {
         const data = await service.getList();
         chai.expect(data.length).to.equal(2);
         const [lucas, milan] = data;
-        chai.expect(lucas.id).to.equal('org.couchdb.user:x');
+        chai.expect(lucas.id).to.equal(PREFIXES.COUCH_USER + 'x');
         chai.expect(lucas.username).to.equal('lucas');
         chai.expect(lucas.fullname).to.equal('Lucas M');
         chai.expect(lucas.email).to.equal('l@m.com');
         chai.expect(lucas.phone).to.equal('123456789');
         chai.expect(lucas.place).to.deep.equal([facilityC]);
         chai.expect(lucas.roles).to.deep.equal([ 'national-admin', 'data-entry' ]);
-        chai.expect(milan.id).to.equal('org.couchdb.user:y');
+        chai.expect(milan.id).to.equal(PREFIXES.COUCH_USER + 'y');
         chai.expect(milan.username).to.equal('milan');
         chai.expect(milan.fullname).to.equal('Milan A');
         chai.expect(milan.email).to.equal('m@a.com');
@@ -466,7 +472,7 @@ describe('Users service', () => {
             roles: ['national-admin', 'data-entry']
           },
           {
-            _id: 'org.couchdb.user:y',
+            _id: PREFIXES.COUCH_USER + 'y',
             name: 'milan',
             facility_id: 'b',
             fullname: 'Milan A',
@@ -477,7 +483,7 @@ describe('Users service', () => {
         ];
         const allUserSettings = [
           {
-            _id: 'org.couchdb.user:x',
+            _id: PREFIXES.COUCH_USER + 'x',
             name: 'lucas',
             fullname: 'Lucas M',
             email: 'l@m.com',
@@ -485,7 +491,7 @@ describe('Users service', () => {
             facility_id: 'c',
           },
           {
-            _id: 'org.couchdb.user:y',
+            _id: PREFIXES.COUCH_USER + 'y',
             name: 'milan',
             fullname: 'Milan A',
             email: 'm@a.com',
@@ -499,7 +505,7 @@ describe('Users service', () => {
         const data = await service.getList();
         chai.expect(data.length).to.equal(1);
         const milan = data[0];
-        chai.expect(milan.id).to.equal('org.couchdb.user:y');
+        chai.expect(milan.id).to.equal(PREFIXES.COUCH_USER + 'y');
         chai.expect(milan.username).to.equal('milan');
         chai.expect(milan.fullname).to.equal('Milan A');
         chai.expect(milan.email).to.equal('m@a.com');
@@ -511,7 +517,7 @@ describe('Users service', () => {
       it('handles minimal users', async () => {
         const allUsers = [
           {
-            _id: 'org.couchdb.user:x',
+            _id: PREFIXES.COUCH_USER + 'x',
             name: 'lucas'
           }
         ];
@@ -520,7 +526,7 @@ describe('Users service', () => {
         const data = await service.getList();
         chai.expect(data.length).to.equal(1);
         const lucas = data[0];
-        chai.expect(lucas.id).to.equal('org.couchdb.user:x');
+        chai.expect(lucas.id).to.equal(PREFIXES.COUCH_USER + 'x');
         chai.expect(lucas.username).to.equal('lucas');
         chai.expect(lucas.fullname).to.equal(undefined);
         chai.expect(lucas.email).to.equal(undefined);
@@ -549,7 +555,7 @@ describe('Users service', () => {
             roles: [ 'national-admin', 'data-entry' ]
           },
           {
-            _id: 'org.couchdb.user:y',
+            _id: PREFIXES.COUCH_USER + 'y',
             name: 'milan',
             facility_id: 'b',
             fullname: 'Milan A',
@@ -570,7 +576,7 @@ describe('Users service', () => {
 
   describe('getUser', () => {
     it('returns user data from _users and user-settings docs', async () => {
-      const userId = 'org.couchdb.user:steve';
+      const userId = PREFIXES.COUCH_USER + 'steve';
       const userDoc = {
         _id: userId,
         _rev: 'steve-user-rev',
@@ -583,7 +589,7 @@ describe('Users service', () => {
       };
       db.users.get.resolves(userDoc);
       db.medic.get.resolves({
-        _id: 'org.couchdb.user:steve (settings)',
+        _id: PREFIXES.COUCH_USER + 'steve (settings)',
         _rev: 'steve-user-settings-rev',
         name: 'steve settings',
         facility_id: facilityB._id,
@@ -620,7 +626,7 @@ describe('Users service', () => {
     });
 
     it('returns a user with minimal data', async () => {
-      const userId = 'org.couchdb.user:steve';
+      const userId = PREFIXES.COUCH_USER + 'steve';
       const userDoc = {
         _id: userId,
         _rev: 'steve-user-rev',
@@ -628,7 +634,7 @@ describe('Users service', () => {
       };
       db.users.get.resolves(userDoc);
       db.medic.get.resolves({
-        _id: 'org.couchdb.user:steve (settings)',
+        _id: PREFIXES.COUCH_USER + 'steve (settings)',
         _rev: 'steve-user-settings-rev',
       });
 
@@ -672,10 +678,10 @@ describe('Users service', () => {
     });
 
     it('fails if no _users doc exists', async () => {
-      const userId = 'org.couchdb.user:steve';
+      const userId = PREFIXES.COUCH_USER + 'steve';
       db.users.get.rejects({ status: 404 });
       db.medic.get.resolves({
-        _id: 'org.couchdb.user:steve (settings)',
+        _id: PREFIXES.COUCH_USER + 'steve (settings)',
         _rev: 'steve-user-settings-rev',
       });
 
@@ -694,7 +700,7 @@ describe('Users service', () => {
     });
 
     it('fails if no user-settings doc exists', async () => {
-      const userId = 'org.couchdb.user:steve';
+      const userId = PREFIXES.COUCH_USER + 'steve';
       db.users.get.resolves({
         _id: userId,
         _rev: 'steve-user-rev',
@@ -718,7 +724,7 @@ describe('Users service', () => {
   });
 
   describe('getUserDoc', () => {
-    const userId = 'org.couchdb.user:steve';
+    const userId = PREFIXES.COUCH_USER + 'steve';
     const userDoc = {
       _id: userId,
       name: 'steve',
@@ -771,9 +777,9 @@ describe('Users service', () => {
           });
 
           chai.expect(db.users.get.callCount).to.equal(1);
-          chai.expect(db.users.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
+          chai.expect(db.users.get.withArgs(PREFIXES.COUCH_USER + 'steve').callCount).to.equal(1);
           chai.expect(db.medic.get.callCount).to.equal(1);
-          chai.expect(db.medic.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
+          chai.expect(db.medic.get.withArgs(PREFIXES.COUCH_USER + 'steve').callCount).to.equal(1);
           chai.expect(db.medic.allDocs.callCount).to.equal(1);
           chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{ keys: ['steve', 'steveVille'], include_docs: true }]);
           chai.expect(db.medic.query.callCount).to.equal(0);
@@ -807,9 +813,9 @@ describe('Users service', () => {
           });
 
           chai.expect(db.users.get.callCount).to.equal(1);
-          chai.expect(db.users.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
+          chai.expect(db.users.get.withArgs(PREFIXES.COUCH_USER + 'steve').callCount).to.equal(1);
           chai.expect(db.medic.get.callCount).to.equal(1);
-          chai.expect(db.medic.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
+          chai.expect(db.medic.get.withArgs(PREFIXES.COUCH_USER + 'steve').callCount).to.equal(1);
           chai.expect(db.medic.allDocs.callCount).to.equal(1);
           chai.expect(db.medic.allDocs.args[0]).to.deep.equal(
             [{ keys: ['steve', 'sVille', 'lVille'], include_docs: true }]
@@ -820,7 +826,7 @@ describe('Users service', () => {
 
     it('returns name and roles from provided userCtx', () => {
       db.users.get.resolves({
-        _id: 'org.couchdb.user:my-user',
+        _id: PREFIXES.COUCH_USER + 'my-user',
         name: 'my-user',
         roles: [ 'a' ],
         type: 'user',
@@ -828,9 +834,9 @@ describe('Users service', () => {
         facility_id: 'myUserVille'
       });
       db.medic.get.resolves({
-        _id: 'org.couchdb.user:my-user',
+        _id: PREFIXES.COUCH_USER + 'my-user',
         name: 'my-user-edited',
-        roles: [ '_admin' ],
+        roles: [ COUCHDB_ADMIN ],
         type: 'user-settings',
         some: 'field',
         contact_id: 'my-user-contact',
@@ -847,7 +853,7 @@ describe('Users service', () => {
         .getUserSettings({ name: 'my-user' })
         .then(result => {
           chai.expect(result).to.deep.equal({
-            _id: 'org.couchdb.user:my-user',
+            _id: PREFIXES.COUCH_USER + 'my-user',
             name: 'my-user',
             roles: [ 'a' ],
             type: 'user-settings',
@@ -862,7 +868,7 @@ describe('Users service', () => {
 
     it('should not use malformed results from all docs', () => {
       db.users.get.resolves({
-        _id: 'org.couchdb.user:my-user',
+        _id: PREFIXES.COUCH_USER + 'my-user',
         name: 'my-user',
         roles: [ 'a' ],
         type: 'user',
@@ -870,9 +876,9 @@ describe('Users service', () => {
         facility_id: 'myUserVille'
       });
       db.medic.get.resolves({
-        _id: 'org.couchdb.user:my-user',
+        _id: PREFIXES.COUCH_USER + 'my-user',
         name: 'my-user-edited',
-        roles: [ '_admin' ],
+        roles: [ COUCHDB_ADMIN ],
         type: 'user-settings',
         some: 'field',
         contact_id: 'my-user-contact',
@@ -886,7 +892,7 @@ describe('Users service', () => {
         .getUserSettings({ name: 'my-user' })
         .then(result => {
           chai.expect(result).to.deep.equal({
-            _id: 'org.couchdb.user:my-user',
+            _id: PREFIXES.COUCH_USER + 'my-user',
             name: 'my-user',
             roles: [ 'a' ],
             type: 'user-settings',
@@ -899,7 +905,7 @@ describe('Users service', () => {
 
     it('should not use malformed results from all docs', () => {
       db.users.get.resolves({
-        _id: 'org.couchdb.user:my-user',
+        _id: PREFIXES.COUCH_USER + 'my-user',
         name: 'my-user',
         roles: [ 'a' ],
         type: 'user',
@@ -907,9 +913,9 @@ describe('Users service', () => {
         facility_id: 'myUserVille'
       });
       db.medic.get.resolves({
-        _id: 'org.couchdb.user:my-user',
+        _id: PREFIXES.COUCH_USER + 'my-user',
         name: 'my-user-edited',
-        roles: [ '_admin' ],
+        roles: [ COUCHDB_ADMIN ],
         type: 'user-settings',
         some: 'field',
         contact_id: 'my-user-contact',
@@ -921,7 +927,7 @@ describe('Users service', () => {
         .getUserSettings({ name: 'my-user' })
         .then(result => {
           chai.expect(result).to.deep.equal({
-            _id: 'org.couchdb.user:my-user',
+            _id: PREFIXES.COUCH_USER + 'my-user',
             name: 'my-user',
             roles: [ 'a' ],
             type: 'user-settings',
@@ -934,7 +940,7 @@ describe('Users service', () => {
 
     it('should not use malformed results from all docs', () => {
       db.users.get.resolves({
-        _id: 'org.couchdb.user:my-user',
+        _id: PREFIXES.COUCH_USER + 'my-user',
         name: 'my-user',
         roles: [ 'a' ],
         type: 'user',
@@ -942,9 +948,9 @@ describe('Users service', () => {
         facility_id: 'myUserVille'
       });
       db.medic.get.resolves({
-        _id: 'org.couchdb.user:my-user',
+        _id: PREFIXES.COUCH_USER + 'my-user',
         name: 'my-user-edited',
-        roles: [ '_admin' ],
+        roles: [ COUCHDB_ADMIN ],
         type: 'user-settings',
         some: 'field',
         contact_id: 'my-user-contact',
@@ -956,7 +962,7 @@ describe('Users service', () => {
         .getUserSettings({ name: 'my-user' })
         .then(result => {
           chai.expect(result).to.deep.equal({
-            _id: 'org.couchdb.user:my-user',
+            _id: PREFIXES.COUCH_USER + 'my-user',
             name: 'my-user',
             roles: [ 'a' ],
             type: 'user-settings',
@@ -969,7 +975,7 @@ describe('Users service', () => {
 
     it('should not use malformed results from all docs', () => {
       db.users.get.resolves({
-        _id: 'org.couchdb.user:my-user',
+        _id: PREFIXES.COUCH_USER + 'my-user',
         name: 'my-user',
         roles: [ 'a' ],
         type: 'user',
@@ -977,9 +983,9 @@ describe('Users service', () => {
         facility_id: 'myUserVille'
       });
       db.medic.get.resolves({
-        _id: 'org.couchdb.user:my-user',
+        _id: PREFIXES.COUCH_USER + 'my-user',
         name: 'my-user-edited',
-        roles: [ '_admin' ],
+        roles: [ COUCHDB_ADMIN ],
         type: 'user-settings',
         some: 'field',
         contact_id: 'my-user-contact',
@@ -991,7 +997,7 @@ describe('Users service', () => {
         .getUserSettings({ name: 'my-user' })
         .then(result => {
           chai.expect(result).to.deep.equal({
-            _id: 'org.couchdb.user:my-user',
+            _id: PREFIXES.COUCH_USER + 'my-user',
             name: 'my-user',
             roles: [ 'a' ],
             type: 'user-settings',
@@ -1004,7 +1010,7 @@ describe('Users service', () => {
 
     it('should work with not found contact', () => {
       db.users.get.resolves({
-        _id: 'org.couchdb.user:my-user',
+        _id: PREFIXES.COUCH_USER + 'my-user',
         name: 'my-user',
         roles: [ 'a' ],
         type: 'user',
@@ -1012,9 +1018,9 @@ describe('Users service', () => {
         facility_id: 'myUserVille'
       });
       db.medic.get.resolves({
-        _id: 'org.couchdb.user:my-user',
+        _id: PREFIXES.COUCH_USER + 'my-user',
         name: 'my-user-edited',
-        roles: [ '_admin' ],
+        roles: [ COUCHDB_ADMIN ],
         type: 'user-settings',
         some: 'field',
         contact_id: 'my-user-contact',
@@ -1031,7 +1037,7 @@ describe('Users service', () => {
         .getUserSettings({ name: 'my-user' })
         .then(result => {
           chai.expect(result).to.deep.equal({
-            _id: 'org.couchdb.user:my-user',
+            _id: PREFIXES.COUCH_USER + 'my-user',
             name: 'my-user',
             roles: [ 'a' ],
             type: 'user-settings',
@@ -1114,7 +1120,7 @@ describe('Users service', () => {
 
     it('should throw an error if medic all docs returns an error', () => {
       db.users.get.resolves({
-        _id: 'org.couchdb.user:my-user',
+        _id: PREFIXES.COUCH_USER + 'my-user',
         name: 'my-user',
         roles: [ 'a' ],
         type: 'user',
@@ -1122,9 +1128,9 @@ describe('Users service', () => {
         facility_id: 'myUserVille'
       });
       db.medic.get.resolves({
-        _id: 'org.couchdb.user:my-user',
+        _id: PREFIXES.COUCH_USER + 'my-user',
         name: 'my-user-edited',
-        roles: [ '_admin' ],
+        roles: [ COUCHDB_ADMIN ],
         type: 'user-settings',
         some: 'field',
         contact_id: 'my-user-contact',
@@ -1176,7 +1182,7 @@ describe('Users service', () => {
       });
       const usersInsert = db.users.put.resolves();
       const medicUsersInsert = db.medic.put.resolves();
-      return service.deleteUser('org.couchdb.user:gareth').then(() => {
+      return service.deleteUser(PREFIXES.COUCH_USER + 'gareth').then(() => {
         chai.expect(usersInsert.callCount).to.equal(1);
         chai.expect(usersInsert.firstCall.args[0]).to.deep.equal(userExpected);
         chai.expect(medicUsersInsert.firstCall.args[0]).to.deep.equal(medicUserExpected);
@@ -1342,6 +1348,7 @@ describe('Users service', () => {
   });
 
   describe('createUser', () => {
+
     it('should set password_change_required to true for new user creation', () => {
       const data = {
         username: 'newuser',
@@ -1357,15 +1364,15 @@ describe('Users service', () => {
       service.__set__('createContact', sinon.stub().resolves());
       service.__set__('storeUpdatedPlace', sinon.stub().resolves());
       service.__set__('createUserSettings', sinon.stub().resolves());
-      sinon.stub(roles, 'hasAllPermissions').returns(false);
+      hasPermissions.returns(false);
 
       couchSettings.getCouchConfig.resolves({
         admin1: 'password_1',
         admin2: 'password_2'
       });
 
-      db.users.put.resolves({ id: 'org.couchdb.user:newuser' });
-      db.medic.put.resolves({ id: 'org.couchdb.user:newuser' });
+      db.users.put.resolves({ id: PREFIXES.COUCH_USER + 'newuser' });
+      db.medic.put.resolves({ id: PREFIXES.COUCH_USER + 'newuser' });
 
       return service.createUser(data).then(() => {
         chai.expect(db.users.put.callCount).to.equal(1);
@@ -1690,7 +1697,7 @@ describe('Users service', () => {
         .withArgs('app_url').returns('http://realhost');
 
       sinon.stub(roles, 'isOffline').returns(false);
-      sinon.stub(roles, 'hasAllPermissions').returns(false);
+      hasPermissions.returns(false);
 
       const users = [{
         username: 'sally',
@@ -1700,25 +1707,25 @@ describe('Users service', () => {
         token_login: true,
       }];
 
-      db.medic.put.withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
-        .resolves({ id: 'org.couchdb.user:sally' });
-      db.users.put.withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
-        .resolves({ id: 'org.couchdb.user:sally' });
+      db.medic.put.withArgs(sinon.match({ _id: PREFIXES.COUCH_USER + 'sally' }))
+        .resolves({ id: PREFIXES.COUCH_USER + 'sally' });
+      db.users.put.withArgs(sinon.match({ _id: PREFIXES.COUCH_USER + 'sally' }))
+        .resolves({ id: PREFIXES.COUCH_USER + 'sally' });
 
-      db.users.get.withArgs('org.couchdb.user:sally')
+      db.users.get.withArgs(PREFIXES.COUCH_USER + 'sally')
         .onCall(0).rejects({ status: 404 })
         .onCall(1).resolves({
-          _id: 'org.couchdb.user:sally',
+          _id: PREFIXES.COUCH_USER + 'sally',
           type: 'user',
-          roles: ['a', 'b', USER_ROLES.ONLINE],
+          roles: ['a', 'b', ONLINE],
           name: 'sally',
         });
-      db.medic.get.withArgs('org.couchdb.user:sally')
+      db.medic.get.withArgs(PREFIXES.COUCH_USER + 'sally')
         .onCall(0).rejects({ status: 404 })
         .onCall(1).resolves({
-          _id: 'org.couchdb.user:sally',
+          _id: PREFIXES.COUCH_USER + 'sally',
           type: 'user-settings',
-          roles: ['a', 'b', USER_ROLES.ONLINE],
+          roles: ['a', 'b', ONLINE],
           phone: '+40755696969',
           name: 'sally',
         });
@@ -1727,8 +1734,8 @@ describe('Users service', () => {
       const response = await service.createUsers(users, 'http://realhost');
       chai.expect(response).to.deep.equal([
         {
-          user: { id: 'org.couchdb.user:sally', rev: undefined },
-          'user-settings': { id: 'org.couchdb.user:sally', rev: undefined },
+          user: { id: PREFIXES.COUCH_USER + 'sally', rev: undefined },
+          'user-settings': { id: PREFIXES.COUCH_USER + 'sally', rev: undefined },
           token_login: { expiration_date: oneDayInMS },
         },
       ]);
@@ -1736,28 +1743,28 @@ describe('Users service', () => {
       chai.expect(db.users.put.callCount).to.equal(2);
 
       chai.expect(db.medic.put.args[0]).to.deep.equal([{
-        _id: 'org.couchdb.user:sally',
+        _id: PREFIXES.COUCH_USER + 'sally',
         name: 'sally',
         type: 'user-settings',
         phone: '+40755696969', // normalized phone
-        roles: ['a', 'b', USER_ROLES.ONLINE],
+        roles: ['a', 'b', ONLINE],
       }]);
 
       chai.expect(db.users.put.args[0][0]).to.deep.include({
-        _id: 'org.couchdb.user:sally',
+        _id: PREFIXES.COUCH_USER + 'sally',
         name: 'sally',
         type: 'user',
-        roles: ['a', 'b', USER_ROLES.ONLINE],
+        roles: ['a', 'b', ONLINE],
       });
       chai.expect(db.users.put.args[0][0].password).not.to.equal('random');
       chai.expect(db.users.put.args[0][0].password.length).to.equal(20);
 
       chai.expect(db.medic.put.args[2][0]).to.deep.equal({
-        _id: 'org.couchdb.user:sally',
+        _id: PREFIXES.COUCH_USER + 'sally',
         name: 'sally',
         type: 'user-settings',
         phone: '+40755696969', // normalized phone
-        roles: ['a', 'b', USER_ROLES.ONLINE],
+        roles: ['a', 'b', ONLINE],
         token_login: {
           active: true,
           expiration_date: oneDayInMS,
@@ -1765,10 +1772,10 @@ describe('Users service', () => {
       });
 
       chai.expect(db.users.put.args[1][0]).to.deep.include({
-        _id: 'org.couchdb.user:sally',
+        _id: PREFIXES.COUCH_USER + 'sally',
         name: 'sally',
         type: 'user',
-        roles: ['a', 'b', USER_ROLES.ONLINE],
+        roles: ['a', 'b', ONLINE],
       });
 
       chai.expect(db.users.put.args[1][0].token_login).to.deep.include({
@@ -1782,7 +1789,7 @@ describe('Users service', () => {
         _id: `token:login:${token}`,
         type: 'token_login',
         reported_date: 0,
-        user: 'org.couchdb.user:sally',
+        user: PREFIXES.COUCH_USER + 'sally',
         tasks: []
       };
       chai.expect(db.medic.put.args[1][0]).to.deep.equal(expectedDoc);
@@ -1793,10 +1800,10 @@ describe('Users service', () => {
         '+40755696969',
         {
           templateContext: {
-            _id: 'org.couchdb.user:sally',
+            _id: PREFIXES.COUCH_USER + 'sally',
             name: 'sally',
             phone: '+40755696969',
-            roles: ['a', 'b', USER_ROLES.ONLINE],
+            roles: ['a', 'b', ONLINE],
             type: 'user'
           }
         }
@@ -2047,7 +2054,7 @@ describe('Users service', () => {
       const usersPut = db.users.put;
       service.__set__('validateNewUsername', sinon.stub().resolves());
       service.__set__('storeUpdatedPlace', sinon.stub().resolves());
-      sinon.stub(roles, 'hasAllPermissions').returns(false);
+      hasPermissions.returns(false);
       sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
       getContact.withArgs(Qualifier.byUuid('user1'))
         .onFirstCall().resolves(null)
@@ -2074,11 +2081,11 @@ describe('Users service', () => {
             rev: 1,
           },
           user: {
-            id: 'org.couchdb.user:user1',
+            id: PREFIXES.COUCH_USER + 'user1',
             rev: 1,
           },
           'user-settings': {
-            id: 'org.couchdb.user:user1',
+            id: PREFIXES.COUCH_USER + 'user1',
             rev: 1,
           },
         },
@@ -2088,11 +2095,11 @@ describe('Users service', () => {
             rev: 1,
           },
           user: {
-            id: 'org.couchdb.user:user2',
+            id: PREFIXES.COUCH_USER + 'user2',
             rev: 1,
           },
           'user-settings': {
-            id: 'org.couchdb.user:user2',
+            id: PREFIXES.COUCH_USER + 'user2',
             rev: 1,
           },
         },
@@ -2173,11 +2180,38 @@ describe('Users service', () => {
       chai.expect(response[0].error.translationParams).to.have.property('username');
       chai.expect(insert.callCount).to.equal(0);
     });
+
+    it('should filter out ignored users during createUsers', async () => {
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('setContactParent', sinon.stub().resolves());
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
+      sinon.stub(tokenLogin, 'manageTokenLogin').resolves({});
+      sinon.stub(places, 'getPlace').resolves({ _id: 'place1' });
+      getContact
+        .onFirstCall().resolves(null)
+        .onSecondCall().resolves({ type: 'person', _id: 'contact_id', _rev: 1 });
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
+
+      const users = [
+        { username: 'skip-me', password: COMPLEX_PASSWORD, place: 'place1', contact: 'c1', type: 'national-manager' },
+        { username: 'keep-me', password: COMPLEX_PASSWORD, place: 'place1', contact: 'c1', type: 'national-manager' },
+      ];
+      const ignoredUsers = { 'skip-me': { user: users[0], ignoreMessage: 'Already imported' } };
+
+      const response = await service.createUsers(users, ignoredUsers);
+      chai.expect(response).to.have.length(1);
+    });
   });
 
   describe('createMultiFacilityUser', () => {
     it('returns error if missing fields', async () => {
       const pwd = 'medic.123456';
+      config.get.withArgs('roles').returns({ user: { offline: true } });
       await chai.expect(service.createMultiFacilityUser({}))
         .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
       await chai.expect(service.createMultiFacilityUser({ password: 'x', place: 'x', contact: 'y' }))
@@ -2223,9 +2257,28 @@ describe('Users service', () => {
         .and.have.property('code', 400);
     });
 
+    it('returns error if token login validation fails', async () => {
+      const tokenLoginConfig = { translation_key: 'sms', enabled: true };
+      config.get.withArgs('token_login').returns(tokenLoginConfig);
+      sinon.stub(tokenLogin, 'validateTokenLogin').returns({ msg: 'Phone number is invalid', key: 'invalid.phone' });
+
+      const data = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: 'x',
+        contact: 'y',
+        type: 'national-manager',
+        token_login: true,
+        phone: 'invalid',
+      };
+
+      await chai.expect(service.createMultiFacilityUser(data)).to.be.eventually.rejectedWith(Error)
+        .and.have.property('code', 400);
+    });
+
     it('returns error if has multiple facilities but does not have role', async () => {
       service.__set__('validateNewUsername', sinon.stub().resolves());
-      sinon.stub(roles, 'hasAllPermissions').returns(false);
+      hasPermissions.returns(false);
 
       const data = {
         username: 'x',
@@ -2238,13 +2291,16 @@ describe('Users service', () => {
       await chai.expect(service.createMultiFacilityUser(data)).to.be.eventually.rejectedWith(Error)
         .and.have.property('code', 400);
 
-      chai.expect(roles.hasAllPermissions.args).to.deep.equal([[['a', 'b'], ['can_have_multiple_places']]]);
+      chai.expect(hasPermissions).to.have.been.calledOnceWithExactly(
+        ['can_have_multiple_places'],
+        ['a', 'b']
+      );
     });
 
     it('returns error if place lookup fails', async () => {
       service.__set__('validateNewUsername', sinon.stub().resolves());
       sinon.stub(places, 'placesExist').rejects(new Error('missing'));
-      sinon.stub(roles, 'hasAllPermissions').returns(true);
+      hasPermissions.returns(true);
 
       const data = {
         username: 'x',
@@ -2262,7 +2318,7 @@ describe('Users service', () => {
     it('returns error if places lookup fails', async () => {
       service.__set__('validateNewUsername', sinon.stub().resolves());
       sinon.stub(places, 'placesExist').rejects(new Error('missing'));
-      sinon.stub(roles, 'hasAllPermissions').returns(true);
+      hasPermissions.returns(true);
 
       const data = {
         username: 'x',
@@ -2279,7 +2335,7 @@ describe('Users service', () => {
     it('returns error if contact is not within place', async () => {
       service.__set__('validateNewUsername', sinon.stub().resolves());
       sinon.stub(places, 'placesExist').resolves();
-      sinon.stub(roles, 'hasAllPermissions').returns(true);
+      hasPermissions.returns(true);
       const data = {
         username: 'x',
         place: ['x', 'y', 'z'],
@@ -2334,7 +2390,7 @@ describe('Users service', () => {
       sinon.stub(people, 'isAPerson').returns(true);
       db.medic.put.resolves({ id: 'success' });
       db.users.put.resolves({ id: 'success' });
-      sinon.stub(roles, 'hasAllPermissions').returns(true);
+      hasPermissions.returns(true);
 
       const userData = {
         username: 'x',
@@ -2355,7 +2411,7 @@ describe('Users service', () => {
         contact_id: 'h',
         roles: ['national-manager'],
         type: 'user-settings',
-        _id: 'org.couchdb.user:x',
+        _id: PREFIXES.COUCH_USER + 'x',
         name: 'x'
       }]]);
 
@@ -2364,20 +2420,20 @@ describe('Users service', () => {
         contact_id: 'h',
         roles: ['national-manager'],
         type: 'user',
-        _id: 'org.couchdb.user:x',
+        _id: PREFIXES.COUCH_USER + 'x',
         name: 'x',
         password: 'password.123',
         password_change_required: false
       }]]);
-      chai.expect(roles.hasAllPermissions.args).to.deep.equal([
-        [['national-manager'], ['can_have_multiple_places']],
-        [['national-manager'], ['can_skip_password_change']]
+      chai.expect(hasPermissions.args).to.deep.equal([
+        [['can_have_multiple_places'], ['national-manager']],
+        [['can_skip_password_change'], ['national-manager']],
       ]);
     });
 
     it('succeeds without permission for single facility', async () => {
       service.__set__('validateNewUsername', sinon.stub().resolves());
-      sinon.stub(roles, 'hasAllPermissions').returns(false);
+      hasPermissions.returns(false);
       sinon.stub(places, 'placesExist').resolves();
       sinon.stub(people, 'isAPerson').returns(true);
       db.medic.put.resolves({ id: 'success' });
@@ -2403,7 +2459,7 @@ describe('Users service', () => {
         contact_id: 'h',
         roles: ['national-manager'],
         type: 'user-settings',
-        _id: 'org.couchdb.user:x',
+        _id: PREFIXES.COUCH_USER + 'x',
         name: 'x'
       }]]);
 
@@ -2412,7 +2468,7 @@ describe('Users service', () => {
         contact_id: 'h',
         roles: ['national-manager'],
         type: 'user',
-        _id: 'org.couchdb.user:x',
+        _id: PREFIXES.COUCH_USER + 'x',
         name: 'x',
         password: 'password.123',
         password_change_required: true
@@ -2852,7 +2908,7 @@ describe('Users service', () => {
         place: ['x', 'y', 'z']
       };
       const user = {
-        _id: 'org.couchdb.user:paul',
+        _id: PREFIXES.COUCH_USER + 'paul',
         name: 'paul',
         type: 'user',
         roles: ['a']
@@ -2860,12 +2916,12 @@ describe('Users service', () => {
       db.medic.get.resolves(user);
       db.users.get.resolves(user);
       sinon.stub(places, 'placesExist').resolves();
-      sinon.stub(roles, 'hasAllPermissions').returns(true);
+      hasPermissions.returns(true);
       db.medic.put.resolves({});
       db.users.put.resolves({});
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.args).to.deep.equal([[{
-          _id: 'org.couchdb.user:paul',
+          _id: PREFIXES.COUCH_USER + 'paul',
           facility_id: [ 'x', 'y', 'z' ],
           name: 'paul',
           type: 'user-settings',
@@ -2873,7 +2929,7 @@ describe('Users service', () => {
         }]]);
 
         chai.expect(db.users.put.args).to.deep.equal([[{
-          _id: 'org.couchdb.user:paul',
+          _id: PREFIXES.COUCH_USER + 'paul',
           facility_id: [ 'x', 'y', 'z' ],
           name: 'paul',
           type: 'user',
@@ -2893,9 +2949,9 @@ describe('Users service', () => {
       sinon.stub(roles, 'isOffline').withArgs(['rebel']).returns(false);
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
-        chai.expect(db.medic.put.args[0][0].roles).to.deep.equal(['rebel', USER_ROLES.ONLINE]);
+        chai.expect(db.medic.put.args[0][0].roles).to.deep.equal(['rebel', ONLINE]);
         chai.expect(db.users.put.callCount).to.equal(1);
-        chai.expect(db.users.put.args[0][0].roles).to.deep.equal(['rebel', USER_ROLES.ONLINE]);
+        chai.expect(db.users.put.args[0][0].roles).to.deep.equal(['rebel', ONLINE]);
       });
     });
 
@@ -2971,7 +3027,7 @@ describe('Users service', () => {
       db.users.get.resolves({ facility_id: 'maine', contact_id: 'june' });
       db.medic.get.resolves({ facility_id: 'maine', contact_id: 'june' });
       sinon.stub(places, 'placesExist').resolves();
-      sinon.stub(roles, 'hasAllPermissions').returns(true);
+      hasPermissions.returns(true);
       db.medic.put.resolves({});
       db.users.put.resolves({});
       return service.updateUser('paul', data, true).then(() => {
@@ -2988,7 +3044,7 @@ describe('Users service', () => {
       };
 
       db.users.get.resolves({ facility_id: ['maine'], contact_id: 'june' });
-      db.medic.get.withArgs('org.couchdb.user:paul').resolves({ facility_id: ['maine'], contact_id: 'june' });
+      db.medic.get.withArgs(PREFIXES.COUCH_USER + 'paul').resolves({ facility_id: ['maine'], contact_id: 'june' });
       getContact.withArgs(Qualifier.byUuid('maricica')).resolves({ 
         _id: 'maricica', 
         type: 'person', 
@@ -2996,7 +3052,7 @@ describe('Users service', () => {
       });
       sinon.stub(people, 'isAPerson').returns(true);
 
-      sinon.stub(roles, 'hasAllPermissions').returns(true);
+      hasPermissions.returns(true);
 
       db.medic.put.resolves({});
       db.users.put.resolves({});
@@ -3016,7 +3072,7 @@ describe('Users service', () => {
       db.users.get.resolves({
         facility_id: 'maine',
         contact_id: 1,
-        roles: ['rambler', USER_ROLES.ONLINE]
+        roles: ['rambler', ONLINE]
       });
       db.medic.get.resolves({
         facility_id: 'maine',
@@ -3059,7 +3115,7 @@ describe('Users service', () => {
       db.medic.put.resolves({});
       db.users.put.resolves({});
       sinon.stub(roles, 'isOffline').withArgs(['rambler']).returns(false);
-      sinon.stub(roles, 'hasAllPermissions').returns(false);
+      hasPermissions.returns(false);
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         const settings = db.medic.put.args[0][0];
@@ -3067,12 +3123,12 @@ describe('Users service', () => {
         chai.expect(settings.phone).to.equal('123');
         chai.expect(settings.known).to.equal(false);
         chai.expect(settings.type).to.equal('user-settings');
-        chai.expect(settings.roles).to.deep.equal(['rambler', USER_ROLES.ONLINE]);
+        chai.expect(settings.roles).to.deep.equal(['rambler', ONLINE]);
 
         chai.expect(db.users.put.callCount).to.equal(1);
         const user = db.users.put.args[0][0];
         chai.expect(user.facility_id).to.deep.equal(['el paso']);
-        chai.expect(user.roles).to.deep.equal(['rambler', USER_ROLES.ONLINE]);
+        chai.expect(user.roles).to.deep.equal(['rambler', ONLINE]);
         chai.expect(user.shoes).to.equal('dusty boots');
         chai.expect(user.password).to.equal(COMPLEX_PASSWORD);
         chai.expect(user.type).to.equal('user');
@@ -3095,7 +3151,8 @@ describe('Users service', () => {
         phone: '123',
         known: false
       });
-      config.get.returns({ chp: { offline: true } });
+      config.get.withArgs('roles').returns({ chp: { offline: true } });
+      config.get.withArgs('permissions').returns({});
       sinon.stub(places, 'placesExist').resolves();
       db.medic.put.resolves({});
       db.users.put.resolves({});
@@ -3146,13 +3203,13 @@ describe('Users service', () => {
         chai.expect(medicPut.args[0]).to.deep.equal([ {
           'name': 'paul',
           'type': 'user-settings',
-          '_id': 'org.couchdb.user:paul'
+          '_id': PREFIXES.COUCH_USER + 'paul'
         } ]);
         chai.expect(usersPut.callCount).to.equal(1);
         chai.expect(usersPut.args[0]).to.deep.equal([ {
           'name': 'paul',
           'type': 'user',
-          '_id': 'org.couchdb.user:paul'
+          '_id': PREFIXES.COUCH_USER + 'paul'
         } ]);
       });
     });
@@ -3173,13 +3230,13 @@ describe('Users service', () => {
         chai.expect(medicPut.args[0]).to.deep.equal([ {
           'name': 'paul',
           'type': 'user-settings',
-          '_id': 'org.couchdb.user:paul'
+          '_id': PREFIXES.COUCH_USER + 'paul'
         } ]);
         chai.expect(usersPut.callCount).to.equal(1);
         chai.expect(usersPut.args[0]).to.deep.equal([ {
           'name': 'paul',
           'type': 'user',
-          '_id': 'org.couchdb.user:paul'
+          '_id': PREFIXES.COUCH_USER + 'paul'
         } ]);
       });
     });
@@ -3194,7 +3251,7 @@ describe('Users service', () => {
       db.users.get.resolves({
         name: 'admin2',
         type: 'user',
-        roles: ['_admin']
+        roles: [COUCHDB_ADMIN]
       });
       db.medic.get.resolves({});
       db.medic.put.resolves({});
@@ -3231,14 +3288,14 @@ describe('Users service', () => {
 
       chai.expect(db.medic.put.callCount).to.equal(1);
       chai.expect(db.medic.put.args[0][0]).to.deep.equal({
-        _id: 'org.couchdb.user:admin2',
+        _id: PREFIXES.COUCH_USER + 'admin2',
         name: 'admin2',
         type: 'user-settings',
         fullname: 'John Smith',
       });
       chai.expect(db.users.put.callCount).to.equal(1);
       chai.expect(db.users.put.args[0][0]).to.deep.equal({
-        _id: 'org.couchdb.user:admin2',
+        _id: PREFIXES.COUCH_USER + 'admin2',
         name: 'admin2',
         type: 'user',
       });
@@ -3263,13 +3320,13 @@ describe('Users service', () => {
 
       chai.expect(db.medic.put.callCount).to.equal(1);
       chai.expect(db.medic.put.args[0][0]).to.deep.equal({
-        _id: 'org.couchdb.user:anne',
+        _id: PREFIXES.COUCH_USER + 'anne',
         name: 'anne',
         type: 'user-settings',
       });
       chai.expect(db.users.put.callCount).to.equal(1);
       chai.expect(db.users.put.args[0][0]).to.deep.equal({
-        _id: 'org.couchdb.user:anne',
+        _id: PREFIXES.COUCH_USER + 'anne',
         name: 'anne',
         type: 'user',
         password: COMPLEX_PASSWORD,
@@ -3281,7 +3338,7 @@ describe('Users service', () => {
 
     it('should set password_change_required to true when admin updates user password', async () => {
       const data = { password: COMPLEX_PASSWORD };
-      sinon.stub(roles, 'hasAllPermissions').returns(false);
+      hasPermissions.returns(false);
       couchSettings.getCouchConfig.resolves({
         admin1: 'password_1',
         admin2: 'password_2',
@@ -3335,7 +3392,7 @@ describe('Users service', () => {
       db.medic.get.returns(Promise.reject({ status: 404 }));
       return service.__get__('validateNewUsername')('georgi').catch(err => {
         chai.expect(usersGet.callCount).to.equal(1);
-        chai.expect(usersGet.args[0][0]).to.equal('org.couchdb.user:georgi');
+        chai.expect(usersGet.args[0][0]).to.equal(PREFIXES.COUCH_USER + 'georgi');
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message.message).to.equal('Username "georgi" already taken.');
         chai.expect(err.message.translationKey).to.equal('username.taken');
@@ -3348,7 +3405,7 @@ describe('Users service', () => {
       const medicGet = db.medic.get.resolves({ id: 'abc', rev: '1-xyz' });
       return service.__get__('validateNewUsername')('georgi').catch(err => {
         chai.expect(medicGet.callCount).to.equal(1);
-        chai.expect(medicGet.args[0][0]).to.equal('org.couchdb.user:georgi');
+        chai.expect(medicGet.args[0][0]).to.equal(PREFIXES.COUCH_USER + 'georgi');
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message.message).to.equal('Username "georgi" already taken.');
         chai.expect(err.message.translationKey).to.equal('username.taken');
@@ -3384,9 +3441,10 @@ describe('Users service', () => {
         .catch(err => {
           chai.expect(err).to.deep.include({ code: 400 });
           chai.expect(db.medic.get.callCount).to.equal(1);
-          chai.expect(db.medic.get.args[0]).to.deep.equal(['org.couchdb.user:my_user']);
+          chai.expect(db.medic.get.args[0]).to.deep.equal([PREFIXES.COUCH_USER + 'my_user']);
           chai.expect(db.users.get.callCount).to.equal(2);
-          chai.expect(db.users.get.args).to.deep.equal([['org.couchdb.user:my_user'], ['org.couchdb.user:my_user']]);
+          chai.expect(db.users.get.args).to.deep.equal([[PREFIXES.COUCH_USER + 'my_user'], 
+            [PREFIXES.COUCH_USER + 'my_user']]);
         });
     });
 
@@ -3402,7 +3460,8 @@ describe('Users service', () => {
           chai.expect(err).to.deep.equal({ some: 'err' });
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0]).to.deep.equal([
-            { name: 'agatha', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:agatha' }
+            { name: 'agatha', type: 'user', roles: [ADMIN, ONLINE], _id: PREFIXES.COUCH_USER + 'agatha' }
+
           ]);
         });
     });
@@ -3411,7 +3470,7 @@ describe('Users service', () => {
       db.medic.get.rejects({ status: 404 });
       db.users.get.rejects({ status: 404 });
 
-      db.users.put.resolves({ id: 'org.couchdb.user:agatha', rev: 1 });
+      db.users.put.resolves({ id: PREFIXES.COUCH_USER + 'agatha', rev: 1 });
       db.medic.put.rejects({ some: 'err' });
       return service
         .createAdmin({ name: 'agatha' })
@@ -3420,11 +3479,12 @@ describe('Users service', () => {
           chai.expect(err).to.deep.equal({ some: 'err' });
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0]).to.deep.equal([
-            { name: 'agatha', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:agatha' }
+            { name: 'agatha', type: 'user', roles: [ADMIN, ONLINE], _id: PREFIXES.COUCH_USER + 'agatha' }
           ]);
           chai.expect(db.medic.put.callCount).to.equal(1);
           chai.expect(db.medic.put.args[0]).to.deep.equal([
-            { name: 'agatha', type: 'user-settings', roles: ['admin'], _id: 'org.couchdb.user:agatha' }
+            { name: 'agatha', type: 'user-settings', 
+              roles: [ADMIN, ONLINE], _id: PREFIXES.COUCH_USER + 'agatha' }
           ]);
         });
     });
@@ -3448,16 +3508,17 @@ describe('Users service', () => {
       db.medic.get.rejects({ status: 404 });
       db.users.get.rejects({ status: 404 });
 
-      db.users.put.resolves({ id: 'org.couchdb.user:perseus', rev: 1 });
-      db.medic.put.resolves({ id: 'org.couchdb.user:perseus', rev: 1 });
+      db.users.put.resolves({ id: PREFIXES.COUCH_USER + 'perseus', rev: 1 });
+      db.medic.put.resolves({ id: PREFIXES.COUCH_USER + 'perseus', rev: 1 });
       return service.createAdmin({ name: 'perseus' }).then(() => {
         chai.expect(db.users.put.callCount).to.equal(1);
         chai.expect(db.users.put.args[0]).to.deep.equal([
-          { name: 'perseus', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:perseus' }
+          { name: 'perseus', type: 'user', roles: [ADMIN, ONLINE], _id: PREFIXES.COUCH_USER + 'perseus' }
         ]);
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.medic.put.args[0]).to.deep.equal([
-          { name: 'perseus', type: 'user-settings', roles: ['admin'], _id: 'org.couchdb.user:perseus' }
+          { name: 'perseus', type: 'user-settings', roles: [ADMIN, ONLINE], 
+            _id: PREFIXES.COUCH_USER + 'perseus' }
         ]);
       });
     });
@@ -3514,7 +3575,7 @@ describe('Users service', () => {
         .withArgs('app_url').returns('http://realhost');
 
       sinon.stub(roles, 'isOffline').returns(false);
-      sinon.stub(roles, 'hasAllPermissions').returns(false);
+      hasPermissions.returns(false);
 
       const user = {
         username: 'sally',
@@ -3524,25 +3585,25 @@ describe('Users service', () => {
         token_login: true,
       };
 
-      db.medic.put.withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
-        .resolves({ id: 'org.couchdb.user:sally' });
-      db.users.put.withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
-        .resolves({ id: 'org.couchdb.user:sally' });
+      db.medic.put.withArgs(sinon.match({ _id: PREFIXES.COUCH_USER + 'sally' }))
+        .resolves({ id: PREFIXES.COUCH_USER + 'sally' });
+      db.users.put.withArgs(sinon.match({ _id: PREFIXES.COUCH_USER + 'sally' }))
+        .resolves({ id: PREFIXES.COUCH_USER + 'sally' });
 
-      db.users.get.withArgs('org.couchdb.user:sally')
+      db.users.get.withArgs(PREFIXES.COUCH_USER + 'sally')
         .onCall(0).rejects({ status: 404 })
         .onCall(1).resolves({
-          _id: 'org.couchdb.user:sally',
+          _id: PREFIXES.COUCH_USER + 'sally',
           type: 'user',
-          roles: ['a', 'b', USER_ROLES.ONLINE],
+          roles: ['a', 'b', ONLINE],
           name: 'sally',
         });
-      db.medic.get.withArgs('org.couchdb.user:sally')
+      db.medic.get.withArgs(PREFIXES.COUCH_USER + 'sally')
         .onCall(0).rejects({ status: 404 })
         .onCall(1).resolves({
-          _id: 'org.couchdb.user:sally',
+          _id: PREFIXES.COUCH_USER + 'sally',
           type: 'user-settings',
-          roles: ['a', 'b', USER_ROLES.ONLINE],
+          roles: ['a', 'b', ONLINE],
           phone: '+40755696969',
           name: 'sally',
         });
@@ -3551,36 +3612,36 @@ describe('Users service', () => {
 
       return service.createUser(user, 'http://realhost').then(response => {
         chai.expect(response).to.deep.equal({
-          user: { id: 'org.couchdb.user:sally', rev: undefined },
-          'user-settings': { id: 'org.couchdb.user:sally', rev: undefined },
+          user: { id: PREFIXES.COUCH_USER + 'sally', rev: undefined },
+          'user-settings': { id: PREFIXES.COUCH_USER + 'sally', rev: undefined },
           token_login: { expiration_date: oneDayInMS },
         });
         chai.expect(db.medic.put.callCount).to.equal(3);
         chai.expect(db.users.put.callCount).to.equal(2);
 
         chai.expect(db.medic.put.args[0]).to.deep.equal([{
-          _id: 'org.couchdb.user:sally',
+          _id: PREFIXES.COUCH_USER + 'sally',
           name: 'sally',
           type: 'user-settings',
           phone: '+40755696969', // normalized phone
-          roles: ['a', 'b', USER_ROLES.ONLINE],
+          roles: ['a', 'b', ONLINE],
         }]);
 
         chai.expect(db.users.put.args[0][0]).to.deep.include({
-          _id: 'org.couchdb.user:sally',
+          _id: PREFIXES.COUCH_USER + 'sally',
           name: 'sally',
           type: 'user',
-          roles: ['a', 'b', USER_ROLES.ONLINE],
+          roles: ['a', 'b', ONLINE],
         });
         chai.expect(db.users.put.args[0][0].password).not.to.equal('random');
         chai.expect(db.users.put.args[0][0].password.length).to.equal(20);
 
         chai.expect(db.medic.put.args[2][0]).to.deep.equal({
-          _id: 'org.couchdb.user:sally',
+          _id: PREFIXES.COUCH_USER + 'sally',
           name: 'sally',
           type: 'user-settings',
           phone: '+40755696969', // normalized phone
-          roles: ['a', 'b', USER_ROLES.ONLINE],
+          roles: ['a', 'b', ONLINE],
           token_login: {
             active: true,
             expiration_date: oneDayInMS,
@@ -3588,10 +3649,10 @@ describe('Users service', () => {
         });
 
         chai.expect(db.users.put.args[1][0]).to.deep.include({
-          _id: 'org.couchdb.user:sally',
+          _id: PREFIXES.COUCH_USER + 'sally',
           name: 'sally',
           type: 'user',
-          roles: ['a', 'b', USER_ROLES.ONLINE],
+          roles: ['a', 'b', ONLINE],
         });
 
         chai.expect(db.users.put.args[1][0].token_login).to.deep.include({
@@ -3605,7 +3666,7 @@ describe('Users service', () => {
           _id: `token:login:${token}`,
           type: 'token_login',
           reported_date: 0,
-          user: 'org.couchdb.user:sally',
+          user: PREFIXES.COUCH_USER + 'sally',
           tasks: []
         };
         chai.expect(db.medic.put.args[1][0]).to.deep.equal(expectedDoc);
@@ -3616,10 +3677,10 @@ describe('Users service', () => {
           '+40755696969',
           {
             templateContext: {
-              _id: 'org.couchdb.user:sally',
+              _id: PREFIXES.COUCH_USER + 'sally',
               name: 'sally',
               phone: '+40755696969',
-              roles: ['a', 'b', USER_ROLES.ONLINE],
+              roles: ['a', 'b', ONLINE],
               type: 'user'
             }
           }
@@ -3642,14 +3703,14 @@ describe('Users service', () => {
       sinon.stub(roles, 'isOffline').returns(false);
 
       db.medic.get.resolves({
-        _id: 'org.couchdb.user:sally',
+        _id: PREFIXES.COUCH_USER + 'sally',
         type: 'user-settings',
-        roles: ['a', 'b', USER_ROLES.ONLINE],
+        roles: ['a', 'b', ONLINE],
       });
       db.users.get.resolves({
-        _id: 'org.couchdb.user:sally',
+        _id: PREFIXES.COUCH_USER + 'sally',
         type: 'user',
-        roles: ['a', 'b', USER_ROLES.ONLINE],
+        roles: ['a', 'b', ONLINE],
       });
 
       return service.updateUser('sally', updates)
@@ -3669,15 +3730,15 @@ describe('Users service', () => {
       sinon.stub(roles, 'isOffline').returns(false);
 
       db.medic.get.resolves({
-        _id: 'org.couchdb.user:sally',
+        _id: PREFIXES.COUCH_USER + 'sally',
         type: 'user-settings',
-        roles: ['a', 'b', USER_ROLES.ONLINE],
+        roles: ['a', 'b', ONLINE],
         phone: '123',
       });
       db.users.get.resolves({
-        _id: 'org.couchdb.user:sally',
+        _id: PREFIXES.COUCH_USER + 'sally',
         type: 'user',
-        roles: ['a', 'b', USER_ROLES.ONLINE],
+        roles: ['a', 'b', ONLINE],
       });
 
       return service.updateUser('sally', updates)
@@ -3699,61 +3760,61 @@ describe('Users service', () => {
 
       const updates = { token_login: true, phone: '+40 755 89-89-89' };
       db.medic.get.onFirstCall().resolves({
-        _id: 'org.couchdb.user:sally',
+        _id: PREFIXES.COUCH_USER + 'sally',
         name: 'sally',
         type: 'user-settings',
-        roles: ['a', 'b', USER_ROLES.ONLINE],
+        roles: ['a', 'b', ONLINE],
         phone: '123',
       });
       db.medic.get.onSecondCall().resolves({
-        _id: 'org.couchdb.user:sally',
+        _id: PREFIXES.COUCH_USER + 'sally',
         name: 'sally',
         type: 'user-settings',
         phone: '+40755898989', // normalized phone
-        roles: ['a', 'b', USER_ROLES.ONLINE],
+        roles: ['a', 'b', ONLINE],
       });
       db.users.get.onFirstCall().resolves({
-        _id: 'org.couchdb.user:sally',
+        _id: PREFIXES.COUCH_USER + 'sally',
         name: 'sally',
         type: 'user',
-        roles: ['a', 'b', USER_ROLES.ONLINE],
+        roles: ['a', 'b', ONLINE],
       });
       db.users.get.onSecondCall().resolves({
-        _id: 'org.couchdb.user:sally',
+        _id: PREFIXES.COUCH_USER + 'sally',
         name: 'sally',
         type: 'user',
-        roles: ['a', 'b', USER_ROLES.ONLINE],
+        roles: ['a', 'b', ONLINE],
       });
-      db.medic.put.withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
-        .resolves({ id: 'org.couchdb.user:sally' });
-      db.users.put.withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
-        .resolves({ id: 'org.couchdb.user:sally' });
+      db.medic.put.withArgs(sinon.match({ _id: PREFIXES.COUCH_USER + 'sally' }))
+        .resolves({ id: PREFIXES.COUCH_USER + 'sally' });
+      db.users.put.withArgs(sinon.match({ _id: PREFIXES.COUCH_USER + 'sally' }))
+        .resolves({ id: PREFIXES.COUCH_USER + 'sally' });
 
       db.medic.allDocs.resolves({ rows: [{ error: 'not_found' }] });
       clock.tick(5000);
 
       return service.updateUser('sally', updates, true).then(response => {
         chai.expect(response).to.deep.equal({
-          user: { id: 'org.couchdb.user:sally', rev: undefined },
-          'user-settings': { id: 'org.couchdb.user:sally', rev: undefined },
+          user: { id: PREFIXES.COUCH_USER + 'sally', rev: undefined },
+          'user-settings': { id: PREFIXES.COUCH_USER + 'sally', rev: undefined },
           token_login: { expiration_date: 5000 + oneDayInMS },
         });
 
         chai.expect(db.medic.get.callCount).to.equal(2);
         chai.expect(db.medic.put.callCount).to.equal(3);
         chai.expect(db.medic.put.args[0][0]).to.deep.equal({
-          _id: 'org.couchdb.user:sally',
+          _id: PREFIXES.COUCH_USER + 'sally',
           name: 'sally',
           type: 'user-settings',
           phone: '+40755898989', // normalized phone
-          roles: ['a', 'b', USER_ROLES.ONLINE],
+          roles: ['a', 'b', ONLINE],
         });
         chai.expect(db.medic.put.args[2][0]).to.deep.equal({
-          _id: 'org.couchdb.user:sally',
+          _id: PREFIXES.COUCH_USER + 'sally',
           name: 'sally',
           type: 'user-settings',
           phone: '+40755898989', // normalized phone
-          roles: ['a', 'b', USER_ROLES.ONLINE],
+          roles: ['a', 'b', ONLINE],
           token_login: {
             active: true,
             expiration_date: 5000 + oneDayInMS,
@@ -3763,17 +3824,17 @@ describe('Users service', () => {
         chai.expect(db.users.get.callCount).to.equal(2);
         chai.expect(db.users.put.callCount).to.equal(2);
         chai.expect(db.users.put.args[0][0]).to.deep.include({
-          _id: 'org.couchdb.user:sally',
+          _id: PREFIXES.COUCH_USER + 'sally',
           name: 'sally',
           type: 'user',
-          roles: ['a', 'b', USER_ROLES.ONLINE],
+          roles: ['a', 'b', ONLINE],
         });
         chai.expect(db.users.put.args[0][0].password.length).to.equal(20);
         chai.expect(db.users.put.args[1][0]).to.deep.include({
-          _id: 'org.couchdb.user:sally',
+          _id: PREFIXES.COUCH_USER + 'sally',
           name: 'sally',
           type: 'user',
-          roles: ['a', 'b', USER_ROLES.ONLINE],
+          roles: ['a', 'b', ONLINE],
         });
         chai.expect(db.users.put.args[1][0].token_login).to.deep.include({
           active: true,
@@ -3787,7 +3848,7 @@ describe('Users service', () => {
           _id: `token:login:${token}`,
           type: 'token_login',
           reported_date: 5000,
-          user: 'org.couchdb.user:sally',
+          user: PREFIXES.COUCH_USER + 'sally',
           tasks: []
         };
         chai.expect(db.medic.put.args[1][0]).to.deep.equal(expectedDoc);
@@ -3796,10 +3857,10 @@ describe('Users service', () => {
         chai.expect(addMessage.args[0][1]).to.deep.equal({ enabled: true, message: 'the sms' });
         chai.expect(addMessage.args[0][2]).to.equal('+40755898989');
         chai.expect(addMessage.args[0][3].templateContext).to.deep.include({
-          _id: 'org.couchdb.user:sally',
+          _id: PREFIXES.COUCH_USER + 'sally',
           name: 'sally',
           phone: '+40755898989',
-          roles: ['a', 'b', USER_ROLES.ONLINE],
+          roles: ['a', 'b', ONLINE],
           type: 'user'
         });
         chai.expect(addMessage.args[1]).to.deep.equal([
@@ -3817,15 +3878,15 @@ describe('Users service', () => {
 
       const updates = { token_login: false };
       db.medic.get.resolves({
-        _id: 'org.couchdb.user:sally',
+        _id: PREFIXES.COUCH_USER + 'sally',
         type: 'user-settings',
-        roles: ['a', 'b', USER_ROLES.ONLINE],
+        roles: ['a', 'b', ONLINE],
         token_login: { active: true },
       });
       db.users.get.resolves({
-        _id: 'org.couchdb.user:sally',
+        _id: PREFIXES.COUCH_USER + 'sally',
         type: 'user',
-        roles: ['a', 'b', USER_ROLES.ONLINE],
+        roles: ['a', 'b', ONLINE],
         token_login: { active: true },
       });
 
@@ -3845,23 +3906,23 @@ describe('Users service', () => {
       sinon.stub(roles, 'isOffline').returns(false);
 
       const updates = { token_login: false };
-      db.medic.get.withArgs('org.couchdb.user:sally').resolves({
-        _id: 'org.couchdb.user:sally',
+      db.medic.get.withArgs(PREFIXES.COUCH_USER + 'sally').resolves({
+        _id: PREFIXES.COUCH_USER + 'sally',
         type: 'user-settings',
-        roles: ['a', 'b', USER_ROLES.ONLINE],
+        roles: ['a', 'b', ONLINE],
       });
-      db.users.get.withArgs('org.couchdb.user:sally').resolves({
-        _id: 'org.couchdb.user:sally',
+      db.users.get.withArgs(PREFIXES.COUCH_USER + 'sally').resolves({
+        _id: PREFIXES.COUCH_USER + 'sally',
         type: 'user',
-        roles: ['a', 'b', USER_ROLES.ONLINE],
+        roles: ['a', 'b', ONLINE],
       });
-      db.users.put.resolves({ id: 'org.couchdb.user:sally' });
-      db.medic.put.resolves({ id: 'org.couchdb.user:sally' });
+      db.users.put.resolves({ id: PREFIXES.COUCH_USER + 'sally' });
+      db.medic.put.resolves({ id: PREFIXES.COUCH_USER + 'sally' });
 
       return service.updateUser('sally', updates).then(response => {
         chai.expect(response).to.deep.equal({
-          user: { id: 'org.couchdb.user:sally', rev: undefined },
-          'user-settings': { id: 'org.couchdb.user:sally', rev: undefined },
+          user: { id: PREFIXES.COUCH_USER + 'sally', rev: undefined },
+          'user-settings': { id: PREFIXES.COUCH_USER + 'sally', rev: undefined },
         });
       });
     });
@@ -3870,40 +3931,40 @@ describe('Users service', () => {
   describe('resetPassword', () => {
     it('should reset password for valid user', async () => {
       const expectedPassword = 'newpassword';
-      sinon.stub(roles, 'hasAllPermissions').returns(false);
+      hasPermissions.returns(false);
       sinon
         .stub(passwords, 'generate')
         .returns(expectedPassword);
       db.users.get.resolves({
-        _id: 'org.couchdb.user:sally',
+        _id: PREFIXES.COUCH_USER + 'sally',
         name: 'sally',
         type: 'user',
-        roles: ['a', 'b', USER_ROLES.ONLINE],
+        roles: ['a', 'b', ONLINE],
       });
-      db.users.put.resolves({ id: 'org.couchdb.user:sally' });
+      db.users.put.resolves({ id: PREFIXES.COUCH_USER + 'sally' });
 
       const password = await service.resetPassword('sally');
 
       chai.expect(password).to.equal(expectedPassword);
       chai.expect(db.users.get.callCount).to.equal(1);
-      chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:sally']);
+      chai.expect(db.users.get.args[0]).to.deep.equal([PREFIXES.COUCH_USER + 'sally']);
       chai.expect(db.users.put.callCount).to.equal(1);
       chai.expect(db.users.put.args[0][0]).to.include({ password: expectedPassword, password_change_required: true });
     });
 
     it('should throw for admin user', async () => {
       const expectedPassword = 'newpassword';
-      sinon.stub(roles, 'hasAllPermissions').returns(false);
+      hasPermissions.returns(false);
       sinon
         .stub(passwords, 'generate')
         .returns(expectedPassword);
       db.users.get.resolves({
-        _id: 'org.couchdb.user:sally',
+        _id: PREFIXES.COUCH_USER + 'sally',
         name: 'sally',
         type: 'user',
-        roles: ['a', 'b', USER_ROLES.ONLINE],
+        roles: ['a', 'b', ONLINE],
       });
-      db.users.put.resolves({ id: 'org.couchdb.user:sally' });
+      db.users.put.resolves({ id: PREFIXES.COUCH_USER + 'sally' });
       couchSettings.getCouchConfig.resolves({ sally: 'oldpassword' });
 
       try {
@@ -3913,7 +3974,7 @@ describe('Users service', () => {
         chai.expect(e.message).to.equal('Admin passwords must be changed manually in the database');
         chai.expect(e.code).to.equal(400);
         chai.expect(db.users.get.callCount).to.equal(1);
-        chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:sally']);
+        chai.expect(db.users.get.args[0]).to.deep.equal([PREFIXES.COUCH_USER + 'sally']);
         chai.expect(db.users.put.callCount).to.equal(0);
         chai.expect(couchSettings.getCouchConfig.callCount).to.equal(1);
         chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
@@ -3933,7 +3994,7 @@ describe('Users service', () => {
           message: 'Failed to find user with name [sally] in the [users] database.',
         });
         chai.expect(db.users.get.callCount).to.equal(1);
-        chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:sally']);
+        chai.expect(db.users.get.args[0]).to.deep.equal([PREFIXES.COUCH_USER + 'sally']);
         chai.expect(db.users.put.callCount).to.equal(0);
       }
     });
@@ -4201,6 +4262,37 @@ describe('Users service', () => {
     });
   });
 
+  describe('parseCsv with import status columns', () => {
+    it('should handle import.status:excluded and import.message:excluded columns', async () => {
+      const csv = 'username,password,type,place,import.status:excluded,import.message:excluded\n' +
+                  'mary,Secret1234,person,place-1,imported,Previously imported\n' +
+                  'peter,Secret5678,person,place-2,,';
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
+
+      const result = await service.parseCsv(csv);
+
+      chai.expect(result.users).to.have.length(2);
+      chai.expect(result.users[0].username).to.equal('mary');
+      chai.expect(result.users[1].username).to.equal('peter');
+      chai.expect(result.ignoredUsers.mary).to.deep.include({ ignoreMessage: 'Previously imported' });
+    });
+  });
+
+  describe('checkPayloadFacilityCount', () => {
+    it('should return true when place is array with multiple items', () => {
+      chai.expect(service.checkPayloadFacilityCount({ place: ['a', 'b'] })).to.equal(true);
+    });
+
+    it('should return false when place is not an array', () => {
+      chai.expect(service.checkPayloadFacilityCount({ place: 'a' })).to.equal(false);
+    });
+
+    it('should return false when place is array with single item', () => {
+      chai.expect(service.checkPayloadFacilityCount({ place: ['a'] })).to.equal(false);
+    });
+  });
+
   describe('sso-login', () => {
     const GENERATED_PASSWORD = 'password.123';
     let userContact;
@@ -4219,7 +4311,7 @@ describe('Users service', () => {
         .stub(ssoLogin, 'validateSsoLogin');
       service.__set__('validateNewUsername', sinon.stub().resolves());
       sinon.stub(people, 'isAPerson').returns(true);
-      sinon.stub(roles, 'hasAllPermissions').returns(true);
+      hasPermissions.returns(true);
       db.medic.put.resolves({ id: 'success' });
       db.users.put.resolves({ id: 'success' });
       getContact.withArgs(Qualifier.byUuid('h')).resolves(userContact);
@@ -4247,7 +4339,7 @@ describe('Users service', () => {
         chai.expect(db.users.put.notCalled).to.be.true;
         chai.expect(service.__get__('validateNewUsername').notCalled).to.be.true;
         chai.expect(people.isAPerson.notCalled).to.be.true;
-        chai.expect(roles.hasAllPermissions.notCalled).to.be.true;
+        chai.expect(hasPermissions.notCalled).to.be.true;
       });
 
       it('succeeds if oidc validation passes', async () => {
@@ -4263,7 +4355,7 @@ describe('Users service', () => {
           facility_id: ssoUserData.place,
           contact_id: ssoUserData.contact,
           roles: ssoUserData.roles,
-          _id: `org.couchdb.user:${ssoUserData.username}`,
+          _id: `${PREFIXES.COUCH_USER}${ssoUserData.username}`,
           name: ssoUserData.username,
         };
         chai.expect(db.medic.put.calledOnceWithExactly({
@@ -4282,9 +4374,9 @@ describe('Users service', () => {
         chai.expect(service.__get__('validateNewUsername').calledOnceWithExactly(ssoUserData.username)).to.be.true;
         chai.expect(places.placesExist.calledOnceWithExactly(ssoUserData.place)).to.be.true;
         chai.expect(people.isAPerson.args).to.deep.equal([[userContact], [userContact], [userContact]]);
-        chai.expect(roles.hasAllPermissions.args).to.deep.equal([
-          [ssoUserData.roles, ['can_have_multiple_places']],
-          [ssoUserData.roles, ['can_skip_password_change']],
+        chai.expect(hasPermissions.args).to.deep.equal([
+          [['can_have_multiple_places'], ssoUserData.roles],
+          [['can_skip_password_change'], ssoUserData.roles],
         ]);
       });
     });
@@ -4311,7 +4403,7 @@ describe('Users service', () => {
         chai.expect(db.users.put.notCalled).to.be.true;
         chai.expect(service.__get__('validateNewUsername').notCalled).to.be.true;
         chai.expect(people.isAPerson.notCalled).to.be.true;
-        chai.expect(roles.hasAllPermissions.notCalled).to.be.true;
+        chai.expect(hasPermissions.notCalled).to.be.true;
       });
 
       it('succeeds if oidc validation passes', async () => {
@@ -4326,7 +4418,7 @@ describe('Users service', () => {
           facility_id: [ssoUserData.place],
           contact_id: ssoUserData.contact,
           roles: ssoUserData.roles,
-          _id: `org.couchdb.user:${ssoUserData.username}`,
+          _id: `${PREFIXES.COUCH_USER}${ssoUserData.username}`,
           name: ssoUserData.username,
         };
 
@@ -4350,10 +4442,9 @@ describe('Users service', () => {
         chai.expect(people.getOrCreatePerson.calledOnceWithExactly(expectedUser.contact_id)).to.be.true;
         chai.expect(service.__get__('validateNewUsername').calledOnceWithExactly(expectedUser.name)).to.be.true;
         chai.expect(people.isAPerson.calledOnceWithExactly(userContact)).to.be.true;
-        chai.expect(roles.hasAllPermissions.calledOnceWithExactly(
-          expectedUser.roles,
-          ['can_skip_password_change']
-        )).to.be.true;
+        chai.expect(hasPermissions).to.have.been.calledOnceWithExactly(
+          ['can_skip_password_change'], expectedUser.roles
+        );
       });
     });
 
@@ -4387,7 +4478,7 @@ describe('Users service', () => {
         chai.expect(db.users.put.notCalled).to.be.true;
         chai.expect(service.__get__('validateNewUsername').notCalled).to.be.true;
         chai.expect(people.isAPerson.notCalled).to.be.true;
-        chai.expect(roles.hasAllPermissions.notCalled).to.be.true;
+        chai.expect(hasPermissions.notCalled).to.be.true;
       });
 
       it('returns error if oidc validation fails for some users', async () => {
@@ -4406,7 +4497,7 @@ describe('Users service', () => {
           facility_id: [ssoUserData.place],
           contact_id: ssoUserData.contact,
           roles: ssoUserData.roles,
-          _id: `org.couchdb.user:${ssoUserData1.username}`,
+          _id: `${PREFIXES.COUCH_USER}${ssoUserData1.username}`,
           name: ssoUserData1.username,
         };
 
@@ -4444,10 +4535,9 @@ describe('Users service', () => {
         chai.expect(people.getOrCreatePerson.calledOnceWithExactly(expectedUser1.contact_id)).to.be.true;
         chai.expect(service.__get__('validateNewUsername').calledOnceWithExactly(expectedUser1.name)).to.be.true;
         chai.expect(people.isAPerson.calledOnceWithExactly(userContact)).to.be.true;
-        chai.expect(roles.hasAllPermissions.calledOnceWithExactly(
-          expectedUser1.roles,
-          ['can_skip_password_change']
-        )).to.be.true;
+        chai.expect(hasPermissions).to.have.been.calledOnceWithExactly(
+          ['can_skip_password_change'], expectedUser1.roles
+        );
       });
 
       it('succeeds if oidc validation passes', async () => {
@@ -4462,18 +4552,18 @@ describe('Users service', () => {
           facility_id: [ssoUserData.place],
           contact_id: ssoUserData.contact,
           roles: ssoUserData.roles,
-          _id: `org.couchdb.user:${ssoUserData.username}`,
+          _id: `${PREFIXES.COUCH_USER}${ssoUserData.username}`,
           name: ssoUserData.username,
         };
         const expectedUser1 = {
           ...expectedUser,
           name: ssoUserData1.username,
-          _id: `org.couchdb.user:${ssoUserData1.username}`,
+          _id: `${PREFIXES.COUCH_USER}${ssoUserData1.username}`,
         };
         const expectedUser2 = {
           ...expectedUser,
           name: ssoUserData2.username,
-          _id: `org.couchdb.user:${ssoUserData2.username}`,
+          _id: `${PREFIXES.COUCH_USER}${ssoUserData2.username}`,
         };
 
         const response = await service.createUsers([ssoUserData, ssoUserData1, ssoUserData2]);
@@ -4548,10 +4638,10 @@ describe('Users service', () => {
           [userContact],
           [userContact]
         ]);
-        chai.expect(roles.hasAllPermissions.args).to.deep.equal([
-          [expectedUser.roles, ['can_skip_password_change']],
-          [expectedUser1.roles, ['can_skip_password_change']],
-          [expectedUser2.roles, ['can_skip_password_change']],
+        chai.expect(hasPermissions.args).to.deep.equal([
+          [['can_skip_password_change'], expectedUser.roles],
+          [['can_skip_password_change'], expectedUser1.roles],
+          [['can_skip_password_change'], expectedUser2.roles],
         ]);
       });
     });
@@ -4571,7 +4661,7 @@ describe('Users service', () => {
           facility_id: [ssoUserData.place],
           contact_id: ssoUserData.contact,
           roles: ssoUserData.roles,
-          _id: `org.couchdb.user:${ssoUserData.username}`,
+          _id: `${PREFIXES.COUCH_USER}${ssoUserData.username}`,
           name: ssoUserData.username,
         };
         const existingUserSettings = {
@@ -4617,7 +4707,7 @@ describe('Users service', () => {
           facility_id: [ssoUserData.place],
           contact_id: ssoUserData.contact,
           roles: ssoUserData.roles,
-          _id: `org.couchdb.user:${ssoUserData.username}`,
+          _id: `${PREFIXES.COUCH_USER}${ssoUserData.username}`,
           name: ssoUserData.username,
         };
         const existingUserSettings = {
@@ -4662,7 +4752,7 @@ describe('Users service', () => {
           facility_id: [ssoUserData.place],
           contact_id: ssoUserData.contact,
           roles: ssoUserData.roles,
-          _id: `org.couchdb.user:${ssoUserData.username}`,
+          _id: `${PREFIXES.COUCH_USER}${ssoUserData.username}`,
           name: ssoUserData.username,
         };
         const existingUserSettings = {

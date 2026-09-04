@@ -74,8 +74,8 @@ const checkCouchDbCluster = async (couchUrl) => {
   ];
 
   const consistentMembership =
-          sameMembershipResult(membershipResults[0], membershipResults[1]) &&
-          sameMembershipResult(membershipResults[0], membershipResults[2]);
+    sameMembershipResult(membershipResults[0], membershipResults[1]) &&
+    sameMembershipResult(membershipResults[0], membershipResults[2]);
 
   if (!consistentMembership) {
     throw new Error('Cluster not ready');

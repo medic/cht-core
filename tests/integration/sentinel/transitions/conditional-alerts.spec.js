@@ -1,26 +1,27 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const { expect } = require('chai');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
     _id: 'district_hospital',
     name: 'District hospital',
-    type: 'district_hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     reported_date: new Date().getTime()
   },
   {
     _id: 'health_center',
     name: 'Health Center',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: 'district_hospital' },
     reported_date: new Date().getTime()
   },
   {
     _id: 'clinic',
     name: 'Clinic',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'person',
@@ -60,7 +61,7 @@ describe('conditional_alerts', () => {
     const doc = {
       _id: uuid(),
       form: 'FORM',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime(),
       from: '+444999',
       contact: {
@@ -94,7 +95,7 @@ describe('conditional_alerts', () => {
     const doc = {
       _id: uuid(),
       form: 'O',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime(),
       from: '+444999',
       contact: {
@@ -128,7 +129,7 @@ describe('conditional_alerts', () => {
     const doc = {
       _id: uuid(),
       form: 'FORM',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime(),
       from: '+444999',
       contact: {
@@ -166,7 +167,7 @@ describe('conditional_alerts', () => {
     const doc = {
       _id: uuid(),
       form: 'FORM',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime(),
       from: '+444999',
       contact: {
@@ -214,7 +215,7 @@ describe('conditional_alerts', () => {
     const form1 = {
       _id: uuid(),
       form: 'FORM',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime() - 1200,
       from: '+444999',
       contact: {
@@ -227,7 +228,7 @@ describe('conditional_alerts', () => {
     const form0 = {
       _id: uuid(),
       form: 'FORM',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime(),
       from: '+444999',
       contact: {

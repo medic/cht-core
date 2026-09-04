@@ -39,6 +39,25 @@ const loadForm = async (config, formType, formName) => {
   }, formData, formType, formName);
 };
 
+// Loads a test form with geolocation edit context pre-injected into the form HTML,
+// mirroring what form.service.ts does before handing the form to Enketo.
+const loadFormWithEditContext = async (config, formName) => {
+  const formPath = getFormPath(config, 'test', formName);
+  const formData = await generateFormData(formPath);
+
+  const modifiedFormHtml = formData.formHtml.replace(
+    /(<input\b[^>]*\bname="\/data\/geo_capture"[^>]*?)(\/?>)/,
+    (_, before, end) => `${before} data-geo-has-location="true"${end}`
+  );
+
+  await browser.execute((formData) => {
+    const myForm = document.getElementById('myform');
+    myForm.formHtml = formData.formHtml;
+    myForm.formModel = formData.formModel;
+    myForm.formXml = formData.formXml;
+  }, { ...formData, formHtml: modifiedFormHtml });
+};
+
 const startMockApp = () => {
   server = mockApp.listen();
   return getBaseURL();
@@ -50,18 +69,35 @@ const stopMockApp = () => {
 
 const submitForm = async () => {
   await $('.form-footer').click();
-  return await browser.executeAsync((resolve) => {
-    const myForm = document.getElementById('myform');
-    myForm.addEventListener('onSubmit', (e) => resolve(e.detail));
-    $('.enketo .submit')
-      .click();
+  return await browser.execute(() => {
+    return new Promise((resolve) => {
+      const myForm = document.getElementById('myform');
+      myForm.addEventListener('onSubmit', async (e) => {
+        const doc = e.detail[0];
+        // data that gets sent through the BiDi protocol gets serialized,
+        // and serializing blobs results in empty objects
+        // https://github.com/webdriverio/webdriverio/issues/15082
+        if (doc._attachments) {
+          for (const [ , attachment ] of Object.entries(doc._attachments)) {
+            if (attachment.data instanceof Blob) {
+              const arrayBuffer = await attachment.data.arrayBuffer();
+              attachment.data = Array.from(new Uint8Array(arrayBuffer));
+            }
+          }
+        }
+        resolve(e.detail);
+      });
+      $('.enketo .submit').click();
+    });
   });
 };
 
+const revertUintToBlob = (attachment) => {
+  return new Blob([new Uint8Array(attachment.data)], { type: attachment.content_type });
+};
+
 const cancelForm = async () => {
-  await browser.executeAsync((resolve) => {
-    const myForm = document.getElementById('myform');
-    myForm.addEventListener('onCancel', () => resolve());
+  await browser.execute(() => {
     $('.enketo .cancel').click();
   });
 };
@@ -69,8 +105,10 @@ const cancelForm = async () => {
 module.exports = {
   getBaseURL,
   loadForm,
+  loadFormWithEditContext,
   startMockApp,
   stopMockApp,
   submitForm,
-  cancelForm
+  cancelForm,
+  revertUintToBlob,
 };

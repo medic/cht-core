@@ -10,6 +10,7 @@ const cutils = require('../../src/libs/utils');
 const lineage = require('../../src/libs/lineage');
 const { Place, Qualifier } = require('@medic/cht-datasource');
 const contactTypesUtils = require('@medic/contact-types-utils');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 let examplePlace;
 
@@ -25,7 +26,7 @@ const contactTypes = [
     edit_form: 'form:contact:district_hospital:edit'
   },
   {
-    id: 'health_center',
+    id: CONTACT_TYPES.HEALTH_CENTER,
     name_key: 'contact.type.health_center',
     group_key: 'contact.type.health_center.plural',
     create_key: 'contact.type.health_center.new',
@@ -41,7 +42,7 @@ const contactTypes = [
     group_key: 'contact.type.clinic.plural',
     create_key: 'contact.type.clinic.new',
     edit_key: 'contact.type.place.edit',
-    parents: ['health_center'],
+    parents: [CONTACT_TYPES.HEALTH_CENTER],
     icon: 'medic-clinic',
     create_form: 'form:contact:clinic:create',
     edit_form: 'form:contact:clinic:edit',
@@ -54,7 +55,7 @@ const contactTypes = [
     create_key: 'contact.type.person.new',
     edit_key: 'contact.type.person.edit',
     primary_contact_key: 'clinic.field.contact',
-    parents: ['district_hospital', 'health_center', 'clinic'],
+    parents: ['district_hospital', CONTACT_TYPES.HEALTH_CENTER, CONTACT_TYPES.CLINIC],
     icon: 'medic-person',
     create_form: 'form:contact:person:create',
     edit_form: 'form:contact:person:edit',
@@ -70,7 +71,7 @@ describe('places controller', () => {
     db.init({ medic: { post: sinon.stub(), allDocs: sinon.stub() } });
     dataContext.init({ bind: sinon.stub() });
     examplePlace = {
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       name: 'St. Paul',
       parent: 'x'
     };
@@ -87,104 +88,154 @@ describe('places controller', () => {
 
   describe('validatePlace', () => {
 
-    it('returns error on string argument', done => {
-      controller._validatePlace('x').catch(err => {
-        chai.expect(err.message).to.equal('Place must be an object.');
-        done();
-      });
+    it('returns error on string argument', () => {
+      return controller
+        ._validatePlace('x')
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.message).to.equal('Place must be an object.');
+        });
     });
 
-    it('returns error on number argument', done => {
-      controller._validatePlace(42).catch(err => {
-        chai.expect(err.message).to.equal('Place must be an object.');
-        done();
-      });
+    it('returns error on number argument', () => {
+      return controller
+        ._validatePlace(42)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.message).to.equal('Place must be an object.');
+        });
     });
 
-    it('returns error when doc is wrong type', done => {
+    it('returns error when doc is wrong type', () => {
       examplePlace._id = 'xyz';
       examplePlace.type = 'food';
-      controller._validatePlace(examplePlace).catch(err => {
-        chai.expect(err.message).to.equal('Wrong type, object xyz is not a place.');
-        done();
-      });
+      return controller
+        ._validatePlace(examplePlace)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.message).to.equal('Wrong type, object xyz is not a place.');
+        });
     });
 
-    it('returns error when doc is person', done => {
+    it('returns error when doc is person', () => {
       examplePlace._id = 'xyz';
       examplePlace.type = 'person';
-      controller._validatePlace(examplePlace).catch(err => {
-        chai.expect(err.message).to.equal('Wrong type, object xyz is not a place.');
-        done();
-      });
+      return controller
+        ._validatePlace(examplePlace)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.message).to.equal('Wrong type, object xyz is not a place.');
+        });
     });
 
-    it('returns error when doc type is not "contact"', done => {
+    it('returns error when doc type is not "contact"', () => {
       examplePlace._id = 'xyz';
       examplePlace.type = 'shoe';
-      examplePlace.contact_type = 'clinic';
-      controller._validatePlace(examplePlace).catch(err => {
-        chai.expect(err.message).to.equal('Wrong type, object xyz is not a place.');
-        done();
-      });
+      examplePlace.contact_type = CONTACT_TYPES.CLINIC;
+      return controller
+        ._validatePlace(examplePlace)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.message).to.equal('Wrong type, object xyz is not a place.');
+        });
     });
 
-    it('returns error if clinic is missing parent', done => {
+    it('returns error if clinic is missing parent', () => {
       examplePlace._id = 'xyz';
       delete examplePlace.parent;
-      controller._validatePlace(examplePlace).catch(err => {
-        chai.expect(err.message).to.equal('Place xyz is missing a "parent" property.');
-        done();
-      });
+      return controller
+        ._validatePlace(examplePlace)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.message).to.equal('Place xyz is missing a "parent" property.');
+        });
     });
 
-    it('returns error if clinic has null parent', done => {
+    it('returns error if clinic has null parent', () => {
       examplePlace._id = 'xyz';
       examplePlace.parent = null;
-      controller._validatePlace(examplePlace).catch(err => {
-        chai.expect(err.message).to.equal('Place xyz is missing a "parent" property.');
-        done();
-      });
+      return controller
+        ._validatePlace(examplePlace)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.message).to.equal('Place xyz is missing a "parent" property.');
+        });
     });
 
-    it('returns error if health center is missing parent', done => {
+    it('returns error if health center is missing parent', () => {
       examplePlace._id = 'xyz';
       delete examplePlace.parent;
-      examplePlace.type = 'health_center';
-      controller._validatePlace(examplePlace).catch(err => {
-        chai.expect(err.message).to.equal('Place xyz is missing a "parent" property.');
-        done();
-      });
+      examplePlace.type = CONTACT_TYPES.HEALTH_CENTER;
+      return controller
+        ._validatePlace(examplePlace)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.message).to.equal('Place xyz is missing a "parent" property.');
+        });
     });
 
-    it('returns error if health center has wrong parent type', done => {
+    it('returns error if health center has wrong parent type', () => {
       const data = {
         _id: 'xyz',
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
         name: 'St. Paul',
         parent: {
           name: 'MoH',
           type: 'national_office'
         }
       };
-      controller._validatePlace(data).catch(err => {
-        chai.expect(err.message)
-          .to.equal('health_center "xyz" should have one of the following parent types: "district_hospital".');
-        done();
-      });
+      return controller
+        ._validatePlace(data)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.message)
+            .to.equal('health_center "xyz" should have one of the following parent types: "district_hospital".');
+        });
     });
 
-    it('returns error if clinic has wrong parent type', done => {
+    it('returns error if clinic has wrong parent type', () => {
       examplePlace._id = 'xyz';
       examplePlace.parent = {
         name: 'St Paul Hospital',
-        type: 'district_hospital'
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL
       };
-      controller._validatePlace(examplePlace).catch(err => {
-        chai.expect(err.message)
-          .to.equal('clinic "xyz" should have one of the following parent types: "health_center".');
-        done();
-      });
+      return controller
+        ._validatePlace(examplePlace)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.message)
+            .to.equal('clinic "xyz" should have one of the following parent types: "health_center".');
+        });
+    });
+
+    it('returns error when place is missing name', () => {
+      const place = { type: CONTACT_TYPES.DISTRICT_HOSPITAL };
+      return controller
+        ._validatePlace(place)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.message).to.equal('Place  is missing a "name" property.');
+        });
+    });
+
+    it('returns error when name is not a string', () => {
+      const place = { type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 123 };
+      return controller
+        ._validatePlace(place)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.message).to.equal('Property "name" on place  must be a string.');
+        });
+    });
+
+    it('returns error when contact is invalid type', () => {
+      const place = { type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'Test', contact: 42 };
+      return controller
+        ._validatePlace(place)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.message).to.include('must be an object or string');
+        });
     });
 
     it('does not return error if district is missing parent', () => {
@@ -208,37 +259,41 @@ describe('places controller', () => {
 
   describe('createPlaces', () => {
 
-    it('rejects objects with wrong type.', done => {
+    it('rejects objects with wrong type.', () => {
       const place = {
         name: 'CHP Family',
         type: 'food'
       };
       const post = db.medic.post;
-      controller._createPlaces(place).catch(err => {
-        chai.expect(err.message).to.equal('Wrong type, object  is not a place.');
-        chai.expect(post.callCount).to.equal(0);
-        done();
-      });
+      return controller
+        ._createPlaces(place)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.message).to.equal('Wrong type, object  is not a place.');
+          chai.expect(post.callCount).to.equal(0);
+        });
     });
 
-    it('rejects parent objects with wrong type.', done => {
+    it('rejects parent objects with wrong type.', () => {
       const place = {
         name: 'CHP Family',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: {
           name: 'CHP Area',
           type: 'food'
         }
       };
       const post = db.medic.post;
-      controller._createPlaces(place).catch(err => {
-        chai.expect(err.message).to.equal('Wrong type, object  is not a place.');
-        chai.expect(post.callCount).to.equal(0);
-        done();
-      });
+      return controller
+        ._createPlaces(place)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.message).to.equal('Wrong type, object  is not a place.');
+          chai.expect(post.callCount).to.equal(0);
+        });
     });
 
-    it('rejects when parent lookup fails.', done => {
+    it('rejects when parent lookup fails.', () => {
       const place = {
         name: 'CHP Family',
         type: 'food',
@@ -246,23 +301,25 @@ describe('places controller', () => {
       };
       const post = db.medic.post;
       sinon.stub(controller, 'getPlace').returns(Promise.reject('boom'));
-      controller._createPlaces(place).catch(err => {
-        chai.expect(err).to.equal('boom');
-        chai.expect(post.callCount).to.equal(0);
-        done();
-      });
+      return controller
+        ._createPlaces(place)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err).to.equal('boom');
+          chai.expect(post.callCount).to.equal(0);
+        });
     });
 
     it('supports objects with name and right type.', async () => {
       const place = {
         name: 'CHP Family',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: {
           name: 'CHP Area One',
-          type: 'health_center',
+          type: CONTACT_TYPES.HEALTH_CENTER,
           parent: {
             name: 'CHP Branch One',
-            type: 'district_hospital'
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL
           }
         }
       };
@@ -293,18 +350,18 @@ describe('places controller', () => {
           return Promise.resolve({
             _id: 'abc',
             name: 'CHP Branch One',
-            type: 'district_hospital'
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL
           });
         }
         if (uuid === 'def') {
           return Promise.resolve({
             _id: 'def',
             name: 'CHP Area One',
-            type: 'health_center',
+            type: CONTACT_TYPES.HEALTH_CENTER,
             parent: {
               _id: 'abc',
               name: 'CHP Branch One',
-              type: 'district_hospital'
+              type: CONTACT_TYPES.DISTRICT_HOSPITAL
             }
           });
         }
@@ -312,15 +369,15 @@ describe('places controller', () => {
           return Promise.resolve({
             _id: 'ghi',
             name: 'CHP Family',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: {
               _id: 'def',
               name: 'CHP Area One',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               parent: {
                 _id: 'abc',
                 name: 'CHP Branch One',
-                type: 'district_hospital'
+                type: CONTACT_TYPES.DISTRICT_HOSPITAL
               }
             }
           });
@@ -337,7 +394,7 @@ describe('places controller', () => {
     it('creates contacts', async () => {
       const place = {
         name: 'CHP Family',
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
         parent: 'ad06d137',
         contact: {
           name: 'Jim',
@@ -371,17 +428,17 @@ describe('places controller', () => {
 
       getWithLineage.withArgs(Qualifier.byUuid('hc')).resolves({
         name: 'CHP Family',
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
         parent: {
           _id: 'ad06d137',
           name: 'CHP Branch One',
-          type: 'district_hospital'
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL
         }
       });
       getWithLineage.withArgs(Qualifier.byUuid('ad06d137')).resolves({
         _id: 'ad06d137',
         name: 'CHP Branch One',
-        type: 'district_hospital'
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL
       });
 
       const actual = await controller._createPlaces(place);
@@ -398,26 +455,28 @@ describe('places controller', () => {
       chai.expect(getWithLineage.args).to.deep.equal([[Qualifier.byUuid('ad06d137')], [Qualifier.byUuid('hc')]]);
     });
 
-    it('returns err if contact does not have name', done => {
+    it('returns err if contact does not have name', () => {
       const place = {
         name: 'HC',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         contact: {
           type: 'person'
         }
       };
       const post = db.medic.post;
-      controller._createPlaces(place).catch(err => {
-        chai.expect(err.message).to.equal('Person is missing a "name" property.');
-        chai.expect(post.callCount).to.equal(0);
-        done();
-      });
+      return controller
+        ._createPlaces(place)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.message).to.equal('Person is missing a "name" property.');
+          chai.expect(post.callCount).to.equal(0);
+        });
     });
 
     it('returns err if contact does not exist', async () => {
       const place = {
         name: 'HC',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         contact: 'person'
       };
       getWithLineage.resolves(null);
@@ -429,39 +488,41 @@ describe('places controller', () => {
       chai.expect(getWithLineage.calledOnceWithExactly(Qualifier.byUuid('person'))).to.be.true;
     });
 
-    it('rejects contacts with wrong type', done => {
+    it('rejects contacts with wrong type', () => {
       const place = {
         name: 'HC',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         contact: {
           name: 'John Doe',
           type: 'x'
         }
       };
       const post = db.medic.post;
-      controller._createPlaces(place).catch(err => {
-        chai.expect(err.message).to.equal('Wrong type, this is not a person.');
-        chai.expect(post.callCount).to.equal(0);
-        done();
-      });
+      return controller
+        ._createPlaces(place)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.message).to.equal('Wrong type, this is not a person.');
+          chai.expect(post.callCount).to.equal(0);
+        });
     });
 
 
     it('supports parents defined as uuids.', async () => {
       const place = {
         name: 'CHP Area One',
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
         parent: 'ad06d137'
       };
       getWithLineage.resolves({
         _id: 'ad06d137',
         name: 'CHP Branch One',
-        type: 'district_hospital'
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL
       });
       db.medic.post.callsFake(doc => {
         // the parent should be created/resolved, parent id should be set.
         chai.expect(doc.name).to.equal('CHP Area One');
-        chai.expect(doc.type).to.equal('health_center');
+        chai.expect(doc.type).to.equal(CONTACT_TYPES.HEALTH_CENTER);
         chai.expect(doc.parent._id).to.equal('ad06d137');
         chai.expect(doc.parent.name).to.equal(undefined); // minified
         chai.expect(doc.parent.type).to.equal(undefined); // minified
@@ -475,24 +536,26 @@ describe('places controller', () => {
       chai.expect(getWithLineage.calledOnceWithExactly(Qualifier.byUuid('ad06d137'))).to.be.true;
     });
 
-    it('rejects invalid reported_date.', done => {
+    it('rejects invalid reported_date.', () => {
       const place = {
         name: 'Test',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         reported_date: 'x'
       };
       sinon.stub(cutils, 'isDateStrValid').returns(false);
-      controller._createPlaces(place).catch(err => {
-        chai.expect(err.code).to.equal(400);
-        chai.expect(err.message).to.equal('Reported date on place  is invalid: x');
-        done();
-      });
+      return controller
+        ._createPlaces(place)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.code).to.equal(400);
+          chai.expect(err.message).to.equal('Reported date on place  is invalid: x');
+        });
     });
 
     it('accepts valid reported_date in ms since epoch', () => {
       const place = {
         name: 'Test',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         reported_date: '123'
       };
       db.medic.post;
@@ -504,7 +567,7 @@ describe('places controller', () => {
     it('accepts valid reported_date in string format', () => {
       const place = {
         name: 'Test',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         reported_date: '2011-10-10T14:48:00-0300'
       };
       const expected = new Date('2011-10-10T14:48:00-0300').valueOf();
@@ -517,7 +580,7 @@ describe('places controller', () => {
     it('sets a default reported_date.', () => {
       const place = {
         name: 'Test',
-        type: 'district_hospital'
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL
       };
       db.medic.post;
       return controller._createPlaces(place).then(() => {
@@ -533,11 +596,13 @@ describe('places controller', () => {
 
   describe('updatePlace', () => {
 
-    it('errors with empty data', done => {
-      controller.updatePlace('123', {}).catch(err => {
-        chai.expect(err.code).to.equal(400);
-        done();
-      });
+    it('errors with empty data', () => {
+      return controller
+        .updatePlace('123', {})
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err.code).to.equal(400);
+        });
     });
 
     it('handles contact field', () => {
@@ -574,17 +639,19 @@ describe('places controller', () => {
       });
     });
 
-    it('errors when function in series fails', done => {
+    it('errors when function in series fails', () => {
       const data = {
         contact: '71df9'
       };
       sinon.stub(controller, 'getPlace').resolves({});
       sinon.stub(controller, '_validatePlace').resolves();
       sinon.stub(people, 'getOrCreatePerson').returns(Promise.reject('go away'));
-      controller.updatePlace('123', data).catch(err => {
-        chai.expect(err).to.equal('go away');
-        done();
-      });
+      return controller
+        .updatePlace('123', data)
+        .then(() => chai.expect.fail('should fail'))
+        .catch(err => {
+          chai.expect(err).to.equal('go away');
+        });
     });
 
   });
@@ -666,6 +733,47 @@ describe('places controller', () => {
 
       chai.expect(dataContext.bind.calledOnce).to.be.true;
       chai.expect(getWithLineage.calledOnceWithExactly(Qualifier.byUuid('test'))).to.be.true;
+    });
+
+    it('rejects non-object non-string contact', async () => {
+      await chai.expect(controller._preparePlaceContact(42)).to.be.rejectedWith();
+    });
+  });
+
+  describe('createPlace with existing contact', () => {
+    it('creates place with existing string contact', async () => {
+      sinon.stub(controller, '_validatePlace').resolves();
+      sinon.stub(people, 'getOrCreatePerson').resolves({ _id: 'person-id', name: 'Jim' });
+      db.medic.post.resolves({ id: 'place-id', rev: '1' });
+
+      const result = await controller._createPlace({
+        name: 'Test Place',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+        contact: 'person-id'
+      });
+
+      chai.expect(result).to.deep.include({ contact: { id: 'person-id' } });
+      chai.expect(db.medic.post.args[0][0].contact).to.equal('person-id');
+    });
+  });
+
+  describe('getOrCreatePlace', () => {
+    it('fetches place when given string id', async () => {
+      sinon.stub(controller, 'getPlace').resolves({ _id: 'place-id' });
+      const result = await controller.getOrCreatePlace('place-id');
+      chai.expect(result._id).to.equal('place-id');
+    });
+
+    it('creates and returns place when given new object', async () => {
+      sinon.stub(controller, '_createPlaces').resolves({ id: 'new-place' });
+      sinon.stub(controller, 'getPlace').resolves({ _id: 'new-place' });
+      const result = await controller.getOrCreatePlace({ name: 'Test', type: CONTACT_TYPES.DISTRICT_HOSPITAL });
+      chai.expect(result._id).to.equal('new-place');
+    });
+
+    it('rejects existing place with _rev', async () => {
+      await chai.expect(controller.getOrCreatePlace({ _id: 'x', _rev: '1' }))
+        .to.be.rejectedWith('Place must be a new object');
     });
   });
 

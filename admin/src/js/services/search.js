@@ -14,9 +14,9 @@ const Search = require('@medic/search');
 
       'ngInject';
 
-      return function() {
-        return Search(DB(), DataContext);
-      };
+      const searchPromise = DataContext.then(dataContext => Search(DB(), dataContext));
+      const doSearch = (...args) => searchPromise.then(search => search(...args));
+      return () => doSearch;
     });
 
   angular.module('inboxServices').factory('Search',
@@ -60,7 +60,9 @@ const Search = require('@medic/search');
         }
         return _search(type, filters, options)
           .then(function(searchResults) {
-            return GetDataRecords(searchResults.docIds, options);
+            return type === 'reports' ?
+              GetDataRecords.getReports(searchResults.docIds, options) :
+              GetDataRecords.getContacts(searchResults.docIds, options);
           })
           .then(function(results) {
             _currentQuery = {};

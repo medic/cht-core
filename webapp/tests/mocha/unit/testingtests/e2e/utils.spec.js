@@ -15,21 +15,31 @@ describe('Test utils', () => {
     sinon.restore();
   });
 
+  beforeEach(() => {
+    sinon
+      .stub(utils.db, 'get')
+      .withArgs('_local/default-forms')
+      .resolves({ forms: ['form:pregnancy', 'form:contact:person'] });
+  });
+
   describe('deleteAllDocs', () => {
     it('Deletes all docs and infodocs except some core ones', async () => {
       sinon.stub(sentinelUtils, 'skipToSeq');
       sinon.stub(utils.db, 'allDocs').resolves({rows: [
         {id: '_design/cats', doc: {_id: '_design/cats'}},
         {id: DOC_IDS.SERVICE_WORKER_META, doc: {_id: DOC_IDS.SERVICE_WORKER_META}},
-        {id: 'migration-log', doc: {_id: 'migration-log'}},
+        {id: DOC_IDS.MIGRATION_LOG, doc: {_id: DOC_IDS.MIGRATION_LOG}},
         {id: 'resources', doc: {_id: 'resources'}},
-        {id: 'branding', doc: {_id: 'branding'}},
-        {id: 'partners', doc: {_id: 'partners'}},
+        {id: DOC_IDS.BRANDING, doc: {_id: DOC_IDS.BRANDING}},
+        {id: DOC_IDS.PARTNERS, doc: {_id: DOC_IDS.PARTNERS}},
         {id: '001', doc: {type: DOC_TYPES.TRANSLATIONS}},
         {id: '002', doc: {type: 'translations-backup'}},
         {id: '003', doc: {type: 'user-settings'}},
         {id: '004', doc: {type: 'info'}},
-        {id: 'ME', doc: {_id: 'ME', _rev: 1}}
+        {id: 'ME', doc: {_id: 'ME', _rev: 1}},
+        {id: 'form:pregnancy', doc: {type: 'form', _id: 'form:pregnancy'}},
+        {id: 'form:contact:person', doc: {type: 'form', _id: 'form:contact:person'}},
+        {id: 'form:home_visit', doc: {type: 'form', _rev: 2, _id: 'form:home_visit'}}
       ]});
       sinon.stub(utils.db, 'bulkDocs').resolves();
 
@@ -44,7 +54,10 @@ describe('Test utils', () => {
       await utils.deleteAllDocs();
       
       expect(utils.db.bulkDocs.calledOnce).to.equal(true);
-      expect(utils.db.bulkDocs.args[0][0]).to.deep.equal([{ _id: 'ME', _deleted: true, _rev: 1 }]);
+      expect(utils.db.bulkDocs.args[0][0]).to.deep.equal([
+        { _id: 'ME', _deleted: true, _rev: 1 },
+        { _id: 'form:home_visit', _deleted: true, _rev: 2 }
+      ]);
       expect(utils.sentinelDb.bulkDocs.calledOnce).to.equal(true);
       expect(utils.sentinelDb.bulkDocs.args[0][0]).to.deep.equal([
         { _id: 'me-info', _rev: '1-abc', _deleted: true },

@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { DataContext, getDatasource, getLocalDataContext, getRemoteDataContext } from '@medic/cht-datasource';
+import { DOC_IDS } from '@medic/constants';
 
 import { SettingsService } from '@mm-services/settings.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { SessionService } from '@mm-services/session.service';
 import { DbService } from '@mm-services/db.service';
-
-import { lastValueFrom } from 'rxjs';
+import { TranslateService } from '@mm-services/translate.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 
 @Injectable({
   providedIn: 'root'
@@ -20,11 +20,12 @@ export class CHTDatasourceService {
   private extensionLibs = {};
 
   constructor(
-    private http: HttpClient,
     private sessionService: SessionService,
     private settingsService: SettingsService,
     private changesService: ChangesService,
-    private dbService: DbService
+    private readonly dbService: DbService,
+    private readonly translateService: TranslateService,
+    private readonly customResourceService: CustomResourceService
   ) { }
 
   isInitialized() {
@@ -38,42 +39,44 @@ export class CHTDatasourceService {
   private async init() {
     this.watchChanges();
     this.userCtx = this.sessionService.userCtx();
-    await Promise.all([this.getSettings(), this.loadScripts()]);
+    await Promise.all([this.getSettings(), this.loadExtensionLibs(), this.customResourceService.init()]);
     this.dataContext = await this.createDataContext();
   }
 
   private async createDataContext() {
+    const settingsService = { getAll: () => this.settings };
     if (this.sessionService.isOnlineOnly(this.userCtx)) {
-      return getRemoteDataContext();
+      return getRemoteDataContext(settingsService);
     }
 
-    const settingsService = { getAll: () => this.settings };
     const sourceDatabases = { medic: await this.dbService.get() };
     return getLocalDataContext(settingsService, sourceDatabases);
   }
 
-  private async loadScripts() {
+  private decodeExtensionLib(name: string, { data }: { data: string }) {
     try {
-      const request = this.http.get<string[]>('/extension-libs', { responseType: 'json' });
-      const extensionLibs = await lastValueFrom(request);
-      if (extensionLibs?.length) {
-        return Promise.all(extensionLibs.map(name => this.loadScript(name)));
-      }
-    } catch (e) {
-      console.error('Error loading extension libs', e);
-    }
-  }
-
-  private async loadScript(name) {
-    try {
-      const request = this.http.get('/extension-libs/' + name, { responseType: 'text' });
-      const result = await lastValueFrom(request);
+      const result = atob(data);
       const module = { exports: null };
       new Function('module', result)(module);
-      this.extensionLibs[name] = module.exports;
+      return module.exports;
     } catch (e) {
       console.error(`Error loading extension lib: "${name}"`, e);
     }
+  }
+
+  private async loadExtensionLibs() {
+    const doc: { _attachments?: Record<string, { data: string }> } | null = await this.dbService
+      .get()
+      .get(DOC_IDS.EXTENSION_LIBS, { attachments: true })
+      .catch(err => {
+        if (err.status === 404) {
+          return null;
+        }
+        throw err;
+      });
+    Object
+      .entries(doc?._attachments ?? {})
+      .forEach(([k, v]) => this.extensionLibs[k] = this.decodeExtensionLib(k, v));
   }
 
   private async getSettings() {
@@ -84,13 +87,9 @@ export class CHTDatasourceService {
   private watchChanges() {
     this.changesService.subscribe({
       key: 'cht-script-api-settings-changes',
-      filter: change => change.id === 'settings',
+      filter: change => change.id === DOC_IDS.SETTINGS,
       callback: () => this.getSettings()
     });
-  }
-
-  private getChtPermissionsFromSettings(chtSettings) {
-    return chtSettings?.permissions || this.settings?.permissions;
   }
 
   private getRolesFromUser(user) {
@@ -100,22 +99,35 @@ export class CHTDatasourceService {
   /**
    * Binds a cht-datasource function to the data context.
    * (e.g. `const getPersonWithLineage = this.bind(Person.v1.getWithLineage);`)
+   * @see {@link bindGenerator} for binding a function that returns an `AsyncGenerator`
    * @param fn the function to bind. It should accept a data context as the parameter and return another function that
    * results in a `Promise`.
    * @returns a "context-aware" version of the function that is bound to the data context and ready to be used
    */
-  bind<R, F extends (arg?: unknown) => Promise<R>>(fn: (ctx: DataContext) => F):
-  (...p: Parameters<F>) => ReturnType<F> {
-    return (...p) => {
-      return new Promise((resolve, reject) => {
-        this.isInitialized().then(() => {
-          const contextualFn = this.dataContext.bind(fn);
-          contextualFn(...p)
-            .then(resolve)
-            .catch(reject);
-        });
-      }) as ReturnType<F>;
-    };
+  bind<R, F extends (arg?: unknown) => Promise<R>>(fn: (ctx: DataContext) => F): F {
+    return (async (...p: Parameters<F>) => {
+      await this.isInitialized();
+      const contextualFn = this.dataContext.bind(fn);
+      return contextualFn(...p);
+    }) as F;
+  }
+
+  /**
+   * Binds a cht-datasource function to the data context.
+   * (e.g. `const getTargets = this.bindGenerator(Target.v1.getAll);`)
+   * @see {@link bind} for binding a function that returns a `Promise`
+   * @param fn the function to bind. It should accept a data context as the parameter and return another function that
+   * results in an `AsyncGenerator`.
+   * @returns a "context-aware" version of the function that is bound to the data context and ready to be used
+   */
+  bindGenerator<R, F extends (arg?: unknown) => AsyncGenerator<R>>(fn: (ctx: DataContext) => F): F {
+    const self = this; // NOSONAR
+    return async function* (...p: Parameters<F>) {
+      await self.isInitialized();
+      for await (const value of self.dataContext.bind(fn)(...p)) {
+        yield value;
+      }
+    } as F;
   }
 
   async get() {
@@ -127,16 +139,20 @@ export class CHTDatasourceService {
         ...dataSource.v1,
         hasPermissions: (permissions, user?, chtSettings?) => {
           const userRoles = this.getRolesFromUser(user);
-          const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
-          return dataSource.v1.hasPermissions(permissions, userRoles, chtPermissionsSettings);
+          return dataSource.v1.hasPermissions(permissions, userRoles, chtSettings?.permissions);
         },
         hasAnyPermission: (permissionsGroupList, user?, chtSettings?) => {
           const userRoles = this.getRolesFromUser(user);
-          const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
-          return dataSource.v1.hasAnyPermission(permissionsGroupList, userRoles, chtPermissionsSettings);
+          return dataSource.v1.hasAnyPermission(permissionsGroupList, userRoles, chtSettings?.permissions);
         },
         getExtensionLib: (id) => {
           return this.extensionLibs[id];
+        },
+        translate: (key: string, interpolateParams?: Record<string, unknown>) => {
+          return this.translateService.instant(key, interpolateParams);
+        },
+        getResource: (name: string) => {
+          return this.customResourceService.getResource(name);
         },
         analytics: {
           getTargetDocs: () => ([]),

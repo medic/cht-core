@@ -12,6 +12,7 @@ const CONFIG_NAME = 'death_reporting';
 const MARK_PROPERTY_NAME = 'mark_deceased_forms';
 const UNDO_PROPERTY_NAME = 'undo_deceased_forms';
 const DATE_FIELD_PROPERTY_NAME = 'date_field';
+const { DOC_TYPES } = require('@medic/constants');
 
 const getConfig = () => config.get(CONFIG_NAME) || {};
 const getConfirmFormCodes = () => getConfig()[MARK_PROPERTY_NAME] || [];
@@ -51,7 +52,7 @@ module.exports = {
     return Boolean(
       doc &&
       doc.form &&
-      doc.type === 'data_record' &&
+      doc.type === DOC_TYPES.DATA_RECORD &&
       (isConfirmForm(doc.form) || isUndoForm(doc.form)) &&
       doc.patient &&
       !transitionUtils.hasRun(info, NAME) &&

@@ -47,6 +47,7 @@ const rightPanelSelectors = {
   automaticReplyState: () => $(`${AUTOMATIC_REPLY_SECTION} .state`),
   automaticReplyRecipient: () => $(`${AUTOMATIC_REPLY_SECTION} .recipient`),
   detailReportRowContent: (row, type) => $$(`${REPORT_BODY_DETAILS} li[test-id*='${row}'] span[test-id='${type}']`),
+  reportImage: (testId) => $(`${REPORT_BODY_DETAILS} li[test-id='${testId}'] mm-attachment-image img`),
   deleteAllButton: () => $('.desktop.multiselect-bar-container .bulk-delete'),
   selectedReportsCount: () => $('.desktop.multiselect-bar-container .count-label'),
   sentTask: () => $(`${REPORT_BODY_DETAILS} ul .task-list .task-state .state`),
@@ -61,12 +62,14 @@ const reviewDialogSelectors = {
 };
 
 const sidebarFilterSelectors = {
-  openBtn: () => $('mm-search-bar .open-filter'),
+  openBtn: () => $('mm-search-bar .open-filter, .mm-search-bar-container .btn.open-filter'),
   resetBtn: () => $('.sidebar-reset'),
   dateAccordionHeader: () => $('#date-filter-accordion mat-expansion-panel-header'),
   dateAccordionBody: () => $('#date-filter-accordion mat-panel-description'),
   toDate: () => $('#toDateFilter'),
   fromDate: () => $('#fromDateFilter'),
+  dateFilterChip: () => $('#date-filter-accordion mat-expansion-panel-header .chip'),
+  clearDateFilterBtn: () => $('#date-filter-accordion mat-expansion-panel-header .chip .fa-times'),
   formAccordionHeader: () => $('#form-filter-accordion mat-expansion-panel-header'),
   formAccordionBody: () => $('#form-filter-accordion mat-panel-description'),
   facilityAccordionHeader: () => $('#place-filter-accordion mat-expansion-panel-header'),
@@ -237,6 +240,38 @@ const filterByDate = async (startDate, endDate) => {
   await $('#freetext').click(); // blur the datepicker
 };
 
+const clickSidebarFilterFromDate = async () => {
+  const el = sidebarFilterSelectors.fromDate();
+  await el.waitForClickable();
+  await el.click();
+};
+
+const clickSidebarFilterToDate = async () => {
+  const el = sidebarFilterSelectors.toDate();
+  await el.waitForClickable();
+  await el.click();
+};
+
+const clickSidebarFilterDateAccordionHeader = async () => {
+  const el = sidebarFilterSelectors.dateAccordionHeader();
+  await el.waitForClickable();
+  await el.click();
+};
+
+const clickSidebarFilterFreetext = async () => {
+  const el = $('#freetext');
+  await el.waitForClickable();
+  await el.click();
+};
+
+const getFromDateValue = async () => {
+  return await sidebarFilterSelectors.fromDate().$('.mm-button-text').getText();
+};
+
+const getToDateValue = async () => {
+  return await sidebarFilterSelectors.toDate().$('.mm-button-text').getText();
+};
+
 const openSidebarFilter = async () => {
   if (!await sidebarFilterSelectors.resetBtn().isDisplayed()) {
     await sidebarFilterSelectors.openBtn().click();
@@ -269,14 +304,9 @@ const filterByFacility = async (parentFacility, reportFacility) => {
   await sidebarFilterSelectors.facilityAccordionHeader().click();
   await sidebarFilterSelectors.facilityAccordionBody().waitForDisplayed();
 
-  const parent = sidebarFilterSelectors.facilityAccordionBody().$(`a*=${parentFacility}`);
-  await parent.waitForDisplayed();
-  await parent.click();
+  await sidebarFilterSelectors.facilityAccordionBody().$(`a*=${parentFacility}`).click();
 
-  const facility = sidebarFilterSelectors
-    .facilityAccordionBody()
-    .$('.mm-dropdown-submenu')
-    .$(`a*=${reportFacility}`);
+  const facility = sidebarFilterSelectors.facilityAccordionBody().$(`a*=${reportFacility}`);
   await facility.waitForDisplayed();
   const checkbox = facility.previousElement();
   await checkbox.click();
@@ -284,6 +314,7 @@ const filterByFacility = async (parentFacility, reportFacility) => {
 
 const setSidebarFilterDate = async (fieldPromise, calendarIdx, date) => {
   await fieldPromise.waitForDisplayed();
+  await fieldPromise.waitForClickable();
   await fieldPromise.click();
 
   const dateRangePicker = `.daterangepicker:nth-of-type(${calendarIdx})`;
@@ -302,6 +333,59 @@ const setSidebarFilterFromDate = () => {
 
 const setSidebarFilterToDate = () => {
   return setSidebarFilterDate(sidebarFilterSelectors.toDate(), 2, 'r3c5');
+};
+
+const setSidebarFilterBikDate = async (fieldPromise, prevClicks, cellIndex) => {
+  await fieldPromise.waitForDisplayed();
+  await fieldPromise.waitForClickable();
+  await fieldPromise.click();
+
+  let picker;
+  await browser.waitUntil(async () => {
+    const pickers = await $$('.nepali-date-picker');
+    for (const p of pickers) {
+      if (await p.isDisplayed()) {
+        picker = p;
+        return true;
+      }
+    }
+    return false;
+  }, { timeout: 5000, timeoutMsg: 'Nepali date picker not displayed' });
+
+  const prevBtn = picker.$('.prev-btn.icon');
+  await prevBtn.waitForDisplayed();
+  for (let i = 0; i < prevClicks; i++) {
+    await prevBtn.click();
+  }
+
+  const cells = await picker.$$('table tbody td.current-month-date:not(.disable)');
+  if (cellIndex === 'last') {
+    if (cells.length > 0) {
+      const cell = cells[cells.length - 1];
+      const text = (await cell.getText()).trim();
+      await cell.click();
+      return text;
+    } else {
+      throw new Error('No enabled cells found in the Nepali date picker');
+    }
+  } else {
+    if (cells.length > cellIndex) {
+      const cell = cells[cellIndex];
+      const text = (await cell.getText()).trim();
+      await cell.click();
+      return text;
+    } else {
+      throw new Error(`Requested cell index ${cellIndex} is not available. Only ${cells.length} cells are enabled.`);
+    }
+  }
+};
+
+const setSidebarFilterBikFromDate = () => {
+  return setSidebarFilterBikDate(sidebarFilterSelectors.fromDate(), 2, 0);
+};
+
+const setSidebarFilterBikToDate = () => {
+  return setSidebarFilterBikDate(sidebarFilterSelectors.toDate(), 0, 'last');
 };
 
 const firstReportDetailField = () => $('#reports-content .details ul li:first-child p');
@@ -449,7 +533,66 @@ const openFirstReport = async () => {
   await openSelectedReport(firstReport);
 };
 
+const waitForReportsLoaded = async (timeout) => {
+  await commonElements.waitForPageLoaded(timeout);
+  await browser.waitUntil(
+    async () => (await leftPanelSelectors.allReports()).length > 0,
+    { timeout: timeout }
+  );
+};
+
+const getNepaliDatePicker = () => $('.nepali-date-picker');
+const getNepaliDatePickerOverlay = () => $('.nepali-date-picker-overlay');
+
+const getVisibleNepaliDatePicker = async () => {
+  const pickers = await $$('.nepali-date-picker');
+  for (const p of pickers) {
+    if (await p.isDisplayed()) {
+      return p;
+    }
+  }
+  return null;
+};
+
+const waitForNepaliDatePickerDisplayed = async () => {
+  const picker = getNepaliDatePicker();
+  await browser.waitUntil(async () => {
+    return await picker.isDisplayed();
+  }, { timeout: 5000, timeoutMsg: 'Nepali date picker not displayed' });
+  return picker;
+};
+
+const getDisabledNepaliDateCells = async () => {
+  const picker = await getVisibleNepaliDatePicker() || getNepaliDatePicker();
+  return await picker.$$('table tbody td.current-month-date.disable');
+};
+
+const isNepaliDatePickerActiveCellDisplayed = async () => {
+  const picker = await getVisibleNepaliDatePicker();
+  if (!picker) {
+    return false;
+  }
+  const activeCell = picker.$('table tbody td.current-month-date.active');
+  return await activeCell.isDisplayed();
+};
+
+const getNepaliDatePickerActiveCellText = async () => {
+  const picker = await getVisibleNepaliDatePicker();
+  if (!picker) {
+    return '';
+  }
+  const activeCell = picker.$('table tbody td.current-month-date.active');
+  await activeCell.waitForDisplayed();
+  return (await activeCell.getText()).trim();
+};
+
 module.exports = {
+  getNepaliDatePicker,
+  getNepaliDatePickerOverlay,
+  waitForNepaliDatePickerDisplayed,
+  getDisabledNepaliDateCells,
+  isNepaliDatePickerActiveCellDisplayed,
+  getNepaliDatePickerActiveCellText,
   leftPanelSelectors,
   rightPanelSelectors,
   deleteDialogSelectors,
@@ -462,6 +605,14 @@ module.exports = {
   openSidebarFilterDateAccordion,
   setSidebarFilterFromDate,
   setSidebarFilterToDate,
+  setSidebarFilterBikFromDate,
+  setSidebarFilterBikToDate,
+  clickSidebarFilterFromDate,
+  clickSidebarFilterToDate,
+  clickSidebarFilterDateAccordionHeader,
+  clickSidebarFilterFreetext,
+  getFromDateValue,
+  getToDateValue,
   filterByForm,
   filterByFacility,
   filterByStatus,
@@ -491,4 +642,6 @@ module.exports = {
   openSelectedReport,
   verifyReport,
   openFirstReport,
+  waitForReportsLoaded,
+  sidebarFilterSelectors,
 };

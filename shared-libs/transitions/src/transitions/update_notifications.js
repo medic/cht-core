@@ -6,6 +6,7 @@ const transitionUtils = require('./utils');
 const mutingUtils = require('../lib/muting_utils');
 const logger = require('@medic/logger');
 const NAME = 'update_notifications';
+const { DOC_TYPES } = require('@medic/constants');
 
 const getEventType = function(config, doc) {
   if (!config.on_form && !config.off_form) {
@@ -45,12 +46,9 @@ module.exports = {
   _addErr: function(event_type, config, doc) {
     const locale = utils.getLocale(doc);
     const evConf = _.find(config.messages, { event_type: event_type });
-    const msg = messages.getMessage(evConf, locale);
-    if (msg) {
-      messages.addError(doc, msg);
-    } else {
-      messages.addError(doc, `Failed to complete notification request, event type "${event_type}" misconfigured.`);
-    }
+    const msg = messages.getMessage(evConf, locale) ||
+      `Failed to complete notification request, event type "${event_type}" misconfigured.`;
+    messages.addError(doc, { code: 'notification_error', message: msg });
   },
   _addMsg: function(event_type, config, doc, registrations, patient) {
     const msgConfig = _.find(config.messages, { event_type: event_type });
@@ -68,7 +66,7 @@ module.exports = {
     return Boolean(
       doc &&
       doc.form &&
-      doc.type === 'data_record' &&
+      doc.type === DOC_TYPES.DATA_RECORD &&
       !transitionUtils.hasRun(info, NAME) &&
       utils.isValidSubmission(doc)
     );

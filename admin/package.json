@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "dependencies": {
     "@medic/constants": "file:../shared-libs/constants",
-    "@uirouter/angularjs": "^1.1.1",
+    "@uirouter/angularjs": "^1.1.2",
     "angular": "^1.8.3",
     "angular-cookie": "^4.1.0",
     "angular-pouchdb": "^5.0.2",
@@ -12,13 +12,13 @@
     "angular-sanitize": "^1.8.3",
     "angular-translate": "^2.19.1",
     "angular-ui-bootstrap": "^2.5.6",
-    "bikram-sambat-bootstrap": "^1.8.0",
+    "bikram-sambat-bootstrap": "^1.8.1",
     "bootstrap": "^3.4.1",
     "font-awesome": "^4.7.0",
     "jquery": "3.7.1",
     "ng-redux": "^4.4.5",
     "redux": "^4.2.1",
-    "select2": "^4.0.13"
+    "select2": "^4.1.0"
   },
   "resolutions": {
     "**/jquery": "3.7.1"

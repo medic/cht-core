@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 
 import { ChangesService } from '@mm-services/changes.service';
 import { DbService } from '@mm-services/db.service';
+import { DOC_IDS } from '@medic/constants';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ZScoreService {
   private tables;
-  private readonly CONFIGURATION_DOC_ID = 'zscore-charts';
+  private readonly CONFIGURATION_DOC_ID = DOC_IDS.ZSCORE_CHARTS;
   private readonly MINIMUM_Z_SCORE = -4;
   private readonly MAXIMUM_Z_SCORE = 4;
 

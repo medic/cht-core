@@ -1,6 +1,7 @@
 const chai = require('chai');
 const utils = require('@utils');
 const chaiExclude = require('chai-exclude');
+const { CONTACT_TYPES } = require('@medic/constants');
 chai.use(chaiExclude);
 
 const password = 'passwordSUP3RS3CR37!';
@@ -11,7 +12,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:online',
-      type: 'district_hospital',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       name: 'Online place',
     },
     contact: {
@@ -52,7 +53,7 @@ describe('Places API', () => {
     it('should create place', () => {
       onlineRequestOptions.body = {
         name: 'CHP Branch One',
-        type: 'district_hospital'
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL
       };
       return utils.request(onlineRequestOptions)
         .then(result => {
@@ -62,7 +63,7 @@ describe('Places API', () => {
         .then((place) => {
           chai.expect(place).to.deep.include({
             name: 'CHP Branch One',
-            type: 'district_hospital'
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL
           });
         });
     });
@@ -70,10 +71,10 @@ describe('Places API', () => {
     it('should create place with parent', () => {
       onlineRequestOptions.body = {
         name: 'CHP Area One',
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
         parent: {
           name: 'CHP Branch One',
-          type: 'district_hospital'
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL
         }
       };
       return utils.request(onlineRequestOptions)
@@ -84,7 +85,7 @@ describe('Places API', () => {
         .then((place) => {
           chai.expect(place).to.deep.include({
             name: 'CHP Area One',
-            type: 'health_center',
+            type: CONTACT_TYPES.HEALTH_CENTER,
           });
           expect(place.parent._id).to.be.a('string');
           return utils.getDoc(place.parent._id);
@@ -92,7 +93,7 @@ describe('Places API', () => {
         .then((parent) => {
           chai.expect(parent).to.deep.include({
             name: 'CHP Branch One',
-            type: 'district_hospital'
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL
           });
         });
     });
@@ -100,7 +101,7 @@ describe('Places API', () => {
     it('#8985 should create place if parent has invalid contact', () => {
       const parentDoc = {
         _id: 'parent',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         name: 'A Place',
         contact: {
           _id: ''
@@ -109,7 +110,7 @@ describe('Places API', () => {
       return utils.saveDoc(parentDoc).then(() => {
         onlineRequestOptions.body = {
           name: 'CHP Area One',
-          type: 'health_center',
+          type: CONTACT_TYPES.HEALTH_CENTER,
           parent: parentDoc._id
         };
         return utils.request(onlineRequestOptions);
@@ -121,7 +122,7 @@ describe('Places API', () => {
         .then((place) => {
           chai.expect(place).to.deep.include({
             name: 'CHP Area One',
-            type: 'health_center',
+            type: CONTACT_TYPES.HEALTH_CENTER,
           });
           expect(place.parent._id).to.be.a('string');
           return utils.getDoc(place.parent._id);
@@ -134,7 +135,7 @@ describe('Places API', () => {
     it('should create place with contact', () => {
       onlineRequestOptions.body = {
         name: 'CHP Area One',
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
         parent: 'fixture:online',
         contact: {
           name: 'Paul',
@@ -156,7 +157,7 @@ describe('Places API', () => {
           });
           chai.expect(place).to.deep.include({
             name: 'CHP Area One',
-            type: 'health_center',
+            type: CONTACT_TYPES.HEALTH_CENTER,
             contact: { _id: contact._id, parent: contact.parent },
             parent: {
               _id: 'fixture:online'
@@ -168,7 +169,7 @@ describe('Places API', () => {
     it('should create place with contact uuid', () => {
       onlineRequestOptions.body = {
         name: 'DS',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         contact: 'fixture:user:online'
       };
       return utils.request(onlineRequestOptions)
@@ -185,7 +186,7 @@ describe('Places API', () => {
           });
           chai.expect(place).to.deep.include({
             name: 'DS',
-            type: 'district_hospital',
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL,
             contact: 'fixture:user:online'
           });
         });
@@ -194,12 +195,12 @@ describe('Places API', () => {
     it('should fail if place contact is not a person type', () => {
       onlineRequestOptions.body = {
         name: 'CHP Area One',
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
         parent: 'fixture:online',
         contact: {
           name: 'Paul',
           phone: '+254883720611',
-          type: 'health_center',
+          type: CONTACT_TYPES.HEALTH_CENTER,
         }
       };
       return utils.request(onlineRequestOptions)
@@ -213,7 +214,7 @@ describe('Places API', () => {
     it('should fail if place contact does not exist', () => {
       onlineRequestOptions.body = {
         name: 'CHP Area One',
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
         parent: 'fixture:online',
         contact: 'x'
       };

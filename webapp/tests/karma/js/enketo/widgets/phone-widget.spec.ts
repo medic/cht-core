@@ -24,8 +24,8 @@ describe('Enketo: Phone Widget', () => {
   const proxySelector = (name) => inputSelector(name).prev();
 
 
-  const buildHtml = (chtUniqueTel?) => {
-    const chtUniqueTelData = chtUniqueTel ? `data-cht-unique_tel="${chtUniqueTel}"` : '';
+  const buildHtml = (chtUniqueTel?: string) => {
+    const chtUniqueTelData = chtUniqueTel === undefined ? '' : `data-cht-unique_tel="${chtUniqueTel}"`;
     const html =
       `<div id="phone-widget-test">
         <label class="question non-select or-appearance-numbers or-appearance-tel" ${chtUniqueTelData}>
@@ -94,9 +94,20 @@ describe('Enketo: Phone Widget', () => {
 
   [
     ['true', 'unique_tel'],
-    ['true()', 'tel'],
-    ['TRUE', 'tel'],
+    ['TRUE', 'unique_tel'],
+    ['True', 'unique_tel'],
+    [' true ', 'unique_tel'],
+    ['\tYES\n', 'unique_tel'],
+    ['yes', 'unique_tel'],
+    ['YES', 'unique_tel'],
+    ['Yes', 'unique_tel'],
+    ['true()', 'unique_tel'],
+    [' TRUE() ', 'unique_tel'],
     ['false', 'tel'],
+    [' false ', 'tel'],
+    ['false()', 'tel'],
+    ['truthy', 'tel'],
+    ['', 'tel'],
     [undefined, 'tel']
   ].forEach(([chtUniqueTel, expectedDataType]) => {
     it(`should be placed in DOM when widget is added with the data-cht-unique_tel attribute: ${chtUniqueTel}`, () => {
@@ -116,6 +127,15 @@ describe('Enketo: Phone Widget', () => {
     });
   });
 
+  it('should set tel when data-cht-unique_tel attribute is missing', () => {
+    buildHtml();
+    const input = inputSelector(inputName);
+
+    new PhoneWidget($(PhoneWidget.selector)[0]);
+
+    expect(input.attr('data-type-xml')).to.equal('tel');
+  });
+
   it('should format input when input value change', async () => {
     buildHtml();
     await new PhoneWidget($(PhoneWidget.selector)[0]);
@@ -129,6 +149,7 @@ describe('Enketo: Phone Widget', () => {
     expect(proxyInput.length).to.equal(1);
     expect(input.length).to.equal(1);
     expect(input.val()).to.equal(NORMALIZED_NUMBER);
+    expect(proxyInput.val()).to.equal(NORMALIZED_NUMBER);
     expect(settingsService.get.calledOnceWithExactly()).to.be.true;
     expect(phoneNumberNormalize.args).to.deep.equal([
       // [{ }, DENORMALIZED_NUMBER],
@@ -150,6 +171,7 @@ describe('Enketo: Phone Widget', () => {
       .change();
 
     expect(input.val()).to.equal(NORMALIZED_NUMBER);
+    expect(proxyInput.val()).to.equal(NORMALIZED_NUMBER);
     expect(settingsService.get.calledOnceWithExactly()).to.be.true;
     expect(phoneNumberNormalize.calledOnceWithExactly({ }, DENORMALIZED_NUMBER)).to.be.true;
     expect(consoleError.calledOnceWithExactly('Error getting settings:', expectedError)).to.be.true;
@@ -167,6 +189,7 @@ describe('Enketo: Phone Widget', () => {
       .change();
 
     expect(input.val()).to.equal(DENORMALIZED_NUMBER);
+    expect(proxyInput.val()).to.equal(DENORMALIZED_NUMBER);
     expect(settingsService.get.calledOnceWithExactly()).to.be.true;
     expect(phoneNumberNormalize.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
   });
@@ -182,6 +205,7 @@ describe('Enketo: Phone Widget', () => {
       .change();
 
     expect(input.val()).to.equal(NORMALIZED_NUMBER);
+    expect(proxyInput.val()).to.equal(NORMALIZED_NUMBER);
     expect(settingsService.get.calledOnceWithExactly()).to.be.true;
     expect(phoneNumberNormalize.calledOnceWithExactly(SETTINGS, NORMALIZED_NUMBER)).to.be.true;
   });

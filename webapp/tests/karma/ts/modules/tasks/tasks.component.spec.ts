@@ -11,6 +11,7 @@ import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TasksActions } from '@mm-actions/tasks';
+import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
@@ -18,7 +19,13 @@ import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { Selectors } from '@mm-selectors/index';
 import { NavigationService } from '@mm-services/navigation.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { UserContactService } from '@mm-services/user-contact.service';
+import { TasksSidebarFilterComponent } from '@mm-modules/tasks/tasks-sidebar-filter.component';
+import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
+import { SessionService } from '@mm-services/session.service';
+import { DbService } from '@mm-services/db.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
+import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 
 describe('TasksComponent', () => {
   let getComponent;
@@ -27,10 +34,11 @@ describe('TasksComponent', () => {
   let performanceService;
   let stopPerformanceTrackStub;
   let contactTypesService;
-  let userContactService;
   let clock;
   let store;
   let lineageModelGeneratorService;
+  let telemetryService;
+  let interactionTrackingService;
 
   let component: TasksComponent;
   let fixture: ComponentFixture<TasksComponent>;
@@ -48,9 +56,8 @@ describe('TasksComponent', () => {
       includes: sinon.stub(),
     };
     lineageModelGeneratorService = { reportSubjects: sinon.stub().resolves([]) };
-    userContactService = {
-      getUserLineageToRemove: sinon.stub(),
-    };
+    telemetryService = { record: sinon.stub() };
+    interactionTrackingService = { startSession: sinon.stub(), record: sinon.stub(), endSession: sinon.stub() };
 
     TestBed.configureTestingModule({
       imports: [
@@ -58,6 +65,7 @@ describe('TasksComponent', () => {
         RouterTestingModule,
         MatIconModule,
         TasksComponent,
+        TasksSidebarFilterComponent,
         NavigationComponent,
         ToolBarComponent,
       ],
@@ -68,8 +76,14 @@ describe('TasksComponent', () => {
         { provide: PerformanceService, useValue: performanceService },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: NavigationService, useValue: {} },
-        { provide: UserContactService, useValue: userContactService },
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
+        // Needed because of facility filter
+        { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves([]) } },
+        // Needed because of Tasks Sidebar Filter
+        { provide: SessionService, useValue: { isOnlineOnly: sinon.stub().returns(false) } },
+        { provide: DbService, useValue: { get: sinon.stub().resolves() } },
+        { provide: TelemetryService, useValue: telemetryService },
+        { provide: InteractionTrackingService, useValue: interactionTrackingService },
       ],
     });
 
@@ -92,7 +106,7 @@ describe('TasksComponent', () => {
   it('should ngOnDestroy should unsubscribe and clear state', async () => {
     await getComponent();
 
-    const setTasksList = sinon.stub(TasksActions.prototype, 'setTasksList');
+    const clearTaskList = sinon.stub(TasksActions.prototype, 'clearTaskList');
     const setTasksLoaded = sinon.stub(TasksActions.prototype, 'setTasksLoaded');
     const clearTaskGroup = sinon.stub(TasksActions.prototype, 'clearTaskGroup');
     const spySubscriptionsUnsubscribe = sinon.spy(component.subscription, 'unsubscribe');
@@ -100,11 +114,18 @@ describe('TasksComponent', () => {
     component.ngOnDestroy();
 
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
-    expect(setTasksList.callCount).to.equal(1);
-    expect(setTasksList.args[0]).to.deep.equal([[]]);
+    expect(clearTaskList.callCount).to.equal(1);
     expect(setTasksLoaded.callCount).to.equal(1);
     expect(setTasksLoaded.args[0]).to.deep.equal([false]);
     expect(clearTaskGroup.callCount).to.equal(1);
+  });
+
+  it('should clear global filters on init so a search from another tab does not leak in', async () => {
+    const clearFilters = sinon.stub(GlobalActions.prototype, 'clearFilters');
+
+    await getComponent(); // triggers ngOnInit via detectChanges
+
+    expect(clearFilters.calledOnceWithExactly()).to.be.true;
   });
 
   it('initial state before resolving tasks', async () => {
@@ -158,8 +179,28 @@ describe('TasksComponent', () => {
     const pastDate = now.clone().subtract(3, 'days');
     clock = sinon.useFakeTimers({ now: now.valueOf(), toFake: ['Date']});
     const taskDocs = [
-      { _id: '1', emission: { _id: 'e1', dueDate: futureDate.format('YYYY-MM-DD') }, owner: 'a' },
-      { _id: '2', emission: { _id: 'e2', dueDate: pastDate.format('YYYY-MM-DD') }, owner: 'b' },
+      {
+        _id: '1',
+        emission: {
+          _id: 'e1',
+          dueDate: futureDate.format('YYYY-MM-DD'),
+          owner: 'a',
+          overdue: false,
+          date: new Date(futureDate.valueOf())
+        },
+        owner: 'a'
+      },
+      {
+        _id: '2',
+        emission: {
+          _id: 'e2',
+          dueDate: pastDate.format('YYYY-MM-DD'),
+          owner: 'b',
+          overdue: true,
+          date: new Date(pastDate.valueOf()),
+        },
+        owner: 'b'
+      },
     ];
     const expectedTasks = [
       {
@@ -168,6 +209,8 @@ describe('TasksComponent', () => {
         overdue: false,
         date: new Date(futureDate.valueOf()),
         owner: 'a',
+        lineage: [],
+        lineageIds: ['a'],
       },
       {
         _id: 'e2',
@@ -175,6 +218,8 @@ describe('TasksComponent', () => {
         overdue: true,
         date: new Date(pastDate.valueOf()),
         owner: 'b',
+        lineage: [],
+        lineageIds: ['b'],
       },
     ];
 
@@ -186,7 +231,6 @@ describe('TasksComponent', () => {
 
     expect(component.loading).to.be.false;
     expect(component.tasksDisabled).to.be.false;
-    expect(component.hasTasks).to.be.true;
     expect(!!component.errorStack).to.be.false;
     expect((<any>TasksActions.prototype.setTasksList).args).to.deep.eq([[expectedTasks]]);
   });
@@ -208,7 +252,7 @@ describe('TasksComponent', () => {
   it('changes feed', async () => {
     contactTypesService.includes
       .withArgs(sinon.match({ type: 'person' })).returns(true)
-      .withArgs(sinon.match({ type: 'clinic' })).returns(true)
+      .withArgs(sinon.match({ type: CONTACT_TYPES.CLINIC })).returns(true)
       .withArgs(sinon.match({ type: 'contact' })).returns(true);
 
     await new Promise(resolve => {
@@ -219,11 +263,13 @@ describe('TasksComponent', () => {
     const changesFeed = changesService.subscribe.args[0][0];
     expect(!!changesFeed.filter({})).to.be.false;
     expect(changesFeed.filter({ id: 'person', doc: { _id: 'person', type: 'person' }})).to.be.true;
-    expect(changesFeed.filter({ id: 'clinic', doc: { _id: 'clinic', type: 'clinic' }})).to.be.true;
-    expect(changesFeed.filter({ id: 'report', doc: { _id: 'report', type: 'data_record', form: 'form' }})).to.be.true;
+    expect(changesFeed.filter({ id: 'clinic', doc: { _id: 'clinic', type: CONTACT_TYPES.CLINIC }})).to.be.true;
+    expect(changesFeed.filter({ id: 'report', doc: { _id: 'report',
+      type: DOC_TYPES.DATA_RECORD, form: 'form' }})).to.be.true;
     expect(changesFeed.filter({ id: 'task', doc: { _id: 'task', type: 'task' }})).to.be.true;
 
-    expect(changesFeed.filter({ id: 'foo', doc: { _id: 'a', type: 'data_record', form: undefined }})).to.be.false;
+    expect(changesFeed.filter({ id: 'foo', doc: { _id: 'a',
+      type: DOC_TYPES.DATA_RECORD, form: undefined }})).to.be.false;
   });
 
   it('should react to rulesEngine emissions', fakeAsync(async () => {
@@ -251,6 +297,23 @@ describe('TasksComponent', () => {
     expect(rulesEngineService.fetchTaskDocsForAllContacts.callCount).to.eq(1);
     expect(performanceService.track.calledOnce).to.be.true;
     expect(stopPerformanceTrackStub.calledOnceWith({ name: 'tasks:load', recordApdex: true })).to.be.true;
+  });
+
+  it('should record telemetry with visible task count on recalculation', async () => {
+    const taskDocs = [
+      { _id: '1', emission: { _id: 'e1', owner: 'a' }, owner: 'a' },
+      { _id: '2', emission: { _id: 'e2', owner: 'b' }, owner: 'b' },
+      { _id: '3', emission: { _id: 'e3', owner: 'c' }, owner: 'c' },
+    ];
+    rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
+
+    await new Promise(resolve => {
+      sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
+      getComponent();
+    });
+
+    expect(telemetryService.record.calledOnce).to.be.true;
+    expect(telemetryService.record.args[0]).to.deep.equal(['tasks:all-tasks', 3]);
   });
 
   it('should should record telemetry on refresh', fakeAsync(async () => {
@@ -282,6 +345,32 @@ describe('TasksComponent', () => {
     expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'tasks:refresh', recordApdex: true });
     expect((<any>TasksActions.prototype.setTasksLoaded).callCount).to.equal(1);
   }));
+
+  describe('interaction tracking', () => {
+    it('opens a tasks session on init and records task_list:open and task_list:loaded', async () => {
+      await new Promise(resolve => {
+        sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
+        getComponent();
+      });
+
+      expect(interactionTrackingService.startSession.args).to.deep.equal([['tasks']]);
+      const actions = interactionTrackingService.record.args.map(a => a[0]);
+      expect(actions).to.include.members(['task_list:open', 'task_list:loaded']);
+    });
+
+    it('records task_list:leave and ends the session on destroy', async () => {
+      await getComponent();
+      sinon.stub(TasksActions.prototype, 'clearTaskList');
+      sinon.stub(TasksActions.prototype, 'setTasksLoaded');
+      sinon.stub(TasksActions.prototype, 'clearTaskGroup');
+      interactionTrackingService.record.resetHistory();
+
+      component.ngOnDestroy();
+
+      expect(interactionTrackingService.record.args).to.deep.include(['task_list:leave']);
+      expect(interactionTrackingService.endSession.callCount).to.equal(1);
+    });
+  });
 
   describe('listTrackBy', () => {
     it('should return task id', () => {
@@ -316,17 +405,28 @@ describe('TasksComponent', () => {
       },
     ];
     const taskDocs = [
-      { _id: '1', emission: { _id: 'e1', dueDate: '2020-10-20' }, forId: 'a', owner: 'a' },
-      { _id: '2', emission: { _id: 'e2', dueDate: '2020-10-20' }, forId: 'b', owner: 'b' },
+      {
+        _id: '1',
+        emission: { _id: 'e1', dueDate: '2020-10-20', date: moment('2020-10-20').toDate(), overdue: true, owner: 'a' },
+        forId: 'a',
+        owner: 'a',
+      },
+      {
+        _id: '2',
+        emission: { _id: 'e2', dueDate: '2020-10-20', date: moment('2020-10-20').toDate(), overdue: true, owner: 'b' },
+        forId: 'b',
+        owner: 'b'
+      },
     ];
 
-    it('should not remove the lineage when user lineage level is undefined', async () => {
+    it('should set lineage data on tasks', async () => {
       const expectedTasks = [
         {
           _id: 'e1',
           date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
+          lineageIds: ['a'],
           overdue: true,
           owner: 'a',
         },
@@ -335,11 +435,11 @@ describe('TasksComponent', () => {
           date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
+          lineageIds: ['b'],
           overdue: true,
           owner: 'b',
         },
       ];
-      userContactService.getUserLineageToRemove.resolves(undefined);
       rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
       lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
 
@@ -348,39 +448,6 @@ describe('TasksComponent', () => {
         getComponent();
       });
 
-      expect(await component.userLineageLevel).to.be.undefined;
-      expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
-    });
-
-    it('should remove lineage when user lineage level is defined', async () => {
-      const expectedTasks = [
-        {
-          _id: 'e1',
-          date: moment('2020-10-20').toDate(),
-          dueDate: '2020-10-20',
-          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
-          overdue: true,
-          owner: 'a',
-        },
-        {
-          _id: 'e2',
-          date: moment('2020-10-20').toDate(),
-          dueDate: '2020-10-20',
-          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
-          overdue: true,
-          owner: 'b',
-        },
-      ];
-      userContactService.getUserLineageToRemove.resolves('CHW Bettys Area');
-      rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
-      lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
-
-      await new Promise(resolve => {
-        sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
-        getComponent();
-      });
-
-      expect(await component.userLineageLevel).to.equal('CHW Bettys Area');
       expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
     });
   });

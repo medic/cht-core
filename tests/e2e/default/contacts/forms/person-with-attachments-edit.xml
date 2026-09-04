@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+  <h:head>
+    <h:title>Edit Person With Attachments</h:title>
+    <model odk:xforms-version="1.0.0">
+      <itext>
+        <translation lang="en">
+          <text id="/data/person_with_attachments/name:label">
+            <value>Full name</value>
+          </text>
+          <text id="/data/person_with_attachments/profile_image:label">
+            <value>Profile Image</value>
+          </text>
+          <text id="/data/person_with_attachments/document:label">
+            <value>Document</value>
+          </text>
+          <text id="/data/person_with_attachments/badge:label">
+            <value>Badge</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <data id="contact:person_with_attachments:edit" version="2026-01-23" prefix="J1!contact:person_with_attachments:edit!" delimiter="#">
+          <person_with_attachments>
+            <parent>PARENT</parent>
+            <type>person</type>
+            <name/>
+            <profile_image/>
+            <document/>
+            <badge type="binary"/>
+          </person_with_attachments>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind nodeset="/data/person_with_attachments/parent" type="string"/>
+      <bind nodeset="/data/person_with_attachments/type" type="string"/>
+      <bind nodeset="/data/person_with_attachments/name" type="string" required="true()"/>
+      <bind nodeset="/data/person_with_attachments/profile_image" type="binary"/>
+      <bind nodeset="/data/person_with_attachments/document" type="binary"/>
+      <bind nodeset="/data/person_with_attachments/badge" type="string" readonly="true()"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
+    </model>
+  </h:head>
+  <h:body>
+    <group ref="/data/person_with_attachments">
+      <input ref="/data/person_with_attachments/name">
+        <label ref="jr:itext('/data/person_with_attachments/name:label')"/>
+      </input>
+      <upload ref="/data/person_with_attachments/profile_image" mediatype="image/*">
+        <label ref="jr:itext('/data/person_with_attachments/profile_image:label')"/>
+      </upload>
+      <upload ref="/data/person_with_attachments/document" mediatype="application/*">
+        <label ref="jr:itext('/data/person_with_attachments/document:label')"/>
+      </upload>
+      <input ref="/data/person_with_attachments/badge" appearance="display-base64-image">
+        <label ref="jr:itext('/data/person_with_attachments/badge:label')"/>
+      </input>
+    </group>
+  </h:body>
+</h:html>

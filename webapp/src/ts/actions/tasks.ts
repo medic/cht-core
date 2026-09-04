@@ -3,6 +3,7 @@ import { createSingleValueAction } from '@mm-actions/actionUtils';
 
 export const Actions = {
   setTasksList: createSingleValueAction('SET_TASKS_LIST', 'tasks'),
+  setOverdueTasks: createSingleValueAction('SET_OVERDUE_TASKS', 'tasks'),
   setTasksLoaded: createSingleValueAction('SET_TASKS_LOADED', 'loaded'),
   setSelectedTask: createSingleValueAction('SET_SELECTED_TASK', 'selected'),
   setLastSubmittedTask: createSingleValueAction('SET_LAST_SUBMITTED_TASK', 'task'),
@@ -10,6 +11,7 @@ export const Actions = {
   setTaskGroupContactLoading: createSingleValueAction('SET_TASK_GROUP_CONTACT_LOADING', 'loading'),
   setTaskGroup: createSingleValueAction('SET_TASK_GROUP', 'taskGroup'),
   clearTaskGroup: createAction('CLEAR_TASK_GROUP'),
+  clearTaskList: createAction('CLEAR_TASK_LIST'),
 };
 
 export class TasksActions {
@@ -17,6 +19,10 @@ export class TasksActions {
 
   setTasksList(tasks) {
     return this.store.dispatch(Actions.setTasksList(tasks));
+  }
+
+  setOverdueTasks(tasks) {
+    return this.store.dispatch(Actions.setOverdueTasks(tasks));
   }
 
   setTasksLoaded(loaded) {
@@ -45,5 +51,9 @@ export class TasksActions {
 
   clearTaskGroup() {
     return this.store.dispatch(Actions.clearTaskGroup());
+  }
+
+  clearTaskList() {
+    return this.store.dispatch(Actions.clearTaskList());
   }
 }

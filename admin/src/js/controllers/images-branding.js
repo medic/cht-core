@@ -1,3 +1,6 @@
+const constants = require('@medic/constants');
+const DOC_IDS = constants.DOC_IDS;
+
 angular.module('controllers').controller('ImagesBrandingCtrl',
   function(
     $log,
@@ -11,7 +14,7 @@ angular.module('controllers').controller('ImagesBrandingCtrl',
     'ngInject';
     'use strict';
 
-    const DOC_ID = 'branding';
+    const DOC_ID = DOC_IDS.BRANDING;
     const MAX_FILE_SIZE = 100000; // 100KB
 
     $('#images-branding .choose').on('click', ev => {

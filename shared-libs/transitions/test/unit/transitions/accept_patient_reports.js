@@ -6,6 +6,7 @@ const utils = require('../../../src/lib/utils');
 const config = require('../../../src/config');
 const messages = require('../../../src/lib/messages');
 const validation = require('@medic/validation');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('accept_patient_reports', () => {
   let transition;
@@ -38,14 +39,14 @@ describe('accept_patient_reports', () => {
         .filter({
           doc: {
             form: 'x',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             reported_date: 1,
           },
           info: {}
         })
         .should.equal(false);
       utils.isValidSubmission.callCount.should.equal(1);
-      utils.isValidSubmission.args[0].should.deep.equal([{ form: 'x', type: 'data_record', reported_date: 1 }]);
+      utils.isValidSubmission.args[0].should.deep.equal([{ form: 'x', type: DOC_TYPES.DATA_RECORD, reported_date: 1 }]);
     });
     it('returns true', () => {
       config.get.returns([{ form: 'x' }, { form: 'z' }]);
@@ -54,14 +55,14 @@ describe('accept_patient_reports', () => {
         .filter({
           doc: {
             form: 'x',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             reported_date: 1,
           },
           info: {}
         })
         .should.equal(true);
       utils.isValidSubmission.callCount.should.equal(1);
-      utils.isValidSubmission.args[0].should.deep.equal([{ form: 'x', type: 'data_record', reported_date: 1 }]);
+      utils.isValidSubmission.args[0].should.deep.equal([{ form: 'x', type: DOC_TYPES.DATA_RECORD, reported_date: 1 }]);
     });
   });
 
@@ -126,7 +127,7 @@ describe('accept_patient_reports', () => {
 
       return transition.onMatch({ doc }).then((changed) => {
         changed.should.equal(true);
-        doc.errors.should.deep.equal([{ message: 'some_error', code: 'invalid_report' }]);
+        doc.errors.should.deep.equal([{ message: 'some_error', code: 'some_error' }]);
         doc.tasks.length.should.equal(1);
         doc.tasks[0].messages[0].should.deep.include({ to: '+123', message: 'some_error'});
         validation.validate.callCount.should.equal(1);
@@ -159,6 +160,34 @@ describe('accept_patient_reports', () => {
             recipient: 'reporting_unit',
           },
         ],
+      }]);
+
+      return transition.onMatch({ doc }).then((changed) => {
+        changed.should.equal(true);
+        (typeof doc.errors).should.equal('undefined');
+        (typeof doc.tasks).should.equal('undefined');
+        utils.getReportsBySubject.callCount.should.equal(1);
+        utils.getReportsBySubject.args[0].should.deep.equal([{ ids: ['x', 'y'], registrations: true }]);
+        utils.getSubjectIds.callCount.should.equal(1);
+        utils.getSubjectIds.args[0].should.deep.equal([doc.patient]);
+        validation.validate.callCount.should.equal(1);
+        validation.validate.args[0].slice(0, 2).should.deep.equal([doc, undefined]); // 3rd arg is a function
+      });
+    });
+
+    it('should not throw error on bad config', () => {
+      const doc = {
+        fields: { patient_id: 'x' },
+        from: '+123',
+        form: 'aaa',
+        patient: { patient_id: 'x' }
+      };
+      sinon.stub(utils, 'getSubjectIds').returns(['x', 'y']);
+      sinon.stub(utils, 'getReportsBySubject').resolves([]);
+      sinon.stub(validation, 'validate').resolves([]);
+
+      config.get.returns([{
+        form: 'aaa',
       }]);
 
       return transition.onMatch({ doc }).then((changed) => {

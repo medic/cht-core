@@ -1,13 +1,13 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const fs = require('fs');
+const { DOC_IDS } = require('@medic/constants');
 
 const viewMapUtils = require('@medic/view-map-utils');
 const db = require('../../../src/db');
 const dbWatcher = require('../../../src/services/db-watcher');
 const settingsService = require('../../../src/services/settings');
 const translations = require('../../../src/translations');
-const extensionLibsService = require('../../../src/services/extension-libs');
 const generateServiceWorker = require('../../../src/generate-service-worker');
 const generateXform = require('../../../src/services/generate-xform');
 const config = require('../../../src/config');
@@ -26,7 +26,6 @@ describe('Configuration', () => {
     sinon.stub(settingsService, 'update');
     sinon.stub(generateServiceWorker, 'run');
     sinon.stub(manifest, 'generate');
-    sinon.stub(extensionLibsService, 'isLibChange').returns(false);
     sinon.spy(config, 'set');
     sinon.spy(config, 'setTranslationCache');
     sinon.spy(config, 'setTransitionsLib');
@@ -196,7 +195,7 @@ describe('Configuration', () => {
         manifest.generate.resolves();
         generateServiceWorker.run.resolves();
 
-        return dbWatcher.medic.args[0][0]({ id: 'branding' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: DOC_IDS.BRANDING }).then(() => {
           chai.expect(generateServiceWorker.run.callCount).to.equal(1);
 
           chai.expect(translations.run.callCount).to.equal(0);
@@ -209,7 +208,7 @@ describe('Configuration', () => {
 
         sinon.stub(process, 'exit');
 
-        return dbWatcher.medic.args[0][0]({ id: 'branding' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: DOC_IDS.BRANDING }).then(() => {
           chai.expect(process.exit.callCount).to.equal(1);
         });
       });
@@ -225,7 +224,7 @@ describe('Configuration', () => {
         sinon.stub(config, 'get').withArgs('roles').returns({ chw: {} });
         sinon.stub(environment, 'db').get(() => 'medicdb');
 
-        return dbWatcher.medic.args[0][0]({ id: 'settings' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: DOC_IDS.SETTINGS }).then(() => {
           chai.expect(settingsService.update.callCount).to.equal(1);
           chai.expect(settingsService.get.callCount).to.equal(1);
           chai.expect(config.set.callCount).to.equal(1);
@@ -250,7 +249,7 @@ describe('Configuration', () => {
           });
         sinon.stub(environment, 'db').get(() => 'medicdb');
 
-        return dbWatcher.medic.args[0][0]({ id: 'settings' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: DOC_IDS.SETTINGS }).then(() => {
           chai.expect(settingsService.update.callCount).to.equal(1);
           chai.expect(settingsService.get.callCount).to.equal(1);
           chai.expect(config.set.callCount).to.equal(1);
@@ -270,7 +269,7 @@ describe('Configuration', () => {
         settingsService.get.rejects();
         sinon.stub(process, 'exit');
 
-        return dbWatcher.medic.args[0][0]({ id: 'settings' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: DOC_IDS.SETTINGS }).then(() => {
           chai.expect(process.exit.callCount).to.equal(1);
         });
       });
@@ -310,19 +309,5 @@ describe('Configuration', () => {
         });
       });
     });
-
-    describe('extension libs changes', () => {
-
-      it('generates service worker when extension libs doc is updated', () => {
-        extensionLibsService.isLibChange.returns(true);
-        generateServiceWorker.run.resolves();
-        return dbWatcher.medic.args[0][0]({ id: 'my-secret-id' }).then(() => {
-          extensionLibsService.isLibChange.returns(true);
-          chai.expect(generateServiceWorker.run.callCount).to.equal(1);
-        });
-      });
-
-    });
-
   });
 });

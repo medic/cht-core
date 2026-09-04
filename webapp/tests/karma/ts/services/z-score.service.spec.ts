@@ -5,6 +5,7 @@ import { expect } from 'chai';
 import { ZScoreService } from '@mm-services/z-score.service';
 import { DbService } from '@mm-services/db.service';
 import { ChangesService } from '@mm-services/changes.service';
+import { DOC_IDS } from '@medic/constants';
 
 describe('ZScore service', () => {
   let service;
@@ -112,7 +113,7 @@ describe('ZScore service', () => {
         const actual = util('weight-for-age', 'male', 1, 25);
         expect(actual).to.equal(1);
         expect(allDocs.callCount).to.equal(1);
-        expect(allDocs.args[0][0].key).to.equal('zscore-charts');
+        expect(allDocs.args[0][0].key).to.equal(DOC_IDS.ZSCORE_CHARTS);
       });
     });
 
@@ -206,7 +207,7 @@ describe('ZScore service', () => {
         const actual = util('height-for-age', 'male', 1, 56.1);
         expect(actual).to.equal(1.5);
         expect(allDocs.callCount).to.equal(1);
-        expect(allDocs.args[0][0].key).to.equal('zscore-charts');
+        expect(allDocs.args[0][0].key).to.equal(DOC_IDS.ZSCORE_CHARTS);
       });
     });
   });
@@ -233,7 +234,7 @@ describe('ZScore service', () => {
         const actual = util('weight-for-height', 'male', 45.1, 26.5);
         expect(actual).to.equal(2.5);
         expect(allDocs.callCount).to.equal(1);
-        expect(allDocs.args[0][0].key).to.equal('zscore-charts');
+        expect(allDocs.args[0][0].key).to.equal(DOC_IDS.ZSCORE_CHARTS);
       });
     });
   });

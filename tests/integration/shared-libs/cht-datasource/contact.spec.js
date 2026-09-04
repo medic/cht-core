@@ -6,6 +6,7 @@ const userFactory = require('@factories/cht/users/users');
 const { getRemoteDataContext, Qualifier, Contact } = require('@medic/cht-datasource');
 const { USER_ROLES } = require('@medic/constants');
 const { setAuth, removeAuth } = require('./auth');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('cht-datasource Contact', () => {
   // NOTE: this is a common word added to contacts to fetch them
@@ -30,7 +31,7 @@ describe('cht-datasource Contact', () => {
   }));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
   const place1 = utils.deepFreeze({
-    ...placeMap.get('health_center'),
+    ...placeMap.get(CONTACT_TYPES.HEALTH_CENTER),
     contact: {_id: contact1._id},
     notes: commonWord
   });
@@ -40,7 +41,7 @@ describe('cht-datasource Contact', () => {
     notes: commonWord
   });
   const place0 = utils.deepFreeze({
-    ...placeMap.get('clinic'),
+    ...placeMap.get(CONTACT_TYPES.CLINIC),
     notes: commonWord,
     contact: {_id: contact0._id},
     parent: {
@@ -58,20 +59,19 @@ describe('cht-datasource Contact', () => {
       },
     }, phone: '1234567890', role: 'patient', short_name: 'Mary'
   }));
-  const placeType = 'clinic';
   const clinic1 = utils.deepFreeze(placeFactory.place().build({
     parent: {
       _id: place1._id, parent: {
         _id: place2._id
       }
-    }, type: placeType, contact: {}, name: 'clinic1'
+    }, type: CONTACT_TYPES.CLINIC, contact: {}, name: 'clinic1'
   }));
   const clinic2 = utils.deepFreeze(placeFactory.place().build({
     parent: {
       _id: place1._id, parent: {
         _id: place2._id
       }
-    }, type: placeType, contact: {}, name: 'clinic2'
+    }, type: CONTACT_TYPES.CLINIC, contact: {}, name: 'clinic2'
   }));
 
   const userNoPerms = utils.deepFreeze(userFactory.build({
@@ -85,7 +85,7 @@ describe('cht-datasource Contact', () => {
     }, roles: [ 'chw' ]
   }));
   const allDocItems = [ contact0, contact1, contact2, place0, place1, place2, clinic1, clinic2, patient ];
-  const dataContext = getRemoteDataContext(utils.getOrigin());
+  const dataContext = getRemoteDataContext({ getAll: () => ({}) }, utils.getOrigin());
   const personType = 'person';
   const e2eTestUser = {
     '_id': 'e2e_contact_test_id', 'type': personType,
@@ -193,7 +193,7 @@ describe('cht-datasource Contact', () => {
       });
 
       it('returns a page of place type contact for no limit and cursor passed', async () => {
-        const responsePage = await getUuidsPage(Qualifier.byContactType(placeType));
+        const responsePage = await getUuidsPage(Qualifier.byContactType(CONTACT_TYPES.CLINIC));
         const responsePlaces = responsePage.data;
         const responseCursor = responsePage.cursor;
 
@@ -224,9 +224,9 @@ describe('cht-datasource Contact', () => {
       });
 
       it('returns a page of place type contact with freetext for no limit and cursor passed', async () => {
-        const freetext = 'clinic';
+        const freetext = CONTACT_TYPES.CLINIC;
         const responsePage = await getUuidsPage({
-          ...Qualifier.byContactType(placeType), ...Qualifier.byFreetext(freetext)
+          ...Qualifier.byContactType(CONTACT_TYPES.CLINIC), ...Qualifier.byFreetext(freetext)
         });
         const responsePlaces = responsePage.data;
         const responseCursor = responsePage.cursor;
@@ -252,8 +252,12 @@ describe('cht-datasource Contact', () => {
 
       it('returns a page of place type contact ids' +
         ' when limit and cursor is passed and cursor can be reused', async () => {
-        const firstPage = await getUuidsPage(Qualifier.byContactType(placeType), cursor, twoLimit);
-        const secondPage = await getUuidsPage(Qualifier.byContactType(placeType), firstPage.cursor, twoLimit);
+        const firstPage = await getUuidsPage(Qualifier.byContactType(CONTACT_TYPES.CLINIC), cursor, twoLimit);
+        const secondPage = await getUuidsPage(
+          Qualifier.byContactType(CONTACT_TYPES.CLINIC),
+          firstPage.cursor, 
+          twoLimit,
+        );
 
         const allData = [ ...firstPage.data, ...secondPage.data ];
 
@@ -303,10 +307,10 @@ describe('cht-datasource Contact', () => {
       it('returns a page of place type contact ids' +
         ' when limit and cursor is passed and cursor can be reused', async () => {
         const firstPage = await getUuidsPage({
-          ...Qualifier.byContactType(placeType), ...Qualifier.byFreetext(placeFreetext),
+          ...Qualifier.byContactType(CONTACT_TYPES.CLINIC), ...Qualifier.byFreetext(placeFreetext),
         }, cursor, twoLimit);
         const secondPage = await getUuidsPage({
-          ...Qualifier.byContactType(placeType), ...Qualifier.byFreetext(placeFreetext),
+          ...Qualifier.byContactType(CONTACT_TYPES.CLINIC), ...Qualifier.byFreetext(placeFreetext),
         }, firstPage.cursor, twoLimit);
         const expectedContactIds = [ place0._id, clinic1._id, clinic2._id ];
 
@@ -359,7 +363,7 @@ describe('cht-datasource Contact', () => {
       it('throws error when limit is invalid', async () => {
         await expect(
           getUuidsPage({
-            ...Qualifier.byContactType(placeType),
+            ...Qualifier.byContactType(CONTACT_TYPES.CLINIC),
             ...Qualifier.byFreetext(placeFreetext)
           }, cursor, invalidLimit)
         ).to.be.rejectedWith(
@@ -370,7 +374,7 @@ describe('cht-datasource Contact', () => {
       it('throws error when cursor is invalid', async () => {
         await expect(
           getUuidsPage({
-            ...Qualifier.byContactType(placeType),
+            ...Qualifier.byContactType(CONTACT_TYPES.CLINIC),
             ...Qualifier.byFreetext(placeFreetext),
           }, invalidCursor, twoLimit)
         ).to.be.rejectedWith(

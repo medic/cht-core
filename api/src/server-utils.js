@@ -7,7 +7,7 @@ const { HTTP_HEADERS } = require('@medic/constants');
 const MEDIC_BASIC_AUTH = 'Basic realm="Medic Web Services"';
 const REQUEST_ID_HEADER = HTTP_HEADERS.REQUEST_ID;
 const cookie = require('./services/cookie');
-const {InvalidArgumentError} = require('@medic/cht-datasource');
+const { InvalidArgumentError, ResourceNotFoundError } = require('@medic/cht-datasource');
 
 const wantsJSON = req => req.accepts(['text', 'json']) === 'json';
 
@@ -66,6 +66,8 @@ module.exports = {
     let code = err.code || err.statusCode || err.status || 500;
     if (err instanceof InvalidArgumentError) {
       code = 400;
+    } else if (err instanceof ResourceNotFoundError) {
+      code = 404;
     }
     if (!Number.isInteger(code)) {
       logger.warn(`Non-numeric error code: ${code}`);
@@ -87,7 +89,7 @@ module.exports = {
    */
   notLoggedIn: (req, res, showPrompt) => {
     if (!res.headersSent) {
-      res.setHeader('logout-authorization', 'CHT-Core API');
+      res.setHeader(HTTP_HEADERS.LOGOUT_AUTHORIZATION, 'CHT-Core API');
     }
 
     if (showPrompt) {

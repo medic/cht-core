@@ -5,6 +5,7 @@ const path = require('path');
 const readFileAsync = promisify(fs.readFile);
 const db = require('../../../src/db');
 const { expect } = require('chai');
+const { DOC_IDS } = require('@medic/constants');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -76,7 +77,7 @@ const assertDb = expected => {
         return (
           doc._id !== '_design/medic' &&
           doc._id !== '_design/medic-client' &&
-          doc._id !== 'settings'
+          doc._id !== DOC_IDS.SETTINGS
         );
       });
 
@@ -197,9 +198,9 @@ const initSettings = settings => {
 };
 
 const getSettings = () => {
-  return db.medic.get('settings').catch(err => {
+  return db.medic.get(DOC_IDS.SETTINGS).catch(err => {
     if (err.status === 404) {
-      return { _id: 'settings', settings: {} };
+      return { _id: DOC_IDS.SETTINGS, settings: {} };
     }
     throw err;
   });

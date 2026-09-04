@@ -2,25 +2,26 @@ const sentinelUtils = require('@utils/sentinel');
 const utils = require('@utils');
 const apiUtils = require('./utils');
 const chai = require('chai');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
     _id: 'district_hospital',
     name: 'District hospital',
-    type: 'district_hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     reported_date: new Date().getTime()
   },
   {
     _id: 'health_center',
     name: 'Health Center',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: 'district_hospital' },
     reported_date: new Date().getTime()
   },
   {
     _id: 'clinic1',
     name: 'Clinic',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'chw1',
@@ -55,7 +56,7 @@ const contacts = [
   {
     _id: 'clinic2',
     name: 'Clinic',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'chw2',
@@ -1009,7 +1010,10 @@ describe('transitions', () => {
       .then(result => {
         chai.expect(result.rows.length).to.equal(1);
         chai.expect(result.rows[0].doc).to.deep.include({
-          parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+          parent: {
+            _id: 'clinic1',
+            parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
+          },
           date_of_death: '123456789',
           name: 'Veronica',
         });
@@ -1027,7 +1031,7 @@ describe('transitions', () => {
     const place = {
       _id: 'my_favorite_place',
       name: 'My Favorite Place',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       reported_date: new Date().getTime(),
       parent: { _id: 'district_hospital' },
     };

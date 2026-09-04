@@ -18,6 +18,7 @@ const angularEslintEslintPlugin = require('@angular-eslint/eslint-plugin');
 const angularEslintEslintPluginTemplate = require('@angular-eslint/eslint-plugin-template');
 const templateParser = require('@angular-eslint/template-parser');
 const stylisticPlugin = require('@stylistic/eslint-plugin');
+const Path = require('node:path');
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
@@ -50,7 +51,6 @@ module.exports = defineConfig([
     'shared-libs/cht-datasource/docs/**/*',
     'tests/scalability/report*/**/*',
     'tests/scalability/jmeter/**/*',
-    'webapp/src/ts/providers/xpath-element-path.provider.ts',
     'webapp/dist/**/*',
     '.github/**/compiled/index.js'
   ]),
@@ -75,7 +75,7 @@ module.exports = defineConfig([
       '@stylistic/max-len': ['error', { code: 120, ignoreUrls: true, tabWidth: 2}],
       'max-len': 'off',
       'no-redeclare': ['error', { builtinGlobals: false }],
-      '@stylistic/quotes': ['error', 'single', { allowTemplateLiterals: true }],
+      '@stylistic/quotes': ['error', 'single', { allowTemplateLiterals: 'always' }],
       '@stylistic/semi': ['error', 'always'],
       '@stylistic/array-bracket-newline': [ 'error', 'consistent' ],
       '@stylistic/arrow-spacing': [
@@ -376,6 +376,7 @@ module.exports = defineConfig([
         $: true,
         $$: true,
         document: true,
+        DOMParser: true,
         caches: true,
         navigator: true,
       },
@@ -427,7 +428,7 @@ module.exports = defineConfig([
 
     languageOptions: {
       parser: tsParser,
-      ecmaVersion: 5,
+      ecmaVersion: 2020,
       sourceType: 'script',
 
       parserOptions: {
@@ -526,12 +527,6 @@ module.exports = defineConfig([
     },
   },
   {
-    files: ['scripts/deploy/**/*'],
-    languageOptions: {
-      sourceType: 'module',
-    }
-  },
-  {
     files: ['shared-libs/cht-datasource/**/*.ts'],
     extends: compat.extends(
       'plugin:@typescript-eslint/strict-type-checked',
@@ -544,7 +539,7 @@ module.exports = defineConfig([
 
       parserOptions: {
         project: 'tsconfig.json',
-        tsconfigRootDir: 'shared-libs/cht-datasource/'
+        tsconfigRootDir: Path.join(__dirname, 'shared-libs/cht-datasource')
       },
     },
     plugins: {
@@ -617,7 +612,7 @@ module.exports = defineConfig([
       }],
 
       ['jsdoc/check-tag-names']: ['error', {
-        definedTags: ['typeParam'],
+        definedTags: ['typeParam', 'packageDocumentation'],
       }],
     },
   },
@@ -628,6 +623,13 @@ module.exports = defineConfig([
     },
     rules: {
       ['@typescript-eslint/no-unused-expressions']: 'off',
+      ['@typescript-eslint/no-require-imports']: 'off'
+    },
+  },
+  {
+    files: ['webapp/src/js/enketo/widgets/bikram-sambat-picker-shared.js'],
+    languageOptions: {
+      ecmaVersion: 2020,
     },
   }
 ]);

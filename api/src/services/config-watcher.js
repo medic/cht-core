@@ -7,6 +7,7 @@ const logger = require('@medic/logger');
 const translationUtils = require('@medic/translation-utils');
 const tombstoneUtils = require('@medic/tombstone-utils');
 const viewMapUtils = require('@medic/view-map-utils');
+const { DOC_IDS, PREFIXES } = require('@medic/constants');
 const settingsService = require('./settings');
 const translations = require('../translations');
 const generateXform = require('./generate-xform');
@@ -15,7 +16,6 @@ const manifest = require('./manifest');
 const config = require('../config');
 const environment = require('@medic/environment');
 const dataContext = require('./data-context');
-const extensionLibs = require('./extension-libs');
 const deployInfo = require('./deploy-info');
 
 const MEDIC_DDOC_ID = '_design/medic';
@@ -49,7 +49,7 @@ const initTransitionLib = () => {
   try {
     transitionsLib.loadTransitions(true);
   } catch (err) {
-    logger.error(err);
+    logger.error('Error loading transitions - starting up anyway: %o', err);
   }
   config.setTransitionsLib(transitionsLib);
 };
@@ -126,10 +126,6 @@ const handleBrandingChanges = () => {
     .then(() => updateServiceWorker());
 };
 
-const handleLibsChanges = () => {
-  return updateServiceWorker();
-};
-
 const updateManifest = () => {
   return manifest.generate().catch(err => {
     logger.error('Failed to generate manifest: %o', err);
@@ -164,11 +160,11 @@ const listen = () => {
       return handleDdocChange();
     }
 
-    if (change.id === settingsService.SETTINGS_DOC_ID) {
+    if (change.id === DOC_IDS.SETTINGS) {
       return handleSettingsChange();
     }
 
-    if (change.id.startsWith('messages-')) {
+    if (change.id.startsWith(PREFIXES.TRANSLATIONS)) {
       return handleTranslationsChange();
     }
 
@@ -176,12 +172,8 @@ const listen = () => {
       return handleFormChange(change);
     }
 
-    if (change.id === 'branding') {
+    if (change.id === DOC_IDS.BRANDING) {
       return handleBrandingChanges();
-    }
-
-    if (extensionLibs.isLibChange(change)) {
-      return handleLibsChanges();
     }
   });
 };

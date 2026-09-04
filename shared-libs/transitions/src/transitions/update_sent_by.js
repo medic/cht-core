@@ -1,6 +1,7 @@
 const transitionUtils = require('./utils');
 const db = require('../db');
 const NAME = 'update_sent_by';
+const { DOC_TYPES } = require('@medic/constants');
 
 module.exports = {
   name: NAME,
@@ -9,7 +10,7 @@ module.exports = {
     return Boolean(
       doc &&
             doc.from &&
-            doc.type === 'data_record' &&
+            doc.type === DOC_TYPES.DATA_RECORD &&
             doc.sent_by === undefined &&
             !self._hasRun(info)
     );

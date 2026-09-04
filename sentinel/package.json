@@ -9,5 +9,8 @@
   },
   "scripts": {
     "run-watch": "TZ=UTC nodemon --inspect=0.0.0.0:9228 --watch server.js --watch 'src/**' --watch '../shared-libs/**/src/**' --watch '../shared-libs/**/dist/**' server.js"
+  },
+  "dependencies": {
+    "@medic/constants": "file:../shared-libs/constants"
   }
 }

@@ -2,6 +2,7 @@ const assert = require('chai').assert;
 const utils = require('@utils');
 const host = 'localhost';
 const db = utils.db;
+const { HTTP_HEADERS } = require('@medic/constants');
 
 /**
  * Tests to ensure continued support for Medic Collect.
@@ -69,7 +70,7 @@ describe('medic-collect', () => {
 
 const getForms = ({ auth, userAgent }) => {
   const headers = {
-    'X-OpenRosa-Version': '1.0',
+    [HTTP_HEADERS.OPENROSA_VERSION]: '1.0',
     Date: new Date().toISOString(),
     Host: host
   };

@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 
 import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-matcher.provider';
+import { PREFIXES } from '@medic/constants';
 
 describe('TranslationDocsMatcherProvider service', () => {
   const service = TranslationDocsMatcherProvider;
@@ -12,7 +13,7 @@ describe('TranslationDocsMatcherProvider service', () => {
       expect(service.test({})).to.equal(false);
       expect(service.test(100)).to.equal(false);
       expect(service.test('04aa1bfa-f87d-467e-bf46-51eeb367370b')).to.equal(false);
-      expect(service.test('messages-')).to.equal(false);
+      expect(service.test(PREFIXES.TRANSLATIONS)).to.equal(false);
     });
 
     it('should return true when matching', () => {
@@ -29,7 +30,7 @@ describe('TranslationDocsMatcherProvider service', () => {
       expect(service.getLocaleCode({})).to.equal(null);
       expect(service.getLocaleCode(100)).to.equal(null);
       expect(service.getLocaleCode('04aa1bfa-f87d-467e-bf46-51eeb367370b')).to.equal(null);
-      expect(service.getLocaleCode('messages-')).to.equal(null);
+      expect(service.getLocaleCode(PREFIXES.TRANSLATIONS)).to.equal(null);
     });
 
     it('should return code when matching', () => {

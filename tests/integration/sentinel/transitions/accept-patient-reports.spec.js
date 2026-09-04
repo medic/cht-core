@@ -1,20 +1,21 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const { expect } = require('chai');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 
 const contacts = [
   {
     _id: 'district_hospital',
     name: 'District hospital',
-    type: 'district_hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     reported_date: new Date().getTime()
   },
   {
     _id: 'health_center',
     name: 'Health Center',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     place_id: 'the_health_center',
     parent: { _id: 'district_hospital' },
     reported_date: new Date().getTime()
@@ -22,11 +23,11 @@ const contacts = [
   {
     _id: 'clinic',
     name: 'Clinic',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     place_id: 'the_clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
-    contact: {
-      _id: 'person',
+    contact: { 
+      _id: 'person', 
       parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     reported_date: new Date().getTime()
@@ -68,12 +69,12 @@ describe('accept_patient_reports', () => {
     const doc = {
       _id: uuid(),
       form: 'FORM',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime(),
       from: '+phone',
       contact: {
-        _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+        _id: 'person', 
+        parent: { _id: 'clinic',  parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -97,11 +98,11 @@ describe('accept_patient_reports', () => {
     const doc = {
       _id: uuid(),
       form: 'NOT_FORM',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime(),
       from: '+phone',
       contact: {
-        _id: 'person',
+        _id: 'person', 
         parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
@@ -172,7 +173,7 @@ describe('accept_patient_reports', () => {
 
     const withUnknownPatient = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+phone',
       fields: {
@@ -180,14 +181,14 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
+        _id: 'person', 
         parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       },
     };
 
     const withInvalidPatientId = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+phone',
       fields: {
@@ -195,14 +196,14 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
+        _id: 'person', 
         parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       },
     };
 
     const withUnknownPlace = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORMPLACE',
       from: '+phone',
       fields: {
@@ -210,14 +211,14 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
+        _id: 'person', 
         parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       },
     };
 
     const withInvalidPlaceId = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORMPLACE',
       from: '+phone',
       fields: {
@@ -225,7 +226,7 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
+        _id: 'person', 
         parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       },
     };
@@ -327,7 +328,7 @@ describe('accept_patient_reports', () => {
 
     const doc1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+phone',
       fields: {
@@ -335,14 +336,14 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
+        _id: 'person', 
         parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     const doc2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+phone2',
       fields: {
@@ -351,7 +352,7 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person2',
+        _id: 'person2', 
         parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
@@ -410,7 +411,7 @@ describe('accept_patient_reports', () => {
     const reports = [
       { // not a registration
         _id: 'no_registration_config',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         form: 'test_form',
         fields: {
@@ -418,13 +419,13 @@ describe('accept_patient_reports', () => {
         },
         reported_date: new Date().getTime(),
         contact: {
-          _id: 'person',
+          _id: 'person', 
           parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       { // not a registration
         _id: 'incorrect_content',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'xml_form',
         fields: {
           patient_id: 'patient'
@@ -433,7 +434,7 @@ describe('accept_patient_reports', () => {
       },
       { // not a registration
         _id: 'sms_without_contact',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'sms_form_2',
         fields: {
           patient_id: 'person'
@@ -442,7 +443,7 @@ describe('accept_patient_reports', () => {
       },
       { // valid registration
         _id: 'registration_1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         form: 'xml_form',
         fields: {
@@ -452,20 +453,20 @@ describe('accept_patient_reports', () => {
       },
       { // valid registration
         _id: 'registration_2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'sms_form_1',
         fields: {
           patient_id: 'patient'
         },
         reported_date: new Date().getTime() + 3000,
         contact: {
-          _id: 'person',
+          _id: 'person', 
           parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       { // valid registration
         _id: 'registration_3',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'sms_form_2',
         fields: {
           patient_id: 'patient'
@@ -475,7 +476,7 @@ describe('accept_patient_reports', () => {
       },
       { // valid registration for other patient
         _id: 'registration_4',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'sms_form_2',
         fields: {
           patient_id: 'patient2'
@@ -487,7 +488,7 @@ describe('accept_patient_reports', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: 'phone2',
       fields: {
@@ -495,7 +496,7 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
+        _id: 'person', 
         parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
@@ -526,7 +527,7 @@ describe('accept_patient_reports', () => {
     const reports = [
       { // not a registration
         _id: 'no_registration_config_place',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         form: 'test_form',
         fields: {
@@ -534,13 +535,13 @@ describe('accept_patient_reports', () => {
         },
         reported_date: new Date().getTime(),
         contact: {
-          _id: 'person',
+          _id: 'person', 
           parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       { // not a registration
         _id: 'incorrect_content_place',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'xml_form',
         fields: {
           place_id: 'the_clinic',
@@ -549,7 +550,7 @@ describe('accept_patient_reports', () => {
       },
       { // not a registration
         _id: 'sms_without_contact_place',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'sms_form_2',
         fields: {
           place_id: 'the_clinic',
@@ -558,7 +559,7 @@ describe('accept_patient_reports', () => {
       },
       { // valid registration
         _id: 'registration_1_place',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         form: 'xml_form',
         fields: {
@@ -568,20 +569,20 @@ describe('accept_patient_reports', () => {
       },
       { // valid registration
         _id: 'registration_2_place',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'sms_form_1',
         fields: {
           place_id: 'the_clinic',
         },
         reported_date: new Date().getTime() + 3000,
         contact: {
-          _id: 'person',
+          _id: 'person', 
           parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       { // valid registration
         _id: 'registration_3_place',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'sms_form_2',
         fields: {
           place_id: 'the_clinic',
@@ -591,7 +592,7 @@ describe('accept_patient_reports', () => {
       },
       { // valid registration for other place
         _id: 'registration_4_place',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'sms_form_2',
         fields: {
           place_id: 'the_health_center'
@@ -603,7 +604,7 @@ describe('accept_patient_reports', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: 'phone2',
       fields: {
@@ -611,7 +612,7 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
+        _id: 'person', 
         parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
@@ -642,7 +643,7 @@ describe('accept_patient_reports', () => {
     const reports = [
       { // valid registration for place
         _id: 'registration_1_place',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         form: 'xml_form',
         fields: {
@@ -652,20 +653,20 @@ describe('accept_patient_reports', () => {
       },
       { // valid registration for patient
         _id: 'registration_2_patient',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'sms_form_1',
         fields: {
           patient_id: 'patient',
         },
         reported_date: new Date().getTime() + 3000,
         contact: {
-          _id: 'person',
+          _id: 'person', 
           parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       { // valid registration for place and patient
         _id: 'registration_3_place_and_patient',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'sms_form_2',
         fields: {
           place_id: 'the_clinic',
@@ -676,7 +677,7 @@ describe('accept_patient_reports', () => {
       },
       { // valid registration for other place
         _id: 'registration_4_place',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'sms_form_2',
         fields: {
           place_id: 'the_health_center'
@@ -688,7 +689,7 @@ describe('accept_patient_reports', () => {
 
     const latestRegistration = { // valid registration for place and patient
       _id: 'registration_5_place_and_patient',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'sms_form_2',
       fields: {
         place_id: 'the_clinic',
@@ -700,7 +701,7 @@ describe('accept_patient_reports', () => {
 
     const doc1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: 'phone2',
       fields: {
@@ -709,14 +710,14 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
+        _id: 'person', 
         parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     const doc2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: 'phone2',
       fields: {
@@ -725,7 +726,7 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
+        _id: 'person', 
         parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
@@ -797,7 +798,7 @@ describe('accept_patient_reports', () => {
         _id: uuid(),
         form: 'form_1',
         fields: { patient_id: 'patient' },
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         reported_date: new Date().getTime(),
         scheduled_tasks: [
           { id: 1, type: 'type0', state: 'scheduled', due: new Date().getTime() + 10 * oneDay },
@@ -807,7 +808,7 @@ describe('accept_patient_reports', () => {
           { id: 5, type: 'type3', state: 'muted', due: new Date().getTime() - 10 * oneDay },
         ],
         contact: {
-          _id: 'person',
+          _id: 'person', 
           parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
@@ -815,7 +816,7 @@ describe('accept_patient_reports', () => {
         _id: uuid(),
         form: 'form_2',
         fields: { patient_id: 'patient' },
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         reported_date: new Date().getTime(),
         scheduled_tasks: [
           { id: 1, type: 'type0', group: 'a', state: 'scheduled', due: new Date().getTime() - 10 * oneDay },
@@ -832,7 +833,7 @@ describe('accept_patient_reports', () => {
           { id: 5, type: 'type3', group: 'b', state: 'muted', due: new Date().getTime() + 1 * oneDay },
         ],
         contact: {
-          _id: 'person',
+          _id: 'person', 
           parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
@@ -840,7 +841,7 @@ describe('accept_patient_reports', () => {
         _id: uuid(),
         form: 'form_1',
         fields: { patient_id: 'patient2' },
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         reported_date: new Date().getTime(),
         scheduled_tasks: [
           { id: 1, type: 'type0', state: 'scheduled', due: new Date().getTime() + 10 * oneDay },
@@ -850,7 +851,7 @@ describe('accept_patient_reports', () => {
           { id: 5, type: 'type3', state: 'sent', due: new Date().getTime() - 10 * oneDay },
         ],
         contact: {
-          _id: 'person',
+          _id: 'person', 
           parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
@@ -858,7 +859,7 @@ describe('accept_patient_reports', () => {
         _id: uuid(),
         form: 'form_2',
         fields: { patient_id: 'patient2' },
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         reported_date: new Date().getTime(),
         scheduled_tasks: [
           { id: 1, type: 'type0', group: 'a', state: 'scheduled', due: new Date().getTime() - 10 * oneDay },
@@ -870,7 +871,7 @@ describe('accept_patient_reports', () => {
           { id: 3, type: 'type3', group: 'b', state: 'sent', due: new Date().getTime() + 1 * oneDay },
         ],
         contact: {
-          _id: 'person',
+          _id: 'person', 
           parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
@@ -878,7 +879,7 @@ describe('accept_patient_reports', () => {
         _id: uuid(),
         form: 'form_1',
         fields: { place_id: 'the_clinic' },
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         reported_date: new Date().getTime(),
         scheduled_tasks: [
           { id: 1, type: 'type0', state: 'scheduled', due: new Date().getTime() + 10 * oneDay },
@@ -888,7 +889,7 @@ describe('accept_patient_reports', () => {
           { id: 5, type: 'type3', state: 'sent', due: new Date().getTime() - 10 * oneDay },
         ],
         contact: {
-          _id: 'person',
+          _id: 'person', 
           parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
@@ -896,7 +897,7 @@ describe('accept_patient_reports', () => {
         _id: uuid(),
         form: 'form_2',
         fields: { place_id: 'the_clinic' },
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         reported_date: new Date().getTime(),
         scheduled_tasks: [
           { id: 1, type: 'type0', group: 'a', state: 'scheduled', due: new Date().getTime() - 10 * oneDay },
@@ -908,7 +909,7 @@ describe('accept_patient_reports', () => {
           { id: 3, type: 'type3', group: 'b', state: 'sent', due: new Date().getTime() + 1 * oneDay },
         ],
         contact: {
-          _id: 'person',
+          _id: 'person', 
           parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       }
@@ -916,7 +917,7 @@ describe('accept_patient_reports', () => {
 
     const noSilence = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'NO_SILENCE',
       from: 'phone',
       fields: {
@@ -928,7 +929,7 @@ describe('accept_patient_reports', () => {
 
     const silence1Patient = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'SILENCE1',
       from: '+phone',
       fields: {
@@ -936,14 +937,14 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
+        _id: 'person', 
         parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     const silence2Patient2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'SILENCE2',
       from: 'phone',
       fields: {
@@ -955,7 +956,7 @@ describe('accept_patient_reports', () => {
 
     const silence2Clinic = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'SILENCE2',
       from: 'phone',
       fields: {
@@ -967,7 +968,7 @@ describe('accept_patient_reports', () => {
 
     const silence0PatientAndClinic = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'SILENCE0',
       from: 'phone',
       fields: {

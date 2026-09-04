@@ -2,7 +2,7 @@ const _ = require('lodash');
 const db = require('./db');
 const logger = require('@medic/logger');
 const translationUtils = require('@medic/translation-utils');
-const { DOC_TYPES } = require('@medic/constants');
+const { DOC_IDS, PREFIXES } = require('@medic/constants');
 const translations = {};
 
 const DEFAULT_CONFIG = {
@@ -20,11 +20,12 @@ let transitionsLib;
 
 const loadTranslations = () => {
   const options = {
-    key: [DOC_TYPES.TRANSLATIONS],
+    start_key: PREFIXES.TRANSLATIONS,
+    end_key: PREFIXES.TRANSLATIONS + '\ufff0',
     include_docs: true,
   };
   return db.medic
-    .query('medic-client/doc_by_type', options)
+    .allDocs(options)
     .then(result => {
       result.rows.forEach(row => {
         const values = Object.assign(row.doc.generic, row.doc.custom || {});
@@ -40,10 +41,10 @@ const initFeed = () => {
   db.medic
     .changes({ live: true, since: 'now' })
     .on('change', change => {
-      if (change.id === 'settings') {
+      if (change.id === DOC_IDS.SETTINGS) {
         logger.info('Reloading configuration');
         initConfig();
-      } else if (change.id.startsWith('messages-')) {
+      } else if (change.id.startsWith(PREFIXES.TRANSLATIONS)) {
         logger.info('Detected translations change - reloading');
         loadTranslations().then(() => initTransitionLib());
       }
@@ -56,7 +57,7 @@ const initFeed = () => {
 
 const initConfig = () => {
   return db.medic
-    .get('settings')
+    .get(DOC_IDS.SETTINGS)
     .then(doc => {
       _.defaults(doc.settings, DEFAULT_CONFIG);
       config = doc.settings;

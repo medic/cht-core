@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
   <h:head>
     <h:title>Dates</h:title>
-    <model>
+    <model odk:xforms-version="1.0.0">
       <itext>
         <translation lang="en">
-          <text id="/dates/group/date_a:label">
+          <text id="/data/group/date_a:label">
             <value>Date A</value>
           </text>
-          <text id="/dates/group/date_b:label">
+          <text id="/data/group/date_b:label">
             <value>Date B</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <dates delimiter="#" id="dates" prefix="J1!dates!" version="2024-04-02 00:00:00">
+        <data id="dates" version="2024-04-02 00:00:00" prefix="J1!dates!" delimiter="#">
           <group>
             <date_a/>
             <date_b/>
@@ -26,25 +26,26 @@
           <meta tag="hidden">
             <instanceID/>
           </meta>
-        </dates>
+        </data>
       </instance>
       <instance id="contact-summary"/>
-      <bind nodeset="/dates/group/date_a" type="date"/>
-      <bind nodeset="/dates/group/date_b" type="date"/>
-      <bind calculate="cht:difference-in-days( /dates/group/date_a ,  /dates/group/date_b )" nodeset="/dates/diff_in_days" type="string"/>
-      <bind calculate="cht:difference-in-weeks( /dates/group/date_a ,  /dates/group/date_b )" nodeset="/dates/diff_in_weeks" type="string"/>
-      <bind calculate="cht:difference-in-months( /dates/group/date_a ,  /dates/group/date_b )" nodeset="/dates/diff_in_months" type="string"/>
-      <bind calculate="cht:difference-in-years( /dates/group/date_a ,  /dates/group/date_b )" nodeset="/dates/diff_in_years" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/dates/meta/instanceID" readonly="true()" type="string"/>
+      <instance id="user-contact-summary"/>
+      <bind nodeset="/data/group/date_a" type="date"/>
+      <bind nodeset="/data/group/date_b" type="date"/>
+      <bind nodeset="/data/diff_in_days" type="string" calculate="cht:difference-in-days( /data/group/date_a ,  /data/group/date_b )"/>
+      <bind nodeset="/data/diff_in_weeks" type="string" calculate="cht:difference-in-weeks( /data/group/date_a ,  /data/group/date_b )"/>
+      <bind nodeset="/data/diff_in_months" type="string" calculate="cht:difference-in-months( /data/group/date_a ,  /data/group/date_b )"/>
+      <bind nodeset="/data/diff_in_years" type="string" calculate="cht:difference-in-years( /data/group/date_a ,  /data/group/date_b )"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
   <h:body class="pages">
-    <group appearance="field-list" ref="/dates/group">
-      <input ref="/dates/group/date_a">
-        <label ref="jr:itext('/dates/group/date_a:label')"/>
+    <group appearance="field-list" ref="/data/group">
+      <input ref="/data/group/date_a">
+        <label ref="jr:itext('/data/group/date_a:label')"/>
       </input>
-      <input ref="/dates/group/date_b">
-        <label ref="jr:itext('/dates/group/date_b:label')"/>
+      <input ref="/data/group/date_b">
+        <label ref="jr:itext('/data/group/date_b:label')"/>
       </input>
     </group>
   </h:body>

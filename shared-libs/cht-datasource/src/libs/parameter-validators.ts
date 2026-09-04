@@ -1,13 +1,28 @@
 import { InvalidArgumentError } from './error';
 import {
   ContactTypeQualifier,
+  FormsQualifier,
   FreetextQualifier,
-  UuidQualifier,
+  IdsQualifier,
   isContactTypeQualifier,
+  isFormsQualifier,
   isFreetextQualifier,
+  isIdsQualifier,
   isUuidQualifier,
+  UuidQualifier,
 } from '../qualifier';
-import { Nullable } from './core';
+import {
+  assertDataObject,
+  assertDoesNotHaveField,
+  assertHasOptionalField,
+  assertHasRequiredField,
+  DataObject, isDateTimeString,
+  isRecord,
+  Nullable
+} from './core';
+import * as Input from '../input';
+import { ISO_8601_DATE_PATTERN } from './constants';
+import { DOC_TYPES } from '@medic/constants';
 
 /** @internal */
 export const assertTypeQualifier: (qualifier: unknown) => asserts qualifier is ContactTypeQualifier = (
@@ -17,6 +32,74 @@ export const assertTypeQualifier: (qualifier: unknown) => asserts qualifier is C
     throw new InvalidArgumentError(`Invalid contact type [${JSON.stringify(qualifier)}].`);
   }
 };
+
+const isValidReportedDate = (value: unknown): value is string | number => {
+  if (typeof value === 'number') {
+    return Number.isInteger(value);
+  }
+
+  return typeof value === 'string' && ISO_8601_DATE_PATTERN.test(value);
+};
+
+// eslint-disable-next-line func-style
+function assertReportedDate<T extends DataObject>(
+  data: T
+): asserts data is T & { reported_date?: string | number } {
+  if (data.reported_date && !isValidReportedDate(data.reported_date)) {
+    throw new InvalidArgumentError(
+      `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', ` +
+      '\'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
+    );
+  }
+}
+
+// eslint-disable-next-line func-style
+function assertContactInput(data: unknown): asserts data is Input.v1.ContactInput {
+  assertDataObject(data, InvalidArgumentError);
+  assertHasRequiredField(data, { name: 'type', type: 'string' }, InvalidArgumentError);
+  assertHasRequiredField(data, { name: 'name', type: 'string' }, InvalidArgumentError);
+  assertReportedDate(data);
+  assertDoesNotHaveField(data, '_id', InvalidArgumentError);
+  assertDoesNotHaveField(data, '_rev', InvalidArgumentError);
+}
+
+
+/** @internal */
+// eslint-disable-next-line func-style
+export function assertPersonInput(data: unknown): asserts data is Input.v1.PersonInput {
+  assertContactInput(data);
+  assertHasRequiredField(data, { name: 'parent', type: 'string' }, InvalidArgumentError);
+  assertHasOptionalField(data, { name: 'phone', type: 'string' }, InvalidArgumentError);
+  assertHasOptionalField(data, { name: 'patient_id', type: 'string' }, InvalidArgumentError);
+  assertHasOptionalField(data, { name: 'sex', type: 'string' }, InvalidArgumentError);
+  if (data.date_of_birth && !(data.date_of_birth instanceof Date || isDateTimeString(data.date_of_birth))) {
+    throw new InvalidArgumentError(`The [date_of_birth] field must have a [date] value.`);
+  }
+}
+
+
+/** @internal */
+// eslint-disable-next-line func-style
+export function assertPlaceInput(data: unknown): asserts data is Input.v1.PlaceInput {
+  assertContactInput(data);
+  assertHasOptionalField(data, { name: 'parent', type: 'string' }, InvalidArgumentError);
+  assertHasOptionalField(data, { name: 'contact', type: 'string' }, InvalidArgumentError);
+  assertHasOptionalField(data, { name: 'place_id', type: 'string' }, InvalidArgumentError);
+}
+
+/** @internal */
+// eslint-disable-next-line func-style
+export function assertReportInput(data: unknown): asserts data is Input.v1.ReportInput {
+  assertDataObject(data, InvalidArgumentError);
+  assertHasRequiredField(data, { name: 'form', type: 'string' }, InvalidArgumentError);
+  assertReportedDate(data);
+  assertHasRequiredField(data, { name: 'contact', type: 'string' }, InvalidArgumentError);
+  assertDoesNotHaveField(data, '_id', InvalidArgumentError);
+  assertDoesNotHaveField(data, '_rev', InvalidArgumentError);
+  if (data.type && data.type !== DOC_TYPES.DATA_RECORD) {
+    throw new InvalidArgumentError('Report type must be "data_record".');
+  }
+}
 
 /** @internal */
 export const assertLimit: (limit: unknown) => asserts limit is number | `${number}` = (limit: unknown) => {
@@ -43,6 +126,23 @@ export const assertFreetextQualifier: (qualifier: unknown) => asserts qualifier 
 };
 
 /** @internal */
+export const assertFreetextOrFormsQualifier: (
+  qualifier: unknown
+) => asserts qualifier is FreetextQualifier | FormsQualifier = (
+  qualifier: unknown
+) => {
+  if (isFreetextQualifier(qualifier) || isFormsQualifier(qualifier)) {
+    return;
+  }
+  // Only form-shaped input gets the new message. Everything else keeps the original freetext error
+  // verbatim, so callers (and the 400 bodies the API surfaces from them) are unchanged.
+  if (isRecord(qualifier) && 'forms' in qualifier) {
+    throw new InvalidArgumentError(`Invalid forms [${JSON.stringify(qualifier)}].`);
+  }
+  throw new InvalidArgumentError(`Invalid freetext [${JSON.stringify(qualifier)}].`);
+};
+
+/** @internal */
 export const assertContactTypeFreetextQualifier: (
   qualifier: unknown
 ) => asserts qualifier is ContactTypeQualifier | FreetextQualifier = (
@@ -56,9 +156,29 @@ export const assertContactTypeFreetextQualifier: (
 };
 
 /** @internal */
+export const assertContactTypeIdsQualifier: (
+  qualifier: unknown
+) => asserts qualifier is ContactTypeQualifier | IdsQualifier = (qualifier: unknown) => {
+  if (!(isContactTypeQualifier(qualifier) || isIdsQualifier(qualifier))) {
+    throw new InvalidArgumentError(
+      `Invalid qualifier [${JSON.stringify(qualifier)}]. Must be a contact type or ids qualifier.`
+    );
+  }
+};
+
+/** @internal */
 export const assertUuidQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
   if (!isUuidQualifier(qualifier)) {
     throw new InvalidArgumentError(`Invalid identifier [${JSON.stringify(qualifier)}].`);
+  }
+};
+
+/** @internal */
+export const assertIdsQualifier: (
+  qualifier: unknown
+) => asserts qualifier is IdsQualifier = (qualifier: unknown) => {
+  if (!isIdsQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid identifiers [${JSON.stringify(qualifier)}].`);
   }
 };
 

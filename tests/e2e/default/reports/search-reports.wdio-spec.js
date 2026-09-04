@@ -8,16 +8,17 @@ const personFactory = require('@factories/cht/contacts/person');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const smsPregnancyFactory = require('@factories/cht/reports/sms-pregnancy');
 const userFactory = require('@factories/cht/users/users');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Reports Search', () => {
   // NOTE: this is a search word added to reports for searching purposes
   // the value was chosen such that it is a sub-string of the short_name which
   // gives double output from the couchdb view
   const searchWord = 'sittu';
-  const sittuHospital = placeFactory.place().build({ name: 'Sittu Hospital', type: 'district_hospital' });
+  const sittuHospital = placeFactory.place().build({ name: 'Sittu Hospital', type: CONTACT_TYPES.DISTRICT_HOSPITAL });
   const potuHealthCenter = placeFactory.place().build({
     name: 'Potu Health Center',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: sittuHospital._id }
   });
 
@@ -26,10 +27,23 @@ describe('Reports Search', () => {
     patient_id: 'sittu-patient',
     parent: { _id: sittuHospital._id, parent: sittuHospital.parent },
   });
+  const devanagariPerson = personFactory.build({
+    name: 'Devanagari',
+    patient_id: 'devanagari-numeral-patient',
+    parent: { _id: sittuHospital._id, parent: sittuHospital.parent },
+  });
+
   const potuPerson = personFactory.build({
     name: 'Potu',
     patient_id: 'potu-patient',
     parent: { _id: potuHealthCenter._id, parent: potuHealthCenter.parent },
+  });
+
+  const devanagariReport = pregnancyFactory.build({
+    fields: { patient_id: devanagariPerson.patient_id, note: '१२३४५' }
+  });
+  const latinReport = pregnancyFactory.build({
+    fields: { patient_id: devanagariPerson.patient_id, note: '12345' }
   });
 
   const reports = [
@@ -37,6 +51,8 @@ describe('Reports Search', () => {
     smsPregnancyFactory.pregnancy().build({ fields: { patient_id: potuPerson.patient_id } }),
     pregnancyFactory.build({ fields: { patient_id: sittuPerson.patient_id, case_id: 'case-12', note: searchWord } }),
     pregnancyFactory.build({ fields: { patient_id: potuPerson.patient_id, case_id: 'case-12' } }),
+    devanagariReport,
+    latinReport,
   ];
 
   const offlineUser = userFactory.build({
@@ -53,7 +69,7 @@ describe('Reports Search', () => {
   });
 
   before(async () => {
-    await utils.saveDocs([ sittuHospital, sittuPerson, potuHealthCenter, potuPerson ]);
+    await utils.saveDocs([ sittuHospital, sittuPerson, potuHealthCenter, potuPerson, devanagariPerson ]);
     await utils.saveDocs(reports);
     await utils.createUsers([offlineUser, onlineUser]);
   });
@@ -62,7 +78,7 @@ describe('Reports Search', () => {
 
   [
     ['online', onlineUser, [reports[0], reports[2]], reports],
-    ['offline', offlineUser, [reports[2]], [reports[2], reports[3]]],
+    ['offline', offlineUser, [reports[2]], [reports[2], reports[3], reports[4], reports[5]]],
   ].forEach(([userType, user, filteredReports, allReports]) => describe(`Logged in as an ${userType} user`, () => {
     before(() => loginPage.login(user));
 
@@ -87,6 +103,26 @@ describe('Reports Search', () => {
       }
     });
 
+    it('search by Devanagari numerals should cross-match Latin numeral reports', async () => {
+      await commonPage.goToReports();
+      await searchPage.performSearch('१२३४५');
+      await commonPage.waitForLoaders();
+      expect(await reportsPage.reportsListDetails()).to.have.lengthOf(2);
+      expect(await reportsPage.leftPanelSelectors.reportByUUID(devanagariReport._id).isDisplayed()).to.be.true;
+      expect(await reportsPage.leftPanelSelectors.reportByUUID(latinReport._id).isDisplayed()).to.be.true;
+      await searchPage.clearSearch();
+    });
+
+    it('search by Latin numerals should cross-match Devanagari numeral reports', async () => {
+      await commonPage.goToReports();
+      await searchPage.performSearch('12345');
+      await commonPage.waitForLoaders();
+      expect(await reportsPage.reportsListDetails()).to.have.lengthOf(2);
+      expect(await reportsPage.leftPanelSelectors.reportByUUID(devanagariReport._id).isDisplayed()).to.be.true;
+      expect(await reportsPage.leftPanelSelectors.reportByUUID(latinReport._id).isDisplayed()).to.be.true;
+      await searchPage.clearSearch();
+    });
+
     it('should return results when searching by case_id', async () => {
       const sittuPregnancy = reports[2];
       const potuPregnancy = reports[3];
@@ -97,6 +133,9 @@ describe('Reports Search', () => {
       await reportsPage.openReport(sittuPregnancy._id);
       await reportsPage.clickOnCaseId();
       await commonPage.waitForLoaders();
+
+      await browser.waitUntil(async () => (await reportsPage.reportsListDetails()).length > 0);
+
       expect((await reportsPage.reportsListDetails()).length).to.equal(2);
       expect(await reportsPage.leftPanelSelectors.reportByUUID(sittuPregnancy._id).isDisplayed()).to.be.true;
       expect(await reportsPage.leftPanelSelectors.reportByUUID(potuPregnancy._id).isDisplayed()).to.be.true;
@@ -110,6 +149,7 @@ describe('Reports Search', () => {
 
         await searchPage.performSearch('note:sittu');
         await commonPage.waitForLoaders();
+
         expect((await reportsPage.reportsListDetails()).length).to.equal(filteredReports.length);
         for (const report of filteredReports) {
           expect(await reportsPage.leftPanelSelectors.reportByUUID(report._id).isDisplayed()).to.be.true;
@@ -131,6 +171,7 @@ describe('Reports Search', () => {
 
       await searchPage.performSearch(randomWord);
       await commonPage.waitForLoaders();
+
       expect((await reportsPage.reportsListDetails()).length).to.equal(0);
       await searchPage.clearSearch();
       expect((await reportsPage.reportsListDetails()).length).to.equal(allReports.length);

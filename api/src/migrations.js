@@ -3,7 +3,8 @@ const fs = require('fs');
 const readdir = promisify(fs.readdir);
 const path = require('path');
 const db = require('./db');
-const MIGRATION_LOG_ID = 'migration-log';
+const { DOC_IDS } = require('@medic/constants');
+const MIGRATION_LOG_ID = DOC_IDS.MIGRATION_LOG;
 const MIGRATION_LOG_TYPE = 'meta';
 const MIGRATIONS_DIR = path.join(__dirname, 'migrations');
 const logger = require('@medic/logger');
@@ -15,34 +16,13 @@ const hasRun = (log, migration) => {
   return log.migrations.indexOf(migration.name) !== -1;
 };
 
-const getLogWithView = () => {
-  const options = {
-    include_docs: true,
-    key: [MIGRATION_LOG_TYPE],
-  };
-  return db.medic.query('medic-client/doc_by_type', options).then(result => {
-    return result && result.rows && result.rows[0] && result.rows[0].doc;
-  });
-};
-
-const deleteOldLog = oldLog => {
-  if (oldLog) {
-    oldLog._deleted = true;
-    return db.medic.put(oldLog);
-  }
-};
-
 const createMigrationLog = () => {
-  return getLogWithView()
-    .then(oldLog => {
-      const newLog = {
-        _id: MIGRATION_LOG_ID,
-        type: MIGRATION_LOG_TYPE,
-        migrations: (oldLog && oldLog.migrations) || [],
-      };
-      return db.medic.put(newLog).then(() => deleteOldLog(oldLog));
-    })
-    .then(() => getLog());
+  const newLog = {
+    _id: MIGRATION_LOG_ID,
+    type: MIGRATION_LOG_TYPE,
+    migrations: [],
+  };
+  return db.medic.put(newLog).then(() => getLog());
 };
 
 const getLog = () => {

@@ -27,13 +27,14 @@ import { ErrorLogComponent } from '@mm-components/error-log/error-log.component'
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
 import { AuthDirective } from '@mm-directives/auth.directive';
+import { ContactProfileImageComponent } from '@mm-components/contact-profile-image/contact-profile-image.component';
 import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { SummaryPipe } from '@mm-pipes/message.pipe';
 import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
-import { 
-  ContactSummaryContentComponent 
+import {
+  ContactSummaryContentComponent
 } from '@mm-components/contact-summary-content/contact-summary-content.component';
 
 @Component({
@@ -47,6 +48,7 @@ import {
     NgFor,
     TranslateDirective,
     AuthDirective,
+    ContactProfileImageComponent,
     ContentRowListItemComponent,
     RouterLink,
     TranslatePipe,
@@ -82,6 +84,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   childContactTypes;
   filteredTasks = [];
   filteredReports: any[] = [];
+  summaryCards: any[] = [];
   DISPLAY_LIMIT = 50;
 
   constructor(
@@ -147,7 +150,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const hasSelectedNewContact = selectedContact === null || selectedContact._id !== nextSelectedContact._id;
+    const hasSelectedNewContact = selectedContact === null || selectedContact?._id !== nextSelectedContact?._id;
     if (!hasSelectedNewContact) {
       return;
     }
@@ -173,10 +176,13 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     ]) => {
       void this.recordSearchTelemetry(this.selectedContact, selectedContact, filters);
       if (this.selectedContact?._id !== selectedContact?._id) {
-        // reset view when selected contact changes
         this.resetTaskAndReportsFilter();
       }
       this.selectedContact = selectedContact;
+      this.summaryCards = (selectedContact?.summary?.cards ?? []).map(card => ({ 
+        ...card,
+        collapsed: card.collapsed === true
+      }));
       this.loadingContent = loadingContent;
       this.forms = forms;
       this.loadingSelectedContactReports = loadingSelectedContactReports;
@@ -205,7 +211,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         if (!summary || !this.selectedContact?.doc) {
           return;
         }
-        if (summary.errorStack){
+        if (summary.errorStack) {
           this.summaryErrorStack = summary.errorStack;
           return;
         }
@@ -241,21 +247,83 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscriptions.add(routeSubscription);
   }
 
+  // visit reports are keyed on fields.visited_contact_uuid, which is not a registration subject id,
+  // so ContactChangeFilterService misses them: without this check the visit stats displayed on the
+  // children lists would go stale until the next navigation.
+  // Note this only works for offline users: they alone receive change docs (see ChangesService), so
+  // for online users the visit stats still only refresh on navigation.
+  private isRelevantVisitReport(change) {
+    const doc = change?.doc;
+    if (!this.contactChangeFilterService.isVisitReport(doc)) {
+      return false;
+    }
+    const visitedContactId = doc.fields.visited_contact_uuid;
+    if (visitedContactId === this.selectedContact?.doc?._id) {
+      return true;
+    }
+    return !!this.selectedContact?.children?.some(
+      (group) => group.type?.count_visits && group.contacts?.some((child) => child.doc?._id === visitedContactId)
+    );
+  }
+
+  private hasVisitStatsChildren() {
+    return !!this.selectedContact?.children?.some(
+      (group) => group.type?.count_visits && group.contacts?.length
+    );
+  }
+
+  private isChildrenVisitStatsOnlyChange(change) {
+    if (this.contactChangeFilterService.isRelevantChange(change, this.selectedContact)) {
+      // the profile itself is affected: it needs a full reload
+      return false;
+    }
+    if (change?.deleted) {
+      // deletions carry no doc content, so the deleted doc may have been a visit report
+      return true;
+    }
+    // a visit report about the selected contact itself feeds the UHC card in the contact summary,
+    // which only a full reload refreshes
+    return change?.doc?.fields?.visited_contact_uuid !== this.selectedContact?.doc?._id;
+  }
+
   private subscribeToChanges() {
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-content',
-      filter: (change) => this.contactChangeFilterService.isRelevantChange(change, this.selectedContact),
+      filter: (change) => this.contactChangeFilterService.isRelevantChange(change, this.selectedContact) ||
+        this.isRelevantVisitReport(change) ||
+        (!!change?.deleted && this.hasVisitStatsChildren()),
       callback: (change) => {
         const matchedContact = this.contactChangeFilterService.matchContact(change, this.selectedContact);
         const contactDeleted = this.contactChangeFilterService.isDeleted(change);
         if (matchedContact && contactDeleted) {
-          const parentId = this.selectedContact.doc.parent && this.selectedContact.doc.parent._id;
-          return this.router.navigate(['/contacts', parentId]);
+          return this.navigateToParent();
+        }
+        if (this.isChildrenVisitStatsOnlyChange(change)) {
+          // only the visit stats displayed on the children rows can be affected: refresh those
+          // (debounced in the effect) instead of reloading the whole profile per change
+          return this.contactsActions.refreshChildrenVisitStats();
         }
         return this.contactsActions.selectContact(this.selectedContact._id, { silent: true });
       }
     });
     this.subscriptions.add(changesSubscription);
+  }
+
+  private navigateToParent() {
+    if (!this.selectedContact?.doc) {
+      return;
+    }
+    const parentId = this.selectedContact.doc.parent && this.selectedContact.doc.parent._id;
+    return this.router.navigate(['/contacts', parentId]);
+  }
+
+  // stable row identity, so late annotations (visit stats, task counts) don't re-create every row
+  trackByGroup(index, group) {
+    return group?.type?.id ?? index;
+  }
+
+  trackByChildContact(index, child) {
+    return child?.id ?? child?.doc?._id ?? index;
   }
 
   filterReports(months?, reports?) {
@@ -276,7 +344,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     }
     return filteredReports;
   }
-  
+
   filterTasks(weeks?, tasks?) {
     this.tasksTimeWindowWeeks = weeks;
     const taskEndDate = weeks ? moment().add(weeks, 'weeks').format('YYYY-MM-DD') : null;
@@ -287,10 +355,14 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   }
 
   private async updateFastActions() {
+    if (!this.selectedContact) {
+      return;
+    }
+
     this.fastActionList = await this.fastActionButtonService.getContactRightSideActions({
       xmlReportForms: this.relevantReportForms,
       childContactTypes: this.childContactTypes,
-      parentFacilityId: this.selectedContact.doc?._id,
+      parentFacilityId: this.selectedContact?.doc?._id,
       communicationContext: {
         sendTo: this.selectedContact?.type?.person && this.selectedContact?.doc,
         callbackOpenSendMessage: (sendTo) => this.openSendMessageModal(sendTo),
@@ -343,18 +415,24 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscriptionAllContactForms = this.xmlFormsService.subscribe(
       'SelectedContactChildrenForms',
       { contactForms: true },
-      (error, forms) => {
-        if (error) {
-          console.error('Error fetching allowed contact forms', error);
-          return;
-        }
-
-        const allowedChildTypes = this.filterAllowedChildType(forms, this.childTypesBySelectedContact);
-        this.childContactTypes = this.addPermissionToContactType(allowedChildTypes);
-        this.updateFastActions();
-      }
+      (error, forms) => this.updateContactTypes(error, forms)
     );
     this.subscriptions.add(this.subscriptionAllContactForms);
+  }
+
+  private updateContactTypes(error, forms) {
+    if (error) {
+      console.error('Error fetching allowed contact forms', error);
+      return;
+    }
+
+    if (!this.selectedContact) {
+      return;
+    }
+
+    const allowedChildTypes = this.filterAllowedChildType(forms, this.childTypesBySelectedContact);
+    this.childContactTypes = this.addPermissionToContactType(allowedChildTypes);
+    this.updateFastActions();
   }
 
   private subscribeToSelectedContactXmlForms() {
@@ -373,33 +451,39 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         contactSummary: this.selectedContact.summary.context,
         reportForms: true,
       },
-      (error, forms) => {
-        if (error) {
-          console.error('Error fetching relevant forms', error);
-          return;
-        }
-
-        if (!forms) {
-          return;
-        }
-
-        this.relevantReportForms = forms.map(xForm => {
-          const isUnmuteForm = this.mutingTransition.isUnmuteForm(xForm.internalId, this.settings);
-          const isMuted = this.contactMutedService.getMuted(this.selectedContact.doc);
-          return {
-            id: xForm._id,
-            code: xForm.internalId,
-            title: xForm.title,
-            titleKey: xForm.translation_key,
-            icon: xForm.icon,
-            showUnmuteModal: isMuted && !isUnmuteForm,
-          };
-        });
-
-        this.updateFastActions();
-      }
+      (error, forms) => this.updateReportForms(error, forms)
     );
     this.subscriptions.add(this.subscriptionSelectedContactForms);
+  }
+
+  private updateReportForms(error, forms) {
+    if (error) {
+      console.error('Error fetching relevant forms', error);
+      return;
+    }
+
+    if (!this.selectedContact?.doc) {
+      return;
+    }
+
+    if (!forms) {
+      return;
+    }
+
+    this.relevantReportForms = forms.map(xForm => {
+      const isUnmuteForm = this.mutingTransition.isUnmuteForm(xForm.internalId, this.settings);
+      const isMuted = this.contactMutedService.getMuted(this.selectedContact.doc);
+      return {
+        id: xForm._id,
+        code: xForm.internalId,
+        title: xForm.title,
+        titleKey: xForm.translation_key,
+        icon: xForm.icon,
+        showUnmuteModal: isMuted && !isUnmuteForm,
+      };
+    });
+
+    this.updateFastActions();
   }
 
   private filterAllowedChildType(forms, childTypes: Record<string, any>[]) {

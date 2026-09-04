@@ -1,9 +1,10 @@
 const Factory = require('rosie').Factory;
+const { CONTACT_TYPES } = require('@medic/constants');
 const phoneNumber = '+12068881234';
 
 const place = {
   _id: 'hc1',
-  type: 'health_center',
+  type: CONTACT_TYPES.HEALTH_CENTER,
   name: 'Health Center 1',
   parent: 'dist1'
 };
@@ -11,7 +12,7 @@ const place = {
 const contact = {
   _id: 'fixture:user:user1',
   name: 'OfflineUser',
-  phone: phoneNumber
+  phone: phoneNumber,
 };
 
 

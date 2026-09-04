@@ -6,7 +6,7 @@ import * as chaiExclude from 'chai-exclude';
 chai.use(chaiExclude);
 import { expect, assert } from 'chai';
 import { NgZone } from '@angular/core';
-import { v4 as uuidv4 } from 'uuid';
+import { v7 as uuid } from 'uuid';
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
@@ -374,8 +374,8 @@ describe('Db Service', () => {
 
         getService();
         const db = service.get();
-        await db.put({ _id: uuidv4() });
-        await db.put({ _id: uuidv4() });
+        await db.put({ _id: uuid() });
+        await db.put({ _id: uuid() });
         const allDocs = (await db.allDocs({ include_docs: true })).rows;
         const info = await db.info();
         sinon.resetHistory();
@@ -406,8 +406,8 @@ describe('Db Service', () => {
 
         getService();
         const db = service.get();
-        await db.put({ _id: uuidv4() });
-        await db.put({ _id: uuidv4() });
+        await db.put({ _id: uuid() });
+        await db.put({ _id: uuid() });
         sinon.resetHistory();
 
         const onChange = sinon.stub();
@@ -471,7 +471,7 @@ describe('Db Service', () => {
       it('should call with correct params', fakeAsync(() => {
         const options = { live: false, since: '123' };
         const syncSpy = sinon.spy(window.PouchDB.prototype, 'sync');
-        const target = window.PouchDB(`db-${uuidv4()}`);
+        const target = window.PouchDB(`db-${uuid()}`);
 
         getService();
         const db = service.get();
@@ -506,12 +506,12 @@ describe('Db Service', () => {
       it('should do a full sync', fakeAsync(async () => {
         const options = { live: false };
         const syncSpy = sinon.spy(window.PouchDB.prototype, 'sync');
-        const target = window.PouchDB(`db-${uuidv4()}`);
+        const target = window.PouchDB(`db-${uuid()}`);
 
         getService();
         const db = service.get();
-        await db.put({ _id: uuidv4() });
-        await db.put({ _id: uuidv4() });
+        await db.put({ _id: uuid() });
+        await db.put({ _id: uuid() });
         const allDocs = (await db.allDocs()).rows;
         const info = await db.info();
 
@@ -550,12 +550,12 @@ describe('Db Service', () => {
 
       it('should attach "on" events and run them in the zone', fakeAsync(async () => {
         const syncSpy = sinon.spy(window.PouchDB.prototype, 'sync');
-        const target = window.PouchDB(`db-${uuidv4()}`);
+        const target = window.PouchDB(`db-${uuid()}`);
 
         getService();
         const db = service.get();
-        await db.put({ _id: uuidv4() });
-        await db.put({ _id: uuidv4() });
+        await db.put({ _id: uuid() });
+        await db.put({ _id: uuid() });
         sinon.resetHistory();
 
         const onChange = sinon.stub();
@@ -585,14 +585,14 @@ describe('Db Service', () => {
       }));
 
       it('should catch errors', fakeAsync(async () => {
-        const target = window.PouchDB(`db-${uuidv4()}`);
+        const target = window.PouchDB(`db-${uuid()}`);
         const opts = { live: false, retry: false };
 
         getService();
         const db = service.get();
         const onError = sinon.stub();
         const onComplete = sinon.stub();
-        await target.bulkDocs([{ _id: uuidv4() }]);
+        await target.bulkDocs([{ _id: uuid() }]);
         sinon.stub(target, 'bulkGet').rejects({ status: 400, name: 'forbidden' });
 
         sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
@@ -615,7 +615,7 @@ describe('Db Service', () => {
       describe('to', () => {
         it('should call with correct params', fakeAsync(() => {
           const options = { live: false, since: '123' };
-          const target = window.PouchDB(`db-${uuidv4()}`);
+          const target = window.PouchDB(`db-${uuid()}`);
 
           getService();
           const db = service.get();
@@ -637,12 +637,12 @@ describe('Db Service', () => {
 
         it('should fully replicate', fakeAsync(async () => {
           const options = { live: false };
-          const target = window.PouchDB(`db-${uuidv4()}`);
+          const target = window.PouchDB(`db-${uuid()}`);
 
           getService();
           const db = service.get();
-          await db.put({ _id: uuidv4() });
-          await db.put({ _id: uuidv4() });
+          await db.put({ _id: uuid() });
+          await db.put({ _id: uuid() });
           const allDocs = (await db.allDocs()).rows;
           const info = await db.info();
           sinon.resetHistory();
@@ -664,12 +664,12 @@ describe('Db Service', () => {
         }));
 
         it('should attach "on" events and run them in the zone', fakeAsync(async () => {
-          const target = window.PouchDB(`db-${uuidv4()}`);
+          const target = window.PouchDB(`db-${uuid()}`);
 
           getService();
           const db = service.get();
-          await db.put({ _id: uuidv4() });
-          await db.put({ _id: uuidv4() });
+          await db.put({ _id: uuid() });
+          await db.put({ _id: uuid() });
           sinon.resetHistory();
           sinon.stub(NgZone, 'isInAngularZone').onCall(0).returns(true);
 
@@ -691,7 +691,7 @@ describe('Db Service', () => {
         }));
 
         it('should correctly bind catch', fakeAsync(() => {
-          const target = window.PouchDB(`db-${uuidv4()}`);
+          const target = window.PouchDB(`db-${uuid()}`);
           const opts = { live: false, retry: false, };
 
           getService();
@@ -720,7 +720,7 @@ describe('Db Service', () => {
       describe('from', () => {
         it('should call with correct params', fakeAsync(() => {
           const options = { live: false, since: '123' };
-          const target = window.PouchDB(`db-${uuidv4()}`);
+          const target = window.PouchDB(`db-${uuid()}`);
 
           getService();
           const db = service.get();
@@ -741,12 +741,12 @@ describe('Db Service', () => {
 
         it('should fully replicate', fakeAsync(async () => {
           const options = { live: false };
-          const target = window.PouchDB(`db-${uuidv4()}`);
+          const target = window.PouchDB(`db-${uuid()}`);
 
           getService();
           const db = service.get();
 
-          await target.bulkDocs([{ _id: uuidv4() }, { _id: uuidv4() }]);
+          await target.bulkDocs([{ _id: uuid() }, { _id: uuid() }]);
           const allDocs = (await target.allDocs()).rows;
           const info = await target.info();
 
@@ -767,11 +767,11 @@ describe('Db Service', () => {
         }));
 
         it('should attach "on" events and run them in the zone', fakeAsync(async () => {
-          const target = window.PouchDB(`db-${uuidv4()}`);
+          const target = window.PouchDB(`db-${uuid()}`);
 
           getService();
           const db = service.get();
-          await target.bulkDocs([{ _id: uuidv4() }, { _id: uuidv4() }]);
+          await target.bulkDocs([{ _id: uuid() }, { _id: uuid() }]);
 
           const onChange = sinon.stub();
           const onComplete = sinon.stub();
@@ -792,13 +792,13 @@ describe('Db Service', () => {
         }));
 
         it('should correctly bind catch', fakeAsync(async () => {
-          const target = window.PouchDB(`db-${uuidv4()}`);
+          const target = window.PouchDB(`db-${uuid()}`);
           const opts = { live: false, retry: false };
 
           getService();
           const db = service.get();
           const onError = sinon.stub();
-          await target.bulkDocs([{ _id: uuidv4() }, { _id: uuidv4() }]);
+          await target.bulkDocs([{ _id: uuid() }, { _id: uuid() }]);
           sinon.stub(target, 'bulkGet').rejects({ code: 400 });
 
           // can't use await, replicate doesn't return a promise

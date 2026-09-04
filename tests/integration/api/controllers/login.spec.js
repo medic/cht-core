@@ -3,12 +3,13 @@ chai.use(require('chai-shallow-deep-equal'));
 const utils = require('@utils');
 const mockIdProvider = require('../../../utils/mock-oidc-provider');
 const { DB_NAME } = require('@constants');
+const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 let user;
 const password = 'passwordSUP3RS3CR37!';
 const parentPlace = {
   _id: 'PARENT_PLACE',
-  type: 'district_hospital',
+  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
   name: 'Big Parent Hostpital'
 };
 
@@ -65,7 +66,7 @@ const expectLoginToFail = (response) => {
 };
 
 const getUser = (user) => {
-  const getUserId = n => `org.couchdb.user:${n}`;
+  const getUserId = n => `${PREFIXES.COUCH_USER}${n}`;
   const opts = { path: `/_users/${getUserId(user.username)}` };
   return utils.request(opts);
 };
@@ -99,7 +100,7 @@ describe('login', () => {
       roles: ['district_admin'],
       place: {
         _id: 'fixture:test',
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
         name: 'TestVille',
         parent: 'PARENT_PLACE'
       },

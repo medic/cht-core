@@ -4,6 +4,7 @@ import sinon from 'sinon';
 
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
 
 describe('ContactChangeFilter service', () => {
 
@@ -53,7 +54,7 @@ describe('ContactChangeFilter service', () => {
       contactTypesIncludes.returns(false);
 
       const change1 = { doc: { parent: { _id: '123'} } };
-      const change2 = { doc: { parent: { _id: '123'}, type: 'data_record' } };
+      const change2 = { doc: { parent: { _id: '123'}, type: DOC_TYPES.DATA_RECORD } };
       const change3 = { doc: {} };
       const contact = { doc: { _id: '123' } };
 
@@ -65,8 +66,8 @@ describe('ContactChangeFilter service', () => {
     it('returns true for new children', () => {
       const change1 = { doc: { type: 'person', parent: { _id: '123'} } };
       const change2 = { doc: { type: 'health_center', parent: { _id: '123'} } };
-      const change3 = { doc: { type: 'clinic', parent: { _id: '123'} } };
-      const change4 = { doc: { type: 'district_hospital', parent: { _id: '123'} } };
+      const change3 = { doc: { type: CONTACT_TYPES.CLINIC, parent: { _id: '123'} } };
+      const change4 = { doc: { type: CONTACT_TYPES.DISTRICT_HOSPITAL, parent: { _id: '123'} } };
       const contact = { doc: { _id: '123' } };
 
       expect(service.isRelevantContact(change1, contact)).to.equal(true);
@@ -77,8 +78,8 @@ describe('ContactChangeFilter service', () => {
 
     it('returns true for previous children', () => {
       const change1 = { doc: { _id: 'p1', type: 'person' } };
-      const change2 = { doc: { _id: 'o1', type: 'district_hospital' } };
-      const change3 = { doc: { _id: 'p2', type: 'clinic' } };
+      const change2 = { doc: { _id: 'o1', type: CONTACT_TYPES.DISTRICT_HOSPITAL } };
+      const change3 = { doc: { _id: 'p2', type: CONTACT_TYPES.CLINIC } };
       const contact = {
         doc: { },
         children: [
@@ -102,8 +103,8 @@ describe('ContactChangeFilter service', () => {
     });
 
     it('returns true for ancestor', () => {
-      const change1 = { doc: { _id: '123', type: 'clinic'} };
-      const change2 = { doc: { _id: '456', type: 'district_hospital'} };
+      const change1 = { doc: { _id: '123', type: CONTACT_TYPES.CLINIC} };
+      const change2 = { doc: { _id: '456', type: CONTACT_TYPES.DISTRICT_HOSPITAL} };
       const change3 = { doc: { _id: '789', type: 'health_center'} };
       const contact = {
         doc: { _id: 'id' },
@@ -192,7 +193,7 @@ describe('ContactChangeFilter service', () => {
       change1 = {
         doc: {
           form: 'a',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           fields: {}
         }
       };
@@ -200,7 +201,7 @@ describe('ContactChangeFilter service', () => {
       change2 = {
         doc: {
           form: 'a',
-          type: 'data_record'
+          type: DOC_TYPES.DATA_RECORD
         }
       };
 
@@ -359,6 +360,112 @@ describe('ContactChangeFilter service', () => {
       expect(service.isRelevantReport(change2, contact)).to.equal(false);
       change2.doc.place_id = 'nchild_place3';
       expect(service.isRelevantReport(change2, contact)).to.equal(false);
+    });
+  });
+
+  describe('isRelevantChange', () => {
+    it('returns true when change matches contact directly', () => {
+      const change = { id: 'contact1', doc: { _id: 'contact1' } };
+      const contact = { doc: { _id: 'contact1' } };
+      expect(service.isRelevantChange(change, contact)).to.equal(true);
+    });
+
+    it('returns true when change is a relevant child contact', () => {
+      const change = { id: 'child1', doc: { _id: 'child1', type: 'person', parent: { _id: 'contact1' } } };
+      const contact = { doc: { _id: 'contact1' } };
+      expect(service.isRelevantChange(change, contact)).to.equal(true);
+    });
+
+    it('returns true when change is a relevant report for the contact', () => {
+      const change = {
+        id: 'report1',
+        doc: {
+          _id: 'report1',
+          form: 'stock_report',
+          type: DOC_TYPES.DATA_RECORD,
+          fields: { patient_id: 'contact1' }
+        }
+      };
+      const contact = { doc: { _id: 'contact1', patient_id: 'patient1' } };
+      contactTypesIncludes.returns(false);
+      expect(service.isRelevantChange(change, contact)).to.equal(true);
+    });
+
+    it('returns true when change is a relevant report for a child contact', () => {
+      const change = {
+        id: 'report1',
+        doc: {
+          _id: 'report1',
+          form: 'assessment',
+          type: DOC_TYPES.DATA_RECORD,
+          fields: { patient_id: 'child_patient1' }
+        }
+      };
+      const contact = {
+        doc: { _id: 'contact1' },
+        children: [
+          {
+            type: { id: 'person' },
+            contacts: [
+              { doc: { _id: 'child1', patient_id: 'child_patient1' } }
+            ]
+          }
+        ]
+      };
+      contactTypesIncludes.returns(false);
+      expect(service.isRelevantChange(change, contact)).to.equal(true);
+    });
+
+    it('returns false when change is unrelated', () => {
+      const change = {
+        id: 'other1',
+        doc: {
+          _id: 'other1',
+          form: 'some_form',
+          type: DOC_TYPES.DATA_RECORD,
+          fields: { patient_id: 'someone_else' }
+        }
+      };
+      const contact = {
+        doc: { _id: 'contact1', patient_id: 'patient1' },
+        children: [],
+        lineage: []
+      };
+      contactTypesIncludes.returns(false);
+      expect(service.isRelevantChange(change, contact)).to.equal(false);
+    });
+
+    it('returns false for invalid inputs', () => {
+      expect(service.isRelevantChange({}, {})).to.equal(false);
+      expect(service.isRelevantChange(undefined, undefined)).to.equal(false);
+      expect(service.isRelevantChange({ id: '1' }, { doc: { _id: '2' } })).to.equal(false);
+    });
+  });
+
+  describe('isVisitReport', () => {
+    it('returns true for reports carrying a visited contact', () => {
+      const doc = {
+        type: DOC_TYPES.DATA_RECORD,
+        form: 'home_visit',
+        fields: { visited_contact_uuid: 'visited' },
+      };
+      expect(service.isVisitReport(doc)).to.equal(true);
+    });
+
+    it('returns false when the doc is not a report the UHC views index', () => {
+      expect(service.isVisitReport(undefined)).to.equal(false);
+      expect(service.isVisitReport({})).to.equal(false);
+      expect(service.isVisitReport({ type: DOC_TYPES.DATA_RECORD, form: 'home_visit' })).to.equal(false);
+      expect(service.isVisitReport({ type: DOC_TYPES.DATA_RECORD, form: 'home_visit', fields: {} })).to.equal(false);
+      expect(service.isVisitReport({
+        type: DOC_TYPES.DATA_RECORD,
+        fields: { visited_contact_uuid: 'visited' },
+      })).to.equal(false);
+      expect(service.isVisitReport({
+        type: 'contact',
+        form: 'home_visit',
+        fields: { visited_contact_uuid: 'visited' },
+      })).to.equal(false);
     });
   });
 

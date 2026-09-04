@@ -1,5 +1,5 @@
 const moment = require('moment');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 
 const utils = require('@utils');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
@@ -10,16 +10,17 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const reportFactory = require('@factories/cht/reports/generic-report');
 const userSettingsFactory = require('@factories/cht/users/user-settings');
+const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 describe('Reports tab breadcrumbs', () => {
   const places = placeFactory.generateHierarchy();
-  const clinic = places.get('clinic');
-  const healthCenter1 = places.get('health_center');
+  const clinic = places.get(CONTACT_TYPES.CLINIC);
+  const healthCenter1 = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const districtHospital = places.get('district_hospital');
 
   const healthCenter2 = placeFactory.place().build({
     name: 'health_center_2',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: districtHospital._id },
   });
 
@@ -48,7 +49,7 @@ describe('Reports tab breadcrumbs', () => {
   });
 
   const userWithManyPlaces = userSettingsFactory.build({
-    _id: 'org.couchdb.user:offline_many_facilities',
+    _id: PREFIXES.COUCH_USER + 'offline_many_facilities',
     roles: [ 'chw' ],
     facility_id: [ healthCenter1._id, healthCenter2._id ],
     contact_id: contactWithManyPlaces._id,

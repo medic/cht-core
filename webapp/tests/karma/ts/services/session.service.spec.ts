@@ -4,6 +4,8 @@ import { expect } from 'chai';
 import { HttpClient } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
+import { USER_ROLES } from '@medic/constants';
+const { COUCHDB_ADMIN } = USER_ROLES;
 
 import { SessionService } from '@mm-services/session.service';
 import { LocationService } from '@mm-services/location.service';
@@ -54,6 +56,23 @@ describe('Session service', () => {
     const actual = service.userCtx();
     expect(actual).to.deep.equal(expected);
     expect(cookieGet.args[0][0]).to.equal('userCtx');
+  });
+
+  it('does not log an error when the cookie is absent', () => {
+    const consoleErrorMock = sinon.stub(console, 'error');
+    cookieGet.returns('');
+    const actual = service.userCtx();
+    expect(actual).to.equal(null);
+    expect(consoleErrorMock.callCount).to.equal(0);
+  });
+
+  it('logs an error when the cookie is present but malformed', () => {
+    const consoleErrorMock = sinon.stub(console, 'error');
+    cookieGet.returns('{ not valid json');
+    const actual = service.userCtx();
+    expect(actual).to.equal(null);
+    expect(consoleErrorMock.callCount).to.equal(1);
+    expect(consoleErrorMock.args[0][0]).to.equal('Cookie parsing error');
   });
 
   it('logs out', async () => {
@@ -156,7 +175,7 @@ describe('Session service', () => {
     });
 
     it('returns true for _admin', () => {
-      cookieGet.returns(JSON.stringify({ roles: [ '_admin' ] }));
+      cookieGet.returns(JSON.stringify({ roles: [ COUCHDB_ADMIN ] }));
       const actual = service.isAdmin();
       expect(actual).to.equal(true);
     });

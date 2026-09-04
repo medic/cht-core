@@ -8,6 +8,8 @@ const pouchdbProvider = require('./pouchdb-provider');
 const rulesEmitter = require('./rules-emitter');
 const rulesStateStore = require('./rules-state-store');
 const wireupToProvider = require('./provider-wireup');
+const taskStates = require('./task-states');
+
 
 /**
  * @param {Object} db Medic pouchdb database
@@ -108,5 +110,10 @@ module.exports = db => {
      * @returns {Array} list of dirty contacts UUIDs
      */
     getDirtyContacts: () => rulesStateStore.getDirtyContacts(),
+
+    /**
+     * Returns true if the task is ready to be displayed to the user
+     */
+    showTask: (taskDoc) => taskDoc.state === taskStates.states.Ready,
   };
 };

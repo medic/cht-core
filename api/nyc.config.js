@@ -5,5 +5,10 @@ module.exports = {
   include: [
     'src/**/*.js'
   ],
-  reporter: 'text-summary'
+  reporter: 'text-summary',
+  checkCoverage: true,
+  branches: 90,
+  lines: 95,
+  functions: 94,
+  statements: 95
 };

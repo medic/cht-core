@@ -1,7 +1,8 @@
 const _ = require('lodash/core');
 const constants = require('@medic/constants');
+const USER_ROLES = constants.USER_ROLES;
 const COOKIE_NAME = 'userCtx';
-const ONLINE_ROLE = constants.USER_ROLES.ONLINE;
+const ONLINE_ROLE = USER_ROLES.ONLINE;
 
 (function () {
 
@@ -96,7 +97,7 @@ const ONLINE_ROLE = constants.USER_ROLES.ONLINE;
 
       const isAdmin = function(userCtx) {
         userCtx = userCtx || getUserCtx();
-        return hasRole(userCtx, '_admin');
+        return hasRole(userCtx, USER_ROLES.COUCHDB_ADMIN);
       };
 
       return {

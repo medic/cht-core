@@ -219,3 +219,12 @@ form {
     display: block
   }
 }
+
+[dir="rtl"] #password-container #password {
+  padding: 6px 10px 6px 43px;
+}
+
+[dir="rtl"] #password-container #password-toggle {
+  right: auto;
+  left: 0;
+}

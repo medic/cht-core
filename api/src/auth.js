@@ -1,13 +1,14 @@
 const request = require('@medic/couch-request');
-const _ = require('lodash');
 const db = require('./db');
 const environment = require('@medic/environment');
 const config = require('./config');
 const dataContext = require('./services/data-context');
 const { roles, users } = require('@medic/user-management')(config, db, dataContext);
-
+const { getDatasource } = require('@medic/cht-datasource');
+const { PermissionError } = require('./errors');
 const contentLengthRegex = /^content-length$/i;
 const contentTypeRegex = /^content-type$/i;
+const { HTTP_HEADERS } = require('@medic/constants');
 
 const get = (path, headers) => {
   const getHeaders = { ...headers };
@@ -24,17 +25,33 @@ const get = (path, headers) => {
   });
 };
 
-const hasPermission = (userCtx, permission) => {
-  const roles = config.get('permissions')[permission];
-  if (!roles) {
-    return false;
+const assertPermissions = async (req, { isOnline = false, hasAll = [], hasAny = [] }) => {
+  const userCtx = await module.exports.getUserCtx(req);
+  const onlineUserPass = isOnline === false || roles.isOnlineOnly(userCtx);
+  const isAdmin = roles.isDbAdmin(userCtx);
+  const datasource = getDatasource(dataContext);
+  const hasAllPass = hasAll.length === 0 || isAdmin
+    || datasource.v1.hasPermissions(hasAll, userCtx.roles);
+  const hasAnyPass = hasAny.length === 0 || isAdmin
+    || datasource.v1.hasAnyPermission(hasAny.map(perm => [perm]), userCtx.roles);
+  if (!(onlineUserPass && hasAllPass && hasAnyPass)) {
+    throw new PermissionError('Insufficient privileges');
   }
-  return _.some(roles, role => _.includes(userCtx.roles, role));
+  return userCtx;
+};
+
+const assertDbAdmin = async (req) => {
+  const userCtx = await module.exports.getUserCtx(req);
+  if (!roles.isDbAdmin(userCtx)) {
+    throw new PermissionError('User is not an admin');
+  }
+  return userCtx;
 };
 
 module.exports = {
   isOnlineOnly: roles.isOnlineOnly,
   isDbAdmin: roles.isDbAdmin,
+  assertDbAdmin,
   getUserSettings: users.getUserSettings,
   hasAllPermissions: (userCtx, permissions) => {
     if (roles.isDbAdmin(userCtx)) {
@@ -43,12 +60,8 @@ module.exports = {
     if (!permissions || !userCtx || !userCtx.roles) {
       return false;
     }
-    if (!_.isArray(permissions)) {
-      permissions = [ permissions ];
-    }
-    return _.every(permissions, _.partial(hasPermission, userCtx));
+    return getDatasource(dataContext).v1.hasPermissions(permissions, userCtx.roles);
   },
-
   getUserCtx: req => {
     return get('/_session', req.headers)
       .catch(err => {
@@ -59,23 +72,14 @@ module.exports = {
       })
       .then(auth => {
         if (auth?.userCtx?.name) {
-          req.headers['X-Medic-User'] = auth.userCtx.name;
+          req.headers[HTTP_HEADERS.MEDIC_USER] = auth.userCtx.name;
           return auth.userCtx;
         }
         throw { code: 500, message: 'Failed to authenticate' };
       });
   },
-
-  check: (req, permissions) => {
-    return module.exports
-      .getUserCtx(req)
-      .then(userCtx => {
-        if (!module.exports.hasAllPermissions(userCtx, permissions)) {
-          throw { code: 403, message: 'Insufficient privileges' };
-        }
-        return userCtx;
-      });
-  },
+  check: (req, permissions) => assertPermissions(req, { hasAll: permissions }),
+  assertPermissions,
 
   /**
    * Extract Basic Auth credentials from a request

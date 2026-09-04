@@ -3,22 +3,26 @@ import logger from '@medic/logger';
 import sinon, { SinonStub } from 'sinon';
 import {
   assertRemoteDataContext,
+  getRemoteDataContext,
   getResource,
   getResources,
-  getRemoteDataContext,
   isRemoteDataContext,
+  postResource,
+  putResource,
   RemoteDataContext
 } from '../../../src/remote/libs/data-context';
-import { DataContext, InvalidArgumentError } from '../../../src';
+import { SettingsService } from '../../../src/libs/data-context';
+import { DataContext, InvalidArgumentError, ResourceNotFoundError } from '../../../src';
 
 describe('remote context lib', () => {
+  const settingsService = { getAll: () => ({}) } as SettingsService;
   const context = { url: 'hello.world' } as RemoteDataContext;
   let fetchResponse: { ok: boolean, status: number, statusText: string, json: SinonStub, text: SinonStub };
   let fetchStub: SinonStub;
   let loggerError: SinonStub;
 
   beforeEach(() => {
-    fetchResponse = { 
+    fetchResponse = {
       ok: true,
       status: 200,
       statusText: 'OK',
@@ -35,7 +39,7 @@ describe('remote context lib', () => {
     ([
       [{ url: 'hello.world' }, true],
       [{ hello: 'world' }, false],
-      [{ }, false],
+      [{}, false],
     ] as [DataContext, boolean][]).forEach(([context, expected]) => {
       it(`evaluates ${JSON.stringify(context)}`, () => {
         expect(isRemoteDataContext(context)).to.equal(expected);
@@ -45,14 +49,14 @@ describe('remote context lib', () => {
 
   describe('assertRemoteDataContext', () => {
     it('asserts a remote data context', () => {
-      const context = getRemoteDataContext('hello.world');
+      const context = getRemoteDataContext(settingsService, 'hello.world');
 
       expect(() => assertRemoteDataContext(context)).to.not.throw();
     });
 
     ([
       { hello: 'world' },
-      { },
+      {},
     ] as DataContext[]).forEach(context => {
       it(`throws an error for ${JSON.stringify(context)}`, () => {
         expect(() => assertRemoteDataContext(context))
@@ -68,10 +72,22 @@ describe('remote context lib', () => {
       undefined
     ].forEach(url => {
       it(`returns a remote data context for URL: ${JSON.stringify(url)}`, () => {
-        const context = getRemoteDataContext(url);
+        const context = getRemoteDataContext(settingsService, url);
 
         expect(isRemoteDataContext(context)).to.be.true;
-        expect(context).to.deep.include({ url: url ?? '' });
+        expect(context).to.deep.include({ url: url ?? '', settings: settingsService });
+      });
+    });
+
+    ([
+      null,
+      {},
+      { getAll: 'not a function' },
+      'hello'
+    ] as unknown as SettingsService[]).forEach((invalidSettingsService) => {
+      it(`throws an error if the settings service is invalid: ${JSON.stringify(invalidSettingsService)}`, () => {
+        expect(() => getRemoteDataContext(invalidSettingsService))
+          .to.throw(`Invalid settings service [${JSON.stringify(invalidSettingsService)}].`);
       });
     });
 
@@ -82,7 +98,7 @@ describe('remote context lib', () => {
       [],
     ].forEach(url => {
       it(`throws an error for an invalid URL: ${JSON.stringify(url)}`, () => {
-        expect(() => getRemoteDataContext(url as string))
+        expect(() => getRemoteDataContext(settingsService, url as string))
           .to.throw(`Invalid URL [${JSON.stringify(url)}].`);
       });
     });
@@ -157,7 +173,8 @@ describe('remote context lib', () => {
 
     it('throws an error if the resource fetch resolves an error status', async () => {
       const path = 'path';
-      const resourceId = 'resource';      fetchResponse.ok = false;
+      const resourceId = 'resource';
+      fetchResponse.ok = false;
       fetchResponse.status = 501;
       fetchResponse.statusText = 'Not Implemented';
 
@@ -173,8 +190,189 @@ describe('remote context lib', () => {
     });
   });
 
+  describe('postResource', () => {
+    const path = 'path';
+    const body = {
+      _id: '1',
+      name: 'user-1',
+      contact: {
+        _id: '1',
+        parent: {
+          _id: '2'
+        }
+      }
+    } as const;
+
+    ([
+      [400, InvalidArgumentError],
+      [404, ResourceNotFoundError]
+    ] as [number, typeof Error][]).forEach(([status, Err]) => {
+      it(`throws error if ${status} status is returned`, async () => {
+        const errorMsg = 'Big Problem.';
+        fetchResponse.ok = false;
+        fetchResponse.status = status;
+        fetchResponse.text.resolves(errorMsg);
+
+        await expect(postResource(path)(context)(body)).to.be.rejectedWith(Err, errorMsg);
+
+        expect(fetchStub.calledOnceWithExactly(
+          `${context.url}/${path}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', },
+            body: JSON.stringify(body)
+          }
+        )).to.be.true;
+        expect(fetchResponse.text.calledOnceWithExactly()).to.be.true;
+        expect(fetchResponse.json.notCalled).to.be.true;
+        expect(loggerError.args).to.deep.equal([[
+          `Failed to POST resource to ${context.url}/${path}.`,
+          new Err(errorMsg)
+        ]]);
+      });
+    });
+
+    it('throws an error when the server responds with non-400 error status', async () => {
+      fetchResponse.ok = false;
+      fetchResponse.status = 500;
+      fetchResponse.statusText = 'Internal Server Error';
+
+      await expect(postResource(path)(context)(body)).to.be.rejectedWith(fetchResponse.statusText);
+
+      expect(fetchStub.calledOnceWithExactly(
+        `${context.url}/${path}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', },
+          body: JSON.stringify(body)
+        }
+      )).to.be.true;
+
+      expect(fetchResponse.text.notCalled).to.be.true;
+      expect(fetchResponse.json.notCalled).to.be.true;
+      expect(loggerError.calledOnce).to.be.true;
+      expect(loggerError.args).to.deep.equal([[
+        `Failed to POST resource to ${context.url}/${path}.`,
+        new Error(fetchResponse.statusText)
+      ]]);
+    });
+
+    it('creates a resource for valid req body and path', async () => {
+      const expected_response = { ...body, _id: '1', _rev: '1', _reported_date: 123123123 };
+      fetchResponse.ok = true;
+      fetchResponse.status = 200;
+      fetchResponse.json.resolves(expected_response);
+
+      const response = await postResource(path)(context)(body);
+
+      expect(response).to.equal(expected_response);
+      expect(fetchStub.calledOnceWithExactly(
+        `${context.url}/${path}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body)
+        }
+      )).to.be.true;
+      expect(fetchResponse.json.calledOnceWithExactly()).to.be.true;
+      expect(fetchResponse.text.notCalled).to.be.true;
+      expect(loggerError.notCalled).to.be.true;
+    });
+  });
+
+  describe('putResource', () => {
+    const path = 'path';
+    const body = {
+      _id: '1',
+      name: 'user-1',
+      contact: {
+        _id: '1',
+        parent: {
+          _id: '2'
+        }
+      }
+    } as const;
+
+    ([
+      [400, InvalidArgumentError],
+      [404, ResourceNotFoundError]
+    ] as [number, typeof Error][]).forEach(([status, Err]) => {
+      it(`throws error if ${status} status is returned`, async () => {
+        const errorMsg = 'Big Problem.';
+        fetchResponse.ok = false;
+        fetchResponse.status = status;
+        fetchResponse.text.resolves(errorMsg);
+
+        await expect(putResource(path)(context)(body)).to.be.rejectedWith(errorMsg);
+
+        expect(fetchStub.calledOnceWithExactly(
+          `${context.url}/${path}/${body._id}`,
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', },
+            body: JSON.stringify(body)
+          }
+        )).to.be.true;
+        expect(fetchResponse.text.calledOnceWithExactly()).to.be.true;
+        expect(fetchResponse.json.notCalled).to.be.true;
+        expect(loggerError.args).to.deep.equal([[
+          `Failed to PUT resource to ${context.url}/${path}/${body._id}.`,
+          new Err(errorMsg)
+        ]]);
+      });
+    });
+
+    it('throws an error when the server responds with non-400 error status', async () => {
+      fetchResponse.ok = false;
+      fetchResponse.status = 502;
+      fetchResponse.statusText = 'Bad Gateway';
+
+      await expect(putResource(path)(context)(body)).to.be.rejectedWith(fetchResponse.statusText);
+
+      expect(fetchStub.calledOnceWithExactly(
+        `${context.url}/${path}/${body._id}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', },
+          body: JSON.stringify(body)
+        }
+      )).to.be.true;
+      expect(fetchResponse.text.notCalled).to.be.true;
+      expect(fetchResponse.json.notCalled).to.be.true;
+      expect(loggerError.calledOnce).to.be.true;
+      expect(loggerError.args).to.deep.equal([[
+        `Failed to PUT resource to ${context.url}/${path}/${body._id}.`,
+        new Error(fetchResponse.statusText)
+      ]]);
+    });
+
+    it('updates a resource for valid req body and path', async () => {
+      const expected_response = { ...body, _rev: '1', _reported_date: 123123123 };
+      fetchResponse.ok = true;
+      fetchResponse.status = 200;
+      fetchResponse.json.resolves(expected_response);
+
+      const response = await putResource(path)(context)(body);
+
+      expect(response).to.equal(expected_response);
+      expect(fetchStub.calledOnceWithExactly(
+        `${context.url}/${path}/${body._id}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', },
+          body: JSON.stringify(body)
+        }
+      )).to.be.true;
+      expect(fetchResponse.json.calledOnceWithExactly()).to.be.true;
+      expect(fetchResponse.text.notCalled).to.be.true;
+      expect(loggerError.notCalled).to.be.true;
+    });
+  });
+
   describe('getResources', () => {
-    const params = {abc: 'xyz'};
+    const params = { abc: 'xyz' };
     const stringifiedParams = new URLSearchParams(params).toString();
 
     it('fetches a resource with a path', async () => {

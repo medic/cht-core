@@ -3,6 +3,7 @@ const moment = require('moment');
 const expect = require('chai').expect;
 const should = require('chai').should();
 const rewire = require('rewire');
+const { CONTACT_TYPES } = require('@medic/constants');
 const utils = rewire('../src/index');
 
 const MAX_GSM_LENGTH = 160;
@@ -52,17 +53,17 @@ describe('messageUtils', () => {
         phone: inlinePhone,
         contact: {
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone
             },
             parent: {
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: parentPhone
               },
               parent: {
-                type: 'district_hospital',
+                type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                 contact: {
                   phone: grandparentPhone
                 }
@@ -83,17 +84,17 @@ describe('messageUtils', () => {
         phone: inlinePhone,
         contact: {
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: `not${clinicPhone}`,
             },
             parent: {
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: `not${parentPhone}`,
               },
               parent: {
-                type: 'district_hospital',
+                type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                 contact: {
                   phone: `not${grandparentPhone}`,
                 },
@@ -104,17 +105,17 @@ describe('messageUtils', () => {
         patient: {
           type: 'person',
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone,
             },
             parent: {
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: parentPhone,
               },
               parent: {
-                type: 'district_hospital',
+                type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                 contact: {
                   phone: grandparentPhone,
                 },
@@ -135,17 +136,17 @@ describe('messageUtils', () => {
         phone: inlinePhone,
         contact: {
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: `not${clinicPhone}`,
             },
             parent: {
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: `not${parentPhone}`,
               },
               parent: {
-                type: 'district_hospital',
+                type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                 contact: {
                   phone: `not${grandparentPhone}`,
                 },
@@ -156,17 +157,17 @@ describe('messageUtils', () => {
         place: {
           type: 'some_place',
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone,
             },
             parent: {
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: parentPhone,
               },
               parent: {
-                type: 'district_hospital',
+                type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                 contact: {
                   phone: grandparentPhone,
                 },
@@ -187,19 +188,19 @@ describe('messageUtils', () => {
         contact: {
           parent: {
             type: 'contact',
-            contact_type: 'clinic',
+            contact_type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone
             },
             parent: {
               type: 'contact',
-              contact_type: 'health_center',
+              contact_type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: parentPhone
               },
               parent: {
                 type: 'contact',
-                contact_type: 'district_hospital',
+                contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                 contact: {
                   phone: grandparentPhone
                 }
@@ -219,19 +220,19 @@ describe('messageUtils', () => {
         contact: {
           parent: {
             type: 'contact',
-            contact_type: 'clinic',
+            contact_type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone
             },
             parent: {
               type: 'contact',
-              contact_type: 'health_center',
+              contact_type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: parentPhone
               },
               parent: {
                 type: 'contact',
-                contact_type: 'district_hospital',
+                contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                 contact: {
                   phone: grandparentPhone
                 }
@@ -277,12 +278,12 @@ describe('messageUtils', () => {
           },
           phone: 'patientPhone',
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone,
             },
             parent: {
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: parentPhone,
               },
@@ -324,12 +325,12 @@ describe('messageUtils', () => {
           },
           phone: 'patientPhone',
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone,
             },
             parent: {
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: parentPhone,
               },
@@ -398,14 +399,14 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 phone: '111'
               }
             }
           },
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: '222'
             }
@@ -415,7 +416,7 @@ describe('messageUtils', () => {
           patient: {
             parent: {
               type: 'contact',
-              contact_type: 'clinic',
+              contact_type: CONTACT_TYPES.CLINIC,
               contact: {
                 phone: '111'
               }
@@ -423,7 +424,7 @@ describe('messageUtils', () => {
           },
           parent: {
             type: 'contact',
-            contact_type: 'clinic',
+            contact_type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: '222'
             }
@@ -438,16 +439,16 @@ describe('messageUtils', () => {
       it('resolves health_center based on place if given', () => {
         const context = {
           place: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: {
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: '111'
               }
             }
           },
           parent: {
-            type: 'health_center',
+            type: CONTACT_TYPES.HEALTH_CENTER,
             contact: {
               phone: '222'
             }
@@ -456,10 +457,10 @@ describe('messageUtils', () => {
         const contextFlexible = {
           place: {
             type: 'contact',
-            contact_type: 'clinic',
+            contact_type: CONTACT_TYPES.CLINIC,
             parent: {
               type: 'contact',
-              contact_type: 'health_center',
+              contact_type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: '111'
               }
@@ -467,14 +468,14 @@ describe('messageUtils', () => {
           },
           parent: {
             type: 'contact',
-            contact_type: 'health_center',
+            contact_type: CONTACT_TYPES.HEALTH_CENTER,
             contact: {
               phone: '222'
             }
           }
         };
-        utils._getRecipient(context, 'health_center').should.equal('111');
-        utils._getRecipient(contextFlexible, 'health_center').should.equal('111');
+        utils._getRecipient(context, CONTACT_TYPES.HEALTH_CENTER).should.equal('111');
+        utils._getRecipient(contextFlexible, CONTACT_TYPES.HEALTH_CENTER).should.equal('111');
       });
 
       it('should resolve link: correctly', () => {
@@ -554,14 +555,14 @@ describe('messageUtils', () => {
             },
             parent: {
               type: 'contact',
-              contact_type: 'clinic',
+              contact_type: CONTACT_TYPES.CLINIC,
               contact: { phone: '111111' },
               linked_docs: {
                 clinic: { phone: 'two' },
               },
               parent: {
                 type: 'contact',
-                contact_type: 'health_center',
+                contact_type: CONTACT_TYPES.HEALTH_CENTER,
                 contact: { phone: '22222' },
                 linked_docs: {
                   health_center: { phone: 'three' },
@@ -622,9 +623,23 @@ describe('messageUtils', () => {
         .should.equal('foo');
     });
 
+    it('returns trimmed phone number from array when first field is invalid', () => {
+      utils._getRecipient({from: 'foo'}, ['unknown_field', ' +18005550123 '], false)
+        .should.equal('+18005550123');
+    });
+
+    it('returns doc.from when recipient is white space.', () => {
+      utils._getRecipient({from: 'foo'}, ' ', false)
+        .should.equal('foo');
+    });
+
     it('returns doc.from when recipient is undefined and default_to_sender is false.', () => {
       utils._getRecipient({from: 'foo'}, '', false)
         .should.equal('foo');
+    });
+
+    it('returns first existing string from recipients', () => {
+      utils._getRecipient({from: 'foo'}, [false, true, undefined, null, 'bar'], false).should.equal('bar');
     });
   });
 
@@ -719,7 +734,7 @@ describe('messageUtils', () => {
   describe('generate', () => {
 
     it('adds uuid', () => {
-      utils.__set__('uuid', { v4: sinon.stub().returns('some-uuid') });
+      utils.__set__('uuid', sinon.stub().returns('some-uuid'));
       const config = {};
       const translate = null;
       const doc = {};
@@ -743,7 +758,7 @@ describe('messageUtils', () => {
           contact: {
             type: 'person',
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 type: 'person',
                 phone: '+222'
@@ -768,7 +783,7 @@ describe('messageUtils', () => {
           contact: {
             type: 'person',
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 type: 'person',
                 phone: '+222'
@@ -781,7 +796,7 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 type: 'person',
                 phone: '+333'
@@ -803,7 +818,7 @@ describe('messageUtils', () => {
           contact: {
             type: 'person',
             parent: {
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 type: 'person',
                 phone: '+222'
@@ -812,13 +827,13 @@ describe('messageUtils', () => {
           }
         };
         const content = { message: 'xxx' };
-        const recipient = 'health_center';
+        const recipient = CONTACT_TYPES.HEALTH_CENTER;
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               parent: {
-                type: 'health_center',
+                type: CONTACT_TYPES.HEALTH_CENTER,
                 contact: {
                   type: 'person',
                   phone: '+333'
@@ -841,7 +856,7 @@ describe('messageUtils', () => {
           contact: {
             type: 'person',
             parent: {
-              type: 'district_hospital',
+              type: CONTACT_TYPES.DISTRICT_HOSPITAL,
               contact: {
                 type: 'person',
                 phone: '+222'
@@ -854,11 +869,11 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               parent: {
-                type: 'health_center',
+                type: CONTACT_TYPES.HEALTH_CENTER,
                 parent: {
-                  type: 'district_hospital',
+                  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                   contact: {
                     type: 'person',
                     phone: '+333'
@@ -873,6 +888,179 @@ describe('messageUtils', () => {
         const message = messages[0];
         expect(message.to).to.equal('+333');
       });
+
+      it('returns first recipient when multiple recipients are requested and all have phone.', () => {
+        const config = {};
+        const translate = null;
+        const doc = {
+          from: '+111'          
+        };
+        const content = { message: 'xxx' };
+        const recipient = ['clinic', 'district'];
+        const context = {
+          patient: {
+            parent: {
+              type: CONTACT_TYPES.CLINIC,
+              contact: {
+                type: 'person',
+                phone: '+222'
+              },
+              parent: {
+                type: CONTACT_TYPES.HEALTH_CENTER,
+                parent: {
+                  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+                  contact: {
+                    type: 'person',
+                    phone: '+333'
+                  }
+                }
+              }
+            }
+          }
+        };
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages.length).to.equal(1);
+        const message = messages[0];
+        expect(message.to).to.equal('+222');
+      });
+
+      it('returns second recipient when multiple recipients are requested and first does not have phone.', () => {
+        const config = {};
+        const translate = null;
+        const doc = {
+          from: '+111'       
+        };
+        const content = { message: 'xxx' };
+        const recipient = ['parent', 'grandparent'];
+        const context = {
+          patient: {
+            parent: {
+              type: CONTACT_TYPES.CLINIC,
+              contact: {
+                type: 'person',
+                phone: '+222'
+              },
+              parent: {
+                type: CONTACT_TYPES.HEALTH_CENTER, //parent
+                parent: {
+                  type: CONTACT_TYPES.DISTRICT_HOSPITAL, //grandparent
+                  contact: {
+                    type: 'person',
+                    phone: '+333'
+                  }
+                }
+              }
+            }
+          }
+        };
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages.length).to.equal(1);
+        const message = messages[0];
+        expect(message.to).to.equal('+333');
+      });
+
+      it('returns third recipient when first and second do not have phone.', () => {
+        const config = {};
+        const translate = null;
+        const doc = {
+          from: '+111'        
+        };
+        const content = { message: 'xxx' };
+        const recipient = ['clinic', 'parent', 'grandparent'];
+        const context = {
+          patient: {
+            parent: {
+              type: CONTACT_TYPES.CLINIC,
+              parent: {
+                type: CONTACT_TYPES.HEALTH_CENTER,
+                parent: {
+                  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+                  contact: {
+                    type: 'person',
+                    phone: '+333'
+                  }
+                }
+              }
+            }
+          }
+        };
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages.length).to.equal(1);
+        const message = messages[0];
+        expect(message.to).to.equal('+333');
+      });
+      
+      it('returns sender when multiple recipients are requested and none exist.', () => {
+        const config = {};
+        const translate = null;
+        const doc = {
+          from: '+111'        
+        };
+        const content = { message: 'xxx' };
+        const recipient = ['child', 'parent', 'grandparent'];
+        const context = {
+          patient: {
+            parent: {
+              type: CONTACT_TYPES.CLINIC,
+              contact: {
+                type: 'person',
+                phone: '+222'
+              },
+              parent: {
+                type: CONTACT_TYPES.HEALTH_CENTER,
+                parent: {
+                  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+                  contact: {
+                    type: 'person'
+                  }
+                }
+              }
+            }
+          }
+        };
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages.length).to.equal(1);
+        const message = messages[0];
+        expect(message.to).to.equal('+111');
+      });
+
+      it('returns first recipient text when none of the recipients have phone and default_to_sender is false', () => {
+        const config = {
+          sms: {
+            default_to_sender: false
+          }
+        };
+        const translate = null;
+        const doc = {
+          from: '+111'        
+        };
+        const content = { message: 'xxx' };
+        const recipient = ['clinic', 'parent', 'grandparent'];
+        const context = {
+          patient: {
+            parent: {
+              type: CONTACT_TYPES.CLINIC,
+              contact: {
+                type: 'person'                
+              },
+              parent: {
+                type: CONTACT_TYPES.HEALTH_CENTER,
+                parent: {
+                  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+                  contact: {
+                    type: 'person'
+                  }
+                }
+              }
+            }
+          }
+        };
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages.length).to.equal(1);
+        const message = messages[0];
+        expect(message.to).to.equal('clinic');
+      });
+
     });
 
     describe('truncation', () => {
@@ -1197,7 +1385,7 @@ describe('messageUtils', () => {
         const extraContext = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: { name: 'Bede' }
             }
           }
@@ -1216,9 +1404,9 @@ describe('messageUtils', () => {
           reported_date: '2050-03-13T13:06:22.002Z',
           chw_name: 'Arnold',
           parent: {
-            type: 'health_center',
+            type: CONTACT_TYPES.HEALTH_CENTER,
             parent: {
-              type: 'district_hospital',
+              type: CONTACT_TYPES.DISTRICT_HOSPITAL,
               parent: ''
             }
           }
@@ -1226,7 +1414,7 @@ describe('messageUtils', () => {
         const extraContext = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: { name: 'Bede' }
             }
           }
@@ -1349,6 +1537,214 @@ describe('messageUtils', () => {
       const translate = sinon.stub().returnsArg(0);
       expect(utils.getMessage(config, translate, 'zf')).to.equal('');
       expect(translate.callCount).to.equal(0);
+    });
+  });
+
+  describe('applyPhoneReplacement', () => {
+    let applyPhoneReplacement;
+    beforeEach(() => {
+      applyPhoneReplacement = utils.__get__('applyPhoneReplacement');
+    });
+
+    it('replaces matching phone prefix', () => {
+      const config = { outgoing_phone_replace: { match: '0', replace: '+254' } };
+      expect(applyPhoneReplacement(config, '0712345678')).to.equal('+254712345678');
+    });
+
+    it('does not replace when prefix does not match', () => {
+      const config = { outgoing_phone_replace: { match: '0', replace: '+254' } };
+      expect(applyPhoneReplacement(config, '+254712345678')).to.equal('+254712345678');
+    });
+
+    it('uses empty string when replace is not set', () => {
+      const config = { outgoing_phone_replace: { match: '00' } };
+      expect(applyPhoneReplacement(config, '00712345678')).to.equal('712345678');
+    });
+  });
+
+  describe('applyPhoneFilters', () => {
+    let applyPhoneFilters;
+    beforeEach(() => {
+      applyPhoneFilters = utils.__get__('applyPhoneFilters');
+    });
+
+    it('applies matching filters', () => {
+      const config = {
+        outgoing_phone_filters: [
+          { match: '\\+', replace: '00' }
+        ]
+      };
+      expect(applyPhoneFilters(config, '+254712')).to.equal('00254712');
+    });
+
+    it('skips filters without match or replace', () => {
+      const config = {
+        outgoing_phone_filters: [
+          null,
+          { match: '\\+' },
+          { replace: '00' },
+          { match: '-', replace: 'X' }
+        ]
+      };
+      expect(applyPhoneFilters(config, '07-12')).to.equal('07X12');
+    });
+  });
+
+  describe('resolveAncestor', () => {
+    let resolveAncestor;
+    beforeEach(() => {
+      resolveAncestor = utils.__get__('resolveAncestor');
+    });
+
+    it('returns null when ancestor chain is too short', () => {
+      const context = { contact: { parent: {} } };
+      expect(resolveAncestor(context, 5)).to.equal(null);
+    });
+  });
+
+  describe('generate edge cases', () => {
+    it('returns error when message is empty', () => {
+      const config = {};
+      const translate = sinon.stub().returns('');
+      const doc = {};
+      const content = { translationKey: 'some.key' };
+      const messages = utils.generate(config, translate, doc, content, '+1234');
+      expect(messages[0].error).to.equal('messages.errors.message.empty');
+    });
+
+    it('returns error when translated message equals the translation key', () => {
+      const config = {};
+      const translate = sinon.stub().returns('some.key');
+      const doc = {};
+      const content = { translationKey: 'some.key' };
+      const messages = utils.generate(config, translate, doc, content, '+1234');
+      expect(messages[0].error).to.equal('messages.errors.message.empty');
+    });
+  });
+
+  describe('template edge cases', () => {
+    it('returns empty string when content has no template', () => {
+      const actual = utils.template({}, sinon.stub().returns(''), {}, { translationKey: 'missing' });
+      expect(actual).to.equal('');
+    });
+  });
+
+  describe('extendedTemplateContext', () => {
+    it('merges templateContext from extras', () => {
+      const doc = {};
+      const extras = { templateContext: { custom_field: 'value' } };
+      const ctx = utils._extendedTemplateContext(doc, extras);
+      expect(ctx.custom_field).to.equal('value');
+    });
+  });
+
+  describe('getLocale', () => {
+    it('falls back to locale_outgoing', () => {
+      const config = { locale_outgoing: 'sw' };
+      const doc = {};
+      expect(utils.getLocale(config, doc)).to.equal('sw');
+    });
+  });
+
+  describe('_getRecipient edge cases', () => {
+    it('returns contact.phone when from is not set', () => {
+      const doc = { contact: { phone: '+555' } };
+      expect(utils._getRecipient(doc, 'reporting_unit')).to.equal('+555');
+    });
+
+    it('resolves health_center from context when patient and place are absent', () => {
+      const doc = {
+        from: '+111',
+        contact: {
+          parent: {
+            type: CONTACT_TYPES.HEALTH_CENTER,
+            contact: { phone: '+999' }
+          }
+        }
+      };
+      expect(utils._getRecipient(doc, CONTACT_TYPES.HEALTH_CENTER)).to.equal('+999');
+    });
+
+    it('resolves district from place', () => {
+      const doc = {
+        from: '+111',
+        place: {
+          parent: {
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+            contact: { phone: '+888' }
+          }
+        }
+      };
+      expect(utils._getRecipient(doc, 'district')).to.equal('+888');
+    });
+  });
+  describe('local_phone mustache helper', () => {
+    const translate = (key) => key;
+
+    it('strips country code from phone number in SMS template', () => {
+      const config = { default_country_code: '977' };
+      const doc = { locale: 'en' };
+      const content = { message: [{ locale: 'en', content: 'Call {{#local_phone}}+9779841234567{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call 9841234567');
+    });
+
+    it('strips country code from a context variable', () => {
+      const config = { default_country_code: '977' };
+      const doc = { locale: 'en', fields: { facility_phone: '+9779841234567' } };
+      const content = { message: [{ locale: 'en', 
+        content: 'Call {{#local_phone}}{{facility_phone}}{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call 9841234567');
+    });
+
+    it('returns phone unchanged if country code does not match', () => {
+      const config = { default_country_code: '977' };
+      const doc = { locale: 'en' };
+      const content = { message: [{ locale: 'en', content: 'Call {{#local_phone}}+12025551234{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call +12025551234');
+    });
+
+    it('returns phone unchanged if no default_country_code configured', () => {
+      const config = {};
+      const doc = { locale: 'en' };
+      const content = { message: [{ locale: 'en', content: 'Call {{#local_phone}}+9779841234567{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call +9779841234567');
+    });
+
+    it('handles null phone gracefully', () => {
+      const config = { default_country_code: '977' };
+      const doc = { locale: 'en' };
+      const content = { message: [{ locale: 'en', content: 'Call {{#local_phone}}{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call ');
+    });
+
+    it('works when default_country_code is numeric (not string)', () => {
+      const config = { default_country_code: 977 };
+      const doc = { locale: 'en' };
+      const content = { message: [{ locale: 'en', content: 'Call {{#local_phone}}+9779841234567{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call 9841234567');
+    });
+
+    it('returns phone unchanged if already in local format', () => {
+      const config = { default_country_code: '977' };
+      const doc = { locale: 'en' };
+      const content = { message: [{ locale: 'en', content: 'Call {{#local_phone}}9841234567{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call 9841234567');
+    });
+
+    it('strips country code when phone variable has surrounding whitespace', () => {
+      const config = { default_country_code: '977' };
+      const doc = { locale: 'en', fields: { patient_phone: '+9779841234567' } };
+      const content = { message: [{ locale: 'en', 
+        content: 'Call {{#local_phone}} {{patient_phone}} {{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call 9841234567');
     });
   });
 });

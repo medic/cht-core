@@ -81,6 +81,153 @@ const upgradeInProgress = () => {
 
 const canUpgrade = () => upgradeUtils.isDockerUpgradeServiceRunning();
 
+const compareLocalToRemote = (database, localDdoc, remoteDdocs) => {
+  const remoteDdoc = remoteDdocs?.find(ddoc => localDdoc._id === ddoc._id);
+
+  if (!remoteDdoc) {
+    return;
+  }
+  const types = [
+    areViewsDifferent(localDdoc, remoteDdoc) && 'views',
+    areIndexesDifferent(localDdoc, remoteDdoc) && 'indexes',
+  ].filter(Boolean);
+
+  if (!types.length) {
+    return;
+  }
+
+  let size = 0;
+  if (types.includes('views') || types.includes('added')) {
+    size += localDdoc.viewInfo?.sizes?.file || 0;
+  }
+  if (types.includes('indexes')) {
+    size += localDdoc.nouveauInfo?.reduce((acc, curr) => acc + (curr.disk_size || 0), 0) || 0;
+  }
+
+  const result = {
+    type: types,
+    ddoc: localDdoc._id,
+    db: database.name,
+    size,
+    indexing: true,
+  };
+
+  return result;
+};
+
+const compareRemoteToLocal = (database, remoteDdoc, localDdocs) => {
+  const localDdoc = localDdocs.find(ddoc => ddoc._id === remoteDdoc._id);
+  if (localDdoc) {
+    return;
+  }
+
+  return {
+    type: ['added'],
+    ddoc: remoteDdoc._id,
+    db: database.name,
+    indexing: !!remoteDdoc.nouveau || !!remoteDdoc.views
+  };
+};
+
+const compareBuildVersions = async (buildInfo) => {
+  const remoteBuild = await upgradeUtils.downloadDdocDefinitions(buildInfo);
+  const localBuild = await upgradeUtils.getLocalDdocDefinitions();
+
+  const differences = [];
+
+  for (const [database, localDdocs] of localBuild) {
+    const remoteDdocs = remoteBuild.get(database);
+
+    for (const localDdoc of localDdocs) {
+      localDdoc.viewInfo = await upgradeUtils.getDdocInfo(database, localDdoc._id);
+      localDdoc.nouveauInfo = await upgradeUtils.getNouveauInfo(database, localDdoc);
+
+      differences.push(compareLocalToRemote(database, localDdoc, remoteDdocs));
+    }
+
+    if (remoteDdocs) {
+      for (const remoteDdoc of remoteDdocs) {
+        differences.push(compareRemoteToLocal(database, remoteDdoc, localDdocs));
+      }
+    }
+  }
+
+  return differences.filter(Boolean);
+};
+
+const compareViews = (local, remote) => {
+  for (const [viewName, localView] of Object.entries(local.views)) {
+    const remoteView = remote.views[viewName];
+    if (!remoteView || localView.map !== remoteView.map) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const areViewsDifferent = (local,  remote) => {
+  if (!local.views && !remote.views) {
+    return false;
+  }
+
+  if (!!local.views !== !!remote.views) {
+    return true;
+  }
+
+  if (Object.keys(local.views).length !== Object.keys(remote.views).length) {
+    return true;
+  }
+
+  return compareViews(local, remote);
+};
+
+const compareIndexes = (local, remote) => {
+  for (const [indexName, localIndex] of Object.entries(local.nouveau)) {
+    const remoteIndex = remote.nouveau[indexName];
+    if (!remoteIndex ||
+        localIndex.index !== remoteIndex.index ||
+        !isShallowEqual(localIndex.field_analyzers, remoteIndex.field_analyzers) ||
+        localIndex.default_analyzer !== remoteIndex.default_analyzer
+    ) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const areIndexesDifferent = (local, remote) => {
+  if (!local.nouveau && !remote.nouveau) {
+    return false;
+  }
+
+  if (!!local.nouveau !== !!remote.nouveau) {
+    return true;
+  }
+
+  if (Object.keys(local.nouveau).length !== Object.keys(remote.nouveau).length) {
+    return true;
+  }
+
+  return compareIndexes(local, remote);
+};
+
+const isShallowEqual = (obj1, obj2) => {
+  if (!obj1 && !obj2) {
+    return true;
+  }
+
+  if (!!obj1 !== !!obj2) {
+    return false;
+  }
+
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+
+  return keys1.length === keys2.length &&
+         keys1.every(key => obj1[key] === obj2[key]);
+};
+
 module.exports = {
   canUpgrade,
   upgrade,
@@ -88,4 +235,5 @@ module.exports = {
   abort,
   upgradeInProgress,
   indexerProgress,
+  compareBuildVersions,
 };

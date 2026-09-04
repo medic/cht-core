@@ -32,6 +32,19 @@ describe('facility', () => {
     expect(allDocs.callCount).to.equal(0);
   });
 
+  it('handles facility_id as an array', async () => {
+    const userWithArray = { facility_id: ['a', 'b'], contact_id: 'e' };
+    allDocs.resolves({ rows: [
+      { doc: facilityA },
+      { doc: facilityB },
+      facilityNotFound,
+    ] });
+    const result = await list([userWithArray]);
+    expect(result).to.deep.equal([ facilityA, facilityB ]);
+    expect(allDocs.callCount).to.equal(1);
+    expect(allDocs.args[0][0].keys).to.deep.equal([ 'a', 'b', 'e' ]);
+  });
+
   it('finds all facilities', async () => {
     allDocs.resolves({ rows: [
       { doc: facilityA },

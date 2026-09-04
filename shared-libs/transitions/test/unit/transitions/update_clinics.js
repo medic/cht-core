@@ -5,6 +5,7 @@ const db = require('../../../src/db');
 const config = require('../../../src/config');
 const dataContext = require('../../../src/data-context');
 const utils = require('../../../src/lib/utils');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 const phone = '+34567890123';
 
 let transition;
@@ -32,7 +33,7 @@ describe('update clinic', () => {
 
   it('filter includes docs with no clinic', () => {
     const doc = {
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: phone,
     };
     assert(transition.filter({ doc, info: {} }));
@@ -41,7 +42,7 @@ describe('update clinic', () => {
   it('filter out docs which already have a clinic', () => {
     const doc = {
       from: phone,
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       contact: {
         parent: { name: 'some clinic' },
       },
@@ -52,13 +53,13 @@ describe('update clinic', () => {
   it('should not update clinic by phone', () => {
     const doc = {
       from: phone,
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
     };
 
     const contact = {
       _id: '9ed7d9c6095cc0e37e4d3e94d3387ed9',
       _rev: '6-e447d8801d7bed36614af92449586851',
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       name: 'Clinic',
       place_id: '1000',
       contact: {
@@ -68,7 +69,7 @@ describe('update clinic', () => {
       parent: {
         _id: '9ed7d9c6095cc0e37e4d3e94d33866f1',
         _rev: '6-723dad2083c951501a1851fb88b6e3b5',
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
         name: 'Health Center',
         contact: {
           name: 'HCCN',
@@ -77,7 +78,7 @@ describe('update clinic', () => {
         parent: {
           _id: '9ed7d9c6095cc0e37e4d3e94d3384c8f',
           _rev: '4-6e5f394413e840c1f41bf9f471a91e04',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'District',
           parent: {},
           contact: {
@@ -100,7 +101,7 @@ describe('update clinic', () => {
 
   it('should not update clinic with wrong phone', () => {
     const doc = {
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: 'WRONG',
       content_type: 'xml'
     };
@@ -113,7 +114,7 @@ describe('update clinic', () => {
 
   it('handles clinic ref id not found - medic/medic#2636', () => {
     const doc = {
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '+12345',
       refid: '1000',
       content_type: 'xml'
@@ -127,7 +128,7 @@ describe('update clinic', () => {
 
   it('should update clinic by refid and fix number', () => {
     const doc = {
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '+12345',
       refid: '1000',
     };
@@ -135,7 +136,7 @@ describe('update clinic', () => {
     const contact = {
       _id: '9ed7d9c6095cc0e37e4d3e94d3387ed9',
       _rev: '6-e447d8801d7bed36614af92449586851',
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       name: 'Clinic',
       place_id: '1000',
       contact: {
@@ -145,7 +146,7 @@ describe('update clinic', () => {
       parent: {
         _id: '9ed7d9c6095cc0e37e4d3e94d33866f1',
         _rev: '6-723dad2083c951501a1851fb88b6e3b5',
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
         name: 'Health Center',
         contact: {
           name: 'HCCN',
@@ -154,7 +155,7 @@ describe('update clinic', () => {
         parent: {
           _id: '9ed7d9c6095cc0e37e4d3e94d3384c8f',
           _rev: '4-6e5f394413e840c1f41bf9f471a91e04',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'District',
           parent: {},
           contact: {
@@ -179,12 +180,12 @@ describe('update clinic', () => {
     const doc = {
       from: '+12345',
       refid: '1000',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
     };
     const clinic = {
       _id: '9ed7d9c6095cc0e37e4d3e94d3387ed9',
       _rev: '6-e447d8801d7bed36614af92449586851',
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       name: 'Clinic',
       contact: {
         _id: 'z',
@@ -192,7 +193,7 @@ describe('update clinic', () => {
       parent: {
         _id: '9ed7d9c6095cc0e37e4d3e94d33866f1',
         _rev: '6-723dad2083c951501a1851fb88b6e3b5',
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
         name: 'Health Center',
         contact: {
           name: 'HCCN',
@@ -201,7 +202,7 @@ describe('update clinic', () => {
         parent: {
           _id: '9ed7d9c6095cc0e37e4d3e94d3384c8f',
           _rev: '4-6e5f394413e840c1f41bf9f471a91e04',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'District',
           parent: {},
           contact: {
@@ -242,7 +243,7 @@ describe('update clinic', () => {
     const change = {
       doc: {
         refid: 123,
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
       },
     };
     const view = sinon.stub(db.medic, 'query').resolves({ rows: [] });
@@ -256,7 +257,7 @@ describe('update clinic', () => {
     const change = {
       doc: {
         from: 123,
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
       },
     };
     const view = sinon.stub(db.medic, 'query').resolves({ rows: [] });
@@ -268,7 +269,7 @@ describe('update clinic', () => {
   it('handles lineage rejection properly', () => {
     const doc = {
       from: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
     };
 
     sinon.stub(db.medic, 'query').resolves({ rows: [{ id: 'someID' }] });
@@ -282,7 +283,7 @@ describe('update clinic', () => {
   it('should add sys.facility_not_found when no form', () => {
     const doc = {
       from: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
     };
 
     sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
@@ -297,7 +298,7 @@ describe('update clinic', () => {
   it('should add sys.facility_not_found when form not found', () => {
     const doc = {
       from: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'someForm'
     };
 
@@ -316,7 +317,7 @@ describe('update clinic', () => {
   it('should add sys.facility_not_found when form not public and translates message', () => {
     const doc = {
       from: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'someForm'
     };
 
@@ -356,7 +357,7 @@ describe('update clinic', () => {
   it('should send a message when form is not public', () => {
     const doc = {
       from: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'someForm'
     };
 
@@ -391,7 +392,7 @@ describe('update clinic', () => {
   it('should handle a non-public form with no config', () => {
     const doc = {
       from: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'someForm'
     };
 
@@ -415,7 +416,7 @@ describe('update clinic', () => {
   it('should not send a message when form is not found', () => {
     const doc = {
       from: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'someForm'
     };
 
@@ -434,7 +435,7 @@ describe('update clinic', () => {
   it('should not add sys.facility_not_found when xml', () => {
     const doc = {
       from: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'someForm',
       content_type: 'xml'
     };
@@ -451,7 +452,7 @@ describe('update clinic', () => {
   it('should not add sys.facility_not_found when form is public', () => {
     const doc = {
       from: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'someForm',
     };
 
@@ -465,15 +466,78 @@ describe('update clinic', () => {
     });
   });
 
+  it('should return undefined when refid result is not a known contact type', () => {
+    const doc = {
+      type: DOC_TYPES.DATA_RECORD,
+      from: '+12345',
+      refid: '1000',
+      content_type: 'xml',
+    };
+
+    const result = {
+      _id: 'some-id',
+      type: 'unknown_type',
+      name: 'Unknown',
+    };
+
+    // config has no contact_types matching 'unknown_type', so getContactType returns undefined
+    config.getAll.returns({ contact_types: [{ id: 'clinic' }] });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: result }] });
+
+    return transition.onMatch({ doc }).then(changed => {
+      // no contact found (getContactByRefid returned undefined), and it's xml so no error
+      assert(!changed);
+      assert(!doc.contact);
+    });
+  });
+
+  it('should update clinic by refid when result is a person type', async () => {
+    const doc = {
+      type: DOC_TYPES.DATA_RECORD,
+      from: '+12345',
+      refid: '1000',
+    };
+
+    const personDoc = {
+      _id: 'person-id',
+      type: 'person',
+      name: 'A Person',
+      phone: '+34567890123',
+    };
+
+    const personWithLineage = {
+      _id: 'person-id',
+      type: 'person',
+      name: 'A Person',
+      phone: '+34567890123',
+      parent: { _id: 'parent-id' },
+    };
+
+    // contact_types includes a person type with person: true
+    config.getAll.returns({ contact_types: [{ id: 'person', person: true }] });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: personDoc }] });
+    const getPersonWithLineage = sinon.stub().resolves(personWithLineage);
+    dataContext.bind.returns(getPersonWithLineage);
+
+    const changed = await transition.onMatch({ doc });
+
+    assert(changed);
+    assert(doc.contact);
+    assert.equal(doc.contact._id, 'person-id');
+    assert.equal(doc.contact.name, 'A Person');
+    assert.isTrue(dataContext.bind.calledOnceWithExactly(Person.v1.getWithLineage));
+    assert.isTrue(getPersonWithLineage.calledOnceWithExactly(Qualifier.byUuid('person-id')));
+  });
+
   it('should handle contacts of hardcoded type with a contact_type property', () => {
     const doc = {
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '+12345',
       refid: '1000',
     };
 
     const contact = {
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       contact_type: 'soemthing',
       name: 'Clinic',
       place_id: '1000',
@@ -482,14 +546,14 @@ describe('update clinic', () => {
         phone: '+34567890123',
       },
       parent: {
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
         name: 'Health Center',
         contact: {
           name: 'HCCN',
           phone: '+23456789012',
         },
         parent: {
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'District',
           contact: {
             name: 'DCN',

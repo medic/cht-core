@@ -1,9 +1,10 @@
 const request = require('@medic/couch-request');
 const url = require('url');
 const environment = require('@medic/environment');
+const { USER_ROLES } = require('@medic/constants');
 
 const addSecurityToDb = () => {
-  const dbAdminRole = '_admin';
+  const dbAdminRole = USER_ROLES.COUCHDB_ADMIN;
   const securityObject = {
     admins: { names: [], roles: [ dbAdminRole ] },
     members: { names: [], roles: [ dbAdminRole ] }

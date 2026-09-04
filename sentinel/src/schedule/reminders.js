@@ -85,17 +85,6 @@ const matchReminder = (reminder) => {
     });
 };
 
-// returns strings like "1 day" as a moment.duration
-const durationRegex = /^\d+ (minute|day|hour|week)s?$/;
-const parseDuration = (format) => {
-  if (!durationRegex.test(format)) {
-    return;
-  }
-
-  const tokens = format.split(' ');
-  return moment.duration(Number(tokens[0]), tokens[1]);
-};
-
 const getPlaceIds = (keys, startDocId) => {
   const query = {
     keys,
@@ -134,7 +123,7 @@ const getPlacesWithoutSentForms = (reminder, scheduledDate, placeIds) => {
   if (!reminder.mute_after_form_for) {
     return placeIds;
   }
-  const muteDuration = parseDuration(reminder.mute_after_form_for);
+  const muteDuration = scheduling.parseDuration(reminder.mute_after_form_for);
   if (!muteDuration) {
     return placeIds;
   }
@@ -278,7 +267,7 @@ const createReminderLog = (reminder, scheduledDate, start) => {
     reported_date: moment().valueOf(),
     type: 'reminderlog',
   };
-  logger.debug('Reminder %o succesfully completed in %d seconds', reminder, duration / 1000);
+  logger.debug('Reminder %o successfully completed in %d seconds', reminder, duration / 1000);
   return db.sentinel.put(reminderLog);
 };
 
