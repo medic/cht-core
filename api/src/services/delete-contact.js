@@ -81,7 +81,7 @@ const deleteContactHierarchy = async (id, { deleteUsers, dryRun } = {}) => {
   const userOperations = userIds.map(userId => ({ id: userId }));
   const summary = {
     archive: { contacts: contactIds.length, reports: reportIds.length },
-    'set-contact': setContactOperations.length,
+    'set-contact': { places: setContactOperations.length },
     'delete-user': userOperations.length,
   };
 
