@@ -207,17 +207,6 @@ describe('move-contact service', () => {
     expect(res.json.args[0][0].summary['set-contact']).to.deep.equal({ reports: 0, places: 0 });
   });
 
-  it('does not queue the same report twice when two chunks both match it', async () => {
-    sinon.stub(nouveau, 'BATCH_LIMIT').value(1);
-    reports.resolves({ hits: [ { id: 'report-1', fields: { submitter: 'person-1' } } ] });
-    const res = buildRes();
-
-    await handler(buildReq(), res);
-
-    expect(queue.args[0][0][1].operations).to.have.lengthOf(1);
-    expect(res.json.args[0][0].summary['set-contact']).to.deep.equal({ reports: 1, places: 0 });
-  });
-
   it('pages the nouveau results with the bookmark rather than capping them', async () => {
     sinon.stub(nouveau, 'RESULTS_LIMIT').value(2);
     reports.onFirstCall().resolves({ hits: [ { id: 'r-1' }, { id: 'r-2' } ], bookmark: 'page-2' });

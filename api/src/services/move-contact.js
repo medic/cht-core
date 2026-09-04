@@ -76,21 +76,10 @@ const buildNewLineage = (id, parentById, sourceId, replacementLineage) => nestLi
 );
 
 /**
- * Reports the moved contacts authored, each paired with the author whose lineage it caches. A report
+ * Adds the reports the moved contacts authored, each paired with the author whose lineage it caches. A report
  * caches its author's lineage in `contact`, which goes stale the moment the author moves.
- *
- * `docs_by_replication_key` indexes that author as a searchable `submitter` and stores it, so a
- * single query returns both the report and the value its operation has to be checked against. This
- * used to be two reads, a freetext query for `contact:<id>` followed by an `_id` lookup here for the
- * author, because `submitter` was stored but not searchable. #11370 moved the author indexing out of
- * `reports_by_freetext` and made it searchable here, which removed the emission the first read
- * relied on and made the second read sufficient on its own.
- *
- * Ids are matched verbatim rather than lowercased, because this index uses the keyword analyzer.
- * Results are paged with the bookmark rather than capped, so a prolific author is not silently
- * truncated.
  */
-const addReportPairsForChunk = async (chunk, pairs, seen) => {
+const addReportPairsForChunk = async (chunk, pairs) => {
   const terms = chunk.map(id => `"${escapePhrase(id)}"`);
   const q = `submitter:(${terms.join(' OR ')})`;
   let bookmark = null;
@@ -102,14 +91,8 @@ const addReportPairsForChunk = async (chunk, pairs, seen) => {
     });
     const hits = response.hits ?? [];
     hits.forEach(hit => {
-      if (seen.has(hit.id)) {
-        return;
-      }
-      seen.add(hit.id);
       pairs.push({ id: hit.id, current_contact_id: hit.fields?.submitter });
     });
-    // A bookmark that does not advance means the index has no more to give; without this the loop
-    // would spin forever inside the request.
     const exhausted = hits.length < nouveau.RESULTS_LIMIT || response.bookmark === bookmark;
     bookmark = exhausted ? null : response.bookmark;
   } while (bookmark);
@@ -118,10 +101,9 @@ const addReportPairsForChunk = async (chunk, pairs, seen) => {
 const getReportAuthorPairs = async (contactIds) => {
   const remaining = [ ...contactIds ];
   const pairs = [];
-  const seen = new Set();
 
   while (remaining.length) {
-    await addReportPairsForChunk(remaining.splice(0, nouveau.BATCH_LIMIT), pairs, seen);
+    await addReportPairsForChunk(remaining.splice(0, nouveau.BATCH_LIMIT), pairs);
   }
 
   return pairs;
@@ -159,10 +141,6 @@ const buildSetParentOperations = (contactIds, parentById, sourceId, replacementL
  * stepped over.
  */
 const buildSetContactOperations = (pairs, parentById, sourceId, replacementLineage) => pairs
-  // Only rewrite a cached copy whose contact is really in the moved subtree. The freetext query
-  // matches a lowercased id and the author can change between the two index reads, so a report can
-  // come back whose author is not moving at all; rebuilding that one from the destination lineage
-  // would corrupt an unrelated report. parentById is keyed on the whole subtree.
   .filter(({ current_contact_id: contactId }) => parentById.has(contactId))
   .map(({ id, current_contact_id: contactId }) => ({
     id,
