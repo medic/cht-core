@@ -167,7 +167,10 @@ describe('sentinel processes archive jobs', () => {
   };
 
   const updateSettings = async ({ duration = '2 hours', autoArchive } = {}) => {
-    const archive = { text_expression: 'every 1 seconds', duration };
+    const archive = { text_expression: 'every 1 seconds' };
+    if (duration) {
+      archive.duration = duration;
+    }
     if (autoArchive) {
       archive.auto_archive = autoArchive;
     }
@@ -529,9 +532,10 @@ describe('sentinel processes archive jobs', () => {
       await utils.deleteLogsByPrefix(PREFIXES.ARCHIVE_JOB);
     });
 
-    it('leaves expired tasks and targets alone when auto_archive is not enabled', async function () {
+    it('leaves expired tasks and targets alone without auto_archive.tasks or a duration', async function () {
       this.timeout(60000);
-      await updateSettings();
+      // A configured duration alone now enables the sweeps, so the negative case is a schedule without one.
+      await updateSettings({ duration: null });
 
       const docs = [
         task('archive-e2e-auto-off-task-1'),
