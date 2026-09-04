@@ -442,6 +442,33 @@ describe('ContactChangeFilter service', () => {
     });
   });
 
+  describe('isVisitReport', () => {
+    it('returns true for reports carrying a visited contact', () => {
+      const doc = {
+        type: DOC_TYPES.DATA_RECORD,
+        form: 'home_visit',
+        fields: { visited_contact_uuid: 'visited' },
+      };
+      expect(service.isVisitReport(doc)).to.equal(true);
+    });
+
+    it('returns false when the doc is not a report the UHC views index', () => {
+      expect(service.isVisitReport(undefined)).to.equal(false);
+      expect(service.isVisitReport({})).to.equal(false);
+      expect(service.isVisitReport({ type: DOC_TYPES.DATA_RECORD, form: 'home_visit' })).to.equal(false);
+      expect(service.isVisitReport({ type: DOC_TYPES.DATA_RECORD, form: 'home_visit', fields: {} })).to.equal(false);
+      expect(service.isVisitReport({
+        type: DOC_TYPES.DATA_RECORD,
+        fields: { visited_contact_uuid: 'visited' },
+      })).to.equal(false);
+      expect(service.isVisitReport({
+        type: 'contact',
+        form: 'home_visit',
+        fields: { visited_contact_uuid: 'visited' },
+      })).to.equal(false);
+    });
+  });
+
   describe('isDeleted', () => {
     it('returns true when deleted', () => {
       const change = { doc: { _id: '123' }, deleted: true };
