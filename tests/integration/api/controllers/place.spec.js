@@ -2,8 +2,10 @@ const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
-const { USER_ROLES, CONTACT_TYPES } = require('@medic/constants');
+const reportFactory = require('@factories/cht/reports/generic-report');
+const { USER_ROLES, CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 const { expect } = require('chai');
+const { v7: uuid } = require('uuid');
 
 describe('Place API', () => {
   const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));
@@ -589,6 +591,351 @@ describe('Place API', () => {
 
         await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
       });
+    });
+  });
+
+  describe('POST /api/v1/place/:uuid/move', () => {
+    const endpoint = '/api/v1/place';
+
+    const districtId = uuid();
+    const hcAId = uuid();
+    const hcBId = uuid();
+    const clinicId = uuid();
+
+    // An explicit shortcode: personFactory defaults every person to `test_woman_1`, and a report
+    // records its subject's shortcode, so sharing the default would make this report a subject match
+    // for any other spec that deletes a person.
+    const chw = utils.deepFreeze(personFactory.build({
+      name: 'moving-chw',
+      role: 'chw',
+      patient_id: 'move-chw',
+      parent: { _id: clinicId, parent: { _id: hcAId, parent: { _id: districtId } } },
+    }));
+    const district = utils.deepFreeze(placeFactory.place().build({
+      _id: districtId,
+      name: 'move-district',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+      contact: {},
+    }));
+    const healthCenterA = utils.deepFreeze(placeFactory.place().build({
+      _id: hcAId,
+      name: 'move-hc-a',
+      type: CONTACT_TYPES.HEALTH_CENTER,
+      contact: {},
+      parent: district,
+    }));
+    const healthCenterB = utils.deepFreeze(placeFactory.place().build({
+      _id: hcBId,
+      name: 'move-hc-b',
+      type: CONTACT_TYPES.HEALTH_CENTER,
+      contact: {},
+      parent: district,
+    }));
+    // The clinic being moved, with the chw inside it. Its `contact` carries the chw's lineage, the
+    // way CHT stores it, so the move has to refresh that copy too.
+    const clinic = utils.deepFreeze(placeFactory.place().build({
+      _id: clinicId,
+      name: 'move-clinic',
+      type: CONTACT_TYPES.CLINIC,
+      contact: { _id: chw._id, parent: { _id: clinicId, parent: { _id: hcAId, parent: { _id: districtId } } } },
+      parent: healthCenterA,
+    }));
+    // Authored by the chw, so its cached author lineage must be refreshed by the move.
+    const report = utils.deepFreeze(
+      reportFactory.report().build({ form: 'move-report' }, { patient: chw, submitter: chw })
+    );
+    // No contacts inside it, no primary contact and no reports: the minimal case.
+    const loneClinic = utils.deepFreeze(placeFactory.place().build({
+      name: 'move-lone-clinic',
+      type: CONTACT_TYPES.CLINIC,
+      contact: {},
+      parent: healthCenterA,
+    }));
+
+    before(async () => {
+      await utils.saveDocs([district, healthCenterA, healthCenterB, clinic, chw, report, loneClinic]);
+    });
+
+    it('returns a dry-run summary and moves nothing when passing dry_run', async () => {
+      const response = await utils.request({
+        path: `${endpoint}/${clinicId}/move`,
+        method: 'POST',
+        qs: { dry_run: true },
+        body: { parent_id: hcBId },
+      });
+
+      expect(response).to.deep.equal({
+        summary: { 'set-parent': 2, 'set-contact': { reports: 1, places: 1 } },
+      });
+      const unchanged = await utils.getDoc(clinicId);
+      expect(unchanged.parent._id).to.equal(hcAId);
+    });
+
+    it('throws 400 when parent_id is present but empty', async () => {
+      await expect(utils.request({
+        path: `${endpoint}/${clinicId}/move`,
+        method: 'POST',
+        body: { parent_id: '' },
+      })).to.be.rejectedWith(/parent_id must be a non-empty string/);
+    });
+
+    it('treats an omitted parent_id as a move to the top level', async () => {
+      // A clinic must sit under a health center, so the top level is not a legal destination for one.
+      await expect(utils.request({
+        path: `${endpoint}/${clinicId}/move`,
+        method: 'POST',
+        body: {},
+      })).to.be.rejectedWith(/cannot be moved to the root/);
+    });
+
+    it('throws 400 when the move would create a circular hierarchy', async () => {
+      await expect(utils.request({
+        path: `${endpoint}/${hcAId}/move`,
+        method: 'POST',
+        body: { parent_id: clinicId },
+      })).to.be.rejectedWith(/circular hierarchy/);
+    });
+
+    it('throws 400 when the destination is not an allowed parent type', async () => {
+      await expect(utils.request({
+        path: `${endpoint}/${hcAId}/move`,
+        method: 'POST',
+        body: { parent_id: hcBId },
+      })).to.be.rejectedWith(/cannot have parent of type/);
+    });
+
+    it('throws 404 when the id is not a place', async () => {
+      await expect(utils.request({
+        path: `${endpoint}/${chw._id}/move`,
+        method: 'POST',
+        body: { parent_id: hcBId },
+      })).to.be.rejectedWith('404 - {"code":404,"error":"Place not found"}');
+    });
+
+    [
+      ['does not have can_move_contact_hierarchy permission', userNoPerms],
+      ['is not an online user', offlineUser]
+    ].forEach(([description, user]) => {
+      it(`throws 403 when user ${description}`, async () => {
+        await expect(utils.request({
+          path: `${endpoint}/${clinicId}/move`,
+          method: 'POST',
+          body: { parent_id: hcBId },
+          auth: { username: user.username, password: user.password },
+        })).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
+    });
+
+    it('moves a place with minimal data', async () => {
+      const { id, summary } = await utils.request({
+        path: `${endpoint}/${loneClinic._id}/move`,
+        method: 'POST',
+        body: { parent_id: hcBId },
+      });
+      await utils.waitForBulkOperation(id);
+
+      expect(summary).to.deep.equal({ 'set-parent': 1, 'set-contact': { reports: 0, places: 0 } });
+
+      const moved = await utils.getDoc(loneClinic._id);
+      expect(moved.parent).to.deep.equal({ _id: hcBId, parent: { _id: districtId } });
+    });
+
+    it('moves the subtree and refreshes the lineage cached on its reports', async () => {
+      const { id, summary } = await utils.request({
+        path: `${endpoint}/${clinicId}/move`,
+        method: 'POST',
+        body: { parent_id: hcBId },
+      });
+      await utils.waitForBulkOperation(id);
+
+      expect(summary).to.deep.equal({ 'set-parent': 2, 'set-contact': { reports: 1, places: 1 } });
+
+      // the moved place now sits under the destination
+      const movedClinic = await utils.getDoc(clinicId);
+      expect(movedClinic.parent).to.deep.equal({ _id: hcBId, parent: { _id: districtId } });
+
+      // and the lineage it cached for its own primary contact was refreshed, so `parent` and
+      // `contact` cannot disagree about where the clinic sits
+      expect(movedClinic.contact).to.deep.equal({
+        _id: chw._id,
+        parent: { _id: clinicId, parent: { _id: hcBId, parent: { _id: districtId } } },
+      });
+
+      // the descendant keeps its own parent, with the chain above it rewritten
+      const movedChw = await utils.getDoc(chw._id);
+      expect(movedChw.parent).to.deep.equal({
+        _id: clinicId,
+        parent: { _id: hcBId, parent: { _id: districtId } },
+      });
+
+      // the report's cached author lineage follows, and still names the same author
+      const movedReport = await utils.getDoc(report._id);
+      expect(movedReport.contact._id).to.equal(chw._id);
+      expect(movedReport.contact.parent).to.deep.equal({
+        _id: clinicId,
+        parent: { _id: hcBId, parent: { _id: districtId } },
+      });
+
+      // nothing was removed
+      await expect(utils.getDoc(hcAId)).to.be.fulfilled;
+    });
+  });
+
+  describe('DELETE /api/v1/place/:uuid', () => {
+    const endpoint = '/api/v1/place';
+
+    const place0Id = uuid();
+    const place1Id = uuid();
+    const place2Id = uuid();
+    const person0 = utils.deepFreeze(personFactory.build({
+      name: 'person0',
+      role: 'program_officer',
+      parent: { _id: place1Id, parent: { _id: place0Id } }
+    }));
+    const person1 = utils.deepFreeze(personFactory.build({
+      name: 'person1',
+      role: 'chw_supervisor',
+      parent: { _id: place1Id, parent: { _id: place0Id } }
+    }));
+    const person2 = utils.deepFreeze(personFactory.build({
+      name: 'person2',
+      role: 'chw',
+      parent: { _id: place2Id, parent: { _id: place1Id, parent: { _id: place0Id } } }
+    }));
+    const place0 = utils.deepFreeze(placeFactory.place().build({
+      _id: place0Id,
+      name: 'place0',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+      // Primary contact is actually child of place1.
+      contact: person0
+    }));
+    const place1 = utils.deepFreeze(placeFactory.place().build({
+      _id: place1Id,
+      name: 'place1',
+      type: CONTACT_TYPES.HEALTH_CENTER,
+      contact: person1,
+      parent: place0
+    }));
+    const place2 = utils.deepFreeze(placeFactory.place().build({
+      _id: place2Id,
+      name: 'place2',
+      type: CONTACT_TYPES.CLINIC,
+      contact: person2,
+      parent: place1
+    }));
+    const place3 = utils.deepFreeze(placeFactory.place().build({
+      name: 'place3',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+      contact: {}
+    }));
+    const userToDelete = utils.deepFreeze(userFactory.build({
+      username: 'user-to-delete',
+      place: place2._id,
+      contact: person2._id,
+      roles: [USER_ROLES.ONLINE]
+    }));
+    const deletedUserId = `${PREFIXES.COUCH_USER}${userToDelete.username}`;
+    const reports = utils.deepFreeze([
+      reportFactory.report().build({ form: 'test-report' }, { patient: person0, submitter: person0 }),
+      reportFactory.report().build({ form: 'test-report' }, { patient: person1, submitter: person1 }),
+      reportFactory.report().build({ form: 'test-report' }, { patient: person2, submitter: person2 }),
+    ]);
+
+    const expectArchived = async (doc) => {
+      expect(await utils.archiveDb.get(doc._id)).excludingEvery(['_rev', 'reported_date', 'archive_date'])
+        .to.deep.equal(doc);
+      await expect(utils.getDoc(doc._id)).to.be.rejectedWith('404 - {"error":"not_found","reason":"missing"}');
+    };
+
+    before(async () => {
+      await utils.saveDocs([person0, person1, person2, place0, place1, place2, place3, ...reports]);
+      await utils.createUsers([userToDelete]);
+    });
+
+    after(() => utils.deleteUsers([userToDelete]));
+
+    it('returns a dry-run summary of the subtree and deletes nothing when passing dry_run', async () => {
+      const response = await utils.request({
+        path: `${endpoint}/${place1._id}`,
+        method: 'DELETE',
+        qs: { dry_run: true, delete_users: true },
+      });
+
+      expect(response).to.deep.equal({
+        summary: { archive: { contacts: 5, reports: 3 }, 'set-contact': { places: 1 }, 'delete-user': 1 },
+      });
+      await expect(utils.getDoc(person0._id)).to.be.fulfilled;
+      await expect(utils.getDoc(person1._id)).to.be.fulfilled;
+      await expect(utils.getDoc(person2._id)).to.be.fulfilled;
+      await expect(utils.getDoc(place1._id)).to.be.fulfilled;
+      await expect(utils.getDoc(place2._id)).to.be.fulfilled;
+      await expect(utils.getDoc(reports[0]._id)).to.be.fulfilled;
+      await expect(utils.getDoc(reports[1]._id)).to.be.fulfilled;
+      await expect(utils.getDoc(reports[2]._id)).to.be.fulfilled;
+      const updatedPlace = await utils.getDoc(place0Id);
+      expect(updatedPlace.contact._id).to.equal(person0._id);
+      await expect(utils.usersDb.get(deletedUserId)).to.be.fulfilled;
+    });
+
+    it('throws 400 when a linked user would be left behind and delete_users is not set', async () => {
+      await expect(utils.request({ path: `${endpoint}/${place1._id}`, method: 'DELETE' }))
+        .to.be.rejectedWith(
+          '400 - {"code":400,"error":"1 user(s) are linked to contacts in this hierarchy. '
+          + 'Set delete_users=true (requires can_delete_users) to remove them."}'
+        );
+    });
+
+    it('throws 404 when the id is not a place', async () => {
+      await expect(utils.request({ path: `${endpoint}/${contact0._id}`, method: 'DELETE' }))
+        .to.be.rejectedWith('404 - {"code":404,"error":"Place not found"}');
+    });
+
+    [
+      ['does not have can_delete_contact_hierarchy permission', userNoPerms],
+      ['is not an online user', offlineUser]
+    ].forEach(([description, user]) => {
+      it(`throws 403 when user ${description}`, async () => {
+        const opts = {
+          path: `${endpoint}/${place1._id}`,
+          method: 'DELETE',
+          auth: { username: user.username, password: user.password },
+        };
+        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
+    });
+
+    it('archives a place with minimal data', async () => {
+      const { id, summary } = await utils.request({ path: `${endpoint}/${place3._id}`, method: 'DELETE' });
+      await utils.waitForBulkOperation(id);
+
+      expect(summary).to.deep.equal({
+        archive: { contacts: 1, reports: 0 }, 'set-contact': { places: 0 }, 'delete-user': 0
+      });
+      await expectArchived(place3);
+    });
+
+    it('archives a place with related entities', async () => {
+      const { id, summary } = await utils.request({
+        path: `${endpoint}/${place1._id}`,
+        method: 'DELETE',
+        qs: { delete_users: true },
+      });
+      await utils.waitForBulkOperation(id);
+
+      expect(summary).to.deep.equal({
+        archive: { contacts: 5, reports: 3 }, 'set-contact': { places: 1 }, 'delete-user': 1
+      });
+      await expectArchived(person0);
+      await expectArchived(person1);
+      await expectArchived(person2);
+      await expectArchived(place1);
+      await expectArchived(place2);
+      await expectArchived(reports[0]);
+      await expectArchived(reports[1]);
+      await expectArchived(reports[2]);
+      const updatedPlace = await utils.getDoc(place0Id);
+      expect(updatedPlace.contact).to.be.undefined;
+      await expect(utils.usersDb.get(deletedUserId)).to.be.rejectedWith('deleted');
     });
   });
 });

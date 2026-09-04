@@ -6,8 +6,7 @@ const sentinelUtils = require('@utils/sentinel');
 const constants = require('@constants');
 const { DOC_TYPES, DOC_IDS, PREFIXES } = require('@medic/constants');
 
-const auth = { username: constants.USERNAME, password: constants.PASSWORD };
-const archiveDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-archive`, { auth });
+const { archiveDb } = utils;
 
 const postCsv = (csv, opts = {}) => utils.request({
   path: '/api/v1/archive',
