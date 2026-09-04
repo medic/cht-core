@@ -5,8 +5,10 @@ import {
   getDocById,
   getDocsByIds,
   queryDocIdsByKey,
+  queryDocIdsByKeys,
   queryDocIdsByRange,
-  queryDocsByKey
+  queryDocsByKey,
+  queryDocsByKeys
 } from './libs/doc';
 import {
   ContactTypeQualifier,
@@ -16,6 +18,8 @@ import {
   isFreetextQualifier,
   isIdsQualifier,
   isKeyedFreetextQualifier,
+  isPhonesQualifier,
+  PhonesQualifier,
   UuidQualifier
 } from '../qualifier';
 import * as Contact from '../contact';
@@ -69,6 +73,26 @@ const getOfflineFreetextQueryFn = (medicDb: PouchDB.Database<Doc>) => {
       [qualifier.freetext], [qualifier.freetext + END_OF_ALPHABET_MARKER], limit, skip
     );
   };
+};
+
+// The view emits the raw `doc.phone` as a scalar key, so each number is a key on its own. Duplicates are
+// dropped in a stable order, since rows come back grouped in the order the keys are supplied.
+const phoneViewKeys = (qualifier: PhonesQualifier): string[] => [...new Set(qualifier.phones)];
+
+const getContactDocsPageFn = (
+  qualifier: ContactTypeQualifier | IdsQualifier | PhonesQualifier,
+  getMedicDocsByIds: ReturnType<typeof getDocsByIds>,
+  queryDocsByType: ReturnType<typeof queryDocsByKey>,
+  queryDocsByPhones: ReturnType<typeof queryDocsByKeys>,
+): ((limit: number, skip: number) => Promise<Nullable<Doc>[]>) => {
+  if (isIdsQualifier(qualifier)) {
+    return (limit: number, skip: number) => getMedicDocsByIds(qualifier.ids.slice(skip, skip + limit));
+  }
+  if (isPhonesQualifier(qualifier)) {
+    const keys = phoneViewKeys(qualifier);
+    return (limit: number, skip: number) => queryDocsByPhones(keys, limit, skip);
+  }
+  return (limit: number, skip: number) => queryDocsByType([qualifier.contactType], limit, skip);
 };
 
 /** @internal */
@@ -127,14 +151,22 @@ export namespace v1 {
   export const getUuidsPage = ({ medicDb, settings }: LocalDataContext) => {
     const queryNouveauFreetext = queryByFreetext(medicDb, 'contacts_by_freetext');
     const queryViewByType = queryDocIdsByKey(medicDb, 'medic-client/contacts_by_type');
+    const queryViewByPhones = queryDocIdsByKeys(medicDb, 'medic-client/contacts_by_phone');
     const getOfflineFreetextQueryPageFn = getOfflineFreetextQueryFn(medicDb);
     const promisedUseNouveau = useNouveauIndexes(medicDb);
 
     return async (
-      qualifier: ContactTypeQualifier | FreetextQualifier,
+      qualifier: ContactTypeQualifier | FreetextQualifier | PhonesQualifier,
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<string>> => {
+      if (isPhonesQualifier(qualifier)) {
+        const skip = validateCursor(cursor);
+        const keys = phoneViewKeys(qualifier);
+        const getPageFn = (limit: number, skip: number) => queryViewByPhones(keys, limit, skip);
+        return await fetchAndFilterIds(getPageFn, limit)(limit, skip);
+      }
+
       if (isContactTypeQualifier(qualifier)) {
         assertValidContactType(settings.getAll(), qualifier);
       }
@@ -163,20 +195,19 @@ export namespace v1 {
   export const getPage = ({ medicDb, settings }: LocalDataContext) => {
     const getMedicDocsByIds = getDocsByIds(medicDb);
     const queryDocsByType = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
+    const queryDocsByPhones = queryDocsByKeys(medicDb, 'medic-client/contacts_by_phone');
 
     return async (
-      qualifier: ContactTypeQualifier | IdsQualifier,
+      qualifier: ContactTypeQualifier | IdsQualifier | PhonesQualifier,
       cursor: Nullable<string>,
       limit: number,
     ): Promise<Page<Contact.v1.Contact>> => {
-      if (!isIdsQualifier(qualifier)) {
+      if (isContactTypeQualifier(qualifier)) {
         assertValidContactType(settings.getAll(), qualifier);
       }
 
       const skip = validateCursor(cursor);
-      const getPageFn = isIdsQualifier(qualifier)
-        ? (limit: number, skip: number) => getMedicDocsByIds(qualifier.ids.slice(skip, skip + limit))
-        : (limit: number, skip: number) => queryDocsByType([qualifier.contactType], limit, skip);
+      const getPageFn = getContactDocsPageFn(qualifier, getMedicDocsByIds, queryDocsByType, queryDocsByPhones);
 
       return await fetchAndFilter(
         getPageFn,

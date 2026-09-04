@@ -1,6 +1,7 @@
 const transitionUtils = require('./utils');
-const db = require('../db');
+const dataContext = require('../data-context');
 const NAME = 'update_sent_by';
+const { Contact } = require('@medic/cht-datasource');
 const { DOC_TYPES } = require('@medic/constants');
 
 module.exports = {
@@ -23,14 +24,16 @@ module.exports = {
   },
   onMatch: change => {
     const doc = change.doc;
+    const qualifier = transitionUtils.senderPhoneQualifier(doc);
+    if (!qualifier) {
+      return Promise.resolve();
+    }
 
-    return db.medic
-      .query('medic-client/contacts_by_phone', { key: doc.from, include_docs: true })
-      .then(result => {
-        const sentBy = result.rows &&
-                             result.rows.length &&
-                             result.rows[0].doc &&
-                             result.rows[0].doc.name;
+    const getContactDocs = dataContext.bind(Contact.v1.getPage);
+
+    return getContactDocs(qualifier, null, 1)
+      .then(page => {
+        const sentBy = page.data.length && page.data[0].name;
 
         if (sentBy) {
           doc.sent_by = sentBy;

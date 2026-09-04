@@ -7,7 +7,7 @@ const config = require('../../src/config');
 const infodoc = require('@medic/infodoc');
 const logger = require('@medic/logger');
 const dataContext = require('../../src/data-context');
-const { Contact } = require('@medic/cht-datasource');
+const { Contact, Qualifier } = require('@medic/cht-datasource');
 const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
 
 chai.use(chaiExclude);
@@ -522,12 +522,18 @@ describe('functional transitions', () => {
 
   describe('processDocs', () => {
     let getContactWithLineage;
+    let getContactUuids;
+    let getContactDocs;
 
     beforeEach(() => {
       getContactWithLineage = sinon.stub();
-      dataContext.init({
-        bind: sinon.stub().withArgs(Contact.v1.getWithLineage).returns(getContactWithLineage),
-      });
+      getContactUuids = sinon.stub();
+      getContactDocs = sinon.stub();
+      const bind = sinon.stub();
+      bind.withArgs(Contact.v1.getWithLineage).returns(getContactWithLineage);
+      bind.withArgs(Contact.v1.getUuidsPage).returns(getContactUuids);
+      bind.withArgs(Contact.v1.getPage).returns(getContactDocs);
+      dataContext.init({ bind });
     });
 
     it('should run all async transitions over docs and save all docs', () => {
@@ -664,21 +670,20 @@ describe('functional transitions', () => {
 
       sinon.stub(db.medic, 'put').resolves({ ok: true });
 
-      sinon.stub(db.medic, 'query')
-      // update_clinics
-        .withArgs('medic-client/contacts_by_phone', { key: 'phone1', include_docs: false, limit: 1 })
-        .resolves({ rows: [{ id: 'contact1', key: 'phone1' }] })
-        .withArgs('medic-client/contacts_by_phone', { key: 'phone2', include_docs: false, limit: 1 })
-        .resolves({ rows: [{ key: 'phone2' }] })
-        .withArgs('medic-client/contacts_by_phone', { key: 'phone3', include_docs: false, limit: 1 })
-        .resolves({ rows: [{ id: 'contact3', key: 'phone3' }] })
-        //update_sent_by
-        .withArgs('medic-client/contacts_by_phone', { key: 'phone1', include_docs: true })
-        .resolves({ rows: [{ id: 'contact1', doc: contact1 }] })
-        .withArgs('medic-client/contacts_by_phone', { key: 'phone2', include_docs: true })
-        .resolves({ rows: [{ key: 'phone2' }] })
-        .withArgs('medic-client/contacts_by_phone', { key: 'phone3', include_docs: true })
-        .resolves({ rows: [{ id: 'contact3', doc: contact3 }] });
+      // Any other view queries default to empty.
+      sinon.stub(db.medic, 'query').resolves({ rows: [] });
+
+      // update_clinics resolves the contact UUID by phone (getUuidsPage)
+      getContactUuids
+        .withArgs(Qualifier.byPhones(['phone1']), null, 1).resolves({ data: ['contact1'], cursor: null })
+        .withArgs(Qualifier.byPhones(['phone2']), null, 1).resolves({ data: [], cursor: null })
+        .withArgs(Qualifier.byPhones(['phone3']), null, 1).resolves({ data: ['contact3'], cursor: null });
+
+      // update_sent_by resolves the contact doc by phone (getPage)
+      getContactDocs
+        .withArgs(Qualifier.byPhones(['phone1']), null, 1).resolves({ data: [contact1], cursor: null })
+        .withArgs(Qualifier.byPhones(['phone2']), null, 1).resolves({ data: [], cursor: null })
+        .withArgs(Qualifier.byPhones(['phone3']), null, 1).resolves({ data: [contact3], cursor: null });
 
       getContactWithLineage.resolves(contact1);
 

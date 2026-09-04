@@ -20,14 +20,19 @@ describe('cht-datasource Contact', () => {
   // combining them to have similar text is not done here because the order in which the docs
   // were being returned were not consistent, meaning the order could be [contact0, contact1, contact2]
   // in the first run whereas another in another giving a non-consistent expected value to match against
+  // NOTE: the phone numbers are numeric-only so they cannot collide with the freetext searches above.
+  // contact0 keeps a national format while the others carry a leading "+", which must survive the query
+  // string.
   const contact0 = utils.deepFreeze(personFactory.build({
-    name: 'contact0', role: 'chw', notes: searchWord, short_name: searchWord + '0'
+    name: 'contact0', role: 'chw', notes: searchWord, short_name: searchWord + '0', phone: '0700000000'
   }));
   const contact1 = utils.deepFreeze(personFactory.build({
-    name: 'contact1', role: 'chw_supervisor', notes: searchWord, short_name: searchWord + '1'
+    name: 'contact1', role: 'chw_supervisor', notes: searchWord, short_name: searchWord + '1',
+    phone: '+254700000001'
   }));
   const contact2 = utils.deepFreeze(personFactory.build({
-    name: 'contact2', role: 'program_officer', notes: searchWord, short_name: searchWord + '2'
+    name: 'contact2', role: 'program_officer', notes: searchWord, short_name: searchWord + '2',
+    phone: '+254700000002'
   }));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
   const place1 = utils.deepFreeze({
@@ -385,6 +390,124 @@ describe('cht-datasource Contact', () => {
       });
     });
 
+    describe('getUuidsPage byPhones', () => {
+      const getUuidsPage = Contact.v1.getUuidsPage(dataContext);
+      // The view only emits docs with a truthy `phone`, so the places and user contacts are not in it.
+      const allPhones = [ contact0.phone, contact1.phone, contact2.phone, patient.phone ];
+      const allPhoneContactIds = [ contact0._id, contact1._id, contact2._id, patient._id ];
+      const unknownPhone = '0799999999';
+      const threeLimit = 3;
+      const cursor = null;
+      const invalidLimit = 'invalidLimit';
+      const invalidCursor = 'invalidCursor';
+
+      it('returns a page of contact ids for the given phone numbers', async () => {
+        const responsePage = await getUuidsPage(Qualifier.byPhones(allPhones));
+
+        expect(responsePage.data).to.deep.equalInAnyOrder(allPhoneContactIds);
+        expect(responsePage.cursor).to.be.equal(null);
+      });
+
+      it('returns only the contacts matching a single phone number', async () => {
+        const responsePage = await getUuidsPage(Qualifier.byPhones([ patient.phone ]));
+
+        expect(responsePage.data).to.deep.equal([ patient._id ]);
+        expect(responsePage.cursor).to.be.equal(null);
+      });
+
+      it('returns the contact matching a phone number with a leading "+"', async () => {
+        const responsePage = await getUuidsPage(Qualifier.byPhones([ contact1.phone ]));
+
+        expect(responsePage.data).to.deep.equal([ contact1._id ]);
+        expect(responsePage.cursor).to.be.equal(null);
+      });
+
+      it('skips a phone number with no contact without disturbing the others', async () => {
+        const responsePage = await getUuidsPage(Qualifier.byPhones([ unknownPhone, patient.phone ]));
+
+        expect(responsePage.data).to.deep.equal([ patient._id ]);
+        expect(responsePage.cursor).to.be.equal(null);
+      });
+
+      it('returns an empty page when no phone number matches', async () => {
+        const responsePage = await getUuidsPage(Qualifier.byPhones([ unknownPhone ]));
+
+        expect(responsePage.data).to.deep.equal([]);
+        expect(responsePage.cursor).to.be.equal(null);
+      });
+
+      it('does not normalize the phone numbers', async () => {
+        const responsePage = await getUuidsPage(Qualifier.byPhones([ '+254700000000' ]));
+
+        expect(responsePage.data).to.deep.equal([]);
+      });
+
+      it('returns a page of contact ids when limit and cursor is passed and cursor can be reused', async () => {
+        const firstPage = await getUuidsPage(Qualifier.byPhones(allPhones), cursor, threeLimit);
+        const secondPage = await getUuidsPage(Qualifier.byPhones(allPhones), firstPage.cursor, threeLimit);
+
+        const allData = [ ...firstPage.data, ...secondPage.data ];
+
+        expect(allData).to.deep.equalInAnyOrder(allPhoneContactIds);
+        expect(firstPage.data.length).to.be.equal(3);
+        expect(secondPage.data.length).to.be.equal(1);
+        expect(firstPage.cursor).to.be.equal('3');
+        expect(secondPage.cursor).to.be.equal(null);
+      });
+
+      it('pages across a phone number boundary without dropping or repeating a contact', async () => {
+        // Rows come back grouped in the order of the requested numbers, so the split is deterministic.
+        const twoLimit = 2;
+        const firstPage = await getUuidsPage(Qualifier.byPhones(allPhones), cursor, twoLimit);
+        const secondPage = await getUuidsPage(Qualifier.byPhones(allPhones), firstPage.cursor, twoLimit);
+        const thirdPage = await getUuidsPage(Qualifier.byPhones(allPhones), secondPage.cursor, twoLimit);
+
+        expect(firstPage.data).to.deep.equal([ contact0._id, contact1._id ]);
+        expect(firstPage.cursor).to.be.equal('2');
+        expect(secondPage.data).to.deep.equal([ contact2._id, patient._id ]);
+        expect(secondPage.cursor).to.be.equal('4');
+        expect(thirdPage.data).to.deep.equal([]);
+        expect(thirdPage.cursor).to.be.equal(null);
+      });
+
+      it('throws error when limit is invalid', async () => {
+        await expect(
+          getUuidsPage(Qualifier.byPhones(allPhones), cursor, invalidLimit)
+        ).to.be.rejectedWith(
+          `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].`
+        );
+      });
+
+      it('throws error when cursor is invalid', async () => {
+        // The cursor is only validated as a page token server-side, so this rejects with the API's body.
+        await expect(
+          getUuidsPage(Qualifier.byPhones(allPhones), invalidCursor, threeLimit)
+        ).to.be.rejectedWith(
+          `{"code":400,"error":"The cursor must be a string or null for first page: [\\"${invalidCursor}\\"]."}`
+        );
+      });
+    });
+
+    describe('getPage byPhones', () => {
+      const getPage = Contact.v1.getPage(dataContext);
+
+      it('returns a page of contacts for the given phone numbers', async () => {
+        const responsePage = await getPage(Qualifier.byPhones([ contact1.phone, patient.phone ]));
+        const responseIds = responsePage.data.map(doc => doc._id);
+
+        expect(responseIds).to.deep.equalInAnyOrder([ contact1._id, patient._id ]);
+        expect(responsePage.cursor).to.be.equal(null);
+        responsePage.data.forEach(doc => expect(doc._rev).to.be.a('string'));
+      });
+
+      it('returns an empty page when no phone number matches', async () => {
+        const responsePage = await getPage(Qualifier.byPhones([ '0799999999' ]));
+
+        expect(responsePage.data).to.deep.equal([]);
+        expect(responsePage.cursor).to.be.equal(null);
+      });
+    });
+
     describe('Contact.v1.getUuids', async () => {
       it('fetches all data by iterating through generator', async () => {
         const docs = [];
@@ -396,6 +519,20 @@ describe('cht-datasource Contact', () => {
         }
 
         expect(docs).excluding(excludedProperties).to.deep.equalInAnyOrder(expectedPeopleIds);
+      });
+
+      it('fetches all contacts with the given phone numbers by iterating through generator', async () => {
+        const phones = [ contact0.phone, contact1.phone, contact2.phone, patient.phone ];
+        const expectedIds = [ contact0._id, contact1._id, contact2._id, patient._id ];
+        const docs = [];
+
+        const generator = Contact.v1.getUuids(dataContext)(Qualifier.byPhones(phones));
+
+        for await (const doc of generator) {
+          docs.push(doc);
+        }
+
+        expect(docs).to.deep.equalInAnyOrder(expectedIds);
       });
     });
   });

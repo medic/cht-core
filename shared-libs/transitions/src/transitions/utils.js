@@ -6,6 +6,7 @@ const idGenerator = require('../lib/ids').generator(db);
 const config = require('../config');
 const validation = require('@medic/validation');
 const logger = require('@medic/logger');
+const { Qualifier } = require('@medic/cht-datasource');
 
 validation.init({ db, translate: utils.translate, settings: config.getAll(), logger, dataContext });
 
@@ -68,6 +69,14 @@ module.exports = {
     });
   },
   getUniqueId: () => idGenerator.next().value,
+  /*
+    Builds a phone qualifier for the sender of a report, or null when there is no number to look up.
+    `doc.from` is untrusted inbound SMS metadata, so it is coerced and trimmed before qualifying.
+  */
+  senderPhoneQualifier: (doc) => {
+    const phone = doc.from === undefined || doc.from === null ? '' : String(doc.from).trim();
+    return phone ? Qualifier.byPhones([phone]) : null;
+  },
 
   hasRun: (doc, transition) => {
     return !!(doc.transitions && doc.transitions[transition]);

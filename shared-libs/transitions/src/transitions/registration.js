@@ -4,7 +4,7 @@ const transitionUtils = require('./utils');
 const logger = require('@medic/logger');
 const db = require('../db');
 const dataContext = require('../data-context');
-const { Place, Qualifier } = require('@medic/cht-datasource');
+const { Contact, Place, Qualifier } = require('@medic/cht-datasource');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const messages = require('../lib/messages');
 const schedules = require('../lib/schedules');
@@ -415,9 +415,14 @@ const setPatientId = (options) => {
 };
 
 const getParentByPhone = options => {
-  return db.medic
-    .query('medic-client/contacts_by_phone', { key: options.doc.from, include_docs: true })
-    .then(result => result && result.rows && result.rows.length && result.rows[0].doc)
+  const qualifier = transitionUtils.senderPhoneQualifier(options.doc);
+  if (!qualifier) {
+    return Promise.resolve();
+  }
+
+  const getContactDocs = dataContext.bind(Contact.v1.getPage);
+  return getContactDocs(qualifier, null, 1)
+    .then(page => page.data.length && page.data[0])
     .then(contact => {
       if (!contact) {
         return;

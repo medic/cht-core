@@ -3,7 +3,7 @@ const moment = require('moment');
 const logger = require('@medic/logger');
 const phoneNumberParser = require('@medic/phone-number');
 const config = require('../../transitions/src/config');
-const { Qualifier, Report } = require('@medic/cht-datasource');
+const { Contact, Qualifier, Report } = require('@medic/cht-datasource');
 
 let db;
 let dataContext;
@@ -143,8 +143,16 @@ const validPhone = (value) => {
 };
 
 const uniquePhone = async (value) => {
-  const results = await db.medic.query('medic-client/contacts_by_phone', { key: value });
-  return !results?.rows?.length;
+  // The value comes from a report field, so it can be blank or padded. A blank number has nothing to
+  // clash with, so it is unique.
+  const phone = value === undefined || value === null ? '' : String(value).trim();
+  if (!phone) {
+    return true;
+  }
+  const getContactUuids = dataContext.bind(Contact.v1.getUuids);
+  const generator = getContactUuids(Qualifier.byPhones([phone]));
+  const { done } = await generator.next();
+  return done;
 };
 
 module.exports = {

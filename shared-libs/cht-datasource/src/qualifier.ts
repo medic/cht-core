@@ -117,6 +117,45 @@ export const isContactTypeQualifier = (contactType: unknown): contactType is Con
 };
 
 /**
+ * A qualifier that identifies contacts by their phone numbers.
+ */
+export type PhonesQualifier = Readonly<{ phones: [string, ...string[]] }>;
+
+/**
+ * Builds a qualifier for finding contacts with any of the given phone numbers. Duplicates are removed.
+ * Results are grouped in the order of the given numbers, so page through them by passing the numbers in the
+ * same order with each cursor.
+ * @param phones the phone numbers of the contacts, each matched verbatim against the contact's `phone` field
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the phone numbers are not a non-empty array of non-blank strings with no
+ * leading or trailing whitespace
+ */
+export const byPhones = (phones: [string, ...string[]]): PhonesQualifier => {
+  const qualifier = { phones };
+  if (!isPhonesQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid phones [${JSON.stringify(phones)}].`);
+  }
+
+  // Deduping a non-empty array keeps it non-empty, which TS cannot infer on its own.
+  return { phones: [...new Set(phones)] as [string, ...string[]] };
+};
+
+/**
+ * Returns `true` if the given qualifier is a {@link PhonesQualifier} otherwise `false`. Phone numbers are
+ * matched verbatim, so an empty array of phone numbers is considered invalid, as is a number that is blank
+ * or padded with whitespace.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link PhonesQualifier}, otherwise `false`.
+ */
+export const isPhonesQualifier = (qualifier: unknown): qualifier is PhonesQualifier => {
+  return isRecord(qualifier)
+    && hasField(qualifier, { name: 'phones', type: 'object' })
+    && Array.isArray(qualifier.phones)
+    && qualifier.phones.length > 0
+    && qualifier.phones.every(phone => isString(phone) && phone.length > 0 && phone === phone.trim());
+};
+
+/**
  * A qualifier that identifies entities based on a freetext search string.
  */
 export type FreetextQualifier = Readonly<{ freetext: string }>;

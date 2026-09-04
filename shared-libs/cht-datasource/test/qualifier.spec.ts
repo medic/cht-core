@@ -5,6 +5,7 @@ import {
   byContactIds,
   byForms,
   byFreetext,
+  byPhones,
   byReportingPeriod,
   byUsername,
   byUuid,
@@ -15,6 +16,7 @@ import {
   isFormsQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
+  isPhonesQualifier,
   isReportingPeriodQualifier,
   isUsernameQualifier,
   isUuidQualifier,
@@ -224,6 +226,74 @@ describe('qualifier', () => {
     ].forEach(([ contactType, expected ]) => {
       it(`evaluates ${JSON.stringify(contactType)}`, () => {
         expect(isContactTypeQualifier(contactType)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byPhones', () => {
+    it('builds a qualifier that identifies contacts by their phone numbers', () => {
+      expect(byPhones(['+1234', '+5678'])).to.deep.equal({ phones: ['+1234', '+5678'] });
+    });
+
+    it('accepts a single phone number in an array', () => {
+      expect(byPhones(['+1234'])).to.deep.equal({ phones: ['+1234'] });
+    });
+
+    it('removes duplicate phone numbers while keeping the order given', () => {
+      expect(byPhones(['+5678', '+1234', '+5678'])).to.deep.equal({ phones: ['+5678', '+1234'] });
+    });
+
+    it('keeps internal whitespace, which the view keys can contain', () => {
+      expect(byPhones(['+1 234 567'])).to.deep.equal({ phones: ['+1 234 567'] });
+    });
+
+    ([
+      null,
+      undefined,
+      '+1234',
+      [],
+      [''],
+      ['   '],
+      ['\t\n'],
+      ['+1234', ''],
+      ['  +1 234  '],
+      [' +1234'],
+      ['+1234 '],
+      [null],
+      [0],
+      { },
+      0,
+    ] as [string, ...string[]][]).forEach(phones => {
+      it(`throws an error for ${JSON.stringify(phones)}`, () => {
+        expect(() => byPhones(phones)).to.throw(
+          `Invalid phones [${JSON.stringify(phones)}].`
+        );
+      });
+    });
+  });
+
+  describe('isPhonesQualifier', () => {
+    [
+      [ null, false ],
+      [ '+1234', false ],
+      [ { phones: { } }, false ],
+      [ { phones: '+1234' }, false ],
+      [ { phones: [] }, false ],
+      [ { phones: [''] }, false ],
+      [ { phones: ['   '] }, false ],
+      [ { phones: ['+1234', ''] }, false ],
+      [ { phones: ['+1234', null] }, false ],
+      [ { phone: '+1234' }, false ],
+      [ { phones: ['  +1 234  '] }, false ],
+      [ { phones: [' +1234'] }, false ],
+      [ { phones: ['+1234 '] }, false ],
+      [ { phones: ['+1234'] }, true ],
+      [ { phones: ['+1 234 567'] }, true ],
+      [ { phones: ['+1234', '+5678'] }, true ],
+      [ { phones: ['+1234'], other: 'other' }, true ]
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isPhonesQualifier(qualifier)).to.equal(expected);
       });
     });
   });
