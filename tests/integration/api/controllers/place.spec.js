@@ -862,7 +862,7 @@ describe('Place API', () => {
       });
 
       expect(response).to.deep.equal({
-        summary: { archive: { contacts: 5, reports: 3 }, 'set-contact': 1, 'delete-user': 1 },
+        summary: { archive: { contacts: 5, reports: 3 }, 'set-contact': { places: 1 }, 'delete-user': 1 },
       });
       await expect(utils.getDoc(person0._id)).to.be.fulfilled;
       await expect(utils.getDoc(person1._id)).to.be.fulfilled;
@@ -908,7 +908,9 @@ describe('Place API', () => {
       const { id, summary } = await utils.request({ path: `${endpoint}/${place3._id}`, method: 'DELETE' });
       await utils.waitForBulkOperation(id);
 
-      expect(summary).to.deep.equal({ archive: { contacts: 1, reports: 0 }, 'set-contact': 0, 'delete-user': 0 });
+      expect(summary).to.deep.equal({
+        archive: { contacts: 1, reports: 0 }, 'set-contact': { places: 0 }, 'delete-user': 0
+      });
       await expectArchived(place3);
     });
 
@@ -920,7 +922,9 @@ describe('Place API', () => {
       });
       await utils.waitForBulkOperation(id);
 
-      expect(summary).to.deep.equal({ archive: { contacts: 5, reports: 3 }, 'set-contact': 1, 'delete-user': 1 });
+      expect(summary).to.deep.equal({
+        archive: { contacts: 5, reports: 3 }, 'set-contact': { places: 1 }, 'delete-user': 1
+      });
       await expectArchived(person0);
       await expectArchived(person1);
       await expectArchived(person2);

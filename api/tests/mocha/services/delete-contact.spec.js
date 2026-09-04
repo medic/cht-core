@@ -76,7 +76,7 @@ describe('Delete contact service', () => {
 
       expect(res.status.calledOnceWithExactly(202)).to.be.true;
       expect(res.json.calledOnceWithExactly({
-        summary: { archive: { contacts: 2, reports: 2 }, 'set-contact': 1, 'delete-user': 1 },
+        summary: { archive: { contacts: 2, reports: 2 }, 'set-contact': { places: 1 }, 'delete-user': 1 },
         id: 'bulk-operation:xyz',
       })).to.be.true;
     });
@@ -124,7 +124,7 @@ describe('Delete contact service', () => {
       expect(queue.called).to.equal(false);
       expect(res.status.calledOnceWithExactly(200)).to.be.true;
       expect(res.json.calledOnceWithExactly({
-        summary: { archive: { contacts: 1, reports: 1 }, 'set-contact': 0, 'delete-user': 0 },
+        summary: { archive: { contacts: 1, reports: 1 }, 'set-contact': { places: 0 }, 'delete-user': 0 },
       })).to.be.true;
     });
 

@@ -62,9 +62,9 @@ const SWAGGER_OPTIONS = {
             ok: { const: true },
           },
         },
-        DeleteContactSummary: {
+        BulkOperationSummary: {
           type: 'object',
-          description: 'A count of the changes a delete will make, grouped by action.',
+          description: 'A count of the changes an operation will make, grouped by action.',
           properties: {
             archive: {
               type: 'object',
@@ -75,30 +75,20 @@ const SWAGGER_OPTIONS = {
               },
             },
             'set-contact': {
-              type: 'integer',
-              description: 'Primary-contact references on surviving places that will be cleared.',
-            },
-            'delete-user': {
-              type: 'integer',
-              description: 'Linked user accounts that will be removed.',
-            },
-          },
-        },
-        MoveContactSummary: {
-          type: 'object',
-          description: 'A count of the changes a move will make, grouped by action.',
-          properties: {
-            'set-parent': {
-              type: 'integer',
-              description: 'Contacts in the moved hierarchy whose parent lineage will be rewritten.',
-            },
-            'set-contact': {
               type: 'object',
-              description: 'Documents whose cached copy of the moved lineage will be refreshed.',
+              description: 'Documents whose contact reference will be updated.',
               properties: {
                 reports: { type: 'integer' },
                 places: { type: 'integer' },
               },
+            },
+            'set-parent': {
+              type: 'integer',
+              description: 'Contacts in the moved hierarchy whose parent lineage will be rewritten.',
+            },
+            'delete-user': {
+              type: 'integer',
+              description: 'Linked user accounts that will be removed.',
             },
           },
         },
@@ -152,55 +142,28 @@ const SWAGGER_OPTIONS = {
         BadRequest: { description: 'Invalid input (missing required fields, invalid types, etc.)' },
         Unauthorized: { description: 'Not authenticated' },
         Forbidden: { description: 'Insufficient permissions' },
-        DeleteContactQueued: {
+        BulkOperationQueued: {
           description: 'The bulk operation was queued',
           content: {
             'application/json': {
               schema: {
                 type: 'object',
                 properties: {
-                  summary: { $ref: '#/components/schemas/DeleteContactSummary' },
+                  summary: { $ref: '#/components/schemas/BulkOperationSummary' },
                   id: { type: 'string', description: 'The bulk operation id to poll.' }
                 }
               }
             }
           }
         },
-        DeleteContactDryRun: {
+        BulkOperationDryRun: {
           description: 'The dry-run summary (nothing queued)',
           content: {
             'application/json': {
               schema: {
                 type: 'object',
                 properties: {
-                  summary: { $ref: '#/components/schemas/DeleteContactSummary' }
-                }
-              }
-            }
-          }
-        },
-        MoveContactQueued: {
-          description: 'The bulk operation was queued',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  summary: { $ref: '#/components/schemas/MoveContactSummary' },
-                  id: { type: 'string', description: 'The bulk operation id to poll.' }
-                }
-              }
-            }
-          }
-        },
-        MoveContactDryRun: {
-          description: 'The dry-run summary (nothing queued)',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  summary: { $ref: '#/components/schemas/MoveContactSummary' }
+                  summary: { $ref: '#/components/schemas/BulkOperationSummary' }
                 }
               }
             }
