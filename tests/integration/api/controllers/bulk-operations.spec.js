@@ -69,7 +69,7 @@ describe('Bulk operations API', () => {
         .startsWith(id.slice(PREFIXES.BULK_OPERATION_LOG.length))).to.be.true;
       expect(additional).to.be.empty;
       expect(action).excluding('updated_date').to.deep.equal({
-        action: 'archive',
+        action: 'delete',
         status: 'completed',
         total_changes_count: 1
       });
@@ -90,7 +90,7 @@ describe('Bulk operations API', () => {
 
     const {
       id,
-      summary: { archive: { contacts } }
+      summary: { delete: { contacts } }
     } = await utils.request({ path: `/api/v1/place/${parent._id}`, method: 'DELETE' });
 
     await utils.waitForBulkOperation(id, 1000);
@@ -118,7 +118,7 @@ describe('Bulk operations API', () => {
     expect(bulkOperationLogs[0]).excludingEvery(['_rev', 'start_date', 'updated_date']).to.deep.equal({
       _id: bulkOperationLogIds[0],
       actions: { [bulkOperationActions[0]._id]: {
-        action: 'archive',
+        action: 'delete',
         status: 'queued',
         total_changes_count: 1
       } }
@@ -128,7 +128,7 @@ describe('Bulk operations API', () => {
       .excluding(['_attachments', '_rev'])
       .to.deep.equal({
         _id: actionIds[i],
-        action: 'archive',
+        action: 'delete',
         bulk_operation_id: bulkOperationLogs[i]._id,
         cursor: 0,
         total: 1
@@ -156,7 +156,7 @@ describe('Bulk operations API', () => {
     expect(completedLogs).to.have.lengthOf(2);
     completedLogs.forEach((log, i) => expect(log.actions[actionIds[i + 1]].status).to.equal('completed'));
     expect(failedLog.actions[actionIds[0]]).excluding('updated_date').to.deep.equal({
-      action: 'archive',
+      action: 'delete',
       status: 'failed',
       total_changes_count: 1,
       failed_operations: [

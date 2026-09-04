@@ -80,7 +80,7 @@ const deleteContactHierarchy = async (id, { deleteUsers, dryRun } = {}) => {
 
   const userOperations = userIds.map(userId => ({ id: userId }));
   const summary = {
-    archive: { contacts: contactIds.length, reports: reportIds.length },
+    delete: { contacts: contactIds.length, reports: reportIds.length },
     'set-contact': setContactOperations.length,
     'delete-user': userOperations.length,
   };
@@ -89,11 +89,11 @@ const deleteContactHierarchy = async (id, { deleteUsers, dryRun } = {}) => {
     return { summary };
   }
 
-  // Archive last, so contacts are removed only after the references to them are cleared.
+  // Delete last, so contacts are removed only after the references to them are cleared.
   const bulkOperationId = await bulkOperations.queue([
     { action: ACTIONS.SET_CONTACT, operations: setContactOperations },
     { action: ACTIONS.DELETE_USER, operations: userOperations },
-    { action: ACTIONS.ARCHIVE, operations: [ ...reportIds, ...contactIds ].map(docId => ({ id: docId })) },
+    { action: ACTIONS.DELETE, operations: [ ...reportIds, ...contactIds ].map(docId => ({ id: docId })) },
   ]);
 
   return { summary, id: bulkOperationId };

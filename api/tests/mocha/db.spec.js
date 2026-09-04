@@ -408,6 +408,48 @@ describe('db', () => {
     });
   });
 
+  describe('createDeleted', () => {
+    it('creates the database and sets an admin only policy', async () => {
+      sinon.stub(env, 'db').value('mydb');
+      sinon.stub(env, 'serverUrl').get(() => 'http://admin:pass@couchdb:5984');
+      sinon.stub(db.deleted, 'info').resolves({});
+      sinon.stub(request, 'put').resolves();
+
+      await db.createDeleted();
+
+      expect(db.deleted.info.callCount).to.equal(1);
+      expect(request.put.args).to.deep.equal([[
+        {
+          url: 'http://admin:pass@couchdb:5984/mydb-delete/_security',
+          json: true,
+          body: {
+            admins: { names: [], roles: [ '_admin' ] },
+            members: { names: [], roles: [ '_admin' ] },
+          }
+        }
+      ]]);
+    });
+
+    it('replaces an existing grant rather than adding to it', async () => {
+      // A database restored with a member role still has to end up admin only, so the policy is
+      // written whole instead of having the admin role appended to whatever was there.
+      sinon.stub(env, 'db').value('mydb');
+      sinon.stub(env, 'serverUrl').get(() => 'http://admin:pass@couchdb:5984');
+      sinon.stub(db.deleted, 'info').resolves({});
+      sinon.stub(request, 'get').resolves({
+        admins: { names: [], roles: [ '_admin' ] },
+        members: { names: [ 'someone' ], roles: [ 'chw', '_admin' ] },
+      });
+      sinon.stub(request, 'put').resolves();
+
+      await db.createDeleted();
+
+      const { body } = request.put.args[0][0];
+      expect(body.members).to.deep.equal({ names: [], roles: [ '_admin' ] });
+      expect(body.admins).to.deep.equal({ names: [], roles: [ '_admin' ] });
+    });
+  });
+
   describe('fetch extension', () => {
     it('should set headers where there is an active client request', async () => {
       sinon.stub(PouchDB, 'fetch').resolves({

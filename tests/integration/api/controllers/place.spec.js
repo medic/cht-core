@@ -841,10 +841,12 @@ describe('Place API', () => {
       reportFactory.report().build({ form: 'test-report' }, { patient: person2, submitter: person2 }),
     ]);
 
-    const expectArchived = async (doc) => {
-      expect(await utils.archiveDb.get(doc._id)).excludingEvery(['_rev', 'reported_date', 'archive_date'])
+    // Soft deleted rather than purged: the copy lands in the delete database and medic keeps a
+    // tombstone, which is what reaches offline devices and downstream stores such as cht-sync.
+    const expectDeleted = async (doc) => {
+      expect(await utils.deleteDb.get(doc._id)).excludingEvery(['_rev', 'reported_date', 'deleted_date'])
         .to.deep.equal(doc);
-      await expect(utils.getDoc(doc._id)).to.be.rejectedWith('404 - {"error":"not_found","reason":"missing"}');
+      await expect(utils.getDoc(doc._id)).to.be.rejectedWith('404 - {"error":"not_found","reason":"deleted"}');
     };
 
     before(async () => {
@@ -862,7 +864,7 @@ describe('Place API', () => {
       });
 
       expect(response).to.deep.equal({
-        summary: { archive: { contacts: 5, reports: 3 }, 'set-contact': 1, 'delete-user': 1 },
+        summary: { delete: { contacts: 5, reports: 3 }, 'set-contact': 1, 'delete-user': 1 },
       });
       await expect(utils.getDoc(person0._id)).to.be.fulfilled;
       await expect(utils.getDoc(person1._id)).to.be.fulfilled;
@@ -904,15 +906,15 @@ describe('Place API', () => {
       });
     });
 
-    it('archives a place with minimal data', async () => {
+    it('deletes a place with minimal data', async () => {
       const { id, summary } = await utils.request({ path: `${endpoint}/${place3._id}`, method: 'DELETE' });
       await utils.waitForBulkOperation(id);
 
-      expect(summary).to.deep.equal({ archive: { contacts: 1, reports: 0 }, 'set-contact': 0, 'delete-user': 0 });
-      await expectArchived(place3);
+      expect(summary).to.deep.equal({ delete: { contacts: 1, reports: 0 }, 'set-contact': 0, 'delete-user': 0 });
+      await expectDeleted(place3);
     });
 
-    it('archives a place with related entities', async () => {
+    it('deletes a place with related entities', async () => {
       const { id, summary } = await utils.request({
         path: `${endpoint}/${place1._id}`,
         method: 'DELETE',
@@ -920,15 +922,15 @@ describe('Place API', () => {
       });
       await utils.waitForBulkOperation(id);
 
-      expect(summary).to.deep.equal({ archive: { contacts: 5, reports: 3 }, 'set-contact': 1, 'delete-user': 1 });
-      await expectArchived(person0);
-      await expectArchived(person1);
-      await expectArchived(person2);
-      await expectArchived(place1);
-      await expectArchived(place2);
-      await expectArchived(reports[0]);
-      await expectArchived(reports[1]);
-      await expectArchived(reports[2]);
+      expect(summary).to.deep.equal({ delete: { contacts: 5, reports: 3 }, 'set-contact': 1, 'delete-user': 1 });
+      await expectDeleted(person0);
+      await expectDeleted(person1);
+      await expectDeleted(person2);
+      await expectDeleted(place1);
+      await expectDeleted(place2);
+      await expectDeleted(reports[0]);
+      await expectDeleted(reports[1]);
+      await expectDeleted(reports[2]);
       const updatedPlace = await utils.getDoc(place0Id);
       expect(updatedPlace.contact).to.be.undefined;
       await expect(utils.usersDb.get(deletedUserId)).to.be.rejectedWith('deleted');
