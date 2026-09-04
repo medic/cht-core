@@ -1,0 +1,6 @@
+@if (loading) {
+  <div class="loader"></div>
+}
+@if (!loading && objectUrl) {
+  <img [src]="objectUrl" [alt]="alt"/>
+}
