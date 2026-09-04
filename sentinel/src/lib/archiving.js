@@ -386,26 +386,27 @@ const archiveTargets = async (deadline, indexCounter) => {
  * @returns {boolean}
  */
 const isAutoArchiveEnabled = (field) => !!config.get('archive')?.auto_archive?.[field];
+const hasArchiveDuration = () => !!config.get('archive')?.duration;
 
-const autoArchive = async (deadline, indexCounter) => {
-  if (isAutoArchiveEnabled('tasks')) {
-    let nextBatch = true;
-    while (Date.now() < deadline && nextBatch) {
-      nextBatch = await archiveTasks(deadline, indexCounter);
-    }
+const processAutoArchive = async (deadline, indexCounter) => {
+  if (isAutoArchiveEnabled('tasks') || hasArchiveDuration()) {
+    await autoArchive(deadline, indexCounter, archiveTasks);
+    await autoArchive(deadline, indexCounter, archiveTargets);
+  }
+};
 
-    nextBatch = true;
-    while (Date.now() < deadline && nextBatch) {
-      nextBatch = await archiveTargets(deadline, indexCounter);
-    }
+const autoArchive = async (deadline, indexCounter, autoArchiveFn) => {
+  let nextBatch = true;
+  while (Date.now() < deadline && nextBatch) {
+    nextBatch = await autoArchiveFn(deadline, indexCounter);
   }
 };
 
 /**
  * Drains the job queue in _id order until the deadline. Permanently failed jobs are deleted by
  * recordError, so everything in the queue is processable. Once the queue is drained, and when
- * `archive.auto_archive.tasks` is set, sweeps expired tasks and targets — the tasks flag
- * intentionally covers both.
+ * `archive.auto_archive.tasks` or `archive.duration` is set, sweeps expired tasks and targets —
+ * the tasks flag intentionally covers both.
  * @param {number} deadline - epoch ms after which no further job is started
  * @returns {Promise<void>}
  */
@@ -421,7 +422,7 @@ const processQueue = async (deadline) => {
     await processJob(job, deadline, indexCounter);
   } while (Date.now() < deadline);
 
-  await autoArchive(deadline, indexCounter);
+  await processAutoArchive(deadline, indexCounter);
 };
 
 /**

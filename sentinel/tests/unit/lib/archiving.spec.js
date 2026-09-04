@@ -563,8 +563,8 @@ describe('Sentinel archiving lib', () => {
 
     // Auto-archive jobs are created by the run itself, so their ids are not known up front:
     // serve the attachment from whatever the run put in the fake queue.
-    const stubAutoArchive = (autoArchive, jobs = []) => {
-      sinon.stub(config, 'get').withArgs('archive').returns({ auto_archive: autoArchive });
+    const stubAutoArchive = (archiveConfig, jobs = []) => {
+      sinon.stub(config, 'get').withArgs('archive').returns(archiveConfig);
       const { queue, putSnapshots, logs } = stubQueue(jobs);
       sinon.stub(db.sentinel, 'getAttachment').callsFake(jobId => {
         const target = queue.find(j => j._id === jobId);
@@ -593,8 +593,8 @@ describe('Sentinel archiving lib', () => {
       expect(logger.error.callCount).to.equal(0);
     });
 
-    it('does nothing when auto_archive.tasks is not set', async () => {
-      stubAutoArchive({ tasks: false });
+    it('does nothing when neither auto_archive.tasks nor duration are set', async () => {
+      stubAutoArchive({ auto_archive: { tasks: false }, cron: '* 1 * * *' });
 
       await lib.archive();
 
@@ -603,8 +603,40 @@ describe('Sentinel archiving lib', () => {
       expect(db.sentinel.put.callCount).to.equal(0);
     });
 
+    it('sweeps tasks and targets when a duration is configured, without auto_archive.tasks', async () => {
+      const { queue } = stubAutoArchive({ duration: '4 hours' });
+      db.medic.query.resolves(idRows(taskIds(3)));
+      db.medic.allDocs.resolves(idRows(targetIds(2)));
+      const archiveBatch = sinon.stub().resolves();
+      lib.__set__('archiveBatch', archiveBatch);
+
+      await lib.archive();
+
+      expect(db.medic.query.callCount).to.equal(1);
+      expect(db.medic.allDocs.callCount).to.equal(1);
+      expect(archiveBatch.callCount).to.equal(2);
+      expect(queue).to.have.lengthOf(2);
+      expect(queue.every(job => job._deleted)).to.equal(true);
+    });
+
+    it('sweeps tasks and targets when auto_archive.tasks is set, without a duration', async () => {
+      const { queue } = stubAutoArchive({ auto_archive: { tasks: true } });
+      db.medic.query.resolves(idRows(taskIds(3)));
+      db.medic.allDocs.resolves(idRows(targetIds(2)));
+      const archiveBatch = sinon.stub().resolves();
+      lib.__set__('archiveBatch', archiveBatch);
+
+      await lib.archive();
+
+      expect(db.medic.query.callCount).to.equal(1);
+      expect(db.medic.allDocs.callCount).to.equal(1);
+      expect(archiveBatch.callCount).to.equal(2);
+      expect(queue).to.have.lengthOf(2);
+      expect(queue.every(job => job._deleted)).to.equal(true);
+    });
+
     it('queries expired tasks and targets, and queues and processes one job per batch', async () => {
-      const { queue, logs } = stubAutoArchive({ tasks: true });
+      const { queue, logs } = stubAutoArchive({ auto_archive: { tasks: true } });
       const tasks = taskIds(3);
       const targets = targetIds(2);
       db.medic.query.resolves(idRows(tasks));
@@ -641,7 +673,7 @@ describe('Sentinel archiving lib', () => {
     });
 
     it('stores the ids as the job attachment in the same shape as API-created jobs', async () => {
-      const { putSnapshots } = stubAutoArchive({ tasks: true });
+      const { putSnapshots } = stubAutoArchive({ auto_archive: { tasks: true } });
       const tasks = taskIds(3);
       db.medic.query.resolves(idRows(tasks));
 
@@ -654,7 +686,7 @@ describe('Sentinel archiving lib', () => {
     });
 
     it('keeps fetching while full batches complete, and stops after a short one', async () => {
-      const { queue } = stubAutoArchive({ tasks: true });
+      const { queue } = stubAutoArchive({ auto_archive: { tasks: true } });
       db.medic.query.onCall(0).resolves(idRows(taskIds(PURGE_BATCH_SIZE)));
       db.medic.query.onCall(1).resolves(idRows(taskIds(PURGE_BATCH_SIZE)));
       db.medic.query.onCall(2).resolves(idRows(taskIds(10)));
@@ -670,7 +702,7 @@ describe('Sentinel archiving lib', () => {
     });
 
     it('does not create a job when the sweep returns nothing', async () => {
-      stubAutoArchive({ tasks: true });
+      stubAutoArchive({ auto_archive: { tasks: true } });
 
       await lib.archive();
 
@@ -681,7 +713,7 @@ describe('Sentinel archiving lib', () => {
     });
 
     it('stops re-querying when the job fails, leaving it queued for the next run', async () => {
-      const { queue, logs } = stubAutoArchive({ tasks: true });
+      const { queue, logs } = stubAutoArchive({ auto_archive: { tasks: true } });
       db.medic.query.resolves(idRows(taskIds(PURGE_BATCH_SIZE)));
       db.medic.allDocs.resolves(idRows(targetIds(2)));
       const archiveBatch = sinon.stub().resolves();
@@ -703,7 +735,7 @@ describe('Sentinel archiving lib', () => {
 
     it('does not start a sweep once the deadline has expired', async () => {
       const queued = job({ _id: 'archive:1', total: 1, _attachments: { ids: { data: Buffer.from('x1') } } });
-      const { queue } = stubAutoArchive({ tasks: true }, [queued]);
+      const { queue } = stubAutoArchive({ auto_archive: { tasks: true } }, [queued]);
       db.medic.query.resolves(idRows(taskIds(2)));
       const archiveBatch = sinon.stub().callsFake(() => {
         clock.tick(500);
@@ -719,7 +751,7 @@ describe('Sentinel archiving lib', () => {
     });
 
     it('does not start the targets sweep when the tasks sweep ran out the deadline', async () => {
-      const { queue } = stubAutoArchive({ tasks: true });
+      const { queue } = stubAutoArchive({ auto_archive: { tasks: true } });
       db.medic.query.resolves(idRows(taskIds(2)));
       const archiveBatch = sinon.stub().callsFake(() => {
         clock.tick(500);
