@@ -3,6 +3,8 @@ import { provideMockStore } from '@ngrx/store/testing';
 import { Store } from '@ngrx/store';
 import sinon from 'sinon';
 import { assert, expect } from 'chai';
+import * as moment from 'moment';
+import 'moment/locale/ne';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DOC_IDS, PREFIXES, DOC_TYPES } from '@medic/constants';
 
@@ -23,6 +25,8 @@ import { PipesService } from '@mm-services/pipes.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Target } from '@medic/cht-datasource';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
+
+moment.locale('en');
 
 describe('RulesEngineService', () => {
   let service: RulesEngineService;
@@ -1400,6 +1404,21 @@ describe('RulesEngineService', () => {
       // Tag is '2081-10'.
       expect(tag).to.equal('2081-10');
       expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
+
+    it('should return BS interval tags when the Nepali locale is active', () => {
+      const previousLocale = moment.locale();
+      moment.locale('ne');
+      try {
+        uhcSettingsService.getUseBikramSambatMonths.returns(true);
+        service = TestBed.inject(RulesEngineService);
+
+        expect(service.getTargetIntervalTag(settingsDoc, ReportingPeriod.CURRENT)).to.equal('2081-11');
+        expect(service.getTargetIntervalTag(settingsDoc, ReportingPeriod.PREVIOUS)).to.equal('2081-10');
+        expect(moment.locale()).to.equal('ne');
+      } finally {
+        moment.locale(previousLocale);
+      }
     });
   });
 
