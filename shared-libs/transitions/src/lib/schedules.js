@@ -159,19 +159,20 @@ module.exports = {
           };
           if (!msg.translation_key) {
             // no translation_key so generate now
-            task.messages = messageUtils.generate(
-              config.getAll(),
-              utils.translate,
+            task.messages = messageUtils.generate({
+              config: config.getAll(),
+              translate: utils.translate,
               doc,
-              msg,
-              msg.recipient,
-              {
+              content: msg,
+              recipient: msg.recipient,
+              extraContext: {
                 registrations: patientRegistrations,
                 patient: patient,
                 placeRegistrations: placeRegistrations,
                 place: place,
-              }
-            );
+              },
+              extensionLibs: config.getExtensionLibs?.(),
+            });
           }
           const state = messages.isOutgoingAllowed(doc.from) ? allowedState : 'denied';
           utils.setTaskState(task, state);
