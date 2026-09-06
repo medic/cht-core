@@ -21,6 +21,7 @@ import { RelativeDateService } from '@mm-services/relative-date.service';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { PerformanceService } from '@mm-services/performance.service';
@@ -71,6 +72,8 @@ export class ContactsComponent implements OnInit, OnDestroy {
   defaultFilters: Filter = {};
   moreItems;
   usersHomePlaces;
+  // the home place hydrated through its lineage, so the left-side FAB can see an inherited muted state
+  private homePlaceWithLineage;
   contactTypes;
   childPlaces;
   allowedChildPlaces = [];
@@ -102,6 +105,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
     private exportService: ExportService,
     private performanceService: PerformanceService,
     private xmlFormsService: XmlFormsService,
+    private lineageModelGeneratorService: LineageModelGeneratorService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -124,6 +128,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
 
       this.visitCountSettings = this.UHCSettings.getVisitCountSettings(settings);
       this.usersHomePlaces = homePlaceSummary;
+      this.homePlaceWithLineage = await this.getHomePlaceWithLineage();
       if (this.usersHomePlaces && this.usersHomePlaces.length > 1) {
         this.isAllowedToSort = false;
       }
@@ -165,6 +170,15 @@ export class ContactsComponent implements OnInit, OnDestroy {
     }
     if (this.usersHomePlaces?.find(homePlace => homePlace._id === change.id)) {
       this.usersHomePlaces = await this.getUserHomePlaceSummary();
+      this.homePlaceWithLineage = await this.getHomePlaceWithLineage();
+    } else if (this.isHomePlaceAncestor(change.id)) {
+      // An inherited mute or unmute arrives as a change on an ancestor. The muting transitions stamp
+      // `muted` onto every descendant, so the home place doc usually changes too and the branch above
+      // fires; it does not when muting is disabled, when the sentinel batch is still in flight, or
+      // when a subtree was re-parented under a muted place. Without this the left-side FAB keeps the
+      // answer it had when the tab was opened, which in the unmute direction hides a create that is
+      // now allowed until the user leaves the Contacts tab and comes back.
+      this.homePlaceWithLineage = await this.getHomePlaceWithLineage();
     }
     const withIds =
       this.isSortedByLastVisited() &&
@@ -188,7 +202,8 @@ export class ContactsComponent implements OnInit, OnDestroy {
           this.contactTypesService.includes(change.doc) ||
           (change.deleted && this.listContains(change.id)) ||
           this.isRelevantVisitReport(change.doc) ||
-          this.listContains(change.id)
+          this.listContains(change.id) ||
+          this.isHomePlaceAncestor(change.id)
         );
       },
     });
@@ -500,6 +515,34 @@ export class ContactsComponent implements OnInit, OnDestroy {
     return this.usersHomePlaces?.[0]?._id;
   }
 
+  private async getHomePlaceWithLineage() {
+    const id = this.getUserHomePlaceId();
+    if (!id) {
+      return;
+    }
+    // the home place summary's `lineage` is only ids, so hydrate the doc to let ContactMutedService
+    // see an inherited muted state and not just the home place's own `muted` flag.
+    // hydrate: false skips filling in each ancestor's primary contact, which the muted check never reads.
+    try {
+      const model = await this.lineageModelGeneratorService.contact(id, { merge: true, hydrate: false });
+      return model?.doc;
+    } catch (err) {
+      // a missing home place is tolerated on this path (see getUserHomePlaceSummary), so a failed
+      // hydration must not fail the whole tab. Not console.error, which would file a feedback doc
+      // for a state the list already copes with; warn still prints and joins the feedback buffer.
+      // Note this fails OPEN: with no parentContact the left-side FAB is ungated. Nothing can be
+      // written anyway, because the add route is the only way in and it re-reads the lineage itself.
+      // The API gate covers /api/v1 clients only: the webapp's own save goes to /medic/_bulk_docs.
+      console.warn('Could not hydrate the user home place; the list-view muted gate is off.', err);
+    }
+  }
+
+  private isHomePlaceAncestor(changedId) {
+    // The home place summary's `lineage` is already the ancestor ids, so this costs no extra read,
+    // and it still answers when getHomePlaceWithLineage failed and homePlaceWithLineage is undefined.
+    return !!this.usersHomePlaces?.[0]?.lineage?.includes(changedId);
+  }
+
   private async updateFastActions() {
     if (this.destroyed) {
       // Don't update the fast actions, if the component has already been destroyed
@@ -509,6 +552,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
 
     this.fastActionList = await this.fastActionButtonService.getContactLeftSideActions({
       parentFacilityId: this.getUserHomePlaceId(),
+      parentContact: this.homePlaceWithLineage,
       childContactTypes: this.allowedChildPlaces,
     });
   }

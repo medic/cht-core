@@ -16,6 +16,7 @@ module.exports = (sourceDb, sourceConfig, sourceDataContext) => {
 
   const transitions = require('./transitions');
   const utils = require('./lib/utils');
+  const mutingUtils = require('./lib/muting_utils');
 
   return {
     date: require('./date'),
@@ -28,8 +29,6 @@ module.exports = (sourceDb, sourceConfig, sourceDataContext) => {
     processChange: transitions.processChange,
     processDocs: transitions.processDocs,
     isWithinTimeFrame: utils.isWithinTimeFrame,
+    isMutedInLineage: mutingUtils.isMutedInLineage,
   };
 };
-
-module.exports.isMutedInLineage = require('./lib/muted-lineage').isMutedInLineage;
-module.exports.findMutedAncestor = require('./lib/muted-lineage').findMutedAncestor;

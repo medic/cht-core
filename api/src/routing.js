@@ -535,6 +535,8 @@ app.get('/api/v1/users-info', authorization.handleAuthErrors, authorization.getU
  *       Use [POST /api/v1/place](#/Place/v1PlacePost) instead.
  *       Create a new place and optionally a contact. The parent can be referenced by UUID or
  *       created inline. A contact can also be created inline or referenced by UUID.
+ *       Returns 403 if the parent place is muted, or has a muted ancestor, and the caller's role
+ *       does not have the `can_create_contacts_under_muted_places` permission.
  *     tags: [Place]
  *     x-permissions:
  *       hasAll: [can_edit, can_create_places]
@@ -608,6 +610,11 @@ app.postJson('/api/v1/places', function(req, res) {
  *     description: >
  *       Use [PUT /api/v1/place/{id}](#/Place/v1PlaceIdPut) instead.
  *       Update a place and optionally its contact.
+ *       Returns 403 if the body carries a `parent`, or a `contact` whose `place` (or whose `parent`
+ *       when no `place` is given) names a place, that is muted or has a muted ancestor and the caller's
+ *       role does not have the `can_create_contacts_under_muted_places` permission. A body carrying
+ *       neither is never gated, so a plain rename is unaffected, but a client that resends an unchanged
+ *       `parent` is refused.
  *     tags: [Place]
  *     x-permissions:
  *       hasAll: [can_edit, can_update_places]
@@ -648,13 +655,17 @@ app.postJson('/api/v1/places', function(req, res) {
 app.postJson('/api/v1/places/:id', function(req, res) {
   auth
     .check(req, ['can_edit', 'can_update_places'])
-    .then(() => {
+    .then(async (userCtx) => {
       if (_.isEmpty(req.body)) {
         return serverUtils.emptyJSONBodyError(req, res);
       }
-      return places
-        .updatePlace(req.params.id, req.body)
-        .then(body => res.json(body));
+      // Only refs the body carries are gated: `parent`, and the inline contact's `place`/`parent`,
+      // which updatePlace resolves and createPerson writes under. A body carrying neither is never
+      // blocked, so a rename is unaffected; a client that resends an unchanged `parent` is refused.
+      await mutedParent.assertCanCreateOnMutedParent(userCtx, req.body.parent);
+      await mutedParent.assertCanCreateOnMutedParent(userCtx, req.body.contact?.place || req.body.contact?.parent);
+      const body = await places.updatePlace(req.params.id, req.body);
+      return res.json(body);
     })
     .catch(err => serverUtils.error(err, req, res));
 });
@@ -674,6 +685,9 @@ app.putJson('/api/v1/place/:uuid', place.v1.update);
  *     description: >
  *       Use [POST /api/v1/person](#/Person/v1PersonPost) instead.
  *       Create a new person contact. A place can be created inline or referenced by UUID.
+ *       Returns 403 if the place, or the parent when no place is given, is muted or has a muted
+ *       ancestor and the caller's role does not have the `can_create_contacts_under_muted_places`
+ *       permission.
  *     tags: [Person]
  *     x-permissions:
  *       hasAll: [can_edit, can_create_people]
@@ -729,7 +743,8 @@ app.postJson('/api/v1/people', function(req, res) {
       if (_.isEmpty(req.body)) {
         return serverUtils.emptyJSONBodyError(req, res);
       }
-      await mutedParent.assertCanCreateOnMutedParent(userCtx, req.body.place);
+      // createPerson persists a raw parent when no place is given, so gate both.
+      await mutedParent.assertCanCreateOnMutedParent(userCtx, req.body.place || req.body.parent);
       const body = await people.createPerson(req.body);
       return res.json(body);
     })

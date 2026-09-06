@@ -194,7 +194,12 @@ export class FastActionButtonService {
   }
 
   getContactLeftSideActions(context: ContactActionsContext): Promise<FastAction[]> {
-    const actions = this.getContactFormActions(context.parentFacilityId, context.childContactTypes, { from: 'list' });
+    const actions = this.getContactFormActions(
+      context.parentFacilityId,
+      context.childContactTypes,
+      { from: 'list' },
+      context.parentContact,
+    );
 
     return this.filterActions(actions);
   }

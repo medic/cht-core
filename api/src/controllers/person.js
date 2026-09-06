@@ -124,7 +124,10 @@ module.exports = {
      *   post:
      *     summary: Create a new person
      *     operationId: v1PersonPost
-     *     description: Creates a new person record.
+     *     description: >
+     *       Creates a new person record.
+     *       Returns 403 if the parent place is muted, or has a muted ancestor, and the caller's role
+     *       does not have the `can_create_contacts_under_muted_places` permission.
      *     tags: [Person]
      *     x-since: 5.2.0
      *     x-permissions:

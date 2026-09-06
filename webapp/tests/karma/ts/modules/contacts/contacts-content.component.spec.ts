@@ -437,7 +437,7 @@ describe('Contacts content component', () => {
       await (component as any).updateFastActions();
 
       expect(fastActionButtonService.getContactRightSideActions.calledOnce).to.be.true;
-      expect(fastActionButtonService.getContactRightSideActions.firstCall.args[0].parentContact).to.equal(undefined);
+      expect(fastActionButtonService.getContactRightSideActions.firstCall.args[0].parentContact).to.be.undefined;
     });
   });
 

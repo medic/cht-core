@@ -123,7 +123,10 @@ module.exports = {
      *   post:
      *     summary: Create a new place
      *     operationId: v1PlacePost
-     *     description: Creates a new place record.
+     *     description: >
+     *       Creates a new place record.
+     *       Returns 403 if the parent place is muted, or has a muted ancestor, and the caller's role
+     *       does not have the `can_create_contacts_under_muted_places` permission.
      *     tags: [Place]
      *     x-since: 5.2.0
      *     x-permissions:
