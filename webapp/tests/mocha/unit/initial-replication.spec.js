@@ -10,6 +10,7 @@ let localDb;
 let remoteDb;
 let userCtx;
 let clock;
+let setUiStatus;
 
 const FLAG_ID = '_local/initial-replication';
 
@@ -169,6 +170,8 @@ describe('Initial replication', () => {
       };
       clock = sinon.useFakeTimers();
       initialReplication = rewire('../../../src/js/bootstrapper/initial-replication');
+      setUiStatus = sinon.stub();
+      initialReplication.__set__('setUiStatus', setUiStatus);
     });
 
     it('should perform initial replication', async () => {
@@ -208,7 +211,7 @@ describe('Initial replication', () => {
       await initialReplication.replicate(remoteDb, localDb);
 
       expect(utils.fetchJSON.args).to.deep.equal([['/api/v1/replication/get-ids']]);
-      expect(localDb.allDocs.args).to.deep.equal([[]]);
+      expect(localDb.allDocs.args).to.deep.equal([[], [{ keys: [] }]]);
 
       expect(remoteDb.bulkGet.args).to.deep.equal([[{
         docs: [
@@ -295,7 +298,7 @@ describe('Initial replication', () => {
       await initialReplication.replicate(remoteDb, localDb);
 
       expect(utils.fetchJSON.args).to.deep.equal([['/api/v1/replication/get-ids']]);
-      expect(localDb.allDocs.args).to.deep.equal([[]]);
+      expect(localDb.allDocs.args).to.deep.equal([[], [{ keys: [] }]]);
 
       expect(remoteDb.bulkGet.args).to.deep.equal([[{
         docs: [
@@ -368,7 +371,7 @@ describe('Initial replication', () => {
       await initialReplication.replicate(remoteDb, localDb);
 
       expect(utils.fetchJSON.args).to.deep.equal([['/api/v1/replication/get-ids']]);
-      expect(localDb.allDocs.args).to.deep.equal([[]]);
+      expect(localDb.allDocs.args).to.deep.equal([[], [{ keys: [] }]]);
 
       expect(remoteDb.bulkGet.callCount).to.equal(7);
       const bulkGetArgs = [];
@@ -385,6 +388,18 @@ describe('Initial replication', () => {
         bulkDocsArgs.push(...docs.map(doc => doc._id));
       });
       expect(bulkDocsArgs).to.deep.equal(docIds);
+
+      expect(setUiStatus.args).to.deep.equal([
+        ['LOAD_APP'],
+        ['POLL_REPLICATION'],
+        ['FETCH_INFO', { count: 0, total: 650 }],
+        ['FETCH_INFO', { count: 100, total: 650 }],
+        ['FETCH_INFO', { count: 200, total: 650 }],
+        ['FETCH_INFO', { count: 300, total: 650 }],
+        ['FETCH_INFO', { count: 400, total: 650 }],
+        ['FETCH_INFO', { count: 500, total: 650 }],
+        ['FETCH_INFO', { count: 600, total: 650 }],
+      ]);
 
       expect(localDb.put.args).to.deep.equal([
         [{
@@ -848,6 +863,312 @@ describe('Initial replication', () => {
 
       await expect(initialReplication.replicate(remoteDb, localDb))
         .to.be.rejectedWith(Error, 'Invalid replication state: missing replication log');
+    });
+
+    describe('form docs', () => {
+      const FORM_A = PREFIXES.FORM + 'pregnancy';
+      const FORM_B = PREFIXES.FORM + 'delivery';
+      const FORM_C = PREFIXES.FORM + 'assessment';
+
+      const resolveLog = () => {
+        localDb.get
+          .onCall(0).rejects({ status: 404 })
+          .resolves({ _id: FLAG_ID, start_time: 0 });
+        localDb.put.resolves();
+        localDb.bulkDocs.resolves();
+        localDb.replicate.to.resolves();
+        localDb.info.resolves({ update_seq: 10 });
+      };
+
+      beforeEach(() => {
+        remoteDb.get = sinon.stub();
+      });
+
+      it('should download form docs one by one, with attachments, before the other docs', async () => {
+        sinon.stub(utils, 'fetchJSON').resolves({
+          doc_ids_revs: [
+            { id: 'one', rev: 1 },
+            { id: FORM_A, rev: '3-abc' },
+            { id: 'two', rev: 1 },
+            { id: FORM_B, rev: '1-def' },
+            { id: 'three', rev: 2 },
+          ],
+          warn_docs: 5,
+          last_seq: '123-fdhsfs',
+          warn: false,
+          limit: 10000
+        });
+
+        localDb.allDocs.resolves({ rows: [] });
+        remoteDb.get
+          .withArgs(FORM_A).resolves({ _id: FORM_A, _rev: '3-abc', _attachments: { xml: { data: 'a' } } })
+          .withArgs(FORM_B).resolves({ _id: FORM_B, _rev: '1-def', _attachments: { xml: { data: 'b' } } });
+        remoteDb.bulkGet.resolves({
+          results: [
+            { id: 'one', docs: [{ ok: { _id: 'one', _rev: 1, field: 'one' } }], },
+            { id: 'two', docs: [{ ok: { _id: 'two', _rev: 1, field: 'two' } }], },
+            { id: 'three', docs: [{ ok: { _id: 'three', _rev: 2, field: 'three' } }], },
+          ]
+        });
+        resolveLog();
+
+        await initialReplication.replicate(remoteDb, localDb);
+
+        expect(localDb.allDocs.args).to.deep.equal([[], [{ keys: [FORM_A, FORM_B] }]]);
+        expect(remoteDb.get.args).to.deep.equal([
+          [FORM_A, { rev: '3-abc', attachments: true }],
+          [FORM_B, { rev: '1-def', attachments: true }],
+        ]);
+        expect(remoteDb.bulkGet.args).to.deep.equal([[{
+          docs: [
+            { id: 'one', rev: 1 },
+            { id: 'two', rev: 1 },
+            { id: 'three', rev: 2 },
+          ],
+          attachments: true,
+          revs: true,
+        }]]);
+        expect(localDb.bulkDocs.args).to.deep.equal([
+          [[{ _id: FORM_A, _rev: '3-abc', _attachments: { xml: { data: 'a' } } }], { new_edits: false }],
+          [[{ _id: FORM_B, _rev: '1-def', _attachments: { xml: { data: 'b' } } }], { new_edits: false }],
+          [
+            [
+              { _id: 'one', _rev: 1, field: 'one' },
+              { _id: 'two', _rev: 1, field: 'two' },
+              { _id: 'three', _rev: 2, field: 'three' },
+            ],
+            { new_edits: false },
+          ],
+        ]);
+        expect(remoteDb.get.getCall(1).calledBefore(remoteDb.bulkGet.getCall(0))).to.equal(true);
+
+        expect(setUiStatus.args).to.deep.equal([
+          ['LOAD_APP'],
+          ['POLL_REPLICATION'],
+          ['FETCH_FORMS', { count: 0, total: 2 }],
+          ['FETCH_FORMS', { count: 1, total: 2 }],
+          ['FETCH_INFO', { count: 2, total: 5 }],
+        ]);
+
+        expect(localDb.put.args).to.deep.equal([
+          [{ _id: FLAG_ID, start_time: 0, start_data_usage: undefined }],
+          [{ _id: FLAG_ID, complete: true, data_usage: undefined, duration: 0, start_time: 0 }],
+        ]);
+        expect(localDb.replicate.to.args).to.deep.equal([[remoteDb, { since: 10 }]]);
+      });
+
+      it('should only download form docs that are missing or outdated locally', async () => {
+        sinon.stub(utils, 'fetchJSON').resolves({
+          doc_ids_revs: [
+            { id: FORM_A, rev: '2-current' },
+            { id: FORM_B, rev: '5-newer' },
+            { id: FORM_C, rev: '1-new' },
+            { id: 'one', rev: 1 },
+          ],
+          warn_docs: 4,
+          last_seq: '123-fdhsfs',
+          warn: false,
+          limit: 10000
+        });
+
+        localDb.allDocs
+          .onCall(0).resolves({ rows: [{ id: 'one', value: { rev: 1 } }] })
+          .onCall(1).resolves({
+            rows: [
+              { key: FORM_A, id: FORM_A, value: { rev: '2-current' } },
+              { key: FORM_B, id: FORM_B, value: { rev: '4-older' } },
+              { key: FORM_C, error: 'not_found' },
+            ]
+          });
+        remoteDb.get
+          .withArgs(FORM_B).resolves({ _id: FORM_B, _rev: '5-newer' })
+          .withArgs(FORM_C).resolves({ _id: FORM_C, _rev: '1-new' });
+        resolveLog();
+
+        await initialReplication.replicate(remoteDb, localDb);
+
+        expect(localDb.allDocs.args).to.deep.equal([[], [{ keys: [FORM_A, FORM_B, FORM_C] }]]);
+        expect(remoteDb.get.args).to.deep.equal([
+          [FORM_B, { rev: '5-newer', attachments: true }],
+          [FORM_C, { rev: '1-new', attachments: true }],
+        ]);
+        expect(localDb.bulkDocs.args).to.deep.equal([
+          [[{ _id: FORM_B, _rev: '5-newer' }], { new_edits: false }],
+          [[{ _id: FORM_C, _rev: '1-new' }], { new_edits: false }],
+        ]);
+        expect(remoteDb.bulkGet.callCount).to.equal(0);
+        expect(setUiStatus.args).to.deep.equal([
+          ['LOAD_APP'],
+          ['POLL_REPLICATION'],
+          ['FETCH_FORMS', { count: 0, total: 2 }],
+          ['FETCH_FORMS', { count: 1, total: 2 }],
+          ['FETCH_INFO', { count: 4, total: 4 }],
+        ]);
+        expect(localDb.replicate.to.callCount).to.equal(1);
+      });
+
+      it('should not fetch form docs from _bulk_get even when missing locally', async () => {
+        sinon.stub(utils, 'fetchJSON').resolves({
+          doc_ids_revs: [
+            { id: FORM_A, rev: '1-abc' },
+            { id: 'one', rev: 1 },
+          ],
+          warn_docs: 2,
+          last_seq: '123-fdhsfs',
+          warn: false,
+          limit: 10000
+        });
+
+        localDb.allDocs.resolves({ rows: [] });
+        remoteDb.get.resolves({ _id: FORM_A, _rev: '1-abc' });
+        remoteDb.bulkGet.resolves({
+          results: [{ id: 'one', docs: [{ ok: { _id: 'one', _rev: 1, field: 'one' } }] }]
+        });
+        resolveLog();
+
+        await initialReplication.replicate(remoteDb, localDb);
+
+        expect(remoteDb.bulkGet.args).to.deep.equal([[{
+          docs: [{ id: 'one', rev: 1 }],
+          attachments: true,
+          revs: true,
+        }]]);
+        expect(remoteDb.get.args).to.deep.equal([[FORM_A, { rev: '1-abc', attachments: true }]]);
+      });
+
+      it('should skip form download entirely when there are no form docs', async () => {
+        sinon.stub(utils, 'fetchJSON').resolves({
+          doc_ids_revs: [{ id: 'one', rev: 1 }],
+          warn_docs: 1,
+          last_seq: '123-fdhsfs',
+          warn: false,
+          limit: 10000
+        });
+
+        localDb.allDocs.resolves({ rows: [] });
+        remoteDb.bulkGet.resolves({
+          results: [{ id: 'one', docs: [{ ok: { _id: 'one', _rev: 1, field: 'one' } }] }]
+        });
+        resolveLog();
+
+        await initialReplication.replicate(remoteDb, localDb);
+
+        expect(localDb.allDocs.args).to.deep.equal([[], [{ keys: [] }]]);
+        expect(remoteDb.get.callCount).to.equal(0);
+        expect(localDb.bulkDocs.callCount).to.equal(1);
+        expect(setUiStatus.args).to.deep.equal([
+          ['LOAD_APP'],
+          ['POLL_REPLICATION'],
+          ['FETCH_INFO', { count: 0, total: 1 }],
+        ]);
+      });
+
+      it('should complete when all docs are forms and every form is up to date locally', async () => {
+        sinon.stub(utils, 'fetchJSON').resolves({
+          doc_ids_revs: [
+            { id: FORM_A, rev: '1-abc' },
+            { id: FORM_B, rev: '1-def' },
+          ],
+          warn_docs: 2,
+          last_seq: '123-fdhsfs',
+          warn: false,
+          limit: 10000
+        });
+
+        localDb.allDocs.resolves({
+          rows: [
+            { id: FORM_A, value: { rev: '1-abc' } },
+            { id: FORM_B, value: { rev: '1-def' } },
+          ]
+        });
+        resolveLog();
+
+        await initialReplication.replicate(remoteDb, localDb);
+
+        expect(remoteDb.get.callCount).to.equal(0);
+        expect(remoteDb.bulkGet.callCount).to.equal(0);
+        expect(localDb.bulkDocs.callCount).to.equal(0);
+        expect(setUiStatus.args).to.deep.equal([
+          ['LOAD_APP'],
+          ['POLL_REPLICATION'],
+          ['FETCH_INFO', { count: 2, total: 2 }],
+        ]);
+        expect(localDb.put.args).to.deep.equal([
+          [{ _id: FLAG_ID, start_time: 0, start_data_usage: undefined }],
+          [{ _id: FLAG_ID, complete: true, data_usage: undefined, duration: 0, start_time: 0 }],
+        ]);
+      });
+
+      it('should throw local _all_docs errors when looking up forms', async () => {
+        sinon.stub(utils, 'fetchJSON').resolves({
+          doc_ids_revs: [{ id: FORM_A, rev: '1-abc' }, { id: 'one', rev: 1 }],
+          warn_docs: 2,
+          last_seq: '123-fdhsfs',
+          warn: false,
+          limit: 10000
+        });
+
+        localDb.allDocs
+          .onCall(0).resolves({ rows: [] })
+          .onCall(1).rejects(new Error('keyed lookup failed'));
+        localDb.put.resolves();
+        localDb.get.rejects({ status: 404 });
+
+        await expect(initialReplication.replicate(remoteDb, localDb)).to.be.rejectedWith(Error, 'keyed lookup failed');
+
+        expect(remoteDb.get.callCount).to.equal(0);
+        expect(remoteDb.bulkGet.callCount).to.equal(0);
+        expect(localDb.replicate.to.callCount).to.equal(0);
+      });
+
+      it('should throw remote form get errors and stop downloading', async () => {
+        sinon.stub(utils, 'fetchJSON').resolves({
+          doc_ids_revs: [
+            { id: FORM_A, rev: '1-abc' },
+            { id: FORM_B, rev: '1-def' },
+            { id: 'one', rev: 1 },
+          ],
+          warn_docs: 3,
+          last_seq: '123-fdhsfs',
+          warn: false,
+          limit: 10000
+        });
+
+        localDb.allDocs.resolves({ rows: [] });
+        remoteDb.get.rejects(new Error('attachment too large'));
+        localDb.put.resolves();
+        localDb.get.rejects({ status: 404 });
+
+        await expect(initialReplication.replicate(remoteDb, localDb)).to.be.rejectedWith(Error, 'attachment too large');
+
+        expect(remoteDb.get.args).to.deep.equal([[FORM_A, { rev: '1-abc', attachments: true }]]);
+        expect(localDb.bulkDocs.callCount).to.equal(0);
+        expect(remoteDb.bulkGet.callCount).to.equal(0);
+        expect(localDb.replicate.to.callCount).to.equal(0);
+        expect(localDb.put.args).to.deep.equal([[{ _id: FLAG_ID, start_data_usage: undefined, start_time: 0 }]]);
+      });
+
+      it('should throw local _bulk_docs errors when saving a form doc', async () => {
+        sinon.stub(utils, 'fetchJSON').resolves({
+          doc_ids_revs: [{ id: FORM_A, rev: '1-abc' }, { id: 'one', rev: 1 }],
+          warn_docs: 2,
+          last_seq: '123-fdhsfs',
+          warn: false,
+          limit: 10000
+        });
+
+        localDb.allDocs.resolves({ rows: [] });
+        remoteDb.get.resolves({ _id: FORM_A, _rev: '1-abc' });
+        localDb.bulkDocs.rejects(new Error('quota exceeded'));
+        localDb.put.resolves();
+        localDb.get.rejects({ status: 404 });
+
+        await expect(initialReplication.replicate(remoteDb, localDb)).to.be.rejectedWith(Error, 'quota exceeded');
+
+        expect(localDb.bulkDocs.args).to.deep.equal([[[{ _id: FORM_A, _rev: '1-abc' }], { new_edits: false }]]);
+        expect(remoteDb.bulkGet.callCount).to.equal(0);
+        expect(localDb.replicate.to.callCount).to.equal(0);
+      });
     });
   });
 });
