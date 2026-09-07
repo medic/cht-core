@@ -214,21 +214,26 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
       this.globalActions.setLoadingContent(false);
     } catch (error: any) {
-      // no form will open, so stop the watch instead of leaving `watchPosition` live until the
-      // service's own 30 second timeout settles it. Not a `finally`: on the success path this same
-      // handle is what save() passes to formService.saveContact.
-      this.geoHandle?.cancel();
-      this.errorTranslationKey = error.translationKey || 'error.loading.form';
-      this.globalActions.setLoadingContent(false);
-      this.contentError = true;
-      if (error.isAuthorizationRefusal) {
-        // a deliberate policy outcome, not an application error, so not console.error, which would
-        // file a feedback doc. info still prints in production and joins the circular log buffer, so
-        // a refused deep link leaves a trace when someone reports that a form will not open.
-        console.info('Contact form refused.', error);
-      } else {
-        console.error('Error loading contact form.', error);
-      }
+      this.handleFormLoadError(error);
+    }
+  }
+
+  // extracted from initForm's catch to keep that function under the cognitive complexity limit
+  private handleFormLoadError(error) {
+    // no form will open, so stop the watch instead of leaving `watchPosition` live until the
+    // service's own 30 second timeout settles it. Not a `finally`: on the success path this same
+    // handle is what save() passes to formService.saveContact.
+    this.geoHandle?.cancel();
+    this.errorTranslationKey = error.translationKey || 'error.loading.form';
+    this.globalActions.setLoadingContent(false);
+    this.contentError = true;
+    if (error.isAuthorizationRefusal) {
+      // a deliberate policy outcome, not an application error, so not console.error, which would
+      // file a feedback doc. info still prints in production and joins the circular log buffer, so
+      // a refused deep link leaves a trace when someone reports that a form will not open.
+      console.info('Contact form refused.', error);
+    } else {
+      console.error('Error loading contact form.', error);
     }
   }
 
