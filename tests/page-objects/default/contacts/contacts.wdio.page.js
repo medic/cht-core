@@ -32,6 +32,11 @@ const rightPanelSelectors = {
   placesCardRows: () => $$('.card.children.places li.content-row'),
 };
 
+const childRowSelectors = {
+  childContactRow: (contactId) => $(`.right-pane .card.children li.content-row[data-record-id="${contactId}"]`),
+  childVisitBadge: (contactId) => childRowSelectors.childContactRow(contactId).$('.heading .visits'),
+};
+
 const contactCardSelectors = {
   contactCardName: () => $('h2[test-id="contact-name"]'),
   contactCardIcon: (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`),
@@ -315,6 +320,26 @@ const getAllRHSPlaceIds = async () => {
   return placeRows.map(row => row.getAttribute('data-record-id'));
 };
 
+const getChildVisitStats = async (contactId) => {
+  const row = childRowSelectors.childContactRow(contactId);
+  await row.waitForDisplayed();
+  const overdue = (await row.getAttribute('class')).includes('overdue');
+
+  const visitBadge = childRowSelectors.childVisitBadge(contactId);
+  if (!await visitBadge.isExisting()) {
+    return { hasVisitBadge: false, overdue };
+  }
+
+  const badgeClass = await visitBadge.getAttribute('class');
+  return {
+    hasVisitBadge: true,
+    overdue,
+    count: await visitBadge.$('span').getText(),
+    status: ['danger', 'warning', 'success'].find(status => badgeClass.includes(status)),
+    summary: await row.$('.summary p').getText(),
+  };
+};
+
 const getAllRHSReportsNames = async () => {
   await reportsCardSelectors.rhsReportListElement().waitForDisplayed();
   return commonPage.getTextForElements(reportsCardSelectors.rhsReportElementList);
@@ -474,6 +499,7 @@ module.exports = {
   genericForm,
   leftPanelSelectors,
   rightPanelSelectors,
+  childRowSelectors,
   contactCardSelectors,
   tasksCardSelectors,
   reportsCardSelectors,
@@ -490,6 +516,7 @@ module.exports = {
   addPlace,
   getPrimaryContactName,
   getAllRHSPeopleNames,
+  getChildVisitStats,
   getAllRHSPlaceIds,
   waitForContactLoaded,
   waitForContactUnloaded,
