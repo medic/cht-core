@@ -46,7 +46,7 @@ describe('Performing an upgrade', () => {
 
   const clearUpgradeLogs = async () => {
     const logs = await getUpgradeLogs();
-    logs.shift();
+    logs.shift(); // first item is always the upgrade_log for the install
     logs.forEach(log => log._deleted = true);
     await utils.logsDb.bulkDocs(logs);
   };
