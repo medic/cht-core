@@ -19,6 +19,7 @@ const deployInfo = require('../../../src/services/deploy-info');
 describe('Configuration', () => {
   beforeEach(() => {
     sinon.stub(db, 'createVault');
+    sinon.stub(db, 'createDeleted');
     sinon.stub(db.medic, 'get');
     sinon.stub(viewMapUtils, 'loadViewMaps');
     sinon.stub(translations, 'run');
@@ -70,6 +71,7 @@ describe('Configuration', () => {
 
         chai.expect(deployInfo.store.calledOnce).to.equal(true);
         chai.expect(db.createVault.callCount).to.equal(1);
+        chai.expect(db.createDeleted.callCount).to.equal(1);
       });
     });
 

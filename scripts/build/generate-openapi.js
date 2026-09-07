@@ -66,7 +66,7 @@ const SWAGGER_OPTIONS = {
           type: 'object',
           description: 'A count of the changes an operation will make, grouped by action.',
           properties: {
-            archive: {
+            delete: {
               type: 'object',
               description: 'Documents to remove: the contacts in the hierarchy and their reports.',
               properties: {

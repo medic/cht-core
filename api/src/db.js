@@ -9,7 +9,7 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 const asyncLocalStorage = require('./services/async-storage');
 const audit = require('@medic/audit');
 const { REQUEST_ID_HEADER } = require('./server-utils');
-const { HTTP_HEADERS } = require('@medic/constants');
+const { HTTP_HEADERS, USER_ROLES } = require('@medic/constants');
 
 const { UNIT_TEST_ENV } = process.env;
 
@@ -24,6 +24,7 @@ if (UNIT_TEST_ENV) {
     'vault',
     'cache',
     'archive',
+    'deleted',
   ];
   const DB_FUNCTIONS_TO_STUB = [
     'allDocs',
@@ -51,6 +52,7 @@ if (UNIT_TEST_ENV) {
     'activeTasks',
     'saveDocs',
     'createVault',
+    'createDeleted',
     'wipeCacheDb',
     'addRoleAsAdmin',
     'addRoleAsMember',
@@ -105,6 +107,26 @@ if (UNIT_TEST_ENV) {
   module.exports.createVault = () => module.exports.vault.info();
   module.exports.users = new PouchDB(getDbUrl('_users'), { fetch: fetchFn });
   module.exports.archive = new PouchDB(`${environment.couchUrl}-archive`, { fetch: fetchFn });
+  module.exports.deleted = new PouchDB(`${environment.couchUrl}-delete`, { fetch: fetchFn });
+  /**
+   * Creates the delete database and explicitly keeps it admin only. CouchDB 3 creates databases
+   * admin only by default, but that default is configurable. Enforcing the policy here keeps retained
+   * deleted documents restricted if the database is recreated or the server default changes.
+   */
+  module.exports.createDeleted = async () => {
+    await module.exports.deleted.info();
+    // Set rather than added to. Adding the admin role would leave any existing grant in place, and
+    // would write nothing at all when the role is already there, so a database that came back from
+    // a restore with a member role on it would stay readable. That is the only case this exists for,
+    // since CouchDB creates databases admin only to begin with.
+    const securityUrl = new URL(environment.serverUrl);
+    securityUrl.pathname = `${environment.db}-delete/_security`;
+    const adminOnly = {
+      admins: { names: [], roles: [ USER_ROLES.COUCHDB_ADMIN ] },
+      members: { names: [], roles: [ USER_ROLES.COUCHDB_ADMIN ] },
+    };
+    await request.put({ url: securityUrl.toString(), json: true, body: adminOnly });
+  };
   module.exports.builds = new PouchDB(environment.buildsUrl);
 
   // Get the DB with the given name

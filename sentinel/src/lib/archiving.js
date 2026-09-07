@@ -347,4 +347,5 @@ const archive = async (duration) => {
 module.exports = {
   archive,
   archiveBatch,
+  purgeDocs,
 };
