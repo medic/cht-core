@@ -72,7 +72,7 @@ const generateMessages = (
 
     if (phone.error) {
       logger.error('%o', phone.error);
-      messages.addError(latestReport, phone.error);
+      messages.addError(latestReport, { code: 'phone_number_error', message: phone.error });
       return;
     }
     const context = {
