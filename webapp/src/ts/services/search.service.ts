@@ -61,7 +61,7 @@ export class SearchService {
 
   private getLastVisitedDates(searchResults, searchResultsCache, settings) {
     settings = settings || {};
-    const interval = CalendarInterval.getCurrent(settings.monthStartDate);
+    const interval = CalendarInterval.getCurrent(settings.monthStartDate, settings.useBikramSambatMonths);
     const visitStats = {};
 
     searchResults.forEach((id) => {

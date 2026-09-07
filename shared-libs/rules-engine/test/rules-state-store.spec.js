@@ -80,6 +80,15 @@ describe('rules-state-store', () => {
     expect(isDirty).to.be.true;
   });
 
+  it('stores and propagates useBikramSambatMonths configuration', async () => {
+    const onStateChange = sinon.stub();
+    await rulesStateStore.build({ monthStartDate: 15, useBikramSambatMonths: true }, onStateChange);
+
+    const stateObj = rulesStateStore.__get__('state');
+    expect(stateObj.useBikramSambatMonths).to.be.true;
+    expect(stateObj.monthStartDate).to.equal(15);
+  });
+
   it('scenario after loading state', async () => {
     const onStateChange = sinon.stub().resolves();
     const state = mockState({ 'a': { calculatedAt: Date.now(), expireAt: Date.now() + 1000 } });

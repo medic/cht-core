@@ -1,0 +1,1 @@
+The `License` section of the PR description has been modified. Contributions are accepted under the license stated in the [pull request template]({{templateUrl}}) — please restore the original license text.

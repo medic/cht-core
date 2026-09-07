@@ -33,6 +33,7 @@ import { FastActionButtonComponent } from '@mm-components/fast-action-button/fas
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { PerformanceService } from '@mm-services/performance.service';
+import { UHCStatsService } from '@mm-services/uhc-stats.service';
 import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
 
 describe('Contacts component', () => {
@@ -152,6 +153,9 @@ describe('Contacts component', () => {
           { provide: NavigationService, useValue: {} },
           { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
           { provide: PerformanceService, useValue: performanceService },
+          // keeps the real UHCVisitDisplayService (whose formatting the list tests assert) from
+          // pulling in the real DbService through UHCStatsService
+          { provide: UHCStatsService, useValue: {} },
           { provide: MatDialog, useValue: { open: sinon.stub() } },
         ]
       })

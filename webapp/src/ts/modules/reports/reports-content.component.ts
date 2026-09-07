@@ -24,7 +24,7 @@ import {
   ReportVerifyValidIconComponent,
   ReportVerifyInvalidIconComponent
 } from '@mm-components/status-icons/status-icons.template';
-import { ReportImageComponent } from '@mm-components/report-image/report-image.component';
+import { AttachmentImageComponent } from '@mm-components/attachment-image/attachment-image.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LineagePipe, TitlePipe } from '@mm-pipes/message.pipe';
 import { RelativeDatePipe, StatePipe } from '@mm-pipes/date.pipe';
@@ -40,7 +40,7 @@ import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
     SenderComponent,
     ReportVerifyValidIconComponent,
     ReportVerifyInvalidIconComponent,
-    ReportImageComponent,
+    AttachmentImageComponent,
     AsyncPipe,
     TranslatePipe,
     LineagePipe,

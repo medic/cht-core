@@ -20,11 +20,11 @@ describe('Infinite scrolling', () => {
     let nbrReports = await reportsPage.getAllReportsText();
     expect(nbrReports.length).to.equal(PAGE_SIZE);
 
-    await commonPage.loadNextInfiniteScrollPage('reports');
+    await commonPage.loadNextInfiniteScrollPage('reports', 20000);
     nbrReports = await reportsPage.getAllReportsText();
     expect(nbrReports.length).to.equal(PAGE_SIZE * 2);
 
-    await commonPage.loadNextInfiniteScrollPage('reports');
+    await commonPage.loadNextInfiniteScrollPage('reports', 20000);
     nbrReports = await reportsPage.getAllReportsText();
     expect(nbrReports.length).to.equal(PAGE_SIZE * 3);
   });

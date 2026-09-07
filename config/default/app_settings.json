@@ -299,7 +299,8 @@
     "contacts_default_sort": "",
     "visit_count": {
       "month_start_date": 1,
-      "visit_count_goal": 0
+      "visit_count_goal": 0,
+      "use_bikram_sambat_months": false
     }
   },
   "death_reporting": {

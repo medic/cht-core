@@ -685,7 +685,7 @@ describe('Person API', () => {
       });
 
       expect(response).to.deep.equal({
-        summary: { delete: { contacts: 1, reports: 2 }, 'set-contact': 1, 'delete-user': 1 },
+        summary: { delete: { contacts: 1, reports: 2 }, 'set-contact': { places: 1 }, 'delete-user': 1 },
       });
       await expect(utils.getDoc(person0._id)).to.be.fulfilled;
       await expect(utils.getDoc(reports[0]._id)).to.be.fulfilled;
@@ -726,7 +726,9 @@ describe('Person API', () => {
       const { id, summary } = await utils.request({ path: `${endpoint}/${person1._id}`, method: 'DELETE' });
       await utils.waitForBulkOperation(id);
 
-      expect(summary).to.deep.equal({ delete: { contacts: 1, reports: 0 }, 'set-contact': 0, 'delete-user': 0 });
+      expect(summary).to.deep.equal({
+        delete: { contacts: 1, reports: 0 }, 'set-contact': { places: 0 }, 'delete-user': 0
+      });
       await expectDeleted(person1);
     });
 
@@ -738,7 +740,9 @@ describe('Person API', () => {
       });
       await utils.waitForBulkOperation(id);
 
-      expect(summary).to.deep.equal({ delete: { contacts: 1, reports: 2 }, 'set-contact': 1, 'delete-user': 1 });
+      expect(summary).to.deep.equal({
+        delete: { contacts: 1, reports: 2 }, 'set-contact': { places: 1 }, 'delete-user': 1
+      });
       await expectDeleted(person0);
       await expectDeleted(reports[0]);
       await expectDeleted(reports[1]);

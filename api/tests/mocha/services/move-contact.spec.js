@@ -25,9 +25,8 @@ const UNDER_HC_B = { _id: 'hc-b', parent: { _id: 'district' } };
 const subtreeOf = sinon.match(opts => Array.isArray(opts.key));
 const atDepthOne = sinon.match(opts => Array.isArray(opts.keys));
 
-// Two nouveau indexes are queried in turn, so the stubs split on which one the uri names.
-const freetextQuery = sinon.match(opts => opts.uri.endsWith('reports_by_freetext'));
-const authorQuery = sinon.match(opts => opts.uri.endsWith('docs_by_replication_key'));
+// One nouveau index carries both the report and its author, so a single matcher covers it.
+const reportQuery = sinon.match(opts => opts.uri.endsWith('docs_by_replication_key'));
 
 const buildRes = () => {
   const res = {};
@@ -47,8 +46,7 @@ describe('move-contact service', () => {
   let contactGet;
   let handler;
   let queue;
-  let freetext;
-  let authors;
+  let reports;
 
   beforeEach(() => {
     contactGet = sinon.stub().resolves(healthCenterB);
@@ -68,8 +66,7 @@ describe('move-contact service', () => {
     db.medic.query.withArgs('medic/contacts_by_primary_contact').resolves({ rows: [] });
 
     sinon.stub(request, 'post');
-    freetext = request.post.withArgs(freetextQuery).resolves({ hits: [] });
-    authors = request.post.withArgs(authorQuery).resolves({ hits: [] });
+    reports = request.post.withArgs(reportQuery).resolves({ hits: [] });
 
     handler = moveContact.handleMove({ get: sinon.stub().resolves(clinic), type: 'Place' });
   });
@@ -105,8 +102,7 @@ describe('move-contact service', () => {
 
   it('answers everything from indexes without reading a single document', async () => {
     const allDocs = sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
-    freetext.resolves({ hits: [ { id: 'report-1' } ] });
-    authors.resolves({ hits: [ { id: 'report-1', fields: { submitter: 'person-1' } } ] });
+    reports.resolves({ hits: [ { id: 'report-1', fields: { submitter: 'person-1' } } ] });
 
     await handler(buildReq(), buildRes());
 
@@ -151,8 +147,7 @@ describe('move-contact service', () => {
   });
 
   it('refreshes the cached lineage on reports the moved contacts authored', async () => {
-    freetext.resolves({ hits: [ { id: 'report-1' } ] });
-    authors.resolves({ hits: [ { id: 'report-1', fields: { submitter: 'person-1' } } ] });
+    reports.resolves({ hits: [ { id: 'report-1', fields: { submitter: 'person-1' } } ] });
     const res = buildRes();
 
     await handler(buildReq(), res);
@@ -166,50 +161,44 @@ describe('move-contact service', () => {
     expect(res.json.args[0][0].summary['set-contact']).to.deep.equal({ reports: 1, places: 0 });
   });
 
-  it('looks the report authors up by id in the replication key index', async () => {
-    freetext.resolves({ hits: [ { id: 'report-1' }, { id: 'report-2' } ] });
-
+  it('looks reports up by submitter in the replication key index', async () => {
     await handler(buildReq(), buildRes());
 
-    const { uri, body } = authors.args[0][0];
+    const { uri, body } = reports.args[0][0];
     expect(uri).to.include('_design/medic/_nouveau/docs_by_replication_key');
-    expect(body).to.deep.equal({ q: '_id:("report-1" OR "report-2")', limit: 2 });
+    expect(body.q).to.equal('submitter:("clinic-1" OR "person-1")');
   });
 
-  it('matches the report ids verbatim, unlike the lowercased freetext contact terms', async () => {
-    freetext.resolves({ hits: [ { id: 'RePort-1' } ] });
+  it('matches submitter ids verbatim, because the index uses the keyword analyzer', async () => {
+    db.medic.query.withArgs('medic/contacts_by_depth', subtreeOf)
+      .resolves({ rows: [ { id: 'PeRson-1' } ] });
 
     await handler(buildReq(), buildRes());
 
-    expect(authors.args[0][0].body.q).to.equal('_id:("RePort-1")');
+    expect(reports.args[0][0].body.q).to.equal('submitter:("PeRson-1")');
   });
 
-  it('chunks the author lookup rather than asking for every report at once', async () => {
-    // shrunk so the test does not have to build a real page of results
-    sinon.stub(nouveau, 'RESULTS_LIMIT').value(3);
-    sinon.stub(nouveau, 'BATCH_LIMIT').value(2);
-    freetext.onFirstCall().resolves({ hits: [ { id: 'r-1' }, { id: 'r-2' }, { id: 'r-3' } ], bookmark: 'page-2' });
-    freetext.onSecondCall().resolves({ hits: [ { id: 'r-4' } ] });
+  it('chunks the submitter query rather than naming every contact at once', async () => {
+    sinon.stub(nouveau, 'BATCH_LIMIT').value(1);
 
     await handler(buildReq(), buildRes());
 
-    expect(authors.args.map(([ opts ]) => opts.body.limit)).to.deep.equal([ 2, 2 ]);
+    expect(reports.args.map(([ opts ]) => opts.body.q))
+      .to.deep.equal([ 'submitter:("clinic-1")', 'submitter:("person-1")' ]);
   });
 
-  it('skips a report whose author the index does not report', async () => {
-    freetext.resolves({ hits: [ { id: 'report-1' } ] });
-    authors.resolves({ hits: [ { id: 'report-1', fields: {} } ] });
+  it('skips a report whose submitter the index does not report', async () => {
+    reports.resolves({ hits: [ { id: 'report-1', fields: {} } ] });
 
     await handler(buildReq(), buildRes());
 
     expect(queue.args[0][0][1].operations).to.deep.equal([]);
   });
 
-  it('skips a report whose author is not in the moved subtree', async () => {
-    // The freetext term is lowercased, so a contact whose id differs only by case matches too, and
-    // the author can change between the two index reads. Either way that report is not moving.
-    freetext.resolves({ hits: [ { id: 'report-1' } ] });
-    authors.resolves({ hits: [ { id: 'report-1', fields: { submitter: 'PERSON-1' } } ] });
+  it('skips a report whose submitter is not in the moved subtree', async () => {
+    // Defensive: the query only names contacts in the subtree, but an author can change between the
+    // index read and the write, and a stale index can answer with one that has already moved away.
+    reports.resolves({ hits: [ { id: 'report-1', fields: { submitter: 'outsider' } } ] });
     const res = buildRes();
 
     await handler(buildReq(), res);
@@ -218,36 +207,28 @@ describe('move-contact service', () => {
     expect(res.json.args[0][0].summary['set-contact']).to.deep.equal({ reports: 0, places: 0 });
   });
 
-  it('queries the nouveau index by lowercased contact id', async () => {
-    await handler(buildReq(), buildRes());
-
-    const { uri, body } = freetext.args[0][0];
-    expect(uri).to.include('_design/medic/_nouveau/reports_by_freetext');
-    expect(body.q).to.equal('exact_match:("contact:clinic-1" OR "contact:person-1")');
-  });
-
   it('pages the nouveau results with the bookmark rather than capping them', async () => {
     sinon.stub(nouveau, 'RESULTS_LIMIT').value(2);
-    freetext.onFirstCall().resolves({ hits: [ { id: 'r-1' }, { id: 'r-2' } ], bookmark: 'page-2' });
-    freetext.onSecondCall().resolves({ hits: [ { id: 'r-3' } ] });
+    reports.onFirstCall().resolves({ hits: [ { id: 'r-1' }, { id: 'r-2' } ], bookmark: 'page-2' });
+    reports.onSecondCall().resolves({ hits: [ { id: 'r-3' } ] });
 
     await handler(buildReq(), buildRes());
 
-    expect(freetext.callCount).to.equal(2);
-    expect(freetext.args[0][0].body.bookmark).to.be.null;
-    expect(freetext.args[1][0].body.bookmark).to.equal('page-2');
+    expect(reports.callCount).to.equal(2);
+    expect(reports.args[0][0].body.bookmark).to.be.null;
+    expect(reports.args[1][0].body.bookmark).to.equal('page-2');
     // the whole result set is asked for in one page rather than in batches
-    expect(freetext.args[0][0].body.limit).to.equal(nouveau.RESULTS_LIMIT);
+    expect(reports.args[0][0].body.limit).to.equal(nouveau.RESULTS_LIMIT);
   });
 
   it('stops paging when the bookmark does not advance, rather than looping forever', async () => {
     sinon.stub(nouveau, 'RESULTS_LIMIT').value(2);
     // A misbehaving index that keeps returning a full page and the same bookmark.
-    freetext.resolves({ hits: [ { id: 'r-1' }, { id: 'r-2' } ], bookmark: 'stuck' });
+    reports.resolves({ hits: [ { id: 'r-1' }, { id: 'r-2' } ], bookmark: 'stuck' });
 
     await handler(buildReq(), buildRes());
 
-    expect(freetext.callCount).to.equal(2);
+    expect(reports.callCount).to.equal(2);
   });
 
   it('escapes quotes and backslashes in ids before they reach the query', async () => {
@@ -256,15 +237,7 @@ describe('move-contact service', () => {
 
     await handler(buildReq(), buildRes());
 
-    expect(freetext.args[0][0].body.q).to.equal('exact_match:("contact:we\\"ird\\\\id")');
-  });
-
-  it('escapes quotes and backslashes in report ids too', async () => {
-    freetext.resolves({ hits: [ { id: 'we"ird\\report' } ] });
-
-    await handler(buildReq(), buildRes());
-
-    expect(authors.args[0][0].body.q).to.equal('_id:("we\\"ird\\\\report")');
+    expect(reports.args[0][0].body.q).to.equal('submitter:("we\\"ird\\\\id")');
   });
 
   it('rejects a parent_id that is not a string', async () => {

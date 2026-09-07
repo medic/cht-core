@@ -75,8 +75,16 @@ const SWAGGER_OPTIONS = {
               },
             },
             'set-contact': {
+              type: 'object',
+              description: 'Documents whose contact reference will be updated.',
+              properties: {
+                reports: { type: 'integer' },
+                places: { type: 'integer' },
+              },
+            },
+            'set-parent': {
               type: 'integer',
-              description: 'Primary-contact references on surviving places that will be cleared.',
+              description: 'Contacts in the moved hierarchy whose parent lineage will be rewritten.',
             },
             'delete-user': {
               type: 'integer',

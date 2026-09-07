@@ -40,7 +40,8 @@ const addError = (doc, error) => {
     return;
   }
   if (_.isString(error)) {
-    error = { code: 'invalid_report', message: error };
+    // Use the string as both code and message so analytics can identify it
+    error = { code: error, message: error };
   } else if (_.isObject(error)) {
     if (!error.code) {
       // set error code if missing

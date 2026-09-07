@@ -96,6 +96,10 @@ export class FormatDateService {
   private format(date, key) {
     const momentDate = moment(date);
 
+    if (!momentDate.isValid()) {
+      return momentDate.format(this.config[key]);
+    }
+
     if (this.languageService.useDevanagariScript()) {
       return this.displayBikramSambatDate(momentDate, key);
     }
