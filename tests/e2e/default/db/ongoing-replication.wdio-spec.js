@@ -49,6 +49,7 @@ describe('ongoing replication', function() {
 
   afterEach(async () => {
     await browser.throttle('online');
+    await commonPage.sync();
   });
 
   it('should download new documents ', async () => {
@@ -156,15 +157,13 @@ describe('ongoing replication', function() {
   });
 
   it('should download settings updates', async () => {
-    await commonPage.sync();
-    await utils.updateSettings({ test: true }, { ignoreReload: 'api' });
+    await utils.updateSettings({ test: true }, { ignoreReload: true });
     await commonPage.sync({ expectReload: true, reload: true });
     const settings = await chtDbUtils.getDoc(DOC_IDS.SETTINGS);
     expect(settings.settings.test).to.equal(true);
   });
 
   it('should handle deletes', async () => {
-    await commonPage.sync();
     const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     const docIdsToDelete = [
       'form:dummy',
