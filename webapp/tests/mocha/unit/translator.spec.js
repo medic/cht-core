@@ -74,9 +74,13 @@ describe('Bootstrap Translator', () => {
       translator.setLocale(locale);
       const translated = translator.translate('FETCH_FORMS', { count: 3, total: 12 });
       expect(translated, `"${locale}" FETCH_FORMS`).to.be.a('string')
-        .and.to.include('3')
-        .and.to.include('12')
+        .and.to.not.equal('bootstrap.translator.FETCH_FORMS')
         .and.to.not.include('undefined');
+      // locales like "ne" localise digits, so check the args are used rather than looking for ASCII numbers
+      expect(translated, `"${locale}" FETCH_FORMS ignores count`)
+        .to.not.equal(translator.translate('FETCH_FORMS', { count: 4, total: 12 }));
+      expect(translated, `"${locale}" FETCH_FORMS ignores total`)
+        .to.not.equal(translator.translate('FETCH_FORMS', { count: 3, total: 13 }));
     });
   });
 
