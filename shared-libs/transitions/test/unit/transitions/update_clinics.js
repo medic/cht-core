@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
-const { Contact, Person, Qualifier } = require('@medic/cht-datasource');
+const { Person, Qualifier } = require('@medic/cht-datasource');
 const db = require('../../../src/db');
 const config = require('../../../src/config');
 const dataContext = require('../../../src/data-context');
@@ -9,7 +9,6 @@ const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 const phone = '+34567890123';
 
 let transition;
-let getContactUuids;
 let getContactWithLineage;
 
 describe('update clinic', () => {
@@ -20,12 +19,11 @@ describe('update clinic', () => {
       getTranslations: sinon.stub().returns({})
     });
     transition = require('../../../src/transitions/update_clinics');
-    getContactUuids = sinon.stub();
+    dataContext.init({ bind: sinon.stub() });
     getContactWithLineage = sinon.stub();
-    const bind = sinon.stub().returns(getContactWithLineage);
-    bind.withArgs(Contact.v1.getUuidsPage).returns(getContactUuids);
-    bind.withArgs(Contact.v1.getWithLineage).returns(getContactWithLineage);
-    dataContext.init({ bind });
+    dataContext.init({
+      bind: sinon.stub().returns(getContactWithLineage),
+    });
   });
 
   afterEach(() => {
@@ -91,15 +89,13 @@ describe('update clinic', () => {
       },
     };
 
-    getContactUuids.resolves({ data: [contact._id], cursor: null });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ id: contact._id }] });
     getContactWithLineage.resolves(contact);
 
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(changed);
       assert(doc.contact);
       assert(!doc.contact.phone);
-      assert.deepEqual(getContactUuids.args[0], [Qualifier.byPhones([phone]), null, 1]);
-      assert.deepEqual(getContactWithLineage.args[0], [Qualifier.byUuid(contact._id)]);
     });
   });
 
@@ -109,7 +105,7 @@ describe('update clinic', () => {
       from: 'WRONG',
       content_type: 'xml'
     };
-    getContactUuids.resolves({ data: [], cursor: null });
+    sinon.stub(db.medic, 'query').resolves({ rows: [] });
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(!changed);
       assert(!doc.contact);
@@ -257,16 +253,16 @@ describe('update clinic', () => {
     });
   });
 
-  it('from field is cast to string in phone qualifier', () => {
+  it('from field is cast to string in view query', () => {
     const change = {
       doc: {
         from: 123,
         type: DOC_TYPES.DATA_RECORD,
       },
     };
-    getContactUuids.resolves({ data: [], cursor: null });
+    const view = sinon.stub(db.medic, 'query').resolves({ rows: [] });
     return transition.onMatch(change).then(() => {
-      assert.deepEqual(getContactUuids.args[0], [Qualifier.byPhones(['123']), null, 1]);
+      assert.equal(view.args[0][1].key, '123');
     });
   });
 
@@ -276,8 +272,8 @@ describe('update clinic', () => {
       type: DOC_TYPES.DATA_RECORD,
     };
 
-    getContactUuids.resolves({ data: ['someID'], cursor: null });
-    getContactWithLineage.withArgs(Qualifier.byUuid('someID')).rejects('some error');
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ id: 'someID' }] });
+    getContactWithLineage.withArgs('someID').rejects('some error');
 
     return transition.onMatch({ doc: doc }).catch(err => {
       assert.equal(err, 'some error');
@@ -290,7 +286,7 @@ describe('update clinic', () => {
       type: DOC_TYPES.DATA_RECORD,
     };
 
-    getContactUuids.resolves({ data: [], cursor: null });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
     return transition.onMatch({ doc }).then(changed => {
       assert(changed);
       assert(!doc.contact);
@@ -306,7 +302,7 @@ describe('update clinic', () => {
       form: 'someForm'
     };
 
-    getContactUuids.resolves({ data: [], cursor: null });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
     config.get.withArgs('forms').returns({ 'other': {} });
 
     return transition.onMatch({ doc }).then(changed => {
@@ -325,7 +321,7 @@ describe('update clinic', () => {
       form: 'someForm'
     };
 
-    getContactUuids.resolves({ data: [], cursor: null });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
     const stubbedConfig = config.get;
     stubbedConfig.returns([ {
       form: 'someForm',
@@ -365,7 +361,7 @@ describe('update clinic', () => {
       form: 'someForm'
     };
 
-    getContactUuids.resolves({ data: [], cursor: null });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
     sinon.stub(utils, 'translate').returns('facility not found');
     const stubbedConfig = config.get;
     stubbedConfig.returns([ {
@@ -400,7 +396,7 @@ describe('update clinic', () => {
       form: 'someForm'
     };
 
-    getContactUuids.resolves({ data: [], cursor: null });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
     config.get.withArgs('forms').returns({ 'someForm': {} });
     sinon.stub(utils, 'translate').returns('facility not found');
 
@@ -424,7 +420,7 @@ describe('update clinic', () => {
       form: 'someForm'
     };
 
-    getContactUuids.resolves({ data: [], cursor: null });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
     config.get.withArgs('forms').returns({ 'other': {} });
 
     return transition.onMatch({ doc }).then(changed => {
@@ -444,7 +440,7 @@ describe('update clinic', () => {
       content_type: 'xml'
     };
 
-    getContactUuids.resolves({ data: [], cursor: null });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
 
     return transition.onMatch({ doc }).then(changed => {
       assert(!changed);
@@ -460,7 +456,7 @@ describe('update clinic', () => {
       form: 'someForm',
     };
 
-    getContactUuids.resolves({ data: [], cursor: null });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
     config.get.withArgs('forms').returns({ 'someForm': { public_form: true } });
 
     return transition.onMatch({ doc }).then(changed => {

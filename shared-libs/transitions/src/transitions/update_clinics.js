@@ -53,20 +53,21 @@ const getContactByRefid = doc => {
 };
 
 const getContactByPhone = doc => {
-  const qualifier = transitionUtils.senderPhoneQualifier(doc);
-  if (!qualifier) {
-    return Promise.resolve();
-  }
+  const params = {
+    key: String(doc.from),
+    include_docs: false,
+    limit: 1,
+  };
 
-  const getContactUuids = dataContext.bind(Contact.v1.getUuidsPage);
   const getContactWithLineage = dataContext.bind(Contact.v1.getWithLineage);
-  return getContactUuids(qualifier, null, 1)
-    .then(page => {
-      if (!page.data.length) {
+  return db.medic
+    .query('medic-client/contacts_by_phone', params)
+    .then(data => {
+      if (!data.rows.length || !data.rows[0].id) {
         return;
       }
 
-      return getContactWithLineage(Qualifier.byUuid(page.data[0]));
+      return getContactWithLineage(Qualifier.byUuid(data.rows[0].id));
     });
 };
 

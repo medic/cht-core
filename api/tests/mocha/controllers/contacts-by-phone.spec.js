@@ -1,11 +1,11 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const rewire = require('rewire');
+const controller = rewire('../../../src/controllers/contacts-by-phone');
 const phoneNumber = require('@medic/phone-number');
 const config = require('../../../src/config');
 const serverUtils = require('../../../src/server-utils');
-const dataContext = require('../../../src/services/data-context');
-const { Contact, Qualifier } = require('@medic/cht-datasource');
+const db = require('../../../src/db');
 
 let req;
 let res;
@@ -14,26 +14,6 @@ let revertLineage;
 let settings;
 
 describe('contacts-by-phone controller', () => {
-  const sandbox = sinon.createSandbox();
-  const getContactUuids = sandbox.stub();
-  let controller;
-
-  const asyncGeneratorOf = (ids) => (async function* () {
-    for (const id of ids) {
-      yield id;
-    }
-  })();
-
-  const rejectingAsyncGenerator = (err) => ({
-    [Symbol.asyncIterator]: () => ({ next: () => Promise.reject(err) })
-  });
-
-  before(() => {
-    const bind = sinon.stub(dataContext, 'bind');
-    bind.withArgs(Contact.v1.getUuids).returns(getContactUuids);
-    controller = rewire('../../../src/controllers/contacts-by-phone');
-  });
-
   beforeEach(() => {
     req = {};
     res = {
@@ -44,6 +24,7 @@ describe('contacts-by-phone controller', () => {
       fetchHydratedDocs: sinon.stub(),
     };
     revertLineage = controller.__set__('lineage', lineage);
+    sinon.stub(db.medic, 'query');
     sinon.stub(phoneNumber, 'normalize');
 
     settings = { the: 'settings' };
@@ -52,14 +33,13 @@ describe('contacts-by-phone controller', () => {
 
   afterEach(() => {
     sinon.restore();
-    sandbox.reset();
     revertLineage();
   });
 
   describe('parameter validation', () => {
     it('should return an error when no doc_ids are passed', () => {
       return controller.request(req, res).then(() => {
-        chai.expect(getContactUuids.callCount).to.equal(0);
+        chai.expect(db.medic.query.callCount).to.equal(0);
         chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(0);
         chai.expect(phoneNumber.normalize.callCount).to.equal(0);
 
@@ -83,7 +63,7 @@ describe('contacts-by-phone controller', () => {
         chai.expect(phoneNumber.normalize.callCount).to.equal(1);
         chai.expect(phoneNumber.normalize.args[0]).to.deep.equal([settings, 'something']);
 
-        chai.expect(getContactUuids.callCount).to.equal(0);
+        chai.expect(db.medic.query.callCount).to.equal(0);
         chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(0);
 
         chai.expect(res.status.callCount).to.equal(1);
@@ -102,7 +82,7 @@ describe('contacts-by-phone controller', () => {
         chai.expect(phoneNumber.normalize.callCount).to.equal(1);
         chai.expect(phoneNumber.normalize.args[0]).to.deep.equal([settings, 'some_other_thing']);
 
-        chai.expect(getContactUuids.callCount).to.equal(0);
+        chai.expect(db.medic.query.callCount).to.equal(0);
         chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(0);
 
         chai.expect(res.status.callCount).to.equal(1);
@@ -120,15 +100,15 @@ describe('contacts-by-phone controller', () => {
 
       phoneNumber.normalize.returns('a_normalized');
 
-      getContactUuids.returns(asyncGeneratorOf(['my_doc_id']));
+      db.medic.query.resolves({ rows: [{ id: 'my_doc_id' }] });
       lineage.fetchHydratedDocs.resolves([{ _id: 'my_doc_id', hydrated: true }]);
 
       return controller.request(req, res).then(() => {
         chai.expect(phoneNumber.normalize.callCount).to.equal(1);
         chai.expect(phoneNumber.normalize.args[0]).to.deep.equal([ settings, 'aaa' ]);
 
-        chai.expect(getContactUuids.callCount).to.equal(1);
-        chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhones(['a_normalized'])]);
+        chai.expect(db.medic.query.callCount).to.equal(1);
+        chai.expect(db.medic.query.args[0]).to.deep.equal(['medic-client/contacts_by_phone', { key: 'a_normalized' }]);
         chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(1);
         chai.expect(lineage.fetchHydratedDocs.args[0]).to.deep.equal([['my_doc_id']]);
 
@@ -145,15 +125,17 @@ describe('contacts-by-phone controller', () => {
     req.query = { phone: 'the_phone' };
     phoneNumber.normalize.returns('normalized_phone');
 
-    getContactUuids.returns(asyncGeneratorOf(['doc_id']));
+    db.medic.query.resolves({ rows: [{ id: 'doc_id' }] });
     lineage.fetchHydratedDocs.resolves([{ _id: 'doc_id', hydrated: true }]);
 
     return controller.request(req, res).then(() => {
       chai.expect(phoneNumber.normalize.callCount).to.equal(1);
       chai.expect(phoneNumber.normalize.args[0]).to.deep.equal([ settings, 'the_phone' ]);
 
-      chai.expect(getContactUuids.callCount).to.equal(1);
-      chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhones(['normalized_phone'])]);
+      chai.expect(db.medic.query.callCount).to.equal(1);
+      chai.expect(db.medic.query.args[0]).to.deep.equal(
+        ['medic-client/contacts_by_phone', { key: 'normalized_phone' }]
+      );
       chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(1);
       chai.expect(lineage.fetchHydratedDocs.args[0]).to.deep.equal([['doc_id']]);
 
@@ -169,15 +151,17 @@ describe('contacts-by-phone controller', () => {
     req.body = { phone: 'the_phone' };
     phoneNumber.normalize.returns('normalized_phone');
 
-    getContactUuids.returns(asyncGeneratorOf(['doc_id']));
+    db.medic.query.resolves({ rows: [{ id: 'doc_id' }] });
     lineage.fetchHydratedDocs.resolves([{ _id: 'doc_id', hydrated: true }]);
 
     return controller.request(req, res).then(() => {
       chai.expect(phoneNumber.normalize.callCount).to.equal(1);
       chai.expect(phoneNumber.normalize.args[0]).to.deep.equal([ settings, 'the_phone' ]);
 
-      chai.expect(getContactUuids.callCount).to.equal(1);
-      chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhones(['normalized_phone'])]);
+      chai.expect(db.medic.query.callCount).to.equal(1);
+      chai.expect(db.medic.query.args[0]).to.deep.equal(
+        ['medic-client/contacts_by_phone', { key: 'normalized_phone' }]
+      );
       chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(1);
       chai.expect(lineage.fetchHydratedDocs.args[0]).to.deep.equal([['doc_id']]);
 
@@ -192,7 +176,7 @@ describe('contacts-by-phone controller', () => {
   it('should hydrate and return all results', () => {
     req.query = { phone: 'phone' };
     phoneNumber.normalize.returns('norm');
-    getContactUuids.returns(asyncGeneratorOf(['one', 'two', 'three']));
+    db.medic.query.resolves({ rows: [{ id: 'one' }, { id: 'two' }, { id: 'three' }] });
     lineage.fetchHydratedDocs.resolves([
       { _id: 'one', hydrated: true }, { _id: 'two', hydrated: true }, { _id: 'three', hydrated: true },
     ]);
@@ -201,8 +185,8 @@ describe('contacts-by-phone controller', () => {
       chai.expect(phoneNumber.normalize.callCount).to.equal(1);
       chai.expect(phoneNumber.normalize.args[0]).to.deep.equal([ settings, 'phone' ]);
 
-      chai.expect(getContactUuids.callCount).to.equal(1);
-      chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhones(['norm'])]);
+      chai.expect(db.medic.query.callCount).to.equal(1);
+      chai.expect(db.medic.query.args[0]).to.deep.equal(['medic-client/contacts_by_phone', { key: 'norm' }]);
       chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(1);
       chai.expect(lineage.fetchHydratedDocs.args[0]).to.deep.equal([['one', 'two', 'three']]);
 
@@ -223,14 +207,16 @@ describe('contacts-by-phone controller', () => {
     it('should return an error when no matching docs are found', () => {
       req.query = { phone: 'ph' };
       phoneNumber.normalize.returns('phn');
-      getContactUuids.returns(asyncGeneratorOf([]));
+      db.medic.query.resolves({ rows: [] });
 
       return controller.request(req, res).then(() => {
         chai.expect(phoneNumber.normalize.callCount).to.equal(1);
         chai.expect(phoneNumber.normalize.args[0]).to.deep.equal([ settings, 'ph' ]);
 
-        chai.expect(getContactUuids.callCount).to.equal(1);
-        chai.expect(getContactUuids.args[0]).to.deep.equal([Qualifier.byPhones(['phn'])]);
+        chai.expect(db.medic.query.callCount).to.equal(1);
+        chai.expect(db.medic.query.args[0]).to.deep.equal(
+          ['medic-client/contacts_by_phone', { key: 'phn' }]
+        );
         chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(0);
 
         chai.expect(res.status.callCount).to.equal(1);
@@ -240,14 +226,14 @@ describe('contacts-by-phone controller', () => {
       });
     });
 
-    it('should catch datasource errors', () => {
+    it('should catch db errors', () => {
       req.body = { phone: 'o' };
       phoneNumber.normalize.returns('oo');
-      getContactUuids.returns(rejectingAsyncGenerator({ some: 'err' }));
+      db.medic.query.rejects({ some: 'err' });
       sinon.stub(serverUtils, 'serverError');
 
       return controller.request(req, res).then(() => {
-        chai.expect(getContactUuids.callCount).to.equal(1);
+        chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(0);
         chai.expect(res.status.callCount).to.equal(0);
         chai.expect(res.json.callCount).to.equal(0);
@@ -260,12 +246,12 @@ describe('contacts-by-phone controller', () => {
     it('should catch hydration errors', () => {
       req.body = { phone: 'o' };
       phoneNumber.normalize.returns('oo');
-      getContactUuids.returns(asyncGeneratorOf(['a']));
+      db.medic.query.resolves({ rows: [{ id: 'a' }] });
       lineage.fetchHydratedDocs.rejects({ other: 'err' });
       sinon.stub(serverUtils, 'serverError');
 
       return controller.request(req, res).then(() => {
-        chai.expect(getContactUuids.callCount).to.equal(1);
+        chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(1);
         chai.expect(res.status.callCount).to.equal(0);
         chai.expect(res.json.callCount).to.equal(0);

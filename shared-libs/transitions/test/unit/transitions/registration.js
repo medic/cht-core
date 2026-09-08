@@ -7,7 +7,7 @@ const messages = require('../../../src/lib/messages');
 const utils = require('../../../src/lib/utils');
 const config = require('../../../src/config');
 const validation = require('@medic/validation');
-const { Contact, Place, Qualifier } = require('@medic/cht-datasource');
+const { Place, Qualifier } = require('@medic/cht-datasource');
 const contactTypeUtils = require('@medic/contact-types-utils');
 const phoneNumberParser = require('@medic/phone-number');
 const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
@@ -18,7 +18,6 @@ let acceptPatientReports;
 let transition;
 let settings;
 let getPlace;
-let getContactDocs;
 
 describe('registration', () => {
   beforeEach(() => {
@@ -32,10 +31,11 @@ describe('registration', () => {
         .returns({})
     });
     getPlace = sinon.stub();
-    getContactDocs = sinon.stub();
-    const bind = sinon.stub().returns(getPlace);
-    bind.withArgs(Contact.v1.getPage).returns(getContactDocs);
-    dataContext.init({ bind });
+    dataContext.init({
+      bind: sinon
+        .stub()
+        .returns(getPlace)
+    });
 
     schedules = require('../../../src/lib/schedules');
     transitionUtils = require('../../../src/transitions/utils');
@@ -164,8 +164,17 @@ describe('registration', () => {
         },
       };
       const getContactUuid = sinon.stub(utils, 'getContactUuid').resolves();
-      // return expected results when searching for contacts by phone
-      getContactDocs.resolves({ data: [{ _id: submitterId, parent: { _id: parentId } }], cursor: null });
+      // return expected view results when searching for contacts_by_phone
+      const view = sinon.stub(db.medic, 'query').resolves({
+        rows: [
+          {
+            doc: {
+              _id: submitterId,
+              parent: { _id: parentId },
+            },
+          },
+        ],
+      });
       getPlace.resolves({ _id: parentId, type: 'contact', contact_type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
@@ -181,9 +190,11 @@ describe('registration', () => {
       await transition.onMatch(change);
 
       getContactUuid.callCount.should.equal(1);
-      getContactDocs.callCount.should.equal(1);
-      getContactDocs.args[0].should.deep.equal([Qualifier.byPhones([senderPhoneNumber]), null, 1]);
-      dataContext.bind.calledWith(Place.v1.get).should.be.true;
+      view.callCount.should.equal(1);
+      view.args[0][0].should.equal('medic-client/contacts_by_phone');
+      view.args[0][1].key.should.equal(senderPhoneNumber);
+      view.args[0][1].include_docs.should.equal(true);
+      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid(parentId)).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0][0].name.should.equal(patientName);
@@ -230,8 +241,17 @@ describe('registration', () => {
         },
       };
       const getContactUuid = sinon.stub(utils, 'getContactUuid').resolves();
-      // return expected results when searching for contacts by phone
-      getContactDocs.resolves({ data: [{ _id: submitterId, parent: { _id: parentId } }], cursor: null });
+      // return expected view results when searching for contacts_by_phone
+      const view = sinon.stub(db.medic, 'query').resolves({
+        rows: [
+          {
+            doc: {
+              _id: submitterId,
+              parent: { _id: parentId },
+            },
+          },
+        ],
+      });
       getPlace.resolves({ _id: parentId, type: 'contact', contact_type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves();
 
@@ -249,9 +269,11 @@ describe('registration', () => {
       await transition.onMatch(change);
 
       getContactUuid.callCount.should.equal(1);
-      getContactDocs.callCount.should.equal(1);
-      getContactDocs.args[0].should.deep.equal([Qualifier.byPhones([senderPhoneNumber]), null, 1]);
-      dataContext.bind.calledWith(Place.v1.get).should.be.true;
+      view.callCount.should.equal(1);
+      view.args[0][0].should.equal('medic-client/contacts_by_phone');
+      view.args[0][1].key.should.equal(senderPhoneNumber);
+      view.args[0][1].include_docs.should.equal(true);
+      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid(parentId)).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0][0].name.should.equal(patientName);
@@ -301,7 +323,16 @@ describe('registration', () => {
         },
       };
       sinon.stub(utils, 'getContactUuid').resolves();
-      getContactDocs.resolves({ data: [{ _id: submitterId, parent: { _id: parentId } }], cursor: null });
+      sinon.stub(db.medic, 'query').resolves({
+        rows: [
+          {
+            doc: {
+              _id: submitterId,
+              parent: { _id: parentId },
+            },
+          },
+        ],
+      });
       getPlace.resolves({ _id: parentId, type: 'contact', contact_type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves();
 
@@ -319,7 +350,7 @@ describe('registration', () => {
 
       await transition.onMatch(change);
 
-      dataContext.bind.calledWith(Place.v1.get).should.be.true;
+      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid(parentId)).should.be.true;
       saveDoc.callCount.should.equal(0);
     });
@@ -353,8 +384,17 @@ describe('registration', () => {
         },
       };
       const getContactUuid = sinon.stub(utils, 'getContactUuid').resolves();
-      // return expected results when searching for contacts by phone
-      getContactDocs.resolves({ data: [{ _id: submitterId, parent: { _id: parentId } }], cursor: null });
+      // return expected view results when searching for contacts_by_phone
+      const view = sinon.stub(db.medic, 'query').resolves({
+        rows: [
+          {
+            doc: {
+              _id: submitterId,
+              parent: { _id: parentId },
+            },
+          },
+        ],
+      });
       getPlace.resolves({ _id: parentId, type: 'contact', contact_type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves();
 
@@ -372,9 +412,11 @@ describe('registration', () => {
       await transition.onMatch(change);
 
       getContactUuid.callCount.should.equal(1);
-      getContactDocs.callCount.should.equal(1);
-      getContactDocs.args[0].should.deep.equal([Qualifier.byPhones([senderPhoneNumber]), null, 1]);
-      dataContext.bind.calledWith(Place.v1.get).should.be.true;
+      view.callCount.should.equal(1);
+      view.args[0][0].should.equal('medic-client/contacts_by_phone');
+      view.args[0][1].key.should.equal(senderPhoneNumber);
+      view.args[0][1].include_docs.should.equal(true);
+      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid(parentId)).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0][0].name.should.equal(patientName);
@@ -400,7 +442,11 @@ describe('registration', () => {
           fields: { patient_name: 'jack' },
         },
       };
-      getContactDocs.resolves({ data: [{ parent: { _id: 'papa' } }], cursor: null });
+      sinon
+        .stub(db.medic, 'query')
+        .resolves({
+          rows: [{ doc: { parent: { _id: 'papa' } } }],
+        });
       const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
@@ -426,8 +472,12 @@ describe('registration', () => {
       };
       const change = { doc: doc };
       sinon.stub(utils, 'getContactUuid').resolves();
-      // return expected results when searching for contacts by phone
-      getContactDocs.resolves({ data: [{ parent: { _id: 'papa' } }], cursor: null });
+      // return expected view results when searching for contacts_by_phone
+      sinon
+        .stub(db.medic, 'query')
+        .resolves({
+          rows: [{ doc: { parent: { _id: 'papa' } } }],
+        });
       getPlace.resolves({ _id: 'papa', type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves(1);
       const eventConfig = {
@@ -447,7 +497,7 @@ describe('registration', () => {
 
       await transition.onMatch(change);
 
-      dataContext.bind.calledWith(Place.v1.get).should.be.true;
+      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
       saveDoc.args[0][0].patient_id.should.equal(patientId);
       doc.patient_id.should.equal(patientId);
@@ -467,8 +517,17 @@ describe('registration', () => {
         },
       };
       sinon.stub(utils, 'getContactUuid').resolves();
-      // return expected results when searching for contacts by phone
-      getContactDocs.resolves({ data: [{ _id: 'abc', parent: { _id: 'papa' } }], cursor: null });
+      // return expected view results when searching for contacts_by_phone
+      sinon.stub(db.medic, 'query').resolves({
+        rows: [
+          {
+            doc: {
+              _id: 'abc',
+              parent: { _id: 'papa' },
+            },
+          },
+        ],
+      });
       getPlace.resolves({ _id: 'papa', type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
@@ -492,7 +551,7 @@ describe('registration', () => {
 
       await transition.onMatch(change);
 
-      dataContext.bind.calledWith(Place.v1.get).should.be.true;
+      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0][0].type.should.equal('contact');
@@ -511,8 +570,12 @@ describe('registration', () => {
       };
       const change = { doc: doc };
       sinon.stub(utils, 'getContactUuid').resolves();
-      // return expected results when searching for contacts by phone
-      getContactDocs.resolves({ data: [{ parent: { _id: 'papa' } }], cursor: null });
+      // return expected view results when searching for contacts_by_phone
+      sinon
+        .stub(db.medic, 'query')
+        .resolves({
+          rows: [{ doc: { parent: { _id: 'papa' } } }],
+        });
       getPlace.resolves({ _id: 'papa', type: 'place' });
       sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
@@ -534,7 +597,7 @@ describe('registration', () => {
 
       await transition.onMatch(change);
 
-      dataContext.bind.calledWith(Place.v1.get).should.be.true;
+      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
       (typeof doc.patient_id).should.equal('undefined');
       doc.errors.should.deep.equal([
@@ -557,8 +620,12 @@ describe('registration', () => {
       };
       const change = { doc: doc };
       sinon.stub(utils, 'getContactUuid').resolves();
-      // return expected results when searching for contacts by phone
-      getContactDocs.resolves({ data: [{ parent: { _id: 'papa' } }], cursor: null });
+      // return expected view results when searching for contacts_by_phone
+      sinon
+        .stub(db.medic, 'query')
+        .resolves({
+          rows: [{ doc: { parent: { _id: 'papa' } } }],
+        });
       getPlace.resolves({ _id: 'papa', type: 'place' });
       sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
@@ -582,7 +649,7 @@ describe('registration', () => {
 
       await transition.onMatch(change);
 
-      dataContext.bind.calledWith(Place.v1.get).should.be.true;
+      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
       (typeof doc.patient_id).should.be.equal('undefined');
       doc.errors.should.deep.equal([
@@ -610,8 +677,12 @@ describe('registration', () => {
         },
       };
       sinon.stub(utils, 'getContactUuid').resolves();
-      // return expected results when searching for contacts by phone
-      getContactDocs.resolves({ data: [{ parent: { _id: submitterId } }], cursor: null });
+      // return expected view results when searching for contacts_by_phone
+      sinon
+        .stub(db.medic, 'query')
+        .resolves({
+          rows: [{ doc: { parent: { _id: submitterId } } }],
+        });
       getPlace.resolves({ _id: 'papa', type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
@@ -627,7 +698,7 @@ describe('registration', () => {
 
       await transition.onMatch(change);
 
-      dataContext.bind.calledWith(Place.v1.get).should.be.true;
+      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0][0].name.should.equal(patientName);
@@ -650,8 +721,12 @@ describe('registration', () => {
         },
       };
       sinon.stub(utils, 'getContactUuid').resolves();
-      // return expected results when searching for contacts by phone
-      getContactDocs.resolves({ data: [{ parent: { _id: submitterId } }], cursor: null });
+      // return expected view results when searching for contacts_by_phone
+      sinon
+        .stub(db.medic, 'query')
+        .resolves({
+          rows: [{ doc: { parent: { _id: submitterId } } }],
+        });
       getPlace.resolves({ _id: 'papa', type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
@@ -673,7 +748,7 @@ describe('registration', () => {
 
       await transition.onMatch(change);
 
-      dataContext.bind.calledWith(Place.v1.get).should.be.true;
+      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0][0].name.should.equal(patientName);
@@ -696,8 +771,12 @@ describe('registration', () => {
         },
       };
       sinon.stub(utils, 'getContactUuid').resolves();
-      // return expected results when searching for contacts by phone
-      getContactDocs.resolves({ data: [{ parent: { _id: submitterId } }], cursor: null });
+      // return expected view results when searching for contacts_by_phone
+      sinon
+        .stub(db.medic, 'query')
+        .resolves({
+          rows: [{ doc: { parent: { _id: submitterId } } }],
+        });
       getPlace.resolves({ _id: 'papa', type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
@@ -716,7 +795,7 @@ describe('registration', () => {
 
       await transition.onMatch(change);
 
-      dataContext.bind.calledWith(Place.v1.get).should.be.true;
+      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
       saveDoc.callCount.should.equal(1);
       saveDoc.args[0][0].name.should.equal(patientName);
@@ -1393,19 +1472,22 @@ describe('registration', () => {
           ]
         }]
       };
-      getContactDocs.resolves({
-        data: [
-          {
-            _id: 'supervisor',
-            name: 'Frank',
-            contact_type: 'supervisor',
-            type: 'contact',
-            phone: '+111222',
-            parent: { _id: 'west_hc' }
-          }
-        ],
-        cursor: null
-      });
+      sinon.stub(db.medic, 'query')
+        .withArgs('medic-client/contacts_by_phone')
+        .resolves({
+          rows: [
+            {
+              doc: {
+                _id: 'supervisor',
+                name: 'Frank',
+                contact_type: 'supervisor',
+                type: 'contact',
+                phone: '+111222',
+                parent: { _id: 'west_hc' }
+              }
+            }
+          ]
+        });
       getPlace.resolves({
         _id: 'west_hc',
         name: 'west hc',
@@ -1432,9 +1514,10 @@ describe('registration', () => {
       utils.getContactUuid.callCount.should.equal(1);
       utils.getContactUuid.args[0].should.deep.equal([placeId]);
       utils.getContact.callCount.should.equal(0);
-      getContactDocs.callCount.should.equal(1);
-      getContactDocs.args[0].should.deep.equal([Qualifier.byPhones(['+111222']), null, 1]);
-      dataContext.bind.calledWith(Place.v1.get).should.be.true;
+      db.medic.query.callCount.should.equal(1);
+      db.medic.query.args[0]
+        .should.deep.equal(['medic-client/contacts_by_phone', { key: '+111222', include_docs: true }]);
+      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('west_hc')).should.be.true;
       db.medic.post.callCount.should.equal(1);
       db.medic.post.args[0].should.deep.equal([{
@@ -1680,7 +1763,7 @@ describe('registration', () => {
         }]
       };
       config.get.withArgs('registrations').returns([eventConfig]);
-      getContactDocs.resolves({ data: [], cursor: null });
+      sinon.stub(db.medic, 'query').withArgs('medic-client/contacts_by_phone').resolves({ rows: [] });
 
       sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
@@ -1692,9 +1775,10 @@ describe('registration', () => {
       utils.getContactUuid.args[0].should.deep.equal([placeId]);
       utils.getContact.callCount.should.equal(0);
       db.medic.post.callCount.should.equal(0);
-      getContactDocs.callCount.should.equal(1);
-      getContactDocs.args[0].should.deep.equal([Qualifier.byPhones(['+111222']), null, 1]);
-      dataContext.bind.calledOnceWithExactly(Contact.v1.getPage).should.be.true;
+      db.medic.query.callCount.should.equal(1);
+      db.medic.query.args[0]
+        .should.deep.equal(['medic-client/contacts_by_phone', { key: '+111222', include_docs: true }]);
+      dataContext.bind.notCalled.should.be.true;
       getPlace.notCalled.should.be.true;
 
       change.doc.errors.length.should.equal(1);
