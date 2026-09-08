@@ -8,6 +8,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { TranslateService } from '@mm-services/translate.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
+import { MapTilesPrefetchService } from '@mm-services/map-tiles-prefetch.service';
 import { getDistanceInMeters } from '@mm-services/contact-geolocation.service';
 import { MapComponent, MapMarker } from '@mm-components/map/map.component';
 
@@ -27,12 +28,14 @@ export class TasksMapComponent implements OnInit, OnDestroy {
   markers: MapMarker[] = [];
   tasksWithoutLocation = 0;
   userLocation;
+  center;
 
   constructor(
     private store: Store,
     private router: Router,
     private translateService: TranslateService,
     private geolocationService: GeolocationService,
+    private mapTilesPrefetchService: MapTilesPrefetchService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -40,14 +43,19 @@ export class TasksMapComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.globalActions.setShowContent(true);
     this.globalActions.setTitle(this.translateService.instant('tasks.map.title'));
+    // this route has no :id, so the default back navigation can't resolve it; give the mobile back button an
+    // explicit target instead of leaving the URL stranded on /tasks/map (which then breaks re-opening the map)
+    this.globalActions.setNavigation({ cancelCallback: () => this.router.navigate(['/tasks']) });
     this.subscribeToStore();
     void this.locateUser();
+    void this.setCenter();
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
     this.geoHandle?.cancel();
     this.globalActions.setShowContent(false);
+    this.globalActions.clearNavigation();
   }
 
   private subscribeToStore() {
@@ -60,6 +68,15 @@ export class TasksMapComponent implements OnInit, OnDestroy {
       this.setMarkers();
     });
     this.subscription.add(storeSubscription);
+  }
+
+  private async setCenter() {
+    try {
+      const [geolocation] = await this.mapTilesPrefetchService.getUserFacilityGeolocations();
+      this.center = geolocation;
+    } catch (error) {
+      console.error('Error while getting the facility location', error);
+    }
   }
 
   // distances are a nice-to-have: any geolocation failure just leaves them off the labels
@@ -78,14 +95,24 @@ export class TasksMapComponent implements OnInit, OnDestroy {
     this.tasksWithoutLocation = this.tasks.length - tasksWithLocation.length;
     this.markers = tasksWithLocation.map(task => ({
       geolocation: task.geolocation,
-      label: [task.contact?.name, task.title].filter(Boolean).join(' - '),
-      badge: this.getDistanceBadge(task),
+      label: this.getLabel(task),
+      badge: this.getBadge(task),
       className: task.overdue ? 'overdue' : undefined,
       data: task,
     }));
   }
 
-  private getDistanceBadge(task) {
+  // shown under the pin: patient name and task type
+  private getBadge(task) {
+    return [task.contact?.name, task.title].filter(Boolean).join(' - ') || undefined;
+  }
+
+  // shown on hover: patient name, task type and (once located) the distance from the user
+  private getLabel(task) {
+    return [task.contact?.name, task.title, this.getDistance(task)].filter(Boolean).join(' - ');
+  }
+
+  private getDistance(task) {
     if (!this.userLocation) {
       return undefined;
     }

@@ -1,4 +1,6 @@
-import { Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, ViewChild } from '@angular/core';
+import {
+  Component, ElementRef, EventEmitter, Input, NgZone, OnChanges, OnDestroy, Output, ViewChild,
+} from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { leafletLayer, LeafletLayerOptions, SourceOptions } from 'protomaps-leaflet';
@@ -49,6 +51,7 @@ export class MapComponent implements OnChanges, OnDestroy {
   @Input() geolocation;
   @Input() markers?: MapMarker[];
   @Input() userLocation?: { latitude: number; longitude: number; accuracy?: number };
+  @Input() center?: { latitude: number; longitude: number }; // fixed center: overrides fitting around the markers
   @Output() markerClick = new EventEmitter<MapMarker>();
 
   @ViewChild('map') set mapElement(element: ElementRef | undefined) {
@@ -61,10 +64,14 @@ export class MapComponent implements OnChanges, OnDestroy {
   private markersLayer;
   private userLocationLayer;
   private resizeObserver?: ResizeObserver;
+  private deferredResize?: ReturnType<typeof setTimeout>;
   private containerSize?: { width: number; height: number };
   private fitting = false;
   private userMoved = false;
   validMarkers: MapMarker[] = [];
+
+  constructor(private ngZone: NgZone) {
+  }
 
   get isValid() {
     return this.validMarkers.length > 0;
@@ -100,6 +107,8 @@ export class MapComponent implements OnChanges, OnDestroy {
   private removeMap() {
     this.resizeObserver?.disconnect();
     this.resizeObserver = undefined;
+    clearTimeout(this.deferredResize);
+    this.deferredResize = undefined;
     this.containerSize = undefined;
     this.map?.remove();
     this.map = undefined;
@@ -130,6 +139,22 @@ export class MapComponent implements OnChanges, OnDestroy {
     this.markersLayer = L.layerGroup().addTo(this.map);
     this.userLocationLayer = L.layerGroup().addTo(this.map);
     this.render();
+
+    // On mobile the map's pane is created off-screen (position:absolute, left:100%) and moved on-screen with no size
+    // change, so the ResizeObserver never fires: a layout Leaflet computed while hidden is never corrected and the
+    // map can paint blank until an interaction. Re-measure once after the current layout/route transition settles.
+    this.ngZone.runOutsideAngular(() => {
+      this.deferredResize = setTimeout(() => {
+        this.deferredResize = undefined;
+        if (!this.map) {
+          return;
+        }
+        this.map.invalidateSize({ animate: false });
+        if (!this.userMoved) {
+          this.fitView();
+        }
+      });
+    });
   }
 
   private render() {
@@ -156,7 +181,9 @@ export class MapComponent implements OnChanges, OnDestroy {
     // fit requested during an animation is dropped by Leaflet
     this.fitting = true;
     try {
-      if (positions.length === 1) {
+      if (isValidGeolocation(this.center)) {
+        this.map.setView(this.toLatLng(this.center), MIN_ZOOM, { animate: false });
+      } else if (positions.length === 1) {
         this.map.setView(positions[0], ZOOM, { animate: false });
       } else {
         this.map.fitBounds(L.latLngBounds(positions), {

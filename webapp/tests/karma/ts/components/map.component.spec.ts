@@ -204,6 +204,31 @@ describe('MapComponent', () => {
     });
   });
 
+  describe('fixed center', () => {
+    const markers = [
+      { geolocation: { latitude: -1.29, longitude: 36.82 }, data: 'a' },
+      { geolocation: { latitude: -1.298, longitude: 36.828 }, data: 'b' },
+    ];
+
+    it('should center on the given point at the widest zoom instead of fitting the markers', async () => {
+      await render({ markers, center: { latitude: -1.5, longitude: 36.9 } });
+
+      const map = fixture.componentInstance.map;
+      expect(map.getZoom()).to.equal(15);
+      expect(map.getCenter().lat).to.be.closeTo(-1.5, 0.0001);
+      expect(map.getCenter().lng).to.be.closeTo(36.9, 0.0001);
+      expect(getElements('.leaflet-marker-icon.map-marker').length).to.equal(2); // markers still rendered
+    });
+
+    it('should fit the markers when the center is invalid', async () => {
+      await render({ markers, center: { latitude: 'not', longitude: 'valid' } });
+
+      const bounds = fixture.componentInstance.map.getBounds();
+      expect(bounds.contains([-1.29, 36.82])).to.equal(true);
+      expect(bounds.contains([-1.298, 36.828])).to.equal(true);
+    });
+  });
+
   describe('container resizing', () => {
     const markers = [
       { geolocation: { latitude: -1.29, longitude: 36.82 }, data: 'a' },
@@ -260,6 +285,28 @@ describe('MapComponent', () => {
       expect(map.getZoom()).to.equal(15);
       expect(map.getCenter().lat).to.be.closeTo(0, 0.001);
       expect(map.getCenter().lng).to.be.closeTo(0, 0.001);
+    });
+
+    it('should re-measure once after init, for panes created off-screen on mobile', async () => {
+      await render({ markers });
+      const map = fixture.componentInstance.map;
+      const invalidateSize = sinon.spy(map, 'invalidateSize');
+
+      await new Promise(resolve => setTimeout(resolve, 0)); // let the deferred re-measure run
+
+      expect(invalidateSize.callCount).to.be.greaterThan(0);
+      expect(map.getBounds().contains([-1.29, 36.82])).to.equal(true);
+    });
+
+    it('should not re-measure after the map is removed', async () => {
+      await render({ markers });
+      const map = fixture.componentInstance.map;
+      const invalidateSize = sinon.spy(map, 'invalidateSize');
+      await render({ markers: [] }); // removes the map before the deferred re-measure fires
+
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(invalidateSize.callCount).to.equal(0);
     });
 
     it('should stop observing when the map is removed', async () => {

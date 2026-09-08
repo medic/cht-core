@@ -11,6 +11,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { TranslateService } from '@mm-services/translate.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
+import { MapTilesPrefetchService } from '@mm-services/map-tiles-prefetch.service';
 import { TasksMapComponent } from '@mm-modules/tasks/tasks-map.component';
 
 describe('TasksMapComponent', () => {
@@ -22,6 +23,7 @@ describe('TasksMapComponent', () => {
   let geolocationService;
   let geoHandle;
   let resolveUserLocation;
+  let mapTilesPrefetchService;
   let style;
 
   const tasks: any[] = [
@@ -78,6 +80,7 @@ describe('TasksMapComponent', () => {
       init: sinon.stub().returns(geoHandle),
       currentPromise: new Promise(resolve => resolveUserLocation = resolve),
     };
+    mapTilesPrefetchService = { getUserFacilityGeolocations: sinon.stub().resolves([]) };
 
     TestBed.configureTestingModule({
       imports: [
@@ -89,6 +92,7 @@ describe('TasksMapComponent', () => {
         provideMockStore(),
         { provide: TranslateService, useValue: translateService },
         { provide: GeolocationService, useValue: geolocationService },
+        { provide: MapTilesPrefetchService, useValue: mapTilesPrefetchService },
       ],
     });
 
@@ -115,6 +119,20 @@ describe('TasksMapComponent', () => {
     expect(geolocationService.init.callCount).to.equal(1);
   });
 
+  it('should send the mobile back button to the tasks list, and clear navigation on destroy', async () => {
+    const setNavigation = sinon.stub(GlobalActions.prototype, 'setNavigation');
+    const clearNavigation = sinon.stub(GlobalActions.prototype, 'clearNavigation');
+
+    await render();
+
+    expect(setNavigation.callCount).to.equal(1);
+    setNavigation.args[0][0].cancelCallback();
+    expect(router.navigate.args).to.deep.equal([[['/tasks']]]);
+
+    component.ngOnDestroy();
+    expect(clearNavigation.callCount).to.equal(1);
+  });
+
   it('should show a loader while tasks are loading', async () => {
     await render({ loaded: false, tasksList: tasks });
 
@@ -137,14 +155,14 @@ describe('TasksMapComponent', () => {
       {
         geolocation: { latitude: -1.29, longitude: 36.82 },
         label: 'Jane - Visit',
-        badge: undefined,
+        badge: 'Jane - Visit',
         className: 'overdue',
         data: tasks[0],
       },
       {
         geolocation: { latitude: -1.31, longitude: 36.79 },
         label: 'John - Follow up',
-        badge: undefined,
+        badge: 'John - Follow up',
         className: undefined,
         data: tasks[1],
       },
@@ -177,9 +195,11 @@ describe('TasksMapComponent', () => {
   });
 
   describe('distance from the user', () => {
-    it('should show the user and badge every marker with its distance once the user is located', async () => {
+    it('should badge the patient and task type, and add the distance to the label once located', async () => {
       await render({ tasksList: tasks });
-      expect(component.markers.map(marker => marker.badge)).to.deep.equal([undefined, undefined]);
+      // the badge is the patient and task type, shown regardless of location
+      expect(component.markers.map(marker => marker.badge)).to.deep.equal(['Jane - Visit', 'John - Follow up']);
+      expect(component.markers.map(marker => marker.label)).to.deep.equal(['Jane - Visit', 'John - Follow up']);
       expect(getElement('.user-location')).to.equal(undefined);
 
       const position = { latitude: -1.2921, longitude: 36.8219, accuracy: 10 };
@@ -187,23 +207,21 @@ describe('TasksMapComponent', () => {
 
       expect(component.userLocation).to.deep.equal(position);
       expect(getElement('.user-location')).to.not.equal(undefined);
-      expect(component.markers.map(marker => marker.label)).to.deep.equal(['Jane - Visit', 'John - Follow up']);
-      expect(component.markers.map(marker => marker.badge)).to.deep.equal([
-        'tasks.map.distance.m:{"DISTANCE":315}',
-        'tasks.map.distance.km:{"DISTANCE":"4.1"}',
+      // distance is added to the hover label, the badge stays the patient and task type
+      expect(component.markers.map(marker => marker.label)).to.deep.equal([
+        'Jane - Visit - tasks.map.distance.m:{"DISTANCE":315}',
+        'John - Follow up - tasks.map.distance.km:{"DISTANCE":"4.1"}',
       ]);
+      expect(component.markers.map(marker => marker.badge)).to.deep.equal(['Jane - Visit', 'John - Follow up']);
       const badges = fixture.debugElement.queryAll(By.css('.map-marker .map-marker-badge'));
-      expect(badges.map(badge => badge.nativeElement.innerText)).to.deep.equal([
-        'tasks.map.distance.m:{"DISTANCE":315}',
-        'tasks.map.distance.km:{"DISTANCE":"4.1"}',
-      ]);
+      expect(badges.map(badge => badge.nativeElement.innerText)).to.deep.equal(['Jane - Visit', 'John - Follow up']);
     });
 
     it('should round distances of 10km or more to whole kilometers', async () => {
       await render({ tasksList: [tasks[0]] });
       await locateUser({ latitude: -1.2921, longitude: 36.9719 });
 
-      expect(component.markers[0].badge).to.equal('tasks.map.distance.km:{"DISTANCE":17}');
+      expect(component.markers[0].label).to.equal('Jane - Visit - tasks.map.distance.km:{"DISTANCE":17}');
     });
 
     it('should keep distances when the task list changes', async () => {
@@ -215,9 +233,9 @@ describe('TasksMapComponent', () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect(component.markers.map(marker => marker.badge)).to.deep.equal([
-        'tasks.map.distance.m:{"DISTANCE":315}',
-        'tasks.map.distance.km:{"DISTANCE":"4.1"}',
+      expect(component.markers.map(marker => marker.label)).to.deep.equal([
+        'Jane - Visit - tasks.map.distance.m:{"DISTANCE":315}',
+        'John - Follow up - tasks.map.distance.km:{"DISTANCE":"4.1"}',
       ]);
     });
 
@@ -227,7 +245,8 @@ describe('TasksMapComponent', () => {
 
       expect(component.userLocation).to.equal(undefined);
       expect(getElement('.user-location')).to.equal(undefined);
-      expect(component.markers.map(marker => marker.badge)).to.deep.equal([undefined, undefined]);
+      expect(component.markers.map(marker => marker.label)).to.deep.equal(['Jane - Visit', 'John - Follow up']);
+      expect(component.markers.map(marker => marker.badge)).to.deep.equal(['Jane - Visit', 'John - Follow up']);
     });
 
     it('should cancel the geolocation handle on destroy', async () => {
@@ -236,6 +255,29 @@ describe('TasksMapComponent', () => {
       component.ngOnDestroy();
 
       expect(geoHandle.cancel.callCount).to.equal(1);
+    });
+  });
+
+  describe('map center', () => {
+    it('should center the map on the facility', async () => {
+      const facility = { latitude: -1.3, longitude: 36.8, accuracy: 5 };
+      mapTilesPrefetchService.getUserFacilityGeolocations.resolves([facility]);
+
+      await render({ tasksList: tasks });
+
+      expect(component.center).to.deep.equal(facility);
+    });
+
+    it('should leave the map to fit the markers when the facility has no location', async () => {
+      await render({ tasksList: tasks });
+      expect(component.center).to.equal(undefined);
+    });
+
+    it('should tolerate failures when getting the facility', async () => {
+      mapTilesPrefetchService.getUserFacilityGeolocations.rejects(new Error('boom'));
+      await render({ tasksList: tasks });
+      expect(component.center).to.equal(undefined);
+      expect(component.markers.length).to.equal(2);
     });
   });
 

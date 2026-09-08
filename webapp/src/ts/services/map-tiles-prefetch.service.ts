@@ -64,7 +64,7 @@ export class MapTilesPrefetchService {
 
     this.running = true;
     try {
-      const geolocations = await this.getFacilityGeolocations();
+      const geolocations = await this.getUserFacilityGeolocations();
       if (!geolocations.length) {
         return;
       }
@@ -106,7 +106,7 @@ export class MapTilesPrefetchService {
     return !!window.navigator.serviceWorker?.controller;
   }
 
-  private async getFacilityGeolocations() {
+  async getUserFacilityGeolocations() {
     const userSettings = await this.userSettingsService.get() as any;
     const ids = [userSettings.facility_id].flat().filter(Boolean);
     if (!ids.length) {
