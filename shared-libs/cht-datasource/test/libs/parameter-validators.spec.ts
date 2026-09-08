@@ -1,9 +1,9 @@
-import { ContactTypeQualifier, FormsQualifier, FreetextQualifier } from '../../src/qualifier';
+import { ContactTypeQualifier, FormsQualifier, FreetextQualifier, SubjectsQualifier } from '../../src/qualifier';
 import { expect } from 'chai';
 import {
   assertContactTypeFreetextQualifier,
   assertCursor,
-  assertFreetextOrFormsQualifier,
+  assertFreetextFormsOrSubjectsQualifier,
   assertFreetextQualifier,
   assertLimit,
   assertPersonInput,
@@ -14,7 +14,8 @@ import {
   isFreetextType,
   isContactTypeAndFreetextType,
   assertUuidQualifier,
-  assertIdsQualifier
+  assertIdsQualifier,
+  assertIdsOrSubjectsQualifier
 } from '../../src/libs/parameter-validators';
 import { InvalidArgumentError } from '../../src';
 import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
@@ -115,15 +116,20 @@ describe('libs parameter-validators', () => {
     });
   });
 
-  describe('assertFreetextOrFormsQualifier', () => {
+  describe('assertFreetextFormsOrSubjectsQualifier', () => {
     it('should not throw for a valid freetext qualifier', () => {
       const validQualifier: FreetextQualifier = { freetext: 'key:search text' };
-      expect(() => assertFreetextOrFormsQualifier(validQualifier)).to.not.throw();
+      expect(() => assertFreetextFormsOrSubjectsQualifier(validQualifier)).to.not.throw();
     });
 
     it('should not throw for a valid forms qualifier', () => {
       const validQualifier: FormsQualifier = { forms: ['pregnancy'] };
-      expect(() => assertFreetextOrFormsQualifier(validQualifier)).to.not.throw();
+      expect(() => assertFreetextFormsOrSubjectsQualifier(validQualifier)).to.not.throw();
+    });
+
+    it('should not throw for a valid subjects qualifier', () => {
+      const validQualifier: SubjectsQualifier = { subjects: ['patient-shortcode'] };
+      expect(() => assertFreetextFormsOrSubjectsQualifier(validQualifier)).to.not.throw();
     });
 
     [
@@ -134,8 +140,8 @@ describe('libs parameter-validators', () => {
       {},
       { wrongProp: 'value' }
     ].forEach((qualifier) => {
-      it(`should throw the freetext message for non-form input: ${JSON.stringify(qualifier)}`, () => {
-        expect(() => assertFreetextOrFormsQualifier(qualifier))
+      it(`should throw the freetext message for other input: ${JSON.stringify(qualifier)}`, () => {
+        expect(() => assertFreetextFormsOrSubjectsQualifier(qualifier))
           .to.throw(InvalidArgumentError)
           .with.property('message')
           .that.includes('Invalid freetext');
@@ -149,10 +155,24 @@ describe('libs parameter-validators', () => {
       { forms: 'pregnancy' }
     ].forEach((qualifier) => {
       it(`should throw the forms message for form-shaped input: ${JSON.stringify(qualifier)}`, () => {
-        expect(() => assertFreetextOrFormsQualifier(qualifier))
+        expect(() => assertFreetextFormsOrSubjectsQualifier(qualifier))
           .to.throw(InvalidArgumentError)
           .with.property('message')
           .that.includes('Invalid forms');
+      });
+    });
+
+    [
+      { subjects: [] },
+      { subjects: [''] },
+      { subjects: ['  padded  '] },
+      { subjects: 'patient-shortcode' }
+    ].forEach((qualifier) => {
+      it(`should throw the subjects message for subject-shaped input: ${JSON.stringify(qualifier)}`, () => {
+        expect(() => assertFreetextFormsOrSubjectsQualifier(qualifier))
+          .to.throw(InvalidArgumentError)
+          .with.property('message')
+          .that.includes('Invalid subjects');
       });
     });
   });
@@ -319,6 +339,49 @@ describe('libs parameter-validators', () => {
     it('should throw InvalidArgumentError when an element is an empty string', () => {
       expect(() => assertIdsQualifier({ ids: ['a', '', 'c'] }))
         .to.throw(InvalidArgumentError, `Invalid identifiers [{"ids":["a","","c"]}].`);
+    });
+  });
+
+  describe('assertIdsOrSubjectsQualifier', () => {
+    it('should not throw for a valid ids qualifier', () => {
+      expect(() => assertIdsOrSubjectsQualifier({ ids: ['a', 'b'] })).to.not.throw();
+    });
+
+    it('should not throw for an empty ids qualifier, as assertIdsQualifier does not', () => {
+      expect(() => assertIdsOrSubjectsQualifier({ ids: [] })).to.not.throw();
+    });
+
+    it('should not throw for a valid subjects qualifier', () => {
+      const validQualifier: SubjectsQualifier = { subjects: ['patient-shortcode'] };
+      expect(() => assertIdsOrSubjectsQualifier(validQualifier)).to.not.throw();
+    });
+
+    [
+      { ids: 'abc' },
+      { ids: ['a', 123, 'c'] },
+      { ids: ['a', '', 'c'] },
+      'abc',
+      null,
+      undefined,
+      { freetext: 'search' },
+    ].forEach((qualifier) => {
+      it(`should throw the identifiers message for other input: ${JSON.stringify(qualifier)}`, () => {
+        expect(() => assertIdsOrSubjectsQualifier(qualifier))
+          .to.throw(InvalidArgumentError, `Invalid identifiers [${JSON.stringify(qualifier)}].`);
+      });
+    });
+
+    [
+      { subjects: [] },
+      { subjects: 'patient-shortcode' },
+      { subjects: ['patient-shortcode', ''] },
+      { subjects: ['  padded  '] },
+      { subjects: [123] },
+    ].forEach((qualifier) => {
+      it(`should throw the subjects message for subject-shaped input: ${JSON.stringify(qualifier)}`, () => {
+        expect(() => assertIdsOrSubjectsQualifier(qualifier))
+          .to.throw(InvalidArgumentError, `Invalid subjects [${JSON.stringify(qualifier)}].`);
+      });
     });
   });
 

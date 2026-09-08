@@ -4,6 +4,7 @@ import {
   byContactId,
   byContactIds,
   byForms,
+  bySubjects,
   byFreetext,
   byReportingPeriod,
   byUsername,
@@ -13,6 +14,7 @@ import {
   isContactIdQualifier,
   isContactIdsQualifier,
   isFormsQualifier,
+  isSubjectsQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
   isReportingPeriodQualifier,
@@ -210,6 +212,81 @@ describe('qualifier', () => {
     ].forEach(([ forms, expected ]) => {
       it(`evaluates ${JSON.stringify(forms)}`, () => {
         expect(isFormsQualifier(forms)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('bySubjects', () => {
+    const patientUuid = '3d1a2b4c-0000-4000-8000-000000000001';
+
+    it('builds a qualifier that identifies entities by the subjects they are about', () => {
+      expect(bySubjects(['patient-shortcode', patientUuid]))
+        .to.deep.equal({ subjects: ['patient-shortcode', patientUuid] });
+    });
+
+    it('accepts a single subject in an array', () => {
+      expect(bySubjects([patientUuid])).to.deep.equal({ subjects: [patientUuid] });
+    });
+
+    it('removes duplicate subjects while keeping the order given', () => {
+      expect(bySubjects([patientUuid, 'case-1', patientUuid])).to.deep.equal({ subjects: [patientUuid, 'case-1'] });
+    });
+
+    it('does not trim the subjects it accepts', () => {
+      expect(bySubjects(['Patient_1'])).to.deep.equal({ subjects: ['Patient_1'] });
+    });
+
+    ([
+      null,
+      undefined,
+      'patient-shortcode',
+      [],
+      [''],
+      ['   '],
+      ['\t\n'],
+      ['patient-shortcode', ''],
+      ['  patient-shortcode '],
+      [' patient-shortcode'],
+      ['patient-shortcode '],
+      [null],
+      [0],
+      { },
+      0,
+    ] as [string, ...string[]][]).forEach(subjects => {
+      it(`throws an error for ${JSON.stringify(subjects)}`, () => {
+        expect(() => bySubjects(subjects)).to.throw(
+          `Invalid subjects [${JSON.stringify(subjects)}].`
+        );
+      });
+    });
+  });
+
+  describe('isSubjectsQualifier', () => {
+    [
+      [ null, false ],
+      [ 'patient-shortcode', false ],
+      [ { subjects: { } }, false ],
+      // A bare string would otherwise pass as an iterable of single characters, so it is rejected
+      // explicitly.
+      [ { subjects: 'patient-shortcode' }, false ],
+      [ { subjects: [] }, false ],
+      [ { subjects: [''] }, false ],
+      [ { subjects: ['   '] }, false ],
+      [ { subjects: ['patient-shortcode', ''] }, false ],
+      [ { subjects: ['patient-shortcode', null] }, false ],
+      [ { subject: 'patient-shortcode' }, false ],
+      // A padded identifier would otherwise pass validation but match nothing, since the value is
+      // compared verbatim rather than trimmed: reject it instead of returning a silent empty page.
+      [ { subjects: ['  patient-shortcode '] }, false ],
+      [ { subjects: [' patient-shortcode'] }, false ],
+      [ { subjects: ['patient-shortcode '] }, false ],
+      [ { subjects: ['patient-shortcode'] }, true ],
+      // Shortcodes and UUIDs are both valid subject identifiers and can be mixed.
+      [ { subjects: ['patient-shortcode', '3d1a2b4c-0000-4000-8000-000000000001'] }, true ],
+      [ { subjects: ['patient-shortcode'], other: 'other' }, true ]
+    ].forEach(([ subjects, expected ]) => {
+      it(`evaluates ${JSON.stringify(subjects)}`, () => {
+        expect(isSubjectsQualifier(subjects)).to.equal(expected);
       });
     });
   });

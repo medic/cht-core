@@ -372,6 +372,175 @@ describe('cht-datasource Report', () => {
       });
     });
 
+    describe('getUuidsPage bySubjects', () => {
+      const getUuidsPage = Report.v1.getUuidsPage(dataContext);
+      // Every report in this fixture set is about the same patient, and the factory writes both
+      // `fields.patient_id` (the shortcode) and `fields.patient_uuid` (the UUID), so the view emits
+      // each report twice - once under each key.
+      const allReportIds = allReports.map(report => report._id);
+      // Rows under one key come back in doc id order, which is what makes the cursor walk below exact.
+      const sortedReportIds = [ ...allReportIds ].sort();
+      const fourLimit = 4;
+      const cursor = null;
+      const invalidLimit = 'invalidLimit';
+      const invalidCursor = 'invalidCursor';
+
+      it('returns a page of report ids for a subject shortcode', async () => {
+        const responsePage = await getUuidsPage(Qualifier.bySubjects([ patient.patient_id ]));
+
+        expect(responsePage.data).to.deep.equalInAnyOrder(allReportIds);
+      });
+
+      it('returns a page of report ids for a subject UUID', async () => {
+        const responsePage = await getUuidsPage(Qualifier.bySubjects([ patient._id ]));
+
+        expect(responsePage.data).to.deep.equalInAnyOrder(allReportIds);
+      });
+
+      it('returns a report matching both a shortcode and a UUID exactly once', async () => {
+        const responsePage = await getUuidsPage(Qualifier.bySubjects([ patient.patient_id, patient._id ]));
+
+        expect(responsePage.data).to.deep.equalInAnyOrder(allReportIds);
+        expect(responsePage.data).to.have.lengthOf(allReportIds.length);
+      });
+
+      it('returns an empty page for a subject with no reports', async () => {
+        const responsePage = await getUuidsPage(Qualifier.bySubjects([ 'no-such-subject' ]));
+
+        expect(responsePage.data).to.deep.equal([]);
+        expect(responsePage.cursor).to.be.null;
+      });
+
+      it('does not normalize the subject, so a different case matches nothing', async () => {
+        const responsePage = await getUuidsPage(Qualifier.bySubjects([ patient._id.toUpperCase() ]));
+
+        expect(responsePage.data).to.deep.equal([]);
+        expect(responsePage.cursor).to.be.null;
+      });
+
+      it('walks every page with the cursor without dropping or repeating a report', async () => {
+        const qualifier = Qualifier.bySubjects([ patient.patient_id ]);
+        const firstPage = await getUuidsPage(qualifier, cursor, fourLimit);
+        const secondPage = await getUuidsPage(qualifier, firstPage.cursor, fourLimit);
+        const thirdPage = await getUuidsPage(qualifier, secondPage.cursor, fourLimit);
+
+        expect(firstPage.data).to.deep.equal(sortedReportIds.slice(0, 4));
+        expect(firstPage.cursor).to.equal('4');
+        expect(secondPage.data).to.deep.equal(sortedReportIds.slice(4, 8));
+        expect(secondPage.cursor).to.equal('8');
+        expect(thirdPage.data).to.deep.equal(sortedReportIds.slice(8));
+        expect(thirdPage.cursor).to.be.null;
+      });
+
+      it('throws error when limit is invalid', async () => {
+        await expect(
+          getUuidsPage(Qualifier.bySubjects([ patient.patient_id ]), cursor, invalidLimit)
+        ).to.be.rejectedWith(
+          { code: 400, error: `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].` }
+        );
+      });
+
+      it('throws error when cursor is invalid', async () => {
+        await expect(
+          getUuidsPage(Qualifier.bySubjects([ patient.patient_id ]), invalidCursor, fourLimit)
+        ).to.be.rejectedWith(
+          {
+            code: 400,
+            error: `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
+          }
+        );
+      });
+    });
+
+    describe('getUuids bySubjects', () => {
+      it('fetches all data by iterating through generator', async () => {
+        const expectedReportIds = allReports.map(report => report._id);
+        const docs = [];
+
+        const generator = Report.v1.getUuids(dataContext)(Qualifier.bySubjects([ patient.patient_id ]));
+
+        for await (const doc of generator) {
+          docs.push(doc);
+        }
+
+        expect(docs).to.deep.equalInAnyOrder(expectedReportIds);
+      });
+    });
+
+    describe('getPage bySubjects', () => {
+      const getPage = Report.v1.getPage(dataContext);
+      // As for the uuid path: every report is emitted under both the shortcode and the UUID, and rows
+      // under one key come back in doc id order.
+      const allReportIds = allReports.map(report => report._id);
+      const sortedReportIds = [ ...allReportIds ].sort();
+      const responseIds = (page) => page.data.map(doc => doc._id);
+      const fourLimit = 4;
+      const cursor = null;
+
+      it('returns a page of reports for a subject shortcode', async () => {
+        const responsePage = await getPage(Qualifier.bySubjects([ patient.patient_id ]));
+
+        expect(responsePage.data).excludingEvery(excludedProperties).to.deep.equalInAnyOrder(allReports);
+        expect(responsePage.cursor).to.be.null;
+      });
+
+      it('returns a page of reports for a subject UUID', async () => {
+        const responsePage = await getPage(Qualifier.bySubjects([ patient._id ]));
+
+        expect(responseIds(responsePage)).to.deep.equalInAnyOrder(allReportIds);
+      });
+
+      it('returns a report matching both a shortcode and a UUID exactly once', async () => {
+        const responsePage = await getPage(Qualifier.bySubjects([ patient.patient_id, patient._id ]));
+
+        expect(responseIds(responsePage)).to.deep.equalInAnyOrder(allReportIds);
+        expect(responsePage.data).to.have.lengthOf(allReportIds.length);
+      });
+
+      it('returns an empty page for a subject with no reports', async () => {
+        const responsePage = await getPage(Qualifier.bySubjects([ 'no-such-subject' ]));
+
+        expect(responsePage.data).to.deep.equal([]);
+        expect(responsePage.cursor).to.be.null;
+      });
+
+      it('walks every page with the cursor without dropping or repeating a report', async () => {
+        const qualifier = Qualifier.bySubjects([ patient.patient_id ]);
+        const firstPage = await getPage(qualifier, cursor, fourLimit);
+        const secondPage = await getPage(qualifier, firstPage.cursor, fourLimit);
+        const thirdPage = await getPage(qualifier, secondPage.cursor, fourLimit);
+
+        expect(responseIds(firstPage)).to.deep.equal(sortedReportIds.slice(0, 4));
+        expect(firstPage.cursor).to.equal('4');
+        expect(responseIds(secondPage)).to.deep.equal(sortedReportIds.slice(4, 8));
+        expect(secondPage.cursor).to.equal('8');
+        expect(responseIds(thirdPage)).to.deep.equal(sortedReportIds.slice(8));
+        expect(thirdPage.cursor).to.be.null;
+      });
+
+      it('throws error when cursor is invalid', async () => {
+        await expect(
+          getPage(Qualifier.bySubjects([ patient.patient_id ]), 'invalidCursor', fourLimit)
+        ).to.be.rejectedWith(
+          { code: 400, error: 'The cursor must be a string or null for first page: ["invalidCursor"].' }
+        );
+      });
+    });
+
+    describe('getAll bySubjects', () => {
+      it('fetches all data by iterating through generator', async () => {
+        const docs = [];
+
+        const generator = Report.v1.getAll(dataContext)(Qualifier.bySubjects([ patient.patient_id ]));
+
+        for await (const doc of generator) {
+          docs.push(doc);
+        }
+
+        expect(docs).excludingEvery(excludedProperties).to.deep.equalInAnyOrder(allReports);
+      });
+    });
+
     describe('create', () => {
       const createReport = Report.v1.create(dataContext);
 

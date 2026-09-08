@@ -215,6 +215,7 @@ describe('local report', () => {
       let queryViewFreetextByKey: SinonStub;
       let queryViewFreetextByRange: SinonStub;
       let queryViewByForms: SinonStub;
+      let queryViewBySubjects: SinonStub;
       let fetchAndFilterIdsInner: SinonStub;
       let fetchAndFilterIdsOuter: SinonStub;
       let queryNouveauFreetext: SinonStub;
@@ -223,14 +224,18 @@ describe('local report', () => {
       beforeEach(() => {
         queryViewFreetextByKey = sinon.stub();
         queryViewByForms = sinon.stub();
+        queryViewBySubjects = sinon.stub();
         const queryDocIdsByKey = sinon.stub(LocalDoc, 'queryDocIdsByKey');
         queryDocIdsByKey
           .withArgs(localContext.medicDb, 'medic-offline-freetext/reports_by_freetext')
           .returns(queryViewFreetextByKey);
-        sinon
-          .stub(LocalDoc, 'queryDocIdsByKeys')
+        const queryDocIdsByKeys = sinon.stub(LocalDoc, 'queryDocIdsByKeys');
+        queryDocIdsByKeys
           .withArgs(localContext.medicDb, 'medic-client/reports_by_form')
           .returns(queryViewByForms);
+        queryDocIdsByKeys
+          .withArgs(localContext.medicDb, 'medic-client/reports_by_subject')
+          .returns(queryViewBySubjects);
 
         queryViewFreetextByRange = sinon.stub();
         sinon
@@ -479,6 +484,121 @@ describe('local report', () => {
           expect(queryViewByForms.notCalled).to.be.true;
         });
       });
+
+      describe('when qualifying by subject', () => {
+        const patientUuid = '3d1a2b4c-0000-4000-8000-000000000001';
+
+        beforeEach(() => {
+          fetchAndFilterIdsInner.resolves(expectedResult);
+          // The subject branch must not depend on the nouveau/offline split at all.
+          useNouveauIndexes.resolves(true);
+        });
+
+        ([
+          [null, 0],
+          ['1', 1]
+        ] as [string | null, number][]).forEach(([cursor, skip]) => {
+          it(`queries the reports_by_subject view with cursor ${JSON.stringify(cursor)}`, async () => {
+            const qualifier = Qualifier.bySubjects(['patient-shortcode']);
+
+            const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
+
+            expect(res).to.deep.equal(expectedResult);
+            expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
+            expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
+            expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
+
+            // Verify the page function uses the subject view, keyed on the subject identifier. The
+            // view emits the value itself rather than wrapping it in an array, unlike reports_by_form.
+            const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+            pageFn(limit, skip);
+
+            expect(queryViewBySubjects.calledOnceWithExactly(['patient-shortcode'], limit, skip)).to.be.true;
+
+            // The freetext and form machinery must be untouched
+            expect(queryNouveauFreetext.notCalled).to.be.true;
+            expect(queryViewFreetextByKey.notCalled).to.be.true;
+            expect(queryViewFreetextByRange.notCalled).to.be.true;
+            expect(queryViewByForms.notCalled).to.be.true;
+          });
+        });
+
+        it('queries shortcodes and UUIDs together in one keys call', async () => {
+          const qualifier = Qualifier.bySubjects(['patient-shortcode', patientUuid]);
+
+          await Report.v1.getUuidsPage(localContext)(qualifier, null, limit);
+
+          const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+          pageFn(limit, 0);
+
+          expect(queryViewBySubjects.calledOnceWithExactly(['patient-shortcode', patientUuid], limit, 0)).to.be.true;
+        });
+
+        it('does not normalize the subject identifier', async () => {
+          const qualifier = Qualifier.bySubjects(['Patient_1']);
+
+          await Report.v1.getUuidsPage(localContext)(qualifier, null, limit);
+
+          const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+          pageFn(limit, 0);
+
+          expect(queryViewBySubjects.calledOnceWithExactly(['Patient_1'], limit, 0)).to.be.true;
+        });
+
+        it('drops duplicate subjects even when the qualifier bypasses bySubjects()', async () => {
+          const qualifier = {
+            subjects: ['patient-shortcode', 'patient-shortcode', patientUuid] as [string, ...string[]],
+          };
+
+          await Report.v1.getUuidsPage(localContext)(qualifier, null, limit);
+
+          const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+          pageFn(limit, 0);
+
+          expect(queryViewBySubjects.calledOnceWithExactly(['patient-shortcode', patientUuid], limit, 0)).to.be.true;
+        });
+
+        it('throws an error if cursor is invalid', async () => {
+          const qualifier = Qualifier.bySubjects(['patient-shortcode']);
+          const cursor = 'not a number';
+
+          await expect(Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit))
+            .to.be.rejectedWith(
+              InvalidArgumentError,
+              `The cursor must be a string or null for first page: [${JSON.stringify(cursor)}]`
+            );
+
+          expect(queryViewBySubjects.notCalled).to.be.true;
+          expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
+          expect(fetchAndFilterIdsInner.notCalled).to.be.true;
+        });
+
+        it('prefers the freetext branch when a qualifier satisfies both', async () => {
+          const qualifier = { freetext: 'searchterm', subjects: ['patient-shortcode'] };
+          queryNouveauFreetext.resolves(expectedResult);
+
+          const res = await Report.v1.getUuidsPage(localContext)(qualifier, null, limit);
+
+          expect(res).to.deep.equal(expectedResult);
+          expect(queryNouveauFreetext.calledOnce).to.be.true;
+          expect(queryViewBySubjects.notCalled).to.be.true;
+        });
+
+        it('prefers the form branch when a qualifier satisfies both', async () => {
+          const qualifier = {
+            forms: ['pregnancy'] as [string, ...string[]],
+            subjects: ['patient-shortcode'] as [string, ...string[]],
+          };
+
+          await Report.v1.getUuidsPage(localContext)(qualifier, null, limit);
+
+          const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+          pageFn(limit, 0);
+
+          expect(queryViewByForms.calledOnceWithExactly([['pregnancy']], limit, 0)).to.be.true;
+          expect(queryViewBySubjects.notCalled).to.be.true;
+        });
+      });
     });
 
     // Unlike the stubbed dispatch tests above, this exercises the real page-assembly and cursor
@@ -597,6 +717,114 @@ describe('local report', () => {
 
     });
 
+    // As above, this exercises the real page-assembly and cursor arithmetic against a fake view. The
+    // reports_by_subject view emits a report once for every subject field it sets, so unlike
+    // reports_by_form the same uuid can come back under more than one key.
+    describe('getUuidsPage by subject (pagination and dedup)', () => {
+      const patientShortcode = 'patient-shortcode';
+      const patientUuid = '3d1a2b4c-0000-4000-8000-000000000001';
+      const allUuids = Array.from({ length: 12 }, (_, i) => `report-${i.toString()}`);
+      // Every report sets both `fields.patient_id` and `fields.patient_uuid` for the same patient, so
+      // it is emitted under both keys - the multi-emit case the dedup exists for.
+      const viewRows: Record<string, string[]> = {
+        [patientShortcode]: allUuids,
+        [patientUuid]: allUuids,
+        'case-1': ['report-0'],
+        'place-shortcode': ['report-1', 'report-2'],
+      };
+
+      beforeEach(() => {
+        sinon.stub(Nouveau, 'useNouveauIndexes').resolves(false);
+        sinon
+          .stub(LocalDoc, 'queryDocIdsByKeys')
+          .withArgs(localContext.medicDb, 'medic-client/reports_by_subject')
+          .returns((keys: unknown, limit: number, skip: number) => {
+            // Emulates CouchDB's `keys` behavior: rows come back grouped in the order the keys are
+            // supplied, and skip/limit then apply to that concatenation rather than per key.
+            const rows = (keys as string[]).flatMap(subject => viewRows[subject] ?? []);
+            return Promise.resolve(rows.slice(skip, skip + limit));
+          });
+      });
+
+      it('returns a report matching several of the given subjects exactly once', async () => {
+        const getUuidsPage = Report.v1.getUuidsPage(localContext);
+
+        // Both keys emit all 12 reports, so the view returns 24 rows for a single page.
+        const page = await getUuidsPage(Qualifier.bySubjects([patientShortcode, patientUuid]), null, 100);
+
+        expect(page.data).to.deep.equal(allUuids);
+        expect(page.cursor).to.be.null;
+      });
+
+      it('walks the full result set across cursor pages', async () => {
+        const getUuidsPage = Report.v1.getUuidsPage(localContext);
+        const qualifier = Qualifier.bySubjects([patientShortcode]);
+
+        const page1 = await getUuidsPage(qualifier, null, 5);
+        expect(page1.data).to.deep.equal(allUuids.slice(0, 5));
+        expect(page1.cursor).to.equal('5');
+
+        const page2 = await getUuidsPage(qualifier, page1.cursor, 5);
+        expect(page2.data).to.deep.equal(allUuids.slice(5, 10));
+        expect(page2.cursor).to.equal('10');
+
+        const page3 = await getUuidsPage(qualifier, page2.cursor, 5);
+        expect(page3.data).to.deep.equal(allUuids.slice(10));
+        expect(page3.cursor).to.be.null;
+      });
+
+      it('returns only the reports about the requested subject', async () => {
+        const getUuidsPage = Report.v1.getUuidsPage(localContext);
+
+        const page = await getUuidsPage(Qualifier.bySubjects(['case-1']), null, 5);
+
+        expect(page.data).to.deep.equal(['report-0']);
+        expect(page.cursor).to.be.null;
+      });
+
+      it('returns an empty page for a subject with no reports', async () => {
+        const getUuidsPage = Report.v1.getUuidsPage(localContext);
+
+        const page = await getUuidsPage(Qualifier.bySubjects(['no-such-subject']), null, 5);
+
+        expect(page.data).to.deep.equal([]);
+        expect(page.cursor).to.be.null;
+      });
+
+      it('returns the reports of every requested subject', async () => {
+        const getUuidsPage = Report.v1.getUuidsPage(localContext);
+
+        const page = await getUuidsPage(Qualifier.bySubjects(['case-1', 'place-shortcode']), null, 10);
+
+        expect(page.data).to.deep.equal(['report-0', 'report-1', 'report-2']);
+        expect(page.cursor).to.be.null;
+      });
+
+      it('pages across a subject boundary without dropping or repeating a report', async () => {
+        const getUuidsPage = Report.v1.getUuidsPage(localContext);
+        const qualifier = Qualifier.bySubjects(['case-1', 'place-shortcode']);
+
+        // Page size 2 puts the boundary between the two subjects mid-page, which is where a per-key
+        // rather than whole-result-set skip would show up.
+        const page1 = await getUuidsPage(qualifier, null, 2);
+        expect(page1.data).to.deep.equal(['report-0', 'report-1']);
+        expect(page1.cursor).to.equal('2');
+
+        const page2 = await getUuidsPage(qualifier, page1.cursor, 2);
+        expect(page2.data).to.deep.equal(['report-2']);
+        expect(page2.cursor).to.be.null;
+      });
+
+      it('skips a subject with no reports without disturbing the others', async () => {
+        const getUuidsPage = Report.v1.getUuidsPage(localContext);
+
+        const page = await getUuidsPage(Qualifier.bySubjects(['no-such-subject', 'case-1']), null, 5);
+
+        expect(page.data).to.deep.equal(['report-0']);
+        expect(page.cursor).to.be.null;
+      });
+    });
+
     describe('getPage', () => {
       const limit = 3;
       const notNullCursor = '5';
@@ -647,6 +875,173 @@ describe('local report', () => {
           expect(fetchAndFilterOuter.notCalled).to.be.true;
           expect(fetchAndFilterInner.notCalled).to.be.true;
         });
+      });
+
+      describe('when qualifying by subject', () => {
+        const patientShortcode = 'patient-shortcode';
+        const patientUuid = '3d1a2b4c-0000-4000-8000-000000000001';
+        const expectedResult = { cursor: '3', data: [{ type: 'data_record', form: 'a' }] };
+        let queryDocsByKeysInner: SinonStub;
+        let queryDocsByKeysOuter: SinonStub;
+        let fetchAndFilterUniqueDocsInner: SinonStub;
+        let fetchAndFilterUniqueDocsOuter: SinonStub;
+
+        beforeEach(() => {
+          queryDocsByKeysInner = sinon.stub();
+          queryDocsByKeysOuter = sinon.stub(LocalDoc, 'queryDocsByKeys').returns(queryDocsByKeysInner);
+          fetchAndFilterUniqueDocsInner = sinon.stub().resolves(expectedResult);
+          fetchAndFilterUniqueDocsOuter = sinon
+            .stub(LocalDoc, 'fetchAndFilterUniqueDocs')
+            .returns(fetchAndFilterUniqueDocsInner);
+        });
+
+        it('queries the reports_by_subject view with the docs, filtering to reports', async () => {
+          const qualifier = Qualifier.bySubjects([patientShortcode, patientUuid]);
+
+          const res = await Report.v1.getPage(localContext)(qualifier, notNullCursor, limit);
+
+          expect(res).to.deep.equal(expectedResult);
+          expect(queryDocsByKeysOuter.calledOnceWithExactly(
+            localContext.medicDb, 'medic-client/reports_by_subject'
+          )).to.be.true;
+          const [getPageFn, filterFn, passedLimit] = fetchAndFilterUniqueDocsOuter.firstCall.args;
+          expect(passedLimit).to.equal(limit);
+          expect(fetchAndFilterUniqueDocsInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
+          // The ids arm is not touched.
+          expect(fetchAndFilterOuter.notCalled).to.be.true;
+          expect(getDocsByIdsInner.notCalled).to.be.true;
+
+          await getPageFn(2, 1);
+          expect(queryDocsByKeysInner.calledOnceWithExactly([patientShortcode, patientUuid], 2, 1)).to.be.true;
+
+          // The filter is the same report check the ids arm applies.
+          expect(filterFn({ _id: 'r', _rev: '1', type: 'data_record', form: 'f' })).to.be.true;
+          expect(filterFn({ _id: 'c', _rev: '1', type: 'person' })).to.be.false;
+          expect(filterFn({ _id: 'r', _rev: '1', type: 'data_record' })).to.be.false;
+          expect(filterFn(null)).to.be.false;
+        });
+
+        it('drops duplicate subjects even when the qualifier bypasses bySubjects()', async () => {
+          const qualifier = { subjects: [patientShortcode, patientUuid, patientShortcode] as [string, ...string[]] };
+
+          await Report.v1.getPage(localContext)(qualifier, null, limit);
+
+          const getPageFn = fetchAndFilterUniqueDocsOuter.firstCall.args[0];
+          await getPageFn(limit, 0);
+          expect(queryDocsByKeysInner.calledOnceWithExactly([patientShortcode, patientUuid], limit, 0)).to.be.true;
+        });
+
+        it('prefers the ids arm when a qualifier satisfies both', async () => {
+          const qualifier = { ids: ['r1'], subjects: [patientShortcode] as [string, ...string[]] };
+          fetchAndFilterInner.resolves(expectedResult);
+
+          const res = await Report.v1.getPage(localContext)(qualifier, null, limit);
+
+          expect(res).to.deep.equal(expectedResult);
+          expect(fetchAndFilterOuter.calledOnce).to.be.true;
+          expect(fetchAndFilterUniqueDocsOuter.notCalled).to.be.true;
+          expect(queryDocsByKeysInner.notCalled).to.be.true;
+        });
+
+        it('throws an error if cursor is invalid', async () => {
+          const qualifier = Qualifier.bySubjects([patientShortcode]);
+
+          await expect(Report.v1.getPage(localContext)(qualifier, '-1', limit))
+            .to.be.rejectedWith('The cursor must be a string or null for first page: ["-1"]');
+
+          expect(fetchAndFilterUniqueDocsOuter.notCalled).to.be.true;
+          expect(queryDocsByKeysInner.notCalled).to.be.true;
+        });
+      });
+    });
+
+    // As for the uuid arm above: real page assembly and cursor arithmetic against a fake view, but with
+    // the docs attached, since with include_docs a report emitted under two requested keys comes back as
+    // two full copies rather than two ids.
+    describe('getPage by subject (pagination and dedup)', () => {
+      const patientShortcode = 'patient-shortcode';
+      const patientUuid = '3d1a2b4c-0000-4000-8000-000000000001';
+      const report = (id: string) => ({ _id: id, _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'f' });
+      const allReports = Array.from({ length: 12 }, (_, i) => report(`report-${i.toString()}`));
+      const viewRows: Record<string, Doc[]> = {
+        [patientShortcode]: allReports,
+        [patientUuid]: allReports,
+        'case-1': [allReports[0]],
+        'place-shortcode': [allReports[1], allReports[2]],
+      };
+      const ids = (page: { data: Doc[] }) => page.data.map(doc => doc._id);
+
+      beforeEach(() => {
+        sinon
+          .stub(LocalDoc, 'queryDocsByKeys')
+          .withArgs(localContext.medicDb, 'medic-client/reports_by_subject')
+          .returns((keys: unknown, limit: number, skip: number) => {
+            const rows = (keys as string[]).flatMap(subject => viewRows[subject] ?? []);
+            return Promise.resolve(rows.slice(skip, skip + limit));
+          });
+      });
+
+      it('returns a report matching several of the given subjects exactly once', async () => {
+        const getPage = Report.v1.getPage(localContext);
+
+        const page = await getPage(Qualifier.bySubjects([patientShortcode, patientUuid]), null, 100);
+
+        expect(page.data).to.deep.equal(allReports);
+        expect(page.cursor).to.be.null;
+      });
+
+      it('walks the full result set across cursor pages', async () => {
+        const getPage = Report.v1.getPage(localContext);
+        const qualifier = Qualifier.bySubjects([patientShortcode]);
+
+        const page1 = await getPage(qualifier, null, 5);
+        expect(page1.data).to.deep.equal(allReports.slice(0, 5));
+        expect(page1.cursor).to.equal('5');
+
+        const page2 = await getPage(qualifier, page1.cursor, 5);
+        expect(page2.data).to.deep.equal(allReports.slice(5, 10));
+        expect(page2.cursor).to.equal('10');
+
+        const page3 = await getPage(qualifier, page2.cursor, 5);
+        expect(page3.data).to.deep.equal(allReports.slice(10));
+        expect(page3.cursor).to.be.null;
+      });
+
+      it('pages across a subject boundary without dropping or repeating a report', async () => {
+        const getPage = Report.v1.getPage(localContext);
+        const qualifier = Qualifier.bySubjects(['case-1', 'place-shortcode']);
+
+        const page1 = await getPage(qualifier, null, 2);
+        expect(ids(page1)).to.deep.equal(['report-0', 'report-1']);
+        expect(page1.cursor).to.equal('2');
+
+        const page2 = await getPage(qualifier, page1.cursor, 2);
+        expect(ids(page2)).to.deep.equal(['report-2']);
+        expect(page2.cursor).to.be.null;
+      });
+
+      it('fills a page past the repeats and advances the cursor over the rows it consumed', async () => {
+        const getPage = Report.v1.getPage(localContext);
+        // Rows: r0 (case-1), r0..r11 (shortcode). A page of 3 reads [r0, r0, r1], keeps [r0, r1], then
+        // reads on to fill the page; the cursor lands on the row offset read, not on the docs kept.
+        const qualifier = Qualifier.bySubjects(['case-1', patientShortcode]);
+
+        const page1 = await getPage(qualifier, null, 3);
+        expect(ids(page1)).to.deep.equal(['report-0', 'report-1', 'report-2']);
+        expect(page1.cursor).to.equal('4');
+
+        const page2 = await getPage(qualifier, page1.cursor, 3);
+        expect(ids(page2)).to.deep.equal(['report-3', 'report-4', 'report-5']);
+        expect(page2.cursor).to.equal('7');
+      });
+
+      it('returns an empty page for a subject with no reports', async () => {
+        const getPage = Report.v1.getPage(localContext);
+
+        const page = await getPage(Qualifier.bySubjects(['no-such-subject']), null, 5);
+
+        expect(page.data).to.deep.equal([]);
+        expect(page.cursor).to.be.null;
       });
     });
 

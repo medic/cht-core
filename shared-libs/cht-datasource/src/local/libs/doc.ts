@@ -88,6 +88,21 @@ export const queryDocsByKey = (
   skip: number
 ): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, key, limit, skip, reduce: false });
 
+/**
+ * Queries a view for the docs emitted under any of the given keys. Rows are grouped in the order the
+ * keys are supplied rather than in the view's collation order, so `skip` only stays meaningful across
+ * pages while the caller keeps that order stable.
+ * @internal
+ */
+export const queryDocsByKeys = (
+  db: PouchDB.Database<Doc>,
+  view: string
+) => async (
+  keys: unknown[],
+  limit: number,
+  skip: number
+): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, keys, limit, skip, reduce: false });
+
 const queryDocIds = (
   db: PouchDB.Database<Doc>,
   view: string,
@@ -203,6 +218,35 @@ export const fetchAndFilterIds = (
     }
     const { size } = idSet;
     idSet.add(id);
+    return idSet.size !== size;
+  };
+
+  return fetchAndFilter(
+    getFunction,
+    filterFn,
+    limit
+  );
+};
+
+/**
+ * {@link fetchAndFilter} for docs that a view can emit more than once. A `keys` query returns one row per
+ * matching key, each carrying the whole doc, so a doc emitted under several of the requested keys comes
+ * back several times. On top of the given filter, a doc whose `_id` has already been accepted in this
+ * page is rejected, the way {@link fetchAndFilterIds} collapses repeated ids.
+ * @internal
+ */
+export const fetchAndFilterUniqueDocs = (
+  getFunction: (limit: number, skip: number) => Promise<Nullable<Doc>[]>,
+  filterFunction: (doc: Nullable<Doc>) => boolean,
+  limit: number,
+): ReturnType<typeof fetchAndFilter<Doc>> => {
+  const idSet = new Set<string>();
+  const filterFn = (doc: Nullable<Doc>): boolean => {
+    if (!doc || !filterFunction(doc)) {
+      return false;
+    }
+    const { size } = idSet;
+    idSet.add(doc._id);
     return idSet.size !== size;
   };
 
