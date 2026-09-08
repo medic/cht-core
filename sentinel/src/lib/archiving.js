@@ -6,6 +6,8 @@ const constants = require('@medic/constants');
 const environment = require('@medic/environment');
 const audit = require('@medic/audit');
 const contactTypesUtils = require('@medic/contact-types-utils');
+const { v7: uuid } = require('uuid');
+const config = require('../config');
 
 const PURGE_BATCH_SIZE = 1000;
 const FETCH_BATCH_SIZE = 100;
@@ -15,6 +17,8 @@ const JOB_LOG_STATUS = {
   COMPLETED: 'completed',
   FAILED: 'failed',
 };
+const TASK_EXPIRATION_PERIOD = 60; // days
+const TARGET_EXPIRATION_PERIOD = 6; // months
 
 let currentlyArchiving = false;
 
@@ -299,9 +303,110 @@ const processJob = async (job, deadline, indexCounter) => {
   }
 };
 
+const buildJobId = () => `${constants.PREFIXES.ARCHIVE_JOB}${uuid()}`;
+
+/**
+ * Saves one archive job doc to the sentinel db, carrying the ids as an attachment.
+ * @param {string[]} ids - doc ids for this job
+ * @returns {Promise<Object>} the saved job doc
+ */
+const persistJob = async (ids) => {
+  const doc = {
+    _id: buildJobId(),
+    date: Date.now(),
+    total: ids.length,
+    cursor: 0,
+    _attachments: {
+      [constants.ARCHIVE_IDS_ATTACHMENT]: {
+        content_type: 'text/plain',
+        data: Buffer.from(ids.join('\n'), 'utf8'),
+      },
+    },
+  };
+
+  await db.sentinel.put(doc);
+  return doc;
+};
+
+/**
+ * Queues and processes an archive job for the given ids. Returns whether another batch is worth
+ * fetching: false when there was nothing to archive, when the batch was short (the source is
+ * drained), or when the job did not complete — re-querying would return the same ids and queue
+ * a duplicate job, so the errored job is left for the next run to retry.
+ * @param {string[]} ids - doc ids to archive, at most PURGE_BATCH_SIZE
+ * @param {number} deadline - epoch ms after which no further batch is started
+ * @param {{ batches: number }} indexCounter - run-wide batch counter, see processJob
+ * @returns {Promise<boolean>}
+ */
+const archiveIds = async (ids, deadline, indexCounter) => {
+  if (!ids.length) {
+    return false;
+  }
+
+  const job = await persistJob(ids);
+  await processJob(job, deadline, indexCounter);
+  return job.cursor >= job.total && ids.length === PURGE_BATCH_SIZE;
+};
+
+/**
+ * Archives one batch of tasks in a terminal state whose emission ended more than
+ * TASK_EXPIRATION_PERIOD days ago.
+ * @returns {Promise<boolean>} whether another batch is worth fetching
+ */
+const archiveTasks = async (deadline, indexCounter) => {
+  const maximumEmissionEndDate = moment().subtract(TASK_EXPIRATION_PERIOD, 'days').format('YYYY-MM-DD');
+  const batch = await db.medic.query('medic/tasks_in_terminal_state', {
+    limit: PURGE_BATCH_SIZE,
+    end_key: maximumEmissionEndDate,
+  });
+  const ids = batch.rows.map(row => row.id);
+  return archiveIds(ids, deadline, indexCounter);
+};
+
+/**
+ * Archives one batch of targets whose reporting period is more than TARGET_EXPIRATION_PERIOD
+ * months old.
+ * @returns {Promise<boolean>} whether another batch is worth fetching
+ */
+const archiveTargets = async (deadline, indexCounter) => {
+  const lastAllowedReportingIntervalTag = moment().subtract(TARGET_EXPIRATION_PERIOD, 'months').format('YYYY-MM');
+  const batch = await db.medic.allDocs({
+    limit: PURGE_BATCH_SIZE,
+    start_key: 'target~',
+    end_key: `target~${lastAllowedReportingIntervalTag}~`,
+  });
+  const ids = batch.rows.map(row => row.id);
+  return archiveIds(ids, deadline, indexCounter);
+};
+
+/**
+ * Whether the given `archive.auto_archive` flag is set. The scheduler runs archiving even when
+ * no `archive` settings block exists, so every hop is optional.
+ * @param {string} field
+ * @returns {boolean}
+ */
+const isAutoArchiveEnabled = (field) => !!config.get('archive')?.auto_archive?.[field];
+const hasArchiveDuration = () => !!config.get('archive')?.duration;
+
+const processAutoArchive = async (deadline, indexCounter) => {
+  if (isAutoArchiveEnabled('tasks') || hasArchiveDuration()) {
+    await autoArchive(deadline, indexCounter, archiveTasks);
+    await autoArchive(deadline, indexCounter, archiveTargets);
+  }
+};
+
+const autoArchive = async (deadline, indexCounter, autoArchiveFn) => {
+  let nextBatch = true;
+  while (Date.now() < deadline && nextBatch) {
+    nextBatch = await autoArchiveFn(deadline, indexCounter);
+  }
+};
+
 /**
  * Drains the job queue in _id order until the deadline. Permanently failed jobs are deleted by
- * recordError, so everything in the queue is processable.
+ * recordError, so everything in the queue is processable. Once the queue is drained, and when
+ * `archive.auto_archive.tasks` or `archive.duration` is set, sweeps expired tasks and targets —
+ * the tasks flag intentionally covers both.
  * @param {number} deadline - epoch ms after which no further job is started
  * @returns {Promise<void>}
  */
@@ -316,6 +421,8 @@ const processQueue = async (deadline) => {
     startkey = job._id;
     await processJob(job, deadline, indexCounter);
   } while (Date.now() < deadline);
+
+  await processAutoArchive(deadline, indexCounter);
 };
 
 /**
