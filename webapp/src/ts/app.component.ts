@@ -8,6 +8,7 @@ import { setTheme as setBootstrapTheme } from 'ngx-bootstrap/utils';
 import { combineLatest, take } from 'rxjs';
 
 import { DBSyncService, SyncStatus } from '@mm-services/db-sync.service';
+import { MapTilesPrefetchService } from '@mm-services/map-tiles-prefetch.service';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { SessionService } from '@mm-services/session.service';
@@ -129,6 +130,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   constructor (
     private readonly dbSyncService:DBSyncService,
+    private readonly mapTilesPrefetchService:MapTilesPrefetchService,
     private readonly store:Store,
     private readonly translateService:TranslateService,
     private readonly languageService:LanguageService,
@@ -345,6 +347,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.setAppTitle();
     this.setupAndroidVersion();
     this.requestPersistentStorage();
+    this.mapTilesPrefetchService.init();
     this.startWealthQuintiles();
     this.initAnalyticsModules();
     this.initAndroidTaskNotifications();

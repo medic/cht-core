@@ -5,6 +5,7 @@ import Fuse from 'fuse.js';
 
 interface TaskWithLineage extends TaskEmission {
   lineageIds: string[];
+  geolocation?: { latitude: number; longitude: number };
 }
 
 const getGlobalState = (state): GlobalState => state.global || {};

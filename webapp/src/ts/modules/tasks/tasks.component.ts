@@ -11,6 +11,7 @@ import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
+import { isValidGeolocation } from '@mm-services/contact-geolocation.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
@@ -241,17 +242,27 @@ export class TasksComponent implements OnInit, AfterViewInit, OnDestroy {
     const ids = [ ...new Set(taskDocs.map(task => task.owner)) ];
     return this.lineageModelGeneratorService
       .reportSubjects(ids)
-      .then(subjects => new Map(subjects.map(subject => [subject._id, subject.lineage])));
+      .then(subjects => new Map(subjects.map(subject => [subject._id, subject])));
   }
 
   private getTaskLineage(subjects, task) {
-    const lineageData = (subjects.get(task.owner) || []).filter(Boolean);
+    const subject = subjects.get(task.owner);
+    const lineageData = (subject?.lineage || []).filter(Boolean);
     const lineageNames = lineageData.map(item => item?.name).filter(Boolean);
     const lineageIds = lineageData.map(item => item?._id).filter(Boolean);
+    const geolocation = this.getTaskGeolocation(subject);
 
     return {
       lineage: lineageNames,
       lineageIds: [task.owner, ...lineageIds],
+      ...(geolocation && { geolocation }),
     };
+  }
+
+  // the subject's own location, falling back to its parent's (a person's household)
+  private getTaskGeolocation(subject) {
+    return [subject?.doc, subject?.lineage?.[0]]
+      .map(doc => doc?.geolocation)
+      .find(isValidGeolocation);
   }
 }

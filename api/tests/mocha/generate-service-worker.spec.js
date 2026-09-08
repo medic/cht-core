@@ -6,6 +6,7 @@ const rewire = require('rewire');
 
 const db = require('../../src/db');
 const resources = require('../../src/resources');
+const csp = require('../../src/csp');
 const logger = require('@medic/logger');
 const loginController = require('../../src/controllers/login');
 const { DOC_IDS } = require('@medic/constants');
@@ -19,6 +20,10 @@ describe('generate service worker', () => {
   beforeEach(() => {
     sinon.stub(resources, 'staticPath').value('/absolute/path/to/build/static/');
     sinon.stub(resources, 'webappPath').value('/absolute/path/to/build/static/webapp/');
+    sinon.stub(csp, 'getDirectives').returns({ the: 'csp' });
+    sinon
+      .stub(fs.promises, 'readFile')
+      .callsFake((filePath) => Promise.resolve(`${filePath.split('/').pop()} content`));
     sinon.stub(loginController, 'renderLogin');
     sinon.stub(loginController, 'renderPasswordReset');
     sinon.stub(db.medic, 'get');
@@ -80,18 +85,29 @@ describe('generate service worker', () => {
         'login/images/*.svg',
       ],
       templatedURLs: {
-        '/': [ 'webapp/index.html' ],
-        '/medic/login': 'loginpage html',
-        '/medic/password-reset': 'passwordresetpage html',
-        '/medic/_design/medic/_rewrite/': [
-          'webapp/appcache-upgrade.html'
-        ],
+        '/': 'index.html content{"the":"csp"}',
+        '/medic/login': 'loginpage html{"the":"csp"}',
+        '/medic/password-reset': 'passwordresetpage html{"the":"csp"}',
+        '/medic/_design/medic/_rewrite/': 'appcache-upgrade.html content{"the":"csp"}',
       },
       ignoreURLParametersMatching: [/redirect/, /username/],
       modifyURLPrefix: {
         'webapp/': '/'
       },
-      maximumFileSizeToCacheInBytes: 31457280
+      maximumFileSizeToCacheInBytes: 31457280,
+      runtimeCaching: [{
+        urlPattern: /^https:\/\/vector\.openstreetmap\.org\//,
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'cht-map-tiles',
+          cacheableResponse: { statuses: [200] },
+          expiration: {
+            maxEntries: 2000,
+            maxAgeSeconds: 2592000,
+            purgeOnQuotaError: true,
+          },
+        },
+      }],
     }]);
 
     chai.expect(db.medic.get.callCount).to.equal(1);

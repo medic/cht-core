@@ -62,7 +62,8 @@
                     <div [attr.test-id]="field.label">
                       <label *ngIf="field.label">{{field.label | translate}}</label>
                       <p class="card-field-value" *ngIf="field.translate" translate [translateParams]="field.context">{{field.value}}</p>
-                      <p class="card-field-value" *ngIf="!field.translate && field.filter" [innerHTML]="field.value"></p>
+                      <mm-map class="card-field-value" *ngIf="!field.translate && field.filter === 'map'" [geolocation]="field.value"></mm-map>
+                      <p class="card-field-value" *ngIf="!field.translate && field.filter && field.filter !== 'map'" [innerHTML]="field.value"></p>
                       <p class="card-field-value" *ngIf="!field.translate && !field.filter">{{field.value}}</p>
                     </div>
                   </div>

@@ -10,6 +10,7 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 
 import { AppComponent } from '../../../src/ts/app.component';
 import { DBSyncService } from '@mm-services/db-sync.service';
+import { MapTilesPrefetchService } from '@mm-services/map-tiles-prefetch.service';
 import { LanguageService, SetLanguageService } from '@mm-services/language.service';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -228,6 +229,7 @@ describe('AppComponent', () => {
           provideAnimations(),
           provideMockStore({ selectors: mockedSelectors }),
           { provide: DBSyncService, useValue: dbSyncService },
+          { provide: MapTilesPrefetchService, useValue: { init: sinon.stub() } },
           { provide: TranslateService, useValue: translateService },
           { provide: LanguageService, useValue: languageService },
           { provide: SetLanguageService, useValue: setLanguageService },

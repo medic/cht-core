@@ -5,7 +5,8 @@
       <div>
         <p class="summary_label" translate *ngIf="field.label">{{field.label}}</p>
         <p *ngIf="field.translate" translate [translateParams]="field.context">{{field.value}}</p>
-        <p *ngIf="!field.translate && field.filter" [innerHTML]="field.value"></p>
+        <mm-map *ngIf="!field.translate && field.filter === 'map'" [geolocation]="field.value"></mm-map>
+        <p *ngIf="!field.translate && field.filter && field.filter !== 'map'" [innerHTML]="field.value"></p>
         <p *ngIf="!field.translate && !field.filter">{{field.value}}</p>
       </div>
     </div>
