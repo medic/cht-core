@@ -263,12 +263,15 @@ describe('local contact', () => {
       const contactType = 'person';
       const expectedResult = { cursor: 'bookmark', data: ['1', '2', '3'] };
       let queryViewByType: SinonStub;
+      let queryDocsByPhones: SinonStub;
       let queryViewFreetextByKey: SinonStub;
       let queryViewFreetextByRange: SinonStub;
       let queryViewTypeFreetextByKey: SinonStub;
       let queryViewTypeFreetextByRange: SinonStub;
       let fetchAndFilterIdsInner: SinonStub;
       let fetchAndFilterIdsOuter: SinonStub;
+      let fetchAndFilterInner: SinonStub;
+      let fetchAndFilterOuter: SinonStub;
       let queryNouveauFreetext: SinonStub;
       let useNouveauIndexes: SinonStub;
       let getContactTypeIds: SinonStub;
@@ -277,12 +280,17 @@ describe('local contact', () => {
         getContactTypeIds = sinon.stub(contactTypeUtils, 'getContactTypeIds').returns([contactType]);
 
         queryViewByType = sinon.stub();
+        queryDocsByPhones = sinon.stub();
         queryViewFreetextByKey = sinon.stub();
         queryViewTypeFreetextByKey = sinon.stub();
         const queryDocIdsByKeyStub = sinon.stub(LocalDoc, 'queryDocIdsByKey');
         queryDocIdsByKeyStub
           .withArgs(localContext.medicDb, 'medic-client/contacts_by_type')
           .returns(queryViewByType);
+        sinon
+          .stub(LocalDoc, 'queryDocsByKeys')
+          .withArgs(localContext.medicDb, 'medic-client/contacts_by_phone')
+          .returns(queryDocsByPhones);
         queryDocIdsByKeyStub
           .withArgs(localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext')
           .returns(queryViewFreetextByKey);
@@ -304,6 +312,11 @@ describe('local contact', () => {
         fetchAndFilterIdsOuter = sinon
           .stub(LocalDoc, 'fetchAndFilterIds')
           .returns(fetchAndFilterIdsInner);
+
+        fetchAndFilterInner = sinon.stub();
+        fetchAndFilterOuter = sinon
+          .stub(LocalDoc, 'fetchAndFilter')
+          .returns(fetchAndFilterInner);
 
         queryNouveauFreetext = sinon.stub();
         sinon
@@ -385,6 +398,110 @@ describe('local contact', () => {
           expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
           expect(fetchAndFilterIdsInner.notCalled).to.be.true;
+        });
+      });
+
+      describe('phones qualifier', () => {
+        // The phones arm queries the docs so it can drop rows that are not contacts, then maps to ids.
+        const docsPage = { cursor: 'bookmark', data: [{ _id: '1' }, { _id: '2' }, { _id: '3' }] };
+
+        beforeEach(() => {
+          useNouveauIndexes.resolves(false);
+          fetchAndFilterInner.resolves(docsPage);
+        });
+
+        ([
+          [null, 0],
+          ['1', 1]
+        ] as [string | null, number][]).forEach(([cursor, skip]) => {
+          it(`returns page of UUIDs for phones qualifier with cursor [${cursor}]`, async () => {
+            const phone = '+254712345678';
+            const qualifier = Qualifier.byPhones([phone]);
+
+            const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
+
+            expect(res).to.deep.equal(expectedResult);
+            expect(getContactTypeIds.notCalled).to.be.true;
+            expect(queryNouveauFreetext.notCalled).to.be.true;
+            expect(queryViewByType.notCalled).to.be.true;
+            expect(queryViewFreetextByKey.notCalled).to.be.true;
+            expect(queryViewFreetextByRange.notCalled).to.be.true;
+            expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
+            expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
+            expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
+            expect(fetchAndFilterOuter.calledOnce).to.be.true;
+            expect(fetchAndFilterOuter.args[0][2]).to.equal(limit);
+            expect(fetchAndFilterInner.calledOnceWithExactly(limit, skip)).to.be.true;
+            const pageFn = fetchAndFilterOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+            pageFn(limit, skip);
+
+            expect(queryDocsByPhones.calledWithExactly([phone], limit, skip)).to.be.true;
+          });
+        });
+
+        it('drops rows that are not contacts, matching the doc-returning path', async () => {
+          const unconfigured = {
+            _id: 'unconfigured', _rev: '1', type: 'contact', contact_type: 'not-in-settings'
+          };
+          const contact = { _id: 'person', _rev: '1', type: 'person' };
+          isContact.withArgs(settings, unconfigured).returns(false);
+          isContact.withArgs(settings, contact).returns(true);
+
+          await Contact.v1.getUuidsPage(localContext)(Qualifier.byPhones(['+254712345678']), null, limit);
+
+          const filterFn = fetchAndFilterOuter.firstCall.args[1] as (doc: unknown) => boolean;
+          expect(filterFn(unconfigured)).to.be.false;
+          expect(filterFn(contact)).to.be.true;
+        });
+
+        it('queries every requested phone number in one view call', async () => {
+          const qualifier = Qualifier.byPhones(['+254712345678', '+254798765432']);
+
+          await Contact.v1.getUuidsPage(localContext)(qualifier, null, limit);
+
+          const pageFn = fetchAndFilterOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+          pageFn(limit, 0);
+
+          expect(queryDocsByPhones.calledOnceWithExactly(
+            ['+254712345678', '+254798765432'], limit, 0
+          )).to.be.true;
+        });
+
+        it('does not normalize the phone number', async () => {
+          const qualifier = Qualifier.byPhones(['+1 234 567']);
+
+          await Contact.v1.getUuidsPage(localContext)(qualifier, null, limit);
+
+          const pageFn = fetchAndFilterOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+          pageFn(limit, 0);
+
+          expect(queryDocsByPhones.calledOnceWithExactly(['+1 234 567'], limit, 0)).to.be.true;
+        });
+
+        it('drops duplicate phone numbers even when the qualifier bypasses byPhones()', async () => {
+          const qualifier = { phones: ['+1234', '+1234', '+5678'] as [string, ...string[]] };
+
+          await Contact.v1.getUuidsPage(localContext)(qualifier, null, limit);
+
+          const pageFn = fetchAndFilterOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+          pageFn(limit, 0);
+
+          expect(queryDocsByPhones.calledOnceWithExactly(['+1234', '+5678'], limit, 0)).to.be.true;
+        });
+
+        it('throws for invalid cursor', async () => {
+          const qualifier = Qualifier.byPhones(['+254712345678']);
+          const cursor = 'not a number';
+
+          await expect(Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit))
+            .to.be.rejectedWith(
+              InvalidArgumentError,
+              `The cursor must be a string or null for first page: [${JSON.stringify(cursor)}]`
+            );
+
+          expect(queryDocsByPhones.notCalled).to.be.true;
+          expect(fetchAndFilterOuter.notCalled).to.be.true;
+          expect(fetchAndFilterInner.notCalled).to.be.true;
         });
       });
 
@@ -672,6 +789,8 @@ describe('local contact', () => {
       let getDocsByIdsOuter: SinonStub;
       let queryDocsByKeyInner: SinonStub;
       let queryDocsByKeyOuter: SinonStub;
+      let queryDocsByKeysInner: SinonStub;
+      let queryDocsByKeysOuter: SinonStub;
       let fetchAndFilterInner: SinonStub;
       let fetchAndFilterOuter: SinonStub;
       let getContactTypeIds: SinonStub;
@@ -681,6 +800,8 @@ describe('local contact', () => {
         getDocsByIdsOuter = sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
         queryDocsByKeyInner = sinon.stub();
         queryDocsByKeyOuter = sinon.stub(LocalDoc, 'queryDocsByKey').returns(queryDocsByKeyInner);
+        queryDocsByKeysInner = sinon.stub();
+        queryDocsByKeysOuter = sinon.stub(LocalDoc, 'queryDocsByKeys').returns(queryDocsByKeysInner);
         fetchAndFilterInner = sinon.stub();
         fetchAndFilterOuter = sinon.stub(LocalDoc, 'fetchAndFilter').returns(fetchAndFilterInner);
         getContactTypeIds = sinon.stub(contactTypeUtils, 'getContactTypeIds').returns([contactType]);
@@ -694,7 +815,7 @@ describe('local contact', () => {
 
         expect(res).to.deep.equal(expectedResult);
         expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
-        expect(queryDocsByKeyOuter.calledOnceWithExactly(
+        expect(queryDocsByKeyOuter.calledWithExactly(
           localContext.medicDb, 'medic-client/contacts_by_type'
         )).to.be.true;
         expect(fetchAndFilterOuter.calledOnce).to.be.true;
@@ -708,6 +829,41 @@ describe('local contact', () => {
         await getPageFn(limit, 0);
         expect(queryDocsByKeyInner.calledOnceWithExactly([contactType], limit, 0)).to.be.true;
         expect(getDocsByIdsInner.notCalled).to.be.true;
+      });
+
+      it('returns a page of contacts for the given phone numbers', async () => {
+        const phones: [string, ...string[]] = ['+254712345678', '+254798765432'];
+        const qualifier = Qualifier.byPhones(phones);
+        const expectedResult = { cursor: '2', data: [{ type: 'person' }] };
+        fetchAndFilterInner.resolves(expectedResult);
+
+        const res = await Contact.v1.getPage(localContext)(qualifier, cursor, limit);
+
+        expect(res).to.deep.equal(expectedResult);
+        expect(getContactTypeIds.notCalled).to.be.true;
+        expect(queryDocsByKeysOuter.calledWithExactly(
+          localContext.medicDb, 'medic-client/contacts_by_phone'
+        )).to.be.true;
+        expect(fetchAndFilterOuter.calledOnce).to.be.true;
+        const getPageFn = fetchAndFilterOuter.firstCall.args[0];
+        expect(getPageFn).to.be.a('function');
+        expect(fetchAndFilterInner.calledOnceWithExactly(limit, 0)).to.be.true;
+
+        await getPageFn(limit, 0);
+        expect(queryDocsByKeysInner.calledOnceWithExactly(phones, limit, 0)).to.be.true;
+        expect(queryDocsByKeyInner.notCalled).to.be.true;
+        expect(getDocsByIdsInner.notCalled).to.be.true;
+      });
+
+      it('drops duplicate phone numbers even when the qualifier bypasses byPhones()', async () => {
+        const qualifier = { phones: ['+1234', '+1234', '+5678'] as [string, ...string[]] };
+        fetchAndFilterInner.resolves({ cursor: null, data: [] });
+
+        await Contact.v1.getPage(localContext)(qualifier, cursor, limit);
+
+        const getPageFn = fetchAndFilterOuter.firstCall.args[0];
+        await getPageFn(limit, 0);
+        expect(queryDocsByKeysInner.calledOnceWithExactly(['+1234', '+5678'], limit, 0)).to.be.true;
       });
 
       it('throws an error if the contact type is invalid', async () => {

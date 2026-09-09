@@ -17,6 +17,33 @@ const buildIdsQualifier = (ids) => {
   return Qualifier.byIds(idsArray);
 };
 
+// Accepts `?phone=a,b` and `?phone=a&phone=b`, like `ids` above.
+const buildPhonesQualifier = (phone) => {
+  // `qs.parse` turns `?phone[a]=b` into an object, which has nothing to split.
+  if (!Array.isArray(phone) && typeof phone !== 'string') {
+    throw new InvalidArgumentError(`Invalid phones [${JSON.stringify(phone)}].`);
+  }
+  const phonesArray = (Array.isArray(phone) ? phone : phone.split(',')).filter(Boolean);
+  if (!phonesArray.length) {
+    throw new InvalidArgumentError(`Invalid phones [${JSON.stringify(phonesArray)}].`);
+  }
+  return Qualifier.byPhones(phonesArray);
+};
+
+const buildFreetextTypePhoneQualifier = (query) => {
+  if (query.phone) {
+    return buildPhonesQualifier(query.phone);
+  }
+  const qualifier = {};
+  if (query.freetext) {
+    Object.assign(qualifier, Qualifier.byFreetext(query.freetext));
+  }
+  if (query.type) {
+    Object.assign(qualifier, Qualifier.byContactType(query.type));
+  }
+  return qualifier;
+};
+
 /**
  * @openapi
  * tags:
@@ -81,7 +108,8 @@ module.exports = {
      *     operationId: v1ContactUuidGet
      *     description: >
      *       Returns a paginated array of contact identifier strings matching the given filter criteria.
-     *       At least one of `type` or `freetext` must be provided.
+     *       At least one of `type`, `freetext`, or `phone` must be provided. When `phone` is provided, it takes
+     *       precedence and `type` and `freetext` are ignored.
      *     tags: [Contact]
      *     x-since: 4.18.0
      *     x-permissions:
@@ -92,8 +120,8 @@ module.exports = {
      *         schema:
      *           type: string
      *         description: >
-     *           The contact_type id for the type of contacts to fetch. Required if `freetext` is not provided
-     *           and may be combined with `freetext`.
+     *           The contact_type id for the type of contacts to fetch. Required if `freetext` and `phone` are not
+     *           provided and may be combined with `freetext`.
      *       - in: query
      *         name: freetext
      *         schema:
@@ -101,7 +129,15 @@ module.exports = {
      *           minLength: 3
      *         description: >
      *           A search term for filtering contacts. Must be at least 3 characters and not contain whitespace.
-     *           Required if `type` is not provided and may be combined with `type`.
+     *           Required if `type` and `phone` are not provided and may be combined with `type`.
+     *       - in: query
+     *         name: phone
+     *         x-since: 5.3.0
+     *         schema:
+     *           type: string
+     *         description: >
+     *           A comma-separated list of phone numbers, each matched verbatim against the contact's `phone`
+     *           field. Required if `type` and `freetext` are not provided. Takes precedence over both.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitId'
      *     responses:
@@ -129,16 +165,12 @@ module.exports = {
      */
     getUuids: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
-      if (!req.query.freetext && !req.query.type) {
-        return serverUtils.error({ status: 400, message: 'Either query param freetext or type is required' }, req, res);
+      if (!req.query.freetext && !req.query.type && !req.query.phone) {
+        return serverUtils.error(
+          { status: 400, message: 'Either query param freetext, type or phone is required' }, req, res
+        );
       }
-      const qualifier = {};
-      if (req.query.freetext) {
-        Object.assign(qualifier, Qualifier.byFreetext(req.query.freetext));
-      }
-      if (req.query.type) {
-        Object.assign(qualifier, Qualifier.byContactType(req.query.type));
-      }
+      const qualifier = buildFreetextTypePhoneQualifier(req.query);
       const docs = await getContactIds(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
     }),
@@ -151,8 +183,9 @@ module.exports = {
      *     operationId: v1ContactGet
      *     description: >
      *       Returns a paginated array of contact records (persons and places) matching the given filter criteria.
-     *       At least one of `ids` or `type` must be provided. If both are provided, `ids` takes precedence over
-     *       `type`. Use the `cursor` returned in each response to retrieve subsequent pages.
+     *       At least one of `ids`, `type`, or `phone` must be provided. When more than one is provided the
+     *       precedence is `ids`, then `phone`, then `type`. Use the `cursor` returned in each response to retrieve
+     *       subsequent pages.
      *     tags: [Contact]
      *     x-since: 5.3.0
      *     x-permissions:
@@ -163,14 +196,22 @@ module.exports = {
      *         schema:
      *           type: string
      *         description: >
-     *           A comma-separated list of contact ids to fetch. Required if `type` is not provided. Takes
-     *           precedence over `type` when both are provided.
+     *           A comma-separated list of contact ids to fetch. Required if `type` and `phone` are not provided.
+     *           Takes precedence over `phone` and `type` when more than one is provided.
      *       - in: query
      *         name: type
      *         schema:
      *           type: string
      *         description: >
-     *           The contact_type id for the type of contacts to fetch. Required if `ids` is not provided.
+     *           The contact_type id for the type of contacts to fetch. Required if `ids` and `phone` are not
+     *           provided.
+     *       - in: query
+     *         name: phone
+     *         schema:
+     *           type: string
+     *         description: >
+     *           A comma-separated list of phone numbers, each matched verbatim against the contact's `phone`
+     *           field. Required if `ids` and `type` are not provided. Takes precedence over `type`.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitEntity'
      *     responses:
@@ -198,12 +239,19 @@ module.exports = {
      */
     getAll: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
-      if (!req.query.ids && !req.query.type) {
-        return serverUtils.error({ status: 400, message: 'Either query param ids or type is required' }, req, res);
+      if (!req.query.ids && !req.query.type && !req.query.phone) {
+        return serverUtils.error(
+          { status: 400, message: 'Either query param ids, type or phone is required' }, req, res
+        );
       }
-      const qualifier = req.query.ids
-        ? buildIdsQualifier(req.query.ids)
-        : Qualifier.byContactType(req.query.type);
+      let qualifier;
+      if (req.query.ids) {
+        qualifier = buildIdsQualifier(req.query.ids);
+      } else if (req.query.phone) {
+        qualifier = buildPhonesQualifier(req.query.phone);
+      } else {
+        qualifier = Qualifier.byContactType(req.query.type);
+      }
       const docs = await getContactDocs(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
     }),

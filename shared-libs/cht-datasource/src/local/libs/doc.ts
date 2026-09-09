@@ -88,6 +88,21 @@ export const queryDocsByKey = (
   skip: number
 ): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, key, limit, skip, reduce: false });
 
+/**
+ * Queries a view for the docs emitted under any of the given keys. Rows are grouped in the order the
+ * keys are supplied rather than in the view's collation order, so `skip` only stays meaningful across
+ * pages while the caller keeps that order stable.
+ * @internal
+ */
+export const queryDocsByKeys = (
+  db: PouchDB.Database<Doc>,
+  view: string
+) => async (
+  keys: unknown[],
+  limit: number,
+  skip: number
+): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, keys, limit, skip, reduce: false });
+
 const queryDocIds = (
   db: PouchDB.Database<Doc>,
   view: string,
