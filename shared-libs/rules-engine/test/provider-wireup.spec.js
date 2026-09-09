@@ -982,7 +982,7 @@ describe('provider-wireup integration tests', () => {
         expect(provider.commitTargetDoc.args[1][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
       });
 
-      it('should write target docs with Bikram Sambat tags when BS months are enabled', async () => {
+      it('should write target docs with Bikram Sambat tags when BS months are enabled and the Nepali locale is active', async () => {
         const previousLocale = moment.locale();
         moment.locale('ne');
 

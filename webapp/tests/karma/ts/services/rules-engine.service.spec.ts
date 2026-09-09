@@ -5,6 +5,7 @@ import sinon from 'sinon';
 import { assert, expect } from 'chai';
 import * as moment from 'moment';
 import 'moment/locale/ne';
+import 'moment/locale/ar';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DOC_IDS, PREFIXES, DOC_TYPES } from '@medic/constants';
 
@@ -1406,7 +1407,7 @@ describe('RulesEngineService', () => {
       expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
     });
 
-    it('should return BS interval tags when the Nepali locale is active', () => {
+    it('should return BS interval tags when a non-ASCII-digit locale is active', () => {
       const previousLocale = moment.locale();
       moment.locale('ne');
       try {
@@ -1416,6 +1417,21 @@ describe('RulesEngineService', () => {
         expect(service.getTargetIntervalTag(settingsDoc, ReportingPeriod.CURRENT)).to.equal('2081-11');
         expect(service.getTargetIntervalTag(settingsDoc, ReportingPeriod.PREVIOUS)).to.equal('2081-10');
         expect(moment.locale()).to.equal('ne');
+      } finally {
+        moment.locale(previousLocale);
+      }
+    });
+
+    it('should return BS interval tags when the Arabic locale is active', () => {
+      const previousLocale = moment.locale();
+      moment.locale('ar');
+      try {
+        uhcSettingsService.getUseBikramSambatMonths.returns(true);
+        service = TestBed.inject(RulesEngineService);
+
+        expect(service.getTargetIntervalTag(settingsDoc, ReportingPeriod.CURRENT)).to.equal('2081-11');
+        expect(service.getTargetIntervalTag(settingsDoc, ReportingPeriod.PREVIOUS)).to.equal('2081-10');
+        expect(moment.locale()).to.equal('ar');
       } finally {
         moment.locale(previousLocale);
       }
