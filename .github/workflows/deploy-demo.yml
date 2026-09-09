@@ -1,0 +1,133 @@
+name: Deploy Demo Instance
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to deploy (e.g. 4.20.0)'
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  DEMO_URL: ${{ secrets.DEMO_CHT_URL }}
+  DEMO_USER: ${{ secrets.DEMO_CHT_USER }}
+  DEMO_PASS: ${{ secrets.DEMO_CHT_PASS }}
+  AWS_REGION: 'eu-west-2'
+  EKS_CLUSTER: 'arn:aws:eks:eu-west-2:720541322708:cluster/dev-cht-eks'
+  HELM_NAMESPACE: 'demo-cht'
+  HELM_RELEASE: 'demo-cht'
+  NODE_VERSION: '22.15'
+
+jobs:
+  deploy-demo:
+    name: Deploy to demo
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Scope secrets to the `demo` GitHub environment so this workflow can only
+    # access deployment credentials when running against the demo target. This
+    # satisfies the zizmor `secrets-outside-env` audit and limits the blast
+    # radius if the workflow is ever misused.
+    environment: demo
+    env:
+      INPUT_TAG: ${{ github.event.inputs.tag }}
+
+    steps:
+      - name: Validate tag format
+        run: |
+          TAG="$INPUT_TAG"
+          if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Invalid tag format '$TAG'. Expected format: X.Y.Z (e.g. 4.20.0)"
+            exit 1
+          fi
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Checkout code at tag
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+        with:
+          ref: ${{ env.TAG }}
+          persist-credentials: false
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a  # v4
+        with:
+          aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: azure/setup-kubectl@776406bce94f63e41d621b960d78ee25c8b76ede  # v4
+      - uses: azure/setup-helm@b7246b12e77f7134dc2d460a3d5bad15bbe29390  # v4.1.0
+
+      - name: Configure kubectl context
+        run: |
+          aws eks update-kubeconfig \
+            --name dev-cht-eks \
+            --region $AWS_REGION
+          kubectl config use-context "$EKS_CLUSTER"
+          helm list -n "$HELM_NAMESPACE"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Deploy demo configuration
+        # Push config while the instance is still running the previous version.
+        # This ensures the critical config-push step is completed eagerly before
+        # the in-place helm upgrade begins, so a timeout later does not leave the
+        # instance in a half-configured state requiring manual intervention.
+        uses: ./.github/actions/deploy-conf
+        with:
+          directory: config/demo
+          hostname: ${{ secrets.DEMO_CHT_HOSTNAME }}
+          username: ${{ secrets.DEMO_CHT_USER }}
+          password: ${{ secrets.DEMO_CHT_PASS }}
+
+      - name: Download and update values.yaml
+        run: |
+          helm get values "$HELM_RELEASE" --namespace "$HELM_NAMESPACE" > values.yaml
+          sed -i "s/^cht_image_tag:.*/cht_image_tag: \"$TAG\"/" values.yaml
+          sed -i "s/^chtversion:.*/chtversion: \"$TAG\"/" values.yaml
+          grep -E 'cht_image_tag|chtversion' values.yaml
+        working-directory: scripts/build/helm
+
+      - name: Helm upgrade demo instance
+        # Performs an in-place upgrade (no staging) to avoid holding a CI worker
+        # hostage while staging completes, which can take well over 900 seconds.
+        # Brief downtime during index rebuilds is acceptable for the demo instance.
+        run: |
+          helm upgrade "$HELM_RELEASE" . \
+            --namespace "$HELM_NAMESPACE" \
+            -f values.yaml \
+            --wait \
+            --timeout 10m
+        working-directory: scripts/build/helm
+
+      - name: Poll monitoring for version confirmation
+        # Optional step: waits for the instance to report the new version.
+        # A timeout here is non-fatal because the blocking work (config push and
+        # helm upgrade) has already completed successfully above.
+        run: |
+          ELAPSED=0
+          TIMEOUT=900
+          INTERVAL=30
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            MONITORING_RESPONSE=$(curl -s \
+              -u "$DEMO_USER:$DEMO_PASS" \
+              "$DEMO_URL/api/v2/monitoring" 2>/dev/null || echo '{"error":"connection_failed"}')
+
+            CURRENT_VERSION=$(echo "$MONITORING_RESPONSE" | jq -r '.version.app // empty' 2>/dev/null || echo "")
+
+            if [ "$CURRENT_VERSION" = "$TAG" ]; then
+              echo "Demo instance is now running version $TAG"
+              exit 0
+            fi
+
+            echo "Current version: ${CURRENT_VERSION:-unknown}, waiting for $TAG... (${ELAPSED}s elapsed)"
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
+          done
+
+          echo "::warning::Version confirmation timed out after ${TIMEOUT}s. Current version: ${CURRENT_VERSION:-unknown}. The helm upgrade completed successfully; the instance may still be finalizing."
