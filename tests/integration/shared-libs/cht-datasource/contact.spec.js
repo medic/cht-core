@@ -508,6 +508,42 @@ describe('cht-datasource Contact', () => {
       });
     });
 
+    describe('byPhones with an unconfigured contact type', () => {
+      // The view emits any doc with a phone and a `type` in its hard-coded list, including `type: contact`
+      // docs whose `contact_type` is not configured in settings. Both phones paths must drop those rows,
+      // so a caller cannot get an id from the uuid path that `Contact.v1.get` then refuses to return.
+      const unconfigured = utils.deepFreeze({
+        _id: 'unconfigured-contact-type',
+        type: 'contact',
+        contact_type: 'not_a_configured_contact_type',
+        name: 'Unconfigured',
+        phone: '0788888888',
+        reported_date: new Date().getTime()
+      });
+
+      before(async () => {
+        await utils.saveDoc(unconfigured);
+      });
+
+      after(async () => {
+        await utils.deleteDoc(unconfigured._id);
+      });
+
+      it('is emitted by the view but returned by neither phones path', async () => {
+        const viewRows = await utils.requestOnTestDb({
+          path: '/_design/medic-client/_view/contacts_by_phone',
+          method: 'POST',
+          body: { keys: [ unconfigured.phone ] }
+        });
+        const uuidsPage = await Contact.v1.getUuidsPage(dataContext)(Qualifier.byPhones([ unconfigured.phone ]));
+        const docsPage = await Contact.v1.getPage(dataContext)(Qualifier.byPhones([ unconfigured.phone ]));
+
+        expect(viewRows.rows.map(row => row.id)).to.deep.equal([ unconfigured._id ]);
+        expect(uuidsPage.data).to.deep.equal([]);
+        expect(docsPage.data).to.deep.equal([]);
+      });
+    });
+
     describe('Contact.v1.getUuids', async () => {
       it('fetches all data by iterating through generator', async () => {
         const docs = [];

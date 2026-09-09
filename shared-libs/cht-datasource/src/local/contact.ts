@@ -5,7 +5,6 @@ import {
   getDocById,
   getDocsByIds,
   queryDocIdsByKey,
-  queryDocIdsByKeys,
   queryDocIdsByRange,
   queryDocsByKey,
   queryDocsByKeys
@@ -151,7 +150,7 @@ export namespace v1 {
   export const getUuidsPage = ({ medicDb, settings }: LocalDataContext) => {
     const queryNouveauFreetext = queryByFreetext(medicDb, 'contacts_by_freetext');
     const queryViewByType = queryDocIdsByKey(medicDb, 'medic-client/contacts_by_type');
-    const queryViewByPhones = queryDocIdsByKeys(medicDb, 'medic-client/contacts_by_phone');
+    const queryDocsByPhones = queryDocsByKeys(medicDb, 'medic-client/contacts_by_phone');
     const getOfflineFreetextQueryPageFn = getOfflineFreetextQueryFn(medicDb);
     const promisedUseNouveau = useNouveauIndexes(medicDb);
 
@@ -161,10 +160,18 @@ export namespace v1 {
       limit: number
     ): Promise<Page<string>> => {
       if (isPhonesQualifier(qualifier)) {
+        // The phone view emits any doc with a `phone`, so the rows are filtered through `isContact` to
+        // return the same contacts as the doc-returning path. That needs the docs, unlike the type view,
+        // whose key is itself a configured contact type.
         const skip = validateCursor(cursor);
         const keys = phoneViewKeys(qualifier);
-        const getPageFn = (limit: number, skip: number) => queryViewByPhones(keys, limit, skip);
-        return await fetchAndFilterIds(getPageFn, limit)(limit, skip);
+        const getPageFn = (limit: number, skip: number) => queryDocsByPhones(keys, limit, skip);
+        const page = await fetchAndFilter(
+          getPageFn,
+          (doc: Nullable<Doc>) => isContact(settings, doc),
+          limit
+        )(limit, skip);
+        return { data: page.data.map(doc => doc._id), cursor: page.cursor };
       }
 
       if (isContactTypeQualifier(qualifier)) {
