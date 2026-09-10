@@ -393,6 +393,75 @@ describe('Place API', () => {
         await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
       });
     });
+
+    describe('muted parent gate', () => {
+      const mutedDistrict = utils.deepFreeze({
+        _id: 'fixture:muted-district-place-spec',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+        name: 'Muted District for place.spec',
+        muted: '2025-01-01T00:00:00Z',
+      });
+      const gateUserPassword = 'passwordSUP3RS3CR37!';
+      const gateUser = utils.deepFreeze({
+        username: 'place-gate-user',
+        password: gateUserPassword,
+        place: place1._id,
+        contact: { _id: 'fixture:user:place-gate-user', name: 'Place Gate User' },
+        roles: ['national_admin'],
+      });
+
+      before(async () => {
+        await utils.saveDoc(mutedDistrict);
+        await utils.updatePermissions(
+          ['national_admin'],
+          ['can_create_places'],
+          [],
+          { ignoreReload: true }
+        );
+        await utils.createUsers([gateUser]);
+      });
+
+      after(async () => {
+        await utils.deleteDoc(mutedDistrict._id);
+        await utils.deleteUsers([gateUser]);
+        await utils.revertSettings(true);
+      });
+
+      it('rejects with 403 when parent is muted and role lacks can_create_contacts_under_muted_places', async () => {
+        const opts = {
+          ...postOptions,
+          body: {
+            type: CONTACT_TYPES.HEALTH_CENTER,
+            name: 'should-be-blocked',
+            parent: mutedDistrict._id,
+          },
+          auth: { username: gateUser.username, password: gateUserPassword },
+        };
+        await expect(utils.request(opts)).to.be.rejectedWith(
+          '403 - {"code":403,"error":"Insufficient privileges to create contacts on muted places"}'
+        );
+      });
+
+      it('allows creation when role has can_create_contacts_under_muted_places', async () => {
+        await utils.updatePermissions(
+          ['national_admin'],
+          ['can_create_contacts_under_muted_places'],
+          [],
+          { ignoreReload: true }
+        );
+        const opts = {
+          ...postOptions,
+          body: {
+            type: CONTACT_TYPES.HEALTH_CENTER,
+            name: 'should-be-allowed',
+            parent: mutedDistrict._id,
+          },
+          auth: { username: gateUser.username, password: gateUserPassword },
+        };
+        const placeDoc = await utils.request(opts);
+        expect(placeDoc).to.have.property('_id');
+      });
+    });
   });
 
   describe('PUT /api/v1/place/:uuid', async () => {

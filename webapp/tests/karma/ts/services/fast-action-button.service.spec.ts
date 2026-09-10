@@ -13,6 +13,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
 import { ReportsActions } from '@mm-actions/reports';
 import { UserSettingsService } from '@mm-services/user-settings.service';
+import { ContactMutedService } from '@mm-services/contact-muted.service';
 
 describe('Fast Action Button service', () => {
   let service: FastActionButtonService;
@@ -22,6 +23,7 @@ describe('Fast Action Button service', () => {
   let translateService;
   let translateFromService;
   let userSettingsService;
+  let contactMutedService;
   let documentMock;
   let domElement;
 
@@ -32,6 +34,7 @@ describe('Fast Action Button service', () => {
     translateService = { instant: sinon.stub().returnsArg(0) };
     translateFromService = { get: sinon.stub().returnsArg(0) };
     userSettingsService = { get: sinon.stub().resolves() };
+    contactMutedService = { getMuted: sinon.stub().returns(false) };
     domElement = {
       click: sinon.stub(),
       remove: sinon.stub(),
@@ -50,6 +53,7 @@ describe('Fast Action Button service', () => {
         { provide: TranslateService, useValue: translateService },
         { provide: TranslateFromService, useValue: translateFromService },
         { provide: UserSettingsService, useValue: userSettingsService },
+        { provide: ContactMutedService, useValue: contactMutedService },
         { provide: DOCUMENT, useValue: documentMock},
       ],
     });
@@ -466,6 +470,103 @@ describe('Fast Action Button service', () => {
         context,
       );
     });
+
+    it('should filter contact form actions when parent is muted and the permission is missing', async () => {
+      const mutedParent = { _id: 'parent-facility-1', muted: '2025-01-01T00:00:00Z' };
+      const context = {
+        parentFacilityId: 'parent-facility-1',
+        parentContact: mutedParent,
+        childContactTypes: [
+          { id: 'child-place-1', create_key: 'child-place-1-title', icon: 'child-place-1-icon' },
+          { id: 'child-person-1', create_key: 'child-person-1-title', icon: 'child-person-1-icon', person: true },
+        ],
+        communicationContext: {
+          sendTo: { _id: '1234' },
+          callbackOpenSendMessage: sinon.stub(),
+        },
+      };
+      contactMutedService.getMuted.returns(true);
+      authService.has.resolves(true);
+      authService.has.withArgs('can_create_contacts_under_muted_places').resolves(false);
+      responsiveService.isMobile.returns(false);
+
+      const actions = await service.getContactRightSideActions(context);
+
+      expect(actions).to.have.lengthOf(0);
+      expect(contactMutedService.getMuted.calledWith(mutedParent)).to.be.true;
+      expect(authService.has.args).to.deep.include([ 'can_create_contacts_under_muted_places' ]);
+    });
+
+    it('should keep contact form actions when parent is muted and the muted-places permission is granted', async () => {
+      const mutedParent = { _id: 'parent-facility-1', muted: '2025-01-01T00:00:00Z' };
+      const context = {
+        parentFacilityId: 'parent-facility-1',
+        parentContact: mutedParent,
+        childContactTypes: [
+          { id: 'child-place-1', create_key: 'child-place-1-title', icon: 'child-place-1-icon' },
+          { id: 'child-person-1', create_key: 'child-person-1-title', icon: 'child-person-1-icon', person: true },
+        ],
+        communicationContext: {
+          sendTo: { _id: '1234' },
+          callbackOpenSendMessage: sinon.stub(),
+        },
+      };
+      contactMutedService.getMuted.returns(true);
+      authService.has.resolves(true);
+      responsiveService.isMobile.returns(false);
+
+      const actions = await service.getContactRightSideActions(context);
+
+      expect(actions.map(a => a.id)).to.have.members([ 'child-place-1', 'child-person-1' ]);
+      expect(authService.has.args).to.deep.include([ 'can_create_contacts_under_muted_places' ]);
+    });
+
+    it('should not check the muted-places permission when parent is not muted', async () => {
+      const context = {
+        parentFacilityId: 'parent-facility-1',
+        parentContact: { _id: 'parent-facility-1' },
+        childContactTypes: [
+          { id: 'child-place-1', create_key: 'child-place-1-title', icon: 'child-place-1-icon' },
+        ],
+        communicationContext: {
+          sendTo: { _id: '1234' },
+          callbackOpenSendMessage: sinon.stub(),
+        },
+      };
+      contactMutedService.getMuted.returns(false);
+      authService.has.resolves(true);
+      responsiveService.isMobile.returns(false);
+
+      const actions = await service.getContactRightSideActions(context);
+
+      expect(actions).to.have.lengthOf(1);
+      expect(authService.has.args).to.not.deep.include([ 'can_create_contacts_under_muted_places' ]);
+    });
+
+    it('should not check the muted-places permission when the base create permission is missing', async () => {
+      const mutedParent = { _id: 'parent-facility-1', muted: '2025-01-01T00:00:00Z' };
+      const context = {
+        parentFacilityId: 'parent-facility-1',
+        parentContact: mutedParent,
+        childContactTypes: [
+          { id: 'child-place-1', create_key: 'child-place-1-title', icon: 'child-place-1-icon' },
+          { id: 'child-person-1', create_key: 'child-person-1-title', icon: 'child-person-1-icon', person: true },
+        ],
+        communicationContext: {
+          sendTo: { _id: '1234' },
+          callbackOpenSendMessage: sinon.stub(),
+        },
+      };
+      contactMutedService.getMuted.returns(true);
+      // the base pair is what fails here, so the muted branch must never be reached
+      authService.has.resolves(false);
+      responsiveService.isMobile.returns(false);
+
+      const actions = await service.getContactRightSideActions(context);
+
+      expect(actions).to.have.lengthOf(0);
+      expect(authService.has.args).to.not.deep.include([ 'can_create_contacts_under_muted_places' ]);
+    });
   });
 
   describe('getContactLeftSideActions()', () => {
@@ -557,6 +658,51 @@ describe('Fast Action Button service', () => {
         [ [ 'can_edit', 'can_create_places' ] ],
         [ [ 'can_edit', 'can_create_places' ] ],
       ]);
+    });
+
+    it('should filter contact form actions when the home place is muted and the permission is missing',
+      async () => {
+        const mutedHomePlace = { _id: 'parent-facility-1', muted: '2025-01-01T00:00:00Z' };
+        const context = {
+          parentFacilityId: 'parent-facility-1',
+          parentContact: mutedHomePlace,
+          childContactTypes: [
+            { id: 'child-place-1', create_key: 'child-place-1-title', icon: 'child-place-1-icon' },
+          ],
+        };
+        authService.has.resolves(true);
+        authService.has.withArgs('can_create_contacts_under_muted_places').resolves(false);
+        contactMutedService.getMuted.returns('2025-01-01T00:00:00Z');
+        responsiveService.isMobile.returns(false);
+
+        const actions = await service.getContactLeftSideActions(context);
+
+        // pins the `context.parentContact` forward: without it the muted branch is never reached
+        expect(actions).to.have.lengthOf(0);
+        expect(contactMutedService.getMuted.calledOnceWithExactly(mutedHomePlace)).to.be.true;
+        expect(authService.has.args).to.deep.include([ 'can_create_contacts_under_muted_places' ]);
+      });
+
+    it('should filter contact form actions when the home place has a muted ancestor', async () => {
+      // the home place's own `muted` is absent; the state is inherited. This is why the list
+      // component hydrates the doc instead of passing the summary straight through.
+      const inherited = { _id: 'parent-facility-1', parent: { _id: 'gp', muted: '2025-01-01T00:00:00Z' } };
+      const context = {
+        parentFacilityId: 'parent-facility-1',
+        parentContact: inherited,
+        childContactTypes: [
+          { id: 'child-place-1', create_key: 'child-place-1-title', icon: 'child-place-1-icon' },
+        ],
+      };
+      authService.has.resolves(true);
+      authService.has.withArgs('can_create_contacts_under_muted_places').resolves(false);
+      const realMutedService = new ContactMutedService();
+      contactMutedService.getMuted.callsFake((doc, lineage) => realMutedService.getMuted(doc, lineage));
+      responsiveService.isMobile.returns(false);
+
+      const actions = await service.getContactLeftSideActions(context);
+
+      expect(actions).to.have.lengthOf(0);
     });
 
     it('should build a correct route when parent ID is not provided', async () => {

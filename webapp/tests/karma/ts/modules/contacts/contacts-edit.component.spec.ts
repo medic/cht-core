@@ -9,6 +9,8 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClient } from '@angular/common/http';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
+import { ContactMutedService } from '@mm-services/contact-muted.service';
+import { AuthService } from '@mm-services/auth.service';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
@@ -35,6 +37,8 @@ describe('ContactsEdit component', () => {
   let route;
   let dbGet;
   let dbService;
+  let contactMutedService;
+  let authService;
   let createComponent;
   let fixture;
   let component;
@@ -49,6 +53,7 @@ describe('ContactsEdit component', () => {
   let getFormConfig;
   let fileReaderService;
   let geolocationService;
+  let consoleErrorMock;
   const loadContactSummary = sinon.stub();
 
   beforeEach(() => {
@@ -87,12 +92,14 @@ describe('ContactsEdit component', () => {
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     lineageModelGeneratorService = { contact: sinon.stub().resolves({ doc: {} }) };
+    contactMutedService = { getMuted: sinon.stub().returns(false) };
+    authService = { has: sinon.stub().resolves(true) };
     telemetryService = { record: sinon.stub() };
     chtDatasourceService = {
       bind: sinon.stub().withArgs(Contact.v1.get).returns(getContact)
     };
 
-    sinon.stub(console, 'error');
+    consoleErrorMock = sinon.stub(console, 'error');
 
     const mockedSelectors = [
       { selector: Selectors.getEnketoStatus, value: {} },
@@ -125,6 +132,8 @@ describe('ContactsEdit component', () => {
         { provide: XmlFormsService, useValue: { getFormConfig } },
         { provide: FileReaderService, useValue: fileReaderService },
         { provide: GeolocationService, useValue: geolocationService },
+        { provide: ContactMutedService, useValue: contactMutedService },
+        { provide: AuthService, useValue: authService },
         { provide: HttpClient, useValue: {} },
       ],
     });
@@ -212,6 +221,70 @@ describe('ContactsEdit component', () => {
       await expect(component.validateParentForCreateForm()).to.be.rejectedWith(
         'Parent contact with UUID missing_parent_uuid not found.'
       );
+    });
+
+    const setUpMutedParentTest = async () => {
+      await createComponent();
+      component.contact = { parent: 'parent_uuid', contact_type: 'person' };
+      getContact.withArgs(Qualifier.byUuid('parent_uuid')).resolves({
+        _id: 'parent_uuid',
+        type: CONTACT_TYPES.CLINIC,
+      });
+      contactTypesService.getTypeId.returns(CONTACT_TYPES.CLINIC);
+      contactTypesService.getChildren.resolves([{ id: 'person' }]);
+      lineageModelGeneratorService.contact.resolves({ doc: { _id: 'parent_uuid' }, lineage: [] });
+    };
+
+    it('should throw when the parent is muted and the permission is missing', async () => {
+      await setUpMutedParentTest();
+      contactMutedService.getMuted.returns('2025-01-01T00:00:00Z');
+      authService.has.withArgs('can_create_contacts_under_muted_places').resolves(false);
+
+      const err = await component.validateParentForCreateForm().catch(e => e);
+      expect(err.message).to.equal('Cannot create a contact under muted parent parent_uuid.');
+      // pins the shape the catch in getForm branches on, not only the message
+      expect(err.translationKey).to.equal('error.loading.form.no_authorized');
+      expect(err.isAuthorizationRefusal).to.be.true;
+    });
+
+    it('should throw when the parent is clean but an ancestor is muted', async () => {
+      await setUpMutedParentTest();
+      // the doc's own `muted` is absent; the muted state is inherited from the lineage. This is the
+      // whole reason the component reads the lineage rather than the raw doc.
+      lineageModelGeneratorService.contact.resolves({
+        doc: { _id: 'parent_uuid' },
+        lineage: [{ _id: 'grandparent_uuid', muted: '2025-01-01T00:00:00Z' }],
+      });
+      // real logic, so the case fails if the lineage argument is ever dropped
+      const realMutedService = new ContactMutedService();
+      contactMutedService.getMuted.callsFake((doc, lineage) => realMutedService.getMuted(doc, lineage));
+      authService.has.withArgs('can_create_contacts_under_muted_places').resolves(false);
+
+      const err = await component.validateParentForCreateForm().catch(e => e);
+      expect(err.message).to.equal('Cannot create a contact under muted parent parent_uuid.');
+    });
+
+    it('should skip the lineage read when the permission is granted', async () => {
+      await setUpMutedParentTest();
+      contactMutedService.getMuted.returns('2025-01-01T00:00:00Z');
+      authService.has.withArgs('can_create_contacts_under_muted_places').resolves(true);
+
+      await expect(component.validateParentForCreateForm()).to.eventually.be.fulfilled;
+      // the permission is checked first, so a holder never pays for the lineage read
+      expect(authService.has.args).to.deep.include([ 'can_create_contacts_under_muted_places' ]);
+      expect(lineageModelGeneratorService.contact.notCalled).to.be.true;
+      expect(contactMutedService.getMuted.notCalled).to.be.true;
+    });
+
+    it('should resolve when the parent is not muted and the permission is missing', async () => {
+      await setUpMutedParentTest();
+      contactMutedService.getMuted.returns(false);
+      authService.has.withArgs('can_create_contacts_under_muted_places').resolves(false);
+
+      await expect(component.validateParentForCreateForm()).to.eventually.be.fulfilled;
+      expect(lineageModelGeneratorService.contact
+        .calledOnceWithExactly('parent_uuid', { merge: false, hydrate: false })).to.be.true;
+      expect(contactMutedService.getMuted.calledOnceWithExactly({ _id: 'parent_uuid' }, [])).to.be.true;
     });
   });
 
@@ -412,6 +485,20 @@ describe('ContactsEdit component', () => {
         expect(handleA.cancel.callCount).to.equal(1);
         expect(component.geoHandle).to.equal(handleB);
       }));
+
+    it('should cancel its own geo handle when the form fails to load', async () => {
+      const handle = { cancel: sinon.stub() };
+      geolocationService.init.returns(handle);
+      // no contact type resolves, so initForm throws and lands in the catch
+      routeSnapshot.params = { type: 'person' };
+      contactTypesService.get.resolves();
+
+      await createComponent();
+      await fixture.whenStable();
+
+      expect(component.contentError).to.equal(true);
+      expect(handle.cancel.calledOnce).to.be.true;
+    });
   });
 
   describe('loading form', () => {
@@ -483,6 +570,33 @@ describe('ContactsEdit component', () => {
         expect(formService.render.callCount).to.equal(0);
         expect(component.enketoContact).to.deep.equal(undefined);
         expect(component.contentError).to.equal(true);
+      });
+
+      it('should refuse the add form when the parent is muted, without filing a feedback doc', async () => {
+        const consoleInfoMock = sinon.stub(console, 'info');
+        routeSnapshot.params = { type: 'person', parent_id: 'parent_id' };
+        contactTypesService.get.resolves({
+          create_form: 'person_create_form_id',
+          create_key: 'person_create_key',
+        });
+        contactTypesService.getChildren.resolves([{ id: 'person' }]);
+        getContact
+          .withArgs(Qualifier.byUuid('parent_id'))
+          .resolves({ _id: 'parent_id', type: 'clinic' });
+        lineageModelGeneratorService.contact.resolves({ doc: { _id: 'parent_id' }, lineage: [] });
+        contactMutedService.getMuted.returns('2025-01-01T00:00:00Z');
+        authService.has.withArgs('can_create_contacts_under_muted_places').resolves(false);
+
+        await createComponent();
+        await fixture.whenStable();
+
+        expect(component.errorTranslationKey).to.equal('error.loading.form.no_authorized');
+        expect(component.contentError).to.equal(true);
+        expect(formService.render.callCount).to.equal(0);
+        // a refused add route is a routine policy outcome, so it must not reach console.error,
+        // which the feedback service turns into a feedback doc
+        expect(consoleInfoMock.calledOnce).to.be.true;
+        expect(consoleErrorMock.notCalled).to.be.true;
       });
 
       it('should render form with parent', async () => {
