@@ -1,3 +1,6 @@
+const crypto = require('crypto');
+const { Readable } = require('stream');
+const { ReadableStream } = require('stream/web');
 const logger = require('@medic/logger');
 const db = require('../../db');
 const auth = require('../../auth');
@@ -8,22 +11,29 @@ const bulkDocsService = require('../replication/bulk-docs');
 
 const USER_DOC_PREFIX = 'org.couchdb.user:';
 const CHECKPOINT_PREFIX = '_local/offline-checkpoint:';
+// Docs are written to CouchDB in chunks so a single bulkDocs call stays bounded. This splits only
+// the WRITES: authorization runs once over the whole set (see ingest), because the offline filter
+// is not safe to feed in pieces.
+const WRITE_BATCH_SIZE = 100;
 
 // ---------------------------------------------------------------------------
-// Canonicalisation contract (the client MUST match this byte-for-byte).
+// Wire contract (the client MUST match this byte-for-byte).
 //
-// The signed message is:
-//   Buffer.concat([ Buffer.from(canonicalEnvelope, 'utf8'), payloadBytes ])
-// where:
-//   - canonicalEnvelope = a JSON.stringify of the envelope with object keys
-//     emitted in a STABLE (lexicographically sorted) order at every level.
-//     Sorting removes the ambiguity of insertion-order so the server and the
-//     signing device always hash the exact same bytes.
-//   - payloadBytes = Buffer.from(payload, 'base64') (the raw age ciphertext).
+// A request carries exactly ONE bundle:
+//   POST /api/v1/replication/data-bundle
+//   Content-Type: application/octet-stream
+//   X-Medic-Bundle-Envelope:  base64( utf8( JSON envelope ) )
+//   X-Medic-Bundle-Signature: base64( Ed25519 signature )
+//   <body> = the raw age ciphertext (NDJSON of the docs, encrypted to the server)
 //
-// `canonicalize` recurses so nested objects are also key-sorted; arrays keep
-// their order (order is meaningful in an array). Any non-object/array value is
-// serialised by JSON.stringify as-is.
+// The signed message is utf8(canonicalEnvelope) and NOTHING else. The envelope binds itself to
+// the body through `payload_sha256`, so the signature still covers the payload transitively while
+// staying verifiable before a single body byte is read.
+//
+// canonicalEnvelope = JSON.stringify of the envelope with object keys emitted in a STABLE
+// (lexicographically sorted) order at every level. Sorting removes the ambiguity of
+// insertion-order so the server and the signing device always hash the exact same bytes.
+// `canonicalize` recurses so nested objects are also key-sorted; arrays keep their order.
 // ---------------------------------------------------------------------------
 // Keys sort by UTF-16 code unit, NOT localeCompare: the client and the server must
 // produce byte-identical canonical forms for the signature to verify, and locale
@@ -56,9 +66,17 @@ const isValidEnvelope = (envelope) => {
     typeof envelope === 'object' &&
     isNonEmptyString(envelope.user) &&
     isNonEmptyString(envelope.device_id) &&
+    isNonEmptyString(envelope.payload_sha256) &&
     Number.isFinite(envelope.bundle_seq) &&
     Number.isFinite(envelope.start_seq) &&
-    Number.isFinite(envelope.end_seq);
+    Number.isFinite(envelope.end_seq) &&
+    Number.isFinite(envelope.payload_bytes);
+};
+
+const rejection = (code, reason) => {
+  const err = new Error(reason);
+  err.code = code;
+  return err;
 };
 
 // Reads the per-user _users doc. Device PUBLIC keys are stored on THIS doc (not the medic
@@ -74,27 +92,92 @@ const getUserDoc = async (username) => {
   }
 };
 
-const parseNdjson = (bytes) => {
-  const text = Buffer.from(bytes).toString('utf8');
-  return text
-    .split('\n')
-    .filter(line => line.trim().length > 0)
-    .map(line => JSON.parse(line));
-};
-
 // Builds the CHW's userCtx the same way the session middleware does: from the
 // username, `auth.getUserSettings` reads the _users doc (for roles) and the
 // medic user-settings doc, then hydrates facility_id/contact_id onto it.
 const buildUserCtx = async (username) => auth.getUserSettings({ name: username });
+
+// ---------------------------------------------------------------------------
+// Streaming ingest.
+//
+// The request body is piped straight into age, so the ciphertext is never held whole. On the way
+// past, every byte feeds a sha256 and a length counter that are checked against the envelope once
+// the stream ends. Nothing is written before that check passes.
+// ---------------------------------------------------------------------------
+const digestingStream = (body, digest) => {
+  const readable = typeof body?.pipe === 'function' ? body : Readable.from(body);
+  const chunks = readable[Symbol.asyncIterator]();
+  // `pull` is only called when age asks for more, so the request keeps its backpressure.
+  return new ReadableStream({
+    pull: async (controller) => {
+      const { value, done } = await chunks.next();
+      if (done) {
+        return controller.close();
+      }
+      digest.hash.update(value);
+      digest.bytes += value.length;
+      controller.enqueue(new Uint8Array(value));
+    },
+    cancel: () => readable.destroy(),
+  });
+};
+
+// Reads the decrypted stream as NDJSON. Lines straddle chunk boundaries, so a carry buffer holds
+// the partial trailing line until the next chunk completes it.
+const readDocs = async (plaintext) => {
+  const reader = plaintext.getReader();
+  const decoder = new TextDecoder();
+  const docs = [];
+  let carry = '';
+
+  const pushLine = (line) => {
+    if (line.trim().length) {
+      docs.push(JSON.parse(line));
+    }
+  };
+
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+    carry += decoder.decode(value, { stream: true });
+    const lines = carry.split('\n');
+    carry = lines.pop();
+    lines.forEach(pushLine);
+  }
+  pushLine(carry + decoder.decode());
+  return docs;
+};
+
+const decryptDocs = async (identity, body, digest) => {
+  const plaintext = await age.decryptStream(identity, digestingStream(body, digest));
+  return readDocs(plaintext);
+};
 
 // Ingest with new_edits:false to preserve the CHW's original revisions. The design relies on
 // CouchDB's revision-based dedup so a doc arriving via both P2P and direct sync does not
 // duplicate or conflict. Under new_edits:false CouchDB only returns entries for docs that
 // FAILED, so accepted = total - errors.
 const writeDocs = async (docs) => {
-  const results = await db.medic.bulkDocs(docs, { new_edits: false });
-  const errors = (results || []).filter(result => result?.error).length;
-  return docs.length - errors;
+  let accepted = 0;
+  for (let i = 0; i < docs.length; i += WRITE_BATCH_SIZE) {
+    const batch = docs.slice(i, i + WRITE_BATCH_SIZE);
+    const results = await db.medic.bulkDocs(batch, { new_edits: false });
+    accepted += batch.length - (results || []).filter(result => result?.error).length;
+  }
+  return accepted;
+};
+
+// Authorization runs ONCE over the whole doc set on purpose. `filterAllowedDocs` iterates until
+// the authorization context stops growing, so a report can become allowed on a later pass because
+// the contact granting access to it sits further down the array. Filtering chunk by chunk would
+// silently drop those docs.
+const ingest = async (username, docs) => {
+  const userCtx = await buildUserCtx(username);
+  const allowedDocs = await bulkDocsService.filterOfflineRequest(userCtx, docs);
+  const accepted = allowedDocs.length ? await writeDocs(allowedDocs) : 0;
+  return { accepted, rejected: docs.length - accepted };
 };
 
 const readCheckpointDoc = async (id) => {
@@ -108,131 +191,12 @@ const readCheckpointDoc = async (id) => {
   }
 };
 
-// ---------------------------------------------------------------------------
-// Contiguity contract (ratified: INGEST-ALL, CHECKPOINT-CONTIGUOUS).
-//
-// Every successfully verified+decrypted+validated bundle is ingested,
-// regardless of sequence gaps. The checkpoint, however, only advances through
-// the CONTIGUOUS run of ingested bundles starting from the stored checkpoint:
-//
-//   start from the stored checkpoint (0 if none). Repeatedly look for an
-//   ingested bundle whose `start_seq === currentCheckpoint`; if found, advance
-//   `currentCheckpoint = bundle.end_seq` and repeat. Stop at the first gap.
-//
-// A missing / failed / out-of-order bundle simply parks the checkpoint below
-// the gap. Its docs may already be ingested, but the checkpoint will not cross
-// the gap until the bundle that fills it arrives in a later request.
-// ---------------------------------------------------------------------------
-const advanceCheckpoint = (startCheckpoint, ingestedBundles) => {
-  let checkpoint = startCheckpoint;
-  const remaining = [...ingestedBundles];
-  let advanced = true;
-  while (advanced) {
-    advanced = false;
-    const nextIndex = remaining.findIndex(bundle => bundle.start_seq === checkpoint);
-    if (nextIndex !== -1) {
-      checkpoint = remaining[nextIndex].end_seq;
-      remaining.splice(nextIndex, 1);
-      advanced = true;
-    }
-  }
-  return checkpoint;
-};
-
 const persistCheckpoint = async (id, existing, checkpoint) => {
   const doc = { _id: id, seq: checkpoint };
   if (existing?._rev) {
     doc._rev = existing._rev;
   }
   await db.medic.put(doc);
-};
-
-const rejected = (envelope, reason) => ({
-  user: envelope?.user,
-  device_id: envelope?.device_id,
-  bundle_seq: envelope?.bundle_seq,
-  status: 'rejected',
-  reason,
-});
-
-// Processes a single bundle in isolation. Never throws for one bad bundle -
-// any failure becomes a `rejected` result so the rest of the batch proceeds.
-// Verifies the bundle signature and decrypts its payload. Returns `{ docs }` on success, or
-// `{ reason }` naming why the bundle was rejected. The server's PRIVATE decryption key for this
-// device lives in the secureSettings vault, keyed by (user, device_id); its absence means the
-// server never registered keys for this device, so we cannot decrypt and treat it as unknown.
-const verifyAndDecrypt = async (envelope, payload, signature, deviceEntry) => {
-  const payloadBytes = Buffer.from(payload || '', 'base64');
-  const message = Buffer.concat([Buffer.from(canonicalize(envelope), 'utf8'), payloadBytes]);
-  if (!(await signing.verify(deviceEntry.signing_public_key, signature, message))) {
-    return { reason: 'bad signature' };
-  }
-
-  const serverPrivateKeys = await serverKey.getServerPrivateKeys(envelope.user, envelope.device_id);
-  if (!serverPrivateKeys?.encryption) {
-    return { reason: 'unknown device' };
-  }
-
-  try {
-    const plaintext = await age.decrypt(serverPrivateKeys.encryption, payloadBytes);
-    return { docs: parseNdjson(plaintext) };
-  } catch (err) {
-    logger.warn(
-      'offline-data-bundle: failed to decrypt/parse payload for %s/%s: %o',
-      envelope.user,
-      envelope.device_id,
-      err
-    );
-    return { reason: 'corrupt payload' };
-  }
-};
-
-const processBundle = async (bundle) => {
-  const { envelope, payload, signature } = bundle || {};
-  if (!isValidEnvelope(envelope)) {
-    return rejected(envelope, 'invalid envelope');
-  }
-
-  const userDoc = await getUserDoc(envelope.user);
-  const deviceEntry = userDoc?.keys_by_device?.[envelope.device_id];
-  if (!deviceEntry) {
-    return rejected(envelope, 'unknown device');
-  }
-
-  const unpacked = await verifyAndDecrypt(envelope, payload, signature, deviceEntry);
-  if (unpacked.reason) {
-    return rejected(envelope, unpacked.reason);
-  }
-
-  const userCtx = await buildUserCtx(envelope.user);
-  const allowedDocs = await bulkDocsService.filterOfflineRequest(userCtx, unpacked.docs);
-  const accepted = allowedDocs.length ? await writeDocs(allowedDocs) : 0;
-
-  return {
-    user: envelope.user,
-    device_id: envelope.device_id,
-    bundle_seq: envelope.bundle_seq,
-    start_seq: envelope.start_seq,
-    end_seq: envelope.end_seq,
-    status: 'ingested',
-    accepted,
-    rejected: unpacked.docs.length - accepted,
-  };
-};
-
-const groupKey = (result) => `${result.user} ${result.device_id}`;
-
-// Groups ingested bundles per (user, device) so each group settles one checkpoint.
-const groupByDevice = (ingested) => {
-  const groups = new Map();
-  for (const result of ingested) {
-    const key = groupKey(result);
-    if (!groups.has(key)) {
-      groups.set(key, { user: result.user, device_id: result.device_id, bundles: [] });
-    }
-    groups.get(key).bundles.push(result);
-  }
-  return groups;
 };
 
 // ---------------------------------------------------------------------------
@@ -254,70 +218,116 @@ const groupByDevice = (ingested) => {
 // seq (it has no signing key) nor read the checkpoint (it has no decryption
 // identity), which is what prevents a taxi from tricking the CHW into skipping
 // unsent data.
-//
-// The server signing private key and the device encryption public key are an
-// invariant here: this group came from ingested bundles, which only ingest when
-// the device and its keys were present.
 // ---------------------------------------------------------------------------
-const sealCheckpoint = async (user, deviceId, seq) => {
-  const serverPrivateKeys = await serverKey.getServerPrivateKeys(user, deviceId);
-  const userDoc = await getUserDoc(user);
-  const deviceEntry = userDoc.keys_by_device[deviceId];
-
+const sealCheckpoint = async (keys, user, deviceId, seq) => {
   const inner = { seq, user, device_id: deviceId };
   const innerBytes = Buffer.from(JSON.stringify(inner), 'utf8');
-  const signature = await signing.sign(serverPrivateKeys.signing, innerBytes);
+  const signature = await signing.sign(keys.serverSigningKey, innerBytes);
   const signed = Buffer.from(JSON.stringify({ checkpoint: inner, signature }), 'utf8');
-  const ciphertext = await age.encrypt(deviceEntry.encryption_public_key, signed);
+  const ciphertext = await age.encrypt(keys.deviceEncryptionKey, signed);
   return Buffer.from(ciphertext).toString('base64');
 };
 
-// Advances and persists one (user, device) checkpoint through its contiguous run, returning the
-// aggregate result for that device. The _local checkpoint doc keeps the plain numeric seq; the
-// `checkpoint` returned to the caller is the sealed token (see sealCheckpoint).
-const settleCheckpoint = async (group) => {
-  const id = `${CHECKPOINT_PREFIX}${group.user}:${group.device_id}`;
+// ---------------------------------------------------------------------------
+// Contiguity contract (ratified: CHECKPOINT-CONTIGUOUS).
+//
+// The checkpoint only advances when this bundle starts exactly where the stored checkpoint left
+// off. A bundle that arrives out of order still has its docs ingested, but parks the checkpoint
+// below the gap until the bundle that fills it turns up in a later request.
+// ---------------------------------------------------------------------------
+const settleCheckpoint = async (keys, envelope) => {
+  const id = `${CHECKPOINT_PREFIX}${envelope.user}:${envelope.device_id}`;
   const existing = await readCheckpointDoc(id);
-  const startCheckpoint = (existing && Number.isFinite(existing.seq)) ? existing.seq : 0;
-  const seq = advanceCheckpoint(startCheckpoint, group.bundles);
-  await persistCheckpoint(id, existing, seq);
-  const checkpoint = await sealCheckpoint(group.user, group.device_id, seq);
+  const current = (existing && Number.isFinite(existing.seq)) ? existing.seq : 0;
 
+  let seq = current;
+  if (envelope.start_seq === current) {
+    seq = envelope.end_seq;
+    await persistCheckpoint(id, existing, seq);
+  }
+  return sealCheckpoint(keys, envelope.user, envelope.device_id, seq);
+};
+
+// Resolves both halves of the per-(user, device) key material: the device's registered public keys
+// from the _users doc, and the server's private keys for that device from the secureSettings
+// vault. Either being absent means the server never registered this device.
+const getKeys = async (envelope) => {
+  const userDoc = await getUserDoc(envelope.user);
+  const deviceEntry = userDoc?.keys_by_device?.[envelope.device_id];
+  const serverPrivateKeys = deviceEntry &&
+    await serverKey.getServerPrivateKeys(envelope.user, envelope.device_id);
+  if (!deviceEntry || !serverPrivateKeys?.encryption) {
+    throw rejection(403, 'Unknown device.');
+  }
   return {
-    user: group.user,
-    device_id: group.device_id,
-    checkpoint,
-    accepted: group.bundles.reduce((sum, bundle) => sum + bundle.accepted, 0),
-    rejected: group.bundles.reduce((sum, bundle) => sum + bundle.rejected, 0),
+    deviceSigningKey: deviceEntry.signing_public_key,
+    deviceEncryptionKey: deviceEntry.encryption_public_key,
+    serverEncryptionKey: serverPrivateKeys.encryption,
+    serverSigningKey: serverPrivateKeys.signing,
   };
 };
 
+// The envelope carries the payload's digest, so verifying the signature also pins the body. This
+// runs BEFORE the body is touched: an unsigned or misattributed bundle costs us nothing.
+const verifyEnvelope = async (keys, envelope, signature) => {
+  const message = Buffer.from(canonicalize(envelope), 'utf8');
+  if (!(await signing.verify(keys.deviceSigningKey, signature, message))) {
+    throw rejection(403, 'Bad signature.');
+  }
+};
+
+const assertPayloadMatchesEnvelope = (envelope, digest) => {
+  const actual = digest.hash.digest('base64');
+  if (actual !== envelope.payload_sha256 || digest.bytes !== envelope.payload_bytes) {
+    throw rejection(400, 'Payload does not match the envelope.');
+  }
+};
+
+const unpack = async (keys, envelope, body) => {
+  const digest = { hash: crypto.createHash('sha256'), bytes: 0 };
+  let docs;
+  try {
+    docs = await decryptDocs(keys.serverEncryptionKey, body, digest);
+  } catch (err) {
+    logger.warn(
+      'offline-data-bundle: failed to decrypt/parse payload for %s/%s: %o',
+      envelope.user,
+      envelope.device_id,
+      err
+    );
+    throw rejection(400, 'Corrupt payload.');
+  }
+  // Only once the whole stream has gone by do we know it is the payload the envelope signed.
+  // Nothing has been written yet, so a mismatch costs a rejection and no cleanup.
+  assertPayloadMatchesEnvelope(envelope, digest);
+  return docs;
+};
+
 module.exports = {
-  // Processes an array of `{ envelope, payload, signature }` bundles.
-  // Ingests every valid bundle; advances a per-(user, device) checkpoint
-  // through the contiguous run only. Returns one aggregate result per
-  // (user, device) ingested, plus each rejected bundle surfaced individually.
-  process: async (bundles = []) => {
-    const perBundle = [];
-    for (const bundle of bundles) {
-      try {
-        perBundle.push(await processBundle(bundle));
-      } catch (err) {
-        logger.error('offline-data-bundle: unexpected error processing bundle: %o', err);
-        perBundle.push(rejected(bundle?.envelope, 'processing error'));
-      }
+  // Processes ONE bundle: `envelope` and `signature` come from the request headers, `body` is the
+  // raw age ciphertext stream. Throws a rejection carrying an HTTP `code` when the bundle cannot be
+  // trusted; otherwise ingests the docs and returns the sealed checkpoint for the peer device.
+  process: async (envelope, signature, body) => {
+    if (!isValidEnvelope(envelope)) {
+      throw rejection(400, 'Invalid envelope.');
     }
 
-    const ingested = perBundle.filter(result => result.status === 'ingested');
-    const rejections = perBundle.filter(result => result.status === 'rejected');
+    const keys = await getKeys(envelope);
+    await verifyEnvelope(keys, envelope, signature);
 
-    const results = [];
-    for (const group of groupByDevice(ingested).values()) {
-      results.push(await settleCheckpoint(group));
-    }
-    // Surface per-bundle rejections alongside the per-device aggregates.
-    results.push(...rejections);
+    const docs = await unpack(keys, envelope, body);
+    const { accepted, rejected } = await ingest(envelope.user, docs);
+    const checkpoint = await settleCheckpoint(keys, envelope);
 
-    return { results };
+    return {
+      user: envelope.user,
+      device_id: envelope.device_id,
+      bundle_seq: envelope.bundle_seq,
+      start_seq: envelope.start_seq,
+      end_seq: envelope.end_seq,
+      accepted,
+      rejected,
+      checkpoint,
+    };
   },
 };

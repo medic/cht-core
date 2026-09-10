@@ -81,7 +81,6 @@ const cookie = require('./services/cookie');
 const deployInfo = require('./services/deploy-info');
 const dbDocHandler = require('./controllers/db-doc');
 const replication = require('./controllers/replication');
-const offlineDataBundle = require('./controllers/offline-data-bundle');
 const app = express.Router({ strict: true });
 const asyncLocalStorage = require('./services/async-storage');
 const moment = require('moment');
@@ -934,7 +933,7 @@ app.post(
   authorization.onlineUserPassThrough,
   replication.getDocIdsToDelete,
 );
-app.postJson('/api/v1/replication/data-bundle', offlineDataBundle.request);
+app.post('/api/v1/replication/data-bundle', replication.dataBundle);
 
 const metaRoutePrefix = `/${environment.db}-user-*"name"-meta/`;
 
