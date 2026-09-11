@@ -44,6 +44,13 @@ describe('Performing an upgrade', () => {
     return logs.rows.map(row => row.doc);
   };
 
+  const clearUpgradeLogs = async () => {
+    const logs = await getUpgradeLogs();
+    logs.shift(); // first item is always the upgrade_log for the install
+    logs.forEach(log => log._deleted = true);
+    await utils.logsDb.bulkDocs(logs);
+  };
+
   const deleteUpgradeLogs = async () => {
     const logs = await getUpgradeLogs();
     logs.forEach(log => log._deleted = true);
@@ -51,6 +58,7 @@ describe('Performing an upgrade', () => {
   };
 
   before(async () => {
+    await clearUpgradeLogs();
     await utils.saveDocs([...docs.places, ...docs.clinics, ...docs.persons, ...docs.reports]);
     await utils.createUsers([docs.user]);
 
@@ -69,7 +77,7 @@ describe('Performing an upgrade', () => {
 
   after(async () => {
     await utils.deleteUsers([docs.user]);
-    await utils.revertDb([/^form:/], true);
+    await utils.revertDb();
   });
 
   it('should have an upgrade_log after installing the app, without logs upgrade is aborted', async () => {
