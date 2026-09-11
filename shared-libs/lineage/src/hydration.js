@@ -538,5 +538,6 @@ module.exports = function(Promise, DB) {
     fillContactsInDocs,
     fillParentsInDocs,
     fetchContacts,
+    chainIds,
   };
 };
