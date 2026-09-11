@@ -20,16 +20,16 @@ assignees: ''
 
 When development is ready to begin one of the maintainers should be nominated as a Release Manager. They will be responsible for making sure the following tasks are completed though not necessarily completing them.
 
-- [ ] Checkout to a new `<issue>-update-version` branch (eg: `1234-update-version`) and set the version number in the `package.json` and `package-lock.json`. The easiest way to do this is to use `npm --no-git-tag-version version <major|minor>`. Once the version is updated, submit a PR to `master` branch.
+- [ ] Submit a PR with two changes. Ensure it is merged to `master` before proceeding:
+  *  Run `npm --no-git-tag-version version <major>.<minor>.<patch>` which sets version number in `package.json` and `package-lock.json`.
+  * Run the [helm chart build script](https://github.com/medic/cht-core/blob/master/scripts/build/helm/package-chart.sh) (eg `./package-chart.sh 5.3.0`). This creates a tarball and updates `index.yaml` for the helm chart. Both will get automatically published when the final version is tagged below.
 - [ ] Ensure that issues associated with commits merged to `master` since the last release are closed and mapped to the milestone.
 
 # Releasing - Release Manager
 
 Once the PR has been merged into `master`, and the `master` branch has the new version number, then the release process can start:
 
-- [ ] Submit a PR with two changes. Ensure it is merged to `master` before proceeding:
-  *  Run `npm --no-git-tag-version version <major>.<minor>.<patch>` which sets version number in `package.json` and `package-lock.json`.
-  * Run the [helm chart build script](https://github.com/medic/cht-core/blob/master/scripts/build/helm/package-chart.sh) (eg `./package-chart.sh 5.3.0`). This creates a tarball and updates `index.yaml` for the helm chart. Both will get automatically published when the final version is tagged below.
+- [ ] Create a new release branch from `master` named `<major>.<minor>.x`. Notify the community by creating a post titled `<major>.<minor>.<patch> Beta Releases` in the CHT forum using [this template](https://forum.communityhealthtoolkit.org/new-topic?title=%3Cmajor%3E.%3Cminor%3E.%3Cpatch%3E%20Beta%20Releases&body=I%27ve%20just%20created%20the%20%60%3Cmajor%3E.%3Cminor%3E.x%60%20release%20branch.%20Please%20be%20aware%20that%20any%20further%20changes%20intended%20for%20this%20release%20will%20have%20to%20be%20merged%20to%20%60master%60%20then%20backported.%20Thanks%21&category=development).
 - [ ] Build a beta named `<major>.<minor>.<patch>-beta.1` by creating a lightweight git tag (e.g. `git tag <major>.<minor>.<patch>-beta.1`) and then push it (e.g. `git push origin tag  <major>.<minor>.<patch>-beta.1`).
 - [ ] Once the CI completes successfully and images are built, notify the community by adding a comment in the forum post created above using this template:
 ```
@@ -50,7 +50,7 @@ If all is good, then in 24h, I will start the release. Thanks!
 - [ ] Create a [new release](https://github.com/medic/cht-core/releases/new) in GitHub, with the naming convention `<major>.<minor>.<patch>`, from the release branch created above as the target branch. Click on the "Choose a tag" dropdown and create a tag for the release with the naming convention `<major>.<minor>.<patch>`. Add a link to the release notes in the description of the release.
 - [ ] Once you publish the release, confirm the release build completes successfully and the new release is available on the `staging.dev.medicmobile.org` by running this `curl` call. Ensure you see the correct `id: medic:medic:<major>.<minor>.<patch>`:
    ```
-curl -s https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases | jq '[.rows[] | select(.key[0]=="release")] | max_by(.value.time)'
+   curl -s https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases | jq '[.rows[] | select(.key[0]=="release")] | max_by(.value.time)'
    ```
 - [ ] Upgrade the [demo](https://demo-cht.dev.medicmobile.org/) instance to the newly released version.
   - [ ] From the "App Management" admin console (`medic` user creds in 1Password), go to "Upgrades" and stage the upgrade for this version.

@@ -12,16 +12,17 @@ assignees: ''
 - [ ] Create an GH Milestone for the release and add this issue to it.
 - [ ] Add all the issues to be worked on to the Milestone.
 - [ ] Ensure that all issues are labeled correctly, particularly ensure that "Regressions" are labeled with "Affects: <version>" labels. The "Affects" label is used in a link in the Known Issues section of the release notes of that version so it has to match exactly. To make sure the label is correct go to the [release notes](https://docs.communityhealthtoolkit.org/releases/#release-notes) and ensure the issue is listed.
+- [ ] Assign a maintainer as Release Manager for this release.
 
 # Development - Release Manager
 
 When development is ready to begin one of the maintainers should be nominated as a Release Manager. They will be responsible for making sure the following tasks are completed though not necessarily completing them.
 
-- [ ] Submit a PR with two changes. Ensure it is merged to `master` before proceeding:
-  *  Run `npm --no-git-tag-version version <major>.<minor>.<patch>` which sets version number in `package.json` and `package-lock.json`.
-  * Run the [helm chart build script](https://github.com/medic/cht-core/blob/master/scripts/build/helm/package-chart.sh) (eg `./package-chart.sh 5.3.0`). This creates a tarball and updates `index.yaml` for the helm chart. Both will get automatically published when the final version is tagged below.
-- [ ] Ensure that issues from merged commits are closed and mapped to a milestone.
-- [ ] Write an update in the #stewardship-team Slack channel summarising development and identifying any blockers (the [milestone-status](https://github.com/medic/support-scripts/tree/master/milestone-status) script can be used to get a breakdown of the issues). The Release Manager is to update this every week until the version is released.
+- [ ] Ensure all tickets in the Milestone are closed and merged to `master`.
+- [ ] Check out the target release branch `<major>.<minor>.x`. For example if you're patching `5.2.0`, you would check out `5.2.x` branch.
+- [ ] Cherry-pick all commits from `master` into the target release branch that fix the issues in this patch release.
+- [ ]  Run `npm --no-git-tag-version version <major>.<minor>.<patch>` which sets version number in `package.json` and `package-lock.json`. Commit these changes before the next step.
+- [ ] Run the [helm chart build script](https://github.com/medic/cht-core/blob/master/scripts/build/helm/package-chart.sh) (eg `./package-chart.sh 5.3.0`). This creates a tarball and updates `index.yaml` for the helm chart. Commit these changes as we'll need to cherry-pick it later to `master`.
 
 # Releasing - Release Manager
 
@@ -39,10 +40,11 @@ Once all issues have been merged into `master` then the release process can star
   - [ ] Document any required or recommended upgrades to our other products (eg: cht-conf, cht-gateway, cht-android).
   - [ ] Edit the main release notes `_index.md` [page](https://github.com/medic/cht-docs/blob/main/content/en/releases/_index.md) to add the release to the [Supported versions](https://docs.communityhealthtoolkit.org/core/releases/#supported-versions) and update the EOL date of the previous release. Update the status of any releases that are past their End Of Life date. Also add a link in the `Release Notes` section to the new release page, being sure to include the date of the release.
   - [ ] Ensure that the release notes PR is merged before moving to next step.
+- [ ] To ensure helm charts are published, open a PR against `master` to cherry-pick the helm chart commit from the target release branch. Make sure this PR is merged before proceeding. 
 - [ ] Create a [new release](https://github.com/medic/cht-core/releases/new) in GitHub, with the naming convention `<major>.<minor>.<patch>`, from the release branch created above as the target branch. Click on the "Choose a tag" dropdown and create a tag for the release with the naming convention `<major>.<minor>.<patch>`. Add a link to the release notes page in the description of the release.
 - [ ] Once you publish the release, confirm the release build completes successfully and the new release is available on the `staging.dev.medicmobile.org` by running this `curl` call. Ensure you see the correct `id: medic:medic:<major>.<minor>.<patch>`:
    ```
-curl -s https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases | jq '[.rows[] | select(.key[0]=="release")] | max_by(.value.time)'
+   curl -s https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases | jq '[.rows[] | select(.key[0]=="release")] | max_by(.value.time)'
    ```
 - [ ] Upgrade the [demo](https://demo-cht.dev.medicmobile.org/) instance to the newly released version.
   - [ ] From the "App Management" admin console (`medic` user creds in 1Password), go to "Upgrades" and stage the upgrade for this version.
@@ -56,5 +58,4 @@ curl -s https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view
   - [ ] Refresh the "App Management" page and verify the instance upgraded. You may need to wait 5+ minutes until the upgrade succeeds.  Until then, you may see `50x` errors in the browser - be patient!
 - [ ] Announce the release on the Forum under the "Announcements - Releases" category by using this [template](https://forum.communityhealthtoolkit.org/new-topic?title=Announcing%20the%20release%20of%20%3Cmajor%3E.%3Cminor%3E.%3Cpatch%3E%20of%20the%20CHT%20Core%20Framework&body=%2AAnnouncing%20the%20release%20of%20%7B%7Bversion%7D%7D%20of%20%7B%7Bproduct%7D%7D%2A%0AThis%20release%20fixes%20%7B%7Bnumber%20of%20bugs%7D%7D.%20Read%20the%20%5Brelease%20notes%5D%28%7B%7Burl%7D%7D%29%20for%20full%20details.&category=releases).
 - [ ] Go over the list of commits and individually notify contributing / interested community members about the release.
-- [ ] Go to the [Issues tab](https://github.com/medic/cht-core/issues) and filter the issues with `is:issue label:"Affects: 4.x.x" ` , replace `4.x.x` with the previous version number. Add any open "known issues" from the prior release that were not fixed in this release. Done by adding the correct `Affects: 4.x.x` label.
 - [ ] Mark this issue "done" and close the Milestone.
