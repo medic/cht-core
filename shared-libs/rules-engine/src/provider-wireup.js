@@ -287,16 +287,16 @@ const getTargetDocTag = (filterInterval) => {
     return 'latest';
   }
   if (!rulesStateStore.getUseBikramSambatMonths()) {
-    return moment(filterInterval.end).format('YYYY-MM');
+    return moment(filterInterval.end).locale('en').format('YYYY-MM');
   }
   try {
     const { toBik } = require('bikram-sambat');
-    const bsEnd = toBik(moment(filterInterval.end).format('YYYY-MM-DD'));
+    const bsEnd = toBik(moment(filterInterval.end).locale('en').format('YYYY-MM-DD'));
     return `${bsEnd.year}-${String(bsEnd.month).padStart(2, '0')}`;
   } catch (err) {
     // eslint-disable-next-line no-console
     console.warn('Failed to parse BS date for target document tag, falling back to Gregorian tag:', err);
-    return moment(filterInterval.end).format('YYYY-MM');
+    return moment(filterInterval.end).locale('en').format('YYYY-MM');
   }
 };
 
@@ -315,4 +315,3 @@ const storeTargetsDoc = (provider, aggregate, updatedTargets) => {
     updatedTargets
   );
 };
-
