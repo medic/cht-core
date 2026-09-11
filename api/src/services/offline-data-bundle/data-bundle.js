@@ -1,6 +1,6 @@
-const crypto = require('crypto');
-const { Readable } = require('stream');
-const { ReadableStream } = require('stream/web');
+const crypto = require('node:crypto');
+const { Readable } = require('node:stream');
+const { ReadableStream } = require('node:stream/web');
 const logger = require('@medic/logger');
 const db = require('../../db');
 const auth = require('../../auth');
