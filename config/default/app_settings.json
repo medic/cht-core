@@ -285,6 +285,8 @@
     "can_default_facility_filter": [],
     "can_have_multiple_places": [],
     "can_skip_password_change": [],
+    "can_send_offline_data_bundle": [],
+    "can_relay_offline_data_bundle": [],
     "can_get_task_notifications": [
       "chw",
       "chw_supervisor"

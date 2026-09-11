@@ -47,4 +47,24 @@ describe('offline-data-bundle signing service', () => {
       chai.expect(first.publicKey.x).to.not.equal(second.publicKey.x);
     });
   });
+
+  describe('sign / verify round-trip', () => {
+    it('signs a message that verifies against the matching public key', async () => {
+      const { publicKey, privateKey } = await service.generateKeyPair();
+      const message = Buffer.from('checkpoint bytes', 'utf8');
+
+      const signature = await service.sign(privateKey, message);
+
+      chai.expect(signature).to.be.a('string');
+      chai.expect(await service.verify(publicKey, signature, message)).to.be.true;
+    });
+
+    it('produces a signature that fails to verify against a different message', async () => {
+      const { publicKey, privateKey } = await service.generateKeyPair();
+
+      const signature = await service.sign(privateKey, Buffer.from('a', 'utf8'));
+
+      chai.expect(await service.verify(publicKey, signature, Buffer.from('b', 'utf8'))).to.be.false;
+    });
+  });
 });
