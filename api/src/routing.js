@@ -933,6 +933,7 @@ app.post(
   authorization.onlineUserPassThrough,
   replication.getDocIdsToDelete,
 );
+app.post('/api/v1/replication/data-bundle', replication.dataBundle);
 
 const metaRoutePrefix = `/${environment.db}-user-*"name"-meta/`;
 
