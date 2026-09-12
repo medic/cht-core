@@ -1,0 +1,164 @@
+# Triggered by setting the `review` label on a PR.
+name: PR Review
+
+env:
+  OCR_LLM_MODEL: claude-sonnet-5
+  OCR_LLM_URL: https://api.anthropic.com
+  CLAUDE_LLM_MODEL: claude-opus-5
+  LANGFUSE_OTEL_BASE: https://us.cloud.langfuse.com/api/public/otel
+
+on:
+  pull_request_target:
+    types: [labeled]
+
+permissions: {}
+
+jobs:
+  # Line-by-line correctness review of the diff based on https://github.com/alibaba/open-code-review/blob/main/examples/github_actions/ocr-review.yml
+  code-review:
+    if: github.event.label.name == 'review'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # to read the diff under review
+      pull-requests: write # to post the review summary and inline comments
+    timeout-minutes: 30
+    steps:
+      - name: Run OpenCodeReview
+        uses: alibaba/open-code-review@420bae824a43335e2fc4266eb71f33756715e232 # v1.10.1
+        env:
+          OCR_ENABLE_TELEMETRY: "1"
+          OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+          OTEL_EXPORTER_OTLP_ENDPOINT: ${{ env.LANGFUSE_OTEL_BASE }}
+          OTEL_EXPORTER_OTLP_HEADERS: Authorization=Basic ${{ secrets.LANGFUSE_OTEL_BASIC_AUTH }},x-langfuse-ingestion-version=4
+          OTEL_RESOURCE_ATTRIBUTES: deployment.environment.name=ci,cicd.pipeline.task.name=${{ github.job }},vcs.repository.name=${{ github.repository }},vcs.change.id=${{ github.event.pull_request.number }},cicd.pipeline.run.id=${{ github.run_id }}
+        with:
+          llm_url: ${{ env.OCR_LLM_URL }}
+          llm_auth_token: ${{ secrets.OCR_LLM_AUTH_TOKEN }}
+          llm_auth_header: "x-api-key"
+          llm_model: ${{ env.OCR_LLM_MODEL }}
+          llm_use_anthropic: "true"
+          incremental: 'true'
+          sticky_summary: 'false'
+          background: ${{ github.event.pull_request.title }}
+          # '{"output_config": {"effort": "high"}}' — low|medium|high|xhigh|max.
+          llm_extra_body: '{"output_config": {"effort": "xhigh"}}'
+
+  # completeness review that confirms the PR deliver what the linked issue and its description promise
+  completeness-review:
+    if: github.event.label.name == 'review'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # to read the diff under review
+      pull-requests: read # to read the PR description
+      issues: read # for `gh issue view` on the linked issues
+    timeout-minutes: 30
+    outputs:
+      structured_output: ${{ steps.review.outputs.structured_output }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: Review PR for completeness
+        id: review
+        uses: anthropics/claude-code-action@6b082c41935b4c8a3b8b0ef85ba4ba4d9eeb8975 # v1.0.189
+        env:
+          CLAUDE_CODE_ENABLE_TELEMETRY: "1"
+          CLAUDE_CODE_ENHANCED_TELEMETRY_BETA: "1"
+          OTEL_TRACES_EXPORTER: otlp
+          OTEL_METRICS_EXPORTER: none
+          OTEL_LOGS_EXPORTER: none
+          OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: http/protobuf
+          OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: ${{ env.LANGFUSE_OTEL_BASE }}/v1/traces
+          OTEL_EXPORTER_OTLP_TRACES_HEADERS: Authorization=Basic ${{ secrets.LANGFUSE_OTEL_BASIC_AUTH }},x-langfuse-ingestion-version=4
+          OTEL_LOG_TOOL_DETAILS: "1"
+          OTEL_RESOURCE_ATTRIBUTES: deployment.environment.name=ci,cicd.pipeline.task.name=${{ github.job }},vcs.repository.name=${{ github.repository }},vcs.change.id=${{ github.event.pull_request.number }},cicd.pipeline.run.id=${{ github.run_id }}
+        with:
+          anthropic_api_key: ${{ secrets.OCR_LLM_AUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          plugin_marketplaces: https://github.com/medic/cht-ai-tools.git
+          plugins: |
+            cht-pr-review@medic-cht-ai-tools
+            cht-docs-mcp@medic-cht-ai-tools
+          prompt: |
+            Use the cht-pr-review skill to review pull request
+            ${{ github.event.pull_request.number }} in ${{ github.repository }}.
+            Follow that skill exactly.
+
+            Return the skill's report verbatim as `report_markdown`. If the skill concludes the PR's intent could not 
+            be established, return that as the report; an inconclusive report is still the result.
+          # Keep the configured tools synced up with what is configured in the frontmatter of the skill
+          claude_args: |
+            --model ${{ env.CLAUDE_LLM_MODEL }}
+            --allowedTools "Skill,Read,Grep,Glob,Bash(/home/runner/.claude/plugins/cache/medic-cht-ai-tools/cht-pr-review/*/scripts/pr-context.sh*),Bash(/home/runner/.claude/plugins/cache/medic-cht-ai-tools/cht-pr-review/*/scripts/pr-diff.sh*),mcp__plugin_cht-docs-mcp_cht-docs__ask_question,mcp__plugin_cht-docs-mcp_cht-docs__search_docs"
+            --disallowedTools "Edit,Write,NotebookEdit"
+            --json-schema '{"type":"object","required":["report_markdown"],"additionalProperties":false,"properties":{"report_markdown":{"type":"string","description":"The complete review report as GitHub-flavored markdown."}}}'
+      - name: Upload Claude execution log
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: completeness-review-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.review.outputs.execution_file }}
+          if-no-files-found: warn
+
+  post-review:
+    needs: [code-review, completeness-review]
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write # to update (or post) the review summary comment and clear the label
+    timeout-minutes: 5
+    steps:
+      - name: Post review comment
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        env:
+          STRUCTURED_OUTPUT: ${{ needs.completeness-review.outputs.structured_output }}
+        with:
+          script: |
+            let report_markdown;
+            try {
+              ({ report_markdown } = JSON.parse(process.env.STRUCTURED_OUTPUT || '{}'));
+            } catch (error) {
+              core.warning(`Could not parse structured_output: ${error.message}`);
+            }
+            if (!report_markdown) {
+              core.setFailed('Review produced no report_markdown; nothing to post.');
+              return;
+            }
+            // Every OCR summary comment opens with this marker
+            const marker = '<!-- ocr-summary';
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              ...context.repo,
+              issue_number: context.issue.number,
+              per_page: 100,
+            });
+            const summary = comments.findLast(comment => comment.body?.includes(marker));
+            if (!summary) {
+              core.warning('Found no OpenCodeReview summary comment for this run; posting the report on its own.');
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: context.issue.number,
+                body: report_markdown,
+              });
+              return;
+            }
+            await github.rest.issues.updateComment({
+              ...context.repo,
+              comment_id: summary.id,
+              body: `${summary.body}\n\n---\n\n${report_markdown}`,
+            });
+      - name: Remove the review label
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                ...context.repo,
+                issue_number: context.issue.number,
+                name: 'review',
+              });
+            } catch (error) {
+              if (error.status !== 404) {
+                throw error;
+              }
+              core.info('Label "review" was already gone.');
+            }
