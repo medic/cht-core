@@ -1,80 +1,22 @@
+# Triggered by setting the `review` label on a PR.
 name: PR Review
 
 env:
   OCR_LLM_MODEL: claude-sonnet-5
   OCR_LLM_URL: https://api.anthropic.com
-  OCR_LLM_USE_ANTHROPIC: "true"
-  OCR_LLM_AUTH_HEADER: "x-api-key"
   CLAUDE_LLM_MODEL: claude-opus-5
   LANGFUSE_OTEL_BASE: https://us.cloud.langfuse.com/api/public/otel
 
-# Triggered on demand only: comment `/review` on a pull request.
 on:
-  issue_comment:
-    types: [created]
+  pull_request_target:
+    types: [labeled]
 
 permissions: {}
 
-concurrency:
-  group: >-
-    ${{
-      (
-        github.event.issue.pull_request
-        && github.event.comment.user.type != 'Bot'
-        && startsWith(github.event.comment.body, '/review')
-        && (
-          github.event.comment.author_association == 'OWNER'
-          || github.event.comment.author_association == 'MEMBER'
-          || github.event.comment.author_association == 'COLLABORATOR'
-        )
-      )
-      && format('review-{0}', github.event.issue.number)
-      || format('noop-{0}', github.run_id)
-    }}
-  cancel-in-progress: true
-
 jobs:
-  pr-context:
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write # to react to the triggering comment and read the PR's base ref and head sha
-    # Only maintainers can trigger a review
-    if: |
-      github.event.issue.pull_request && github.event.comment.user.type != 'Bot'
-      && startsWith(github.event.comment.body, '/review')
-      && (
-        github.event.comment.author_association == 'OWNER'
-        || github.event.comment.author_association == 'MEMBER'
-        || github.event.comment.author_association == 'COLLABORATOR'
-      )
-    timeout-minutes: 5
-    outputs:
-      base_ref: ${{ steps.pr-context.outputs.base_ref }}
-      head_sha: ${{ steps.pr-context.outputs.head_sha }}
-      title: ${{ steps.pr-context.outputs.title }}
-    steps:
-      - name: Get PR context
-        id: pr-context
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
-        with:
-          script: |
-            await github.rest.reactions.createForIssueComment({
-              ...context.repo,
-              comment_id: context.payload.comment.id,
-              content: 'eyes',
-            });
-            // issue_comment carries no PR refs, so look them up for the action.
-            const { data: pullRequest } = await github.rest.pulls.get({
-              ...context.repo,
-              pull_number: context.issue.number,
-            });
-            core.setOutput('base_ref', pullRequest.base.ref);
-            core.setOutput('head_sha', pullRequest.head.sha);
-            core.setOutput('title', pullRequest.title);
-
   # Line-by-line correctness review of the diff based on https://github.com/alibaba/open-code-review/blob/main/examples/github_actions/ocr-review.yml
   code-review:
-    needs: pr-context
+    if: github.event.label.name == 'review'
     runs-on: ubuntu-latest
     permissions:
       contents: read # to read the diff under review
@@ -88,24 +30,22 @@ jobs:
           OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
           OTEL_EXPORTER_OTLP_ENDPOINT: ${{ env.LANGFUSE_OTEL_BASE }}
           OTEL_EXPORTER_OTLP_HEADERS: Authorization=Basic ${{ secrets.LANGFUSE_OTEL_BASIC_AUTH }},x-langfuse-ingestion-version=4
-          OTEL_RESOURCE_ATTRIBUTES: deployment.environment.name=ci,cicd.pipeline.task.name=${{ github.job }},vcs.repository.name=${{ github.repository }},vcs.change.id=${{ github.event.issue.number }},cicd.pipeline.run.id=${{ github.run_id }}
+          OTEL_RESOURCE_ATTRIBUTES: deployment.environment.name=ci,cicd.pipeline.task.name=${{ github.job }},vcs.repository.name=${{ github.repository }},vcs.change.id=${{ github.event.pull_request.number }},cicd.pipeline.run.id=${{ github.run_id }}
         with:
           llm_url: ${{ env.OCR_LLM_URL }}
           llm_auth_token: ${{ secrets.OCR_LLM_AUTH_TOKEN }}
-          llm_auth_header: ${{ env.OCR_LLM_AUTH_HEADER }}
+          llm_auth_header: "x-api-key"
           llm_model: ${{ env.OCR_LLM_MODEL }}
-          llm_use_anthropic: ${{ env.OCR_LLM_USE_ANTHROPIC }}
-          # '{"output_config": {"effort": "high"}}' — low|medium|high|xhigh|max.
-          llm_extra_body: '{"output_config": {"effort": "xhigh"}}'
-          base_ref: ${{ needs.pr-context.outputs.base_ref }}
-          head_sha: ${{ needs.pr-context.outputs.head_sha }}
-          background: ${{ needs.pr-context.outputs.title }}
+          llm_use_anthropic: "true"
           incremental: 'true'
           sticky_summary: 'false'
+          background: ${{ github.event.pull_request.title }}
+          # '{"output_config": {"effort": "high"}}' — low|medium|high|xhigh|max.
+          llm_extra_body: '{"output_config": {"effort": "xhigh"}}'
 
-  # completeness review that confirms the PR delivers what the linked issue and its description promise
+  # completeness review that confirms the PR deliver what the linked issue and its description promise
   completeness-review:
-    needs: pr-context
+    if: github.event.label.name == 'review'
     runs-on: ubuntu-latest
     permissions:
       contents: read # to read the diff under review
@@ -118,7 +58,7 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
-          ref: ${{ needs.pr-context.outputs.head_sha }}
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
       - name: Review PR for completeness
         id: review
@@ -133,7 +73,7 @@ jobs:
           OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: ${{ env.LANGFUSE_OTEL_BASE }}/v1/traces
           OTEL_EXPORTER_OTLP_TRACES_HEADERS: Authorization=Basic ${{ secrets.LANGFUSE_OTEL_BASIC_AUTH }},x-langfuse-ingestion-version=4
           OTEL_LOG_TOOL_DETAILS: "1"
-          OTEL_RESOURCE_ATTRIBUTES: deployment.environment.name=ci,cicd.pipeline.task.name=${{ github.job }},vcs.repository.name=${{ github.repository }},vcs.change.id=${{ github.event.issue.number }},cicd.pipeline.run.id=${{ github.run_id }}
+          OTEL_RESOURCE_ATTRIBUTES: deployment.environment.name=ci,cicd.pipeline.task.name=${{ github.job }},vcs.repository.name=${{ github.repository }},vcs.change.id=${{ github.event.pull_request.number }},cicd.pipeline.run.id=${{ github.run_id }}
         with:
           anthropic_api_key: ${{ secrets.OCR_LLM_AUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -143,7 +83,7 @@ jobs:
             cht-docs-mcp@medic-cht-ai-tools
           prompt: |
             Use the cht-pr-review skill to review pull request
-            ${{ github.event.issue.number }} in ${{ github.repository }}.
+            ${{ github.event.pull_request.number }} in ${{ github.repository }}.
             Follow that skill exactly.
 
             Return the skill's report verbatim as `report_markdown`. If the skill concludes the PR's intent could not 
@@ -165,7 +105,7 @@ jobs:
     needs: [code-review, completeness-review]
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: write # to update (or post) the review summary comment
+      pull-requests: write # to update (or post) the review summary comment and clear the label
     timeout-minutes: 5
     steps:
       - name: Post review comment
@@ -206,3 +146,19 @@ jobs:
               comment_id: summary.id,
               body: `${summary.body}\n\n---\n\n${report_markdown}`,
             });
+      - name: Remove the review label
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                ...context.repo,
+                issue_number: context.issue.number,
+                name: 'review',
+              });
+            } catch (error) {
+              if (error.status !== 404) {
+                throw error;
+              }
+              core.info('Label "review" was already gone.');
+            }
