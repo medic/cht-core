@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 
 import * as validation from '@medic/validation';
+import * as extensionLibs from '@medic/extension-libs';
 import { ValidationService } from '@mm-services/validation.service';
 import { DbService } from '@mm-services/db.service';
 import { SettingsService } from '@mm-services/settings.service';
@@ -10,6 +11,8 @@ import { TranslateLocaleService } from '@mm-services//translate-locale.service';
 import { LanguageService} from '@mm-services/language.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { DOC_TYPES } from '@medic/constants';
+
+const messages = require('@medic/message-utils');
 
 describe('Validation Service', () => {
   let service:ValidationService;
@@ -20,6 +23,7 @@ describe('Validation Service', () => {
   let chtDatasourceService;
 
   beforeEach(() => {
+    extensionLibs.set({});
     dbService = { get: sinon.stub() };
     settingsService = { get: sinon.stub() };
     translateLocaleService = { instant: sinon.stub() };
@@ -40,7 +44,10 @@ describe('Validation Service', () => {
     service = TestBed.inject(ValidationService);
   });
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    extensionLibs.set({});
+    sinon.restore();
+  });
 
   describe('init', () => {
     it('should init', async () => {
@@ -160,6 +167,10 @@ describe('Validation Service', () => {
 
     it('should translate error messages with provided context', async () => {
       settingsService.get.resolves({ the: 'settings' });
+      const loadedExtensionLibs = extensionLibs.set({
+        'uppercase.js': value => value.toUpperCase(),
+      });
+      const template = sinon.spy(messages, 'template');
       const context = {
         patient: { name: 'the patient', patient_id: 'aaa' },
       };
@@ -183,6 +194,18 @@ describe('Validation Service', () => {
         { code: 'invalid_1', message: 'untranslated1 the patient' },
         { code: 'invalid_2', message: 'untranslated2 the patient' },
       ]);
+      expect(template.callCount).to.equal(2);
+      expect(template.firstCall.args[0]).to.deep.include({
+        config: { the: 'settings' },
+        doc: { _id: 'report', type: DOC_TYPES.DATA_RECORD, locale: undefined },
+        extraContext: context,
+        extensionLibs: loadedExtensionLibs,
+      });
+      expect(template.firstCall.args[0].content).to.deep.equal({
+        code: 'invalid_1',
+        message: 'untranslated1 the patient',
+      });
+      expect(template.firstCall.args[0].translate).to.be.a('function');
     });
 
     it('should skip validation with invalid config', async () => {

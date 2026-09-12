@@ -13,6 +13,7 @@ describe('Message mapper', () => {
     sinon.stub(messageUtils, 'generate');
     sinon.stub(registrationUtils, 'isValidRegistration');
     sinon.stub(config, 'get');
+    sinon.stub(config, 'getExtensionLibs').returns({});
     sinon.stub(config, 'translate');
   });
 
@@ -424,20 +425,21 @@ describe('Message mapper', () => {
           chai.expect(config.translate.args[0]).to.deep.equal(['task-translation-key', { group: 'gr' }]);
 
           chai.expect(messageUtils.generate.callCount).to.deep.equal(1);
-          chai.expect(messageUtils.generate.args[0]).to.deep.equal([
-            { config: 1 },
-            config.translate,
-            record,
-            {
+          chai.expect(messageUtils.generate.args[0]).to.deep.equal([{
+            config: { config: 1 },
+            translate: config.translate,
+            doc: record,
+            content: {
               translationKey: 'alpha',
               message: undefined
             },
-            'random recipient',
-            {
+            recipient: 'random recipient',
+            extraContext: {
               patient: record.patient,
               registrations: record.registrations
-            }
-          ]);
+            },
+            extensionLibs: {},
+          }]);
 
           chai.expect(result.length).to.equal(2);
           chai.expect(result[0]).to.deep.equal([

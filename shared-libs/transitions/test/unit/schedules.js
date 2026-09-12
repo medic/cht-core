@@ -6,13 +6,29 @@ const messageUtils = require('@medic/message-utils');
 const utils = require('../../src/lib/utils');
 const logger = require('@medic/logger');
 
+const pickGenerateArgs = call => {
+  const options = call[0];
+  return [
+    options.config,
+    options.translate,
+    options.doc,
+    options.content,
+    options.recipient,
+    options.extraContext,
+    options.extensionLibs,
+  ];
+};
+
 describe('schedules', () => {
   let schedules;
+  let loadedExtensionLibs;
 
   beforeEach(() => {
+    loadedExtensionLibs = { 'uppercase.js': value => value.toUpperCase() };
     config.init({
       getAll: sinon.stub().returns({}),
       get: sinon.stub().returns(),
+      getExtensionLibs: sinon.stub().returns(loadedExtensionLibs),
     });
 
     schedules = require('../../src/lib/schedules');
@@ -542,7 +558,7 @@ describe('schedules', () => {
       schedules.assignSchedule(doc, schedule, { patient, patientRegistrations });
 
       assert.equal(messageUtils.generate.callCount, 1);
-      assert.deepEqual(messageUtils.generate.args[0], [
+      assert.deepEqual(pickGenerateArgs(messageUtils.generate.args[0]), [
         {},
         utils.translate,
         doc,
@@ -554,6 +570,7 @@ describe('schedules', () => {
           place: undefined,
           placeRegistrations: undefined,
         },
+        loadedExtensionLibs,
       ]);
 
       assert.equal(doc.scheduled_tasks.length, 1);
@@ -586,7 +603,7 @@ describe('schedules', () => {
       schedules.assignSchedule(doc, schedule, { place, placeRegistrations });
 
       assert.equal(messageUtils.generate.callCount, 1);
-      assert.deepEqual(messageUtils.generate.args[0], [
+      assert.deepEqual(pickGenerateArgs(messageUtils.generate.args[0]), [
         {},
         utils.translate,
         doc,
@@ -598,6 +615,7 @@ describe('schedules', () => {
           place: place,
           placeRegistrations: placeRegistrations,
         },
+        loadedExtensionLibs,
       ]);
 
       assert.equal(doc.scheduled_tasks.length, 1);
@@ -632,7 +650,7 @@ describe('schedules', () => {
       schedules.assignSchedule(doc, schedule, { place, placeRegistrations, patient, patientRegistrations });
 
       assert.equal(messageUtils.generate.callCount, 1);
-      assert.deepEqual(messageUtils.generate.args[0], [
+      assert.deepEqual(pickGenerateArgs(messageUtils.generate.args[0]), [
         {},
         utils.translate,
         doc,
@@ -644,6 +662,7 @@ describe('schedules', () => {
           place: place,
           placeRegistrations: placeRegistrations,
         },
+        loadedExtensionLibs,
       ]);
 
       assert.equal(doc.scheduled_tasks.length, 1);
@@ -675,7 +694,7 @@ describe('schedules', () => {
       schedules.assignSchedule(doc, schedule);
 
       assert.equal(messageUtils.generate.callCount, 1);
-      assert.deepEqual(messageUtils.generate.args[0], [
+      assert.deepEqual(pickGenerateArgs(messageUtils.generate.args[0]), [
         {},
         utils.translate,
         doc,
@@ -687,6 +706,7 @@ describe('schedules', () => {
           place: undefined,
           placeRegistrations: undefined,
         },
+        loadedExtensionLibs,
       ]);
 
       assert.equal(doc.scheduled_tasks.length, 1);

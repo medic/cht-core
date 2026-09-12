@@ -64,14 +64,15 @@ const updateScheduledTasks = (doc, context, dueDates, clearFailing=false) => {
           message: task.message,
         };
 
-        const messages = messageUtils.generate(
-          config.getAll(),
-          utils.translate,
+        const messages = messageUtils.generate({
+          config: config.getAll(),
+          translate: utils.translate,
           doc,
           content,
-          task.recipient,
-          context
-        );
+          recipient: task.recipient,
+          extraContext: context,
+          extensionLibs: config.getExtensionLibs?.(),
+        });
 
         // generated messages could have errors, such messages should not be saved
         // an example invalid message would be generated when a registration was missing the patient
