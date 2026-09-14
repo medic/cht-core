@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
   <h:head>
     <h:title>New Area</h:title>
     <model odk:xforms-version="1.0.0">
@@ -80,11 +80,17 @@
           <text id="/data/init/select_person:label">
             <value>Select the Primary Contact</value>
           </text>
+          <text id="/data/init/custom_place_name_label_translator:label">
+            <value>hidden</value>
+          </text>
           <text id="/data/init/custom_place_name:label">
             <value><output value=" /data/init/custom_place_name_label "/></value>
           </text>
           <text id="/data/init/place_type:label">
             <value>Enter the name of this place</value>
+          </text>
+          <text id="/data/init/generated_name:label">
+            <value>hidden</value>
           </text>
           <text id="/data/contact:label">
             <value>New Person</value>
@@ -112,12 +118,6 @@
           </text>
           <text id="/data/contact/ephemeral_dob/age_months:label">
             <value>Months</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_approx:label">
-            <value>DOB</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_iso:label">
-            <value>Date of Birth</value>
           </text>
           <text id="/data/contact/ephemeral_dob/dob_debug:label">
             <value> DOB Approx: <output value=" /data/contact/ephemeral_dob/dob_approx "/>
@@ -147,9 +147,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           </text>
           <text id="/data/health_center/is_name_generated:label">
             <value> Would you like to name the place after the primary contact: "<output value=" /data/init/generated_name_translation "/>"?</value>
-          </text>
-          <text id="/data/health_center/name:label">
-            <value>Name</value>
           </text>
           <text id="/data/health_center/external_id:label">
             <value>External ID</value>
@@ -267,9 +264,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/health_center/is_name_generated:label">
             <value> क्या आप इस स्थान को प्राथमिक कॉंटॅक्ट का नाम देना चाहेंगे?: <output value=" /data/init/generated_name_translation "/></value>
           </text>
-          <text id="/data/health_center/name:label">
-            <value>नाम</value>
-          </text>
           <text id="/data/health_center/external_id:label">
             <value>बाहरी ID</value>
           </text>
@@ -277,6 +271,12 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
             <value>नोट्स</value>
           </text>
           <text id="select_dob_method-0">
+            <value>-</value>
+          </text>
+          <text id="/data/init/custom_place_name_label_translator:label">
+            <value>-</value>
+          </text>
+          <text id="/data/init/generated_name:label">
             <value>-</value>
           </text>
           <text id="/data/contact/short_name:label">
@@ -303,16 +303,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/contact/ephemeral_dob/dob_method:label">
             <value>-</value>
           </text>
-          <text id="/data/contact/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_iso:label">
-            <value>-</value>
-          </text>
           <text id="/data/contact/ephemeral_dob/dob_debug:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/meta:label">
             <value>-</value>
           </text>
         </translation>
@@ -425,9 +416,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/health_center/is_name_generated:label">
             <value> Apakah Anda ingin nama tempat setelah kontak utama: "<output value=" /data/init/generated_name_translation "/>"?</value>
           </text>
-          <text id="/data/health_center/name:label">
-            <value>Nama</value>
-          </text>
           <text id="/data/health_center/external_id:label">
             <value>Eksternal ID</value>
           </text>
@@ -435,6 +423,12 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
             <value>Catatan</value>
           </text>
           <text id="select_dob_method-0">
+            <value>-</value>
+          </text>
+          <text id="/data/init/custom_place_name_label_translator:label">
+            <value>-</value>
+          </text>
+          <text id="/data/init/generated_name:label">
             <value>-</value>
           </text>
           <text id="/data/contact/short_name:label">
@@ -461,16 +455,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/contact/ephemeral_dob/dob_method:label">
             <value>-</value>
           </text>
-          <text id="/data/contact/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_iso:label">
-            <value>-</value>
-          </text>
           <text id="/data/contact/ephemeral_dob/dob_debug:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/meta:label">
             <value>-</value>
           </text>
         </translation>
@@ -583,9 +568,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/health_center/is_name_generated:label">
             <value> Je, Ungependa kuita eneo hii kama mwasilishi mkuu wa eneo hii? "<output value=" /data/init/generated_name_translation "/>"?</value>
           </text>
-          <text id="/data/health_center/name:label">
-            <value>Jina</value>
-          </text>
           <text id="/data/health_center/external_id:label">
             <value>Namba ya nje</value>
           </text>
@@ -593,6 +575,12 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
             <value>Maelezo</value>
           </text>
           <text id="select_dob_method-0">
+            <value>-</value>
+          </text>
+          <text id="/data/init/custom_place_name_label_translator:label">
+            <value>-</value>
+          </text>
+          <text id="/data/init/generated_name:label">
             <value>-</value>
           </text>
           <text id="/data/contact/short_name:label">
@@ -619,16 +607,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/contact/ephemeral_dob/dob_method:label">
             <value>-</value>
           </text>
-          <text id="/data/contact/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_iso:label">
-            <value>-</value>
-          </text>
           <text id="/data/contact/ephemeral_dob/dob_debug:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/meta:label">
             <value>-</value>
           </text>
         </translation>
@@ -741,9 +720,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/health_center/is_name_generated:label">
             <value> के तपाइ यस स्थानकाे प्राथमिक सम्पर्क नाम दिन चाहानु हुन्छ?:<output value=" /data/init/generated_name_translation "/></value>
           </text>
-          <text id="/data/health_center/name:label">
-            <value>नाम</value>
-          </text>
           <text id="/data/health_center/external_id:label">
             <value>बाहिरि ID</value>
           </text>
@@ -751,6 +727,12 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
             <value>टिप्पणि</value>
           </text>
           <text id="select_dob_method-0">
+            <value>-</value>
+          </text>
+          <text id="/data/init/custom_place_name_label_translator:label">
+            <value>-</value>
+          </text>
+          <text id="/data/init/generated_name:label">
             <value>-</value>
           </text>
           <text id="/data/contact/short_name:label">
@@ -777,16 +759,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/contact/ephemeral_dob/dob_method:label">
             <value>-</value>
           </text>
-          <text id="/data/contact/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_iso:label">
-            <value>-</value>
-          </text>
           <text id="/data/contact/ephemeral_dob/dob_debug:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/meta:label">
             <value>-</value>
           </text>
         </translation>
@@ -899,9 +872,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/health_center/is_name_generated:label">
             <value> Voulez-vous nommer l'endroit: "<output value=" /data/init/generated_name_translation "/>"?</value>
           </text>
-          <text id="/data/health_center/name:label">
-            <value>Nom</value>
-          </text>
           <text id="/data/health_center/external_id:label">
             <value>Identifiant externe</value>
           </text>
@@ -909,6 +879,12 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
             <value>Notes</value>
           </text>
           <text id="select_dob_method-0">
+            <value>-</value>
+          </text>
+          <text id="/data/init/custom_place_name_label_translator:label">
+            <value>-</value>
+          </text>
+          <text id="/data/init/generated_name:label">
             <value>-</value>
           </text>
           <text id="/data/contact/short_name:label">
@@ -935,22 +911,13 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/contact/ephemeral_dob/dob_method:label">
             <value>-</value>
           </text>
-          <text id="/data/contact/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_iso:label">
-            <value>-</value>
-          </text>
           <text id="/data/contact/ephemeral_dob/dob_debug:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/meta:label">
             <value>-</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:health_center:create" version="2025-05-01 22-44" prefix="J1!contact:health_center:create!" delimiter="#">
+        <data id="contact:health_center:create" version="20260724164712" prefix="J1!contact:health_center:create!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -1012,8 +979,8 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
               <dob_iso/>
               <dob_debug/>
             </ephemeral_dob>
-            <phone/>
-            <phone_alternate/>
+            <phone cht:unique_tel="true"/>
+            <phone_alternate cht:unique_tel="true"/>
             <sex/>
             <role/>
             <role_other/>
@@ -1192,8 +1159,8 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
       <bind nodeset="/data/contact/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected( ../dob_method,'approx')), &#10;../dob_calendar,&#10;../dob_approx)"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"/>
-      <bind nodeset="/data/contact/phone" type="tel" relevant="selected( /data/init/create_new_person ,'new_person')" constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678"/>
-      <bind nodeset="/data/contact/phone_alternate" type="tel" relevant="selected( /data/init/create_new_person ,'new_person')" constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678"/>
+      <bind nodeset="/data/contact/phone" type="string" relevant="selected( /data/init/create_new_person ,'new_person')" constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678"/>
+      <bind nodeset="/data/contact/phone_alternate" type="string" relevant="selected( /data/init/create_new_person ,'new_person')" constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678"/>
       <bind nodeset="/data/contact/sex" type="string" required="true()" relevant="selected( /data/init/create_new_person ,'new_person')"/>
       <bind nodeset="/data/contact/role" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"/>
       <bind nodeset="/data/contact/role_other" type="string" required="true()" relevant="selected(  /data/contact/role ,'other')"/>
@@ -1219,11 +1186,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
   </h:head>
   <h:body class="pages">
     <group ref="/data/inputs">
-      <group ref="/data/inputs/user">
-        <input ref="/data/inputs/user/contact_id"/>
-        <input ref="/data/inputs/user/facility_id"/>
-        <input ref="/data/inputs/user/name"/>
-      </group>
+      <group ref="/data/inputs/user"/>
     </group>
     <group appearance="field-list" ref="/data/init">
       <select1 ref="/data/init/create_new_person" appearance="columns-pack">
@@ -1236,8 +1199,8 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
       <input ref="/data/init/select_person" appearance="select-contact type-person">
         <label ref="jr:itext('/data/init/select_person:label')"/>
       </input>
-      <input ref="/data/init/name" appearance="hidden"/>
       <select1 ref="/data/init/custom_place_name_label_translator" appearance="hidden">
+        <label ref="jr:itext('/data/init/custom_place_name_label_translator:label')"/>
         <itemset nodeset="instance('translate_name_label')/root/item">
           <value ref="name"/>
           <label ref="jr:itext(itextId)"/>
@@ -1251,6 +1214,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
         </itemset>
       </select1>
       <select1 ref="/data/init/generated_name" appearance="hidden">
+        <label ref="jr:itext('/data/init/generated_name:label')"/>
         <itemset nodeset="instance('generated_name')/root/item">
           <value ref="name"/>
           <label ref="jr:itext(itextId)"/>
@@ -1290,10 +1254,10 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           </input>
         </group>
       </group>
-      <input ref="/data/contact/phone">
+      <input ref="/data/contact/phone" appearance="numbers tel">
         <label ref="jr:itext('/data/contact/phone:label')"/>
       </input>
-      <input ref="/data/contact/phone_alternate">
+      <input ref="/data/contact/phone_alternate" appearance="numbers tel">
         <label ref="jr:itext('/data/contact/phone_alternate:label')"/>
       </input>
       <select1 ref="/data/contact/sex" appearance="columns">

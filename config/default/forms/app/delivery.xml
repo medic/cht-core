@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
   <h:head>
     <h:title>Delivery</h:title>
     <model odk:xforms-version="1.0.0">
@@ -128,41 +128,14 @@
           <text id="translate_woman_start_label-0">
             <value>Woman</value>
           </text>
-          <text id="/data/inputs/source:label">
-            <value>Source</value>
-          </text>
-          <text id="/data/inputs/source_id:label">
-            <value>Source ID</value>
-          </text>
           <text id="/data/inputs/user:label">
             <value>User</value>
           </text>
           <text id="/data/inputs/user/contact_id:label">
             <value>Contact ID</value>
           </text>
-          <text id="/data/inputs/user/name:label">
-            <value>Name</value>
-          </text>
-          <text id="/data/inputs/user/phone:label">
-            <value>Phone</value>
-          </text>
           <text id="/data/inputs/contact/_id:label">
             <value>What is the patient's name?</value>
-          </text>
-          <text id="/data/inputs/contact/name:label">
-            <value>Name</value>
-          </text>
-          <text id="/data/inputs/contact/short_name:label">
-            <value>Short Name</value>
-          </text>
-          <text id="/data/inputs/contact/patient_id:label">
-            <value>Patient ID</value>
-          </text>
-          <text id="/data/inputs/contact/date_of_birth:label">
-            <value>Date of Birth</value>
-          </text>
-          <text id="/data/inputs/contact/sex:label">
-            <value>Sex</value>
           </text>
           <text id="/data/inputs/contact/parent/_id:label">
             <value>Household ID</value>
@@ -172,12 +145,6 @@
           </text>
           <text id="/data/inputs/contact/parent/parent/parent/_id:label">
             <value>Health Facility ID</value>
-          </text>
-          <text id="/data/inputs/contact/parent/parent/contact/chw_name:label">
-            <value>CHW name</value>
-          </text>
-          <text id="/data/inputs/contact/parent/parent/contact/phone:label">
-            <value>CHW phone</value>
           </text>
           <text id="/data/condition:label">
             <value><output value=" /data/patient_short_name_start "/>'s Condition</value>
@@ -232,9 +199,6 @@
           </text>
           <text id="/data/death_info_woman/death_baby_note:label">
             <value>If babies were delivered, you will have the chance to report on them Next &gt;.</value>
-          </text>
-          <text id="/data/death_info_woman/death_report/type:label">
-            <value>Type</value>
           </text>
           <text id="/data/delivery_outcome:label">
             <value>Delivery Outcome</value>
@@ -298,15 +262,6 @@
           </text>
           <text id="/data/baby_death/baby_death_repeat/baby_death_add_notes:label">
             <value>Additional notes about baby's death</value>
-          </text>
-          <text id="/data/baby_death/baby_death_repeat/baby_death_profile/parent/_id:label">
-            <value>Parent</value>
-          </text>
-          <text id="/data/baby_death/baby_death_repeat/baby_death_profile/parent/parent/_id:label">
-            <value>Area</value>
-          </text>
-          <text id="/data/baby_death/baby_death_repeat/baby_death_profile/parent/parent/parent/_id:label">
-            <value>Health Facility ID</value>
           </text>
           <text id="/data/babys_condition:label">
             <value>Baby's Condition</value>
@@ -391,18 +346,6 @@
           </text>
           <text id="/data/babys_condition/baby_repeat/baby_details/blue_skin:label">
             <value>Blue skin color (hypothermia)</value>
-          </text>
-          <text id="/data/babys_condition/baby_repeat/baby_details/baby_profile/parent/_id:label">
-            <value>Parent</value>
-          </text>
-          <text id="/data/babys_condition/baby_repeat/baby_details/baby_profile/parent/parent/_id:label">
-            <value>Area</value>
-          </text>
-          <text id="/data/babys_condition/baby_repeat/baby_details/baby_profile/parent/parent/parent/_id:label">
-            <value>Health Facility ID</value>
-          </text>
-          <text id="/data/babys_condition/baby_repeat/baby_details/baby_profile/type:label">
-            <value>Type</value>
           </text>
           <text id="/data/safe_postnatal_practices:label">
             <value>Safe Postnatal Practices</value>
@@ -557,10 +500,22 @@
           <text id="/data/summary/r_fup_danger_sign_baby:label">
             <value>Please conduct a danger sign follow-up for the baby in 3 days.</value>
           </text>
+          <text id="/data/summary/custom_translations/custom_woman_label_translator:label">
+            <value>hidden</value>
+          </text>
+          <text id="/data/summary/custom_translations/custom_woman_start_label_translator:label">
+            <value>hidden</value>
+          </text>
+          <text id="/data/summary/custom_translations/delivery_place_label_translator:label">
+            <value>hidden</value>
+          </text>
+          <text id="/data/summary/custom_translations/woman_death_place_label_translator:label">
+            <value>hidden</value>
+          </text>
         </translation>
       </itext>
       <instance>
-        <data id="delivery" version="2025-10-22  10-35" prefix="J1!delivery!" delimiter="#">
+        <data id="delivery" version="20260724164710" prefix="J1!delivery!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -1498,6 +1453,7 @@
     <group appearance="field-list" ref="/data/baby_death">
       <label ref="jr:itext('/data/baby_death:label')"/>
       <group ref="/data/baby_death/baby_death_repeat">
+        <label/>
         <repeat nodeset="/data/baby_death/baby_death_repeat" jr:count="/data/baby_death/baby_death_repeat_count">
           <input ref="/data/baby_death/baby_death_repeat/baby_death_date">
             <label ref="jr:itext('/data/baby_death/baby_death_repeat/baby_death_date:label')"/>
@@ -1535,6 +1491,7 @@
         <label ref="jr:itext('/data/babys_condition/baby_repeat_note:label')"/>
       </input>
       <group ref="/data/babys_condition/baby_repeat">
+        <label/>
         <repeat nodeset="/data/babys_condition/baby_repeat" jr:count="/data/babys_condition/baby_repeat_count">
           <group ref="/data/babys_condition/baby_repeat/baby_details">
             <input ref="/data/babys_condition/baby_repeat/baby_details/baby_n">
@@ -1837,24 +1794,28 @@
       </input>
       <group appearance="hidden" ref="/data/summary/custom_translations">
         <select1 ref="/data/summary/custom_translations/custom_woman_label_translator">
+          <label ref="jr:itext('/data/summary/custom_translations/custom_woman_label_translator:label')"/>
           <itemset nodeset="instance('translate_woman_label')/root/item">
             <value ref="name"/>
             <label ref="jr:itext(itextId)"/>
           </itemset>
         </select1>
         <select1 ref="/data/summary/custom_translations/custom_woman_start_label_translator">
+          <label ref="jr:itext('/data/summary/custom_translations/custom_woman_start_label_translator:label')"/>
           <itemset nodeset="instance('translate_woman_start_label')/root/item">
             <value ref="name"/>
             <label ref="jr:itext(itextId)"/>
           </itemset>
         </select1>
         <select1 ref="/data/summary/custom_translations/delivery_place_label_translator">
+          <label ref="jr:itext('/data/summary/custom_translations/delivery_place_label_translator:label')"/>
           <itemset nodeset="instance('places')/root/item">
             <value ref="name"/>
             <label ref="jr:itext(itextId)"/>
           </itemset>
         </select1>
         <select1 ref="/data/summary/custom_translations/woman_death_place_label_translator">
+          <label ref="jr:itext('/data/summary/custom_translations/woman_death_place_label_translator:label')"/>
           <itemset nodeset="instance('places')/root/item">
             <value ref="name"/>
             <label ref="jr:itext(itextId)"/>

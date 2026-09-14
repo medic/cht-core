@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
   <h:head>
     <h:title>Pregnancy registration</h:title>
     <model odk:xforms-version="1.0.0">
@@ -89,47 +89,14 @@
           <text id="translate_woman_start_label-0">
             <value>The woman</value>
           </text>
-          <text id="/data/inputs/source:label">
-            <value>Source</value>
-          </text>
-          <text id="/data/inputs/source_id:label">
-            <value>Source ID</value>
-          </text>
           <text id="/data/inputs/user:label">
             <value>User</value>
           </text>
           <text id="/data/inputs/user/contact_id:label">
             <value>Contact ID</value>
           </text>
-          <text id="/data/inputs/user/parent/_id:label">
-            <value>Parent ID</value>
-          </text>
           <text id="/data/inputs/contact/_id:label">
             <value>What is the patient's name?</value>
-          </text>
-          <text id="/data/inputs/contact/name:label">
-            <value>Name</value>
-          </text>
-          <text id="/data/inputs/contact/short_name:label">
-            <value>Short Name</value>
-          </text>
-          <text id="/data/inputs/contact/patient_id:label">
-            <value>Patient ID</value>
-          </text>
-          <text id="/data/inputs/contact/date_of_birth:label">
-            <value>Date of Birth</value>
-          </text>
-          <text id="/data/inputs/contact/sex:label">
-            <value>Sex</value>
-          </text>
-          <text id="/data/inputs/contact/parent/_id:label">
-            <value>Parent ID</value>
-          </text>
-          <text id="/data/inputs/contact/parent/parent/contact/chw_name:label">
-            <value>CHW name</value>
-          </text>
-          <text id="/data/inputs/contact/parent/parent/contact/phone:label">
-            <value>CHW phone</value>
           </text>
           <text id="/data/gestational_age:label">
             <value>Gestational Age</value>
@@ -140,9 +107,6 @@
           <text id="/data/gestational_age/register_method/lmp_method:label">
             <value>How would you like to report the pregnancy?</value>
           </text>
-          <text id="/data/gestational_age/register_method/lmp_method:hint">
-            <value>Select one.</value>
-          </text>
           <text id="/data/gestational_age/method_lmp/u_lmp_date:jr:constraintMsg">
             <value>Start date cannot be less than 1 month ago. Start date cannot be more than 9 months in the future.</value>
           </text>
@@ -151,9 +115,6 @@
           </text>
           <text id="/data/gestational_age/method_approx/lmp_approx:label">
             <value>Would you like to report the pregnancy in weeks or months?</value>
-          </text>
-          <text id="/data/gestational_age/method_approx/lmp_approx:hint">
-            <value>Select one.</value>
           </text>
           <text id="/data/gestational_age/method_approx/lmp_approx_weeks:jr:constraintMsg">
             <value>Must be between 4 and 40.</value>
@@ -200,9 +161,6 @@
           <text id="/data/gestational_age/method_none/no_info_pregnancy_reason:label">
             <value> Why do you want to register <output value=" /data/patient_short_name "/>?</value>
           </text>
-          <text id="/data/gestational_age/method_none/no_info_pregnancy_reason:hint">
-            <value>Select one.</value>
-          </text>
           <text id="/data/gestational_age/method_none/pregnancy_confirm_note:label">
             <value> Refer <output value=" /data/patient_short_name "/> to the health facility to confirm. You will receive tasks every two weeks to check in on the pregnancy. Schedule will follow WHO recommendations once LMP or EDD is entered.</value>
           </text>
@@ -214,9 +172,6 @@
           </text>
           <text id="/data/anc_visits_hf/anc_visits_hf_past/visited_hf_count:label">
             <value> How many times has <output value=" /data/patient_short_name "/> been to the health facility for ANC?</value>
-          </text>
-          <text id="/data/anc_visits_hf/anc_visits_hf_past/visited_hf_count:hint">
-            <value>Enter 0 if she has not been yet.</value>
           </text>
           <text id="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_count_confim_note_single:label">
             <value> You entered that <output value=" /data/patient_short_name "/> has attended 1 ANC visit at the health facility.</value>
@@ -281,17 +236,11 @@
           <text id="/data/risk_factors/risk_factors_present/primary_condition:label">
             <value> Does <output value=" /data/patient_short_name "/> have any of these risk factors?</value>
           </text>
-          <text id="/data/risk_factors/risk_factors_present/primary_condition:hint">
-            <value>Select all that apply.</value>
-          </text>
           <text id="/data/risk_factors/risk_factors_present/secondary_condition:jr:constraintMsg">
             <value>If "None of the above" selected, cannot select any other option.</value>
           </text>
           <text id="/data/risk_factors/risk_factors_present/secondary_condition:label">
             <value> Does <output value=" /data/patient_short_name "/> have any of these risk factors?</value>
-          </text>
-          <text id="/data/risk_factors/risk_factors_present/secondary_condition:hint">
-            <value>Select all that apply.</value>
           </text>
           <text id="/data/risk_factors/risk_factors_present/additional_risk_check:label">
             <value>Are there additional factors that could make this pregnancy high-risk?</value>
@@ -545,10 +494,16 @@
           <text id="/data/summary/r_fup_pregnancy_visit_2_weeks:label">
             <value>Please conduct the next pregnancy home visit in 2 weeks.</value>
           </text>
+          <text id="/data/summary/custom_translations/custom_woman_label_translator:label">
+            <value>hidden</value>
+          </text>
+          <text id="/data/summary/custom_translations/custom_woman_start_label_translator:label">
+            <value>hidden</value>
+          </text>
         </translation>
       </itext>
       <instance>
-        <data id="pregnancy" version="2025-09-19 14:53:02.982000" prefix="J1!pregnancy!" delimiter="#">
+        <data id="pregnancy" version="20260724164711" prefix="J1!pregnancy!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -1245,7 +1200,6 @@
         </input>
         <select1 ref="/data/gestational_age/register_method/lmp_method">
           <label ref="jr:itext('/data/gestational_age/register_method/lmp_method:label')"/>
-          <hint ref="jr:itext('/data/gestational_age/register_method/lmp_method:hint')"/>
           <itemset nodeset="instance('lmp_methods')/root/item">
             <value ref="name"/>
             <label ref="jr:itext(itextId)"/>
@@ -1260,7 +1214,6 @@
       <group appearance="field-list" ref="/data/gestational_age/method_approx">
         <select1 ref="/data/gestational_age/method_approx/lmp_approx">
           <label ref="jr:itext('/data/gestational_age/method_approx/lmp_approx:label')"/>
-          <hint ref="jr:itext('/data/gestational_age/method_approx/lmp_approx:hint')"/>
           <itemset nodeset="instance('lmp_approximations')/root/item">
             <value ref="name"/>
             <label ref="jr:itext(itextId)"/>
@@ -1307,7 +1260,6 @@
         </input>
         <select1 ref="/data/gestational_age/method_none/no_info_pregnancy_reason">
           <label ref="jr:itext('/data/gestational_age/method_none/no_info_pregnancy_reason:label')"/>
-          <hint ref="jr:itext('/data/gestational_age/method_none/no_info_pregnancy_reason:hint')"/>
           <itemset nodeset="instance('no_info_pregnancy_reasons')/root/item">
             <value ref="name"/>
             <label ref="jr:itext(itextId)"/>
@@ -1323,7 +1275,6 @@
         <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past:label')"/>
         <input ref="/data/anc_visits_hf/anc_visits_hf_past/visited_hf_count">
           <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_hf_count:label')"/>
-          <hint ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_hf_count:hint')"/>
         </input>
         <group appearance="field-list" ref="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group">
           <input ref="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_count_confim_note_single">
@@ -1349,6 +1300,7 @@
             <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates_multiple_note_section:label')"/>
           </input>
           <group ref="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates">
+            <label/>
             <repeat nodeset="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates" jr:count="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates_count">
               <select1 ref="/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date_ask_multiple">
                 <label ref="jr:itext('/data/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date_ask_multiple:label')"/>
@@ -1410,7 +1362,6 @@
       <group appearance="field-list" ref="/data/risk_factors/risk_factors_present">
         <select ref="/data/risk_factors/risk_factors_present/primary_condition">
           <label ref="jr:itext('/data/risk_factors/risk_factors_present/primary_condition:label')"/>
-          <hint ref="jr:itext('/data/risk_factors/risk_factors_present/primary_condition:hint')"/>
           <itemset nodeset="instance('primary_conditions')/root/item">
             <value ref="name"/>
             <label ref="jr:itext(itextId)"/>
@@ -1418,7 +1369,6 @@
         </select>
         <select ref="/data/risk_factors/risk_factors_present/secondary_condition">
           <label ref="jr:itext('/data/risk_factors/risk_factors_present/secondary_condition:label')"/>
-          <hint ref="jr:itext('/data/risk_factors/risk_factors_present/secondary_condition:hint')"/>
           <itemset nodeset="instance('secondary_conditions')/root/item">
             <value ref="name"/>
             <label ref="jr:itext(itextId)"/>
@@ -1760,12 +1710,14 @@
       </input>
       <group appearance="hidden" ref="/data/summary/custom_translations">
         <select1 ref="/data/summary/custom_translations/custom_woman_label_translator">
+          <label ref="jr:itext('/data/summary/custom_translations/custom_woman_label_translator:label')"/>
           <itemset nodeset="instance('translate_woman_label')/root/item">
             <value ref="name"/>
             <label ref="jr:itext(itextId)"/>
           </itemset>
         </select1>
         <select1 ref="/data/summary/custom_translations/custom_woman_start_label_translator">
+          <label ref="jr:itext('/data/summary/custom_translations/custom_woman_start_label_translator:label')"/>
           <itemset nodeset="instance('translate_woman_start_label')/root/item">
             <value ref="name"/>
             <label ref="jr:itext(itextId)"/>
