@@ -1,4 +1,5 @@
 const db = require('../db');
+const logger = require('@medic/logger');
 const infodoc = require('@medic/infodoc');
 infodoc.initLib(db.medic, db.sentinel);
 
@@ -13,7 +14,13 @@ module.exports = {
       let body = Buffer.from('');
       proxyRes.on('data', data => (body = Buffer.concat([body, data])));
       proxyRes.on('end', () => {
-        body = JSON.parse(body.toString());
+        try {
+          body = JSON.parse(body.toString());
+        } catch (err) {
+          logger.warn('Invalid JSON in CouchDB response for infodoc update. Status: %s, error: %s',
+            proxyRes.statusCode, err.message);
+          return;
+        }
 
         if (body.id && body.ok && !req.body._deleted) {
           // Single successful write
