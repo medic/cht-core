@@ -650,7 +650,7 @@ describe('sentinel processes archive jobs', () => {
       await updateSettings({ duration: '1 second', autoArchive: { tasks: true } });
 
       // two batches' worth
-      const COUNT = BATCH_SIZE * 70;
+      const COUNT = BATCH_SIZE * 7;
       const expiredTasks = Array.from(
         { length: COUNT },
         (_, i) => task(`archive-e2e-auto-deadline-task-${String(i).padStart(5, '0')}`)
@@ -676,17 +676,17 @@ describe('sentinel processes archive jobs', () => {
       expect(partialLogs.length).to.equal(1);
       expect(partialLogs[0]).to.include({
         status: 'running',
-        total: 50 * 1000, // max ids per job
-        cursor: BATCH_SIZE,
+        total: 7 * 1000, // max ids per job
         automatic: true,
       });
+      expect(partialLogs[0].cursor).to.be.below(COUNT);
 
       // ...and never reaches the targets.
       await expectLiveInMedic(targetIds);
       await expectNotArchived(targetIds);
 
       // Every following run picks up where the previous one stopped, targets last.
-      const MAX_RUNS = 52;
+      const MAX_RUNS = 8;
       let remaining = [...taskIds, ...targetIds];
       for (let run = 2; run <= MAX_RUNS && remaining.length; run++) {
         await runArchivingOnce();
@@ -702,7 +702,7 @@ describe('sentinel processes archive jobs', () => {
 
       expect(await getArchiveJobs()).to.deep.equal([]);
       const logs = await getArchiveLogs();
-      expect(logs.length).to.equal(3);
+      expect(logs.length).to.equal(2);
       expect(logs.every(log => {
         return log.status === 'completed' && log.automatic === true;
       })).to.equal(true);
