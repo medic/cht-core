@@ -11,6 +11,7 @@ import { EnketoService } from '@mm-services/enketo.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
+import { MapTilesPrefetchService } from '@mm-services/map-tiles-prefetch.service';
 
 @Injectable({
   providedIn: 'root'
@@ -27,6 +28,7 @@ export class IntegrationApiService {
   readonly DB;
   readonly InteractionTracking;
   readonly Geolocation;
+  readonly MapTiles;
 
   constructor(
     private dbService:DbService,
@@ -40,6 +42,7 @@ export class IntegrationApiService {
     private androidApiService:AndroidApiService,
     private readonly interactionTrackingService:InteractionTrackingService,
     private readonly geolocationService:GeolocationService,
+    private readonly mapTilesPrefetchService:MapTilesPrefetchService,
   ) {
     this.DB = dbService;
     this.AndroidAppLauncher = androidAppLauncherService;
@@ -52,6 +55,7 @@ export class IntegrationApiService {
     this.Translate = translateService;
     this.InteractionTracking = interactionTrackingService;
     this.Geolocation = this.geolocationService;
+    this.MapTiles = this.mapTilesPrefetchService;
   }
 
   get(service) {
