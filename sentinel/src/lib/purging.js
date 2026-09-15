@@ -12,9 +12,7 @@ const nouveau = require('@medic/nouveau');
 const { roles } = require('@medic/user-management')(config, db, dataContext);
 const moment = require('moment');
 const { SENTINEL_METADATA } = require('@medic/constants');
-
-const TASK_EXPIRATION_PERIOD = 60; // days
-const TARGET_EXPIRATION_PERIOD = 6; // months
+const expiration = require('./expiration');
 
 const MAX_CONTACT_BATCH_SIZE = nouveau.BATCH_LIMIT;
 const MAX_BATCH_SIZE = 20 * 1000;
@@ -507,7 +505,7 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
 };
 
 const purgeTasks = async (roles) => {
-  const maximumEmissionEndDate = moment().subtract(TASK_EXPIRATION_PERIOD, 'days').format('YYYY-MM-DD');
+  const maximumEmissionEndDate = expiration.getMaximumEmissionEndDate();
   let startKeyDocId = '';
   let startKey = '';
   let nextBatch;
@@ -543,7 +541,7 @@ const purgeTargets = async (roles) => {
   let startKey = JSON.stringify(startKeyDocId);
   let nextBatch;
 
-  const lastAllowedReportingIntervalTag = moment().subtract(TARGET_EXPIRATION_PERIOD, 'months').format('YYYY-MM');
+  const lastAllowedReportingIntervalTag = expiration.getLastAllowedReportingIntervalTag();
   // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
   const getBatch = () => db.queryMedic('allDocs', {
     limit: MAX_BATCH_SIZE,
