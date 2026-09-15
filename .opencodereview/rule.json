@@ -1,0 +1,65 @@
+{
+  "include": [
+    "**/*.{ts,js}"
+  ],
+  "exclude": [
+    "**/package-lock.json",
+    "api/src/enketo-transformer/**",
+    "api/src/public/login/lib-bowser.js",
+    "webapp/src/js/enketo/bootstrap-datepicker.*.js",
+    ".github/**/compiled/index.js"
+  ],
+  "rules": [
+    {
+      "path": "api/resources/translations/*.properties",
+      "rule": ".opencodereview/rules/translations.md"
+    },
+    {
+      "path": "ddocs/**/*.js",
+      "rule": ".opencodereview/rules/couchdb-ddocs.md",
+      "merge_system_rule": true
+    },
+    {
+      "path": "shared-libs/cht-datasource/src/**/*.{ts,js}",
+      "rule": ".opencodereview/rules/cht-datasource.md",
+      "merge_system_rule": true
+    },
+    {
+      "path": "tests/**/*.{ts,js}",
+      "rule": ".opencodereview/rules/e2e-tests.md"
+    },
+    {
+      "path": "api/tests/integration/**/*.js",
+      "rule": ".opencodereview/rules/e2e-tests.md"
+    },
+    {
+      "path": "**/tests/**/*.{ts,js}",
+      "rule": ".opencodereview/rules/unit-tests.md"
+    },
+    {
+      "path": "shared-libs/*/test/**/*.{ts,js}",
+      "rule": ".opencodereview/rules/unit-tests.md"
+    },
+    {
+      "path": "config/*/test/**/*.js",
+      "rule": ".opencodereview/rules/unit-tests.md"
+    },
+
+    {
+      "path": "webapp/**/src/**/*.{ts,js}",
+      "rule": ".opencodereview/rules/webapp.md",
+      "merge_system_rule": true
+    },
+
+    {
+      "path": "admin/src/js/**/*.js",
+      "rule": ".opencodereview/rules/admin.md",
+      "merge_system_rule": true
+    },
+    {
+      "path": "**/*.{ts,js,mjs,cjs}",
+      "rule": ".opencodereview/rules/base.md",
+      "merge_system_rule": true
+    }
+  ]
+}
