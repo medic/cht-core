@@ -175,6 +175,42 @@ describe('generate_shortcode_on_contacts', () => {
       });
   });
 
+  it('should add patient_id to a report submitted after the patient receives one', async () => {
+    const settings = {
+      transitions: { generate_shortcode_on_contacts: true },
+    };
+
+    const person = {
+      _id: uuid(),
+      type: 'person',
+      reported_date: new Date().getTime(),
+    };
+    const report = {
+      _id: uuid(),
+      type: DOC_TYPES.DATA_RECORD,
+      form: 'pregnancy',
+      fields: { patient_uuid: person._id },
+      contact: { _id: person._id },
+      reported_date: new Date().getTime(),
+    };
+
+    await utils.updateSettings(settings, { ignoreReload: 'sentinel' });
+    await utils.saveDoc(person);
+    await sentinelUtils.waitForSentinel(person._id);
+
+    const patient = await utils.getDoc(person._id);
+    expect(patient.patient_id).to.be.a('string');
+
+    await utils.saveDoc(report);
+    await sentinelUtils.waitForSentinel(report._id);
+
+    const updatedReport = await utils.getDoc(report._id);
+    expect(updatedReport.fields).to.include({
+      patient_uuid: person._id,
+      patient_id: patient.patient_id,
+    });
+  });
+
   it('should add place_id', () => {
     const settings = {
       transitions: { generate_shortcode_on_contacts: true },
