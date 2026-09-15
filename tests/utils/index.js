@@ -1268,7 +1268,17 @@ const waitForAuditCount = async (docId, expectedCount, retries = 15) => {
   return waitForAuditCount(docId, expectedCount, retries - 1);
 };
 
-
+const waitForBulkOperation = async (id, tries = 30) => {
+  for (let i = 0; i < tries; i++) {
+    const log = await request({ path: `/api/v1/bulk-operations/${id}` });
+    const actions = Object.values(log.actions || {});
+    if (actions.every(action => action.status !== 'queued')) {
+      return log;
+    }
+    await delayPromise(100);
+  }
+  throw new Error(`bulk operation ${id} did not complete`);
+};
 
 const getDefaultSettings = () => {
   const pathToDefaultAppSettings = path.join(__dirname, '../config.default.json');
@@ -1978,8 +1988,8 @@ module.exports = {
   setTransitionSeqToNow,
   waitForDocRev,
   waitForAuditCount,
+  waitForBulkOperation,
   getDefaultSettings,
-
   addTranslations,
   enableLanguage,
   enableLanguages,

@@ -552,6 +552,29 @@ describe('Sentinel archiving lib', () => {
     expect(db.sentinel.allDocs.callCount).to.equal(2);
   });
 
+  describe('canArchive', () => {
+    it('accepts contacts (modern and legacy types), reports, tasks and targets', () => {
+      const canArchive = lib.__get__('canArchive');
+      expect(canArchive({ type: 'contact' })).to.equal(true);
+      expect(canArchive({ type: 'person' })).to.equal(true);
+      expect(canArchive({ type: 'clinic' })).to.equal(true);
+      expect(canArchive({ type: 'health_center' })).to.equal(true);
+      expect(canArchive({ type: 'district_hospital' })).to.equal(true);
+      expect(canArchive({ type: 'data_record' })).to.equal(true);
+      expect(canArchive({ type: 'task' })).to.equal(true);
+      expect(canArchive({ type: 'target' })).to.equal(true);
+    });
+
+    it('rejects other types and missing docs', () => {
+      const canArchive = lib.__get__('canArchive');
+      expect(canArchive({ type: 'feedback' })).to.equal(false);
+      expect(canArchive({ type: 'usersmeta' })).to.equal(false);
+      expect(canArchive({})).to.equal(false);
+      expect(canArchive(null)).to.equal(false);
+      expect(canArchive(undefined)).to.equal(false);
+    });
+  });
+
   describe('archiveBatch', () => {
     // The outer beforeEach stubs `archiveBatch` on `lib` so the loop tests can observe
     // its inputs cheaply. These tests want the real implementation, so they rewire a
@@ -564,8 +587,8 @@ describe('Sentinel archiving lib', () => {
     it('does nothing when the batch has no usable ids', async () => {
       stubBatchExternals();
 
-      await archiveBatch([]);
-      await archiveBatch(['', '   ']);
+      expect(await archiveBatch([])).to.deep.equal([]);
+      expect(await archiveBatch(['', '   '])).to.deep.equal([]);
 
       expect(db.medic.allDocs.callCount).to.equal(0);
       expect(db.archive.bulkDocs.callCount).to.equal(0);
@@ -593,8 +616,9 @@ describe('Sentinel archiving lib', () => {
         r1: ['1-b'],
       }));
 
-      await archiveBatch([' c1 ', 'r1', 'f1', 'missing']);
+      const skipped = await archiveBatch([' c1 ', 'r1', 'f1', 'missing']);
 
+      expect(skipped).to.deep.equal(['f1', 'missing']);
       expect(db.medic.allDocs.args[0]).to.deep.equal([{
         attachments: true,
         keys: ['c1', 'r1', 'f1', 'missing'],
@@ -636,8 +660,9 @@ describe('Sentinel archiving lib', () => {
         ],
       });
 
-      await archiveBatch(['r1', 'f1', 'missing']);
+      const skipped = await archiveBatch(['r1', 'f1', 'missing']);
 
+      expect(skipped).to.deep.equal(['f1', 'missing']);
       expect(logger.warn.callCount).to.equal(1);
       expect(logger.warn.args[0]).to.deep.equal([
         'Archiving: skipped 2 ids, missing or not archivable: %o',
@@ -653,8 +678,9 @@ describe('Sentinel archiving lib', () => {
         .onCall(0).resolves(docRows(makeIds(FETCH_BATCH_SIZE)))
         .onCall(1).resolves({ rows: [{ doc: null }, { doc: { _id: 'x1', type: 'form' } }] });
 
-      await archiveBatch([...makeIds(FETCH_BATCH_SIZE), 'missing', 'x1']);
+      const skipped = await archiveBatch([...makeIds(FETCH_BATCH_SIZE), 'missing', 'x1']);
 
+      expect(skipped).to.deep.equal(['missing', 'x1']);
       expect(logger.warn.args[0]).to.deep.equal([
         'Archiving: skipped 2 ids, missing or not archivable: %o',
         ['missing', 'x1'],
@@ -665,7 +691,7 @@ describe('Sentinel archiving lib', () => {
       stubBatchExternals();
       sinon.stub(logger, 'warn');
 
-      await archiveBatch(['r1', 'r2']);
+      expect(await archiveBatch(['r1', 'r2'])).to.deep.equal([]);
 
       expect(logger.warn.callCount).to.equal(0);
     });
@@ -682,8 +708,9 @@ describe('Sentinel archiving lib', () => {
         { doc: null }, // missing
       ] });
 
-      await archiveBatch([...types.map((t, i) => `ok${i}`), 'bad0', 'bad1', 'bad2', 'missing']);
+      const skipped = await archiveBatch([...types.map((t, i) => `ok${i}`), 'bad0', 'bad1', 'bad2', 'missing']);
 
+      expect(skipped).to.deep.equal(['bad0', 'bad1', 'bad2', 'missing']);
       expect(db.archive.bulkDocs.args[0][0].map(d => ({ id: d._id, type: d.type }))).to.deep.equal(
         types.map((type, i) => ({ id: `ok${i}`, type }))
       );
@@ -695,7 +722,7 @@ describe('Sentinel archiving lib', () => {
       clock.setSystemTime(1);
       const ids = makeIds(FETCH_BATCH_SIZE * 2 + 50);
 
-      await archiveBatch(ids);
+      expect(await archiveBatch(ids)).to.deep.equal([]);
 
       const chunks = [
         ids.slice(0, FETCH_BATCH_SIZE),
@@ -722,7 +749,7 @@ describe('Sentinel archiving lib', () => {
         r1: ['2-winner', '2-conflict', 'deleted:2-resolved'],
       }));
 
-      await archiveBatch(['r1']);
+      expect(await archiveBatch(['r1'])).to.deep.equal([]);
 
       expect(db.purge.args[1][1]).to.deep.equal([
         { _id: 'r1', _revs: ['2-winner', '2-conflict', '2-resolved'] },
@@ -736,7 +763,7 @@ describe('Sentinel archiving lib', () => {
       clock.setSystemTime(1);
       db.sentinel.bulkGet.resolves(bulkGetResult({ 'r1-info': [] })); // not found
 
-      await archiveBatch(['r1']);
+      expect(await archiveBatch(['r1'])).to.deep.equal([]);
 
       // No info docs found → only the medic purge fires.
       expect(db.purge.callCount).to.equal(1);
@@ -747,7 +774,7 @@ describe('Sentinel archiving lib', () => {
       stubBatchExternals();
       clock.setSystemTime(1);
 
-      await archiveBatch(['r1']);
+      expect(await archiveBatch(['r1'])).to.deep.equal([]);
 
       const medicPurge = db.purge.getCall(1);
       expect(medicPurge.args[1].map(d => d._id)).to.deep.equal(['r1']);
