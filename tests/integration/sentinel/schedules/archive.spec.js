@@ -568,6 +568,8 @@ describe('sentinel processes archive jobs', () => {
       const survivors = [
         task('archive-e2e-auto-task-recent', { endDate: daysAgo(10) }),
         task('archive-e2e-auto-task-draft', { state: 'Draft' }),
+        // emits a `null` view key, which sorts below the date range: age is unknowable, leave it
+        task('archive-e2e-auto-task-no-end-date', { endDate: null }),
         target('archive-e2e-auto-boundary', 6),
         target('archive-e2e-auto-recent', 1),
       ];
@@ -591,10 +593,11 @@ describe('sentinel processes archive jobs', () => {
       // One job per sweep, tasks first (job ids are time-ordered), both completed and dequeued.
       expect(await getArchiveJobs()).to.deep.equal([]);
       const logs = await getArchiveLogs();
-      expect(logs.map(log => ({ status: log.status, total: log.total }))).to.deep.equal([
-        { status: 'completed', total: taskIds.length },
-        { status: 'completed', total: targetIds.length },
-      ]);
+      expect(logs.map(log => ({ status: log.status, total: log.total, automatic: log.automatic })))
+        .to.deep.equal([
+          { status: 'completed', total: taskIds.length, automatic: true },
+          { status: 'completed', total: targetIds.length, automatic: true },
+        ]);
 
       await utils.deleteDocs(survivorIds);
     });
@@ -632,6 +635,8 @@ describe('sentinel processes archive jobs', () => {
       expect(await getArchiveJobs()).to.deep.equal([]);
       const logs = await getArchiveLogs();
       expect(logs).to.have.lengthOf(3);
+      // Only the sweeps are flagged automatic; the csv-queued job is not.
+      expect(logs.map(log => log.automatic)).to.deep.equal([undefined, true, true]);
       expect(logs[0]).to.include({ _id: userJobId, status: 'completed', total: 1 });
       expect(logs[1]).to.include({ status: 'completed', total: taskIds.length });
       expect(logs[2]).to.include({ status: 'completed', total: targetIds.length });

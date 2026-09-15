@@ -8,6 +8,7 @@ const audit = require('@medic/audit');
 const contactTypesUtils = require('@medic/contact-types-utils');
 const { v7: uuid } = require('uuid');
 const config = require('../config');
+const expiration = require('./expiration');
 
 const PURGE_BATCH_SIZE = 1000;
 const FETCH_BATCH_SIZE = 100;
@@ -17,8 +18,9 @@ const JOB_LOG_STATUS = {
   COMPLETED: 'completed',
   FAILED: 'failed',
 };
-const TASK_EXPIRATION_PERIOD = 60; // days
-const TARGET_EXPIRATION_PERIOD = 6; // months
+
+// one job per sweep per run: bounds the work a run does and the size of the query response
+const AUTO_ARCHIVE_JOB_SIZE = 50 * 1000;
 
 let currentlyArchiving = false;
 
@@ -192,6 +194,7 @@ const setLogRunning = (job) => updateLog(job._id, {
   status: JOB_LOG_STATUS.RUNNING,
   cursor: job.cursor,
   total: job.total,
+  ...(job.automatic && { automatic: true }),
 });
 
 /**
@@ -316,6 +319,7 @@ const persistJob = async (ids) => {
     date: Date.now(),
     total: ids.length,
     cursor: 0,
+    automatic: true,
     _attachments: {
       [constants.ARCHIVE_IDS_ATTACHMENT]: {
         content_type: 'text/plain',
@@ -329,54 +333,55 @@ const persistJob = async (ids) => {
 };
 
 /**
- * Queues and processes an archive job for the given ids. Returns whether another batch is worth
- * fetching: false when there was nothing to archive, when the batch was short (the source is
- * drained), or when the job did not complete — re-querying would return the same ids and queue
- * a duplicate job, so the errored job is left for the next run to retry.
- * @param {string[]} ids - doc ids to archive, at most PURGE_BATCH_SIZE
+ * Queues and processes an archive job for the given ids. A no-op for an empty list.
+ * @param {string[]} ids - doc ids to archive
  * @param {number} deadline - epoch ms after which no further batch is started
  * @param {{ batches: number }} indexCounter - run-wide batch counter, see processJob
- * @returns {Promise<boolean>}
+ * @returns {Promise<void>}
  */
 const archiveIds = async (ids, deadline, indexCounter) => {
   if (!ids.length) {
-    return false;
+    return;
   }
 
   const job = await persistJob(ids);
   await processJob(job, deadline, indexCounter);
-  return job.cursor >= job.total && ids.length === PURGE_BATCH_SIZE;
+
+  if (ids.length === AUTO_ARCHIVE_JOB_SIZE) {
+    logger.info(`Archiving: sweep filled a job with ${ids.length} ids, resuming on the next run`);
+  }
 };
 
 /**
- * Archives one batch of tasks in a terminal state whose emission ended more than
- * TASK_EXPIRATION_PERIOD days ago.
- * @returns {Promise<boolean>} whether another batch is worth fetching
+ * Archives the oldest expired tasks in a terminal state, as a single job. The empty start key
+ * floors the range above `null` and numeric keys, so tasks with a malformed `emission.endDate`
+ * are skipped rather than archived regardless of age.
+ * @param {number} deadline - epoch ms after which no further batch is started
+ * @param {{ batches: number }} indexCounter - run-wide batch counter, see processJob
+ * @returns {Promise<void>}
  */
 const archiveTasks = async (deadline, indexCounter) => {
-  const maximumEmissionEndDate = moment().subtract(TASK_EXPIRATION_PERIOD, 'days').format('YYYY-MM-DD');
-  const batch = await db.medic.query('medic/tasks_in_terminal_state', {
-    limit: PURGE_BATCH_SIZE,
-    end_key: maximumEmissionEndDate,
+  const { rows } = await db.medic.query('medic/tasks_in_terminal_state', {
+    limit: AUTO_ARCHIVE_JOB_SIZE,
+    start_key: '',
+    end_key: expiration.getMaximumEmissionEndDate(),
   });
-  const ids = batch.rows.map(row => row.id);
-  return archiveIds(ids, deadline, indexCounter);
+  await archiveIds(rows.map(row => row.id), deadline, indexCounter);
 };
 
 /**
- * Archives one batch of targets whose reporting period is more than TARGET_EXPIRATION_PERIOD
- * months old.
- * @returns {Promise<boolean>} whether another batch is worth fetching
+ * Archives the oldest targets whose reporting period has expired, as a single job.
+ * @param {number} deadline - epoch ms after which no further batch is started
+ * @param {{ batches: number }} indexCounter - run-wide batch counter, see processJob
+ * @returns {Promise<void>}
  */
 const archiveTargets = async (deadline, indexCounter) => {
-  const lastAllowedReportingIntervalTag = moment().subtract(TARGET_EXPIRATION_PERIOD, 'months').format('YYYY-MM');
-  const batch = await db.medic.allDocs({
-    limit: PURGE_BATCH_SIZE,
+  const { rows } = await db.medic.allDocs({
+    limit: AUTO_ARCHIVE_JOB_SIZE,
     start_key: 'target~',
-    end_key: `target~${lastAllowedReportingIntervalTag}~`,
+    end_key: `target~${expiration.getLastAllowedReportingIntervalTag()}~`,
   });
-  const ids = batch.rows.map(row => row.id);
-  return archiveIds(ids, deadline, indexCounter);
+  await archiveIds(rows.map(row => row.id), deadline, indexCounter);
 };
 
 /**
@@ -388,17 +393,24 @@ const archiveTargets = async (deadline, indexCounter) => {
 const isAutoArchiveEnabled = (field) => !!config.get('archive')?.auto_archive?.[field];
 const hasArchiveDuration = () => !!config.get('archive')?.duration;
 
+/**
+ * Archives expired tasks and then expired targets, one job each, when `archive.auto_archive.tasks`
+ * or `archive.duration` is set. Each run reads only the oldest AUTO_ARCHIVE_JOB_SIZE ids of
+ * its range.
+ * @param {number} deadline - epoch ms after which no sweep is started
+ * @param {{ batches: number }} indexCounter - run-wide batch counter, see processJob
+ * @returns {Promise<void>}
+ */
 const processAutoArchive = async (deadline, indexCounter) => {
-  if (isAutoArchiveEnabled('tasks') || hasArchiveDuration()) {
-    await autoArchive(deadline, indexCounter, archiveTasks);
-    await autoArchive(deadline, indexCounter, archiveTargets);
+  if (!isAutoArchiveEnabled('tasks') && !hasArchiveDuration()) {
+    return;
   }
-};
 
-const autoArchive = async (deadline, indexCounter, autoArchiveFn) => {
-  let nextBatch = true;
-  while (Date.now() < deadline && nextBatch) {
-    nextBatch = await autoArchiveFn(deadline, indexCounter);
+  for (const sweep of [archiveTasks, archiveTargets]) {
+    if (Date.now() >= deadline) {
+      return;
+    }
+    await sweep(deadline, indexCounter);
   }
 };
 
