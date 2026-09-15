@@ -10,6 +10,7 @@ const request = require('@medic/couch-request');
 const config = require('../../src/config');
 const environment = require('@medic/environment');
 const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
+const messageUtils = require('@medic/message-utils');
 
 describe('due tasks', () => {
   let schedule;
@@ -20,7 +21,8 @@ describe('due tasks', () => {
       getAll: sinon
         .stub()
         .returns({}),
-      get: sinon.stub().returns(undefined)      
+      get: sinon.stub().returns(undefined),
+      getExtensionLibs: sinon.stub().returns({}),
     });
     sinon.stub(environment, 'couchUrl').value('http://admin:pass@127.0.0.1:5984/medic');
 
@@ -236,6 +238,9 @@ describe('due tasks', () => {
       .returns('Please visit {{patient_name}} asap');
     const getRegistrations = sinon.stub(utils, 'getRegistrations').resolves([]);
     const setTaskState = sinon.stub(utils, 'setTaskState');
+    const extensionLibs = { 'uppercase.js': value => value.toUpperCase() };
+    config.getExtensionLibs.returns(extensionLibs);
+    const generate = sinon.spy(messageUtils, 'generate');
 
     const minified = {
       fields: {
@@ -320,6 +325,20 @@ describe('due tasks', () => {
       assert.equal(translate.args[0][0], 'visit-1');
       assert.equal(getRegistrations.callCount, 1);
       assert.equal(setTaskState.callCount, 1);
+      assert.equal(generate.callCount, 1);
+      const generateOptions = generate.firstCall.args[0];
+      assert.strictEqual(generateOptions.config, config.getAll());
+      assert.strictEqual(generateOptions.translate, utils.translate);
+      assert.strictEqual(generateOptions.doc, hydrated);
+      assert.deepEqual(generateOptions.content, { translationKey: 'visit-1', message: undefined });
+      assert.equal(generateOptions.recipient, 'clinic');
+      assert.deepEqual(generateOptions.extraContext, {
+        patient: hydrated.patient,
+        place: undefined,
+        registrations: [],
+        placeRegistrations: undefined,
+      });
+      assert.strictEqual(generateOptions.extensionLibs, extensionLibs);
       const saved = saveDoc.firstCall.args[0];
       assert.equal(saved.scheduled_tasks.length, 2);
       assert.equal(saved.scheduled_tasks[0].messages.length, 1);

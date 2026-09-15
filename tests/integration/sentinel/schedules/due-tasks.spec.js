@@ -3,6 +3,7 @@ const sentinelUtils = require('@utils/sentinel');
 const chai = require('chai');
 const moment = require('moment');
 const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
+const { createExtensionLibDoc, waitForExtensionLibsReload } = require('@utils/extension-libs');
 
 const reportedDate = moment().valueOf();
 const oneMonthAgo = moment().subtract(1, 'month').toISOString();
@@ -140,6 +141,30 @@ const reportWithDuplicateDueDate = {
       state: 'scheduled',
     },
   ],
+};
+
+const reportWithExtensionLib = {
+  _id: 'report_extension_lib',
+  type: DOC_TYPES.DATA_RECORD,
+  contact: {
+    _id: 'chw1',
+    parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+  },
+  fields: { patient_id: 'patient1' },
+  reported_date: oneMonthAgo,
+  scheduled_tasks: [{
+    due: twoDaysAgo,
+    message_key: 'messages.extension',
+    recipient: 'clinic',
+    state_history: [],
+    state: 'scheduled',
+  }, {
+    due: twoDaysAgo,
+    message_key: 'messages.extension.invalid',
+    recipient: 'clinic',
+    state_history: [],
+    state: 'scheduled',
+  }],
 };
 
 const reports = [
@@ -398,16 +423,29 @@ const translations = {
   'messages.two':
     'TWO. Reported by {{contact.name}}. Patient {{patient_name}} ({{patient_id}}). Value {{fields.value}}',
   'messages.clinic':
-    'CLINIC. Reported by {{contact.name}}. Place {{place.name}} ({{place.place_id}}). Value {{fields.value}}'
+    'CLINIC. Reported by {{contact.name}}. Place {{place.name}} ({{place.place_id}}). Value {{fields.value}}',
+  'messages.extension':
+    'Extension helpers: {{#decorate}}{{patient_name}}{{/decorate}} / {{#reverse}}{{patient_name}}{{/reverse}}',
+  'messages.extension.invalid': 'Invalid helper fallback: {{#invalid}}patient {{patient_id}}{{/invalid}}',
 };
 
 const ids = reports.map(report => report._id);
 
 describe('Due Tasks', () => {
-  before(() => utils
-    .saveDocs(contacts)
-    .then(() => utils.addTranslations('test', translations))
-    .then(() => utils.updateSettings(settings, { ignoreReload: 'sentinel' })));
+  before(async () => {
+    const reload = await waitForExtensionLibsReload();
+    await utils.saveDocs([
+      ...contacts,
+      createExtensionLibDoc({
+        'decorate.js': 'module.exports = value => `patient<${value}>`;',
+        'reverse.js': 'module.exports = value => Array.from(value).reverse().join(\'\');',
+        'invalid.js': 'module.exports = { reason: \'not a function\' };',
+      }),
+    ]);
+    await reload.promise;
+    await utils.addTranslations('test', translations);
+    await utils.updateSettings(settings, { ignoreReload: 'sentinel' });
+  });
   after(() => utils.revertDb([], true));
 
   it('should process scheduled messages correctly', async () => {
@@ -567,5 +605,27 @@ describe('Due Tasks', () => {
     chai.expect(report.scheduled_tasks[1].state).to.equal('scheduled',
       'Task with missing translation should remain in scheduled state');
     chai.expect(report.scheduled_tasks[1].messages).to.equal(undefined);
+  });
+
+  it('renders scheduled messages with multiple extension-libs and handles invalid exports', async () => {
+    await sentinelUtils.waitForSentinel();
+    await utils.toggleSentinelTransitions();
+    await utils.saveDoc(reportWithExtensionLib);
+    await utils.toggleSentinelTransitions();
+    await utils.runSentinelTasks();
+    await sentinelUtils.waitForSentinel([reportWithExtensionLib._id]);
+    await utils.waitForDocRev([{ id: reportWithExtensionLib._id, rev: 2 }]);
+
+    const report = await utils.getDoc(reportWithExtensionLib._id);
+    chai.expect(report.scheduled_tasks[0]).to.deep.include({ state: 'pending' });
+    chai.expect(report.scheduled_tasks[0].messages[0]).to.include({
+      message: 'Extension helpers: patient<Patient1> / 1tneitaP',
+      to: '111222',
+    });
+    chai.expect(report.scheduled_tasks[1]).to.deep.include({ state: 'pending' });
+    chai.expect(report.scheduled_tasks[1].messages[0]).to.include({
+      message: 'Invalid helper fallback: patient patient1',
+      to: '111222',
+    });
   });
 });

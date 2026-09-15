@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 
 import * as validation from '@medic/validation';
 import * as messages from '@medic/message-utils';
+import * as extensionLibs from '@medic/extension-libs';
 import { DbService } from '@mm-services/db.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
@@ -58,13 +59,14 @@ export class ValidationService {
     }
 
     return errors.map(error => {
-      error.message = messages.template(
-        this.settings,
-        this.translate.bind(this),
+      error.message = messages.template({
+        config: this.settings,
+        translate: this.translate.bind(this),
         doc,
-        error,
-        context
-      );
+        content: error,
+        extraContext: context,
+        extensionLibs: extensionLibs.getAll(),
+      });
       return error;
     });
   }

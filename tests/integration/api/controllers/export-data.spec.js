@@ -1,6 +1,7 @@
 const utils = require('@utils');
 const uuid = require('uuid').v7;
-const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
+const { DOC_IDS, DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
+const { createExtensionLibDoc, waitForExtensionLibsReload } = require('@utils/extension-libs');
 
 const getRows = (result) => {
   const rows = result.split('\n');
@@ -18,6 +19,49 @@ const expectRows = (expected, rows) => {
 describe('Export Data V2.0', () => {
 
   after(() => utils.revertDb([], true));
+
+  describe('GET /api/v2/export/messages with extension-libs', () => {
+    const report = {
+      _id: 'export-messages-extension-lib',
+      type: DOC_TYPES.DATA_RECORD,
+      form: 'extension_lib_test',
+      locale: 'en',
+      from: '+12025550123',
+      reported_date: Date.now(),
+      fields: { name: 'Ada' },
+      scheduled_tasks: [{
+        state: 'scheduled',
+        due: Date.now(),
+        recipient: 'reporting_unit',
+        message: [{
+          locale: 'en',
+          content: 'Hello {{#uppercase}}{{fields.name}}{{/uppercase}}',
+        }],
+      }],
+    };
+
+    before(async () => {
+      const reload = await waitForExtensionLibsReload();
+      await utils.saveDocs([
+        createExtensionLibDoc({ 'uppercase.js': 'module.exports = value => value.toUpperCase();' }),
+        report,
+      ]);
+      await reload.promise;
+    });
+
+    after(async () => {
+      const reload = await waitForExtensionLibsReload();
+      await utils.deleteDocs([DOC_IDS.EXTENSION_LIBS, report._id]);
+      await reload.promise;
+    });
+
+    it('renders scheduled message content with the loaded extension library', async () => {
+      const result = await utils.request({ path: '/api/v2/export/messages' });
+
+      expect(result).to.include('export-messages-extension-lib');
+      expect(result).to.include('Hello ADA');
+    });
+  });
 
   describe('GET|POST /api/v2/export/reports', () => {
     const docs = [{
