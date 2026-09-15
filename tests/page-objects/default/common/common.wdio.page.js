@@ -455,7 +455,7 @@ const syncAndWaitForSuccess = async (timeout = RELOAD_SYNC_TIMEOUT) => {
       await browser.pause(200);
       if (await modalPage.isDisplayed()) {
         reloadModalShown = true;
-        await closeReloadModal(false, RELOAD_SYNC_TIMEOUT);
+        await closeReloadModal(false, true);
         await openHamburgerMenu();
       }
 
@@ -488,6 +488,7 @@ const hideModalOverlay = () => {
 const sync = async ({
   reload = false,
   serviceWorkerUpdate = false,
+  expectReload = false,
   timeout = RELOAD_SYNC_TIMEOUT
 } = {}) => {
   await hideModalOverlay();
@@ -495,7 +496,9 @@ const sync = async ({
   const reloadModalShown = await syncAndWaitForSuccess(timeout);
   // service worker updates require downloading all resources, and then it triggers the update modal.
   // sometimes this action is not timely with a quick sync.
-  (serviceWorkerUpdate && !reloadModalShown) && await closeReloadModal(false, RELOAD_SYNC_TIMEOUT);
+  if ((serviceWorkerUpdate || expectReload) && !reloadModalShown) {
+    await closeReloadModal(false, RELOAD_SYNC_TIMEOUT);
+  }
 
   if (reload) {
     await browser.refresh();
