@@ -36,7 +36,7 @@ describe('TrainingCardsFormComponent', () => {
     consoleErrorMock = sinon.stub(console, 'error');
     geoHandle = { cancel: sinon.stub() };
     geolocationService = { init: sinon.stub().returns(geoHandle) };
-    xmlFormsService = { get: sinon.stub().resolves() };
+    xmlFormsService = { getFormConfig: sinon.stub().resolves() };
     translateService = {
       get: sinon.stub().resolvesArg(0),
       instant: sinon.stub().returnsArg(0),
@@ -185,7 +185,7 @@ describe('TrainingCardsFormComponent', () => {
 
     it('should call enketo save, set content in snackbar and unload form', fakeAsync(() => {
       const consoleDebugMock = sinon.stub(console, 'debug');
-      xmlFormsService.get.resolves({ _id: 'form:training:new_feature' });
+      xmlFormsService.getFormConfig.resolves({ doc: { _id: 'form:training:new_feature' } });
       formService.save.resolves([{ _id: 'completed_training' }]);
       formService.render.resolves({
         _id: 'form:training:new_feature',
@@ -203,15 +203,13 @@ describe('TrainingCardsFormComponent', () => {
         _id: 'form:training:new_feature',
         pages: { activePages: [ { id: 'page-1' } ] },
       }]);
-      expect(formService.save.calledOnce).to.be.true;
-      expect(formService.save.args[0]).to.deep.equal([
-        'training:a_form_id',
+      expect(formService.save.args).to.deep.equal([[
         {
           _id: 'form:training:new_feature',
           pages: { activePages: [ { id: 'page-1' } ] },
         },
         geoHandle
-      ]);
+      ]]);
       expect(consoleDebugMock.callCount).to.equal(1);
       expect(consoleDebugMock.args[0]).to.deep.equal([
         'Saved form and associated docs',
@@ -232,7 +230,7 @@ describe('TrainingCardsFormComponent', () => {
 
     it('should catch enketo saving error', fakeAsync(() => {
       sinon.resetHistory();
-      xmlFormsService.get.resolves({ the: 'rendered training form' });
+      xmlFormsService.getFormConfig.resolves({ doc: { the: 'rendered training form' } });
       formService.render.resolves({ the: 'rendered training form' });
       formService.save.rejects({ some: 'error' });
       store.overrideSelector(Selectors.getTrainingCardFormId, 'training:a_form_id');
@@ -242,12 +240,10 @@ describe('TrainingCardsFormComponent', () => {
       component.saveForm();
       tick();
 
-      expect(formService.save.calledOnce).to.be.true;
-      expect(formService.save.args[0]).to.deep.equal([
-        'training:a_form_id',
+      expect(formService.save.args).to.deep.equal([[
         { the: 'rendered training form' },
         geoHandle
-      ]);
+      ]]);
       expect(consoleErrorMock.calledOnce).to.be.true;
       expect(consoleErrorMock.args[0]).to.deep.equal([
         'TrainingCardsFormComponent :: Error submitting form data.',
@@ -264,19 +260,18 @@ describe('TrainingCardsFormComponent', () => {
   describe('loadForm', () => {
     it('should load form', fakeAsync(() => {
       sinon.resetHistory();
-      const xmlForm = { _id: 'training:a_form_id', some: 'content' };
+      const formConfig = { doc: { _id: 'training:a_form_id', some: 'content' } };
       const renderedForm = { rendered: 'form', model: {}, instance: {} };
-      xmlFormsService.get.resolves(xmlForm);
+      xmlFormsService.getFormConfig.resolves(formConfig);
       formService.render.resolves(renderedForm);
       store.overrideSelector(Selectors.getTrainingCardFormId, 'training:a_form_id');
       store.refreshState();
       tick();
 
       expect(geolocationService.init.calledOnce).to.be.true;
-      expect(xmlFormsService.get.calledOnce).to.be.true;
-      expect(xmlFormsService.get.args[0]).to.deep.equal([ 'training:a_form_id' ]);
+      expect(xmlFormsService.getFormConfig.args).to.deep.equal([[ 'training-card', 'training:a_form_id' ]]);
       expect(formService.render.calledOnce).to.be.true;
-      expect(formService.render.args[0][0].formDoc).to.deep.equal(xmlForm);
+      expect(formService.render.args[0][0].formConfig).to.deep.equal(formConfig);
       expect(component.form).to.equal(renderedForm);
       expect(consoleErrorMock.notCalled).to.be.true;
       expect(feedbackService.submit.notCalled).to.be.true;
@@ -310,13 +305,13 @@ describe('TrainingCardsFormComponent', () => {
     }));
 
     it('should catch form loading errors', fakeAsync(() => {
-      xmlFormsService.get.rejects({ error: 'boom' });
+      xmlFormsService.getFormConfig.rejects({ error: 'boom' });
       sinon.resetHistory();
       store.overrideSelector(Selectors.getTrainingCardFormId, 'training:a_form_id');
       store.refreshState();
       tick();
 
-      expect(xmlFormsService.get.calledOnce).to.be.true;
+      expect(xmlFormsService.getFormConfig.calledOnce).to.be.true;
       expect(formService.render.notCalled).to.be.true;
       expect(consoleErrorMock.calledOnce).to.be.true;
       expect(consoleErrorMock.args[0]).to.deep.equal([
@@ -329,14 +324,14 @@ describe('TrainingCardsFormComponent', () => {
     }));
 
     it('should catch enketo errors', fakeAsync(() => {
-      xmlFormsService.get.resolves({ _id: 'training:a_form_id', some: 'content' });
+      xmlFormsService.getFormConfig.resolves({ doc: { _id: 'training:a_form_id', some: 'content' } });
       formService.render.rejects({ some: 'error' });
       sinon.resetHistory();
       store.overrideSelector(Selectors.getTrainingCardFormId, 'training:a_form_id');
       store.refreshState();
       tick();
 
-      expect(xmlFormsService.get.calledOnce).to.be.true;
+      expect(xmlFormsService.getFormConfig.calledOnce).to.be.true;
       expect(formService.render.calledOnce).to.be.true;
       expect(component.form).to.equal(null);
       expect(consoleErrorMock.calledOnce).to.be.true;

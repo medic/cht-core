@@ -1,59 +1,29 @@
-/*
- * Simple module for calculating XPath of an element using the browser's built-
- * in XML support.
- *
- * Copyright (c) 2009, Mozilla Foundation
- *
- * Taken from Firebug, licensed under BSD:
- * https://github.com/firebug/firebug/blob/master/extension/content/firebug/lib/xpath.js
- */
+const getElementLineage = (element: Element): Element[] => element.parentElement
+  ? [...getElementLineage(element.parentElement), element]
+  : [element];
 
-export const Xpath:any = {};
+const getElementPosition = (element: Element): number => Array
+  .from(element.parentElement?.children ?? [element])
+  .filter(sibling => sibling.nodeName === element.nodeName)
+  .indexOf(element) + 1;
 
-// ********************************************************************************************* //
-// XPATH
+export const Xpath = {
+  /**
+   * Gets the XPath for an element with no positional predicates.
+   */
+  getElementXPath: (element: Element): string => getElementLineage(element)
+    .map(({ nodeName }) => `/${nodeName}`)
+    .join(''),
 
-/**
- * Gets an XPath for an element which describes its hierarchical location.
- */
-Xpath.getElementXPath = function(element)
-{
-    if (element && element.id)
-        return '//*[@id="' + element.id + '"]';
-    else
-        return Xpath.getElementTreeXPath(element);
-};
-
-Xpath.getElementTreeXPath = function(element)
-{
-    var paths: string[] = [];
-
-    // Use nodeName (instead of localName) so namespace prefix is included (if any).
-    for (; element && element.nodeType == Node.ELEMENT_NODE; element = element.parentNode)
-    {
-        var index = 0;
-        var hasFollowingSiblings = false;
-        for (var sibling = element.previousSibling; sibling; sibling = sibling.previousSibling)
-        {
-            // Ignore document type declaration.
-            if (sibling.nodeType == Node.DOCUMENT_TYPE_NODE)
-                continue;
-
-            if (sibling.nodeName == element.nodeName)
-                ++index;
-        }
-
-        for (var sibling = element.nextSibling; sibling && !hasFollowingSiblings;
-            sibling = sibling.nextSibling)
-        {
-            if (sibling.nodeName == element.nodeName)
-                hasFollowingSiblings = true;
-        }
-
-        var tagName = (element.prefix ? element.prefix + ":" : "") + element.localName;
-        var pathIndex = (index || hasFollowingSiblings ? "[" + (index + 1) + "]" : "");
-        paths.splice(0, 0, tagName + pathIndex);
-    }
-
-    return paths.length ? "/" + paths.join("/") : null;
+  /**
+   * Gets the XPath for an element with a positional predicate on every node in the path that is a repeat instance.
+   * @param element the element to get the XPath for
+   * @param repeatPaths the raw XPaths (containing no positional predicates) of the form's repeat groups
+   */
+  getElementPositionalXPath: (element: Element, repeatPaths: string[] = []): string => getElementLineage(element)
+    .map(node => {
+      const position = repeatPaths.includes(Xpath.getElementXPath(node)) ? `[${getElementPosition(node)}]` : '';
+      return `/${node.nodeName}${position}`;
+    })
+    .join('')
 };

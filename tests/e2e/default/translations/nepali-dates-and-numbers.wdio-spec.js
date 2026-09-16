@@ -1,6 +1,8 @@
+/* global window, MouseEvent */
 const path = require('path');
 const bikramSambat = require('bikram-sambat');
 const { devanagari } = require('eurodigit/src/to_non_euro');
+const { to_euro: fromDevanagari } = require('eurodigit');
 const moment = require('moment');
 
 const utils = require('@utils');
@@ -259,5 +261,189 @@ describe('Bikram Sambat date display', () => {
     const relativeFormat = moment(NINE_WEEKS_AGO.toDate()).fromNow();
     const lmpDateValue = await reportsPage.getReportDetailFieldValueByLabel('LMP Date');
     expect(lmpDateValue).to.equal(`${dateFormat} (${relativeFormat})`);
+  });
+
+  it('does not save a date when day and year are entered without a month (#8011)', async () => {
+    const testStart = Date.now();
+    const fillAndSubmit = async ({ withMonth }) => {
+      await commonPage.goToReports();
+      await commonPage.openFastActionReport('bikram-sambat-dates', false);
+      const realInput = $('input[name="/bikram-sambat-dates/data/date2"]');
+      const dateWidget = await realInput.nextElement();
+      await dateWidget.$('input[name="day"]').setValue('15');
+      if (withMonth) {
+        await dateWidget.$('.dropdown-toggle').click();
+        await dateWidget.$$('.dropdown-menu li')[3].click(); // साउन (month 4)
+      }
+      await dateWidget.$('input[name="year"]').setValue('2081');
+      // Submit directly while the year field is focused, so the blur and serialization happen on the
+      // real submit path. A separate blur step would let the deferred clear run first and mask the issue.
+      await genericForm.submitForm();
+    };
+
+    await fillAndSubmit({ withMonth: false }); // the #8011 case
+    await fillAndSubmit({ withMonth: true });  // control: a complete date must still save
+
+    const reports = (await getReports()).filter(r => r.form === 'bikram-sambat-dates' && r.reported_date >= testStart);
+    const date2vals = reports.map(r => r.fields?.data?.date2);
+    expect(date2vals.filter(v => !v)).to.have.lengthOf(1);   // incomplete: saved empty
+    expect(date2vals.filter(v => !!v)).to.have.lengthOf(1);  // complete: saved a date
+  });
+
+  it('should open the calendar popup, select a date, and populate the inputs when language is Nepali', async () => {
+    await setLanguage(NEPALI_LOCALE_CODE);
+    await commonPage.goToReports();
+    await commonPage.openFastActionReport('bikram-sambat-dates', false);
+
+    const realInput = $('input[name="/bikram-sambat-dates/data/date1"]');
+    const dateWidget = await realInput.nextElement();
+    const calendarBtn = await dateWidget.$('.calendar-btn');
+
+    await calendarBtn.waitForDisplayed();
+    await calendarBtn.click();
+
+    // Robust click helper to reduce flaky "element click intercepted" failures.
+    const safeClick = async (el, { waitTimeout = 15000 } = {}) => {
+      await el.waitForDisplayed({ timeout: waitTimeout });
+      const startTime = Date.now();
+      while (true) {
+        try {
+          await el.waitForClickable({ timeout: 1000 });
+          await el.click();
+          return;
+        } catch {
+          if (Date.now() - startTime > waitTimeout) {
+            // Last-resort fallback to JS click if native click fails
+            await browser.execute((element) => {
+              if (element) {
+                if (typeof element.click === 'function') {
+                  element.click();
+                } else if (typeof element.dispatchEvent === 'function') {
+                  element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+                }
+              }
+            }, el);
+            return;
+          }
+          await browser.pause(200);
+        }
+      }
+    };
+
+    const getVisiblePopupIndex = async () => {
+      return await browser.execute(() => {
+        const elements = document.querySelectorAll('.nepali-date-picker');
+        for (let i = 0; i < elements.length; i++) {
+          const el = elements[i];
+          if (el.style.display !== 'none' && window.getComputedStyle(el).display !== 'none') {
+            return i;
+          }
+        }
+        return -1;
+      });
+    };
+
+    const getVisiblePopup = async () => {
+      const idx = await getVisiblePopupIndex();
+      if (idx === -1) {
+        throw new Error('No visible popup found');
+      }
+      return (await $$('.nepali-date-picker'))[idx];
+    };
+
+    const waitForClosed = async (idx) => {
+      await browser.waitUntil(async () => {
+        return await browser.execute((i) => {
+          const el = document.querySelectorAll('.nepali-date-picker')[i];
+          return !el || el.style.display === 'none' || window.getComputedStyle(el).display === 'none';
+        }, idx);
+      }, {
+        timeout: 20000,
+        timeoutMsg: 'Expected the .nepali-date-picker popup to be hidden'
+      });
+    };
+
+    const clickOverlayJS = async () => {
+      await browser.execute(() => {
+        const el = document.querySelector('.nepali-date-picker-overlay');
+        if (el) {
+          el.click();
+        }
+      });
+    };
+
+    // Wait until at least one of the popup elements is displayed
+    await browser.waitUntil(async () => {
+      return (await getVisiblePopupIndex()) !== -1;
+    }, {
+      timeout: 20000,
+      timeoutMsg: 'Expected a .nepali-date-picker to be displayed'
+    });
+
+    const popupIndex = await getVisiblePopupIndex();
+    const overlay = $('.nepali-date-picker-overlay');
+    await overlay.waitForDisplayed({ timeout: 20000 });
+
+    // Verify overlay click closes the popup
+    await clickOverlayJS();
+    await waitForClosed(popupIndex);
+    await overlay.waitForDisplayed({ reverse: true, timeout: 20000 });
+
+    // Open it again
+    await calendarBtn.click();
+    await browser.waitUntil(async () => {
+      return (await getVisiblePopupIndex()) !== -1;
+    }, {
+      timeout: 20000
+    });
+    await overlay.waitForDisplayed({ timeout: 20000 });
+
+    // Verify close button click closes the popup
+    const popup = await getVisiblePopup();
+    const closeBtn = popup.$('.close-btn');
+    await closeBtn.waitForDisplayed({ timeout: 20000 });
+    await safeClick(closeBtn, { waitTimeout: 20000 });
+    await waitForClosed(popupIndex);
+    await overlay.waitForDisplayed({ reverse: true, timeout: 20000 });
+
+    // Open it again to select a date
+    await calendarBtn.click();
+    await browser.waitUntil(async () => {
+      return (await getVisiblePopupIndex()) !== -1;
+    }, {
+      timeout: 20000
+    });
+    await overlay.waitForDisplayed({ timeout: 20000 });
+
+    const activePopup = await getVisiblePopup();
+    const activeDays = await activePopup.$$('table tbody td.current-month-date:not(.disable)');
+    expect(activeDays.length).to.be.greaterThan(0);
+    await activeDays[0].scrollIntoView();
+    await safeClick(activeDays[0], { waitTimeout: 20000 });
+
+    // Click close button explicitly because selection no longer automatically closes the picker
+    const finalCloseBtn = activePopup.$('.close-btn');
+    await safeClick(finalCloseBtn, { waitTimeout: 20000 });
+
+    await waitForClosed(popupIndex);
+    await overlay.waitForDisplayed({ reverse: true, timeout: 20000 });
+
+    const dayVal = await dateWidget.$('input[name="day"]').getValue();
+    const monthVal = await dateWidget.$('input[name="month"]').getValue();
+    const yearVal = await dateWidget.$('input[name="year"]').getValue();
+
+    expect(dayVal).to.not.be.empty;
+    expect(monthVal).to.not.be.empty;
+    expect(yearVal).to.not.be.empty;
+
+    // Assert the real date input's value matches the converted Gregorian value
+    const dayLatin = fromDevanagari(dayVal);
+    const monthLatin = fromDevanagari(monthVal);
+    const yearLatin = fromDevanagari(yearVal);
+    const expectedGreg = bikramSambat.toGreg_text(yearLatin, monthLatin, dayLatin);
+
+    expect(await realInput.getValue()).to.equal(expectedGreg);
+
+    await genericForm.cancelForm();
   });
 });

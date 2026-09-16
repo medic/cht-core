@@ -152,6 +152,72 @@ describe('remote report', () => {
           freetext: freetext,
         })).to.be.true;
       });
+
+      describe('with a form qualifier', () => {
+        it('sends the form codes as a query param on the shared uuid endpoint', async () => {
+          const expectedResponse = { data: ['uuid1', 'uuid2'], cursor };
+          getResourcesInner.resolves(expectedResponse);
+
+          const result = await Report.v1.getUuidsPage(remoteContext)(
+            { forms: ['pregnancy', 'delivery'] }, cursor, limit
+          );
+
+          expect(result).to.equal(expectedResponse);
+          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/uuid')).to.be.true;
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            form: 'pregnancy,delivery',
+            cursor,
+          })).to.be.true;
+        });
+
+        it('sends a single form code without a trailing separator', async () => {
+          getResourcesInner.resolves({ data: [], cursor: null });
+
+          await Report.v1.getUuidsPage(remoteContext)({ forms: ['pregnancy'] }, null, limit);
+
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            form: 'pregnancy',
+          })).to.be.true;
+        });
+
+        it('omits cursor param when cursor is null', async () => {
+          const expectedResponse = { data: [], cursor: null };
+          getResourcesInner.resolves(expectedResponse);
+
+          const result = await Report.v1.getUuidsPage(remoteContext)({ forms: ['pregnancy'] }, null, limit);
+
+          expect(result).to.equal(expectedResponse);
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            form: 'pregnancy',
+          })).to.be.true;
+        });
+
+        it('does not normalize the form codes', async () => {
+          getResourcesInner.resolves({ data: [], cursor: null });
+
+          await Report.v1.getUuidsPage(remoteContext)({ forms: ['ANC_FollowUp'] }, null, limit);
+
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            form: 'ANC_FollowUp',
+          })).to.be.true;
+        });
+
+        it('prefers freetext when a qualifier satisfies both', async () => {
+          getResourcesInner.resolves({ data: [], cursor: null });
+
+          await Report.v1.getUuidsPage(remoteContext)({ freetext, forms: ['pregnancy'] }, null, limit);
+
+          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/uuid')).to.be.true;
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            freetext,
+          })).to.be.true;
+        });
+      });
     });
 
     describe('getPage', () => {

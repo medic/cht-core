@@ -62,6 +62,17 @@ setUuid() {
 	fi
 }
 
+set_nouveau_url() {
+  # Ensure [nouveau] section exists
+  if ! grep -q '^\s*\[\s*nouveau\s*\]\s*$' "$CLUSTER_CREDENTIALS"; then
+    printf "\n[nouveau]\n" >> "$CLUSTER_CREDENTIALS"
+  fi
+
+  sed -e '/^\s*url\s*=.*/d' -e "/^\s*\[\s*nouveau\s*\]\s*$/a url = $NOUVEAU_URL" "$CLUSTER_CREDENTIALS" > "${CLUSTER_CREDENTIALS}.tmp"
+  cp "${CLUSTER_CREDENTIALS}.tmp" "$CLUSTER_CREDENTIALS"
+  rm "${CLUSTER_CREDENTIALS}.tmp"
+}
+
 if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 
 	# Check that we own everything in /opt/couchdb and fix if necessary. We also
@@ -127,6 +138,10 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 		sed -e '/^\s*level\s*=.*/d' -e "/^\s*\[\s*log\s*\]\s*$/a level = $COUCHDB_LOG_LEVEL" "$CLUSTER_CREDENTIALS" > "${CLUSTER_CREDENTIALS}.tmp"
 		cp "${CLUSTER_CREDENTIALS}.tmp" "$CLUSTER_CREDENTIALS"
 		rm "${CLUSTER_CREDENTIALS}.tmp"
+	fi
+
+	if [[ "$NOUVEAU_URL" ]]; then
+		set_nouveau_url
 	fi
 
 	if [ "$CLUSTER_PEER_IPS" ] || [ "$IS_CLUSTER" = false ]; then

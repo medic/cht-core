@@ -19,6 +19,18 @@ const buildIdsQualifier = (ids) => {
   return Qualifier.byIds(idsArray);
 };
 
+// Accepts `?form=a,b` and `?form=a&form=b` alike, matching how `ids` is handled above rather than
+// picking one convention for this parameter alone.
+const buildFormsQualifier = (form) => {
+  const formsArray = (Array.isArray(form) ? form : form.split(',')).filter(Boolean);
+  if (!formsArray.length) {
+    // Same message shape as byForms() throws below for other invalid input, so the two paths that
+    // can reject a `form` value give a caller one consistent body to parse rather than two.
+    throw new InvalidArgumentError(`Invalid forms [${JSON.stringify(formsArray)}].`);
+  }
+  return Qualifier.byForms(formsArray);
+};
+
 /**
  * @openapi
  * tags:
@@ -82,7 +94,9 @@ module.exports = {
      *     summary: Get report UUIDs
      *     operationId: v1ReportUuidGet
      *     description: >
-     *       Returns a paginated array of report identifiers matching the given freetext search term.
+     *       Returns a paginated array of report identifiers matching either the given freetext search term or the
+     *       given form codes. Exactly one of `freetext` and `form` is required; if both are given, `freetext` is
+     *       used and `form` is ignored.
      *     tags: [Report]
      *     x-since: 4.18.0
      *     x-permissions:
@@ -90,12 +104,23 @@ module.exports = {
      *     parameters:
      *       - in: query
      *         name: freetext
-     *         required: true
+     *         required: false
      *         schema:
      *           type: string
      *           minLength: 3
      *         description: >
      *           A search term for filtering reports. Must be at least 3 characters and not contain whitespace.
+     *           Required unless `form` is given.
+     *       - in: query
+     *         name: form
+     *         required: false
+     *         x-since: 5.3.0
+     *         schema:
+     *           type: string
+     *         description: >
+     *           A comma-separated list of form codes (e.g. `pregnancy,delivery`), or the parameter repeated once
+     *           per code. Each is matched verbatim against the report's `form` field. Required unless `freetext`
+     *           is given.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitId'
      *     responses:
@@ -123,7 +148,11 @@ module.exports = {
      */
     getUuids: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
-      const qualifier = Qualifier.byFreetext(req.query.freetext);
+      // Freetext wins when both are given, so a caller that already sends `freetext` keeps its
+      // existing behavior no matter what else is on the query string.
+      const qualifier = req.query.freetext === undefined && req.query.form !== undefined
+        ? buildFormsQualifier(req.query.form)
+        : Qualifier.byFreetext(req.query.freetext);
       const docs = await getReportIds(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
     }),

@@ -13,6 +13,7 @@ const replications = require('../../../src/schedule/replications');
 const outbound = require('../../../src/schedule/outbound');
 const purgeLib = require('../../../src/lib/purging');
 const purging = require('../../../src/schedule/purging');
+const archiving = require('../../../src/schedule/archiving');
 const backgroundCleanup = require('../../../src/schedule/background-cleanup');
 
 let unit;
@@ -27,6 +28,7 @@ const ALL_SCHEDULED_TASKS = [
   'replications',
   'outbound',
   'purging',
+  'archiving',
   'transitionsDisabledReminder',
   'backgroundCleanup',
 ];
@@ -42,6 +44,7 @@ describe('scheduler', () => {
       sinon.stub(replications, 'execute');
       sinon.stub(outbound, 'execute');
       sinon.stub(purging, 'execute');
+      sinon.stub(archiving, 'execute');
       sinon.stub(backgroundCleanup, 'execute');
     });
 
@@ -60,6 +63,7 @@ describe('scheduler', () => {
       replications.execute.resolves();
       outbound.execute.resolves();
       purging.execute.resolves();
+      archiving.execute.resolves();
       backgroundCleanup.execute.resolves();
       unit.init();
 
@@ -69,6 +73,7 @@ describe('scheduler', () => {
       assert.equal(replications.execute.callCount, 1);
       assert.equal(outbound.execute.callCount, 1);
       assert.equal(purging.execute.callCount, 1);
+      assert.equal(archiving.execute.callCount, 1);
       assert.equal(backgroundCleanup.execute.callCount, 1);
       assertOngoingTasks(ALL_SCHEDULED_TASKS);
 
@@ -79,6 +84,7 @@ describe('scheduler', () => {
       assert.equal(replications.execute.callCount, 1);
       assert.equal(outbound.execute.callCount, 1);
       assert.equal(purging.execute.callCount, 1);
+      assert.equal(archiving.execute.callCount, 1);
       assert.equal(backgroundCleanup.execute.callCount, 1);
       assert.equal(unit.__get__('sendable').callCount, 1);
       assertOngoingTasks(ALL_SCHEDULED_TASKS);
@@ -101,6 +107,7 @@ describe('scheduler', () => {
       replications.execute.resolves();
       outbound.execute.resolves();
       purging.execute.resolves();
+      archiving.execute.resolves();
       backgroundCleanup.execute.resolves();
       unit.init();
 
@@ -110,6 +117,7 @@ describe('scheduler', () => {
       assert.equal(replications.execute.callCount, 1);
       assert.equal(outbound.execute.callCount, 1);
       assert.equal(purging.execute.callCount, 1);
+      assert.equal(archiving.execute.callCount, 1);
       assert.equal(backgroundCleanup.execute.callCount, 1);
       assertOngoingTasks(ALL_SCHEDULED_TASKS);
 
@@ -126,6 +134,7 @@ describe('scheduler', () => {
           assert.equal(replications.execute.callCount, 2);
           assert.equal(outbound.execute.callCount, 2);
           assert.equal(purging.execute.callCount, 2);
+          assert.equal(archiving.execute.callCount, 2);
           assert.equal(backgroundCleanup.execute.callCount, 2);
           assertOngoingTasks(ALL_SCHEDULED_TASKS);
 
@@ -142,6 +151,7 @@ describe('scheduler', () => {
           assert.equal(replications.execute.callCount, 3);
           assert.equal(outbound.execute.callCount, 3);
           assert.equal(purging.execute.callCount, 3);
+          assert.equal(archiving.execute.callCount, 3);
           assert.equal(backgroundCleanup.execute.callCount, 3);
           assertOngoingTasks(ALL_SCHEDULED_TASKS);
         });
@@ -153,6 +163,7 @@ describe('scheduler', () => {
       replications.execute.resolves();
       outbound.execute.resolves();
       purging.execute.resolves();
+      archiving.execute.resolves();
 
       let dueTasksTaskResolve;
       let remindersTaskResolve;
@@ -172,6 +183,7 @@ describe('scheduler', () => {
       assert.equal(replications.execute.callCount, 1);
       assert.equal(outbound.execute.callCount, 1);
       assert.equal(purging.execute.callCount, 1);
+      assert.equal(archiving.execute.callCount, 1);
       assert.equal(backgroundCleanup.execute.callCount, 1);
 
       return nextTick()
@@ -186,6 +198,7 @@ describe('scheduler', () => {
           assert.equal(replications.execute.callCount, 2);
           assert.equal(outbound.execute.callCount, 2);
           assert.equal(purging.execute.callCount, 2);
+          assert.equal(archiving.execute.callCount, 2);
           assert.equal(backgroundCleanup.execute.callCount, 1);
 
           return nextTick();
@@ -209,6 +222,7 @@ describe('scheduler', () => {
           assert.equal(replications.execute.callCount, 3);
           assert.equal(outbound.execute.callCount, 3);
           assert.equal(purging.execute.callCount, 3);
+          assert.equal(archiving.execute.callCount, 3);
           assert.equal(backgroundCleanup.execute.callCount, 1);
 
           remindersTaskResolve();
@@ -231,6 +245,7 @@ describe('scheduler', () => {
       replications.execute.resolves();
       outbound.execute.rejects({ err: 2 });
       purging.execute.resolves();
+      archiving.execute.resolves();
       backgroundCleanup.execute.resolves();
       unit.init();
 
@@ -240,6 +255,7 @@ describe('scheduler', () => {
       assert.equal(replications.execute.callCount, 1);
       assert.equal(outbound.execute.callCount, 1);
       assert.equal(purging.execute.callCount, 1);
+      assert.equal(archiving.execute.callCount, 1);
       assert.equal(backgroundCleanup.execute.callCount, 1);
       assertOngoingTasks(ALL_SCHEDULED_TASKS);
 
@@ -361,6 +377,7 @@ describe('scheduler', () => {
       sinon.stub(reminders, 'execute').resolves();
       sinon.stub(replications, 'execute').resolves();
       sinon.stub(outbound, 'execute').resolves();
+      sinon.stub(archiving, 'execute').resolves();
       sinon.stub(backgroundCleanup, 'execute').resolves();
 
       sinon.stub(purgeLib, 'purge').callsFake(() => {

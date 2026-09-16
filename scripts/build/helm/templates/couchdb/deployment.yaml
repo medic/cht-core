@@ -127,6 +127,8 @@ spec:
             value: couchdb-{{ $nodeNumber }}.{{ $.Values.namespace }}.svc.cluster.local
           - name: NODE_COUNT
             value: {{ $.Values.clusteredCouch.noOfCouchDBNodes | quote }}
+          - name: NOUVEAU_URL
+            value: http://nouveau-{{ $nodeNumber }}:5987
         {{- if eq $nodeNumber 1 }}
           - name: CLUSTER_PEER_IPS
             valueFrom:
@@ -148,7 +150,6 @@ spec:
         - mountPath: /opt/couchdb/etc/local.d
           name: couchdb-{{ $nodeNumber }}-claim0
           subPath: local.d
-      {{- if eq $nodeNumber 1 }}
       - name: cht-couchdb-nouveau
         image: "{{ $.Values.upstream_servers.docker_registry }}/cht-couchdb-nouveau:{{ $.Values.cht_image_tag }}"
         {{ if eq $.Values.cache_images false}}imagePullPolicy: Always{{ end }}
@@ -159,7 +160,6 @@ spec:
         - mountPath: /data/nouveau
           name: couchdb-{{ $nodeNumber }}-claim0
           subPath: data
-      {{- end }}
       restartPolicy: Always
       volumes:
       - name: couchdb-{{ $nodeNumber }}-claim0

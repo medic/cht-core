@@ -1,5 +1,10 @@
 module.exports.map = (doc) => {
   const skip = [ '_id', '_rev', 'type', 'refid', 'content' ];
+
+  const normalizeDevanagariNumerals = (str) => {
+    return str.replace(/[०-९]/g, (d) => String.fromCodePoint(d.codePointAt(0) - 0x0966 + 0x0030));
+  };
+
   const keyShouldBeSkipped = key => skip.indexOf(key) !== -1 || /_date$/.test(key);
 
   const usedKeys = [];
@@ -21,7 +26,7 @@ module.exports.map = (doc) => {
       return;
     }
     if (typeof value === 'string') {
-      const lowerValue = value.toLowerCase();
+      const lowerValue = normalizeDevanagariNumerals(value.toLowerCase());
       lowerValue
         .split(/\s+/)
         .forEach((word) => emitMaybe(word, reportedDate));
@@ -42,8 +47,5 @@ module.exports.map = (doc) => {
     Object
       .keys(doc.fields)
       .forEach((key) => emitField(key, doc.fields[key], doc.reported_date));
-  }
-  if (doc.contact && doc.contact._id) {
-    emitMaybe(`contact:${doc.contact._id.toLowerCase()}`, doc.reported_date);
   }
 };

@@ -11,6 +11,7 @@ import { UserContactService } from '@mm-services/user-contact.service';
 import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-utils.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
 import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
+import { FormConfig, FormType } from '@mm-services/form/form-config';
 
 export const TRAINING_FORM_ID_PREFIX: string = `${PREFIXES.FORM}training:`;
 export const CONTACT_FORM_ID_PREFIX: string = `${PREFIXES.FORM}contact:`;
@@ -20,21 +21,21 @@ export const CONTACT_FORM_ID_PREFIX: string = `${PREFIXES.FORM}contact:`;
 })
 export class XmlFormsService {
   private init;
-  private observable = new Subject();
+  private readonly observable = new Subject();
   readonly HTML_ATTACHMENT_NAME = 'form.html';
   readonly MODEL_ATTACHMENT_NAME = 'model.xml';
 
   constructor(
-    private authService:AuthService,
-    private changesService:ChangesService,
-    private contactTypesService:ContactTypesService,
-    private dbService:DbService,
-    private fileReaderService: FileReaderService,
-    private userContactService:UserContactService,
-    private userContactSummaryService: UserContactSummaryService,
-    private xmlFormsContextUtilsService:XmlFormsContextUtilsService,
-    private parseProvider:ParseProvider,
-    private ngZone:NgZone,
+    private readonly authService:AuthService,
+    private readonly changesService:ChangesService,
+    private readonly contactTypesService:ContactTypesService,
+    private readonly dbService:DbService,
+    private readonly fileReaderService: FileReaderService,
+    private readonly userContactService:UserContactService,
+    private readonly userContactSummaryService: UserContactSummaryService,
+    private readonly xmlFormsContextUtilsService:XmlFormsContextUtilsService,
+    private readonly parseProvider:ParseProvider,
+    private readonly ngZone:NgZone,
   ) {
     this.init = this.getForms();
 
@@ -69,11 +70,6 @@ export class XmlFormsService {
           .filter(row => this.findXFormAttachmentName(row.doc))
           .map(row => row.doc);
       });
-  }
-
-  private getById(internalId) {
-    const formId = `${PREFIXES.FORM}${internalId}`;
-    return this.dbService.get().get(formId);
   }
 
   private getByView(internalId) {
@@ -281,14 +277,6 @@ export class XmlFormsService {
       Object.keys(doc._attachments).find(name => name === 'xml' || name.endsWith('.xml'));
   }
 
-  private hasRequiredAttachments(doc) {
-    return doc &&
-      doc._attachments &&
-      Object.keys(doc._attachments).find(name => name === this.MODEL_ATTACHMENT_NAME) &&
-      Object.keys(doc._attachments).find(name => name === this.HTML_ATTACHMENT_NAME) &&
-      Object.keys(doc._attachments).find(name => name === 'xml' || name.endsWith('.xml'));
-  }
-
   /**
    * Invokes the given callback with an array of docs containing xforms
    * which the user is allowed to complete. Listens for changes and invokes
@@ -343,48 +331,49 @@ export class XmlFormsService {
   /**
    * @memberof XmlFormsService
    * @param {String} internalId The value of the desired doc's internalId field.
+   * @param {FormType} formType The type of form to retrieve
    * @returns {Promise} Resolves a doc containing an xform with the given
    *    internal identifier if the user is allowed to see it.
    */
-  get(internalId) {
-    return this
-      .getById(internalId)
-      .catch(err => {
-        console.warn('Error in XMLFormService : getById : ', err?.message, err?.status, err);
-        if (err.status === 404) {
-          // fallback for backwards compatibility
-          return this.getByView(internalId);
-        }
-        throw err;
-      })
-      .then(doc => {
-        if (!this.hasRequiredAttachments(doc)) {
-          const errorTitle = 'Error in XMLFormService : hasRequiredAttachments : ';
-          const errorMessage = `The form "${internalId}" doesn't have required attachments`;
-          console.error(errorTitle, errorMessage);
-          return Promise.reject(new Error(errorTitle + errorMessage));
-        }
-        return doc;
+  private async get(internalId: string, formType: FormType) {
+    // contact_types config stores full _id value. All other forms are referenced by internalId
+    const formId = formType === FormType.Contact ? internalId : `${PREFIXES.FORM}${internalId}`;
+    try {
+      return await this.dbService.get().get(formId);
+    } catch (err) {
+      console.warn('Error in XMLFormService : getById : ', err?.message, err?.status, err);
+      if (err.status === 404) {
+        // fallback for backwards compatibility
+        return this.getByView(internalId);
+      }
+      throw err;
+    }
+  }
+
+  private getAttachment(id: string, name: string) {
+    return this.dbService
+      .get()
+      .getAttachment(id, name)
+      .then(blob => this.fileReaderService.utf8(blob))
+      .catch(() => {
+        throw new Error(`Could not get [${name}] form attachment for form [${id}].`);
       });
   }
 
-  getDocAndFormAttachment(internalId) {
-    return this.get(internalId)
-      .then(doc => {
-        const attachmentName = this.findXFormAttachmentName(doc);
-        return this.dbService.get().getAttachment(doc._id, attachmentName)
-          .then(blob => this.fileReaderService.utf8(blob))
-          .then(xml => ({ doc, xml }))
-          .catch(err => {
-            const errorTitle = 'Error in XMLFormService : getDocAndFormAttachment : ';
-            let errorMessage = `Failed to get the form "${internalId}" xform attachment`;
-            if (err.status === 404) {
-              errorMessage = `The form "${internalId}" doesn't have an xform attachment`;
-            }
-            console.error(errorTitle, errorMessage);
-            return Promise.reject(new Error(errorTitle + errorMessage));
-          });
-      });
+  async getFormConfig(formType: FormType, id: string) {
+    return this.ngZone.runOutsideAngular(async () => {
+      const formDoc = await this.get(id, formType);
+      const xmlAttachmentName = this.findXFormAttachmentName(formDoc);
+      if (!xmlAttachmentName) {
+        throw new Error(`Could not get [xml] form attachment for form [${id}].`);
+      }
+      const [xml, html, model] = await Promise.all([
+        this.getAttachment(formDoc._id, this.findXFormAttachmentName(formDoc)),
+        this.getAttachment(formDoc._id, this.HTML_ATTACHMENT_NAME),
+        this.getAttachment(formDoc._id, this.MODEL_ATTACHMENT_NAME)
+      ]);
+      return new FormConfig(formDoc, formType, xml, html, model);
+    });
   }
 
   /**

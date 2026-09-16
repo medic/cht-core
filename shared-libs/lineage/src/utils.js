@@ -22,9 +22,9 @@ const isReport = (doc) => doc.type === DOC_TYPES.DATA_RECORD;
 const getPatientId = (doc) => (doc.fields && (doc.fields.patient_id || doc.fields.patient_uuid)) || doc.patient_id;
 const getPlaceId = (doc) => (doc.fields && doc.fields.place_id) || doc.place_id;
 
-
 module.exports = {
   getId,
+  isContact,
   validLinkedDocs,
   isReport,
   getPatientId,

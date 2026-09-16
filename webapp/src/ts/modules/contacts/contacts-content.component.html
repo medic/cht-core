@@ -24,7 +24,7 @@
       <div class="body meta">
         <div class="card">
           <div class="row heading" [ngClass]="{'deceased': selectedContact?.doc?.date_of_death, 'muted':selectedContact?.doc?.muted }">
-            <span [innerHTML]="selectedContact?.type?.icon | resourceIcon"></span>
+            <mm-contact-profile-image></mm-contact-profile-image>
             <div class="heading-content">
               <h2 [attr.test-id]="'contact-name'">{{selectedContact?.doc?.name}}</h2>
               <div [attr.test-id]="'deceased-title'" *ngIf="selectedContact?.doc?.date_of_death">{{'contact.deceased.title' | translate}}</div>
@@ -73,7 +73,10 @@
         </ng-container>
       </div>
 
-      <div class="card compact-card children" [ngClass]="group?.type?.person ? 'persons' : 'places'" *ngFor="let group of selectedContact?.children">
+      <div
+        class="card compact-card children"
+        [ngClass]="group?.type?.person ? 'persons' : 'places'"
+        *ngFor="let group of selectedContact?.children; trackBy: trackByGroup">
         <div class="action-header cell">
           <div class="col-xs-10">
             <h3>
@@ -85,12 +88,14 @@
         </div>
 
         <ul>
-          <ng-container *ngFor="let child of group?.contacts" >
+          <ng-container *ngFor="let child of group?.contacts; trackBy: trackByChildContact" >
             <mm-content-row *ngIf="!child.deceased"
               [id]="child.doc._id"
               [route]="['/', 'contacts', child.doc._id]"
               [heading]="child.doc.name"
-              [summary]="''"
+              [summary]="child.summary || ''"
+              [overdue]="child.overdue"
+              [visits]="child.visits"
               [primaryContact]="child.isPrimaryContact"
               [dob]="child.doc.date_of_birth"
               [taskCount]="child.taskCount"

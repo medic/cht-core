@@ -15,7 +15,7 @@ import {
   Nullable
 } from '../../libs/core';
 import { Doc } from '../../libs/doc';
-import { getDocsByIds, queryDocsByRange } from './doc';
+import { getDocsByIds } from './doc';
 import logger from '@medic/logger';
 import lineageFactory from '@medic/lineage';
 import * as Report from '../../report';
@@ -26,6 +26,31 @@ import * as LocalContact from '../contact';
 import { InvalidArgumentError } from '../../libs/error';
 import contactTypeUtils from '@medic/contact-types-utils';
 import { isEqual } from 'lodash';
+import { DOC_TYPES } from '@medic/constants';
+
+const isContactDoc = (doc: Doc): boolean => doc.type === 'contact'
+  || (isString(doc.type) && contactTypeUtils.HARDCODED_TYPES.includes(doc.type));
+
+// Walks a parent chain, emitting one id per link and stopping at the first link without an `_id`
+const walkLineageIds = (start: unknown): string[] => {
+  const ids: string[] = [];
+  let current: unknown = start;
+  while (isRecord(current) && isString(current._id) && current._id.length) {
+    ids.push(current._id);
+    current = current.parent;
+  }
+  return ids;
+};
+
+const getParentIds = (doc: Doc): Nullable<string[]> => {
+  if (isContactDoc(doc)) {
+    return walkLineageIds(doc.parent);
+  }
+  if (doc.type === DOC_TYPES.DATA_RECORD && doc.form) {
+    return walkLineageIds(doc.contact);
+  }
+  return null;
+};
 
 /**
  * Returns the identified document along with the parent documents recorded for its lineage. The returned array is
@@ -33,8 +58,26 @@ import { isEqual } from 'lodash';
  * @internal
  */
 export const getLineageDocsById = (medicDb: PouchDB.Database<Doc>): (id: string) => Promise<Nullable<Doc>[]> => {
-  const fn = queryDocsByRange(medicDb, 'medic-client/docs_by_id_lineage');
-  return (id: string) => fn([id], [id, {}]);
+  const getMedicDocsById = getDocsByIds(medicDb);
+  return async (id: string) => {
+    try {
+      const doc = await medicDb.get(id);
+      const parentIds = getParentIds(doc);
+      if (!parentIds) {
+        return [];
+      }
+      if (parentIds.length === 0) {
+        return [doc];
+      }
+      const ancestors = await getMedicDocsById(parentIds);
+      return [doc, ...ancestors];
+    } catch (err: unknown) {
+      if ((err as PouchDB.Core.Error).status === 404) {
+        return [];
+      }
+      throw err;
+    }
+  };
 };
 
 /** @internal */

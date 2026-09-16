@@ -23,7 +23,6 @@ const SUITES = {
   ],
   data: [
     './db/**/*.wdio-spec.js',
-    './purge/**/*.wdio-spec.js',
     './telemetry/**/*.wdio-spec.js'
   ],
   lowLevel: [

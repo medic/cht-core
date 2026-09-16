@@ -39,6 +39,25 @@ const loadForm = async (config, formType, formName) => {
   }, formData, formType, formName);
 };
 
+// Loads a test form with geolocation edit context pre-injected into the form HTML,
+// mirroring what form.service.ts does before handing the form to Enketo.
+const loadFormWithEditContext = async (config, formName) => {
+  const formPath = getFormPath(config, 'test', formName);
+  const formData = await generateFormData(formPath);
+
+  const modifiedFormHtml = formData.formHtml.replace(
+    /(<input\b[^>]*\bname="\/data\/geo_capture"[^>]*?)(\/?>)/,
+    (_, before, end) => `${before} data-geo-has-location="true"${end}`
+  );
+
+  await browser.execute((formData) => {
+    const myForm = document.getElementById('myform');
+    myForm.formHtml = formData.formHtml;
+    myForm.formModel = formData.formModel;
+    myForm.formXml = formData.formXml;
+  }, { ...formData, formHtml: modifiedFormHtml });
+};
+
 const startMockApp = () => {
   server = mockApp.listen();
   return getBaseURL();
@@ -86,6 +105,7 @@ const cancelForm = async () => {
 module.exports = {
   getBaseURL,
   loadForm,
+  loadFormWithEditContext,
   startMockApp,
   stopMockApp,
   submitForm,
