@@ -155,13 +155,13 @@ describe('Bulk operations API', () => {
     const [failedLog, ...completedLogs] = await getBulkOperationLogs(bulkOperationLogIds);
     expect(completedLogs).to.have.lengthOf(2);
     completedLogs.forEach((log, i) => expect(log.actions[actionIds[i + 1]].status).to.equal('completed'));
+    // A missing doc has nothing left to delete, so only the operation with no id fails
     expect(failedLog.actions[actionIds[0]]).excluding('updated_date').to.deep.equal({
       action: 'delete',
       status: 'failed',
       total_changes_count: 1,
       failed_operations: [
-        { notid: 'notfound1' },
-        { id: 'notfound0' }
+        { notid: 'notfound1' }
       ]
     });
   });
