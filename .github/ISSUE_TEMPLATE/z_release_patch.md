@@ -20,9 +20,9 @@ When development is ready to begin one of the maintainers should be nominated as
 
 - [ ] Ensure all tickets in the Milestone are closed and merged to `master`.
 - [ ] Check out the target release branch `<major>.<minor>.x`. For example if you're patching `5.2.0`, you would check out `5.2.x` branch.
-- [ ] Cherry-pick all commits from `master` into the target release branch that fix the issues in this patch release.
+- [ ] Cherry-pick all commits from `master` into the target release branch that fix the issues in this patch release. Create a PR into the release branch for these cherry-picks.
 - [ ]  Run `npm --no-git-tag-version version <major>.<minor>.<patch>` which sets version number in `package.json` and `package-lock.json`. Commit these changes before the next step.
-- [ ] Run the [helm chart build script](https://github.com/medic/cht-core/blob/master/scripts/build/helm/package-chart.sh) (eg `./package-chart.sh 5.3.0`). This creates a tarball and updates `index.yaml` for the helm chart. Commit these changes as we'll need to cherry-pick it later to `master`.
+- [ ] Run the [helm chart build script](https://github.com/medic/cht-core/blob/master/scripts/build/helm/package-chart.sh) (eg `./package-chart.sh 5.3.0`). This creates a tarball and updates `index.yaml` for the helm chart. Commit these changes, then cherry-pick that commit onto a branch off `master` and open a draft PR for it. You will mark this PR as ready in the Releasing section below.
 
 # Releasing - Release Manager
 
@@ -38,9 +38,9 @@ Once all issues have been merged into `master` then the release process can star
   - [ ] Move the document you just downloaded into the [releases folder](https://github.com/medic/cht-docs/tree/main/content/en/releases), naming it `<major>_<minor>_<patch>.md` (eg `5_3_0.md`)
   - [ ] Collect known migration steps, descriptions, screenshots, videos, data, and anything else to help communicate particularly important changes. This information should already be on the issue, but if not, prompt the change author to provide it.
   - [ ] Document any required or recommended upgrades to our other products (eg: cht-conf, cht-gateway, cht-android).
-  - [ ] Edit the main release notes `_index.md` [page](https://github.com/medic/cht-docs/blob/main/content/en/releases/_index.md) to add the release to the [Supported versions](https://docs.communityhealthtoolkit.org/core/releases/#supported-versions) and update the EOL date of the previous release. Update the status of any releases that are past their End Of Life date. Also add a link in the `Release Notes` section to the new release page, being sure to include the date of the release.
+  - [ ] Edit the main release notes `_index.md` [page](https://github.com/medic/cht-docs/blob/main/content/en/releases/_index.md) to add a link in the `Release Notes` section to the new release page, being sure to include the date of the release. Update the status of any releases that are past their End Of Life date.
   - [ ] Ensure that the release notes PR is merged before moving to next step.
-- [ ] To ensure helm charts are published, open a PR against `master` to cherry-pick the helm chart commit from the target release branch. Make sure this PR is merged before proceeding. 
+- [ ] To ensure helm charts are published, mark the draft helm chart PR you opened in the Development section as ready for review. Make sure this PR is merged before proceeding.
 - [ ] Create a [new release](https://github.com/medic/cht-core/releases/new) in GitHub, with the naming convention `<major>.<minor>.<patch>`, from the release branch created above as the target branch. Click on the "Choose a tag" dropdown and create a tag for the release with the naming convention `<major>.<minor>.<patch>`. Add a link to the release notes page in the description of the release.
 - [ ] Once you publish the release, confirm the release build completes successfully and the new release is available on the `staging.dev.medicmobile.org` by running this `curl` call. Ensure you see the correct `id: medic:medic:<major>.<minor>.<patch>`:
    ```
