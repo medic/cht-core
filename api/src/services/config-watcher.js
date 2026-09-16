@@ -146,7 +146,6 @@ const load = () => {
     .then(() => addUserRolesToDb())
     .then(() => initTransitionLib())
     .then(() => db.createVault())
-    .then(() => db.createDeleted())
     .then(() => deployInfo.store());
 };
 
