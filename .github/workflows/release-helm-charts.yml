@@ -1,14 +1,15 @@
 name: Push Helm Charts→Docs Site
 
 on:
-
-  # CHT Core only pushes new tags when we do a release
   push:
-    tags:
-      - '*'
-  # allow this to be run manually in case a change is made outside
-  # of a release
-  workflow_dispatch:
+    branches:
+      - master
+    paths:
+      - 'scripts/build/helm-releases/**'
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   checkout-repo-upload-chart-artifacts:
