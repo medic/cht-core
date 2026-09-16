@@ -1,4 +1,5 @@
 const chai = require('chai');
+const { ReadableStream } = require('node:stream/web');
 
 const service = require('../../../../src/services/offline-data-bundle/age');
 
@@ -19,16 +20,32 @@ describe('offline-data-bundle age service', () => {
     });
   });
 
+  // Reads a web ReadableStream of bytes back into a single Buffer.
+  const collect = async (stream) => {
+    const chunks = [];
+    for await (const chunk of stream) {
+      chunks.push(Buffer.from(chunk));
+    }
+    return Buffer.concat(chunks);
+  };
+
+  const streamOf = (buffer) => new ReadableStream({
+    start: (controller) => {
+      controller.enqueue(new Uint8Array(buffer));
+      controller.close();
+    },
+  });
+
   describe('encrypt / decrypt round-trip', () => {
-    it('encrypts to a recipient and decrypts with the matching identity', async () => {
+    it('encrypts to a recipient and decrypts the stream with the matching identity', async () => {
       const identity = await service.generateIdentity();
       const recipient = await service.identityToRecipient(identity);
       const plaintext = Buffer.from('hello checkpoint', 'utf8');
 
       const ciphertext = await service.encrypt(recipient, plaintext);
-      const decrypted = await service.decrypt(identity, ciphertext);
+      const decrypted = await collect(await service.decryptStream(identity, streamOf(ciphertext)));
 
-      chai.expect(Buffer.from(decrypted).toString('utf8')).to.equal('hello checkpoint');
+      chai.expect(decrypted.toString('utf8')).to.equal('hello checkpoint');
     });
 
     it('produces ciphertext a non-matching identity cannot decrypt', async () => {
@@ -38,7 +55,7 @@ describe('offline-data-bundle age service', () => {
 
       let threw = false;
       try {
-        await service.decrypt(otherIdentity, ciphertext);
+        await collect(await service.decryptStream(otherIdentity, streamOf(ciphertext)));
       } catch {
         threw = true;
       }

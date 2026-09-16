@@ -10,6 +10,10 @@ const age = require('../../../../src/services/offline-data-bundle/age');
 const signing = require('../../../../src/services/offline-data-bundle/signing');
 const serverKey = require('../../../../src/services/offline-data-bundle/server-key');
 const bulkDocsService = require('../../../../src/services/replication/bulk-docs');
+const config = require('../../../../src/config');
+const dataContext = require('../../../../src/services/data-context');
+const db2 = require('../../../../src/db');
+const userManagement = require('@medic/user-management')(config, db2, dataContext);
 
 const service = require('../../../../src/services/offline-data-bundle/data-bundle');
 
@@ -41,6 +45,8 @@ const notFound = () => {
 
 const ndjson = (docs) => Buffer.from(docs.map(doc => JSON.stringify(doc)).join('\n'), 'utf8');
 
+const encode = (envelope) => Buffer.from(JSON.stringify(envelope), 'utf8').toString('base64');
+
 const envelopeFor = (overrides = {}) => ({
   user: USER,
   device_id: DEVICE,
@@ -53,7 +59,12 @@ const envelopeFor = (overrides = {}) => ({
 });
 
 // The body arrives as a Node stream, exactly like `req` does.
-const bodyStream = (buffer = CIPHERTEXT) => Readable.from([buffer]);
+// Stands in for the express request: an async-iterable body plus the headers the service reads.
+const bodyStream = (buffer = CIPHERTEXT, headers = {}) => {
+  const stream = Readable.from([buffer]);
+  stream.headers = headers;
+  return stream;
+};
 
 // Stubs the two seal primitives (signing.sign, age.encrypt) so settleCheckpoint returns SEALED_TOKEN.
 const stubSeal = () => {
@@ -108,7 +119,7 @@ describe('offline-data-bundle data-bundle service', () => {
         [DEVICE]: { signing_public_key: SIGNING_JWK, encryption_public_key: DEVICE_RECIPIENT },
       },
     };
-    sinon.stub(db.users, 'get').resolves(userDoc);
+    sinon.stub(userManagement.users, 'getUserDoc').resolves(userDoc);
     sinon.stub(serverKey, 'getServerPrivateKeys')
       .resolves({ encryption: SERVER_IDENTITY, signing: SERVER_SIGNING_JWK });
     sinon.stub(signing, 'verify').resolves(true);
@@ -116,6 +127,7 @@ describe('offline-data-bundle data-bundle service', () => {
     sinon.stub(db.medic, 'put').resolves({ ok: true });
     sinon.stub(db.medic, 'bulkDocs').resolves([]);
     sinon.stub(auth, 'getUserSettings').resolves({ name: USER, roles: ['chw'] });
+    sinon.stub(auth, 'isOnlineOnly').returns(false);
     sinon.stub(bulkDocsService, 'filterOfflineRequest').callsFake((userCtx, docs) => Promise.resolve(docs));
     stubSeal();
   });
@@ -131,69 +143,87 @@ describe('offline-data-bundle data-bundle service', () => {
       it(`rejects an envelope missing ${field}`, async () => {
         const envelope = envelopeFor();
         delete envelope[field];
-        await expectRejection(service.process(envelope, 'sig', bodyStream()), 400, 'Invalid envelope.');
+        await expectRejection(service.process(encode(envelope), 'sig', bodyStream()), 400, 'Invalid envelope.');
       });
     });
 
-    it('rejects a missing envelope', async () => {
-      await expectRejection(service.process(null, 'sig', bodyStream()), 400, 'Invalid envelope.');
+    it('rejects a missing envelope header', async () => {
+      await expectRejection(
+        service.process(null, 'sig', bodyStream()), 400, 'Missing bundle envelope or signature header.'
+      );
+    });
+
+    it('rejects a missing signature header', async () => {
+      await expectRejection(
+        service.process(encode(envelopeFor()), null, bodyStream()),
+        400,
+        'Missing bundle envelope or signature header.'
+      );
+    });
+
+    it('rejects an envelope header that is not base64 json', async () => {
+      await expectRejection(
+        service.process('bm90LWpzb24=', 'sig', bodyStream()), 400, 'Bundle envelope is not valid base64 json.'
+      );
+    });
+
+    it('rejects a payload_bytes over the max body size', async () => {
+      await expectRejection(
+        service.process(encode(envelopeFor({ payload_bytes: 33 * 1024 * 1024 })), 'sig', bodyStream()),
+        400,
+        'Invalid envelope.'
+      );
     });
 
     it('does not touch the body when the envelope is invalid', async () => {
       const decryptStream = stubDecryptStream(ndjson([{ _id: 'a' }]));
-      await expectRejection(service.process({}, 'sig', bodyStream()), 400, 'Invalid envelope.');
+      await expectRejection(service.process(encode({}), 'sig', bodyStream()), 400, 'Invalid envelope.');
       chai.expect(decryptStream.called).to.be.false;
     });
   });
 
   describe('device resolution', () => {
     it('rejects when the user doc does not exist', async () => {
-      db.users.get.rejects(notFound());
-      await expectRejection(service.process(envelopeFor(), 'sig', bodyStream()), 403, 'Unknown device.');
+      userManagement.users.getUserDoc.rejects(notFound());
+      await expectRejection(service.process(encode(envelopeFor()), 'sig', bodyStream()), 400, 'Unknown device.');
     });
 
     it('rejects when the device has no registered keys', async () => {
       userDoc.keys_by_device = {};
-      await expectRejection(service.process(envelopeFor(), 'sig', bodyStream()), 403, 'Unknown device.');
+      await expectRejection(service.process(encode(envelopeFor()), 'sig', bodyStream()), 400, 'Unknown device.');
     });
 
     it('rejects when the server holds no private key for the device', async () => {
       serverKey.getServerPrivateKeys.resolves(null);
-      await expectRejection(service.process(envelopeFor(), 'sig', bodyStream()), 403, 'Unknown device.');
+      await expectRejection(service.process(encode(envelopeFor()), 'sig', bodyStream()), 400, 'Unknown device.');
     });
 
     it('propagates an unexpected error reading the user doc', async () => {
-      db.users.get.rejects(new Error('couch is down'));
-      await chai.expect(service.process(envelopeFor(), 'sig', bodyStream())).to.be.rejectedWith('couch is down');
+      userManagement.users.getUserDoc.rejects(new Error('couch is down'));
+      await chai
+        .expect(service.process(encode(envelopeFor()), 'sig', bodyStream()))
+        .to.be.rejectedWith('couch is down');
     });
   });
 
   describe('signature', () => {
-    it('verifies over the canonical envelope alone, with the device signing key', async () => {
+    it('verifies over the decoded envelope bytes exactly as they arrived', async () => {
       stubDecryptStream(ndjson([{ _id: 'a' }]));
       const envelope = envelopeFor();
-      await service.process(envelope, 'the-signature', bodyStream());
+      await service.process(encode(envelope), 'the-signature', bodyStream());
 
       chai.expect(signing.verify.callCount).to.equal(1);
       const [key, signature, message] = signing.verify.args[0];
       chai.expect(key).to.deep.equal(SIGNING_JWK);
       chai.expect(signature).to.equal('the-signature');
-      // canonical form = key-sorted JSON of the envelope, and nothing else
-      chai.expect(message.toString('utf8')).to.equal(JSON.stringify({
-        bundle_seq: 1,
-        device_id: DEVICE,
-        end_seq: 5,
-        payload_bytes: CIPHERTEXT.length,
-        payload_sha256: PAYLOAD_SHA256,
-        start_seq: 0,
-        user: USER,
-      }));
+      // the signed message is the transmitted bytes, so no canonical form is reproduced here
+      chai.expect(message.toString('utf8')).to.equal(JSON.stringify(envelope));
     });
 
     it('rejects a bad signature without reading the body', async () => {
       signing.verify.resolves(false);
       const decryptStream = stubDecryptStream(ndjson([{ _id: 'a' }]));
-      await expectRejection(service.process(envelopeFor(), 'sig', bodyStream()), 403, 'Bad signature.');
+      await expectRejection(service.process(encode(envelopeFor()), 'sig', bodyStream()), 400, 'Bad signature.');
       chai.expect(decryptStream.called).to.be.false;
       chai.expect(db.medic.bulkDocs.called).to.be.false;
     });
@@ -202,20 +232,22 @@ describe('offline-data-bundle data-bundle service', () => {
   describe('payload', () => {
     it('rejects when decryption fails', async () => {
       sinon.stub(age, 'decryptStream').rejects(new Error('no identity matched'));
-      await expectRejection(service.process(envelopeFor(), 'sig', bodyStream()), 400, 'Corrupt payload.');
+      await expectRejection(
+        service.process(encode(envelopeFor()), 'sig', bodyStream()), 400, 'Corrupt payload.'
+      );
       chai.expect(db.medic.bulkDocs.called).to.be.false;
     });
 
     it('rejects when the payload is not valid NDJSON', async () => {
       stubDecryptStream(Buffer.from('{not json}', 'utf8'));
-      await expectRejection(service.process(envelopeFor(), 'sig', bodyStream()), 400, 'Corrupt payload.');
+      await expectRejection(service.process(encode(envelopeFor()), 'sig', bodyStream()), 400, 'Corrupt payload.');
     });
 
     it('rejects when the body digest does not match the envelope', async () => {
       stubDecryptStream(ndjson([{ _id: 'a' }]));
       const envelope = envelopeFor({ payload_sha256: crypto.createHash('sha256').update('other').digest('base64') });
       await expectRejection(
-        service.process(envelope, 'sig', bodyStream()),
+        service.process(encode(envelope), 'sig', bodyStream()),
         400,
         'Payload does not match the envelope.'
       );
@@ -223,10 +255,20 @@ describe('offline-data-bundle data-bundle service', () => {
       chai.expect(db.medic.put.called).to.be.false;
     });
 
-    it('rejects when the body length does not match the envelope', async () => {
+    it('aborts mid-stream when the body outgrows the declared length', async () => {
       stubDecryptStream(ndjson([{ _id: 'a' }]));
       await expectRejection(
-        service.process(envelopeFor({ payload_bytes: 3 }), 'sig', bodyStream()),
+        service.process(encode(envelopeFor({ payload_bytes: 3 })), 'sig', bodyStream()),
+        413,
+        'Payload is larger than the envelope declared.'
+      );
+      chai.expect(db.medic.bulkDocs.called).to.be.false;
+    });
+
+    it('rejects when the body is shorter than the declared length', async () => {
+      stubDecryptStream(ndjson([{ _id: 'a' }]));
+      await expectRejection(
+        service.process(encode(envelopeFor({ payload_bytes: CIPHERTEXT.length + 10 })), 'sig', bodyStream()),
         400,
         'Payload does not match the envelope.'
       );
@@ -235,7 +277,7 @@ describe('offline-data-bundle data-bundle service', () => {
 
     it('decrypts with the server private key for this device', async () => {
       const decryptStream = stubDecryptStream(ndjson([{ _id: 'a' }]));
-      await service.process(envelopeFor(), 'sig', bodyStream());
+      await service.process(encode(envelopeFor()), 'sig', bodyStream());
       chai.expect(serverKey.getServerPrivateKeys.args[0]).to.deep.equal([USER, DEVICE]);
       chai.expect(decryptStream.args[0][0]).to.equal(SERVER_IDENTITY);
     });
@@ -249,21 +291,82 @@ describe('offline-data-bundle data-bundle service', () => {
         return webStream([bytes.subarray(0, 7), bytes.subarray(7, 20), bytes.subarray(20)]);
       });
 
-      await service.process(envelopeFor(), 'sig', bodyStream());
+      await service.process(encode(envelopeFor()), 'sig', bodyStream());
       chai.expect(db.medic.bulkDocs.args[0][0]).to.deep.equal(docs);
+    });
+
+    it('rejects a line that is not a document', async () => {
+      stubDecryptStream(Buffer.from('{"_id":"a"}\n"just a string"\n', 'utf8'));
+      await expectRejection(service.process(encode(envelopeFor()), 'sig', bodyStream()), 400, 'Corrupt payload.');
+      chai.expect(db.medic.bulkDocs.called).to.be.false;
+    });
+
+    it('rejects a line that is an array', async () => {
+      stubDecryptStream(Buffer.from('[{"_id":"a"}]\n', 'utf8'));
+      await expectRejection(
+        service.process(encode(envelopeFor()), 'sig', bodyStream()), 400, 'Corrupt payload.'
+      );
     });
 
     it('ignores blank lines', async () => {
       stubDecryptStream(Buffer.from('{"_id":"a"}\n\n{"_id":"b"}\n', 'utf8'));
-      await service.process(envelopeFor(), 'sig', bodyStream());
+      await service.process(encode(envelopeFor()), 'sig', bodyStream());
       chai.expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([{ _id: 'a' }, { _id: 'b' }]);
+    });
+  });
+
+  describe('declared size', () => {
+    it('rejects a content-length over the max body size', async () => {
+      const body = bodyStream(CIPHERTEXT, { 'content-length': String(33 * 1024 * 1024) });
+      await expectRejection(
+        service.process(encode(envelopeFor()), 'sig', body),
+        413,
+        `Request body is larger than ${32 * 1024 * 1024} bytes`
+      );
+    });
+
+    it('rejects a content-length that disagrees with the envelope', async () => {
+      const body = bodyStream(CIPHERTEXT, { 'content-length': '999' });
+      await expectRejection(
+        service.process(encode(envelopeFor()), 'sig', body),
+        400,
+        'Content-Length does not match the envelope.'
+      );
+    });
+
+    it('accepts a content-length that matches the envelope', async () => {
+      stubDecryptStream(ndjson([{ _id: 'a' }]));
+      const body = bodyStream(CIPHERTEXT, { 'content-length': String(CIPHERTEXT.length) });
+      const result = await service.process(encode(envelopeFor()), 'sig', body);
+      chai.expect(result.accepted).to.equal(1);
+    });
+
+    it('proceeds when no content-length is set', async () => {
+      stubDecryptStream(ndjson([{ _id: 'a' }]));
+      const result = await service.process(encode(envelopeFor()), 'sig', bodyStream());
+      chai.expect(result.accepted).to.equal(1);
+    });
+  });
+
+  describe('user', () => {
+    it('rejects an online-only user before any payload is read', async () => {
+      auth.isOnlineOnly.returns(true);
+      const decryptStream = stubDecryptStream(ndjson([{ _id: 'a' }]));
+
+      await expectRejection(
+        service.process(encode(envelopeFor()), 'sig', bodyStream()),
+        400,
+        'Bundles can only be ingested for offline users.'
+      );
+      chai.expect(decryptStream.called).to.be.false;
+      chai.expect(db.medic.bulkDocs.called).to.be.false;
     });
   });
 
   describe('ingest', () => {
     it('authorizes as the peer, not the relaying user', async () => {
       stubDecryptStream(ndjson([{ _id: 'a' }]));
-      await service.process(envelopeFor(), 'sig', bodyStream());
+      await service.process(encode(envelopeFor()), 'sig', bodyStream());
       chai.expect(auth.getUserSettings.args[0]).to.deep.equal([{ name: USER }]);
       chai.expect(bulkDocsService.filterOfflineRequest.args[0][0]).to.deep.equal({ name: USER, roles: ['chw'] });
     });
@@ -271,7 +374,7 @@ describe('offline-data-bundle data-bundle service', () => {
     it('filters the whole doc set in a single call', async () => {
       const docs = Array.from({ length: 250 }, (unused, i) => ({ _id: `doc-${i}` }));
       stubDecryptStream(ndjson(docs));
-      await service.process(envelopeFor(), 'sig', bodyStream());
+      await service.process(encode(envelopeFor()), 'sig', bodyStream());
 
       chai.expect(bulkDocsService.filterOfflineRequest.callCount).to.equal(1);
       chai.expect(bulkDocsService.filterOfflineRequest.args[0][1]).to.have.length(250);
@@ -280,7 +383,7 @@ describe('offline-data-bundle data-bundle service', () => {
     it('writes in batches of 100 with new_edits false', async () => {
       const docs = Array.from({ length: 250 }, (unused, i) => ({ _id: `doc-${i}` }));
       stubDecryptStream(ndjson(docs));
-      const result = await service.process(envelopeFor(), 'sig', bodyStream());
+      const result = await service.process(encode(envelopeFor()), 'sig', bodyStream());
 
       chai.expect(db.medic.bulkDocs.callCount).to.equal(3);
       chai.expect(db.medic.bulkDocs.args.map(args => args[0].length)).to.deep.equal([100, 100, 50]);
@@ -292,7 +395,7 @@ describe('offline-data-bundle data-bundle service', () => {
     it('does not write when authorization allows nothing', async () => {
       stubDecryptStream(ndjson([{ _id: 'a' }, { _id: 'b' }]));
       bulkDocsService.filterOfflineRequest.resolves([]);
-      const result = await service.process(envelopeFor(), 'sig', bodyStream());
+      const result = await service.process(encode(envelopeFor()), 'sig', bodyStream());
 
       chai.expect(db.medic.bulkDocs.called).to.be.false;
       chai.expect(result).to.include({ accepted: 0, rejected: 2 });
@@ -301,14 +404,14 @@ describe('offline-data-bundle data-bundle service', () => {
     it('counts docs the peer may not write as rejected', async () => {
       stubDecryptStream(ndjson([{ _id: 'a' }, { _id: 'forbidden' }]));
       bulkDocsService.filterOfflineRequest.resolves([{ _id: 'a' }]);
-      const result = await service.process(envelopeFor(), 'sig', bodyStream());
+      const result = await service.process(encode(envelopeFor()), 'sig', bodyStream());
       chai.expect(result).to.include({ accepted: 1, rejected: 1 });
     });
 
     it('counts docs CouchDB refused as rejected', async () => {
       stubDecryptStream(ndjson([{ _id: 'a' }, { _id: 'b' }]));
       db.medic.bulkDocs.resolves([{ id: 'b', error: 'conflict' }]);
-      const result = await service.process(envelopeFor(), 'sig', bodyStream());
+      const result = await service.process(encode(envelopeFor()), 'sig', bodyStream());
       chai.expect(result).to.include({ accepted: 1, rejected: 1 });
     });
   });
@@ -318,13 +421,13 @@ describe('offline-data-bundle data-bundle service', () => {
       stubDecryptStream(ndjson([{ _id: 'a' }]));
       db.medic.get.withArgs(CHECKPOINT_ID).resolves({ _id: CHECKPOINT_ID, _rev: '1-a', seq: 5 });
 
-      await service.process(envelopeFor({ start_seq: 5, end_seq: 9 }), 'sig', bodyStream());
+      await service.process(encode(envelopeFor({ start_seq: 5, end_seq: 9 })), 'sig', bodyStream());
       chai.expect(db.medic.put.args[0][0]).to.deep.equal({ _id: CHECKPOINT_ID, _rev: '1-a', seq: 9 });
     });
 
     it('starts from zero when no checkpoint is stored yet', async () => {
       stubDecryptStream(ndjson([{ _id: 'a' }]));
-      await service.process(envelopeFor({ start_seq: 0, end_seq: 5 }), 'sig', bodyStream());
+      await service.process(encode(envelopeFor({ start_seq: 0, end_seq: 5 })), 'sig', bodyStream());
       chai.expect(db.medic.put.args[0][0]).to.deep.equal({ _id: CHECKPOINT_ID, seq: 5 });
     });
 
@@ -332,7 +435,7 @@ describe('offline-data-bundle data-bundle service', () => {
       stubDecryptStream(ndjson([{ _id: 'a' }]));
       db.medic.get.withArgs(CHECKPOINT_ID).resolves({ _id: CHECKPOINT_ID, _rev: '1-a', seq: 5 });
 
-      await service.process(envelopeFor({ start_seq: 9, end_seq: 12 }), 'sig', bodyStream());
+      await service.process(encode(envelopeFor({ start_seq: 9, end_seq: 12 })), 'sig', bodyStream());
       chai.expect(db.medic.put.called).to.be.false;
       chai.expect(db.medic.bulkDocs.called).to.be.true;
       // the seal still carries the OLD position, so the peer knows it must resend the gap
@@ -341,7 +444,7 @@ describe('offline-data-bundle data-bundle service', () => {
 
     it('seals with the server signing key and encrypts to the device', async () => {
       stubDecryptStream(ndjson([{ _id: 'a' }]));
-      const result = await service.process(envelopeFor(), 'sig', bodyStream());
+      const result = await service.process(encode(envelopeFor()), 'sig', bodyStream());
 
       chai.expect(signing.sign.args[0][0]).to.deep.equal(SERVER_SIGNING_JWK);
       chai.expect(JSON.parse(signing.sign.args[0][1].toString('utf8')))
@@ -355,19 +458,11 @@ describe('offline-data-bundle data-bundle service', () => {
     });
   });
 
-  it('returns the envelope position alongside the counts and the sealed checkpoint', async () => {
+  it('returns only the counts and the sealed checkpoint', async () => {
     stubDecryptStream(ndjson([{ _id: 'a' }]));
-    const result = await service.process(envelopeFor(), 'sig', bodyStream());
+    const result = await service.process(encode(envelopeFor()), 'sig', bodyStream());
 
-    chai.expect(result).to.deep.equal({
-      user: USER,
-      device_id: DEVICE,
-      bundle_seq: 1,
-      start_seq: 0,
-      end_seq: 5,
-      accepted: 1,
-      rejected: 0,
-      checkpoint: SEALED_TOKEN,
-    });
+    // the caller already has the envelope values it sent, so they are not echoed back
+    chai.expect(result).to.deep.equal({ accepted: 1, rejected: 0, checkpoint: SEALED_TOKEN });
   });
 });

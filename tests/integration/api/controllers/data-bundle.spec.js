@@ -88,24 +88,6 @@ const deniedDoc = {
   reported_date: 1,
 };
 
-// Replicates the service's canonicalisation contract byte-for-byte
-// (see api/src/services/offline-data-bundle/data-bundle.js). Recursive
-// key-sort JSON; arrays keep order.
-const canonicalize = (value) => {
-  if (Array.isArray(value)) {
-    return `[${value.map(canonicalize).join(',')}]`;
-  }
-  if (value && typeof value === 'object') {
-    const entries = Object
-      .keys(value)
-      // UTF-16 code unit order, matching the service (NOT localeCompare)
-      .sort((a, b) => (a === b ? 0 : (a < b ? -1 : 1)))
-      .map(key => `${JSON.stringify(key)}:${canonicalize(value[key])}`);
-    return `{${entries.join(',')}}`;
-  }
-  return JSON.stringify(value);
-};
-
 const toNdjson = (docs) => docs.map(doc => JSON.stringify(doc)).join('\n');
 
 // Age-encrypts the NDJSON to the server's recipient key. age-encryption is
@@ -151,8 +133,9 @@ const buildSignedRequest = async ({ envelope, ciphertext, privateKey }) => {
     payload_sha256: createHash('sha256').update(payloadBytes).digest('base64'),
     payload_bytes: payloadBytes.length,
   };
-  const message = Buffer.from(canonicalize(fullEnvelope), 'utf8');
-  const signature = Buffer.from(await webcrypto.subtle.sign({ name: 'Ed25519' }, privateKey, message));
+  // the signed message is exactly the bytes that travel in the header, no canonical form involved
+  const envelopeBytes = Buffer.from(JSON.stringify(fullEnvelope), 'utf8');
+  const signature = Buffer.from(await webcrypto.subtle.sign({ name: 'Ed25519' }, privateKey, envelopeBytes));
 
   return {
     path: '/api/v1/replication/data-bundle',
@@ -160,7 +143,7 @@ const buildSignedRequest = async ({ envelope, ciphertext, privateKey }) => {
     auth: { username: 'bundletaxi', password },
     headers: {
       'Content-Type': 'application/octet-stream',
-      'X-Medic-Bundle-Envelope': Buffer.from(JSON.stringify(fullEnvelope), 'utf8').toString('base64'),
+      'X-Medic-Bundle-Envelope': envelopeBytes.toString('base64'),
       'X-Medic-Bundle-Signature': signature.toString('base64'),
     },
     body: payloadBytes,
@@ -226,15 +209,7 @@ describe('offline data-bundle handler', () => {
     const firstResponse = await utils.request(requestOptions);
     // `checkpoint` is a SEALED token (base64), not the raw number, so assert the rest verbatim
     // and open the token separately.
-    chai.expect(firstResponse).excluding('checkpoint').to.deep.equal({
-      user: 'bundlechw',
-      device_id: DEVICE_ID,
-      bundle_seq: 1,
-      start_seq: 0,
-      end_seq: 1,
-      accepted: 1,
-      rejected: 1,
-    });
+    chai.expect(firstResponse).excluding('checkpoint').to.deep.equal({ accepted: 1, rejected: 1 });
     chai.expect(firstResponse.checkpoint).to.be.a('string');
 
     // Open the sealed checkpoint: age-decrypt with the device identity, verify the server signature

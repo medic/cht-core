@@ -113,8 +113,7 @@ describe('Initial Replication controller', () => {
   });
 
   describe('dataBundle', () => {
-    const ENVELOPE = { user: 'chw1', device_id: 'device-a', bundle_seq: 1, start_seq: 0, end_seq: 5 };
-    const RESULT = { ...ENVELOPE, accepted: 3, rejected: 0, checkpoint: 'c2VhbGVk' };
+    const RESULT = { accepted: 3, rejected: 0, checkpoint: 'c2VhbGVk' };
 
     const bundleReq = (headers = {}) => ({
       id: 'req-1',
@@ -122,50 +121,30 @@ describe('Initial Replication controller', () => {
       get: (name) => headers[name],
     });
 
-    const encodeEnvelope = (envelope) => Buffer.from(JSON.stringify(envelope), 'utf8').toString('base64');
-
-    it('should ingest the bundle and respond with the result', async () => {
+    it('should hand the raw headers and the request stream to the service', async () => {
       sinon.stub(auth, 'assertPermissions').resolves();
       sinon.stub(dataBundle, 'process').resolves(RESULT);
       const req = bundleReq({
-        'X-Medic-Bundle-Envelope': encodeEnvelope(ENVELOPE),
+        'X-Medic-Bundle-Envelope': 'ZW52ZWxvcGU=',
         'X-Medic-Bundle-Signature': 'the-signature',
       });
 
       await controller.dataBundle(req, res);
 
       expect(auth.assertPermissions.args).to.deep.equal([[ req, { hasAny: ['can_relay_offline_data_bundle'] } ]]);
-      expect(dataBundle.process.args).to.deep.equal([[ ENVELOPE, 'the-signature', req ]]);
+      // the controller does no parsing: the header values and the request itself go straight down
+      expect(dataBundle.process.args).to.deep.equal([[ 'ZW52ZWxvcGU=', 'the-signature', req ]]);
       expect(res.json.args).to.deep.equal([[ RESULT ]]);
     });
 
-    it('should pass the raw request through as the payload stream', async () => {
-      sinon.stub(auth, 'assertPermissions').resolves();
-      sinon.stub(dataBundle, 'process').resolves(RESULT);
-      const req = bundleReq({ 'X-Medic-Bundle-Envelope': encodeEnvelope(ENVELOPE) });
-
-      await controller.dataBundle(req, res);
-
-      // the body is never buffered by the controller, the service reads it off the request
-      expect(dataBundle.process.args[0][2]).to.equal(req);
-    });
-
-    it('should pass a null envelope on when the header is missing', async () => {
+    it('should pass undefined headers through rather than guessing', async () => {
       sinon.stub(auth, 'assertPermissions').resolves();
       sinon.stub(dataBundle, 'process').resolves(RESULT);
 
       await controller.dataBundle(bundleReq(), res);
 
-      expect(dataBundle.process.args[0][0]).to.be.null;
-    });
-
-    it('should pass a null envelope on when the header is not valid base64 json', async () => {
-      sinon.stub(auth, 'assertPermissions').resolves();
-      sinon.stub(dataBundle, 'process').resolves(RESULT);
-
-      await controller.dataBundle(bundleReq({ 'X-Medic-Bundle-Envelope': 'bm90LWpzb24=' }), res);
-
-      expect(dataBundle.process.args[0][0]).to.be.null;
+      expect(dataBundle.process.args[0][0]).to.be.undefined;
+      expect(dataBundle.process.args[0][1]).to.be.undefined;
     });
 
     it('should respond with the error when the relaying user lacks the permission', async () => {
@@ -187,7 +166,7 @@ describe('Initial Replication controller', () => {
       sinon.stub(auth, 'assertPermissions').resolves();
       sinon.stub(dataBundle, 'process').rejects(error);
       sinon.stub(serverUtils, 'error');
-      const req = bundleReq({ 'X-Medic-Bundle-Envelope': encodeEnvelope(ENVELOPE) });
+      const req = bundleReq({ 'X-Medic-Bundle-Envelope': 'ZW52ZWxvcGU=' });
 
       await controller.dataBundle(req, res);
 

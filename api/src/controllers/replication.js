@@ -2,23 +2,10 @@ const replication = require('../services/replication/replication');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
 const logger = require('@medic/logger');
+const { HTTP_HEADERS } = require('@medic/constants');
 const dataBundle = require('../services/offline-data-bundle/data-bundle');
 
 const RELAY_PERMISSION = 'can_relay_offline_data_bundle';
-const ENVELOPE_HEADER = 'X-Medic-Bundle-Envelope';
-const SIGNATURE_HEADER = 'X-Medic-Bundle-Signature';
-
-const parseEnvelope = (req) => {
-  const raw = req.get(ENVELOPE_HEADER);
-  if (!raw) {
-    return null;
-  }
-  try {
-    return JSON.parse(Buffer.from(raw, 'base64').toString('utf8'));
-  } catch {
-    return null;
-  }
-};
 
 module.exports = {
   getDocIds: async (req, res) => {
@@ -115,23 +102,8 @@ module.exports = {
    *           application/json:
    *             schema:
    *               type: object
-   *               required: [user, device_id, bundle_seq, start_seq, end_seq, accepted, rejected, checkpoint]
+   *               required: [accepted, rejected, checkpoint]
    *               properties:
-   *                 user:
-   *                   type: string
-   *                   description: Username of the peer that produced the bundle.
-   *                 device_id:
-   *                   type: string
-   *                   description: Identifier of the peer device that produced the bundle.
-   *                 bundle_seq:
-   *                   type: number
-   *                   description: The `bundle_seq` from the envelope.
-   *                 start_seq:
-   *                   type: number
-   *                   description: The `start_seq` from the envelope.
-   *                 end_seq:
-   *                   type: number
-   *                   description: The `end_seq` from the envelope.
    *                 accepted:
    *                   type: number
    *                   description: Number of documents written.
@@ -157,10 +129,12 @@ module.exports = {
   dataBundle: async (req, res) => {
     try {
       await auth.assertPermissions(req, { hasAny: [RELAY_PERMISSION] });
-      const envelope = parseEnvelope(req);
-      const signature = req.get(SIGNATURE_HEADER);
-      const result = await dataBundle.process(envelope, signature, req);
-      logger.info(`REQ ${req.id} - Relayed an offline data bundle for ${result.user}.`);
+      const result = await dataBundle.process(
+        req.get(HTTP_HEADERS.BUNDLE_ENVELOPE),
+        req.get(HTTP_HEADERS.BUNDLE_SIGNATURE),
+        req
+      );
+      logger.info(`REQ ${req.id} - Relayed an offline data bundle.`);
       return res.json(result);
     } catch (err) {
       return serverUtils.error(err, req, res);

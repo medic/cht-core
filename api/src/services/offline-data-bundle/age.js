@@ -39,12 +39,4 @@ module.exports = {
     decrypter.addIdentity(identity);
     return decrypter.decrypt(ciphertext);
   },
-
-  // Decrypts age ciphertext with the given identity (age secret key string). Returns the
-  // plaintext as a Uint8Array. Throws if the identity cannot decrypt the ciphertext.
-  decrypt: async (identity, ciphertext) => {
-    const decrypter = new (await load()).Decrypter();
-    decrypter.addIdentity(identity);
-    return decrypter.decrypt(ciphertext, 'uint8array');
-  },
 };
