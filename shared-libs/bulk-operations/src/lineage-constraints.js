@@ -1,8 +1,8 @@
-const db = require('../db');
-const config = require('../config');
+const db = require('./libs/db');
+const config = require('./libs/config');
+const lineage = require('./libs/lineage');
 const contactTypesUtils = require('@medic/contact-types-utils');
-const lineage = require('@medic/lineage')(Promise, db.medic);
-const { BadRequestError } = require('../errors');
+const { ValidationError } = require('./errors');
 
 
 /**
@@ -11,14 +11,14 @@ const { BadRequestError } = require('../errors');
  */
 const assertRootIsAllowed = (sourceType) => {
   if (contactTypesUtils.hasParents(sourceType)) {
-    throw new BadRequestError(`contacts of type '${sourceType.id}' cannot be moved to the root`);
+    throw new ValidationError(`contacts of type '${sourceType.id}' cannot be moved to the root`);
   }
 };
 
 const assertParentTypeIsAllowed = (settings, sourceDoc, destinationDoc) => {
   const sourceType = contactTypesUtils.getContactType(settings, sourceDoc);
   if (!sourceType) {
-    throw new BadRequestError(`cannot move contact with unknown type '${contactTypesUtils.getTypeId(sourceDoc)}'`);
+    throw new ValidationError(`cannot move contact with unknown type '${contactTypesUtils.getTypeId(sourceDoc)}'`);
   }
 
   if (!destinationDoc) {
@@ -27,18 +27,18 @@ const assertParentTypeIsAllowed = (settings, sourceDoc, destinationDoc) => {
 
   const destinationType = contactTypesUtils.getContactType(settings, destinationDoc);
   if (!destinationType) {
-    throw new BadRequestError(`destination contact '${destinationDoc._id}' has an unknown type`);
+    throw new ValidationError(`destination contact '${destinationDoc._id}' has an unknown type`);
   }
 
   if (!contactTypesUtils.isParentOf(destinationType, sourceType)) {
-    throw new BadRequestError(`contacts of type '${sourceType.id}' cannot have parent of type '${destinationType.id}'`);
+    throw new ValidationError(`contacts of type '${sourceType.id}' cannot have parent of type '${destinationType.id}'`);
   }
 };
 
 const assertDestinationIsNotCurrentParent = (sourceDoc, destinationDoc) => {
   const currentParentId = sourceDoc.parent?._id || sourceDoc.parent;
   if ((destinationDoc?._id || null) === (currentParentId || null)) {
-    throw new BadRequestError(`contact '${sourceDoc._id}' already has that parent`);
+    throw new ValidationError(`contact '${sourceDoc._id}' already has that parent`);
   }
 };
 
@@ -48,12 +48,12 @@ const assertNoCircularHierarchy = (sourceDoc, destinationDoc) => {
   }
 
   if (sourceDoc._id === destinationDoc._id) {
-    throw new BadRequestError('cannot move a contact to itself');
+    throw new ValidationError('cannot move a contact to itself');
   }
 
   const destinationAncestry = lineage.chainIds(destinationDoc);
   if (destinationAncestry.includes(sourceDoc._id)) {
-    throw new BadRequestError(
+    throw new ValidationError(
       `circular hierarchy: '${destinationDoc._id}' is a descendant of '${sourceDoc._id}'`
     );
   }
@@ -80,7 +80,7 @@ const assertNoPrimaryContactStranded = async (sourceDoc, destinationDoc, descend
   const stranded = result.rows.find(row => moved.has(row.value.primary_contact));
 
   if (stranded) {
-    throw new BadRequestError(
+    throw new ValidationError(
       `cannot move '${sourceDoc._id}': it would strand the primary contact of '${stranded.id}'`
     );
   }
@@ -88,12 +88,12 @@ const assertNoPrimaryContactStranded = async (sourceDoc, destinationDoc, descend
 
 /**
  * Runs every legality check for a move. Throws on the first violation; the caller turns that into a
- * `BadRequestError`, so any other failure (a database error, say) propagates as a 500 instead of
+ * 400 (API) or a failed log (Sentinel), so any other failure (a database error, say) propagates as a 500 instead of
  * being reported to the caller as an invalid move.
  * @param {Object} sourceDoc - the contact being moved
  * @param {Object|null} destinationDoc - the new parent, or null when moving to the root
  * @param {string[]} descendantIds - the ids of the source and everything beneath it
- * @throws {BadRequestError} when the move would be illegal
+ * @throws {ValidationError} when the move would be illegal
  */
 const assertMoveIsLegal = async (sourceDoc, destinationDoc, descendantIds) => {
   const settings = config.getAll();

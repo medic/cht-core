@@ -87,8 +87,13 @@ const BULK_OPERATIONS = {
     SET_PARENT: 'set-parent',
     DELETE_USER: 'delete-user',
   },
+  TYPES: {
+    DELETE_CONTACT: 'delete-contact',
+    MOVE_CONTACT: 'move-contact',
+  },
   STATUSES: {
     QUEUED: 'queued',
+    RUNNING: 'running',
     COMPLETED: 'completed',
     FAILED: 'failed',
   },

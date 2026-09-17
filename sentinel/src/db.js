@@ -71,6 +71,8 @@ if (UNIT_TEST_ENV) {
     get: stubMe('get'),
     put: stubMe('put'),
     allDocs: stubMe('allDocs'),
+    query: stubMe('query'),
+    changes: stubMe('changes'),
   };
 
   module.exports.allDbs = stubMe('allDbs');
