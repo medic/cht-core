@@ -42,10 +42,10 @@ rules:
 
   cache-poisoning:
     ignore:
-      # release-helm-charts.yml only triggers on `push` to master — restricted
-      # to maintainers. No external actor can trigger this workflow, so cache
-      # poisoning via a forked PR is not possible.
-      # Risk accepted: 2026-04-11, re-confirmed on trigger change 2026-09-16.
+      # release-helm-charts.yml only runs from master. Its job is gated to
+      # successful builds of release tags, which only maintainers can create.
+      # Cache poisoning via a forked PR is not possible.
+      # Risk accepted: 2026-04-11, re-confirmed on trigger change 2026-09-17.
       - .github/workflows/release-helm-charts.yml
 
 

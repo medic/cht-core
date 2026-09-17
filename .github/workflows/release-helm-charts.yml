@@ -1,11 +1,13 @@
 name: Push Helm Charts→Docs Site
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - 'Build and test'
+    types:
+      - completed
     branches:
-      - master
-    paths:
-      - 'scripts/build/helm-releases/**'
+      - '[0-9]+.[0-9]+.[0-9]+'
 
 concurrency:
   group: pages
@@ -13,6 +15,9 @@ concurrency:
 
 jobs:
   checkout-repo-upload-chart-artifacts:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
