@@ -633,6 +633,24 @@ describe('CalendarInterval', () => {
       });
     });
 
+    it('calculates BS intervals when the Nepali locale renders dates with Devanagari digits', () => {
+      const previousLocale = moment.locale();
+      moment.locale('ne');
+      try {
+        const timestamp = moment('2026-07-05 12:00:00').valueOf();
+        const expectedStart = moment('2026-06-15 00:00:00').valueOf();
+        const expectedEnd = moment('2026-07-16 23:59:59.999').valueOf();
+
+        chai.expect(service.getInterval(1, timestamp, true)).to.deep.equal({
+          start: expectedStart,
+          end: expectedEnd
+        });
+        chai.expect(moment.locale()).to.equal('ne');
+      } finally {
+        moment.locale(previousLocale);
+      }
+    });
+
     it('returns n-th of current BS month when start day is n <= today\'s BS day', () => {
       // 2026-07-05 is BS 2083-03-21 (Ashadh 21).
       // Start day 15 <= 21, so start is BS 2083-03-15 (Ashadh 15 = 2026-06-29)
