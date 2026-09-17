@@ -63,83 +63,42 @@ describe('Bulk operations service', () => {
   });
 
   describe('queue', () => {
-    const actionOperations = [
-      { action: 'delete', operations: [{ id: 'person' }, { id: 'report' }] },
-      { action: 'set-contact', operations: [{ id: 'place', current_contact_id: 'person' }] },
-      { action: 'delete-user', operations: [{ id: 'org.couchdb.user:chw' }] },
-    ];
-
-    it('writes the log to medic-logs and the actions to medic-sentinel, and returns the operation id', async () => {
+    it('writes a single log doc to medic-logs and returns the operation id', async () => {
       const put = sinon.stub(db.medicLogs, 'put').resolves();
-      const saveDocs = sinon.stub(db, 'saveDocs').resolves();
 
-      const operationId = await service.queue(actionOperations);
-
-      expect(operationId.startsWith('bulk-operation:')).to.equal(true);
+      const id = await service.queue('delete-contact', { contact_id: 'target', delete_users: true });
 
       expect(put.calledOnce).to.equal(true);
       const log = put.args[0][0];
-      expect(log._id).to.equal(operationId);
-      expect(Object.keys(log.actions)).to.have.length(3);
-
-      expect(saveDocs.calledOnce).to.equal(true);
-      expect(saveDocs.args[0][0]).to.equal(db.sentinel);
-      const actions = saveDocs.args[0][1];
-      expect(actions).to.have.length(3);
-      expect(actions.map(action => action.action)).to.deep.equal(['delete', 'set-contact', 'delete-user']);
-      expect(actions[0].bulk_operation_id).to.equal(operationId);
-
-      // the log must exist before the listener can pick up an action
-      expect(put.calledBefore(saveDocs)).to.equal(true);
+      expect(log._id).to.equal(id);
+      expect(id).to.match(/^bulk-operation:/);
+      expect(log).to.deep.include({
+        type: 'delete-contact',
+        params: { contact_id: 'target', delete_users: true },
+        status: 'queued',
+      });
+      expect(log.start_date).to.be.an.instanceOf(Date);
+      expect(log.updated_date).to.deep.equal(log.start_date);
     });
 
-    it('stores each action\'s params in a base64 json attachment and records the log action detail', async () => {
-      const put = sinon.stub(db.medicLogs, 'put').resolves();
-      const saveDocs = sinon.stub(db, 'saveDocs').resolves();
+    it('writes nothing else: the actions are Sentinel\'s to plan', async () => {
+      sinon.stub(db.medicLogs, 'put').resolves();
+      const sentinelPut = sinon.stub(db.sentinel, 'put').resolves();
+      const sentinelBulkDocs = sinon.stub(db.sentinel, 'bulkDocs').resolves([]);
 
-      await service.queue(actionOperations);
+      await service.queue('move-contact', { contact_id: 'chp', parent_id: 'hc-b' });
 
-      const log = put.args[0][0];
-      const actions = saveDocs.args[0][1];
-
-      // per-item params live in a base64 json attachment
-      const attachment = actions[0]._attachments.operations;
-      expect(attachment.content_type).to.equal('application/json');
-      expect(JSON.parse(Buffer.from(attachment.data, 'base64').toString()))
-        .to.deep.equal(actionOperations[0].operations);
-      expect(actions[0].cursor).to.equal(0);
-      expect(actions[0].total).to.equal(2);
-
-      // the log action entry cross-links to the action doc and starts queued
-      const logAction = log.actions[actions[0]._id];
-      expect(logAction.status).to.equal('queued');
-      expect(logAction.action).to.equal('delete');
-      expect(logAction.total_changes_count).to.equal(2);
-      expect(logAction.updated_date).to.equal(log.start_date);
+      expect(sentinelPut.called).to.equal(false);
+      expect(sentinelBulkDocs.called).to.equal(false);
     });
 
     it('generates a distinct operation id on each call', async () => {
       sinon.stub(db.medicLogs, 'put').resolves();
-      sinon.stub(db, 'saveDocs').resolves();
 
-      const [ first, second ] = await Promise.all([ service.queue(actionOperations), service.queue(actionOperations) ]);
+      const first = await service.queue('delete-contact', { contact_id: 'a' });
+      const second = await service.queue('delete-contact', { contact_id: 'a' });
 
       expect(first).to.not.equal(second);
-    });
-
-    it('skips action groups that have no operations', async () => {
-      sinon.stub(db.medicLogs, 'put').resolves();
-      const saveDocs = sinon.stub(db, 'saveDocs').resolves();
-      const groups = [
-        { action: 'delete', operations: [{ id: 'person' }] },
-        { action: 'set-contact', operations: [] },
-        { action: 'delete-user', operations: [{ id: 'org.couchdb.user:chw' }] },
-      ];
-
-      await service.queue(groups);
-
-      const actions = saveDocs.args[0][1];
-      expect(actions.map(action => action.action)).to.deep.equal(['delete', 'delete-user']);
     });
   });
 });

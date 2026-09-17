@@ -37,7 +37,7 @@ module.exports = (sourceConfig, sourceDb, sourceDataContext) => {
      * @param {Object} params - the request parameters recorded on the log
      * @throws {ValidationError} when the operation would be illegal
      */
-    validate: (type, params) => getPlanner(type).validate(params),
+    validate: async (type, params) => getPlanner(type).validate(params),
 
     /**
      * Works out everything an operation touches. Assumes `validate` has passed.
@@ -45,7 +45,7 @@ module.exports = (sourceConfig, sourceDb, sourceDataContext) => {
      * @param {Object} params - the request parameters recorded on the log
      * @returns {Promise<Object>} the summary of changes and the actions to run, in execution order
      */
-    plan: (type, params) => getPlanner(type).plan(params),
+    plan: async (type, params) => getPlanner(type).plan(params),
 
     ValidationError,
   };
