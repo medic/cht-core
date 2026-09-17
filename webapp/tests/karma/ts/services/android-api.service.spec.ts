@@ -9,6 +9,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.service';
+import { P2pService } from '@mm-services/p2p.service';
 
 describe('AndroidApi service', () => {
 
@@ -19,6 +20,7 @@ describe('AndroidApi service', () => {
   let consoleErrorMock;
   let navigationService;
   let androidAppLauncherService;
+  let p2pService;
 
   beforeEach(() => {
     sessionService = {
@@ -41,6 +43,12 @@ describe('AndroidApi service', () => {
       goToPrimaryTab: sinon.stub(),
     };
 
+    p2pService = {
+      hostingResolved: sinon.stub(),
+      pairingResolved: sinon.stub(),
+      permissionsResolvedBy: sinon.stub(),
+    };
+
     androidAppLauncherService = {
       resolveAndroidAppResponse: sinon.stub()
     };
@@ -54,6 +62,7 @@ describe('AndroidApi service', () => {
         { provide: MRDTService, useValue: mrdtService },
         { provide: NavigationService, useValue: navigationService },
         { provide: AndroidAppLauncherService, useValue: androidAppLauncherService },
+        { provide: P2pService, useValue: p2pService },
       ],
     });
 
@@ -152,6 +161,38 @@ describe('AndroidApi service', () => {
     it('should call geolocation permissionRequestResolved', () => {
       service.locationPermissionRequestResolve();
       expect(geolocationService.permissionRequestResolved.callCount).to.equal(1);
+    });
+  });
+
+  describe('p2p callbacks', () => {
+    it('should pass a hosting result on to the p2p service', () => {
+      service.resolveP2pHostingResult(true, 'data:image/png;base64,abc');
+
+      expect(p2pService.hostingResolved.args).to.deep.equal([[ true, 'data:image/png;base64,abc' ]]);
+    });
+
+    it('should pass a hosting failure code on unchanged', () => {
+      service.resolveP2pHostingResult(false, 'hotspot_unsupported');
+
+      expect(p2pService.hostingResolved.args).to.deep.equal([[ false, 'hotspot_unsupported' ]]);
+    });
+
+    it('should pass a pairing result on to the p2p service', () => {
+      service.resolveP2pPairing(true, 'Supervisor phone');
+
+      expect(p2pService.pairingResolved.args).to.deep.equal([[ true, 'Supervisor phone' ]]);
+    });
+
+    it('should pass the permission answer on to the p2p service', () => {
+      service.p2pPermissionsResolved(false);
+
+      expect(p2pService.permissionsResolvedBy.args).to.deep.equal([[ false ]]);
+    });
+
+    it('should expose the p2p callbacks on v1, since that is what android calls', () => {
+      expect(service.v1.resolveP2pHostingResult).to.be.a('function');
+      expect(service.v1.resolveP2pPairing).to.be.a('function');
+      expect(service.v1.p2pPermissionsResolved).to.be.a('function');
     });
   });
 
