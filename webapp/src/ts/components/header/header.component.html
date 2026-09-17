@@ -76,6 +76,13 @@
             </li>
           </ng-container>
 
+          <li role="presentation" *ngIf="p2pVisible">
+            <a routerLink="p2p" role="menuitem" tabindex="-1">
+              <i class="fa fa-fw fa-exchange"></i>
+              <span>{{'p2p.menu.title' | translate}}</span>
+            </a>
+          </li>
+
           <li role="presentation" *ngIf="canLogOut">
             <a role="menuitem" tabindex="-1" rel="external" (click)="logout()">
               <i class="fa fa-fw fa-power-off"></i>
