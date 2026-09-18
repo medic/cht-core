@@ -36,22 +36,22 @@ export class ContactViewModelGeneratorService {
   LIMIT_SELECT_ALL_REPORTS = 500;
 
   constructor(
-    private lineageModelGeneratorService:LineageModelGeneratorService,
-    private dbService:DbService,
-    private contactTypesService:ContactTypesService,
-    private translateService:TranslateService,
-    private searchService:SearchService,
-    private contactMutedService:ContactMutedService,
-    private getDataRecordsService:GetDataRecordsService,
-    private ngZone:NgZone,
+    private lineageModelGeneratorService: LineageModelGeneratorService,
+    private dbService: DbService,
+    private contactTypesService: ContactTypesService,
+    private translateService: TranslateService,
+    private searchService: SearchService,
+    private contactMutedService: ContactMutedService,
+    private getDataRecordsService: GetDataRecordsService,
+    private ngZone: NgZone,
     readonly chtDatasourceService: CHTDatasourceService,
-  ){
+  ) {
     this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
   }
 
   private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
-  private primaryContactComparator (lhs, rhs) {
+  private primaryContactComparator(lhs, rhs) {
     if (lhs.isPrimaryContact) {
       return -1;
     }
@@ -98,8 +98,8 @@ export class ContactViewModelGeneratorService {
       return primary;
     }
     if (lhs.doc.date_of_birth &&
-        rhs.doc.date_of_birth &&
-        lhs.doc.date_of_birth !== rhs.doc.date_of_birth) {
+      rhs.doc.date_of_birth &&
+      lhs.doc.date_of_birth !== rhs.doc.date_of_birth) {
       return lhs.doc.date_of_birth < rhs.doc.date_of_birth ? -1 : 1;
     }
     if (lhs.doc.date_of_birth && !rhs.doc.date_of_birth) {
@@ -161,9 +161,9 @@ export class ContactViewModelGeneratorService {
       return children;
     }
 
-    // If the primary contact is not a child, fetch the document    
+    // If the primary contact is not a child, fetch the document
     const contact = await this.getContactFromDatasource(Qualifier.byUuid(contactId));
-    
+
     if (!contact) {
       return children;
     }
@@ -195,20 +195,20 @@ export class ContactViewModelGeneratorService {
     return childTypes;
   }
 
-  private getChildren (model, types, { getChildPlaces }: any = {}) {
+  private getChildren(model, types, { getChildPlaces }: any = {}) {
     const options: any = { include_docs: true };
     const contactId = model.doc._id;
     if (getChildPlaces) {
       // get all types
-      options.startkey = [ contactId ];
-      options.endkey = [ contactId, {} ];
+      options.startkey = [contactId];
+      options.endkey = [contactId, {}];
     } else {
       // just get person children
       const childTypes = this.getPersonChildTypes(types, model.type?.id);
       if (!childTypes.length) {
         return Promise.resolve([]);
       }
-      options.keys = childTypes.map(type => [ contactId, type.id ]);
+      options.keys = childTypes.map(type => [contactId, type.id]);
     }
     return this.dbService
       .get()
@@ -294,19 +294,24 @@ export class ContactViewModelGeneratorService {
     return this.searchService
       .search('reports', { subjectIds }, { include_docs: true, limit: this.LIMIT_SELECT_ALL_REPORTS })
       .then(reports => {
-        reports.forEach(report => {
+        const safeReports = (reports || []).filter(Boolean);
+
+        safeReports.forEach(report => {
           report.valid = !report.errors || !report.errors.length;
 
           if (!report.fields || report.fields?.patient_name) {
             return;
           }
+
           const patientId = report.fields.patient_id || report.patient_id;
           const patient = contactDocs.find(contact => contact?.patient_id === patientId);
+
           if (patient) {
             report.fields.patient_name = patient.name;
           }
         });
-        return reports;
+
+        return safeReports;
       });
   }
 
@@ -315,7 +320,7 @@ export class ContactViewModelGeneratorService {
   }
 
   private _loadReports(model, forms) {
-    const contacts = [ model.doc ];
+    const contacts = [model.doc];
     model.children?.forEach(group => {
       if (group?.type?.person) {
         group.contacts.forEach(contact => contacts.push(contact.doc));
@@ -332,11 +337,11 @@ export class ContactViewModelGeneratorService {
     model.type = this.contactTypesService.getTypeById(types, typeId);
   }
 
-  getContact(id:string, options?) {
+  getContact(id: string, options?) {
     return this.ngZone.runOutsideAngular(() => this._getContact(id, options));
   }
 
-  private _getContact(id:string, options?) {
+  private _getContact(id: string, options?) {
     return Promise
       .all([
         this.contactTypesService.getAll(),
