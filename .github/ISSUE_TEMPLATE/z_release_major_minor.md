@@ -52,6 +52,7 @@ If all is good, then in 24h, I will start the release. Thanks!
    ```
    curl -s https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases | jq '[.rows[] | select(.key[0]=="release")] | max_by(.value.time)'
    ```
+- [ ] A [Push Helm Charts](https://github.com/medic/cht-core/actions/workflows/release-helm-charts.yml) run will be triggered when the release build completes. Confirm the run completes successfully and the new release is listed on `docs.communityhealthtoolkit.org/cht-core/index.yaml`.
 - [ ] Upgrade the [demo](https://demo-cht.dev.medicmobile.org/) instance to the newly released version.
   - [ ] From the "App Management" admin console (`medic` user creds in 1Password), go to "Upgrades" and stage the upgrade for this version.
   - [ ] Clone `cht-core` repo and checkout the target tag (`git checkout <major>.<minor>.x` ) to ensure you have the proper version of the helm charts.
