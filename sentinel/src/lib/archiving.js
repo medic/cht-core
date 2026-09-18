@@ -68,12 +68,12 @@ const canArchive = (doc) => {
  * any point is recoverable by re-running the batch. Ids that are missing or not archivable are
  * skipped and logged.
  * @param {string[]} batch - doc ids to archive
- * @returns {Promise<string[]>} the ids that were skipped because they are missing or not archivable
+ * @returns {Promise<void>}
  */
 const archiveBatch = async (batch) => {
   const ids = batch.map(i => i.toString().trim()).filter(Boolean);
   if (!ids.length) {
-    return [];
+    return;
   }
   const date = Date.now();
 
@@ -102,7 +102,6 @@ const archiveBatch = async (batch) => {
   await audit.recordArchiving(archivedIds, date);
   await purgeDocs(db.sentinel, archivedIds.map(id => `${id}-info`));
   await purgeDocs(db.medic, archivedIds);
-  return skippedIds;
 };
 
 /**
@@ -346,5 +345,4 @@ const archive = async (duration) => {
 
 module.exports = {
   archive,
-  archiveBatch,
 };

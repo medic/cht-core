@@ -5,7 +5,7 @@ const { BULK_OPERATIONS, PREFIXES } = require('@medic/constants');
 const { setContact } = require('./set-contact');
 const { setParent } = require('./set-parent');
 const { deleteUser } = require('./delete-user');
-const { archive } = require('./archive');
+const { deleteDocs } = require('./delete');
 
 const { ACTIONS, STATUSES, OPERATIONS_ATTACHMENT } = BULK_OPERATIONS;
 const { BULK_OPERATION_ACTION: ACTION_ID_PREFIX } = PREFIXES;
@@ -17,7 +17,7 @@ const HANDLERS = {
   [ACTIONS.SET_CONTACT]: setContact,
   [ACTIONS.SET_PARENT]: setParent,
   [ACTIONS.DELETE_USER]: deleteUser,
-  [ACTIONS.ARCHIVE]: archive,
+  [ACTIONS.DELETE]: deleteDocs,
 };
 
 const readOperations = async (actionId) => {

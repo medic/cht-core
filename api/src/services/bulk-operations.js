@@ -77,7 +77,7 @@ const getLog = async (id) => {
  * listener processes). The log is written first so it exists before the listener picks up an action.
  * Action groups with no operations are skipped.
  * @param {Object[]} actionOperations - one group per action type
- * @param {string} actionOperations[].action - the action type (`archive`, `set-contact`, `delete-user`)
+ * @param {string} actionOperations[].action - the action type (`delete`, `set-contact`, `delete-user`)
  * @param {Object[]} actionOperations[].operations - the per-item params for that action
  * @returns {Promise<string>} the bulk operation id
  */
