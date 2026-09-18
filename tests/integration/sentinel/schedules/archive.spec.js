@@ -166,13 +166,10 @@ describe('sentinel processes archive jobs', () => {
     }
   };
 
-  const updateSettings = async ({ duration = '2 hours', autoArchive } = {}) => {
+  const updateSettings = async ({ duration = '2 hours' } = {}) => {
     const archive = { text_expression: 'every 1 seconds' };
     if (duration) {
       archive.duration = duration;
-    }
-    if (autoArchive) {
-      archive.auto_archive = autoArchive;
     }
     await utils.updateSettings({ archive }, { ignoreReload: true });
     await utils.toggleSentinelTransitions();
@@ -490,7 +487,6 @@ describe('sentinel processes archive jobs', () => {
   });
 
   describe('auto archive', () => {
-    // Mirrors the lib's PURGE_BATCH_SIZE: every auto-archive job holds at most this many ids.
     const BATCH_SIZE = 1000;
     const daysAgo = days => moment().subtract(days, 'days').format('YYYY-MM-DD');
     const monthsAgo = months => moment().subtract(months, 'months').format('YYYY-MM');
@@ -532,32 +528,34 @@ describe('sentinel processes archive jobs', () => {
       await utils.deleteLogsByPrefix(PREFIXES.ARCHIVE_JOB);
     });
 
-    it('leaves expired tasks and targets alone without auto_archive.tasks or a duration', async function () {
+    it('sweeps tasks and targets without specific configuration', async function () {
       this.timeout(60000);
-      // A configured duration alone now enables the sweeps, so the negative case is a schedule without one.
       await updateSettings({ duration: null });
 
       const docs = [
-        task('archive-e2e-auto-off-task-1'),
-        task('archive-e2e-auto-off-task-2'),
-        target('archive-e2e-auto-off', 9),
+        task('archive-e2e-auto-unconfigured-task-1'),
+        task('archive-e2e-auto-unconfigured-task-2'),
+        target('archive-e2e-auto-unconfigured', 9),
       ];
       await utils.saveDocs(docs);
       const ids = idsOf(docs);
+      await waitForInfoDocs(ids);
 
       await runArchivingOnce();
 
-      await expectLiveInMedic(ids);
-      await expectNotArchived(ids);
-      expect(await getArchiveJobs()).to.deep.equal([]);
-      expect(await getArchiveLogs()).to.deep.equal([]);
+      await expectFullyPurgedFromMedic(ids);
+      await expectInfoDocsPurged(ids);
+      await expectAuditedArchive(ids);
 
-      await utils.deleteDocs(ids);
+      expect(await getArchiveJobs()).to.deep.equal([]);
+      const logs = await getArchiveLogs();
+      expect(logs.map(log => ({ status: log.status, total: log.total, automatic: log.automatic })))
+        .to.deep.equal([{ status: 'completed', total: ids.length, automatic: true }]);
     });
 
-    it('archives expired tasks, then expired targets, when auto_archive.tasks is enabled', async function () {
+    it('archives expired tasks and targets in a single job', async function () {
       this.timeout(60000);
-      await updateSettings({ autoArchive: { tasks: true } });
+      await updateSettings();
 
       const expiredTasks = [
         task('archive-e2e-auto-task-1'),
@@ -585,26 +583,22 @@ describe('sentinel processes archive jobs', () => {
       await expectFullyPurgedFromMedic(archivedIds);
       await expectInfoDocsPurged(archivedIds);
       await expectAuditedArchive(archivedIds);
-      await expectArchivedAfter(targetIds, taskIds);
 
       await expectLiveInMedic(survivorIds);
       await expectNotArchived(survivorIds);
 
-      // One job per sweep, tasks first (job ids are time-ordered), both completed and dequeued.
+      // One sweep, one job holding the expired tasks and targets together, completed and dequeued.
       expect(await getArchiveJobs()).to.deep.equal([]);
       const logs = await getArchiveLogs();
       expect(logs.map(log => ({ status: log.status, total: log.total, automatic: log.automatic })))
-        .to.deep.equal([
-          { status: 'completed', total: taskIds.length, automatic: true },
-          { status: 'completed', total: targetIds.length, automatic: true },
-        ]);
+        .to.deep.equal([{ status: 'completed', total: archivedIds.length, automatic: true }]);
 
       await utils.deleteDocs(survivorIds);
     });
 
-    it('sweeps tasks and targets only once the queued user jobs are done', async function () {
+    it('sweeps only once the queued user jobs are done', async function () {
       this.timeout(60000);
-      await updateSettings({ autoArchive: { tasks: true } });
+      await updateSettings();
 
       const report = {
         _id: 'archive-e2e-auto-queued-report',
@@ -629,27 +623,24 @@ describe('sentinel processes archive jobs', () => {
       await expectFullyPurgedFromMedic(archivedIds);
       await expectInfoDocsPurged(archivedIds);
       await expectAuditedArchive(archivedIds);
-      await expectArchivedAfter(taskIds, [report._id]);
-      await expectArchivedAfter(targetIds, taskIds);
+      await expectArchivedAfter([...taskIds, ...targetIds], [report._id]);
 
       expect(await getArchiveJobs()).to.deep.equal([]);
       const logs = await getArchiveLogs();
-      expect(logs).to.have.lengthOf(3);
-      // Only the sweeps are flagged automatic; the csv-queued job is not.
-      expect(logs.map(log => log.automatic)).to.deep.equal([undefined, true, true]);
+      expect(logs).to.have.lengthOf(2);
+      // sweep is flagged automatic; the csv-queued job is not.
+      expect(logs.map(log => log.automatic)).to.deep.equal([undefined, true]);
       expect(logs[0]).to.include({ _id: userJobId, status: 'completed', total: 1 });
-      expect(logs[1]).to.include({ status: 'completed', total: taskIds.length });
-      expect(logs[2]).to.include({ status: 'completed', total: targetIds.length });
-      // The sweeps were queued after the user job finished.
+      expect(logs[1]).to.include({ status: 'completed', total: taskIds.length + targetIds.length });
+      // sweep was queued after the user job finished.
       expect(logs[1].start_date).to.be.at.least(logs[0].updated_date);
-      expect(logs[2].start_date).to.be.at.least(logs[1].updated_date);
     });
 
-    it('stops the task sweep after one batch and resumes it on the next run', async function () {
+    it('stops the sweep at the deadline and resumes the same job on the next run', async function () {
       this.timeout(300000);
       await updateSettings({ duration: '1 second', autoArchive: { tasks: true } });
 
-      // two batches' worth
+      // seven batches' worth
       const COUNT = BATCH_SIZE * 7;
       const expiredTasks = Array.from(
         { length: COUNT },
@@ -663,29 +654,29 @@ describe('sentinel processes archive jobs', () => {
 
       await runArchivingOnce();
 
-      // The sweep stops between jobs, so the first run archives whole batches but not all of them...
+      // The deadline is only checked between batches, so the first run archives whole batches
       const firstRun = await liveRows(archiveDb, { keys: taskIds });
       expect(firstRun.length).to.be.greaterThan(0);
       expect(firstRun.length).to.be.lessThan(COUNT);
       expect(firstRun.length % BATCH_SIZE).to.equal(0);
       expect(await liveRows(utils.db, { keys: taskIds })).to.have.lengthOf(COUNT - firstRun.length);
-      // ...leaves a partial job behind...
+      // ...leaves one partial job behind
       const archiveJobs = await getArchiveJobs();
       const partialLogs = await getArchiveLogs();
       expect(archiveJobs.length).to.equal(1);
       expect(partialLogs.length).to.equal(1);
       expect(partialLogs[0]).to.include({
         status: 'running',
-        total: 7 * 1000, // max ids per job
+        total: COUNT + targetIds.length,
         automatic: true,
       });
       expect(partialLogs[0].cursor).to.be.below(COUNT);
 
-      // ...and never reaches the targets.
+      // ...and never reaches the targets, which sit at the end of the job's ids.
       await expectLiveInMedic(targetIds);
       await expectNotArchived(targetIds);
 
-      // Every following run picks up where the previous one stopped, targets last.
+      // Every following run resumes that same job before sweeping again.
       const MAX_RUNS = 8;
       let remaining = [...taskIds, ...targetIds];
       for (let run = 2; run <= MAX_RUNS && remaining.length; run++) {
@@ -698,15 +689,11 @@ describe('sentinel processes archive jobs', () => {
       await expectFullyPurgedFromMedic(archivedIds);
       await expectInfoDocsPurged(archivedIds);
       await expectAuditedArchive(archivedIds);
-      await expectArchivedAfter(targetIds, taskIds);
 
       expect(await getArchiveJobs()).to.deep.equal([]);
       const logs = await getArchiveLogs();
-      expect(logs.length).to.equal(2);
-      expect(logs.every(log => {
-        return log.status === 'completed' && log.automatic === true;
-      })).to.equal(true);
-      expect(logs.reduce((sum, log) => sum + log.total, 0)).to.equal(COUNT + targetIds.length);
+      expect(logs.map(log => ({ status: log.status, total: log.total, automatic: log.automatic })))
+        .to.deep.equal([{ status: 'completed', total: COUNT + targetIds.length, automatic: true }]);
     });
   });
 });

@@ -12,7 +12,6 @@ const nouveau = require('@medic/nouveau');
 const { roles } = require('@medic/user-management')(config, db, dataContext);
 const moment = require('moment');
 const { SENTINEL_METADATA } = require('@medic/constants');
-const expiration = require('./expiration');
 
 const MAX_CONTACT_BATCH_SIZE = nouveau.BATCH_LIMIT;
 const MAX_BATCH_SIZE = 20 * 1000;
@@ -504,69 +503,6 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
   } while (nextBatch);
 };
 
-const purgeTasks = async (roles) => {
-  const maximumEmissionEndDate = expiration.getMaximumEmissionEndDate();
-  let startKeyDocId = '';
-  let startKey = '';
-  let nextBatch;
-
-  // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
-  const getBatch = () => db.queryMedic('medic/tasks_in_terminal_state', {
-    limit: MAX_BATCH_SIZE,
-    end_key: JSON.stringify(maximumEmissionEndDate),
-    start_key: JSON.stringify(startKey),
-    startkey_docid: startKeyDocId,
-  });
-
-  const getIdsToPurge = (rolesHashes, rows) => {
-    const toPurge = {};
-    rows.forEach(row => {
-      rolesHashes.forEach(hash => {
-        toPurge[hash] = toPurge[hash] || {};
-        toPurge[hash][row.id] = row.id;
-      });
-    });
-    return toPurge;
-  };
-
-  do {
-    logger.info(`Purging: Starting "tasks" purge batch with id "${startKeyDocId}"`);
-    const result = await batchedPurge(getBatch, getIdsToPurge, roles, startKeyDocId, startKey);
-    ({ nextKey: startKey, nextKeyDocId: startKeyDocId, nextBatch } = result);
-  } while (nextBatch);
-};
-
-const purgeTargets = async (roles) => {
-  let startKeyDocId = 'target~';
-  let startKey = JSON.stringify(startKeyDocId);
-  let nextBatch;
-
-  const lastAllowedReportingIntervalTag = expiration.getLastAllowedReportingIntervalTag();
-  // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
-  const getBatch = () => db.queryMedic('allDocs', {
-    limit: MAX_BATCH_SIZE,
-    start_key: JSON.stringify(startKeyDocId),
-    end_key: JSON.stringify(`target~${lastAllowedReportingIntervalTag}~`),
-  });
-
-  const getIdsToPurge = (rolesHashes, rows) => {
-    const toPurge = {};
-    rows.forEach(row => {
-      rolesHashes.forEach(hash => {
-        toPurge[hash] = toPurge[hash] || {};
-        toPurge[hash][row.id] = row.id;
-      });
-    });
-    return toPurge;
-  };
-
-  do {
-    logger.info(`Purging: Starting "targets" purge batch with id "${startKeyDocId}"`);
-    const result = await batchedPurge(getBatch, getIdsToPurge, roles, startKeyDocId, startKey);
-    ({ nextKey: startKey, nextKeyDocId: startKeyDocId, nextBatch } = result);
-  } while (nextBatch);
-};
-
 const batchedPurge = (getBatch, getIdsToPurge, roles, startKeyDocId) => {
   let nextKey = false;
   let nextKeyDocId = false;
@@ -674,8 +610,6 @@ const purge = () => {
       return initPurgeDbs(roles)
         .then(() => purgeContacts(roles, purgeFn))
         .then(() => purgeUnallocatedRecords(roles, purgeFn))
-        .then(() => purgeTasks(roles))
-        .then(() => purgeTargets(roles))
         .then(() => writePurgeLog(roles, start));
     })
     .catch(err => {
