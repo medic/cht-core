@@ -362,6 +362,7 @@ describe('local place', () => {
       let createDocOuter: SinonStub;
       let createDocInner: SinonStub;
       let getTypeById: SinonStub;
+      let getContactTypes: SinonStub;
       let getReportedDateTimestamp: SinonStub;
       let isContact: SinonStub;
 
@@ -371,7 +372,15 @@ describe('local place', () => {
         createDocInner = sinon.stub().resolves(placeDoc);
         createDocOuter = sinon.stub(LocalDoc, 'createDoc').returns(createDocInner);
         settingsGetAll.returns(settings);
-        getTypeById = sinon.stub(contactTypeUtils, 'getTypeById');
+        // getTypeById resolves the hardcoded types too now, so the default mirrors that dictionary
+        const hardcoded: Record<string, unknown> = {
+          district_hospital: { id: 'district_hospital' },
+          health_center: { id: 'health_center', parents: [ 'district_hospital' ] },
+          clinic: { id: 'clinic', parents: [ 'health_center' ] },
+        };
+        getTypeById = sinon.stub(contactTypeUtils, 'getTypeById')
+          .callsFake((_settings, id) => hardcoded[id] as never);
+        getContactTypes = sinon.stub(contactTypeUtils, 'getContactTypes').returns([]);
         getReportedDateTimestamp = sinon.stub(LocalCore, 'getReportedDateTimestamp');
         isContact = sinon
           .stub(LocalContact.v1, 'isContact')
@@ -446,7 +455,6 @@ describe('local place', () => {
         expect(settingsGetAll.calledThrice).to.be.true;
         expect(getTypeById.args).to.deep.equal([
           [settings, input.type],
-          [settings, input.type],
           [settings, input.type]
         ]);
         expect(isPlace.calledOnceWithExactly(settings, parent)).to.be.true;
@@ -471,6 +479,7 @@ describe('local place', () => {
           reported_date: 123445566
         };
         getTypeById.returns(customPlaceType);
+        getContactTypes.returns([customPlaceType]);
         getDocsByIdsInner.resolves([parent, null]);
         getReportedDateTimestamp.returns(input.reported_date);
 
@@ -481,7 +490,6 @@ describe('local place', () => {
         expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(settingsGetAll.calledThrice).to.be.true;
         expect(getTypeById.args).to.deep.equal([
-          [settings, input.type],
           [settings, input.type],
           [settings, input.type]
         ]);
@@ -497,6 +505,26 @@ describe('local place', () => {
           parent: minifiedParent,
         };
         expect(createDocInner.calledOnceWithExactly(expectedDoc)).to.be.true;
+      });
+
+      it('stores the hardcoded type when nothing is configured, rather than a contact_type', async () => {
+        // getTypeById answers for the hardcoded types, so the stored shape has to come from the
+        // configuration instead of from the lookup being truthy.
+        const input = {
+          name: 'place-1',
+          type: 'health_center',
+          parent: parent._id,
+        };
+        getTypeById.returns({ id: 'health_center', parents: [parent.type] });
+        getContactTypes.returns([]);
+        getDocsByIdsInner.resolves([parent]);
+        isPlace.returns(true);
+
+        await Place.v1.create(localContext)(input);
+
+        const created = createDocInner.args[0][0];
+        expect(created.type).to.equal('health_center');
+        expect(created).to.not.have.property('contact_type');
       });
 
       it('creates a place with primary contact', async () => {
@@ -516,7 +544,6 @@ describe('local place', () => {
         expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(settingsGetAll.calledThrice).to.be.true;
         expect(getTypeById.args).to.deep.equal([
-          [settings, input.type],
           [settings, input.type],
           [settings, input.type]
         ]);
@@ -547,7 +574,6 @@ describe('local place', () => {
         expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(settingsGetAll.calledTwice).to.be.true;
         expect(getTypeById.args).to.deep.equal([
-          [settings, input.type],
           [settings, input.type],
           [settings, input.type]
         ]);
@@ -581,7 +607,6 @@ describe('local place', () => {
         expect(settingsGetAll.calledTwice).to.be.true;
         expect(getTypeById.args).to.deep.equal([
           [settings, input.type],
-          [settings, input.type],
           [settings, input.type]
         ]);
         expect(isPlace.notCalled).to.be.true;
@@ -609,7 +634,6 @@ describe('local place', () => {
         expect(settingsGetAll.calledThrice).to.be.true;
         expect(getTypeById.args).to.deep.equal([
           [settings, input.type],
-          [settings, input.type],
           [settings, input.type]
         ]);
         expect(isPlace.calledOnceWithExactly(settings, invalidParent)).to.be.true;
@@ -636,7 +660,6 @@ describe('local place', () => {
         expect(settingsGetAll.calledTwice).to.be.true;
         expect(getTypeById.args).to.deep.equal([
           [settings, input.type],
-          [settings, input.type],
           [settings, input.type]
         ]);
         expect(isPlace.notCalled).to.be.true;
@@ -660,7 +683,6 @@ describe('local place', () => {
         expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(settingsGetAll.calledTwice).to.be.true;
         expect(getTypeById.args).to.deep.equal([
-          [settings, input.type],
           [settings, input.type],
           [settings, input.type]
         ]);
@@ -688,8 +710,7 @@ describe('local place', () => {
         expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(settingsGetAll.calledOnce).to.be.true;
         expect(getTypeById.args).to.deep.equal([
-          [settings, input.type],
-          [settings, input.type],
+          [settings, input.type]
         ]);
         expect(isPlace.notCalled).to.be.true;
         expect(getDocsByIdsInner.calledOnceWithExactly([parent._id, input.contact])).to.be.true;

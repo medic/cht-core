@@ -1,9 +1,10 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
-const { Place, Qualifier} = require('@medic/cht-datasource');
+const { Contact, Place, Qualifier} = require('@medic/cht-datasource');
 const auth = require('../../../src/auth');
 const dataContext = require('../../../src/services/data-context');
 const serverUtils = require('../../../src/server-utils');
+const { NotFoundError } = require('../../../src/errors');
 
 describe('Place Controller', () => {
   const sandbox = sinon.createSandbox();
@@ -12,6 +13,7 @@ describe('Place Controller', () => {
   const placeGetPageByType = sandbox.stub();
   const placeCreate = sandbox.stub();
   const updatePlace = sandbox.stub();
+  const contactGet = sandbox.stub();
 
   let assertPermissions;
   let serverUtilsError;
@@ -26,6 +28,7 @@ describe('Place Controller', () => {
     bind.withArgs(Place.v1.getPage).returns(placeGetPageByType);
     bind.withArgs(Place.v1.create).returns(placeCreate);
     bind.withArgs(Place.v1.update).returns(updatePlace);
+    bind.withArgs(Contact.v1.get).returns(contactGet);
     controller = require('../../../src/controllers/place');
   });
 
@@ -210,6 +213,42 @@ describe('Place Controller', () => {
         expect(updatePlace.calledOnceWithExactly(input)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
         expect(res.json.calledOnceWithExactly(updatePlaceDoc)).to.be.true;
+      });
+    });
+
+    describe('delete', () => {
+      // the delete logic itself is covered in the delete-contact service spec
+      it('responds 404 for an id that is not a place', async () => {
+        req = { params: { uuid: 'person-1' }, query: {} };
+        placeGet.resolves(null);
+
+        await controller.v1.delete(req, res);
+
+        expect(placeGet.calledOnceWithExactly(Qualifier.byUuid('person-1'))).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        const err = serverUtilsError.args[0][0];
+        expect(err).to.be.an.instanceOf(NotFoundError);
+        expect(err.message).to.equal('Place not found');
+        expect(serverUtilsError.args[0][1]).to.equal(req);
+        expect(serverUtilsError.args[0][2]).to.equal(res);
+      });
+    });
+
+    describe('move', () => {
+      // the move logic itself is covered in the move-contact service spec
+      it('responds 404 for an id that is not a place', async () => {
+        req = { params: { uuid: 'person-1' }, query: {}, body: { parent_id: 'parent-1' } };
+        placeGet.resolves(null);
+
+        await controller.v1.move(req, res);
+
+        expect(placeGet.calledOnceWithExactly(Qualifier.byUuid('person-1'))).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        const err = serverUtilsError.args[0][0];
+        expect(err).to.be.an.instanceOf(NotFoundError);
+        expect(err.message).to.equal('Place not found');
+        expect(serverUtilsError.args[0][1]).to.equal(req);
+        expect(serverUtilsError.args[0][2]).to.equal(res);
       });
     });
   });

@@ -19,26 +19,12 @@ import {
 } from './libs/lineage';
 import { assertPlaceInput } from '../libs/parameter-validators';
 import * as LocalContact from './contact';
-import { CONTACT_TYPES } from '@medic/constants';
-
-const DEFAULT_PLACE_TYPES_DICT: Record<string, { id: string, parents?: string[], person?: boolean } | undefined> = {
-  [CONTACT_TYPES.DISTRICT_HOSPITAL]: { id: CONTACT_TYPES.DISTRICT_HOSPITAL },
-  health_center: {
-    id: 'health_center',
-    parents: [CONTACT_TYPES.DISTRICT_HOSPITAL],
-  },
-  clinic: {
-    id: 'clinic',
-    parents: ['health_center'],
-  },
-};
 
 const getPlaceType = (
   settings: DataObject,
   input: Input.v1.PlaceInput
 ) => {
-  const type = contactTypeUtils.getTypeById(settings, input.type)
-    ?? DEFAULT_PLACE_TYPES_DICT[input.type];
+  const type = contactTypeUtils.getTypeById(settings, input.type);
   if (!type || type.person) {
     throw new InvalidArgumentError(`[${input.type}] is not a valid place type.`);
   }
@@ -47,8 +33,13 @@ const getPlaceType = (
 
 const getTypeProperties = (settings: DataObject, input: Input.v1.PlaceInput) => {
   getPlaceType(settings, input);
-  const customType = contactTypeUtils.getTypeById(settings, input.type);
-  return customType
+  // getTypeById answers for the hardcoded types now, so a truthy lookup no longer means the type is
+  // configured. The stored shape has to key off the configuration itself, or an unconfigured install
+  // would start writing contact_type documents where it used to write the hardcoded type.
+  const isConfigured = contactTypeUtils
+    .getContactTypes(settings)
+    .some(({ id }) => id === input.type);
+  return isConfigured
     ? { contact_type: input.type, type: 'contact' }
     : { type: input.type };
 };
