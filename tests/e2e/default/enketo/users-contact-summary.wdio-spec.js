@@ -53,7 +53,7 @@ describe('user contact summary in forms', () => {
     contact.show_form = true;
     await utils.saveDoc(contact);
 
-    await commonPage.sync();
+    await commonPage.sync({ expectReload: true, reload: true });
     const labels = await commonPage.getFastActionItemsLabelsFlat();
     expect(labels).to.include('users-contact-summary');
   });
@@ -64,7 +64,7 @@ describe('user contact summary in forms', () => {
     contact.note = 'this is the text we expect';
     await utils.saveDoc(contact);
 
-    await commonPage.sync();
+    await commonPage.sync({ expectReload: true, reload: true });
     await commonPage.openFastActionReport('users-contact-summary', false);
     expect(await commonEnketoPage.getInputValue('user note')).to.equal(contact.note);
   });
