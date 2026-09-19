@@ -4,6 +4,8 @@ import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
+import * as moment from 'moment';
+import 'moment/locale/ne';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 
@@ -32,6 +34,8 @@ import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
 import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
 import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
+
+moment.locale('en');
 
 describe('Contacts content component', () => {
   let component: ContactsContentComponent;
@@ -520,6 +524,52 @@ describe('Contacts content component', () => {
       fastActionButtonService.getContactRightSideActions.resetHistory();
       (component as any).updateReportForms(null, []);
       expect(fastActionButtonService.getContactRightSideActions.notCalled).to.be.true;
+    });
+  });
+
+  describe('filterTasks', () => {
+    let clock;
+
+    beforeEach(() => {
+      clock = sinon.useFakeTimers({ now: moment('2026-09-10').valueOf(), toFake: ['Date'] });
+      (component as any).selectedContact = {
+        tasks: [
+          { _id: 'task-3-days', dueDate: '2026-09-13' },
+          { _id: 'task-9-days', dueDate: '2026-09-19' },
+          { _id: 'task-30-days', dueDate: '2026-10-10' },
+        ],
+      };
+    });
+
+    afterEach(() => {
+      clock.restore();
+    });
+
+    it('should only keep tasks due within the selected number of weeks', () => {
+      component.filterTasks(1);
+      expect(component.filteredTasks.map((task: any) => task._id)).to.deep.equal(['task-3-days']);
+
+      component.filterTasks(2);
+      expect(component.filteredTasks.map((task: any) => task._id)).to.deep.equal(['task-3-days', 'task-9-days']);
+
+      component.filterTasks();
+      expect(component.filteredTasks.map((task: any) => task._id))
+        .to.deep.equal(['task-3-days', 'task-9-days', 'task-30-days']);
+    });
+
+    it('should apply the same window when the locale renders Devanagari digits (#11422)', () => {
+      const previousLocale = moment.locale();
+      moment.locale('ne');
+      try {
+        component.filterTasks(1);
+        expect(component.filteredTasks.map((task: any) => task._id)).to.deep.equal(['task-3-days']);
+
+        component.filterTasks(2);
+        expect(component.filteredTasks.map((task: any) => task._id)).to.deep.equal(['task-3-days', 'task-9-days']);
+        expect(moment.locale()).to.equal('ne');
+      } finally {
+        moment.locale(previousLocale);
+      }
     });
   });
 
