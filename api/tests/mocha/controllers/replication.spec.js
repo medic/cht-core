@@ -113,8 +113,6 @@ describe('Initial Replication controller', () => {
   });
 
   describe('dataBundle', () => {
-    const RESULT = { accepted: 3, rejected: 0, checkpoint: 'c2VhbGVk' };
-
     const bundleReq = (headers = {}) => ({
       id: 'req-1',
       userCtx: { name: 'supervisor' },
@@ -123,7 +121,7 @@ describe('Initial Replication controller', () => {
 
     it('should hand the raw headers and the request stream to the service', async () => {
       sinon.stub(auth, 'assertPermissions').resolves();
-      sinon.stub(dataBundle, 'process').resolves(RESULT);
+      sinon.stub(dataBundle, 'process').resolves();
       const req = bundleReq({
         'X-Medic-Bundle-Envelope': 'ZW52ZWxvcGU=',
         'X-Medic-Bundle-Signature': 'the-signature',
@@ -134,12 +132,13 @@ describe('Initial Replication controller', () => {
       expect(auth.assertPermissions.args).to.deep.equal([[ req, { hasAny: ['can_relay_offline_data_bundle'] } ]]);
       // the controller does no parsing: the header values and the request itself go straight down
       expect(dataBundle.process.args).to.deep.equal([[ 'ZW52ZWxvcGU=', 'the-signature', req ]]);
-      expect(res.json.args).to.deep.equal([[ RESULT ]]);
+      // nothing about the bundle's contents goes back to the relaying device
+      expect(res.json.args).to.deep.equal([[ { ok: true } ]]);
     });
 
     it('should pass undefined headers through rather than guessing', async () => {
       sinon.stub(auth, 'assertPermissions').resolves();
-      sinon.stub(dataBundle, 'process').resolves(RESULT);
+      sinon.stub(dataBundle, 'process').resolves();
 
       await controller.dataBundle(bundleReq(), res);
 

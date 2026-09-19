@@ -8,7 +8,6 @@ const userFactory = require('@factories/cht/users/users');
 const chai = require('chai');
 const { webcrypto } = require('node:crypto');
 const { USER_ROLES, CONTACT_TYPES, PREFIXES } = require('@medic/constants');
-const age = require('../../../../api/src/services/offline-data-bundle/age');
 
 const getUserId = n => `${PREFIXES.COUCH_USER}${n}`;
 const password = 'passwordSUP3RS3CR37!';
@@ -2522,9 +2521,7 @@ describe('Users API', () => {
       contact: { _id: 'fixture:contact:devkey-other', name: 'DeviceKeyOther' },
       roles: ['data_entry']
     };
-    // real keys generated in the before() below: age recipients and Ed25519 public key JWKs
-    let deviceKeyA;
-    let deviceKeyB;
+    // real Ed25519 public key JWKs generated in the before() below
     let signingKeyA;
     let signingKeyB;
 
@@ -2534,8 +2531,6 @@ describe('Users API', () => {
     };
 
     before(async () => {
-      deviceKeyA = await age.identityToRecipient(await age.generateIdentity());
-      deviceKeyB = await age.identityToRecipient(await age.generateIdentity());
       signingKeyA = await generateSigningKey();
       signingKeyB = await generateSigningKey();
 
@@ -2550,27 +2545,23 @@ describe('Users API', () => {
       await utils.deleteUsers([senderUser, otherUser]);
     });
 
-    it('stores the device keys and returns the server public keys', async () => {
+    it('stores the device key and returns the server public key', async () => {
       const response = await utils.request({
         path: `/api/v1/users/${senderUser.username}/devices/device-A/keys`,
         method: 'POST',
-        body: { encryption_key: deviceKeyA, signing_key: signingKeyA },
+        body: { signing_key: signingKeyA },
         auth: { username: senderUser.username, password },
       });
 
       chai.expect(response.server_encryption_public_key).to.match(/^age1/);
-      chai.expect(response.server_signing_public_key).to.include({ kty: 'OKP', crv: 'Ed25519' });
 
       const userDoc = await utils.usersDb.get(getUserId(senderUser.username));
       chai.expect(Object.keys(userDoc.keys_by_device)).to.deep.equal(['device-A']);
       const entry = userDoc.keys_by_device['device-A'];
-      chai.expect(entry.encryption_public_key).to.equal(deviceKeyA);
       chai.expect(entry.signing_public_key).to.deep.equal(signingKeyA);
       chai.expect(entry.server_encryption_public_key).to.equal(response.server_encryption_public_key);
-      chai.expect(entry.server_signing_public_key).to.deep.equal(response.server_signing_public_key);
-      // server PRIVATE keys must live in the secureSettings vault, never on the _users doc
+      // the server PRIVATE key must live in the secureSettings vault, never on the _users doc
       chai.expect(entry.server_encryption_private_key).to.be.undefined;
-      chai.expect(entry.server_signing_private_key).to.be.undefined;
       chai.expect(entry.updated_date).to.be.a('number');
     });
 
@@ -2578,13 +2569,12 @@ describe('Users API', () => {
       await utils.request({
         path: `/api/v1/users/${senderUser.username}/devices/device-A/keys`,
         method: 'POST',
-        body: { encryption_key: deviceKeyB, signing_key: signingKeyB },
+        body: { signing_key: signingKeyB },
         auth: { username: senderUser.username, password },
       });
 
       const userDoc = await utils.usersDb.get(getUserId(senderUser.username));
       chai.expect(Object.keys(userDoc.keys_by_device)).to.deep.equal(['device-A']);
-      chai.expect(userDoc.keys_by_device['device-A'].encryption_public_key).to.equal(deviceKeyB);
       chai.expect(userDoc.keys_by_device['device-A'].signing_public_key).to.deep.equal(signingKeyB);
     });
 
@@ -2592,25 +2582,25 @@ describe('Users API', () => {
       await chai.expect(utils.request({
         path: `/api/v1/users/${otherUser.username}/devices/device-C/keys`,
         method: 'POST',
-        body: { encryption_key: deviceKeyA, signing_key: signingKeyA },
+        body: { signing_key: signingKeyA },
         auth: { username: otherUser.username, password },
       })).to.be.rejectedWith(/403/);
     });
 
-    it('400s when required fields are missing', async () => {
+    it('400s when the signing key is missing', async () => {
       await chai.expect(utils.request({
         path: `/api/v1/users/${senderUser.username}/devices/device-A/keys`,
         method: 'POST',
-        body: { encryption_key: deviceKeyA },
+        body: { something_else: true },
         auth: { username: senderUser.username, password },
       })).to.be.rejectedWith(/400/);
     });
 
-    it('400s when a key has an invalid format', async () => {
+    it('400s when the signing key has an invalid format', async () => {
       await chai.expect(utils.request({
         path: `/api/v1/users/${senderUser.username}/devices/device-A/keys`,
         method: 'POST',
-        body: { encryption_key: 'not-an-age-recipient', signing_key: signingKeyA },
+        body: { signing_key: { not: 'a-jwk' } },
         auth: { username: senderUser.username, password },
       })).to.be.rejectedWith(/400/);
     });

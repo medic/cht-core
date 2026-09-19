@@ -3,13 +3,24 @@ const { webcrypto } = require('node:crypto');
 
 const service = require('../../../../src/services/offline-data-bundle/signing');
 
+// The service only ever verifies, so the test plays the device's part and signs with webcrypto.
+const deviceKeyPair = async () => {
+  const keyPair = await webcrypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']);
+  return {
+    publicKey: await webcrypto.subtle.exportKey('jwk', keyPair.publicKey),
+    sign: async (message) => {
+      const signature = await webcrypto.subtle.sign({ name: 'Ed25519' }, keyPair.privateKey, message);
+      return Buffer.from(signature).toString('base64');
+    },
+  };
+};
+
 describe('offline-data-bundle signing service', () => {
   describe('isValidPublicKey', () => {
     let validJwk;
 
     before(async () => {
-      const keyPair = await webcrypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']);
-      validJwk = await webcrypto.subtle.exportKey('jwk', keyPair.publicKey);
+      validJwk = (await deviceKeyPair()).publicKey;
     });
 
     it('returns true for a real Ed25519 public key JWK', async () => {
@@ -29,42 +40,34 @@ describe('offline-data-bundle signing service', () => {
     });
   });
 
-  describe('generateKeyPair', () => {
-    it('generates an Ed25519 keypair exported as JWK', async () => {
-      const { publicKey, privateKey } = await service.generateKeyPair();
+  describe('verify', () => {
+    it('accepts a signature made by the matching private key', async () => {
+      const device = await deviceKeyPair();
+      const message = Buffer.from('envelope bytes', 'utf8');
 
-      chai.expect(publicKey).to.include({ kty: 'OKP', crv: 'Ed25519' });
-      chai.expect(publicKey.x).to.be.a('string');
-      chai.expect(publicKey.d).to.be.undefined;
-      chai.expect(privateKey).to.include({ kty: 'OKP', crv: 'Ed25519' });
-      chai.expect(privateKey.d).to.be.a('string');
-      chai.expect(await service.isValidPublicKey(publicKey)).to.be.true;
+      const signature = await device.sign(message);
+
+      chai.expect(await service.verify(device.publicKey, signature, message)).to.be.true;
     });
 
-    it('generates a distinct keypair on each call', async () => {
-      const first = await service.generateKeyPair();
-      const second = await service.generateKeyPair();
-      chai.expect(first.publicKey.x).to.not.equal(second.publicKey.x);
-    });
-  });
+    it('rejects a signature over a different message', async () => {
+      const device = await deviceKeyPair();
 
-  describe('sign / verify round-trip', () => {
-    it('signs a message that verifies against the matching public key', async () => {
-      const { publicKey, privateKey } = await service.generateKeyPair();
-      const message = Buffer.from('checkpoint bytes', 'utf8');
+      const signature = await device.sign(Buffer.from('a', 'utf8'));
 
-      const signature = await service.sign(privateKey, message);
-
-      chai.expect(signature).to.be.a('string');
-      chai.expect(await service.verify(publicKey, signature, message)).to.be.true;
+      chai.expect(await service.verify(device.publicKey, signature, Buffer.from('b', 'utf8'))).to.be.false;
     });
 
-    it('produces a signature that fails to verify against a different message', async () => {
-      const { publicKey, privateKey } = await service.generateKeyPair();
+    it('rejects a signature made by another device', async () => {
+      const device = await deviceKeyPair();
+      const other = await deviceKeyPair();
+      const message = Buffer.from('envelope bytes', 'utf8');
 
-      const signature = await service.sign(privateKey, Buffer.from('a', 'utf8'));
+      chai.expect(await service.verify(device.publicKey, await other.sign(message), message)).to.be.false;
+    });
 
-      chai.expect(await service.verify(publicKey, signature, Buffer.from('b', 'utf8'))).to.be.false;
+    it('returns false rather than throwing on a malformed key', async () => {
+      chai.expect(await service.verify({ kty: 'oops' }, 'c2ln', Buffer.from('a'))).to.be.false;
     });
   });
 });

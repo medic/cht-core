@@ -99,33 +99,9 @@ const encryptToServer = async (serverKey, ndjson) => {
   return encrypter.encrypt(Buffer.from(ndjson, 'utf8'));
 };
 
-// Generates an age identity + its recipient string. The recipient is registered as the device's
-// encryption_key; the identity is kept so the test can decrypt the SEALED checkpoint token the
-// server returns (the server encrypts the checkpoint to that recipient).
-const generateAgeKeys = async () => {
-  const age = await import('age-encryption');
-  const identity = await age.generateIdentity();
-  return { identity, recipient: await age.identityToRecipient(identity) };
-};
-
-// Decrypts age ciphertext with the given identity, returning the plaintext bytes.
-const decryptWithIdentity = async (identity, ciphertext) => {
-  const { Decrypter } = await import('age-encryption');
-  const decrypter = new Decrypter();
-  decrypter.addIdentity(identity);
-  return decrypter.decrypt(ciphertext, 'uint8array');
-};
-
-// Opens a sealed checkpoint token: base64 -> age-decrypt with the device identity -> JSON. Returns
-// the { checkpoint, signature } envelope the server sealed.
-const openSealedCheckpoint = async (token, identity) => {
-  const signedBytes = await decryptWithIdentity(identity, Buffer.from(token, 'base64'));
-  return JSON.parse(Buffer.from(signedBytes).toString('utf8'));
-};
-
 // Builds the request the way a relaying device does: the envelope pins the body with its sha256,
-// the signature covers the canonical envelope alone (so the server can check it before reading a
-// single body byte), and the ciphertext travels as the raw octet-stream body.
+// the signature covers the envelope alone (so the server can check it before reading a single
+// body byte), and the ciphertext travels as the raw octet-stream body.
 const buildSignedRequest = async ({ envelope, ciphertext, privateKey }) => {
   const payloadBytes = Buffer.from(ciphertext);
   const fullEnvelope = {
@@ -152,10 +128,8 @@ const buildSignedRequest = async ({ envelope, ciphertext, privateKey }) => {
 
 describe('offline data-bundle handler', () => {
   let serverKey;
-  let serverSigningPublicKey;
   let signingKeyJwk;
   let privateKey;
-  let deviceEncryptionIdentity;
 
   before(async () => {
     await utils.saveDoc(parentPlace);
@@ -180,18 +154,14 @@ describe('offline data-bundle handler', () => {
     privateKey = keyPair.privateKey;
     signingKeyJwk = await webcrypto.subtle.exportKey('jwk', keyPair.publicKey);
 
-    // Register the CHW device (as admin). Keep the device's age identity so we can open the sealed
-    // checkpoint, and capture both the server's age recipient (to encrypt bundles to) and the
-    // server's signing public key (to verify the sealed checkpoint's signature).
-    const { identity, recipient } = await generateAgeKeys();
-    deviceEncryptionIdentity = identity;
+    // Register the CHW device (as admin) and capture the server's age recipient for this device,
+    // which is what the bundles are encrypted to.
     const deviceKeyResponse = await utils.request({
       path: `/api/v1/users/bundlechw/devices/${DEVICE_ID}/keys`,
       method: 'POST',
-      body: { encryption_key: recipient, signing_key: signingKeyJwk },
+      body: { signing_key: signingKeyJwk },
     });
     serverKey = deviceKeyResponse.server_encryption_public_key;
-    serverSigningPublicKey = deviceKeyResponse.server_signing_public_key;
   });
 
   after(async () => {
@@ -201,29 +171,13 @@ describe('offline data-bundle handler', () => {
 
   it('ingests an authorized doc with original rev, rejects out-of-scope docs, dedupes on replay', async () => {
     const ciphertext = await encryptToServer(serverKey, toNdjson([allowedDoc, deniedDoc]));
-    const envelope = { user: 'bundlechw', device_id: DEVICE_ID, bundle_seq: 1, start_seq: 0, end_seq: 1 };
+    const envelope = { user: 'bundlechw', device_id: DEVICE_ID, bundle_seq: 1 };
     const requestOptions = await buildSignedRequest({ envelope, ciphertext, privateKey });
 
-    // First relay: the authorized doc is ingested, the out-of-scope doc rejected,
-    // and the per-(user, device) checkpoint advances to end_seq.
+    // First relay: the authorized doc is ingested and the out-of-scope doc dropped. The relaying
+    // device is told nothing about either, since it cannot read the bundle.
     const firstResponse = await utils.request(requestOptions);
-    // `checkpoint` is a SEALED token (base64), not the raw number, so assert the rest verbatim
-    // and open the token separately.
-    chai.expect(firstResponse).excluding('checkpoint').to.deep.equal({ accepted: 1, rejected: 1 });
-    chai.expect(firstResponse.checkpoint).to.be.a('string');
-
-    // Open the sealed checkpoint: age-decrypt with the device identity, verify the server signature
-    // over the inner checkpoint bytes with the server's signing public key, and confirm the seq.
-    const signed = await openSealedCheckpoint(firstResponse.checkpoint, deviceEncryptionIdentity);
-    const serverVerifyKey = await webcrypto.subtle.importKey(
-      'jwk', serverSigningPublicKey, { name: 'Ed25519' }, false, ['verify']
-    );
-    const innerBytes = Buffer.from(JSON.stringify(signed.checkpoint), 'utf8');
-    const validSignature = await webcrypto.subtle.verify(
-      { name: 'Ed25519' }, serverVerifyKey, Buffer.from(signed.signature, 'base64'), innerBytes
-    );
-    chai.expect(validSignature).to.be.true;
-    chai.expect(signed.checkpoint).to.deep.equal({ seq: 1, user: 'bundlechw', device_id: DEVICE_ID });
+    chai.expect(firstResponse).to.deep.equal({ ok: true });
 
     // The authorized doc exists with its ORIGINAL client rev (proves new_edits:false).
     const stored = await utils.getDoc('bundle_allowed_report', '', '?conflicts=true');
@@ -240,12 +194,8 @@ describe('offline data-bundle handler', () => {
     const deniedResult = await utils.getDoc('bundle_denied_report').catch(err => err);
     chai.expect(deniedResult).to.include({ status: 404 });
 
-    // Replay the identical bundle: CouchDB revision dedup means no conflict and no
-    // rev change; the already-settled checkpoint does not move.
-    const secondResponse = await utils.request(requestOptions);
-    const replaySigned = await openSealedCheckpoint(secondResponse.checkpoint, deviceEncryptionIdentity);
-    chai.expect(replaySigned.checkpoint.seq).to.equal(1);
-    chai.expect(secondResponse.accepted).to.equal(1);
+    // Replay the identical bundle: CouchDB revision dedup means no conflict and no rev change.
+    chai.expect(await utils.request(requestOptions)).to.deep.equal({ ok: true });
 
     const afterReplay = await utils.getDoc('bundle_allowed_report', '', '?conflicts=true');
     chai.expect(afterReplay._rev).to.equal(CLIENT_REV);
@@ -254,7 +204,7 @@ describe('offline data-bundle handler', () => {
 
   it('rejects a body that does not match the signed envelope', async () => {
     const ciphertext = await encryptToServer(serverKey, toNdjson([allowedDoc]));
-    const envelope = { user: 'bundlechw', device_id: DEVICE_ID, bundle_seq: 2, start_seq: 1, end_seq: 2 };
+    const envelope = { user: 'bundlechw', device_id: DEVICE_ID, bundle_seq: 2 };
     const requestOptions = await buildSignedRequest({ envelope, ciphertext, privateKey });
     // swap the body for a different (valid, and validly encrypted) payload, leaving the signed
     // envelope untouched: the sha256 in the envelope no longer describes what arrived.

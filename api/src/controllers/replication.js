@@ -42,8 +42,8 @@ module.exports = {
    *       Ingests one offline data bundle carried by a relaying device. The bundle is a signed,
    *       encrypted delta produced by a peer device. Data from the bundle is validated through the
    *       offline write-authorization pipeline according to the user who originally produced the
-   *       bundle, not the user relaying it to this endpoint. A per-(user, device) checkpoint
-   *       recording the latest synchronization point between the device and the server is returned.
+   *       bundle, not the user relaying it to this endpoint. Documents the peer is not authorized to
+   *       write are dropped and not reported back.
    *     tags: [Bulk]
    *     x-permissions:
    *       hasAny: [can_relay_offline_data_bundle]
@@ -56,7 +56,7 @@ module.exports = {
    *           bundles and detect gaps without reading the payload.
    *         schema:
    *           type: object
-   *           required: [user, device_id, bundle_seq, start_seq, end_seq, payload_sha256, payload_bytes]
+   *           required: [user, device_id, bundle_seq, payload_sha256, payload_bytes]
    *           properties:
    *             user:
    *               type: string
@@ -67,12 +67,6 @@ module.exports = {
    *             bundle_seq:
    *               type: number
    *               description: Monotonic bundle sequence number.
-   *             start_seq:
-   *               type: number
-   *               description: Inclusive lower sequence bound covered by this bundle.
-   *             end_seq:
-   *               type: number
-   *               description: Exclusive upper sequence bound covered by this bundle.
    *             payload_sha256:
    *               type: string
    *               description: Base64 SHA-256 of the request body, which binds the body to this envelope.
@@ -83,7 +77,7 @@ module.exports = {
    *         name: X-Medic-Bundle-Signature
    *         required: true
    *         description: >
-   *           Base64 Ed25519 signature over the canonical envelope bytes, made with the peer
+   *           Base64 Ed25519 signature over the envelope header bytes, made with the peer
    *           device's registered signing key.
    *         schema:
    *           type: string
@@ -102,23 +96,11 @@ module.exports = {
    *           application/json:
    *             schema:
    *               type: object
-   *               required: [accepted, rejected, checkpoint]
+   *               required: [ok]
    *               properties:
-   *                 accepted:
-   *                   type: number
-   *                   description: Number of documents written.
-   *                 rejected:
-   *                   type: number
-   *                   description: >
-   *                     Number of documents the peer was not authorized to write, or that CouchDB
-   *                     refused. They are dropped, not retried.
-   *                 checkpoint:
-   *                   type: string
-   *                   description: >
-   *                     Base64 token holding the peer's synchronization point, signed by the server
-   *                     and encrypted to the peer device. Only the peer can read it. It advances
-   *                     only when this bundle continues from the stored checkpoint without a gap,
-   *                     so a bundle that arrives out of order returns the earlier position.
+   *                 ok:
+   *                   type: boolean
+   *                   description: Always true.
    *       '400':
    *         $ref: '#/components/responses/BadRequest'
    *       '401':
@@ -129,13 +111,13 @@ module.exports = {
   dataBundle: async (req, res) => {
     try {
       await auth.assertPermissions(req, { hasAny: [RELAY_PERMISSION] });
-      const result = await dataBundle.process(
+      await dataBundle.process(
         req.get(HTTP_HEADERS.BUNDLE_ENVELOPE),
         req.get(HTTP_HEADERS.BUNDLE_SIGNATURE),
         req
       );
       logger.info(`REQ ${req.id} - Relayed an offline data bundle.`);
-      return res.json(result);
+      return res.json({ ok: true });
     } catch (err) {
       return serverUtils.error(err, req, res);
     }

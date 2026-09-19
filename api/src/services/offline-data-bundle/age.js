@@ -12,23 +12,6 @@ const load = () => {
 module.exports = {
   generateIdentity: async () => (await load()).generateIdentity(),
   identityToRecipient: async (identity) => (await load()).identityToRecipient(identity),
-  isValidRecipient: async (recipient) => {
-    try {
-      new (await load()).Encrypter().addRecipient(recipient);
-      return true;
-    } catch {
-      return false;
-    }
-  },
-
-  // Encrypts plaintext bytes to the given age recipient string. `plaintext` is a Uint8Array/Buffer;
-  // returns the age ciphertext as a Uint8Array. Throws if the recipient string is invalid.
-  encrypt: async (recipient, plaintext) => {
-    const encrypter = new (await load()).Encrypter();
-    encrypter.addRecipient(recipient);
-    return encrypter.encrypt(plaintext);
-  },
-
   // Decrypts an age ciphertext STREAM with the given identity. `ciphertext` is a web
   // ReadableStream of the raw age bytes; the returned value is a ReadableStream of the plaintext.
   // age authenticates every chunk, so a tampered or truncated stream errors while reading. The
