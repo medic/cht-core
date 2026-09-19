@@ -156,6 +156,7 @@ const docs = [
 
 const daysAgo = days => moment().subtract(days, 'days').format('Y-MM-DD');
 
+// Purging leaves tasks and targets alone, expired or not — expired ones are archived instead.
 const tasks = [
   {
     _id: 'task1~user1',
@@ -255,7 +256,6 @@ const tasks = [
   },
 ];
 
-const latestTargetInterval = moment().subtract(7, 'months').format('YYYY-MM');
 const targets = [
   {
     _id: `target~${moment().subtract(9, 'months').format('YYYY-MM')}~${PREFIXES.COUCH_USER}user2`,
@@ -291,15 +291,7 @@ const targets = [
   },
 ];
 
-const targetIdsToPurge = [];
-const targetIdsToKeep = [];
-targets.forEach(target => {
-  if (target.reporting_period > latestTargetInterval) {
-    targetIdsToKeep.push(target._id);
-  } else {
-    targetIdsToPurge.push(target._id);
-  }
-});
+const targetIds = targets.map(target => target._id);
 const users = [
   {
     username: 'user1',
@@ -356,6 +348,13 @@ const purgeSettings = {
   text_expression: 'every 1 seconds'
 };
 
+// disable archiving by setting the window one day off the test run
+const nextArchiveRun = moment().add(1, 'day');
+const archiveSettings = {
+  cron: `${nextArchiveRun.minutes()} ${nextArchiveRun.hours()} ` +
+        `${nextArchiveRun.date()} ${nextArchiveRun.month() + 1} *`,
+};
+
 const requestDocs = async (username) => {
   const options = {
     path: `/api/v1/replication/get-ids`,
@@ -391,6 +390,7 @@ const updateUser = async user => {
 describe('Server side purge', () => {
   before(async () => {
     await utils.revertDb([], true);
+    await utils.updateSettings({ archive: archiveSettings }, { ignoreReload: true });
     const existingUsers = await utils.getCreatedUsers();
     await utils.deleteUsers(existingUsers);
     await utils.saveDocs([...docs, ...tasks, ...targets]);
@@ -407,7 +407,7 @@ describe('Server side purge', () => {
 
   it('should purge correct docs', async () => {
     const seq = await sentinelUtils.getCurrentSeq();
-    await utils.updateSettings({ purge: purgeSettings }, { ignoreReload: true });
+    await utils.updateSettings({ purge: purgeSettings, archive: archiveSettings }, { ignoreReload: true });
     const purgeLog = await sentinelUtils.waitForPurgeCompletion(seq);
 
     chai.expect(Object.values(purgeLog.roles)).to.deep.equal([
@@ -428,10 +428,10 @@ describe('Server side purge', () => {
       'clinic1', 'contact1',
       'report2', 'report5', 'report6', 'report11',
       'message2', 'message4',
-      'task1~user1', 'task2~user1', 'task3~user1',
+      'task1~user1', 'task2~user1', 'task3~user1', 'task4~user1',
     ]);
     const purgedDocsUser1 = [
-      'report1', 'report3', 'report4', 'report9', 'report10', 'message1', 'message3', 'task4~user1', ...targetIdsToPurge
+      'report1', 'report3', 'report4', 'report9', 'report10', 'message1', 'message3',
     ];
     purgedDocsUser1.forEach(id => chai.expect(user1Docs).to.not.include(id));
 
@@ -439,11 +439,11 @@ describe('Server side purge', () => {
       'clinic1', 'contact1',
       'report1', 'report3', 'report4', 'report11', 'report9', 'report10',
       'message1', 'message3',
-      'task1~user2', 'task2~user2', 'task3~user2',
-      ...targetIdsToKeep
+      'task1~user2', 'task2~user2', 'task3~user2', 'task4~user2',
+      ...targetIds
     ]);
     const purgedDocsUser2 = [
-      'report2', 'report5', 'report6', 'message2', 'message4', 'task4~user2', ...targetIdsToPurge
+      'report2', 'report5', 'report6', 'message2', 'message4',
     ];
     purgedDocsUser2.forEach(id => chai.expect(user2Docs).to.not.include(id));
 
@@ -455,7 +455,10 @@ describe('Server side purge', () => {
   });
 
   it('should clear purged cache when settings are updated', async () => {
-    await utils.updateSettings({ district_admins_access_unallocated_messages: true }, { ignoreReload: true });
+    await utils.updateSettings(
+      { district_admins_access_unallocated_messages: true, archive: archiveSettings },
+      { ignoreReload: true },
+    );
 
     const responseDocsUser1 = await requestDocs('user1');
     const responseDocsUser2 = await requestDocs('user2');
@@ -485,7 +488,7 @@ describe('Server side purge', () => {
       .then(result => {
         seq = result;
         purgeSettings.fn = reversePurgeFn.toString();
-        return utils.updateSettings({ purge: purgeSettings }, { ignoreReload: true });
+        return utils.updateSettings({ purge: purgeSettings, archive: archiveSettings }, { ignoreReload: true });
       })
       .then(() => sentinelUtils.waitForPurgeCompletion(seq))
       .then(() => Promise.all([requestDeletes('user1', purgedIdsUser1), requestDeletes('user2', purgedIdsUser2)]))
@@ -506,7 +509,7 @@ describe('Server side purge', () => {
           'clinic1', 'contact1',
           'report1', 'report3', 'report4',
           'message1', 'message3',
-          'task1~user1', 'task2~user1', 'task3~user1',
+          'task1~user1', 'task2~user1', 'task3~user1', 'task4~user1',
         ]);
         user1DocIds.forEach(id => chai.expect(purgedIdsUser1).to.not.include(id));
 
@@ -514,7 +517,8 @@ describe('Server side purge', () => {
           'clinic1', 'contact1',
           'report2', 'report5', 'report6',
           'message2', 'message4',
-          'task1~user2', 'task2~user2', 'task3~user2',
+          'task1~user2', 'task2~user2', 'task3~user2', 'task4~user2',
+          ...targetIds,
         ]);
         user2ChangeIds.forEach(id => chai.expect(purgedIdsUser2).to.not.include(id));
       });
@@ -523,7 +527,7 @@ describe('Server side purge', () => {
   it('should clear purged cache when users are updated', async () => {
     const seq = await sentinelUtils.getCurrentSeq();
     purgeSettings.fn = purgeFn.toString();
-    await utils.updateSettings({ purge: purgeSettings }, { ignoreReload: true });
+    await utils.updateSettings({ purge: purgeSettings, archive: archiveSettings }, { ignoreReload: true });
     await sentinelUtils.waitForPurgeCompletion(seq);
 
     let responseDocsUser1 = await requestDocs('user1');
@@ -536,10 +540,10 @@ describe('Server side purge', () => {
       'clinic1', 'contact1',
       'report2', 'report5', 'report6', 'report11',
       'message2', 'message4',
-      'task1~user1', 'task2~user1', 'task3~user1',
+      'task1~user1', 'task2~user1', 'task3~user1', 'task4~user1',
     ]);
     const purgedDocsUser1 = [
-      'report1', 'report3', 'report4', 'report9', 'report10', 'message1', 'message3', 'task4~user1', ...targetIdsToPurge
+      'report1', 'report3', 'report4', 'report9', 'report10', 'message1', 'message3',
     ];
     purgedDocsUser1.forEach(id => chai.expect(user1Docs).to.not.include(id));
 
@@ -547,11 +551,11 @@ describe('Server side purge', () => {
       'clinic1', 'contact1',
       'report1', 'report3', 'report4', 'report11', 'report9', 'report10',
       'message1', 'message3',
-      'task1~user2', 'task2~user2', 'task3~user2',
-      ...targetIdsToKeep
+      'task1~user2', 'task2~user2', 'task3~user2', 'task4~user2',
+      ...targetIds
     ]);
     const purgedDocsUser2 = [
-      'report2', 'report5', 'report6', 'message2', 'message4', 'task4~user2', ...targetIdsToPurge
+      'report2', 'report5', 'report6', 'message2', 'message4',
     ];
     purgedDocsUser2.forEach(id => chai.expect(user2Docs).to.not.include(id));
 
@@ -577,7 +581,7 @@ describe('Server side purge', () => {
       'clinic1', 'contact1',
       'report2', 'report5', 'report6', 'report11',
       'message2', 'message4',
-      'task1~user1', 'task2~user1', 'task3~user1',
+      'task1~user1', 'task2~user1', 'task3~user1', 'task4~user1',
     ]);
     purgedDocsUser1.forEach(id => chai.expect(user1Docs).to.not.include(id));
 
@@ -585,7 +589,8 @@ describe('Server side purge', () => {
       'clinic1', 'contact1',
       'report2', 'report5', 'report6', 'report11',
       'message2', 'message4',
-      'task1~user2', 'task2~user2', 'task3~user2',
+      'task1~user2', 'task2~user2', 'task3~user2', 'task4~user2',
+      ...targetIds,
     ]);
     purgedDocsUser1.forEach(id => chai.expect(user2Docs).to.not.include(id));
   });
