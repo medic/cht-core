@@ -15,7 +15,6 @@ describe('DeviceKey service', () => {
   const DEVICE_ID = 'device-1';
   const SERVER_KEYS = {
     server_encryption_public_key: 'age1server',
-    server_signing_public_key: { kty: 'OKP', crv: 'Ed25519', x: 'server-signing' },
   };
 
   let service: DeviceKeyService;
@@ -86,7 +85,7 @@ describe('DeviceKey service', () => {
     return request;
   };
 
-  it('registers keys with the server after a successful sync', async () => {
+  it('registers the signing key with the server after a successful sync', async () => {
     medicDb.get.rejects(notFound());
     service.init();
 
@@ -94,12 +93,13 @@ describe('DeviceKey service', () => {
 
     expect(request.request.url).to.equal(`/api/v1/users/chw-user/devices/${DEVICE_ID}/keys`);
     expect(request.request.method).to.equal('POST');
-    expect(request.request.body.encryption_key).to.match(/^age1/);
     expect(request.request.body.signing_key).to.include({ kty: 'OKP', crv: 'Ed25519' });
     expect(request.request.body.signing_key.x).to.be.a('string');
+    // the device no longer has an encryption key of its own: nothing is sent back to it
+    expect(Object.keys(request.request.body)).to.deep.equal(['signing_key']);
   });
 
-  it('stores the device keys and the server keys in a local doc', async () => {
+  it('stores the device key and the server key in a local doc', async () => {
     medicDb.get.rejects(notFound());
     service.init();
 
@@ -109,12 +109,9 @@ describe('DeviceKey service', () => {
     const doc = medicDb.put.args[0][0];
     expect(doc._id).to.equal('_local/offline-device-keys');
     expect(doc.device_id).to.equal(DEVICE_ID);
-    expect(doc.encryption_private_key).to.match(/^AGE-SECRET-KEY-1/);
-    expect(doc.encryption_public_key).to.match(/^age1/);
     expect(doc.signing_private_key).to.be.a('string');
     expect(doc.signing_public_key.crv).to.equal('Ed25519');
     expect(doc.server_encryption_public_key).to.equal(SERVER_KEYS.server_encryption_public_key);
-    expect(doc.server_signing_public_key).to.deep.equal(SERVER_KEYS.server_signing_public_key);
   });
 
   it('does nothing when the sync did not fully succeed', async () => {
@@ -174,6 +171,6 @@ describe('DeviceKey service', () => {
 
     expect(medicDb.put.callCount).to.equal(0);
     expect(consoleError.callCount).to.equal(1);
-    expect(consoleError.args[0][0]).to.equal('DeviceKeyService :: Error registering device keys');
+    expect(consoleError.args[0][0]).to.equal('DeviceKeyService :: Error registering device key');
   });
 });
