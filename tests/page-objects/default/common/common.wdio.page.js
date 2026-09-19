@@ -409,9 +409,9 @@ const goToAnalytics = async () => {
   await waitForPageLoaded();
 };
 
-const closeReloadModal = async (shouldUpdate, timeout) => {
+const closeReloadModal = async (shouldUpdate, extendedTimeout = false) => {
+  const timeout = extendedTimeout || shouldUpdate ? RELOAD_SYNC_TIMEOUT : ELEMENT_DISPLAY_PAUSE;
   try {
-    timeout = timeout || shouldUpdate ? RELOAD_SYNC_TIMEOUT : ELEMENT_DISPLAY_PAUSE;
     if (shouldUpdate) {
       await modalPage.submit(timeout);
       await waitForAngularLoaded(timeout);
@@ -497,7 +497,7 @@ const sync = async ({
   // service worker updates require downloading all resources, and then it triggers the update modal.
   // sometimes this action is not timely with a quick sync.
   if ((serviceWorkerUpdate || expectReload) && !reloadModalShown) {
-    await closeReloadModal(false, RELOAD_SYNC_TIMEOUT);
+    await closeReloadModal(false, true);
   }
 
   if (reload) {

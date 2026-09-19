@@ -139,7 +139,7 @@ describe('ongoing replication', function() {
     await utils.addTranslations('rnd', {});
     await waitForServiceWorker.promise;
 
-    await commonPage.sync({ expectReload: true, reload: true, serviceWorkerUpdate: true });
+    await commonPage.sync({ reload: true, serviceWorkerUpdate: true });
     const rnd = await chtDbUtils.getDoc('messages-rnd');
     expect(rnd).to.include({
       type: DOC_TYPES.TRANSLATIONS,
@@ -151,7 +151,7 @@ describe('ongoing replication', function() {
     await utils.saveDoc(rnd);
     await waitForServiceWorker.promise;
 
-    await commonPage.sync({ expectReload: true, reload: true, serviceWorkerUpdate: true });
+    await commonPage.sync({ reload: true, serviceWorkerUpdate: true });
     const updatedRnd = await chtDbUtils.getDoc('messages-rnd');
     expect(updatedRnd.updated).to.equal(rnd.updated);
   });
@@ -174,7 +174,7 @@ describe('ongoing replication', function() {
     await utils.deleteDocs(docIdsToDelete);
     await waitForServiceWorker.promise;
 
-    await commonPage.sync({ expectReload: true, reload: true, serviceWorkerUpdate: true });
+    await commonPage.sync({ reload: true, serviceWorkerUpdate: true });
     const localDocsPostSync = await chtDbUtils.getDocs();
     const localDocIds = dataFactory.ids(localDocsPostSync);
 

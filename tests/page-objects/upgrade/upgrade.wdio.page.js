@@ -68,6 +68,7 @@ const upgradeVersion = async (branch, tag, testFrontend=true) => {
   if (testFrontend) {
     // https://github.com/medic/cht-core/issues/9186
     // this is an unfortunate incompatibility between current API and admin app in the old version
+    await common.waitForLoaders();
     await deploymentComplete().waitForDisplayed();
   }
 };

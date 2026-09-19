@@ -127,7 +127,7 @@ describe('Performing an upgrade', () => {
 
   (testFrontend ? it : xit)('should display current branch in the about page', async () => {
     await loginPage.login({ username: docs.user.username, password: docs.user.password });
-    await commonPage.sync({ expectReload: true, reload: true, serviceWorkerUpdate: true });
+    await commonPage.sync({ reload: true, serviceWorkerUpdate: true });
 
     await commonPage.goToAboutPage();
     await aboutPage.aboutCard().waitForDisplayed();
