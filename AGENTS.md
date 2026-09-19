@@ -163,7 +163,7 @@ The parenthetical must contain the issue number, not a component name.
 
 ## CI
 
-GitHub Actions runs on Node 22.15. The main CI pipeline runs:
+GitHub Actions runs on Node 22.17. The main CI pipeline runs:
 
 1. `npm run lint`
 2. `npm run unit`

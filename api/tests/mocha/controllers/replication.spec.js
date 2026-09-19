@@ -3,6 +3,8 @@ const sinon = require('sinon');
 const controller = require('../../../src/controllers/replication');
 const replicationService = require('../../../src/services/replication/replication');
 const serverUtils = require('../../../src/server-utils');
+const auth = require('../../../src/auth');
+const dataBundle = require('../../../src/services/offline-data-bundle/data-bundle');
 
 let req;
 let res;
@@ -106,6 +108,68 @@ describe('Initial Replication controller', () => {
 
       expect(replicationService.getContext.callCount).to.equal(1);
       expect(serverUtils.serverError.args).to.deep.equal([[ { status: 502 }, req, res ]]);
+      expect(res.json.callCount).to.equal(0);
+    });
+  });
+
+  describe('dataBundle', () => {
+    const bundleReq = (headers = {}) => ({
+      id: 'req-1',
+      userCtx: { name: 'supervisor' },
+      get: (name) => headers[name],
+    });
+
+    it('should hand the raw headers and the request stream to the service', async () => {
+      sinon.stub(auth, 'assertPermissions').resolves();
+      sinon.stub(dataBundle, 'process').resolves();
+      const req = bundleReq({
+        'X-Medic-Bundle-Envelope': 'ZW52ZWxvcGU=',
+        'X-Medic-Bundle-Signature': 'the-signature',
+      });
+
+      await controller.dataBundle(req, res);
+
+      expect(auth.assertPermissions.args).to.deep.equal([[ req, { hasAny: ['can_relay_offline_data_bundle'] } ]]);
+      // the controller does no parsing: the header values and the request itself go straight down
+      expect(dataBundle.process.args).to.deep.equal([[ 'ZW52ZWxvcGU=', 'the-signature', req ]]);
+      // nothing about the bundle's contents goes back to the relaying device
+      expect(res.json.args).to.deep.equal([[ { ok: true } ]]);
+    });
+
+    it('should pass undefined headers through rather than guessing', async () => {
+      sinon.stub(auth, 'assertPermissions').resolves();
+      sinon.stub(dataBundle, 'process').resolves();
+
+      await controller.dataBundle(bundleReq(), res);
+
+      expect(dataBundle.process.args[0][0]).to.be.undefined;
+      expect(dataBundle.process.args[0][1]).to.be.undefined;
+    });
+
+    it('should respond with the error when the relaying user lacks the permission', async () => {
+      const error = { code: 403, message: 'Insufficient privileges' };
+      sinon.stub(auth, 'assertPermissions').rejects(error);
+      sinon.stub(dataBundle, 'process');
+      sinon.stub(serverUtils, 'error');
+      const req = bundleReq();
+
+      await controller.dataBundle(req, res);
+
+      expect(dataBundle.process.callCount).to.equal(0);
+      expect(serverUtils.error.args).to.deep.equal([[ error, req, res ]]);
+      expect(res.json.callCount).to.equal(0);
+    });
+
+    it('should respond with the error when the bundle is rejected', async () => {
+      const error = { code: 400, message: 'Payload does not match the envelope.' };
+      sinon.stub(auth, 'assertPermissions').resolves();
+      sinon.stub(dataBundle, 'process').rejects(error);
+      sinon.stub(serverUtils, 'error');
+      const req = bundleReq({ 'X-Medic-Bundle-Envelope': 'ZW52ZWxvcGU=' });
+
+      await controller.dataBundle(req, res);
+
+      expect(serverUtils.error.args).to.deep.equal([[ error, req, res ]]);
       expect(res.json.callCount).to.equal(0);
     });
   });

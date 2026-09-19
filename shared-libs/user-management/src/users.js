@@ -621,21 +621,16 @@ const saveUserSettingsUpdates = async (userSettings) => {
   };
 };
 
-const upsertDeviceKey = async (username, deviceId, deviceKeys, serverKeys) => {
+const upsertDeviceKey = async (username, deviceId, signingKey, serverEncryptionKey) => {
   const userDoc = await getUserDoc(username, 'users');
   userDoc.keys_by_device = userDoc.keys_by_device || {};
   userDoc.keys_by_device[deviceId] = {
-    encryption_public_key: deviceKeys.encryption_key,
-    signing_public_key: deviceKeys.signing_key,
-    server_encryption_public_key: serverKeys.server_encryption_public_key,
-    server_signing_public_key: serverKeys.server_signing_public_key,
+    signing_public_key: signingKey,
+    server_encryption_public_key: serverEncryptionKey,
     updated_date: Date.now(),
   };
   await saveUserUpdates(userDoc);
-  return {
-    server_encryption_public_key: serverKeys.server_encryption_public_key,
-    server_signing_public_key: serverKeys.server_signing_public_key,
-  };
+  return { server_encryption_public_key: serverEncryptionKey };
 };
 
 const validateFacilityIsNeeded = (data, user) => {

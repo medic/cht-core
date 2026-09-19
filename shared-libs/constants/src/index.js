@@ -37,6 +37,8 @@ const HTTP_HEADERS = {
   OPENROSA_VERSION: 'X-OpenRosa-Version',
   MEDIC_REPLICATION_ID: 'medic-replication-id',
   LOGOUT_AUTHORIZATION: 'logout-authorization',
+  BUNDLE_ENVELOPE: 'X-Medic-Bundle-Envelope',
+  BUNDLE_SIGNATURE: 'X-Medic-Bundle-Signature',
 };
 
 const STANDARD_HTTP_HEADERS = {
