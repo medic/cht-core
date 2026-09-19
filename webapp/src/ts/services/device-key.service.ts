@@ -20,15 +20,12 @@ interface PublicKeyJwk {
 }
 
 interface DeviceKeys {
-  encryption_private_key: string;
-  encryption_public_key: string;
   signing_private_key: string;
   signing_public_key: PublicKeyJwk;
 }
 
 interface ServerKeys {
   server_encryption_public_key: string;
-  server_signing_public_key: PublicKeyJwk;
 }
 
 const toBase64Url = (bytes: Uint8Array): string => {
@@ -37,17 +34,17 @@ const toBase64Url = (bytes: Uint8Array): string => {
 };
 
 /**
- * Registers this device's offline data bundle keys with the server, and stores the server's
- * public keys locally, so a user that later goes offline can seal bundles for the server.
+ * Registers this device's offline data bundle signing key with the server, and stores the
+ * server's encryption public key locally, so a user that later goes offline can sign bundles and
+ * encrypt them to the server.
  *
  * Registration runs after a fully successful sync only. At that point the device has just been
  * in direct contact with the server, so any bundle still sealed under older keys is stale by
  * definition and nothing unsent is lost when the server replaces the device entry.
  *
- * Ed25519 and X25519 are not available in Web Crypto on the browsers the webapp still supports
- * (Chrome 107), so signing keys come from @noble/curves and encryption keys from age-encryption,
- * both pure JS. Consequence: private keys are raw material, they cannot be non-extractable
- * Web Crypto keys.
+ * Ed25519 is not available in Web Crypto on the browsers the webapp still supports (Chrome 107),
+ * so signing keys come from @noble/curves, which is pure JS. Consequence: the private key is raw
+ * material, it cannot be a non-extractable Web Crypto key.
  */
 @Injectable({
   providedIn: 'root'
@@ -83,7 +80,7 @@ export class DeviceKeyService {
     } catch (err) {
       // Key registration must never break syncing: the user keeps working online, and the next
       // successful sync tries again.
-      console.error('DeviceKeyService :: Error registering device keys', err);
+      console.error('DeviceKeyService :: Error registering device key', err);
     }
   }
 
@@ -104,17 +101,10 @@ export class DeviceKeyService {
   }
 
   private async generateDeviceKeys(): Promise<DeviceKeys> {
-    const [age, { ed25519 }] = await Promise.all([
-      import('age-encryption'),
-      import('@noble/curves/ed25519.js'),
-    ]);
-
-    const identity = await age.generateIdentity();
+    const { ed25519 } = await import('@noble/curves/ed25519.js');
     const signingPrivateKey = ed25519.utils.randomSecretKey();
 
     return {
-      encryption_private_key: identity,
-      encryption_public_key: await age.identityToRecipient(identity),
       signing_private_key: toBase64Url(signingPrivateKey),
       signing_public_key: {
         kty: 'OKP',
@@ -127,10 +117,7 @@ export class DeviceKeyService {
   private async sendDeviceKeys(deviceId: string, deviceKeys: DeviceKeys): Promise<ServerKeys> {
     const username = this.sessionService.userCtx()?.name;
     const url = `/api/v1/users/${username}/devices/${deviceId}/keys`;
-    const body = {
-      encryption_key: deviceKeys.encryption_public_key,
-      signing_key: deviceKeys.signing_public_key,
-    };
+    const body = { signing_key: deviceKeys.signing_public_key };
 
     return lastValueFrom(this.http.post<ServerKeys>(url, body, { responseType: 'json' }));
   }

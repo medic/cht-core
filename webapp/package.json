@@ -41,7 +41,6 @@
     "@ngx-translate/core": "^16.0.4",
     "@noble/curves": "^2.2.0",
     "@webcomponents/webcomponentsjs": "^2.8.0",
-    "age-encryption": "^0.3.0",
     "bikram-sambat-bootstrap": "^1.8.1",
     "bikram-sambat-calendar": "^1.8.1",
     "bootstrap": "^3.4.1",

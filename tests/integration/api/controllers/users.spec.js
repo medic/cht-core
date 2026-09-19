@@ -2589,7 +2589,7 @@ describe('Users API', () => {
       const response = await utils.request({
         path: `/api/v1/users/${senderUser.username}/devices/device-webapp/keys`,
         method: 'POST',
-        body: { encryption_key: deviceKeyA, signing_key: signingKey },
+        body: { signing_key: signingKey },
         auth: { username: senderUser.username, password },
       });
 
