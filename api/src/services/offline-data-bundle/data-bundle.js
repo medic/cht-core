@@ -152,7 +152,7 @@ const parseLine = (line) => {
   return doc;
 };
 
-const parseLines = (lines) => lines.map(parseLine).filter(doc => doc);
+const parseLines = (lines) => lines.map(parseLine).filter(Boolean);
 
 // Yields docs as the decrypted stream produces them. Lines straddle chunk boundaries, so a carry
 // buffer holds the partial trailing line until the next chunk completes it.
