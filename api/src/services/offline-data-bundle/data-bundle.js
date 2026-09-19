@@ -152,29 +152,28 @@ const parseLine = (line) => {
   return doc;
 };
 
+const parseLines = (lines) => lines.map(parseLine).filter(doc => doc);
+
 // Yields docs as the decrypted stream produces them. Lines straddle chunk boundaries, so a carry
-// buffer holds the partial trailing line until the next chunk completes it. Only decryption and
-// parsing failures are raised here: a failure in the consumer (a CouchDB write) ends the generator
-// without passing through this catch, so it keeps its own status instead of becoming a 400.
+// buffer holds the partial trailing line until the next chunk completes it.
+const streamDocs = async function* (plaintext) {
+  const decoder = new TextDecoder();
+  let carry = '';
+  for await (const chunk of plaintext) {
+    carry += decoder.decode(chunk, { stream: true });
+    const lines = carry.split('\n');
+    carry = lines.pop();
+    yield* parseLines(lines);
+  }
+  yield* parseLines([carry + decoder.decode()]);
+};
+
+// Only decryption and parsing failures are raised here: a failure in the consumer (a CouchDB
+// write) ends the delegated generator without passing through this catch, so it keeps its own
+// status instead of becoming a 400.
 const readDocs = async function* (plaintext, envelope) {
   try {
-    const decoder = new TextDecoder();
-    let carry = '';
-    for await (const chunk of plaintext) {
-      carry += decoder.decode(chunk, { stream: true });
-      const lines = carry.split('\n');
-      carry = lines.pop();
-      for (const line of lines) {
-        const doc = parseLine(line);
-        if (doc) {
-          yield doc;
-        }
-      }
-    }
-    const last = parseLine(carry + decoder.decode());
-    if (last) {
-      yield last;
-    }
+    yield* streamDocs(plaintext);
   } catch (err) {
     throw corruptPayload(err, envelope);
   }
