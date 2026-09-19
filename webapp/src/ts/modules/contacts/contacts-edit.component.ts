@@ -22,6 +22,8 @@ import { Contact, Qualifier } from '@medic/cht-datasource';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
+import { ContactMutedService } from '@mm-services/contact-muted.service';
+import { AuthService } from '@mm-services/auth.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { FormType } from '@mm-services/form/form-config';
 import { FormValidationError } from '@mm-services/enketo.service';
@@ -47,6 +49,8 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly ngZone: NgZone,
     private readonly fileReaderService: FileReaderService,
     private readonly geolocationService: GeolocationService,
+    private readonly contactMutedService: ContactMutedService,
+    private readonly authService: AuthService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
@@ -209,10 +213,26 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       this.setEnketoContact(formInstance);
 
       this.globalActions.setLoadingContent(false);
-    } catch (error) {
-      this.errorTranslationKey = error.translationKey || 'error.loading.form';
-      this.globalActions.setLoadingContent(false);
-      this.contentError = true;
+    } catch (error: any) {
+      this.handleFormLoadError(error);
+    }
+  }
+
+  // extracted from initForm's catch to keep that function under the cognitive complexity limit
+  private handleFormLoadError(error) {
+    // no form will open, so stop the watch instead of leaving `watchPosition` live until the
+    // service's own 30 second timeout settles it. Not a `finally`: on the success path this same
+    // handle is what save() passes to formService.saveContact.
+    this.geoHandle?.cancel();
+    this.errorTranslationKey = error.translationKey || 'error.loading.form';
+    this.globalActions.setLoadingContent(false);
+    this.contentError = true;
+    if (error.isAuthorizationRefusal) {
+      // a deliberate policy outcome, not an application error, so not console.error, which would
+      // file a feedback doc. info still prints in production and joins the circular log buffer, so
+      // a refused deep link leaves a trace when someone reports that a form will not open.
+      console.info('Contact form refused.', error);
+    } else {
       console.error('Error loading contact form.', error);
     }
   }
@@ -289,6 +309,29 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     await this.ensureValidChildType(parentType);
+    await this.ensureParentNotMuted();
+  }
+
+  private async ensureParentNotMuted() {
+    // Permission first: a holder is allowed under any parent, so the lineage read below is pure
+    // waste for them. Same ordering as the API gate in api/src/services/muted-parent.js.
+    if (await this.authService.has('can_create_contacts_under_muted_places')) {
+      return;
+    }
+
+    // Contact.v1.get returns a raw doc, so the ancestors have to come from the lineage generator.
+    // hydrate: false skips filling in each ancestor's primary contact, which the muted check never reads.
+    const model = await this.lineageModelGeneratorService
+      .contact(this.contact.parent, { merge: false, hydrate: false });
+    if (!this.contactMutedService.getMuted(model?.doc, model?.lineage)) {
+      return;
+    }
+
+    const error: any = new Error(`Cannot create a contact under muted parent ${this.contact.parent}.`);
+    // reuse the existing not-authorized copy rather than the generic "Error loading form"
+    error.translationKey = 'error.loading.form.no_authorized';
+    error.isAuthorizationRefusal = true;
+    throw error;
   }
 
   private async ensureValidTopLevelType() {

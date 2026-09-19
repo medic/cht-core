@@ -26,6 +26,7 @@ import { NavigationComponent } from '@mm-components/navigation/navigation.compon
 import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { ContactsMoreMenuComponent } from '@mm-modules/contacts/contacts-more-menu.component';
@@ -54,6 +55,7 @@ describe('Contacts component', () => {
   let contactListContains;
   let exportService;
   let xmlFormsService;
+  let lineageModelGeneratorService;
   let fastActionButtonService;
   let performanceService;
   let stopPerformanceTrackStub;
@@ -102,6 +104,7 @@ describe('Contacts component', () => {
     };
     exportService = { export: sinon.stub() };
     xmlFormsService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
+    lineageModelGeneratorService = { contact: sinon.stub().resolves({ doc: {} }) };
     fastActionButtonService = {
       getContactLeftSideActions: sinon.stub(),
       getButtonTypeForContentList: sinon.stub(),
@@ -149,6 +152,7 @@ describe('Contacts component', () => {
           { provide: ScrollLoaderProvider, useValue: scrollLoaderProvider },
           { provide: ExportService, useValue: exportService },
           { provide: XmlFormsService, useValue: xmlFormsService },
+          { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
           { provide: FastActionButtonService, useValue: fastActionButtonService },
           { provide: NavigationService, useValue: {} },
           { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
@@ -590,6 +594,29 @@ describe('Contacts component', () => {
       const changesFilter = changesService.subscribe.args[0][0].filter;
       expect(!!changesFilter({ deleted: true, id: 'some_id' })).to.equal(true);
     });
+
+    it('changes filter lets a doc-less ancestor change through #10139', fakeAsync(() => {
+      getDataRecordsService.getContacts.resolves([{ ...district, lineage: [ 'health-center-id' ] }]);
+      component.ngOnInit();
+      flush();
+
+      const changesFilter = changesService.subscribe.args[0][0].filter;
+
+      // an online-only user's changes carry no `doc`, so only an id-based condition can match
+      expect(changesFilter({ id: 'health-center-id' })).to.equal(true);
+      expect(changesFilter({ id: 'some-other-doc' })).to.equal(false);
+    }));
+
+    it('changes filter does not throw before the home place has resolved #10139', fakeAsync(() => {
+      component.usersHomePlaces = undefined;
+      component.ngOnInit();
+
+      const changesFilter = changesService.subscribe.args[0][0].filter;
+
+      // manageChangesSubscription runs before usersHomePlaces is assigned
+      expect(changesFilter({ id: 'health-center-id' })).to.equal(false);
+      flush();
+    }));
   });
 
   describe('last visited date', () => {
@@ -1237,6 +1264,105 @@ describe('Contacts component', () => {
         name: 'contact_list:load',
         recordApdex: true,
       });
+    }));
+  });
+
+  describe('home place hydration', () => {
+    it('should pass the hydrated home place to the left-side actions', fakeAsync(() => {
+      sinon.resetHistory();
+      const hydrated = { _id: 'district-id', parent: { _id: 'parent-id', muted: '2025-01-01T00:00:00Z' } };
+      lineageModelGeneratorService.contact.resolves({ doc: hydrated });
+
+      component.ngOnInit();
+      flush();
+      component.updateFastActions();
+      flush();
+
+      expect(lineageModelGeneratorService.contact
+        .calledOnceWithExactly('district-id', { merge: true, hydrate: false })).to.be.true;
+      expect(fastActionButtonService.getContactLeftSideActions.lastCall.args[0]).to.deep.include({
+        parentFacilityId: 'district-id',
+        parentContact: hydrated,
+      });
+    }));
+
+    it('should not hydrate anything when the user has no home place', fakeAsync(() => {
+      sinon.resetHistory();
+      userSettingsService.get.resolves({ facility_id: null });
+      getDataRecordsService.getContacts.resolves([]);
+
+      component.ngOnInit();
+      flush();
+      component.updateFastActions();
+      flush();
+
+      expect(lineageModelGeneratorService.contact.notCalled).to.be.true;
+      expect(fastActionButtonService.getContactLeftSideActions.lastCall.args[0].parentContact).to.be.undefined;
+    }));
+
+    it('should keep the list working when the home place cannot be hydrated', fakeAsync(() => {
+      sinon.resetHistory();
+      const consoleWarn = sinon.stub(console, 'warn');
+      lineageModelGeneratorService.contact.rejects(new Error('Document not found: district-id'));
+
+      component.ngOnInit();
+      flush();
+      component.updateFastActions();
+      flush();
+
+      expect(component.error).to.not.equal(true);
+      expect(consoleWarn.calledOnce).to.be.true;
+      // the muted check degrades to off rather than breaking the tab
+      expect(fastActionButtonService.getContactLeftSideActions.lastCall.args[0].parentContact).to.be.undefined;
+    }));
+
+    it('should re-hydrate the home place when an ancestor changes', fakeAsync(() => {
+      sinon.resetHistory();
+      getDataRecordsService.getContacts.resolves([{ ...district, lineage: [ 'health-center-id' ] }]);
+      const clean = { _id: 'district-id', parent: { _id: 'health-center-id' } };
+      const muted = { _id: 'district-id', parent: { _id: 'health-center-id', muted: '2025-01-01T00:00:00Z' } };
+      lineageModelGeneratorService.contact.onCall(0).resolves({ doc: clean });
+      lineageModelGeneratorService.contact.onCall(1).resolves({ doc: muted });
+
+      component.ngOnInit();
+      flush();
+      expect(fastActionButtonService.getContactLeftSideActions.lastCall.args[0].parentContact).to.deep.equal(clean);
+      const changesCallback = changesService.subscribe.args[0][0].callback;
+
+      // the mute lands on the ancestor only: the home place doc itself never changes
+      changesCallback({ id: 'health-center-id', doc: { _id: 'health-center-id', type: 'health_center' } });
+      flush();
+
+      expect(lineageModelGeneratorService.contact.callCount).to.equal(2);
+      expect(fastActionButtonService.getContactLeftSideActions.lastCall.args[0].parentContact).to.deep.equal(muted);
+    }));
+
+    it('should not re-hydrate the home place on an unrelated contact change', fakeAsync(() => {
+      sinon.resetHistory();
+      getDataRecordsService.getContacts.resolves([{ ...district, lineage: [ 'health-center-id' ] }]);
+
+      component.ngOnInit();
+      flush();
+      const changesCallback = changesService.subscribe.args[0][0].callback;
+      changesCallback({ id: 'some-other-person', doc: { _id: 'some-other-person', type: 'person' } });
+      flush();
+
+      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
+    }));
+
+    it('should re-hydrate the home place when the home place itself changes', fakeAsync(() => {
+      sinon.resetHistory();
+
+      component.ngOnInit();
+      flush();
+      expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
+
+      const changesCallback = changesService.subscribe.args[0][0].callback;
+      changesCallback({ id: 'district-id', doc: { _id: 'district-id', muted: '2025-01-01T00:00:00Z' } });
+      flush();
+
+      // the mute cascade stamps `muted` onto the home place, so the FAB gate must see the new value
+      expect(lineageModelGeneratorService.contact.callCount).to.equal(2);
     }));
   });
 });

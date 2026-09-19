@@ -2,6 +2,7 @@ const { Place, Qualifier } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
+const mutedParent = require('../services/muted-parent');
 
 const getPlace = ctx.bind(Place.v1.get);
 const getPlaceWithLineage = ctx.bind(Place.v1.getWithLineage);
@@ -122,7 +123,10 @@ module.exports = {
      *   post:
      *     summary: Create a new place
      *     operationId: v1PlacePost
-     *     description: Creates a new place record.
+     *     description: >
+     *       Creates a new place record.
+     *       Returns 403 if the parent place is muted, or has a muted ancestor, and the caller's role
+     *       does not have the `can_create_contacts_under_muted_places` permission.
      *     tags: [Place]
      *     x-since: 5.2.0
      *     x-permissions:
@@ -148,7 +152,11 @@ module.exports = {
      *         $ref: '#/components/responses/Forbidden'
      */
     create: serverUtils.doOrError(async (req, res) => {
-      await auth.assertPermissions(req, { isOnline: true, hasAny: ['can_create_places', 'can_edit'] });
+      const userCtx = await auth.assertPermissions(
+        req,
+        { isOnline: true, hasAny: ['can_create_places', 'can_edit'] }
+      );
+      await mutedParent.assertCanCreateOnMutedParent(userCtx, req.body?.parent);
       const placeDoc = await create(req.body);
       return res.json(placeDoc);
     }),
