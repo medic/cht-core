@@ -12,29 +12,14 @@ const signing = require('../services/offline-data-bundle/signing');
 const serverKey = require('../services/offline-data-bundle/server-key');
 
 const validateDeviceKeyBody = async (body) => {
-  const { encryption_key: encryptionKey, signing_key: signingKey } = body;
-  if (!encryptionKey || !signingKey) {
-    return 'Missing required fields: encryption_key and signing_key';
-  }
-  if (!(await age.isValidRecipient(encryptionKey))) {
-    return 'Invalid encryption_key: expected an age recipient';
+  const { signing_key: signingKey } = body;
+  if (!signingKey) {
+    return 'Missing required field: signing_key';
   }
   if (!(await signing.isValidPublicKey(signingKey))) {
     return 'Invalid signing_key: expected an Ed25519 public key JWK';
   }
   return null;
-};
-
-const generateServerKeys = async () => {
-  const encryptionIdentity = await age.generateIdentity();
-  const encryptionRecipient = await age.identityToRecipient(encryptionIdentity);
-  const signingKeyPair = await signing.generateKeyPair();
-  return {
-    server_encryption_public_key: encryptionRecipient,
-    server_encryption_private_key: encryptionIdentity,
-    server_signing_public_key: signingKeyPair.publicKey,
-    server_signing_private_key: signingKeyPair.privateKey,
-  };
 };
 
 const hasFullPermission = req => {
@@ -501,13 +486,13 @@ module.exports = {
    * @openapi
    * /api/v1/users/{username}/devices/{device_id}/keys:
    *   post:
-   *     summary: Register a device's public keys
+   *     summary: Register a device's public key
    *     operationId: v1UsersUsernameDeviceKeysPost
    *     description: >
-   *       Stores the device's age encryption and Ed25519 signing public keys against the user and returns the
-   *       server's public keys generated for this device. Keys are per-device: re-registering the same `device_id`
-   *       replaces the stored keys. Requires the `can_send_offline_data_bundle` permission. Non-admin users can
-   *       only register keys for themselves.
+   *       Stores the device's Ed25519 signing public key against the user and returns the server's encryption
+   *       public key generated for this device, which the device encrypts its data bundles to. Keys are
+   *       per-device: re-registering the same `device_id` replaces the stored key. Requires the
+   *       `can_send_offline_data_bundle` permission. Non-admin users can only register keys for themselves.
    *     tags: [User]
    *     x-permissions:
    *       hasAny: [can_send_offline_data_bundle]
@@ -530,30 +515,24 @@ module.exports = {
    *         application/json:
    *           schema:
    *             type: object
-   *             required: [encryption_key, signing_key]
+   *             required: [signing_key]
    *             properties:
-   *               encryption_key:
-   *                 type: string
-   *                 description: The device's age encryption recipient (public) key.
    *               signing_key:
    *                 type: object
    *                 additionalProperties: true
    *                 description: The device's Ed25519 public signing key as a JWK.
    *     responses:
    *       '200':
-   *         description: Device keys registered
+   *         description: Device key registered
    *         content:
    *           application/json:
    *             schema:
    *               type: object
+   *               required: [server_encryption_public_key]
    *               properties:
    *                 server_encryption_public_key:
    *                   type: string
    *                   description: The server's age encryption recipient (public) key for this device.
-   *                 server_signing_public_key:
-   *                   type: object
-   *                   additionalProperties: true
-   *                   description: The server's Ed25519 public signing key as a JWK for this device.
    *       '400':
    *         $ref: '#/components/responses/BadRequest'
    *       '401':
@@ -579,22 +558,19 @@ module.exports = {
         return serverUtils.error({ code: 400, reason: validationError }, req, res);
       }
 
-      const { encryption_key: encryptionKey, signing_key: signingKey } = req.body;
-      const serverKeys = await generateServerKeys();
-      // Server PRIVATE keys must never touch the _users doc (the user can read it via the CouchDB
-      // proxy). Persist them to the secureSettings vault; only public keys go on the _users doc.
-      await serverKey.setServerPrivateKeys(username, deviceId, {
-        encryption: serverKeys.server_encryption_private_key,
-        signing: serverKeys.server_signing_private_key,
-      });
-      const deviceKeys = { encryption_key: encryptionKey, signing_key: signingKey };
-      const serverPublicKeys = await users.setDeviceKey(username, deviceId, deviceKeys, {
-        server_encryption_public_key: serverKeys.server_encryption_public_key,
-        server_signing_public_key: serverKeys.server_signing_public_key,
-      });
+      const identity = await age.generateIdentity();
+      // The server PRIVATE key must never touch the _users doc (the user can read it via the
+      // CouchDB proxy). It goes to the secureSettings vault; only public keys go on the _users doc.
+      await serverKey.setServerPrivateKey(username, deviceId, identity);
+      const serverPublicKey = await users.setDeviceKey(
+        username,
+        deviceId,
+        req.body.signing_key,
+        await age.identityToRecipient(identity)
+      );
 
-      logger.info(`REQ ${req.id} - Registered device keys for device '${deviceId}' on user '${username}'.`);
-      res.json(serverPublicKeys);
+      logger.info(`REQ ${req.id} - Registered device key for device '${deviceId}' on user '${username}'.`);
+      res.json(serverPublicKey);
     } catch (err) {
       serverUtils.error(err, req, res);
     }

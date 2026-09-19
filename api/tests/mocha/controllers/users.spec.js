@@ -1040,19 +1040,11 @@ describe('Users Controller', () => {
 
   describe('deviceKey', () => {
     const signingJwk = { kty: 'OKP', crv: 'Ed25519', x: 'device-pub' };
-    const serverSigningPublicJwk = { kty: 'OKP', crv: 'Ed25519', x: 'server-pub' };
-    const serverSigningPrivateJwk = { kty: 'OKP', crv: 'Ed25519', x: 'server-pub', d: 'server-priv' };
-    // Only PUBLIC server keys are persisted on the _users doc (passed to setDeviceKey and returned).
-    const serverPublicKeys = {
-      server_encryption_public_key: 'age1serverrecipient',
-      server_signing_public_key: serverSigningPublicJwk,
-    };
-    // PRIVATE server keys go to the secureSettings vault, keyed per user + device.
+    // Only the PUBLIC server key is persisted on the _users doc (passed to setDeviceKey and returned).
+    const serverPublicKeys = { server_encryption_public_key: 'age1serverrecipient' };
+    // The PRIVATE server key goes to the secureSettings vault, keyed per user + device.
     const vaultKey = 'offline-data-bundle-server-key:chw:device-1';
-    const vaultValue = JSON.stringify({
-      encryption: 'AGE-SECRET-KEY-1SERVER',
-      signing: serverSigningPrivateJwk,
-    });
+    const vaultValue = 'AGE-SECRET-KEY-1SERVER';
 
     beforeEach(() => {
       res = { json: sinon.stub() };
@@ -1061,14 +1053,9 @@ describe('Users Controller', () => {
       sinon.stub(auth, 'basicAuthCredentials').returns(false);
       sinon.stub(users, 'setDeviceKey').resolves(serverPublicKeys);
       sinon.stub(secureSettings, 'setCredentials').resolves();
-      sinon.stub(age, 'isValidRecipient').resolves(true);
       sinon.stub(age, 'generateIdentity').resolves('AGE-SECRET-KEY-1SERVER');
       sinon.stub(age, 'identityToRecipient').resolves('age1serverrecipient');
       sinon.stub(signing, 'isValidPublicKey').resolves(true);
-      sinon.stub(signing, 'generateKeyPair').resolves({
-        publicKey: serverSigningPublicJwk,
-        privateKey: serverSigningPrivateJwk,
-      });
     });
 
     it('should respond with error when empty body', () => {
@@ -1080,38 +1067,12 @@ describe('Users Controller', () => {
       });
     });
 
-    it('should respond with 400 when encryption_key is missing', () => {
-      req = { params: { username: 'chw', device_id: 'device-1' }, body: { signing_key: signingJwk } };
-      return controller.deviceKey(req, res).then(() => {
-        chai.expect(serverUtils.error.callCount).to.equal(1);
-        chai.expect(serverUtils.error.args[0][0]).to.deep.equal(
-          { code: 400, reason: 'Missing required fields: encryption_key and signing_key' }
-        );
-        chai.expect(users.setDeviceKey.notCalled).to.be.true;
-      });
-    });
-
     it('should respond with 400 when signing_key is missing', () => {
-      req = { params: { username: 'chw', device_id: 'device-1' }, body: { encryption_key: 'age1recipient' } };
+      req = { params: { username: 'chw', device_id: 'device-1' }, body: { something_else: true } };
       return controller.deviceKey(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(serverUtils.error.args[0][0]).to.deep.equal(
-          { code: 400, reason: 'Missing required fields: encryption_key and signing_key' }
-        );
-        chai.expect(users.setDeviceKey.notCalled).to.be.true;
-      });
-    });
-
-    it('should respond with 400 when encryption_key is not a valid age recipient', () => {
-      age.isValidRecipient.resolves(false);
-      req = {
-        params: { username: 'chw', device_id: 'device-1' },
-        body: { encryption_key: 'not-a-recipient', signing_key: signingJwk },
-      };
-      return controller.deviceKey(req, res).then(() => {
-        chai.expect(serverUtils.error.callCount).to.equal(1);
-        chai.expect(serverUtils.error.args[0][0]).to.deep.equal(
-          { code: 400, reason: 'Invalid encryption_key: expected an age recipient' }
+          { code: 400, reason: 'Missing required field: signing_key' }
         );
         chai.expect(users.setDeviceKey.notCalled).to.be.true;
       });
@@ -1121,7 +1082,7 @@ describe('Users Controller', () => {
       signing.isValidPublicKey.resolves(false);
       req = {
         params: { username: 'chw', device_id: 'device-1' },
-        body: { encryption_key: 'age1recipient', signing_key: { not: 'a-jwk' } },
+        body: { signing_key: { not: 'a-jwk' } },
       };
       return controller.deviceKey(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(1);
@@ -1153,37 +1114,37 @@ describe('Users Controller', () => {
       });
     });
 
-    it('should register the device keys when referencing self', () => {
+    it('should register the device key when referencing self', () => {
       req = {
         id: 'req-1',
         params: { username: 'chw', device_id: 'device-1' },
-        body: { encryption_key: 'age1recipient', signing_key: signingJwk },
+        body: { signing_key: signingJwk },
       };
 
       return controller.deviceKey(req, res).then(() => {
         chai.expect(serverUtils.error.notCalled).to.be.true;
         chai.expect(secureSettings.setCredentials.args[0]).to.deep.equal([vaultKey, vaultValue]);
         chai.expect(users.setDeviceKey.args[0]).to.deep.equal([
-          'chw', 'device-1', { encryption_key: 'age1recipient', signing_key: signingJwk }, serverPublicKeys,
+          'chw', 'device-1', signingJwk, 'age1serverrecipient',
         ]);
         chai.expect(res.json.args[0]).to.deep.equal([serverPublicKeys]);
       });
     });
 
-    it('should register the device keys when requester is a db admin acting on another user', () => {
+    it('should register the device key when requester is a db admin acting on another user', () => {
       auth.assertPermissions.resolves({ name: 'admin', roles: ['_admin'] });
       auth.isDbAdmin.returns(true);
       req = {
         id: 'req-2',
         params: { username: 'chw', device_id: 'device-1' },
-        body: { encryption_key: 'age1recipient', signing_key: signingJwk },
+        body: { signing_key: signingJwk },
       };
 
       return controller.deviceKey(req, res).then(() => {
         chai.expect(serverUtils.error.notCalled).to.be.true;
         chai.expect(secureSettings.setCredentials.args[0]).to.deep.equal([vaultKey, vaultValue]);
         chai.expect(users.setDeviceKey.args[0]).to.deep.equal([
-          'chw', 'device-1', { encryption_key: 'age1recipient', signing_key: signingJwk }, serverPublicKeys,
+          'chw', 'device-1', signingJwk, 'age1serverrecipient',
         ]);
         chai.expect(res.json.args[0]).to.deep.equal([serverPublicKeys]);
       });
@@ -1192,7 +1153,7 @@ describe('Users Controller', () => {
     it('should respond with 403 when a non-admin references another user', () => {
       req = {
         params: { username: 'other', device_id: 'device-1' },
-        body: { encryption_key: 'age1recipient', signing_key: signingJwk },
+        body: { signing_key: signingJwk },
       };
 
       return controller.deviceKey(req, res).then(() => {
@@ -1205,13 +1166,13 @@ describe('Users Controller', () => {
       });
     });
 
-    it('should propagate error when saving the device keys fails', () => {
+    it('should propagate error when saving the device key fails', () => {
       const saveError = new Error('boom');
       users.setDeviceKey.rejects(saveError);
       req = {
         id: 'req-3',
         params: { username: 'chw', device_id: 'device-1' },
-        body: { encryption_key: 'age1recipient', signing_key: signingJwk },
+        body: { signing_key: signingJwk },
       };
 
       return controller.deviceKey(req, res).then(() => {
