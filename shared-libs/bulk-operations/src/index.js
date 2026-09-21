@@ -24,7 +24,7 @@ const getPlanner = (type) => {
   return planner;
 };
 
-module.exports = (sourceConfig, sourceDb, sourceDataContext) => {
+const init = (sourceConfig, sourceDb, sourceDataContext) => {
   config.init(sourceConfig);
   db.init(sourceDb);
   dataContext.init(sourceDataContext);
@@ -50,3 +50,5 @@ module.exports = (sourceConfig, sourceDb, sourceDataContext) => {
     ValidationError,
   };
 };
+
+module.exports = init;

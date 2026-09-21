@@ -219,24 +219,33 @@ const discardActionDocs = async (logId) => {
 };
 
 /**
+ * What an outstanding action doc means, which depends on the state of the operation that owns it.
+ */
+const workForAction = (action, log) => {
+  if (log?.status === STATUSES.RUNNING) {
+    return () => runAction(action, log);
+  }
+
+  if (log?.status === STATUSES.QUEUED) {
+    // An interrupted plan: nothing has run yet, so throw the actions away and plan again.
+    return async () => {
+      await discardActionDocs(log._id);
+      await planOperation(log);
+    };
+  }
+
+  // Terminal, or the log is gone entirely: these actions must not run.
+  return () => discardActionDocs(action.bulk_operation_id);
+};
+
+/**
  * Asks the database what to do next, in a fixed order of preference, and returns the work to do or
  * null when there is none. Each rule is one lookup and the first that finds something wins.
  */
 const pullNext = async () => {
   const action = await getOldestActionDoc();
   if (action) {
-    const log = await getLog(action.bulk_operation_id);
-    if (log?.status === STATUSES.RUNNING) {
-      return () => runAction(action, log);
-    }
-    if (log?.status === STATUSES.QUEUED) {
-      return async () => {
-        await discardActionDocs(log._id);
-        await planOperation(log);
-      };
-    }
-    // Terminal, or the log is gone entirely: these actions must not run.
-    return () => discardActionDocs(action.bulk_operation_id);
+    return workForAction(action, await getLog(action.bulk_operation_id));
   }
 
   const running = await getOldestLog(STATUSES.RUNNING);
