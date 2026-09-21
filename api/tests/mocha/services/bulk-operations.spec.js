@@ -75,7 +75,7 @@ describe('Bulk operations service', () => {
       expect(log).to.deep.include({
         type: 'delete-contact',
         params: { contact_id: 'target', delete_users: true },
-        requester: 'jsmith',
+        requested_by: 'jsmith',
         status: 'queued',
       });
       expect(log.start_date).to.be.an.instanceOf(Date);
