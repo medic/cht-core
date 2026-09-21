@@ -50,7 +50,7 @@ const copyDocs = async (docs, actionId) => {
   });
   const rejected = results.filter(({ error }) => error).map(({ id }) => id);
   if (rejected.length) {
-    logger.error(`bulk-operations: delete could not copy some docs (action ${actionId}): %o`, results);
+    logger.error(`bulk-operations: delete could not copy some docs (action ${actionId}): %o`, rejected);
   }
 
   return { copied: docs.filter(doc => !rejected.includes(doc._id)), rejected };
