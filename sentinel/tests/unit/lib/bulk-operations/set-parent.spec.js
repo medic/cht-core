@@ -2,6 +2,7 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 
 const db = require('../../../../src/db');
+const { RetryableError } = require('../../../../src/lib/bulk-operations/errors');
 const { setParent } = require('../../../../src/lib/bulk-operations/set-parent');
 
 describe('bulk-operations set-parent handler', () => {
@@ -27,11 +28,48 @@ describe('bulk-operations set-parent handler', () => {
     expect(updated.find(d => d._id === 'person-1').parent).to.be.undefined;
   });
 
-  it('fails an operation whose write is rejected by couch', async () => {
+  it('skips a doc that already holds what we are writing, so a re-run converges', async () => {
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: [
+      { doc: { _id: 'clinic-1', parent: { _id: 'wanted' } } },
+    ] });
+    const bulkDocs = sinon.stub(db.medic, 'bulkDocs').resolves([]);
+
+    const failed = await setParent(
+      // the guard no longer matches, because we applied this on an earlier attempt
+      [ { id: 'clinic-1', parent: { _id: 'wanted' }, current_parent_id: 'something-else' } ],
+      'action-1'
+    );
+
+    expect(failed).to.deep.equal([]);
+    expect(bulkDocs.called).to.equal(false);
+  });
+
+  it('retries when the read fails with a status worth another attempt', async () => {
+    sinon.stub(db.medic, 'allDocs').rejects(Object.assign(new Error('couch down'), { status: 503 }));
+
+    await expect(setParent(
+      [ { id: 'clinic-1', parent: { _id: 'wanted' }, current_parent_id: 'old' } ],
+      'action-1'
+    )).to.be.rejectedWith(RetryableError, /could not read the docs/);
+  });
+
+  it('retries a write that lost to a concurrent edit rather than failing it', async () => {
     sinon.stub(db.medic, 'allDocs').resolves({ rows: [
       { doc: { _id: 'clinic-1', parent: { _id: 'hc-a' } } },
     ] });
     sinon.stub(db.medic, 'bulkDocs').resolves([ { id: 'clinic-1', error: 'conflict' } ]);
+
+    await expect(setParent(
+      [ { id: 'clinic-1', parent: { _id: 'hc-b' }, current_parent_id: 'hc-a' } ],
+      'action-1'
+    )).to.be.rejectedWith(RetryableError, /concurrent edit/);
+  });
+
+  it('fails an operation whose write couch rejected for any other reason', async () => {
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: [
+      { doc: { _id: 'clinic-1', parent: { _id: 'hc-a' } } },
+    ] });
+    sinon.stub(db.medic, 'bulkDocs').resolves([ { id: 'clinic-1', error: 'forbidden' } ]);
 
     const failed = await setParent(
       [ { id: 'clinic-1', parent: { _id: 'hc-b' }, current_parent_id: 'hc-a' } ],

@@ -4,6 +4,7 @@ const db = require('../../db');
 const config = require('../../config');
 const dataContext = require('../../data-context');
 const { BULK_OPERATIONS, PREFIXES } = require('@medic/constants');
+const { RetryableError, isRetryableStatus } = require('./errors');
 const { setContact } = require('./set-contact');
 const { setParent } = require('./set-parent');
 const { deleteUser } = require('./delete-user');
@@ -16,6 +17,8 @@ const { BULK_OPERATION_LOG: LOG_ID_PREFIX, BULK_OPERATION_ACTION: ACTION_ID_PREF
 
 const BATCH_SIZE = 100;
 const RETRY_TIMEOUT = 60000;
+const MINUTE = 60 * 1000;
+const MAX_BACKOFF_MINUTES = 5;
 const OPERATIONS_CONTENT_TYPE = 'application/json';
 
 const HANDLERS = {
@@ -105,6 +108,31 @@ const getActionDocs = async (logId) => {
   return result.rows.map(row => ({ _id: row.id, _rev: row.value.rev }));
 };
 
+/**
+ * The cool-down before the next attempt: the first retry is immediate, then a minute, two, and so on
+ * up to five, which it then stays at for as long as the failure lasts.
+ */
+const backoffFor = (attempts) => Math.min(Math.max(attempts - 1, 0), MAX_BACKOFF_MINUTES) * MINUTE;
+
+const dueDateFor = (attempts) => new Date(Date.now() + backoffFor(attempts));
+
+const isDue = (doc) => !doc.next_attempt_date || new Date(doc.next_attempt_date) <= new Date();
+
+/**
+ * Records that an attempt failed in a way that is worth repeating, so the work is presented again
+ * once its cool-down has passed. Nothing else about the doc changes: the cursor stays where it was,
+ * so the batch that failed is the batch that runs next.
+ */
+const scheduleRetry = async (database, doc, reason) => {
+  const attempts = (doc.attempts || 0) + 1;
+  const latest = await database.get(doc._id);
+  const next_attempt_date = dueDateFor(attempts);
+  await database.put({ ...latest, attempts, next_attempt_date });
+  logger.warn(
+    `bulk-operations: ${doc._id} attempt ${attempts} will be retried at ${next_attempt_date.toISOString()}: ${reason}`
+  );
+};
+
 const getOldestActionDoc = async () => {
   const result = await db.sentinel.allDocs({
     startkey: ACTION_ID_PREFIX,
@@ -134,12 +162,15 @@ const runOperations = async (action, handler) => {
     try {
       failed = await handler(batch, actionId);
     } catch (err) {
+      if (err instanceof RetryableError) {
+        // The batch did not run, so the cursor stays put and this batch is the one tried next.
+        throw err;
+      }
       // Unexpected handler error: treat the whole batch as failed so the rest still runs.
       logger.error(`bulk-operations: error handling action ${actionId}: %o`, err);
       failed = batch;
-    } finally {
-      action = await saveProgress(action, batch.length, failed);
     }
+    action = await saveProgress(action, batch.length, failed);
   }
   return action;
 };
@@ -152,23 +183,34 @@ const runOperations = async (action, handler) => {
 const runAction = async (action, log) => {
   const handler = HANDLERS[action.action];
   let completed;
+  let unexpected;
   try {
     if (!handler) {
       throw new Error(`bulk-operations: no handler for action "${action.action}"`);
     }
     completed = action.cursor < action.total ? await runOperations(action, handler) : action;
-  } finally {
-    completed = completed || action;
-    const actions = { ...log.actions };
-    actions[action._id] = {
-      action: action.action,
-      updated_date: new Date(),
-      total_changes_count: action.total,
-      failed_operations: completed.failed_operations,
-    };
-    await updateLog(log, { actions });
-    await deleteDocsFrom(db.sentinel, [ completed ]);
-    logger.info(`bulk-operations: completed action ${action._id}`);
+  } catch (err) {
+    if (err instanceof RetryableError) {
+      // Nothing is recorded and the action doc stays put, so it runs again after the cool-down.
+      return scheduleRetry(db.sentinel, action, err.message);
+    }
+    unexpected = err;
+  }
+
+  completed = completed || action;
+  const actions = { ...log.actions };
+  actions[action._id] = {
+    action: action.action,
+    updated_date: new Date(),
+    total_changes_count: action.total,
+    failed_operations: completed.failed_operations,
+  };
+  await updateLog(log, { actions });
+  await deleteDocsFrom(db.sentinel, [ completed ]);
+  logger.info(`bulk-operations: completed action ${action._id}`);
+
+  if (unexpected) {
+    throw unexpected;
   }
 };
 
@@ -178,17 +220,23 @@ const runAction = async (action, log) => {
  * finished operation, which is "running with none".
  */
 const planOperation = async (log) => {
+  let summary;
+  let actions;
   try {
     await planners.validate(log.type, log.params);
+    ({ summary, actions } = await planners.plan(log.type, log.params));
   } catch (err) {
-    if (!(err instanceof planners.ValidationError)) {
-      throw err;
+    if (err instanceof planners.ValidationError) {
+      logger.warn(`bulk-operations: ${log._id} is no longer valid: ${err.message}`);
+      return updateLog(log, { status: STATUSES.FAILED, error: { message: err.message } });
     }
-    logger.warn(`bulk-operations: ${log._id} is no longer valid: ${err.message}`);
-    return updateLog(log, { status: STATUSES.FAILED, error: { message: err.message } });
+    if (err instanceof RetryableError || isRetryableStatus(err)) {
+      // Nothing was written, so the operation stays queued and is planned again later.
+      return scheduleRetry(db.medicLogs, log, err.message);
+    }
+    throw err;
   }
 
-  const { summary, actions } = await planners.plan(log.type, log.params);
   const actionDocs = actions
     .filter(({ operations }) => operations.length)
     .map(({ action, operations }) => buildActionDoc(log._id, action, operations));
@@ -245,6 +293,12 @@ const workForAction = (action, log) => {
 const pullNext = async () => {
   const action = await getOldestActionDoc();
   if (action) {
+    // Still cooling down after a failed attempt. Nothing else may be planned while it is
+    // outstanding, so the pass ends here and wakes again when it is due.
+    if (!isDue(action)) {
+      waitFor(action);
+      return null;
+    }
     return workForAction(action, await getLog(action.bulk_operation_id));
   }
 
@@ -255,6 +309,10 @@ const pullNext = async () => {
 
   const queued = await getOldestLog(STATUSES.QUEUED);
   if (queued) {
+    if (!isDue(queued)) {
+      waitFor(queued);
+      return null;
+    }
     return () => planOperation(queued);
   }
 
@@ -263,15 +321,26 @@ const pullNext = async () => {
 
 let running = false;
 let wakeRequested = false;
+// When the only work left is cooling down, the pass records when to look again rather than spinning.
+let waitingUntil = null;
+
+const waitFor = (doc) => {
+  const due = new Date(doc.next_attempt_date).getTime();
+  waitingUntil = waitingUntil ? Math.min(waitingUntil, due) : due;
+};
 
 const runPass = async () => {
   running = true;
   try {
     do {
       wakeRequested = false;
+      waitingUntil = null;
       let work;
       while ((work = await pullNext())) {
         await work();
+      }
+      if (waitingUntil) {
+        setTimeout(wake, Math.max(waitingUntil - Date.now(), 0));
       }
     } while (wakeRequested); // a change landed mid-pass: look again before going idle
   } catch (err) {

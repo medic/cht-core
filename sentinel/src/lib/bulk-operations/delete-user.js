@@ -3,10 +3,17 @@ const db = require('../../db');
 const config = require('../../config');
 const dataContext = require('../../data-context');
 const { PREFIXES } = require('@medic/constants');
+const { RetryableError, isRetryableStatus } = require('./errors');
 
 const userManagement = require('@medic/user-management')(config, db, dataContext);
 
-// Remove each linked user via the existing user-delete path; a failure fails only that op.
+const isMissing = (err) => (err?.status ?? err?.statusCode) === 404;
+
+/**
+ * Remove each linked user via the existing user-delete path. A user that is already gone counts as
+ * done, so a re-run converges, and a failure that is worth another attempt stops the batch rather
+ * than failing only that operation.
+ */
 const deleteUser = async (batch, actionId) => {
   const failed = [];
   for (const op of batch) {
@@ -18,6 +25,16 @@ const deleteUser = async (batch, actionId) => {
     try {
       await userManagement.users.deleteUser(op.id.replace(PREFIXES.COUCH_USER, ''));
     } catch (err) {
+      if (isMissing(err)) {
+        // Already deleted, by us on an earlier attempt or by someone else.
+        continue;
+      }
+      if (isRetryableStatus(err)) {
+        throw new RetryableError(
+          `bulk-operations: delete-user could not remove ${op.id} (action ${actionId}): ${err.message || err}`,
+          { cause: err }
+        );
+      }
       logger.error(`bulk-operations: delete-user failed for ${op.id} (action ${actionId}): %o`, err);
       failed.push(op);
     }

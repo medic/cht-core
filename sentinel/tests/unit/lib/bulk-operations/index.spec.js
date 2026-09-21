@@ -293,6 +293,96 @@ describe('bulk-operations sentinel scheduler', () => {
     });
   });
 
+  describe('retries', () => {
+    const RetryableError = require('../../../../src/lib/bulk-operations/errors').RetryableError;
+
+    it('ramps the cool-down: immediate, then a minute at a time up to five', () => {
+      const backoffFor = service.__get__('backoffFor');
+
+      expect([ 1, 2, 3, 4, 5, 6, 7, 20 ].map(backoffFor)).to.deep.equal([
+        0, 60000, 120000, 180000, 240000, 300000, 300000, 300000,
+      ]);
+    });
+
+    it('leaves the action in place and schedules another attempt when the handler asks to retry', async () => {
+      const action = buildAction();
+      db.sentinel.get.resolves(action);
+      db.sentinel.getAttachment.resolves(Buffer.from(JSON.stringify([ { id: 'a' } ])));
+      service.__set__('HANDLERS', { 'set-contact': sinon.stub().rejects(new RetryableError('couch down')) });
+      sinon.stub(logger, 'warn');
+
+      await service.__get__('runAction')(action, buildLog());
+
+      const [ saved ] = db.sentinel.put.args[0];
+      expect(saved.attempts).to.equal(1);
+      expect(saved.next_attempt_date).to.be.an.instanceOf(Date);
+      // the cursor has not moved, so the batch that failed is the batch that runs next
+      expect(saved.cursor).to.equal(0);
+      // nothing is recorded and the action doc stays
+      expect(db.medicLogs.put.called).to.equal(false);
+      expect(db.sentinel.bulkDocs.called).to.equal(false);
+    });
+
+    it('counts the attempts, so the cool-down lengthens each time', async () => {
+      const action = buildAction({ attempts: 3 });
+      db.sentinel.get.resolves(action);
+      db.sentinel.getAttachment.resolves(Buffer.from(JSON.stringify([ { id: 'a' } ])));
+      service.__set__('HANDLERS', { 'set-contact': sinon.stub().rejects(new RetryableError('couch down')) });
+      sinon.stub(logger, 'warn');
+
+      await service.__get__('runAction')(action, buildLog());
+
+      const [ saved ] = db.sentinel.put.args[0];
+      expect(saved.attempts).to.equal(4);
+      expect(saved.next_attempt_date.getTime() - Date.now()).to.be.closeTo(3 * 60000, 2000);
+    });
+
+    it('keeps a plan that failed for a repeatable reason queued', async () => {
+      sinon.stub(logger, 'warn');
+      planners.validate.rejects(Object.assign(new Error('couch down'), { status: 503 }));
+      const log = buildLog({ status: 'queued' });
+      db.medicLogs.get.resolves(log);
+
+      await service.__get__('planOperation')(log);
+
+      const [ saved ] = db.medicLogs.put.args[0];
+      expect(saved.status).to.equal('queued');
+      expect(saved.attempts).to.equal(1);
+      expect(db.sentinel.bulkDocs.called).to.equal(false);
+    });
+
+    it('lets an unexpected plan failure fail the action rather than retrying forever', async () => {
+      planners.validate.rejects(new Error('programming error'));
+
+      await expect(service.__get__('planOperation')(buildLog({ status: 'queued' })))
+        .to.be.rejectedWith('programming error');
+
+      expect(db.medicLogs.put.called).to.equal(false);
+    });
+
+    it('does not touch an action that is still cooling down', async () => {
+      const soon = new Date(Date.now() + 60000);
+      db.sentinel.allDocs
+        .withArgs(sinon.match({ startkey: 'bulk-operation-action:' }))
+        .resolves({ rows: [ { id: ACTION_ID, doc: buildAction({ next_attempt_date: soon }) } ] });
+
+      expect(await service.__get__('pullNext')()).to.equal(null);
+      // and nothing else is planned while it is outstanding
+      expect(db.medicLogs.query.called).to.equal(false);
+    });
+
+    it('does not plan an operation that is still cooling down', async () => {
+      const soon = new Date(Date.now() + 60000);
+      db.sentinel.allDocs
+        .withArgs(sinon.match({ startkey: 'bulk-operation-action:' }))
+        .resolves({ rows: [] });
+      db.medicLogs.query.withArgs(sinon.match.any, sinon.match({ key: 'queued' }))
+        .resolves({ rows: [ { doc: buildLog({ status: 'queued', next_attempt_date: soon }) } ] });
+
+      expect(await service.__get__('pullNext')()).to.equal(null);
+    });
+  });
+
   describe('listen', () => {
     it('registers the feed before the first pass, and wakes on a log change', async () => {
       const on = sinon.stub().returnsThis();

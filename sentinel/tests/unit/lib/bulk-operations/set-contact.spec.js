@@ -2,6 +2,7 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 
 const db = require('../../../../src/db');
+const { RetryableError } = require('../../../../src/lib/bulk-operations/errors');
 const { setContact } = require('../../../../src/lib/bulk-operations/set-contact');
 
 describe('bulk-operations set-contact handler', () => {
@@ -26,18 +27,55 @@ describe('bulk-operations set-contact handler', () => {
     expect(updated.find(d => d._id === 'place-2').contact).to.be.undefined;
   });
 
-  it('fails an operation whose write is rejected by couch', async () => {
+  it('skips a doc that already holds what we are writing, so a re-run converges', async () => {
     sinon.stub(db.medic, 'allDocs').resolves({ rows: [
-      { doc: { _id: 'place-1', contact: { _id: 'old-1' } } },
+      { doc: { _id: 'clinic-1', contact: { _id: 'wanted' } } },
     ] });
-    sinon.stub(db.medic, 'bulkDocs').resolves([ { id: 'place-1', error: 'conflict' } ]);
+    const bulkDocs = sinon.stub(db.medic, 'bulkDocs').resolves([]);
 
     const failed = await setContact(
-      [ { id: 'place-1', contact: { _id: 'new-1' }, current_contact_id: 'old-1' } ],
+      // the guard no longer matches, because we applied this on an earlier attempt
+      [ { id: 'clinic-1', contact: { _id: 'wanted' }, current_contact_id: 'something-else' } ],
       'action-1'
     );
 
-    expect(failed.map(op => op.id)).to.deep.equal([ 'place-1' ]);
+    expect(failed).to.deep.equal([]);
+    expect(bulkDocs.called).to.equal(false);
+  });
+
+  it('retries when the read fails with a status worth another attempt', async () => {
+    sinon.stub(db.medic, 'allDocs').rejects(Object.assign(new Error('couch down'), { status: 503 }));
+
+    await expect(setContact(
+      [ { id: 'clinic-1', contact: { _id: 'wanted' }, current_contact_id: 'old' } ],
+      'action-1'
+    )).to.be.rejectedWith(RetryableError, /could not read the docs/);
+  });
+
+  it('retries a write that lost to a concurrent edit rather than failing it', async () => {
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: [
+      { doc: { _id: 'clinic-1', contact: { _id: 'old' } } },
+    ] });
+    sinon.stub(db.medic, 'bulkDocs').resolves([ { id: 'clinic-1', error: 'conflict' } ]);
+
+    await expect(setContact(
+      [ { id: 'clinic-1', contact: { _id: 'chw' }, current_contact_id: 'old' } ],
+      'action-1'
+    )).to.be.rejectedWith(RetryableError, /concurrent edit/);
+  });
+
+  it('fails an operation whose write couch rejected for any other reason', async () => {
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: [
+      { doc: { _id: 'clinic-1', contact: { _id: 'old' } } },
+    ] });
+    sinon.stub(db.medic, 'bulkDocs').resolves([ { id: 'clinic-1', error: 'forbidden' } ]);
+
+    const failed = await setContact(
+      [ { id: 'clinic-1', contact: { _id: 'chw' }, current_contact_id: 'old' } ],
+      'action-1'
+    );
+
+    expect(failed.map(op => op.id)).to.deep.equal([ 'clinic-1' ]);
   });
 
   it('fails an operation whose doc is missing', async () => {

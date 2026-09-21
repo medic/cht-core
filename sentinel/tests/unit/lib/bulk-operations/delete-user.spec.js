@@ -5,6 +5,7 @@ const config = require('../../../../src/config');
 const db = require('../../../../src/db');
 const dataContext = require('../../../../src/data-context');
 const { users } = require('@medic/user-management')(config, db, dataContext);
+const { RetryableError } = require('../../../../src/lib/bulk-operations/errors');
 const { deleteUser } = require('../../../../src/lib/bulk-operations/delete-user');
 
 describe('bulk-operations delete-user handler', () => {
@@ -37,6 +38,21 @@ describe('bulk-operations delete-user handler', () => {
 
     expect(failed.map(op => op.id)).to.deep.equal([ 'org.couchdb.user:bob' ]);
     expect(deleteUserStub.args.map(a => a[0])).to.deep.equal([ 'alice', 'bob', 'carol' ]);
+  });
+
+  it('counts a user that is already gone as done, so a re-run converges', async () => {
+    deleteUserStub.rejects(Object.assign(new Error('not found'), { status: 404 }));
+
+    const failed = await deleteUser([ { id: 'org.couchdb.user:chw' } ], 'action-1');
+
+    expect(failed).to.deep.equal([]);
+  });
+
+  it('retries when the delete fails with a status worth another attempt', async () => {
+    deleteUserStub.rejects(Object.assign(new Error('couch down'), { status: 503 }));
+
+    await expect(deleteUser([ { id: 'org.couchdb.user:chw' } ], 'action-1'))
+      .to.be.rejectedWith(RetryableError, /could not remove/);
   });
 
   it('fails an operation with no id without calling the delete path', async () => {
