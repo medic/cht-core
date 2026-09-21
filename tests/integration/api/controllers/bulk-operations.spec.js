@@ -2,7 +2,7 @@ const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
-const { CONTACT_TYPES, PREFIXES, BULK_OPERATIONS } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 const { expect } = require('chai');
 
 describe('Bulk operations API', () => {
@@ -25,9 +25,14 @@ describe('Bulk operations API', () => {
   const getBulkOperationLogs = (keys) => utils.logsDb
     .allDocs({ keys, include_docs: true })
     .then(({ rows }) => rows.map(({ doc }) => doc).filter(Boolean));
-  const getBulkOperationActions = (keys) => utils.sentinelDb
-    .allDocs({ keys, include_docs: true })
-    .then(({ rows }) => rows.map(({ doc }) => doc).filter(Boolean));
+  // Action docs carry their operation's uuid, so one range read finds everything it owns.
+  const getActionDocsFor = async (logIds) => {
+    const results = await Promise.all(logIds.map((logId) => {
+      const prefix = `${PREFIXES.BULK_OPERATION_ACTION}${logId.slice(PREFIXES.BULK_OPERATION_LOG.length)}:`;
+      return utils.sentinelDb.allDocs({ startkey: prefix, endkey: `${prefix}\ufff0` });
+    }));
+    return results.flatMap(({ rows }) => rows);
+  };
 
   before(async () => {
     await utils.saveDoc(place);
@@ -63,6 +68,10 @@ describe('Bulk operations API', () => {
 
       const log = await utils.waitForBulkOperation(id);
       expect(log._id).to.equal(id);
+      expect(log.status).to.equal('completed');
+      expect(log.type).to.equal('delete-contact');
+      expect(log.params).to.deep.equal({ contact_id: person._id, delete_users: false });
+      expect(log.summary.delete).to.deep.equal({ contacts: 1, reports: 0 });
       expect(new Date(log.start_date).getTime()).to.be.closeTo(Date.now(), 60000);
       const [[actionId, action], ...additional] = Object.entries(log.actions);
       expect(actionId.slice(PREFIXES.BULK_OPERATION_ACTION.length)
@@ -70,7 +79,6 @@ describe('Bulk operations API', () => {
       expect(additional).to.be.empty;
       expect(action).excluding('updated_date').to.deep.equal({
         action: 'delete',
-        status: 'completed',
         total_changes_count: 1
       });
       expect(new Date(action.updated_date).getTime()).to.be.closeTo(Date.now(), 60000);
@@ -88,19 +96,17 @@ describe('Bulk operations API', () => {
       .map((_, i) => personFactory.build({ name: `person${i}`, parent }));
     await utils.saveDocs([parent, ...persons]);
 
-    const {
-      id,
-      summary: { delete: { contacts } }
-    } = await utils.request({ path: `/api/v1/place/${parent._id}`, method: 'DELETE' });
+    const { id } = await utils.request({ path: `/api/v1/place/${parent._id}`, method: 'DELETE' });
 
-    await utils.waitForBulkOperation(id, 1000);
+    // The summary is worked out when Sentinel plans the operation, so it lands on the log.
+    const log = await utils.waitForBulkOperation(id, 1000);
 
-    expect(contacts).to.equal(3001);
+    expect(log.summary.delete.contacts).to.equal(3001);
     const deleted = await utils.getDocs([parent._id, ...persons.map(({ _id }) => _id)]);
     expect(deleted.filter(Boolean)).to.be.empty;
   });
 
-  it('queues multiple actions and performs them when Sentinel starts', async () => {
+  it('records only the log until Sentinel plans the operation', async () => {
     const persons = Array
       .from({ length: 3})
       .map((_, i) => personFactory.build({ name: `person${i}`}));
@@ -110,59 +116,77 @@ describe('Bulk operations API', () => {
     const bulkOperationLogIds = await Promise.all(persons.map(({ _id }) => utils
       .request({ path: `/api/v1/person/${_id}`, method: 'DELETE' })
       .then(({ id }) => id)));
-    const bulkOperationLogs = await getBulkOperationLogs(bulkOperationLogIds);
-    const actionIds = bulkOperationLogs.flatMap(({ actions }) => Object.keys(actions));
-    const bulkOperationActions = await getBulkOperationActions(actionIds);
+    const queuedLogs = await getBulkOperationLogs(bulkOperationLogIds);
 
-    expect(bulkOperationLogs).to.have.lengthOf(3);
-    expect(bulkOperationLogs[0]).excludingEvery(['_rev', 'start_date', 'updated_date']).to.deep.equal({
-      _id: bulkOperationLogIds[0],
-      actions: { [bulkOperationActions[0]._id]: {
-        action: 'delete',
-        status: 'queued',
-        total_changes_count: 1
-      } }
+    // Nothing but the intent is written while Sentinel is down.
+    expect(queuedLogs).to.have.lengthOf(3);
+    queuedLogs.forEach((log, i) => {
+      expect(log.status).to.equal('queued');
+      expect(log.type).to.equal('delete-contact');
+      expect(log.params).to.deep.equal({ contact_id: persons[i]._id, delete_users: false });
+      expect(log.actions).to.be.undefined;
+      expect(log.summary).to.be.undefined;
     });
-    expect(bulkOperationActions).to.have.lengthOf(3);
-    bulkOperationActions.forEach((action, i) => expect(action)
-      .excluding(['_attachments', '_rev'])
-      .to.deep.equal({
-        _id: actionIds[i],
-        action: 'delete',
-        bulk_operation_id: bulkOperationLogs[i]._id,
-        cursor: 0,
-        total: 1
-      }));
-
-    const buffer = await utils.sentinelDb.getAttachment(actionIds[0], BULK_OPERATIONS.OPERATIONS_ATTACHMENT);
-    const attachment = JSON.parse(buffer.toString());
-    expect(attachment).to.deep.equal([{ id: persons[0]._id }]);
-
-    // Add invalid operations to test failure scenario
-    const updatedAttachment = [{ id: 'notfound0' }, ...attachment, { notid: 'notfound1' }];
-    await utils.sentinelDb.putAttachment(
-      actionIds[0],
-      BULK_OPERATIONS.OPERATIONS_ATTACHMENT,
-      bulkOperationActions[0]._rev,
-      Buffer.from(JSON.stringify(updatedAttachment)).toString('base64'),
-      'application/json'
-    );
+    expect(await getActionDocsFor(bulkOperationLogIds)).to.be.empty;
 
     await utils.startSentinel();
     await Promise.all(bulkOperationLogIds.map(id => utils.waitForBulkOperation(id, 100)));
 
-    expect(await getBulkOperationActions(actionIds)).to.be.empty;
-    const [failedLog, ...completedLogs] = await getBulkOperationLogs(bulkOperationLogIds);
-    expect(completedLogs).to.have.lengthOf(2);
-    completedLogs.forEach((log, i) => expect(log.actions[actionIds[i + 1]].status).to.equal('completed'));
-    // A missing doc has nothing left to delete, so only the operation with no id fails
-    expect(failedLog.actions[actionIds[0]]).excluding('updated_date').to.deep.equal({
-      action: 'delete',
-      status: 'failed',
-      total_changes_count: 1,
-      failed_operations: [
-        { notid: 'notfound1' }
-      ]
+    const finishedLogs = await getBulkOperationLogs(bulkOperationLogIds);
+    finishedLogs.forEach((log) => {
+      expect(log.status).to.equal('completed');
+      expect(log.summary.delete).to.deep.equal({ contacts: 1, reports: 0 });
+      expect(Object.values(log.actions).map(action => action.action)).to.deep.equal([ 'delete' ]);
     });
+    // the action docs are cleaned up as they are run
+    expect(await getActionDocsFor(bulkOperationLogIds)).to.be.empty;
+    const deleted = await utils.getDocs(persons.map(({ _id }) => _id));
+    expect(deleted.filter(Boolean)).to.be.empty;
+  });
+
+  it('fails the operation when it is no longer valid by the time it is planned', async () => {
+    const district = placeFactory.place().build({
+      name: 'stale-district',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+      contact: {},
+    });
+    const healthCenterA = placeFactory.place().build({
+      name: 'stale-hc-a',
+      type: CONTACT_TYPES.HEALTH_CENTER,
+      contact: {},
+      parent: district,
+    });
+    const healthCenterB = placeFactory.place().build({
+      name: 'stale-hc-b',
+      type: CONTACT_TYPES.HEALTH_CENTER,
+      contact: {},
+      parent: district,
+    });
+    const clinic = placeFactory.place().build({
+      name: 'stale-clinic',
+      type: CONTACT_TYPES.CLINIC,
+      contact: {},
+      parent: healthCenterA,
+    });
+    await utils.saveDocs([district, healthCenterA, healthCenterB, clinic]);
+    await utils.stopSentinel();
+
+    const { id } = await utils.request({
+      path: `/api/v1/place/${clinic._id}/move`,
+      method: 'POST',
+      body: { parent_id: healthCenterB._id },
+    });
+
+    // The destination goes away between the request and the plan, which is exactly what planning at
+    // execution time is meant to catch.
+    await utils.deleteDoc(healthCenterB._id);
+    await utils.startSentinel();
+    const log = await utils.waitForBulkOperation(id, 100);
+
+    expect(log.status).to.equal('failed');
+    expect(log.error.message).to.contain(`destination contact '${healthCenterB._id}' not found`);
+    expect(log.actions).to.be.undefined;
+    const unmoved = await utils.getDoc(clinic._id);
+    expect(unmoved.parent._id).to.equal(healthCenterA._id);
   });
 });
