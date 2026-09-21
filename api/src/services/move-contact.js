@@ -56,7 +56,7 @@ const handleMove = ({ get, type }) => {
 
   return serverUtils.doOrError(async (req, res) => {
     const dryRun = req.query.dry_run === 'true';
-    await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_move_contact_hierarchy'] });
+    const userCtx = await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_move_contact_hierarchy'] });
 
     const parentId = parseParentId(req.body);
     const { uuid } = req.params;
@@ -71,7 +71,7 @@ const handleMove = ({ get, type }) => {
       return res.status(200).json({ summary });
     }
 
-    const id = await bulkOperations.queue(TYPES.MOVE_CONTACT, params);
+    const id = await bulkOperations.queue(TYPES.MOVE_CONTACT, params, userCtx.name);
     return res.status(202).json({ id });
   });
 };

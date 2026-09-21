@@ -66,7 +66,7 @@ describe('Bulk operations service', () => {
     it('writes a single log doc to medic-logs and returns the operation id', async () => {
       const put = sinon.stub(db.medicLogs, 'put').resolves();
 
-      const id = await service.queue('delete-contact', { contact_id: 'target', delete_users: true });
+      const id = await service.queue('delete-contact', { contact_id: 'target', delete_users: true }, 'jsmith');
 
       expect(put.calledOnce).to.equal(true);
       const log = put.args[0][0];
@@ -75,6 +75,7 @@ describe('Bulk operations service', () => {
       expect(log).to.deep.include({
         type: 'delete-contact',
         params: { contact_id: 'target', delete_users: true },
+        requester: 'jsmith',
         status: 'queued',
       });
       expect(log.start_date).to.be.an.instanceOf(Date);

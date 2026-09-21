@@ -15,7 +15,7 @@ describe('Delete contact service', () => {
   let plan;
 
   beforeEach(() => {
-    sinon.stub(auth, 'assertPermissions').resolves();
+    sinon.stub(auth, 'assertPermissions').resolves({ name: 'jsmith' });
     sinon.stub(serverUtils, 'error');
     queue = sinon.stub(bulkOperations, 'queue').resolves('bulk-operation:xyz');
     validate = sinon.stub(planners, 'validate').resolves();
@@ -44,8 +44,9 @@ describe('Delete contact service', () => {
 
       expect(validate.calledOnceWithExactly('delete-contact', { contact_id: 'target', delete_users: true }))
         .to.be.true;
-      expect(queue.calledOnceWithExactly('delete-contact', { contact_id: 'target', delete_users: true }))
-        .to.be.true;
+      expect(queue.calledOnceWithExactly(
+        'delete-contact', { contact_id: 'target', delete_users: true }, 'jsmith'
+      )).to.be.true;
       // nothing is planned here: Sentinel does that when it runs the operation
       expect(plan.called).to.equal(false);
 

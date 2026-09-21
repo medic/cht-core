@@ -3,18 +3,24 @@ const chai = require('chai');
 chai.use(require('chai-as-promised'));
 const { expect } = chai;
 
+const { Qualifier } = require('@medic/cht-datasource');
+
 const db = require('../../src/libs/db');
+const dataContext = require('../../src/libs/data-context');
 const { ValidationError } = require('../../src/errors');
 const { validate, plan } = require('../../src/delete-contact');
 
 describe('delete-contact planner', () => {
   let medicQuery;
   let usersQuery;
+  let contactGet;
 
   beforeEach(() => {
     medicQuery = sinon.stub().resolves({ rows: [] });
     usersQuery = sinon.stub().resolves({ rows: [] });
+    contactGet = sinon.stub().resolves({ _id: 'place', type: 'clinic' });
     db.init({ medic: { query: medicQuery }, users: { query: usersQuery } });
+    dataContext.init({ bind: () => contactGet });
   });
 
   afterEach(() => sinon.restore());
@@ -112,6 +118,17 @@ describe('delete-contact planner', () => {
       stubViews({ contacts: [ { id: 'place', value: {} } ] });
 
       await expect(validate({ contact_id: 'place' })).to.be.fulfilled;
+      expect(contactGet.args[0]).to.deep.equal([ Qualifier.byUuid('place') ]);
+    });
+
+    it('refuses a contact that no longer exists', async () => {
+      contactGet.resolves(null);
+
+      const err = await validate({ contact_id: 'place', delete_users: true }).catch(e => e);
+
+      expect(err).to.be.an.instanceOf(ValidationError);
+      expect(err.message).to.equal(`contact 'place' not found`);
+      expect(usersQuery.called).to.equal(false);
     });
   });
 });

@@ -9,6 +9,12 @@ const { ValidationError } = require('@medic/bulk-operations')(config, db, dataCo
 const planners = require('../../../src/services/bulk-operation-planners');
 
 describe('Bulk operation planners', () => {
+  beforeEach(() => {
+    // validate resolves the contact through cht-datasource before it checks anything else
+    sinon.stub(db.medic, 'get').resolves({ _id: 'place', _rev: '1-a', type: 'clinic' });
+    sinon.stub(config, 'getAll').returns({ contact_types: [ { id: 'clinic' } ] });
+  });
+
   afterEach(() => sinon.restore());
 
   it('reports a refused operation as a 400', async () => {

@@ -26,7 +26,7 @@ const handleDelete = ({ get, type }) => serverUtils.doOrError(async (req, res) =
   const permissions = deleteUsers
     ? ['can_delete_contact_hierarchy', 'can_delete_users']
     : ['can_delete_contact_hierarchy'];
-  await auth.assertPermissions(req, { isOnline: true, hasAll: permissions });
+  const userCtx = await auth.assertPermissions(req, { isOnline: true, hasAll: permissions });
 
   const { uuid } = req.params;
   const contact = await get(uuid);
@@ -43,7 +43,7 @@ const handleDelete = ({ get, type }) => serverUtils.doOrError(async (req, res) =
     return res.status(200).json({ summary });
   }
 
-  const id = await bulkOperations.queue(TYPES.DELETE_CONTACT, params);
+  const id = await bulkOperations.queue(TYPES.DELETE_CONTACT, params, userCtx.name);
   return res.status(202).json({ id });
 });
 

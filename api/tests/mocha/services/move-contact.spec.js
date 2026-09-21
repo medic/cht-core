@@ -39,7 +39,7 @@ describe('move-contact service', () => {
   beforeEach(() => {
     contactGet = sinon.stub().resolves(healthCenterB);
     sinon.stub(dataContext, 'bind').withArgs(Contact.v1.get).returns(contactGet);
-    sinon.stub(auth, 'assertPermissions').resolves();
+    sinon.stub(auth, 'assertPermissions').resolves({ name: 'jsmith' });
     sinon.stub(serverUtils, 'error');
     queue = sinon.stub(bulkOperations, 'queue').resolves('bulk-operation:1');
     validate = sinon.stub(planners, 'validate').resolves();
@@ -62,8 +62,9 @@ describe('move-contact service', () => {
     });
     expect(validate.calledOnceWithExactly('move-contact', { contact_id: 'clinic-1', parent_id: 'hc-b' }))
       .to.be.true;
-    expect(queue.calledOnceWithExactly('move-contact', { contact_id: 'clinic-1', parent_id: 'hc-b' }))
-      .to.be.true;
+    expect(queue.calledOnceWithExactly(
+      'move-contact', { contact_id: 'clinic-1', parent_id: 'hc-b' }, 'jsmith'
+    )).to.be.true;
     // nothing is planned here: Sentinel does that when it runs the operation
     expect(plan.called).to.equal(false);
 

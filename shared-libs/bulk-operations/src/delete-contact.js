@@ -1,6 +1,8 @@
 const db = require('./libs/db');
+const dataContext = require('./libs/data-context');
 const { ValidationError } = require('./errors');
 const { BULK_OPERATIONS } = require('@medic/constants');
+const { Contact, Qualifier } = require('@medic/cht-datasource');
 
 const { ACTIONS } = BULK_OPERATIONS;
 
@@ -55,9 +57,16 @@ const getLinkedUserIds = async (contactIds) => {
  * @param {Object} params
  * @param {string} params.contact_id - the target contact id
  * @param {boolean} [params.delete_users] - also remove users linked to the deleted contacts
- * @throws {ValidationError} when linked users would be left behind and `delete_users` was not set
+ * @throws {ValidationError} when the contact is gone, or when linked users would be left behind and
+ *   `delete_users` was not set
  */
 const validate = async ({ contact_id: contactId, delete_users: deleteUsers }) => {
+  const getContact = dataContext.bind(Contact.v1.get);
+  const contact = await getContact(Qualifier.byUuid(contactId));
+  if (!contact) {
+    throw new ValidationError(`contact '${contactId}' not found`);
+  }
+
   if (deleteUsers) {
     return;
   }
