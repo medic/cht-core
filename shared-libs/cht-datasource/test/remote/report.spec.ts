@@ -54,6 +54,65 @@ describe('remote report', () => {
 
   describe('v1', () => {
     const identifier = { uuid: 'uuid' } as const;
+    const limit = 3;
+    const cursor = '1';
+
+    // Every list qualifier rides the route its function already uses, comma-joined under one query
+    // param, and a qualifier that also satisfies an older shape is sent as the older one. Each call
+    // pins that contract for one qualifier on one function; anything specific to a qualifier stays as
+    // its own test.
+    const describeListQualifierParam = ({ title, fn, route, key, param, values, losesTo }: {
+      title: string;
+      fn: () => (qualifier: never, cursor: string | null, limit: number) => Promise<unknown>;
+      route: string;
+      key: string;
+      param: string;
+      values: [string, string];
+      losesTo: { qualifier: Record<string, unknown>; sent: Record<string, string> }[];
+    }) => describe(title, () => {
+      const [first, second] = values;
+
+      it(`sends the ${key} comma-joined as ?${param}= on ${route}`, async () => {
+        const expectedResponse = { data: [], cursor };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await fn()({ [key]: [first, second] } as never, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, route)).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          [param]: `${first},${second}`,
+          cursor,
+        })).to.be.true;
+      });
+
+      it('sends a single value without a trailing separator and omits a null cursor', async () => {
+        getResourcesInner.resolves({ data: [], cursor: null });
+
+        await fn()({ [key]: [first] } as never, null, limit);
+
+        expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString(), [param]: first })).to.be.true;
+      });
+
+      it('does not normalize the values', async () => {
+        getResourcesInner.resolves({ data: [], cursor: null });
+
+        await fn()({ [key]: ['Mixed_Case'] } as never, null, limit);
+
+        expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString(), [param]: 'Mixed_Case' })).to.be.true;
+      });
+
+      losesTo.forEach(({ qualifier, sent }) => {
+        it(`is ignored in favour of ${Object.keys(qualifier).join()} when a qualifier satisfies both`, async () => {
+          getResourcesInner.resolves({ data: [], cursor: null });
+
+          await fn()({ ...qualifier, [key]: [first] } as never, null, limit);
+
+          expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString(), ...sent })).to.be.true;
+        });
+      });
+    });
 
     describe('get', () => {
       it('returns a report by UUID', async () => {
@@ -106,8 +165,6 @@ describe('remote report', () => {
     });
 
     describe('getUuidsPage', () => {
-      const limit = 3;
-      const cursor = '1';
       const freetext = 'report';
       const qualifier = {
         freetext
@@ -153,157 +210,33 @@ describe('remote report', () => {
         })).to.be.true;
       });
 
-      describe('with a form qualifier', () => {
-        it('sends the form codes as a query param on the shared uuid endpoint', async () => {
-          const expectedResponse = { data: ['uuid1', 'uuid2'], cursor };
-          getResourcesInner.resolves(expectedResponse);
-
-          const result = await Report.v1.getUuidsPage(remoteContext)(
-            { forms: ['pregnancy', 'delivery'] }, cursor, limit
-          );
-
-          expect(result).to.equal(expectedResponse);
-          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/uuid')).to.be.true;
-          expect(getResourcesInner.calledOnceWithExactly({
-            limit: limit.toString(),
-            form: 'pregnancy,delivery',
-            cursor,
-          })).to.be.true;
-        });
-
-        it('sends a single form code without a trailing separator', async () => {
-          getResourcesInner.resolves({ data: [], cursor: null });
-
-          await Report.v1.getUuidsPage(remoteContext)({ forms: ['pregnancy'] }, null, limit);
-
-          expect(getResourcesInner.calledOnceWithExactly({
-            limit: limit.toString(),
-            form: 'pregnancy',
-          })).to.be.true;
-        });
-
-        it('omits cursor param when cursor is null', async () => {
-          const expectedResponse = { data: [], cursor: null };
-          getResourcesInner.resolves(expectedResponse);
-
-          const result = await Report.v1.getUuidsPage(remoteContext)({ forms: ['pregnancy'] }, null, limit);
-
-          expect(result).to.equal(expectedResponse);
-          expect(getResourcesInner.calledOnceWithExactly({
-            limit: limit.toString(),
-            form: 'pregnancy',
-          })).to.be.true;
-        });
-
-        it('does not normalize the form codes', async () => {
-          getResourcesInner.resolves({ data: [], cursor: null });
-
-          await Report.v1.getUuidsPage(remoteContext)({ forms: ['ANC_FollowUp'] }, null, limit);
-
-          expect(getResourcesInner.calledOnceWithExactly({
-            limit: limit.toString(),
-            form: 'ANC_FollowUp',
-          })).to.be.true;
-        });
-
-        it('prefers freetext when a qualifier satisfies both', async () => {
-          getResourcesInner.resolves({ data: [], cursor: null });
-
-          await Report.v1.getUuidsPage(remoteContext)({ freetext, forms: ['pregnancy'] }, null, limit);
-
-          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/uuid')).to.be.true;
-          expect(getResourcesInner.calledOnceWithExactly({
-            limit: limit.toString(),
-            freetext,
-          })).to.be.true;
-        });
+      describeListQualifierParam({
+        title: 'with a form qualifier',
+        fn: () => Report.v1.getUuidsPage(remoteContext),
+        route: 'api/v1/report/uuid',
+        key: 'forms',
+        param: 'form',
+        values: ['pregnancy', 'delivery'],
+        losesTo: [
+          { qualifier: { freetext }, sent: { freetext } },
+        ],
       });
 
-      describe('with a subject qualifier', () => {
-        const patientUuid = '3d1a2b4c-0000-4000-8000-000000000001';
-
-        it('sends the subjects as a query param on the shared uuid endpoint', async () => {
-          const expectedResponse = { data: ['uuid1', 'uuid2'], cursor };
-          getResourcesInner.resolves(expectedResponse);
-
-          const result = await Report.v1.getUuidsPage(remoteContext)(
-            { subjects: ['patient-shortcode', patientUuid] }, cursor, limit
-          );
-
-          expect(result).to.equal(expectedResponse);
-          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/uuid')).to.be.true;
-          expect(getResourcesInner.calledOnceWithExactly({
-            limit: limit.toString(),
-            subject: `patient-shortcode,${patientUuid}`,
-            cursor,
-          })).to.be.true;
-        });
-
-        it('sends a single subject without a trailing separator', async () => {
-          getResourcesInner.resolves({ data: [], cursor: null });
-
-          await Report.v1.getUuidsPage(remoteContext)({ subjects: ['patient-shortcode'] }, null, limit);
-
-          expect(getResourcesInner.calledOnceWithExactly({
-            limit: limit.toString(),
-            subject: 'patient-shortcode',
-          })).to.be.true;
-        });
-
-        it('omits cursor param when cursor is null', async () => {
-          const expectedResponse = { data: [], cursor: null };
-          getResourcesInner.resolves(expectedResponse);
-
-          const result = await Report.v1.getUuidsPage(remoteContext)({ subjects: [patientUuid] }, null, limit);
-
-          expect(result).to.equal(expectedResponse);
-          expect(getResourcesInner.calledOnceWithExactly({
-            limit: limit.toString(),
-            subject: patientUuid,
-          })).to.be.true;
-        });
-
-        it('does not normalize the subjects', async () => {
-          getResourcesInner.resolves({ data: [], cursor: null });
-
-          await Report.v1.getUuidsPage(remoteContext)({ subjects: ['Patient_1'] }, null, limit);
-
-          expect(getResourcesInner.calledOnceWithExactly({
-            limit: limit.toString(),
-            subject: 'Patient_1',
-          })).to.be.true;
-        });
-
-        it('prefers freetext when a qualifier satisfies both', async () => {
-          getResourcesInner.resolves({ data: [], cursor: null });
-
-          await Report.v1.getUuidsPage(remoteContext)({ freetext, subjects: ['patient-shortcode'] }, null, limit);
-
-          expect(getResourcesInner.calledOnceWithExactly({
-            limit: limit.toString(),
-            freetext,
-          })).to.be.true;
-        });
-
-        it('prefers forms when a qualifier satisfies both', async () => {
-          getResourcesInner.resolves({ data: [], cursor: null });
-
-          await Report.v1.getUuidsPage(remoteContext)(
-            { forms: ['pregnancy'], subjects: ['patient-shortcode'] }, null, limit
-          );
-
-          expect(getResourcesInner.calledOnceWithExactly({
-            limit: limit.toString(),
-            form: 'pregnancy',
-          })).to.be.true;
-        });
+      describeListQualifierParam({
+        title: 'with a subject qualifier',
+        fn: () => Report.v1.getUuidsPage(remoteContext),
+        route: 'api/v1/report/uuid',
+        key: 'subjects',
+        param: 'subject',
+        values: ['patient-shortcode', '3d1a2b4c-0000-4000-8000-000000000001'],
+        losesTo: [
+          { qualifier: { freetext }, sent: { freetext } },
+          { qualifier: { forms: ['pregnancy'] }, sent: { form: 'pregnancy' } },
+        ],
       });
     });
 
     describe('getPage', () => {
-      const limit = 3;
-      const cursor = '1';
-
       it('returns a page of reports for the given ids', async () => {
         const expectedResponse = { data: [{ type: DOC_TYPES.DATA_RECORD, form: 'yes' }], cursor };
         getResourcesInner.resolves(expectedResponse);
@@ -329,56 +262,16 @@ describe('remote report', () => {
         expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString(), ids: 'a,b' })).to.be.true;
       });
 
-      describe('with a subject qualifier', () => {
-        const patientShortcode = 'patient-shortcode';
-        const patientUuid = '3d1a2b4c-0000-4000-8000-000000000001';
-        const expectedResponse = { data: [{ type: DOC_TYPES.DATA_RECORD, form: 'yes' }], cursor };
-
-        it('sends the subjects as a query param on the shared report endpoint', async () => {
-          getResourcesInner.resolves(expectedResponse);
-
-          const result = await Report.v1.getPage(remoteContext)(
-            { subjects: [patientShortcode, patientUuid] }, cursor, limit
-          );
-
-          expect(result).to.equal(expectedResponse);
-          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report')).to.be.true;
-          expect(getResourcesInner.calledOnceWithExactly({
-            limit: limit.toString(),
-            subject: `${patientShortcode},${patientUuid}`,
-            cursor,
-          })).to.be.true;
-        });
-
-        it('sends a single subject without a trailing separator', async () => {
-          getResourcesInner.resolves(expectedResponse);
-
-          await Report.v1.getPage(remoteContext)({ subjects: [patientShortcode] }, null, limit);
-
-          expect(getResourcesInner.calledOnceWithExactly({
-            limit: limit.toString(),
-            subject: patientShortcode,
-          })).to.be.true;
-        });
-
-        it('does not normalize the subjects', async () => {
-          getResourcesInner.resolves(expectedResponse);
-
-          await Report.v1.getPage(remoteContext)({ subjects: ['Patient-Shortcode'] }, null, limit);
-
-          expect(getResourcesInner.calledOnceWithExactly({
-            limit: limit.toString(),
-            subject: 'Patient-Shortcode',
-          })).to.be.true;
-        });
-
-        it('prefers ids when a qualifier satisfies both', async () => {
-          getResourcesInner.resolves(expectedResponse);
-
-          await Report.v1.getPage(remoteContext)({ ids: ['a'], subjects: [patientShortcode] }, null, limit);
-
-          expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString(), ids: 'a' })).to.be.true;
-        });
+      describeListQualifierParam({
+        title: 'with a subject qualifier',
+        fn: () => Report.v1.getPage(remoteContext),
+        route: 'api/v1/report',
+        key: 'subjects',
+        param: 'subject',
+        values: ['patient-shortcode', '3d1a2b4c-0000-4000-8000-000000000001'],
+        losesTo: [
+          { qualifier: { ids: ['a'] }, sent: { ids: 'a' } },
+        ],
       });
     });
 
