@@ -274,6 +274,51 @@ describe('muting', () => {
       });
   });
 
+  it('should add muting_error code on errors when muting fails', () => {
+    const settings = {
+      transitions: { muting: true },
+      muting: {
+        mute_forms: ['mute'],
+        unmute_forms: ['unmute'],
+        messages: [{
+          event_type: 'contact_not_found',
+          recipient: '12345',
+          message: [{
+            locale: 'en',
+            content: 'Contact not found'
+          }],
+        }],
+      },
+      forms: { mute: { } }
+    };
+
+    const doc = {
+      _id: uuid(),
+      type: DOC_TYPES.DATA_RECORD,
+      form: 'mute',
+      from: '+444999',
+      fields: {
+        patient_id: 'unknown',
+      },
+      reported_date: new Date().getTime(),
+      contact: {
+        _id: 'person',
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
+
+    return utils
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
+      .then(() => utils.saveDoc(doc))
+      .then(() => sentinelUtils.waitForSentinel(doc._id))
+      .then(() => utils.getDoc(doc._id))
+      .then(updated => {
+        chai.expect(updated.errors).to.be.ok;
+        chai.expect(updated.errors).to.have.lengthOf(1);
+        chai.expect(updated.errors[0].code).to.equal('muting_error');
+      });
+  });
+
   it('should mute and unmute a person', () => {
     const settings = {
       transitions: { muting: true },

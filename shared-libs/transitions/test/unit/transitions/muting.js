@@ -520,6 +520,7 @@ describe('Muting transition', () => {
           chai.expect(result).to.equal(true);
           chai.expect(doc.errors.length).to.equal(1);
           chai.expect(doc.errors[0].message).to.equal('Contact was not found');
+          chai.expect(doc.errors[0].code).to.equal('muting_error');
           chai.expect(mutingUtils.updateMuteState.callCount).to.equal(0);
         });
       });

@@ -1,13 +1,14 @@
 /**
- * AndraBot: PR checks for external contributions, run by .github/workflows/andra-bot.yml via actions/github-script.
+ * AndraBot: PR checks for external contributions. Entry point of the composite action in
+ * ./action.yml, which runs it through actions/github-script (see ./README.md for usage).
  *
  * For PRs opened by external contributors it checks that:
- * - the PR description follows the pull request template
+ * - the PR description follows the repository's pull request template
  * - the PR is linked to an issue (closing keyword or the "Development" sidebar)
  * - the PR author is assigned to the linked issue
  * and posts a single comment listing anything that needs fixing, replaced whenever its
  * content changes so the author is notified (comment edits are silent). The PR is
- * labeled with FAILURE_LABEL while checks fail and SUCCESS_LABEL once they all pass.
+ * labeled with `failureLabel` while checks fail and `successLabel` once they all pass.
  *
  * The message texts live in ./andra-bot-messages/ so they can be edited without touching this script.
  */
@@ -16,11 +17,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const COMMENT_MARKER = '<!-- andra-bot -->';
-const FAILURE_LABEL = 'Waiting for contributor';
-const SUCCESS_LABEL = 'Ready for review';
 const TRUSTED_ASSOCIATIONS = new Set(['OWNER', 'MEMBER', 'COLLABORATOR']);
 const MESSAGES_DIR = path.join(__dirname, 'andra-bot-messages');
-const PR_TEMPLATE_PATH = path.join(__dirname, '..', '..', '.github', 'PULL_REQUEST_TEMPLATE.md');
+const DEFAULT_OPTIONS = {
+  prTemplatePath: '.github/PULL_REQUEST_TEMPLATE.md',
+  failureLabel: 'Waiting for contributor',
+  successLabel: 'Ready for review',
+};
 
 const getMessage = (name, replacements = {}) => {
   const template = fs.readFileSync(path.join(MESSAGES_DIR, `${name}.md`), 'utf8').trim();
@@ -29,7 +32,26 @@ const getMessage = (name, replacements = {}) => {
     .reduce((text, [key, value]) => text.replaceAll(`{{${key}}}`, value), template);
 };
 
-const readPrTemplate = () => fs.readFileSync(PR_TEMPLATE_PATH, 'utf8');
+// Read through the API rather than from disk so the calling workflow needs no checkout: the
+// template is whatever is on the default branch of the repository the PR targets, which is
+// also the one GitHub offered the contributor. Failing loudly here is deliberate — a wrong
+// path is a misconfiguration of the calling workflow, not something the contributor can fix.
+const fetchPrTemplate = async (github, context, prTemplatePath) => {
+  const location = `${context.repo.owner}/${context.repo.repo}:${prTemplatePath}`;
+  let data;
+  try {
+    ({ data } = await github.rest.repos.getContent({ ...context.repo, path: prTemplatePath }));
+  } catch (err) {
+    throw new Error(`Could not read the PR template at ${location}: ${err.message}`);
+  }
+  if (Array.isArray(data) || data.type !== 'file') {
+    throw new Error(`The PR template at ${location} is not a file.`);
+  }
+  return {
+    content: Buffer.from(data.content, 'base64').toString('utf8'),
+    url: data.html_url,
+  };
+};
 
 // Strips repeatedly so removals can't splice new comment markers together
 // (e.g. `<!-<!-- x -->- y -->`); also keeps CodeQL's sanitization check happy.
@@ -219,7 +241,7 @@ const toIssueNode = (issue, reference) => {
 // transferred or deleted) means the reference simply does not count. Anything else is left to
 // throw: the job goes red without a comment or a label change, exactly as it already does for
 // every other API call here, and the next `synchronize` re-runs it. Swallowing those would be
-// the one path that can hand a genuinely unlinked PR its `Ready for review` label.
+// the one path that can hand a genuinely unlinked PR its success label.
 const MISSING_ISSUE_STATUSES = new Set([404, 410]);
 
 const resolveReferencedIssues = async (github, context, core, references) => {
@@ -309,9 +331,9 @@ const getLinkedIssues = async (github, context, core) => {
   return [...linkedIssues, ...resolved.filter(issue => isInOrg(issue.repository.owner.login))];
 };
 
-const getLinkedIssueFailure = (pr, linkedIssues) => {
+const getLinkedIssueFailure = (pr, linkedIssues, message) => {
   if (!linkedIssues.length) {
-    return getMessage('missing-linked-issue');
+    return message('missing-linked-issue');
   }
   if (linkedIssues.some(issue => isAssignedTo(issue, pr.user.login))) {
     return null;
@@ -332,24 +354,23 @@ const getLinkedIssueFailure = (pr, linkedIssues) => {
       return true;
     })
     .join(', ');
-  return getMessage('not-assigned', { issueList });
+  return message('not-assigned', { issueList });
 };
 
-const getFailures = async (github, context, core) => {
+const getFailures = async (github, context, core, { template, message }) => {
   const pr = context.payload.pull_request;
   const failures = [];
 
-  const template = readPrTemplate();
   if (!matchesTemplate(pr.body, template)) {
     const sections = getHeadings(template).join(', ');
-    failures.push(getMessage('template-mismatch', { sections }));
+    failures.push(message('template-mismatch', { sections }));
   }
   if (!matchesLicense(pr.body, template)) {
-    failures.push(getMessage('license-changed'));
+    failures.push(message('license-changed'));
   }
 
   const linkedIssues = await getLinkedIssues(github, context, core);
-  const linkedIssueFailure = getLinkedIssueFailure(pr, linkedIssues);
+  const linkedIssueFailure = getLinkedIssueFailure(pr, linkedIssues, message);
   if (linkedIssueFailure) {
     failures.push(linkedIssueFailure);
   }
@@ -357,11 +378,9 @@ const getFailures = async (github, context, core) => {
   return failures;
 };
 
-const buildCommentBody = (pr, failures) => {
-  const intro = getMessage('intro', { author: pr.user.login });
+const buildCommentBody = (failures, message) => {
   const items = failures.map(failure => `- ${failure}`).join('\n');
-  const outro = getMessage('outro');
-  return `${COMMENT_MARKER}\n${intro}\n\n${items}\n\n${outro}`;
+  return `${COMMENT_MARKER}\n${message('intro')}\n\n${items}\n\n${message('outro')}`;
 };
 
 // GitHub may store comment bodies with \r\n line endings, so normalize before comparing.
@@ -456,8 +475,21 @@ const findExistingComment = async (github, context) => {
   );
 };
 
-const runAndraBot = async ({ github, context, core }) => {
+/**
+ * @param {object} actions the `github`, `context` and `core` objects provided by actions/github-script
+ * @param {object} [options]
+ * @param {string} [options.prTemplatePath] path of the PR template in the repository the PR targets
+ * @param {string} [options.failureLabel] label set on the PR while any check fails
+ * @param {string} [options.successLabel] label set on the PR once every check passes
+ */
+const runAndraBot = async ({ github, context, core }, options = {}) => {
+  const { prTemplatePath, failureLabel, successLabel } = { ...DEFAULT_OPTIONS, ...options };
   const pr = context.payload.pull_request;
+
+  if (!pr) {
+    core.setFailed(`AndraBot only runs on pull request events, not on "${context.eventName}".`);
+    return;
+  }
 
   if (pr.user.type === 'Bot' || TRUSTED_ASSOCIATIONS.has(pr.author_association)) {
     core.info(`Skipping AndraBot checks for ${pr.user.login} (${pr.author_association}).`);
@@ -469,21 +501,30 @@ const runAndraBot = async ({ github, context, core }) => {
     return;
   }
 
-  const failures = await getFailures(github, context, core);
+  const template = await fetchPrTemplate(github, context, prTemplatePath);
+  const message = (name, replacements = {}) => getMessage(name, {
+    author: pr.user.login,
+    templateUrl: template.url,
+    failureLabel,
+    successLabel,
+    ...replacements,
+  });
+
+  const failures = await getFailures(github, context, core, { template: template.content, message });
   const existingComment = await findExistingComment(github, context);
 
   if (!failures.length) {
     if (existingComment) {
-      const body = `${COMMENT_MARKER}\n${getMessage('success', { author: pr.user.login })}`;
+      const body = `${COMMENT_MARKER}\n${message('success')}`;
       await syncComment(github, context, core, { existingComment, body });
     }
-    await swapLabels(github, context, core, { add: SUCCESS_LABEL, remove: FAILURE_LABEL });
+    await swapLabels(github, context, core, { add: successLabel, remove: failureLabel });
     core.info('All AndraBot checks passed.');
     return;
   }
 
-  await syncComment(github, context, core, { existingComment, body: buildCommentBody(pr, failures) });
-  await swapLabels(github, context, core, { add: FAILURE_LABEL, remove: SUCCESS_LABEL });
+  await syncComment(github, context, core, { existingComment, body: buildCommentBody(failures, message) });
+  await swapLabels(github, context, core, { add: failureLabel, remove: successLabel });
   core.setFailed(`AndraBot checks failed:\n- ${failures.join('\n- ')}`);
 };
 

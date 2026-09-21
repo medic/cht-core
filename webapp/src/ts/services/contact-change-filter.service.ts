@@ -23,6 +23,14 @@ export class ContactChangeFilterService {
     return !!change.doc.form && change.doc.type === DOC_TYPES.DATA_RECORD;
   }
 
+  /**
+   * Whether the doc is a visit report, i.e. a report the UHC views (visits_by_date and
+   * contacts_by_last_visited) index. Mirrors the condition those views' map functions use.
+   */
+  isVisitReport(doc) {
+    return !!doc?.form && doc.type === DOC_TYPES.DATA_RECORD && !!doc.fields?.visited_contact_uuid;
+  }
+
   private matchReportSubject(report, contact) {
     const reportSubjects = registrationUtils.getSubjectIds(report.doc);
     const contactSubjects = registrationUtils.getSubjectIds(contact.doc);

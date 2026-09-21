@@ -16,6 +16,26 @@ rules:
       # Risk accepted: 2026-07-21.
       # NOTE: ignore entries must be the workflow basename, not a path.
       - andra-bot.yml
+      # release-helm-charts.yml uses workflow_run to publish charts after
+      # "Build and test" succeeds on a release tag. It checks out master (never
+      # the triggering ref), uploads a static directory, and the job-level `if:`
+      # drops any run whose upstream event was not a push. No fork code runs
+      # with elevated privilege. Risk accepted: 2026-09-18.
+      - release-helm-charts.yml
+
+  unpinned-uses:
+    config:
+      policies:
+        # andra-bot.yml references this repository's own AndraBot action as
+        # medic/cht-core/.github/actions/andrabot@master. The reference is
+        # same-repo: under pull_request_target the workflow file itself is
+        # already resolved from the default branch, so anyone able to move
+        # master already controls the workflow — a SHA pin adds no security
+        # boundary, while it would freeze the action (and its message files)
+        # behind a workflow bump on every change. Risk accepted: 2026-09-01.
+        medic/cht-core/.github/actions/andrabot: ref-pin
+        # Everything else keeps zizmor's strictest policy: pin to a SHA.
+        "*": hash-pin
 
   template-injection:
     ignore:
@@ -28,10 +48,10 @@ rules:
 
   cache-poisoning:
     ignore:
-      # release-helm-charts.yml only triggers on `push: tags: v*` — exclusively
-      # maintainers who can push version tags. No external actor can trigger this
-      # workflow, so cache poisoning via a forked PR is not possible.
-      # Risk accepted: 2026-04-11.
+      # release-helm-charts.yml only runs from master. Its job is gated to
+      # successful builds of release tags, which only maintainers can create.
+      # Cache poisoning via a forked PR is not possible.
+      # Risk accepted: 2026-04-11, re-confirmed on trigger change 2026-09-17.
       - .github/workflows/release-helm-charts.yml
 
 

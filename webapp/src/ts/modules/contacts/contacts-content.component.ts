@@ -27,6 +27,7 @@ import { ErrorLogComponent } from '@mm-components/error-log/error-log.component'
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
 import { AuthDirective } from '@mm-directives/auth.directive';
+import { ContactProfileImageComponent } from '@mm-components/contact-profile-image/contact-profile-image.component';
 import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { SummaryPipe } from '@mm-pipes/message.pipe';
@@ -47,6 +48,7 @@ import {
     NgFor,
     TranslateDirective,
     AuthDirective,
+    ContactProfileImageComponent,
     ContentRowListItemComponent,
     RouterLink,
     TranslatePipe,
@@ -245,24 +247,83 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscriptions.add(routeSubscription);
   }
 
+  // visit reports are keyed on fields.visited_contact_uuid, which is not a registration subject id,
+  // so ContactChangeFilterService misses them: without this check the visit stats displayed on the
+  // children lists would go stale until the next navigation.
+  // Note this only works for offline users: they alone receive change docs (see ChangesService), so
+  // for online users the visit stats still only refresh on navigation.
+  private isRelevantVisitReport(change) {
+    const doc = change?.doc;
+    if (!this.contactChangeFilterService.isVisitReport(doc)) {
+      return false;
+    }
+    const visitedContactId = doc.fields.visited_contact_uuid;
+    if (visitedContactId === this.selectedContact?.doc?._id) {
+      return true;
+    }
+    return !!this.selectedContact?.children?.some(
+      (group) => group.type?.count_visits && group.contacts?.some((child) => child.doc?._id === visitedContactId)
+    );
+  }
+
+  private hasVisitStatsChildren() {
+    return !!this.selectedContact?.children?.some(
+      (group) => group.type?.count_visits && group.contacts?.length
+    );
+  }
+
+  private isChildrenVisitStatsOnlyChange(change) {
+    if (this.contactChangeFilterService.isRelevantChange(change, this.selectedContact)) {
+      // the profile itself is affected: it needs a full reload
+      return false;
+    }
+    if (change?.deleted) {
+      // deletions carry no doc content, so the deleted doc may have been a visit report
+      return true;
+    }
+    // a visit report about the selected contact itself feeds the UHC card in the contact summary,
+    // which only a full reload refreshes
+    return change?.doc?.fields?.visited_contact_uuid !== this.selectedContact?.doc?._id;
+  }
+
   private subscribeToChanges() {
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-content',
-      filter: (change) => this.contactChangeFilterService.isRelevantChange(change, this.selectedContact),
+      filter: (change) => this.contactChangeFilterService.isRelevantChange(change, this.selectedContact) ||
+        this.isRelevantVisitReport(change) ||
+        (!!change?.deleted && this.hasVisitStatsChildren()),
       callback: (change) => {
         const matchedContact = this.contactChangeFilterService.matchContact(change, this.selectedContact);
         const contactDeleted = this.contactChangeFilterService.isDeleted(change);
         if (matchedContact && contactDeleted) {
-          if (!this.selectedContact?.doc) {
-            return;
-          }
-          const parentId = this.selectedContact.doc.parent && this.selectedContact.doc.parent._id;
-          return this.router.navigate(['/contacts', parentId]);
+          return this.navigateToParent();
+        }
+        if (this.isChildrenVisitStatsOnlyChange(change)) {
+          // only the visit stats displayed on the children rows can be affected: refresh those
+          // (debounced in the effect) instead of reloading the whole profile per change
+          return this.contactsActions.refreshChildrenVisitStats();
         }
         return this.contactsActions.selectContact(this.selectedContact._id, { silent: true });
       }
     });
     this.subscriptions.add(changesSubscription);
+  }
+
+  private navigateToParent() {
+    if (!this.selectedContact?.doc) {
+      return;
+    }
+    const parentId = this.selectedContact.doc.parent && this.selectedContact.doc.parent._id;
+    return this.router.navigate(['/contacts', parentId]);
+  }
+
+  // stable row identity, so late annotations (visit stats, task counts) don't re-create every row
+  trackByGroup(index, group) {
+    return group?.type?.id ?? index;
+  }
+
+  trackByChildContact(index, child) {
+    return child?.id ?? child?.doc?._id ?? index;
   }
 
   filterReports(months?, reports?) {
