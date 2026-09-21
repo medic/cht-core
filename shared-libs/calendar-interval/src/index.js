@@ -60,7 +60,7 @@ const getBSEnd = (bikramSambat, year, month, intervalStartDate) => {
 
 const getBikramSambatInterval = (intervalStartDate, referenceDate) => {
   const bikramSambat = require('bikram-sambat');
-  const bsRef = bikramSambat.toBik(referenceDate.format('YYYY-MM-DD'));
+  const bsRef = bikramSambat.toBik(referenceDate.clone().locale('en').format('YYYY-MM-DD'));
 
   let startBS;
   let endBS;

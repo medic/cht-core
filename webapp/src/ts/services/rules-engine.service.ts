@@ -602,7 +602,7 @@ export class RulesEngineService implements OnDestroy {
 
     if (reportingPeriod === ReportingPeriod.CURRENT) {
       if (useBikramSambatMonths) {
-        const bsEnd = toBik(moment(currentInterval.end).format('YYYY-MM-DD'));
+        const bsEnd = toBik(moment(currentInterval.end).locale('en').format('YYYY-MM-DD'));
         return `${bsEnd.year}-${String(bsEnd.month).padStart(2, '0')}`;
       }
       return moment(currentInterval.end)
@@ -621,7 +621,7 @@ export class RulesEngineService implements OnDestroy {
     }
 
     if (useBikramSambatMonths) {
-      const bsEnd = toBik(moment(interval.end).format('YYYY-MM-DD'));
+      const bsEnd = toBik(moment(interval.end).locale('en').format('YYYY-MM-DD'));
       return `${bsEnd.year}-${String(bsEnd.month).padStart(2, '0')}`;
     }
     return moment(interval.end)
