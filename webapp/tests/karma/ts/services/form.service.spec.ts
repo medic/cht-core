@@ -1110,6 +1110,7 @@ describe('Form service', () => {
       });
 
       it('appends to an existing geolocation_log rather than replacing it', async () => {
+        clock = sinon.useFakeTimers({ now: 5000 });
         const existingEntry = { timestamp: 1, recording: { old: true } };
         const geoData = { latitude: 9, longitude: 9 };
         const geoHandle = sinon.stub().resolves(geoData);
@@ -1117,7 +1118,7 @@ describe('Form service', () => {
 
         const actual = await (service as any).attachGeoToReport(geoHandle, docs);
 
-        expect(actual[0].geolocation_log).to.deep.equal([existingEntry, { timestamp: Date.now(), recording: geoData }]);
+        expect(actual[0].geolocation_log).to.deep.equal([existingEntry, { timestamp: 5000, recording: geoData }]);
       });
     });
 
