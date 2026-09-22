@@ -48,7 +48,4 @@ module.exports.map = (doc) => {
       .keys(doc.fields)
       .forEach((key) => emitField(key, doc.fields[key], doc.reported_date));
   }
-  if (doc.contact && doc.contact._id) {
-    emitMaybe(`contact:${doc.contact._id.toLowerCase()}`, doc.reported_date);
-  }
 };

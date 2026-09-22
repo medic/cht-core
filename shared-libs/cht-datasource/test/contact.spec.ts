@@ -18,6 +18,7 @@ describe('contact', () => {
   let isContactTypeQualifier: SinonStub;
   let isFreetextQualifier: SinonStub;
   let isIdsQualifier: SinonStub;
+  let isPhonesQualifier: SinonStub;
 
   beforeEach(() => {
     dataContextBind = sinon.stub(dataContext, 'bind');
@@ -27,6 +28,7 @@ describe('contact', () => {
     isContactTypeQualifier = sinon.stub(Qualifier, 'isContactTypeQualifier');
     isFreetextQualifier = sinon.stub(Qualifier, 'isFreetextQualifier');
     isIdsQualifier = sinon.stub(Qualifier, 'isIdsQualifier');
+    isPhonesQualifier = sinon.stub(Qualifier, 'isPhonesQualifier');
   });
 
   afterEach(() => sinon.restore());
@@ -371,6 +373,20 @@ describe('contact', () => {
         expect(isFreetextQualifier.notCalled).to.be.true;
       });
 
+      it('retrieves a page of UUIDs for a phones qualifier', async () => {
+        isContactTypeQualifier.returns(false);
+        isFreetextQualifier.returns(false);
+        isPhonesQualifier.returns(true);
+        const phonesQualifier: Qualifier.PhonesQualifier = { phones: ['+254712345678'] };
+        getIdsPage.resolves(pageData);
+
+        const result = await Contact.v1.getUuidsPage(dataContext)(phonesQualifier, cursor, limit);
+
+        expect(result).to.equal(pageData);
+        expect(getIdsPage.calledOnceWithExactly(phonesQualifier, cursor, limit)).to.be.true;
+        expect(isPhonesQualifier.calledOnceWithExactly(phonesQualifier)).to.be.true;
+      });
+
       it('throws an error if the data context is invalid', () => {
         isContactTypeQualifier.returns(true);
         isFreetextQualifier.returns(true);
@@ -390,7 +406,7 @@ describe('contact', () => {
 
         await expect(Contact.v1.getUuidsPage(dataContext)(invalidContactTypeQualifier, cursor, limit))
           .to.be.rejectedWith(`Invalid qualifier [${JSON.stringify(invalidContactTypeQualifier)}]. ` +
-            `Must be a contact type and/or freetext qualifier.`);
+            `Must be a contact type, freetext, and/or phones qualifier.`);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(
           adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage)
@@ -405,7 +421,7 @@ describe('contact', () => {
 
         await expect(Contact.v1.getUuidsPage(dataContext)(invalidFreetextQualifier, cursor, limit))
           .to.be.rejectedWith(`Invalid qualifier [${JSON.stringify(invalidFreetextQualifier)}]. ` +
-            `Must be a contact type and/or freetext qualifier.`);
+            `Must be a contact type, freetext, and/or phones qualifier.`);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(
           adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage)
@@ -420,7 +436,8 @@ describe('contact', () => {
         isFreetextQualifier.returns(false);
 
         await expect(Contact.v1.getUuidsPage(dataContext)(invalidQualifier, cursor, limit)).to.be.rejectedWith(
-          `Invalid qualifier [${JSON.stringify(invalidQualifier)}]. Must be a contact type and/or freetext qualifier.`
+          `Invalid qualifier [${JSON.stringify(invalidQualifier)}]. ` +
+          `Must be a contact type, freetext, and/or phones qualifier.`
         );
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -537,7 +554,7 @@ describe('contact', () => {
 
         expect(() => Contact.v1.getUuids(dataContext)(invalidContactTypeQualifier))
           .to.throw(`Invalid qualifier [${JSON.stringify(invalidContactTypeQualifier)}]. ` +
-          `Must be a contact type and/or freetext qualifier.`);
+          `Must be a contact type, freetext, and/or phones qualifier.`);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(contactGetIdsPage.notCalled).to.be.true;
         expect(isContactTypeQualifier.calledOnceWithExactly(invalidContactTypeQualifier)).to.be.true;
@@ -549,7 +566,7 @@ describe('contact', () => {
 
         expect(() => Contact.v1.getUuids(dataContext)(invalidFreetextQualifier))
           .to.throw(`Invalid qualifier [${JSON.stringify(invalidFreetextQualifier)}]. ` +
-          `Must be a contact type and/or freetext qualifier.`);
+          `Must be a contact type, freetext, and/or phones qualifier.`);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(contactGetIdsPage.notCalled).to.be.true;
         expect(isContactTypeQualifier.calledOnceWithExactly(invalidFreetextQualifier)).to.be.true;
@@ -561,7 +578,8 @@ describe('contact', () => {
         isFreetextQualifier.returns(false);
 
         expect(() => Contact.v1.getUuids(dataContext)(invalidQualifier)).to.throw(
-          `Invalid qualifier [${JSON.stringify(invalidQualifier)}]. Must be a contact type and/or freetext qualifier.`
+          `Invalid qualifier [${JSON.stringify(invalidQualifier)}]. ` +
+          `Must be a contact type, freetext, and/or phones qualifier.`
         );
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(contactGetIdsPage.notCalled).to.be.true;
@@ -613,6 +631,20 @@ describe('contact', () => {
         expect(isIdsQualifier.calledOnceWithExactly(idsQualifier)).to.be.true;
       });
 
+      it('retrieves contacts for a phones qualifier', async () => {
+        isContactTypeQualifier.returns(false);
+        isIdsQualifier.returns(false);
+        isPhonesQualifier.returns(true);
+        const phonesQualifier: Qualifier.PhonesQualifier = { phones: ['+254712345678'] };
+        getPage.resolves(pageData);
+
+        const result = await Contact.v1.getPage(dataContext)(phonesQualifier, cursor, limit);
+
+        expect(result).to.equal(pageData);
+        expect(getPage.calledOnceWithExactly(phonesQualifier, cursor, limit)).to.be.true;
+        expect(isPhonesQualifier.calledOnceWithExactly(phonesQualifier)).to.be.true;
+      });
+
       it('uses default cursor and limit when not provided', async () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(pageData);
@@ -648,7 +680,7 @@ describe('contact', () => {
 
         await expect(Contact.v1.getPage(dataContext)(invalidQualifier as never, cursor, limit))
           .to.be.rejectedWith(
-            `Invalid qualifier [${JSON.stringify(invalidQualifier)}]. Must be a contact type or ids qualifier.`
+            `Invalid qualifier [${JSON.stringify(invalidQualifier)}]. Must be a contact type, ids, or phones qualifier.`
           );
 
         expect(isContactTypeQualifier.calledOnceWithExactly(invalidQualifier)).to.be.true;
@@ -731,7 +763,7 @@ describe('contact', () => {
         isIdsQualifier.returns(false);
         const invalidQualifier = { invalid: true };
         const expectedMessage =
-          `Invalid qualifier [${JSON.stringify(invalidQualifier)}]. Must be a contact type or ids qualifier.`;
+          `Invalid qualifier [${JSON.stringify(invalidQualifier)}]. Must be a contact type, ids, or phones qualifier.`;
 
         expect(() => Contact.v1.getAll(dataContext)(invalidQualifier as never)).to.throw(expectedMessage);
         expect(contactGetPage.notCalled).to.be.true;
@@ -756,10 +788,14 @@ describe('contact', () => {
             'getUuidsByFreetext',
             'getUuidsPageByType',
             'getUuidsByType',
+            'getUuidsPageByPhones',
+            'getUuidsByPhones',
             'getPageByType',
             'getByType',
             'getPageByIds',
             'getByIds',
+            'getPageByPhones',
+            'getByPhones',
           ]
         );
       });
@@ -1096,6 +1132,102 @@ describe('contact', () => {
         expect(dataContextBind.calledOnceWithExactly(Contact.v1.getAll)).to.be.true;
         expect(contactGetAll.calledOnceWithExactly(idsQualifier)).to.be.true;
         expect(byIds.calledOnceWithExactly(ids)).to.be.true;
+      });
+
+      it('getUuidsPageByPhones', async () => {
+        const expectedContactIds: Page<Contact.v1.Contact> = { data: [], cursor: null };
+        const contactGetIdsPage = sinon.stub().resolves(expectedContactIds);
+        dataContextBind.returns(contactGetIdsPage);
+        const phones: [string, ...string[]] = ['+254712345678', '+254798765432'];
+        const phonesQualifier = { phones };
+        const byPhones = sinon.stub(Qualifier, 'byPhones').returns(phonesQualifier);
+        const limit = 2;
+        const cursor = '1';
+
+        const returnedContactIds = await contact.getUuidsPageByPhones(phones, cursor, limit);
+
+        expect(returnedContactIds).to.equal(expectedContactIds);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuidsPage)).to.be.true;
+        expect(contactGetIdsPage.calledOnceWithExactly(phonesQualifier, cursor, limit)).to.be.true;
+        expect(byPhones.calledOnceWithExactly(phones)).to.be.true;
+      });
+
+      it('getUuidsPageByPhones uses default cursor and limit', async () => {
+        const expectedContactIds: Page<Contact.v1.Contact> = { data: [], cursor: null };
+        const contactGetIdsPage = sinon.stub().resolves(expectedContactIds);
+        dataContextBind.returns(contactGetIdsPage);
+        const phones: [string, ...string[]] = ['+254712345678'];
+        const phonesQualifier = { phones };
+        sinon.stub(Qualifier, 'byPhones').returns(phonesQualifier);
+
+        const returnedContactIds = await contact.getUuidsPageByPhones(phones);
+
+        expect(returnedContactIds).to.equal(expectedContactIds);
+        expect(contactGetIdsPage.calledOnceWithExactly(phonesQualifier, null, 10000)).to.be.true;
+      });
+
+      it('getUuidsByPhones', () => {
+        const mockAsyncGenerator = fakeGenerator();
+        const contactGetIds = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(contactGetIds);
+        const phones: [string, ...string[]] = ['+254712345678', '+254798765432'];
+        const phonesQualifier = { phones };
+        const byPhones = sinon.stub(Qualifier, 'byPhones').returns(phonesQualifier);
+
+        const res = contact.getUuidsByPhones(phones);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
+        expect(contactGetIds.calledOnceWithExactly(phonesQualifier)).to.be.true;
+        expect(byPhones.calledOnceWithExactly(phones)).to.be.true;
+      });
+
+      it('getPageByPhones', async () => {
+        const expectedContacts: Page<Contact.v1.Contact> = { data: [], cursor: null };
+        const contactGetPage = sinon.stub().resolves(expectedContacts);
+        dataContextBind.returns(contactGetPage);
+        const phones: [string, ...string[]] = ['+254712345678', '+254798765432'];
+        const phonesQualifier = { phones };
+        const byPhones = sinon.stub(Qualifier, 'byPhones').returns(phonesQualifier);
+        const limit = 2;
+        const cursor = '1';
+
+        const returnedContacts = await contact.getPageByPhones(phones, cursor, limit);
+
+        expect(returnedContacts).to.equal(expectedContacts);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getPage)).to.be.true;
+        expect(contactGetPage.calledOnceWithExactly(phonesQualifier, cursor, limit)).to.be.true;
+        expect(byPhones.calledOnceWithExactly(phones)).to.be.true;
+      });
+
+      it('getPageByPhones uses default cursor and limit', async () => {
+        const expectedContacts: Page<Contact.v1.Contact> = { data: [], cursor: null };
+        const contactGetPage = sinon.stub().resolves(expectedContacts);
+        dataContextBind.returns(contactGetPage);
+        const phones: [string, ...string[]] = ['+254712345678'];
+        const phonesQualifier = { phones };
+        sinon.stub(Qualifier, 'byPhones').returns(phonesQualifier);
+
+        const returnedContacts = await contact.getPageByPhones(phones);
+
+        expect(returnedContacts).to.equal(expectedContacts);
+        expect(contactGetPage.calledOnceWithExactly(phonesQualifier, null, 100)).to.be.true;
+      });
+
+      it('getByPhones', () => {
+        const mockAsyncGenerator = fakeGenerator();
+        const contactGetAll = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(contactGetAll);
+        const phones: [string, ...string[]] = ['+254712345678', '+254798765432'];
+        const phonesQualifier = { phones };
+        const byPhones = sinon.stub(Qualifier, 'byPhones').returns(phonesQualifier);
+
+        const res = contact.getByPhones(phones);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getAll)).to.be.true;
+        expect(contactGetAll.calledOnceWithExactly(phonesQualifier)).to.be.true;
+        expect(byPhones.calledOnceWithExactly(phones)).to.be.true;
       });
     });
   });
