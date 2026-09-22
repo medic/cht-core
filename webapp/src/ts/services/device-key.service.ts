@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
+// Imported statically on purpose. A dynamic import becomes its own webpack chunk, which the
+// service worker then precaches, and the precached list is asserted in
+// tests/e2e/default/service-worker. The `.js` suffix is required by the package's exports map.
+import { ed25519 } from '@noble/curves/ed25519.js';
 
 import { AuthService } from '@mm-services/auth.service';
 import { DbService } from '@mm-services/db.service';
@@ -101,7 +105,6 @@ export class DeviceKeyService {
   }
 
   private async generateDeviceKeys(): Promise<DeviceKeys> {
-    const { ed25519 } = await import('@noble/curves/ed25519.js');
     const signingPrivateKey = ed25519.utils.randomSecretKey();
 
     return {
