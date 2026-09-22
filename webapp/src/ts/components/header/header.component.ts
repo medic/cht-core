@@ -61,7 +61,7 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
     protected readonly modalService: ModalService,
     protected readonly storageInfoService: StorageInfoService,
     private headerTabsService: HeaderTabsService,
-    private p2pService: P2pService,
+    private readonly p2pService: P2pService,
   ) {
     super(store, dbSyncService, modalService, storageInfoService);
   }

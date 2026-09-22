@@ -2,89 +2,109 @@
 <div class="inner">
   <div class="col-sm-12 page p2p scrolling">
 
-    <mat-card *ngIf="loading">
-      <mat-card-content>
-        <p translate>p2p.loading</p>
-      </mat-card-content>
-    </mat-card>
+    @if (loading) {
+      <mat-card>
+        <mat-card-content>
+          <p translate>p2p.loading</p>
+        </mat-card-content>
+      </mat-card>
+    }
 
     <!-- Browsers have no radio to share; this only works inside the Android app. -->
-    <mat-card *ngIf="!loading && !supported">
-      <mat-card-header>
-        <mat-card-title translate>p2p.unsupported.title</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p translate>p2p.unsupported.description</p>
-      </mat-card-content>
-    </mat-card>
+    @if (!loading && !supported) {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title translate>p2p.unsupported.title</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p translate>p2p.unsupported.description</p>
+        </mat-card-content>
+      </mat-card>
+    }
 
     <!-- Neither permission, or a device too old for either role. -->
-    <mat-card *ngIf="!loading && supported && !canHost && !canJoin">
-      <mat-card-header>
-        <mat-card-title translate>p2p.no_role.title</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p translate>p2p.no_role.description</p>
-      </mat-card-content>
-    </mat-card>
+    @if (!loading && supported && !canHost && !canJoin) {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title translate>p2p.no_role.title</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p translate>p2p.no_role.description</p>
+        </mat-card-content>
+      </mat-card>
+    }
 
-    <mat-card *ngIf="!loading && canHost && state === 'idle'">
-      <mat-card-header>
-        <mat-card-title translate>p2p.host.title</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p translate>p2p.host.description</p>
-        <button mat-flat-button color="primary" (click)="startHosting()" translate>p2p.host.start</button>
-      </mat-card-content>
-    </mat-card>
+    @if (!loading && canHost && state === 'idle') {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title translate>p2p.host.title</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p translate>p2p.host.description</p>
+          <button mat-flat-button color="primary" (click)="startHosting()" translate>p2p.host.start</button>
+        </mat-card-content>
+      </mat-card>
+    }
 
-    <mat-card *ngIf="!loading && canJoin && state === 'idle'">
-      <mat-card-header>
-        <mat-card-title translate>p2p.peer.title</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p translate>p2p.peer.description</p>
-        <button mat-flat-button color="primary" (click)="scanAndJoin()" translate>p2p.peer.scan</button>
-      </mat-card-content>
-    </mat-card>
+    @if (!loading && canJoin && state === 'idle') {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title translate>p2p.peer.title</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p translate>p2p.peer.description</p>
+          <button mat-flat-button color="primary" (click)="scanAndJoin()" translate>p2p.peer.scan</button>
+        </mat-card-content>
+      </mat-card>
+    }
 
-    <mat-card *ngIf="state === 'starting' || state === 'joining'">
-      <mat-card-content>
-        <p translate>{{ state === 'starting' ? 'p2p.host.starting' : 'p2p.peer.joining' }}</p>
-        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-      </mat-card-content>
-    </mat-card>
+    @if (state === 'starting' || state === 'joining') {
+      <mat-card>
+        <mat-card-content>
+          <p translate>{{ state === 'starting' ? 'p2p.host.starting' : 'p2p.peer.joining' }}</p>
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </mat-card-content>
+      </mat-card>
+    }
 
     <!-- Hosting: the code carries the network details and the certificate to expect. -->
-    <mat-card *ngIf="state === 'hosting'">
-      <mat-card-header>
-        <mat-card-title translate>p2p.host.ready.title</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p translate>p2p.host.ready.description</p>
-        <img class="p2p-qr" *ngIf="qrImage" [src]="qrImage" alt="{{ 'p2p.host.ready.qr_alt' | translate }}">
-        <button mat-stroked-button (click)="stopHosting()" translate>p2p.host.stop</button>
-      </mat-card-content>
-    </mat-card>
+    @if (state === 'hosting') {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title translate>p2p.host.ready.title</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p translate>p2p.host.ready.description</p>
+          @if (qrImage) {
+            <img class="p2p-qr" [src]="qrImage" alt="{{ 'p2p.host.ready.qr_alt' | translate }}">
+          }
+          <button mat-stroked-button (click)="stopHosting()" translate>p2p.host.stop</button>
+        </mat-card-content>
+      </mat-card>
+    }
 
-    <mat-card *ngIf="state === 'paired'">
-      <mat-card-header>
-        <mat-card-title translate>p2p.peer.paired.title</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p>{{ 'p2p.peer.paired.description' | translate:{ host: hostLabel } }}</p>
-        <button mat-stroked-button (click)="leaveSession()" translate>p2p.peer.leave</button>
-      </mat-card-content>
-    </mat-card>
+    @if (state === 'paired') {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title translate>p2p.peer.paired.title</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p>{{ 'p2p.peer.paired.description' | translate:{ host: hostLabel } }}</p>
+          <button mat-stroked-button (click)="leaveSession()" translate>p2p.peer.leave</button>
+        </mat-card-content>
+      </mat-card>
+    }
 
-    <mat-card *ngIf="state === 'failed'">
-      <mat-card-header>
-        <mat-card-title translate>p2p.failed.title</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p translate>{{ errorKey }}</p>
-      </mat-card-content>
-    </mat-card>
+    @if (state === 'failed') {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title translate>p2p.failed.title</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p translate>{{ errorKey }}</p>
+        </mat-card-content>
+      </mat-card>
+    }
 
   </div>
 </div>
