@@ -1271,7 +1271,7 @@ const waitForAuditCount = async (docId, expectedCount, retries = 15) => {
 
 // The operation is planned and run by Sentinel, so it is finished when the log says so. A log that
 // has not been planned yet has no actions at all, which is why the status is what is waited on.
-const waitForBulkOperation = async (id, tries = 30) => {
+const waitForBulkOperation = async (id, tries = 100) => {
   for (let i = 0; i < tries; i++) {
     const log = await request({ path: `/api/v1/bulk-operations/${id}` });
     if ([ 'completed', 'failed' ].includes(log.status)) {

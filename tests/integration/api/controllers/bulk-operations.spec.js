@@ -3,6 +3,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
+const { v7: uuid } = require('uuid');
 const { expect } = require('chai');
 
 describe('Bulk operations API', () => {
@@ -150,14 +151,8 @@ describe('Bulk operations API', () => {
       type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       contact: {},
     });
-    const healthCenterA = placeFactory.place().build({
-      name: 'stale-hc-a',
-      type: CONTACT_TYPES.HEALTH_CENTER,
-      contact: {},
-      parent: district,
-    });
-    const healthCenterB = placeFactory.place().build({
-      name: 'stale-hc-b',
+    const healthCenter = placeFactory.place().build({
+      name: 'stale-hc',
       type: CONTACT_TYPES.HEALTH_CENTER,
       contact: {},
       parent: district,
@@ -166,27 +161,30 @@ describe('Bulk operations API', () => {
       name: 'stale-clinic',
       type: CONTACT_TYPES.CLINIC,
       contact: {},
-      parent: healthCenterA,
+      parent: healthCenter,
     });
-    await utils.saveDocs([district, healthCenterA, healthCenterB, clinic]);
-    await utils.stopSentinel();
+    await utils.saveDocs([district, healthCenter, clinic]);
 
-    const { id } = await utils.request({
-      path: `/api/v1/place/${clinic._id}/move`,
-      method: 'POST',
-      body: { parent_id: healthCenterB._id },
+    // The intent is recorded directly rather than through the API, which would refuse a destination
+    // that does not exist. That is the point: the API validated against a hierarchy that has since
+    // changed, and it is the plan, running later, that has to catch it.
+    const id = `${PREFIXES.BULK_OPERATION_LOG}${uuid()}`;
+    const now = new Date();
+    await utils.logsDb.put({
+      _id: id,
+      type: 'move-contact',
+      params: { contact_id: clinic._id, parent_id: 'destination-that-went-away' },
+      status: 'queued',
+      start_date: now,
+      updated_date: now,
     });
 
-    // The destination goes away between the request and the plan, which is exactly what planning at
-    // execution time is meant to catch.
-    await utils.deleteDoc(healthCenterB._id);
-    await utils.startSentinel();
     const log = await utils.waitForBulkOperation(id, 100);
 
     expect(log.status).to.equal('failed');
-    expect(log.error.message).to.contain(`destination contact '${healthCenterB._id}' not found`);
+    expect(log.error.message).to.contain(`destination contact 'destination-that-went-away' not found`);
     expect(log.actions).to.be.undefined;
     const unmoved = await utils.getDoc(clinic._id);
-    expect(unmoved.parent._id).to.equal(healthCenterA._id);
+    expect(unmoved.parent._id).to.equal(healthCenter._id);
   });
 });
