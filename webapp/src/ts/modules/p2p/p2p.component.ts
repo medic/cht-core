@@ -86,7 +86,7 @@ export class P2pComponent implements OnInit, OnDestroy {
     this.reset();
   }
 
-  private onHostingResult(result:P2pResult) {
+  private onHostingResult(result: P2pResult) {
     if (!result.ok) {
       return this.fail(result.detail);
     }
@@ -94,7 +94,7 @@ export class P2pComponent implements OnInit, OnDestroy {
     this.state = 'hosting';
   }
 
-  private onPairingResult(result:P2pResult) {
+  private onPairingResult(result: P2pResult) {
     if (!result.ok) {
       return this.fail(result.detail);
     }
@@ -103,10 +103,12 @@ export class P2pComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * The native side sends a stable code, so it maps to a translation key. An unrecognised code
-   * still lands on a real message rather than showing the raw value to the user.
+   * The native side sends a stable code, so it maps straight to a translation key. Nothing here
+   * validates the code: what keeps a CHW from seeing a raw `p2p.error.<code>` is that every code
+   * cht-android can report has a key in messages-en.properties, checked by check-p2p-codes.sh.
+   * The fallback only covers an empty detail.
    */
-  private fail(code:string) {
+  private fail(code: string) {
     this.errorKey = `p2p.error.${code || 'unknown'}`;
     this.state = 'failed';
   }

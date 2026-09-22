@@ -28,7 +28,7 @@ export class P2pService {
   private readonly pairingSubject = new Subject<P2pResult>();
   private readonly permissionsSubject = new Subject<boolean>();
 
-  constructor(private readonly authService:AuthService) { }
+  constructor(private readonly authService: AuthService) { }
 
   /**
    * The native bridge cht-android exposes to the WebView.
@@ -42,12 +42,12 @@ export class P2pService {
   }
 
   /** True only when running inside cht-android with the P2P methods present. */
-  isSupported():boolean {
+  isSupported(): boolean {
     return !!this.bridge && typeof this.bridge.p2p_host_available === 'function';
   }
 
   /** Whether this user may relay another device's data, and this device can host a session. */
-  async canHost():Promise<boolean> {
+  async canHost(): Promise<boolean> {
     if (!this.isSupported() || !this.bridge.p2p_host_available()) {
       return false;
     }
@@ -55,7 +55,7 @@ export class P2pService {
   }
 
   /** Whether this user may send their data to a relay, and this device can join a session. */
-  async canJoin():Promise<boolean> {
+  async canJoin(): Promise<boolean> {
     if (!this.isSupported() || !this.bridge.p2p_join_available()) {
       return false;
     }
@@ -63,16 +63,16 @@ export class P2pService {
   }
 
   /** Results arrive asynchronously: bringing a hotspot up takes seconds. */
-  hostingResult():Observable<P2pResult> {
+  hostingResult(): Observable<P2pResult> {
     return this.hostingSubject.asObservable();
   }
 
-  pairingResult():Observable<P2pResult> {
+  pairingResult(): Observable<P2pResult> {
     return this.pairingSubject.asObservable();
   }
 
   /** Emits once the user has answered the Android permission prompt. */
-  permissionsResolved():Observable<boolean> {
+  permissionsResolved(): Observable<boolean> {
     return this.permissionsSubject.asObservable();
   }
 
@@ -84,7 +84,7 @@ export class P2pService {
     this.bridge?.p2p_stop_hosting();
   }
 
-  isHosting():boolean {
+  isHosting(): boolean {
     return !!this.bridge?.p2p_is_hosting();
   }
 
@@ -97,15 +97,15 @@ export class P2pService {
   }
 
   // Called by AndroidApiService when the native side reports back.
-  hostingResolved(ok:boolean, detail:string) {
+  hostingResolved(ok: boolean, detail: string) {
     this.hostingSubject.next({ ok, detail });
   }
 
-  pairingResolved(ok:boolean, detail:string) {
+  pairingResolved(ok: boolean, detail: string) {
     this.pairingSubject.next({ ok, detail });
   }
 
-  permissionsResolvedBy(granted:boolean) {
+  permissionsResolvedBy(granted: boolean) {
     this.permissionsSubject.next(granted);
   }
 }
