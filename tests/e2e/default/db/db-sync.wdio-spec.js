@@ -262,11 +262,13 @@ describe('db-sync', () => {
       const deviceIds = Object.keys(keysByDevice);
       expect(deviceIds).to.have.lengthOf(1);
       const entry = keysByDevice[deviceIds[0]];
-      expect(entry.encryption_public_key).to.match(/^age1/);
       expect(entry.signing_public_key).to.include({ kty: 'OKP', crv: 'Ed25519' });
-      // the server public keys the device needs to seal bundles, and no server private key
-      expect(entry.server_encryption_public_key).to.match(/^age1/);
-      expect(entry.server_signing_public_key).to.include({ kty: 'OKP', crv: 'Ed25519' });
+      // the device's signing key is the only thing stored here: the server's encryption public key
+      // goes back to the device in the response, and no key material of the server's is ever kept
+      // on a doc the user can read
+      expect(entry.encryption_public_key).to.be.undefined;
+      expect(entry.server_encryption_public_key).to.be.undefined;
+      expect(entry.server_signing_public_key).to.be.undefined;
       expect(entry.server_encryption_private_key).to.be.undefined;
       expect(entry.server_signing_private_key).to.be.undefined;
     });
