@@ -6,6 +6,7 @@ import {
   createDoc,
   fetchAndFilter,
   fetchAndFilterIds,
+  fetchAndFilterUniqueDocs,
   getDocById,
   getDocIdsByIdRange,
   getDocsByIds,
@@ -13,6 +14,7 @@ import {
   queryDocIdsByKeys,
   queryDocIdsByRange,
   queryDocsByKey,
+  queryDocsByKeys,
   queryDocsByRange,
   updateDoc,
 } from '../../../src/local/libs/doc';
@@ -375,6 +377,63 @@ describe('local doc lib', () => {
     });
   });
 
+  describe('queryDocsByKeys', () => {
+    const limit = 100;
+    const skip = 0;
+    const keys = ['patient-shortcode', '3d1a2b4c-0000-4000-8000-000000000001'];
+
+    it('returns docs based on multiple keys in pages', async () => {
+      const doc0 = { _id: 'doc0' };
+      const doc1 = { _id: 'doc1' };
+      const doc2 = { _id: 'doc2' };
+
+      dbQuery.resolves({
+        rows: [
+          { doc: doc0 },
+          { doc: doc1 },
+          { doc: doc2 }
+        ]
+      });
+      isDoc.returns(true);
+
+      const result = await queryDocsByKeys(db, 'medic-client/reports_by_subject')(keys, limit, skip);
+
+      expect(result).to.deep.equal([doc0, doc1, doc2]);
+      expect(dbQuery.calledOnceWithExactly('medic-client/reports_by_subject', {
+        include_docs: true,
+        keys,
+        limit,
+        skip,
+        reduce: false
+      })).to.be.true;
+      expect(isDoc.args).to.deep.equal([[doc0], [doc1], [doc2]]);
+    });
+
+    it('returns null for a row whose doc is not a doc', async () => {
+      const doc0 = { _id: 'doc0' };
+
+      dbQuery.resolves({ rows: [{ doc: doc0 }, { doc: undefined }] });
+      isDoc.withArgs(doc0).returns(true);
+      isDoc.withArgs(undefined).returns(false);
+
+      const result = await queryDocsByKeys(db, 'medic-client/reports_by_subject')(keys, limit, skip);
+
+      expect(result).to.deep.equal([doc0, null]);
+    });
+
+    it('returns empty array if docs are not found', async () => {
+      dbQuery.resolves({ rows: [] });
+      isDoc.returns(true);
+
+      const result = await queryDocsByKeys(db, 'medic-client/reports_by_subject')(keys, limit, skip);
+
+      expect(result).to.deep.equal([]);
+      expect(dbQuery.calledOnceWithExactly('medic-client/reports_by_subject', {
+        include_docs: true, keys, limit, skip, reduce: false
+      })).to.be.true;
+    });
+  });
+
   describe('queryDocIdsByRange', () => {
     const limit = 3;
     const skip = 2;
@@ -706,6 +765,77 @@ describe('local doc lib', () => {
     });
   });
 
+
+  // Run against the real fetchAndFilter rather than a stub: the point is that the id set and the page
+  // arithmetic agree, so a row that is dropped as a repeat is still skipped over on the next page.
+  describe('fetchAndFilterUniqueDocs', () => {
+    const report = (id: string) => ({ _id: id, _rev: '1', type: 'data_record', form: 'f' });
+    const isReport = (doc: Nullable<Doc.Doc>): boolean => !!doc && doc.type === 'data_record';
+
+    it('returns each doc at most once when the rows repeat it', async () => {
+      // A view that emits a doc under two keys returns it once per key when both are requested.
+      const rows = [report('r0'), report('r1'), report('r0'), report('r1')];
+      const getFunction = sinon.stub().callsFake(
+        (limit: number, skip: number) => Promise.resolve(rows.slice(skip, skip + limit))
+      );
+
+      const page = await fetchAndFilterUniqueDocs(getFunction, isReport, 10)(10, 0);
+
+      expect(page.data.map(doc => doc._id)).to.deep.equal(['r0', 'r1']);
+      expect(page.cursor).to.be.null;
+    });
+
+    it('still applies the given filter', async () => {
+      const rows = [report('r0'), { _id: 'c0', _rev: '1', type: 'person' }, report('r0')];
+      const getFunction = sinon.stub().callsFake(
+        (limit: number, skip: number) => Promise.resolve(rows.slice(skip, skip + limit))
+      );
+
+      const page = await fetchAndFilterUniqueDocs(getFunction, isReport, 10)(10, 0);
+
+      expect(page.data.map(doc => doc._id)).to.deep.equal(['r0']);
+    });
+
+    it('rejects null rows', async () => {
+      const rows = [report('r0'), null, report('r1')];
+      const getFunction = sinon.stub().callsFake(
+        (limit: number, skip: number) => Promise.resolve(rows.slice(skip, skip + limit))
+      );
+
+      const page = await fetchAndFilterUniqueDocs(getFunction, isReport, 10)(10, 0);
+
+      expect(page.data.map(doc => doc._id)).to.deep.equal(['r0', 'r1']);
+    });
+
+    it('fills the page past the repeats and advances the cursor over the rows it consumed', async () => {
+      const rows = [report('r0'), report('r0'), report('r1'), report('r1'), report('r2')];
+      const getFunction = sinon.stub().callsFake(
+        (limit: number, skip: number) => Promise.resolve(rows.slice(skip, skip + limit))
+      );
+
+      const page = await fetchAndFilterUniqueDocs(getFunction, isReport, 2)(2, 0);
+
+      // The first fetch of 2 yields one unique doc, so a second fetch is needed to fill the page. The
+      // cursor is a row offset, so it must point past every row read, not past every doc kept.
+      expect(page.data.map(doc => doc._id)).to.deep.equal(['r0', 'r1']);
+      expect(page.cursor).to.equal('4');
+      expect(getFunction.args).to.deep.equal([[2, 0], [2, 2]]);
+    });
+
+    it('keeps a separate id set per call, so a repeat across two pages is not collapsed', async () => {
+      const rows = [report('r0'), report('r1'), report('r0')];
+      const getFunction = sinon.stub().callsFake(
+        (limit: number, skip: number) => Promise.resolve(rows.slice(skip, skip + limit))
+      );
+
+      const page1 = await fetchAndFilterUniqueDocs(getFunction, isReport, 2)(2, 0);
+      const page2 = await fetchAndFilterUniqueDocs(getFunction, isReport, 2)(2, Number(page1.cursor));
+
+      expect(page1.data.map(doc => doc._id)).to.deep.equal(['r0', 'r1']);
+      expect(page2.data.map(doc => doc._id)).to.deep.equal(['r0']);
+      expect(page2.cursor).to.be.null;
+    });
+  });
 
   describe('createDoc', () => {
     const doc = {

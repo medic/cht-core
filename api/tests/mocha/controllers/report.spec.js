@@ -265,7 +265,7 @@ describe('Report Controller Tests', () => {
         expect(serverUtilsError.notCalled).to.be.true;
       });
 
-      it('still reports a missing freetext when neither is given', async () => {
+      it('still reports a missing freetext when none of them is given', async () => {
         req = { query: { cursor, limit } };
 
         await controller.v1.getUuids(req, res);
@@ -274,6 +274,127 @@ describe('Report Controller Tests', () => {
         expect(serverUtilsError.calledOnce).to.be.true;
         expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
         expect(serverUtilsError.args[0][0].message).to.equal('Invalid freetext [undefined].');
+      });
+    });
+
+    describe('getUuids by subject', () => {
+      const limit = 100;
+      const cursor = null;
+      const patientUuid = '3d1a2b4c-0000-4000-8000-000000000001';
+      const uuids = { data: ['uuid1', 'uuid2'], cursor: null };
+
+      it('builds a subject qualifier from a comma-separated list', async () => {
+        req = { query: { subject: `patient-shortcode,${patientUuid}`, cursor, limit } };
+        reportGetIdsPage.resolves(uuids);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_reports'] }
+        )).to.be.true;
+        expect(reportGetIdsPage.calledOnceWithExactly(
+          Qualifier.bySubjects(['patient-shortcode', patientUuid]), cursor, limit
+        )).to.be.true;
+        expect(res.json.calledOnceWithExactly(uuids)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('builds a subject qualifier from a repeated query param', async () => {
+        req = { query: { subject: ['patient-shortcode', patientUuid], cursor, limit } };
+        reportGetIdsPage.resolves(uuids);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(reportGetIdsPage.calledOnceWithExactly(
+          Qualifier.bySubjects(['patient-shortcode', patientUuid]), cursor, limit
+        )).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('accepts a single subject', async () => {
+        req = { query: { subject: 'patient-shortcode', cursor, limit } };
+        reportGetIdsPage.resolves(uuids);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(reportGetIdsPage.calledOnceWithExactly(
+          Qualifier.bySubjects(['patient-shortcode']), cursor, limit
+        )).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('ignores empty entries in the list', async () => {
+        req = { query: { subject: 'patient-shortcode,,case-1,', cursor, limit } };
+        reportGetIdsPage.resolves(uuids);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(reportGetIdsPage.calledOnceWithExactly(
+          Qualifier.bySubjects(['patient-shortcode', 'case-1']), cursor, limit
+        )).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('errors without querying when subject is present but empty', async () => {
+        req = { query: { subject: '', cursor, limit } };
+
+        await controller.v1.getUuids(req, res);
+
+        expect(reportGetIdsPage.notCalled).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
+        expect(serverUtilsError.args[0][0].message).to.equal('Invalid subjects [[]].');
+      });
+
+      it('errors without querying when the subject param is object-shaped', async () => {
+        // `?subject[a]=b` parses to an object, which has nothing to split.
+        req = { query: { subject: { a: 'b' }, cursor, limit } };
+
+        await controller.v1.getUuids(req, res);
+
+        expect(reportGetIdsPage.notCalled).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
+        expect(serverUtilsError.args[0][0].message).to.equal('Invalid subjects [{"a":"b"}].');
+      });
+
+      it('errors without querying when the form param is object-shaped', async () => {
+        // The same guard covers `form`, which is parsed by the same helper.
+        req = { query: { form: { a: 'b' }, cursor, limit } };
+
+        await controller.v1.getUuids(req, res);
+
+        expect(reportGetIdsPage.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
+        expect(serverUtilsError.args[0][0].message).to.equal('Invalid forms [{"a":"b"}].');
+      });
+
+      it('uses freetext and ignores subject when both are given', async () => {
+        req = { query: { freetext: 'report', subject: 'patient-shortcode', cursor, limit } };
+        reportGetIdsPage.resolves(uuids);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(reportGetIdsPage.calledOnceWithExactly(
+          Qualifier.byFreetext('report'), cursor, limit
+        )).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('uses form and ignores subject when both are given', async () => {
+        req = { query: { form: 'pregnancy', subject: 'patient-shortcode', cursor, limit } };
+        reportGetIdsPage.resolves(uuids);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(reportGetIdsPage.calledOnceWithExactly(
+          Qualifier.byForms(['pregnancy']), cursor, limit
+        )).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
       });
     });
 
@@ -300,7 +421,7 @@ describe('Report Controller Tests', () => {
         expect(serverUtilsError.notCalled).to.be.true;
       });
 
-      it('returns a 400 error when the ids param is not provided', async () => {
+      it('returns a 400 error when neither ids nor subject is provided', async () => {
         req = { query: { cursor, limit } };
 
         await controller.v1.getAll(req, res);
@@ -308,7 +429,7 @@ describe('Report Controller Tests', () => {
         expect(reportGetPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(
-          { status: 400, message: 'Query param ids is required' },
+          { status: 400, message: 'Either query param ids or subject is required' },
           req,
           res
         )).to.be.true;
@@ -322,6 +443,83 @@ describe('Report Controller Tests', () => {
         expect(reportGetPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.called).to.be.true;
+      });
+
+      describe('by subject', () => {
+        const patientUuid = '3d1a2b4c-0000-4000-8000-000000000001';
+
+        it('returns a page of reports for the given comma-separated subjects', async () => {
+          req = { query: { subject: `patient-shortcode,${patientUuid}`, cursor, limit } };
+          reportGetPage.resolves(reports);
+
+          await controller.v1.getAll(req, res);
+
+          expect(assertPermissions.calledOnceWithExactly(
+            req,
+            { isOnline: true, hasAll: ['can_view_reports'] }
+          )).to.be.true;
+          expect(reportGetPage.calledOnceWithExactly(
+            Qualifier.bySubjects(['patient-shortcode', patientUuid]), cursor, limit
+          )).to.be.true;
+          expect(res.json.calledOnceWithExactly(reports)).to.be.true;
+          expect(serverUtilsError.notCalled).to.be.true;
+        });
+
+        it('returns a page of reports for a repeated subject param', async () => {
+          req = { query: { subject: ['patient-shortcode', patientUuid], cursor, limit } };
+          reportGetPage.resolves(reports);
+
+          await controller.v1.getAll(req, res);
+
+          expect(reportGetPage.calledOnceWithExactly(
+            Qualifier.bySubjects(['patient-shortcode', patientUuid]), cursor, limit
+          )).to.be.true;
+          expect(serverUtilsError.notCalled).to.be.true;
+        });
+
+        it('prefers ids over subject when both are given', async () => {
+          req = { query: { ids: 'a,b', subject: 'patient-shortcode', cursor, limit } };
+          reportGetPage.resolves(reports);
+
+          await controller.v1.getAll(req, res);
+
+          expect(reportGetPage.calledOnceWithExactly(Qualifier.byIds(['a', 'b']), cursor, limit)).to.be.true;
+          expect(serverUtilsError.notCalled).to.be.true;
+        });
+
+        it('errors without querying when every entry in the subject list is empty', async () => {
+          req = { query: { subject: ',,', cursor, limit } };
+
+          await controller.v1.getAll(req, res);
+
+          expect(reportGetPage.notCalled).to.be.true;
+          expect(res.json.notCalled).to.be.true;
+          expect(serverUtilsError.calledOnce).to.be.true;
+          expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
+          expect(serverUtilsError.args[0][0].message).to.equal('Invalid subjects [[]].');
+        });
+
+        it('errors without querying when a subject is padded', async () => {
+          req = { query: { subject: '  patient-shortcode  ', cursor, limit } };
+
+          await controller.v1.getAll(req, res);
+
+          expect(reportGetPage.notCalled).to.be.true;
+          expect(serverUtilsError.calledOnce).to.be.true;
+          expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
+          expect(serverUtilsError.args[0][0].message).to.equal('Invalid subjects [["  patient-shortcode  "]].');
+        });
+
+        it('errors without querying when the subject param is object-shaped', async () => {
+          req = { query: { subject: { a: 'b' }, cursor, limit } };
+
+          await controller.v1.getAll(req, res);
+
+          expect(reportGetPage.notCalled).to.be.true;
+          expect(serverUtilsError.calledOnce).to.be.true;
+          expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
+          expect(serverUtilsError.args[0][0].message).to.equal('Invalid subjects [{"a":"b"}].');
+        });
       });
     });
 

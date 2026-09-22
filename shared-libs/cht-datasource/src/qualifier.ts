@@ -222,6 +222,54 @@ export const isFormsQualifier = (qualifier: unknown): qualifier is FormsQualifie
 };
 
 /**
+ * A qualifier that identifies entities based on the subjects they are about.
+ */
+export type SubjectsQualifier = Readonly<{ subjects: [string, ...string[]] }>;
+
+/**
+ * Builds a qualifier for finding entities about any of the given subjects.
+ * @param subjects the subject identifiers to search with. A subject is identified either by a shortcode
+ * (`patient_id`, `place_id`, `case_id`) or by a UUID (`patient_uuid`, `place_uuid`), and both kinds can be
+ * mixed in one call. Each is matched verbatim against the document's subject fields: they are not
+ * normalized, so an identifier with leading or trailing whitespace is rejected rather than silently
+ * matching nothing. Duplicates are removed. Results are grouped in the order of the given subjects. To page
+ * through results, pass the subjects in the same order with each cursor.
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the subjects are not a non-empty array of non-blank strings with no
+ * leading or trailing whitespace
+ */
+export const bySubjects = (subjects: [string, ...string[]]): SubjectsQualifier => {
+  const qualifier = { subjects };
+  if (!isSubjectsQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid subjects [${JSON.stringify(subjects)}].`);
+  }
+
+  // Deduping a non-empty array can only ever keep it non-empty, so the tuple shape survives the Set
+  // round-trip; TS just cannot see that on its own.
+  return { subjects: [...new Set(subjects)] as [string, ...string[]] };
+};
+
+/**
+ * Returns `true` if the given qualifier is a {@link SubjectsQualifier} otherwise `false`.
+ *
+ * The qualifier must have a `subjects` key holding a non-empty array of strings, none of which is empty,
+ * blank, or padded with leading/trailing whitespace. Unlike {@link isIdsQualifier}, an empty array is
+ * rejected: it can only ever match nothing, which is never what the caller meant, and silently
+ * returning an empty page would hide the mistake. A padded identifier is rejected for the same reason: it
+ * would otherwise pass validation but match nothing, since the value is compared verbatim rather than
+ * trimmed.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link SubjectsQualifier}, otherwise `false`.
+ */
+export const isSubjectsQualifier = (qualifier: unknown): qualifier is SubjectsQualifier => {
+  return isRecord(qualifier)
+    && hasField(qualifier, { name: 'subjects', type: 'object' })
+    && Array.isArray(qualifier.subjects)
+    && qualifier.subjects.length > 0
+    && qualifier.subjects.every(subject => isString(subject) && subject.length > 0 && subject === subject.trim());
+};
+
+/**
  * A qualifier that identifies entities based on a reporting period (e.g. a calendar month). The reporting period
  * should be represented with the format YYYY-MM (e.g. "2025-07").
  */

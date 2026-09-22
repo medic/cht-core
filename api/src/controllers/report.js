@@ -20,15 +20,40 @@ const buildIdsQualifier = (ids) => {
 };
 
 // Accepts `?form=a,b` and `?form=a&form=b` alike, matching how `ids` is handled above rather than
-// picking one convention for this parameter alone.
-const buildFormsQualifier = (form) => {
-  const formsArray = (Array.isArray(form) ? form : form.split(',')).filter(Boolean);
-  if (!formsArray.length) {
-    // Same message shape as byForms() throws below for other invalid input, so the two paths that
-    // can reject a `form` value give a caller one consistent body to parse rather than two.
-    throw new InvalidArgumentError(`Invalid forms [${JSON.stringify(formsArray)}].`);
+// picking one convention per parameter. `?subject=` is parsed the same way. `name` is only used in the
+// error, and matches the message shape the by*() builders throw below for other invalid input, so every
+// path that can reject a value gives a caller one consistent body to parse.
+const parseListParam = (name, value) => {
+  // `qs.parse` turns `?form[a]=b` into an object, which has nothing to split.
+  if (!Array.isArray(value) && typeof value !== 'string') {
+    throw new InvalidArgumentError(`Invalid ${name} [${JSON.stringify(value)}].`);
   }
-  return Qualifier.byForms(formsArray);
+  const values = (Array.isArray(value) ? value : value.split(',')).filter(Boolean);
+  if (!values.length) {
+    throw new InvalidArgumentError(`Invalid ${name} [${JSON.stringify(values)}].`);
+  }
+  return values;
+};
+
+const buildFormsQualifier = (form) => Qualifier.byForms(parseListParam('forms', form));
+
+const buildSubjectsQualifier = (subject) => Qualifier.bySubjects(parseListParam('subjects', subject));
+
+const buildUuidsQualifier = ({ freetext, form, subject }) => {
+  // Freetext wins when more than one is given, then form, so a caller that already sends `freetext`
+  // keeps its existing behavior no matter what else is on the query string.
+  if (freetext !== undefined) {
+    return Qualifier.byFreetext(freetext);
+  }
+  if (form !== undefined) {
+    return buildFormsQualifier(form);
+  }
+  if (subject !== undefined) {
+    return buildSubjectsQualifier(subject);
+  }
+  // None of them given: fall through to `byFreetext` so the missing-parameter error stays the one
+  // this endpoint has always thrown.
+  return Qualifier.byFreetext(freetext);
 };
 
 /**
@@ -94,9 +119,14 @@ module.exports = {
      *     summary: Get report UUIDs
      *     operationId: v1ReportUuidGet
      *     description: >
-     *       Returns a paginated array of report identifiers matching either the given freetext search term or the
-     *       given form codes. Exactly one of `freetext` and `form` is required; if both are given, `freetext` is
-     *       used and `form` is ignored.
+     *       Returns a paginated array of report identifiers matching the given freetext search term, form codes,
+     *       or subject identifiers. Exactly one of `freetext`, `form` and `subject` is required; if more than one
+     *       is given, `freetext` wins, then `form`, and the rest are ignored.
+     *
+     *
+     *       Each identifier appears at most once on a page. A report is indexed once per subject field it sets,
+     *       so one report can match several of the values given to `subject`; those repeats are collapsed within
+     *       the page.
      *     tags: [Report]
      *     x-since: 4.18.0
      *     x-permissions:
@@ -110,7 +140,7 @@ module.exports = {
      *           minLength: 3
      *         description: >
      *           A search term for filtering reports. Must be at least 3 characters and not contain whitespace.
-     *           Required unless `form` is given.
+     *           Required unless `form` or `subject` is given.
      *       - in: query
      *         name: form
      *         required: false
@@ -120,7 +150,18 @@ module.exports = {
      *         description: >
      *           A comma-separated list of form codes (e.g. `pregnancy,delivery`), or the parameter repeated once
      *           per code. Each is matched verbatim against the report's `form` field. Required unless `freetext`
-     *           is given.
+     *           or `subject` is given.
+     *       - in: query
+     *         name: subject
+     *         required: false
+     *         x-since: 5.4.0
+     *         schema:
+     *           type: string
+     *         description: >
+     *           A comma-separated list of subject identifiers, or the parameter repeated once per identifier. A
+     *           subject is identified either by a shortcode (`patient_id`, `place_id`, `case_id`) or by a UUID
+     *           (`patient_uuid`, `place_uuid`), and both kinds can be mixed in one request. Each is matched
+     *           verbatim. Required unless `freetext` or `form` is given.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitId'
      *     responses:
@@ -148,11 +189,7 @@ module.exports = {
      */
     getUuids: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
-      // Freetext wins when both are given, so a caller that already sends `freetext` keeps its
-      // existing behavior no matter what else is on the query string.
-      const qualifier = req.query.freetext === undefined && req.query.form !== undefined
-        ? buildFormsQualifier(req.query.form)
-        : Qualifier.byFreetext(req.query.freetext);
+      const qualifier = buildUuidsQualifier(req.query);
       const docs = await getReportIds(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
     }),
@@ -214,8 +251,14 @@ module.exports = {
      *     summary: Get reports
      *     operationId: v1ReportGet
      *     description: >
-     *       Returns a paginated array of report records for the given ids. Use the `cursor` returned in each
-     *       response to retrieve subsequent pages.
+     *       Returns a paginated array of report records for the given ids, or of the reports about the given
+     *       subjects. At least one of `ids` or `subject` must be provided; if both are given, `ids` is used and
+     *       `subject` is ignored. Use the `cursor` returned in each response to retrieve subsequent pages.
+     *
+     *
+     *       Each report appears at most once on a page. A report is indexed once per subject field it sets, so
+     *       one report can match several of the values given to `subject`; those repeats are collapsed within
+     *       the page.
      *     tags: [Report]
      *     x-since: 5.3.0
      *     x-permissions:
@@ -223,10 +266,23 @@ module.exports = {
      *     parameters:
      *       - in: query
      *         name: ids
-     *         required: true
+     *         required: false
      *         schema:
      *           type: string
-     *         description: A comma-separated list of report ids to fetch.
+     *         description: >
+     *           A comma-separated list of report ids to fetch. Required unless `subject` is given. Takes
+     *           precedence over `subject` when both are provided.
+     *       - in: query
+     *         name: subject
+     *         required: false
+     *         x-since: 5.4.0
+     *         schema:
+     *           type: string
+     *         description: >
+     *           A comma-separated list of subject identifiers, or the parameter repeated once per identifier. A
+     *           subject is identified either by a shortcode (`patient_id`, `place_id`, `case_id`) or by a UUID
+     *           (`patient_uuid`, `place_uuid`), and both kinds can be mixed in one request. Each is matched
+     *           verbatim. Required unless `ids` is given.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitEntity'
      *     responses:
@@ -254,10 +310,16 @@ module.exports = {
      */
     getAll: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
-      if (!req.query.ids) {
-        return serverUtils.error({ status: 400, message: 'Query param ids is required' }, req, res);
+      if (!req.query.ids && !req.query.subject) {
+        return serverUtils.error(
+          { status: 400, message: 'Either query param ids or subject is required' }, req, res
+        );
       }
-      const qualifier = buildIdsQualifier(req.query.ids);
+      // Ids win when both are given, so a caller that already sends `ids` keeps its existing behavior
+      // no matter what else is on the query string.
+      const qualifier = req.query.ids
+        ? buildIdsQualifier(req.query.ids)
+        : buildSubjectsQualifier(req.query.subject);
       const docs = await getReportDocs(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
     }),

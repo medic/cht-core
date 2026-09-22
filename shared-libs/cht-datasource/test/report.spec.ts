@@ -552,6 +552,27 @@ describe('report', () => {
         expect(getPage.notCalled).to.be.true;
       });
 
+      it('retrieves reports for a subjects qualifier', async () => {
+        const subjectsQualifier = Qualifier.bySubjects(['patient-shortcode']);
+        isIdsQualifier.returns(false);
+        getPage.resolves(pageData);
+
+        const result = await Report.v1.getPage(dataContext)(subjectsQualifier, cursor, limit);
+
+        expect(result).to.equal(pageData);
+        expect(getPage.calledOnceWithExactly(subjectsQualifier, cursor, limit)).to.be.true;
+      });
+
+      it('throws the subjects message for a subject-shaped invalid qualifier', async () => {
+        const invalidSubjects = { subjects: ['  padded  '] };
+        isIdsQualifier.returns(false);
+
+        await expect(Report.v1.getPage(dataContext)(invalidSubjects as never, cursor, limit))
+          .to.be.rejectedWith(`Invalid subjects [${JSON.stringify(invalidSubjects)}].`);
+
+        expect(getPage.notCalled).to.be.true;
+      });
+
       [-1, null, {}, '', 0, 1.1, false].forEach((limitValue) => {
         it(`throws an error if limit is invalid: ${JSON.stringify(limitValue)}`, async () => {
           isIdsQualifier.returns(true);
@@ -614,6 +635,25 @@ describe('report', () => {
 
         expect(() => Report.v1.getAll(dataContext)({ ids: [] } as never))
           .to.throw(`Invalid identifiers [${JSON.stringify({ ids: [] })}].`);
+        expect(reportGetPage.notCalled).to.be.true;
+      });
+
+      it('returns a generator for a subjects qualifier', () => {
+        const subjectsQualifier = Qualifier.bySubjects(['patient-shortcode']);
+        isIdsQualifier.returns(false);
+        getPagedGenerator.returns(mockGenerator);
+
+        const generator = Report.v1.getAll(dataContext)(subjectsQualifier);
+
+        expect(generator).to.deep.equal(mockGenerator);
+        expect(getPagedGenerator.calledOnceWithExactly(reportGetPage, subjectsQualifier)).to.be.true;
+      });
+
+      it('throws the subjects message for a subject-shaped invalid qualifier', () => {
+        isIdsQualifier.returns(false);
+
+        expect(() => Report.v1.getAll(dataContext)({ subjects: [] } as never))
+          .to.throw(`Invalid subjects [${JSON.stringify({ subjects: [] })}].`);
         expect(reportGetPage.notCalled).to.be.true;
       });
     });
@@ -720,12 +760,16 @@ describe('report', () => {
           'getUuidsPageByFreetext',
           'getUuidsByForms',
           'getUuidsPageByForms',
+          'getUuidsBySubjects',
+          'getUuidsPageBySubjects',
           'getByUuid',
           'create',
           'update',
           'getByUuidWithLineage',
           'getPageByIds',
           'getByIds',
+          'getPageBySubjects',
+          'getBySubjects',
         ]);
       });
 
@@ -909,6 +953,57 @@ describe('report', () => {
         expect(byForms.calledOnceWithExactly(forms)).to.be.true;
       });
 
+      it('getUuidsPageBySubjects', async () => {
+        const expectedReportIds: Page<Report.v1.Report> = { data: [], cursor: null };
+        const reportGetIdsPage = sinon.stub().resolves(expectedReportIds);
+        dataContextBind.returns(reportGetIdsPage);
+        const subjects: [string, ...string[]] = ['patient-shortcode', '3d1a2b4c-0000-4000-8000-000000000001'];
+        const limit = 2;
+        const cursor = '1';
+        const qualifier = { subjects };
+        const bySubjects = sinon.stub(Qualifier, 'bySubjects').returns(qualifier);
+
+        const returnedReportIds = await report.getUuidsPageBySubjects(subjects, cursor, limit);
+
+        expect(returnedReportIds).to.equal(expectedReportIds);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
+        expect(
+          reportGetIdsPage.calledOnceWithExactly(qualifier, cursor, limit)
+        ).to.be.true;
+        expect(bySubjects.calledOnceWithExactly(subjects)).to.be.true;
+      });
+
+      it('getUuidsPageBySubjects uses default cursor and limit', async () => {
+        const expectedReportIds: Page<Report.v1.Report> = { data: [], cursor: null };
+        const reportGetIdsPage = sinon.stub().resolves(expectedReportIds);
+        dataContextBind.returns(reportGetIdsPage);
+        const subjects: [string, ...string[]] = ['patient-shortcode'];
+        const qualifier = { subjects };
+        sinon.stub(Qualifier, 'bySubjects').returns(qualifier);
+
+        const returnedReportIds = await report.getUuidsPageBySubjects(subjects);
+
+        expect(returnedReportIds).to.equal(expectedReportIds);
+        expect(reportGetIdsPage.calledOnceWithExactly(qualifier, null, 10000)).to.be.true;
+      });
+
+      it('getUuidsBySubjects', () => {
+        const mockAsyncGenerator = fakeGenerator();
+
+        const reportGetIds = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(reportGetIds);
+        const subjects: [string, ...string[]] = ['patient-shortcode', '3d1a2b4c-0000-4000-8000-000000000001'];
+        const qualifier = { subjects };
+        const bySubjects = sinon.stub(Qualifier, 'bySubjects').returns(qualifier);
+
+        const res = report.getUuidsBySubjects(subjects);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuids)).to.be.true;
+        expect(reportGetIds.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(bySubjects.calledOnceWithExactly(subjects)).to.be.true;
+      });
+
       it('getPageByIds', async () => {
         const expectedReports: Page<Report.v1.Report> = { data: [], cursor: null };
         const reportGetPage = sinon.stub().resolves(expectedReports);
@@ -955,6 +1050,54 @@ describe('report', () => {
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getAll)).to.be.true;
         expect(reportGetAll.calledOnceWithExactly(idsQualifier)).to.be.true;
         expect(byIds.calledOnceWithExactly(ids)).to.be.true;
+      });
+
+      it('getPageBySubjects', async () => {
+        const expectedReports: Page<Report.v1.Report> = { data: [], cursor: null };
+        const reportGetPage = sinon.stub().resolves(expectedReports);
+        dataContextBind.returns(reportGetPage);
+        const subjects: [string, ...string[]] = ['patient-shortcode', '3d1a2b4c-0000-4000-8000-000000000001'];
+        const qualifier = { subjects };
+        const bySubjects = sinon.stub(Qualifier, 'bySubjects').returns(qualifier);
+        const limit = 2;
+        const cursor = '1';
+
+        const returnedReports = await report.getPageBySubjects(subjects, cursor, limit);
+
+        expect(returnedReports).to.equal(expectedReports);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getPage)).to.be.true;
+        expect(reportGetPage.calledOnceWithExactly(qualifier, cursor, limit)).to.be.true;
+        expect(bySubjects.calledOnceWithExactly(subjects)).to.be.true;
+      });
+
+      it('getPageBySubjects uses default cursor and limit', async () => {
+        const expectedReports: Page<Report.v1.Report> = { data: [], cursor: null };
+        const reportGetPage = sinon.stub().resolves(expectedReports);
+        dataContextBind.returns(reportGetPage);
+        const subjects: [string, ...string[]] = ['patient-shortcode'];
+        const qualifier = { subjects };
+        sinon.stub(Qualifier, 'bySubjects').returns(qualifier);
+
+        const returnedReports = await report.getPageBySubjects(subjects);
+
+        expect(returnedReports).to.equal(expectedReports);
+        expect(reportGetPage.calledOnceWithExactly(qualifier, null, 100)).to.be.true;
+      });
+
+      it('getBySubjects', () => {
+        const mockAsyncGenerator = fakeGenerator();
+        const reportGetAll = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(reportGetAll);
+        const subjects: [string, ...string[]] = ['patient-shortcode', '3d1a2b4c-0000-4000-8000-000000000001'];
+        const qualifier = { subjects };
+        const bySubjects = sinon.stub(Qualifier, 'bySubjects').returns(qualifier);
+
+        const res = report.getBySubjects(subjects);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getAll)).to.be.true;
+        expect(reportGetAll.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(bySubjects.calledOnceWithExactly(subjects)).to.be.true;
       });
 
       it('create', async () => {

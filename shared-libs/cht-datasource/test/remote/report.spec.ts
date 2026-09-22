@@ -218,6 +218,86 @@ describe('remote report', () => {
           })).to.be.true;
         });
       });
+
+      describe('with a subject qualifier', () => {
+        const patientUuid = '3d1a2b4c-0000-4000-8000-000000000001';
+
+        it('sends the subjects as a query param on the shared uuid endpoint', async () => {
+          const expectedResponse = { data: ['uuid1', 'uuid2'], cursor };
+          getResourcesInner.resolves(expectedResponse);
+
+          const result = await Report.v1.getUuidsPage(remoteContext)(
+            { subjects: ['patient-shortcode', patientUuid] }, cursor, limit
+          );
+
+          expect(result).to.equal(expectedResponse);
+          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/uuid')).to.be.true;
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            subject: `patient-shortcode,${patientUuid}`,
+            cursor,
+          })).to.be.true;
+        });
+
+        it('sends a single subject without a trailing separator', async () => {
+          getResourcesInner.resolves({ data: [], cursor: null });
+
+          await Report.v1.getUuidsPage(remoteContext)({ subjects: ['patient-shortcode'] }, null, limit);
+
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            subject: 'patient-shortcode',
+          })).to.be.true;
+        });
+
+        it('omits cursor param when cursor is null', async () => {
+          const expectedResponse = { data: [], cursor: null };
+          getResourcesInner.resolves(expectedResponse);
+
+          const result = await Report.v1.getUuidsPage(remoteContext)({ subjects: [patientUuid] }, null, limit);
+
+          expect(result).to.equal(expectedResponse);
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            subject: patientUuid,
+          })).to.be.true;
+        });
+
+        it('does not normalize the subjects', async () => {
+          getResourcesInner.resolves({ data: [], cursor: null });
+
+          await Report.v1.getUuidsPage(remoteContext)({ subjects: ['Patient_1'] }, null, limit);
+
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            subject: 'Patient_1',
+          })).to.be.true;
+        });
+
+        it('prefers freetext when a qualifier satisfies both', async () => {
+          getResourcesInner.resolves({ data: [], cursor: null });
+
+          await Report.v1.getUuidsPage(remoteContext)({ freetext, subjects: ['patient-shortcode'] }, null, limit);
+
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            freetext,
+          })).to.be.true;
+        });
+
+        it('prefers forms when a qualifier satisfies both', async () => {
+          getResourcesInner.resolves({ data: [], cursor: null });
+
+          await Report.v1.getUuidsPage(remoteContext)(
+            { forms: ['pregnancy'], subjects: ['patient-shortcode'] }, null, limit
+          );
+
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            form: 'pregnancy',
+          })).to.be.true;
+        });
+      });
     });
 
     describe('getPage', () => {
@@ -247,6 +327,58 @@ describe('remote report', () => {
 
         expect(result).to.equal(expectedResponse);
         expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString(), ids: 'a,b' })).to.be.true;
+      });
+
+      describe('with a subject qualifier', () => {
+        const patientShortcode = 'patient-shortcode';
+        const patientUuid = '3d1a2b4c-0000-4000-8000-000000000001';
+        const expectedResponse = { data: [{ type: DOC_TYPES.DATA_RECORD, form: 'yes' }], cursor };
+
+        it('sends the subjects as a query param on the shared report endpoint', async () => {
+          getResourcesInner.resolves(expectedResponse);
+
+          const result = await Report.v1.getPage(remoteContext)(
+            { subjects: [patientShortcode, patientUuid] }, cursor, limit
+          );
+
+          expect(result).to.equal(expectedResponse);
+          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report')).to.be.true;
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            subject: `${patientShortcode},${patientUuid}`,
+            cursor,
+          })).to.be.true;
+        });
+
+        it('sends a single subject without a trailing separator', async () => {
+          getResourcesInner.resolves(expectedResponse);
+
+          await Report.v1.getPage(remoteContext)({ subjects: [patientShortcode] }, null, limit);
+
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            subject: patientShortcode,
+          })).to.be.true;
+        });
+
+        it('does not normalize the subjects', async () => {
+          getResourcesInner.resolves(expectedResponse);
+
+          await Report.v1.getPage(remoteContext)({ subjects: ['Patient-Shortcode'] }, null, limit);
+
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            subject: 'Patient-Shortcode',
+          })).to.be.true;
+        });
+
+        it('prefers ids when a qualifier satisfies both', async () => {
+          getResourcesInner.resolves(expectedResponse);
+
+          await Report.v1.getPage(remoteContext)({ ids: ['a'], subjects: [patientShortcode] }, null, limit);
+
+          expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString(), ids: 'a' })).to.be.true;
+        });
       });
     });
 
