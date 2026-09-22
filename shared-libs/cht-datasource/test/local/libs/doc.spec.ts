@@ -13,6 +13,7 @@ import {
   queryDocIdsByKeys,
   queryDocIdsByRange,
   queryDocsByKey,
+  queryDocsByKeys,
   queryDocsByRange,
   updateDoc,
 } from '../../../src/local/libs/doc';
@@ -371,6 +372,64 @@ describe('local doc lib', () => {
         skip,
         reduce: false
       })).to.be.true;
+      expect(isDoc.args).to.deep.equal([[doc0]]);
+    });
+  });
+
+  describe('queryDocsByKeys', () => {
+    const limit = 100;
+    const skip = 0;
+    const keys = ['+254712345678', '+254798765432'];
+
+    it('returns docs for multiple keys in pages', async () => {
+      const doc0 = { _id: 'doc0' };
+      const doc1 = { _id: 'doc1' };
+      const doc2 = { _id: 'doc2' };
+
+      dbQuery.resolves({
+        rows: [
+          { doc: doc0 },
+          { doc: doc1 },
+          { doc: doc2 }
+        ]
+      });
+      isDoc.returns(true);
+
+      const result = await queryDocsByKeys(db, 'medic-client/contacts_by_phone')(keys, limit, skip);
+
+      expect(result).to.deep.equal([doc0, doc1, doc2]);
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_phone', {
+        include_docs: true,
+        keys,
+        limit,
+        skip,
+        reduce: false
+      })).to.be.true;
+      expect(isDoc.args).to.deep.equal([[doc0], [doc1], [doc2]]);
+    });
+
+    it('returns empty array if docs are not found', async () => {
+      dbQuery.resolves({ rows: [] });
+      isDoc.returns(true);
+
+      const result = await queryDocsByKeys(db, 'medic-client/contacts_by_phone')(keys, limit, skip);
+
+      expect(result).to.deep.equal([]);
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_phone', {
+        include_docs: true, keys, limit, skip, reduce: false
+      })).to.be.true;
+      expect(isDoc.args).to.deep.equal([]);
+    });
+
+    it('returns null valued array if rows from database are not docs', async () => {
+      const doc0 = { _id: 'doc0' };
+
+      dbQuery.resolves({ rows: [{ doc: doc0 }] });
+      isDoc.returns(false);
+
+      const result = await queryDocsByKeys(db, 'medic-client/contacts_by_phone')(keys, limit, skip);
+
+      expect(result).to.deep.equal([null]);
       expect(isDoc.args).to.deep.equal([[doc0]]);
     });
   });
