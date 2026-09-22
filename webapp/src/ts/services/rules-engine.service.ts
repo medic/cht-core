@@ -4,7 +4,6 @@ import * as RulesEngineCore from '@medic/rules-engine';
 import { Subject, Subscription } from 'rxjs';
 import { debounce as _debounce, uniq as _uniq } from 'lodash-es';
 import * as moment from 'moment';
-import { toBik } from 'bikram-sambat';
 import { DOC_IDS, DOC_TYPES } from '@medic/constants';
 
 import { AuthService } from '@mm-services/auth.service';
@@ -599,34 +598,19 @@ export class RulesEngineService implements OnDestroy {
     const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
     const useBikramSambatMonths = this.uhcSettingsService.getUseBikramSambatMonths(settings);
     const currentInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate, useBikramSambatMonths);
-
-    if (reportingPeriod === ReportingPeriod.CURRENT) {
-      if (useBikramSambatMonths) {
-        const bsEnd = toBik(moment(currentInterval.end).locale('en').format('YYYY-MM-DD'));
-        return `${bsEnd.year}-${String(bsEnd.month).padStart(2, '0')}`;
-      }
-      return moment(currentInterval.end)
-        .locale('en')
-        .format(this.INTERVAL_TAG_FORMAT);
-    }
-
     let interval = currentInterval;
-    for (let i = 0; i < monthsAgo; i++) {
-      const previousDate = moment(interval.start).subtract(1, 'day');
-      interval = this.calendarIntervalService.getInterval(
-        uhcMonthStartDate,
-        previousDate.valueOf(),
-        useBikramSambatMonths
-      );
+    if (reportingPeriod === ReportingPeriod.PREVIOUS) {
+      for (let i = 0; i < monthsAgo; i++) {
+        const previousDate = moment(interval.start).subtract(1, 'day');
+        interval = this.calendarIntervalService.getInterval(
+          uhcMonthStartDate,
+          previousDate.valueOf(),
+          useBikramSambatMonths
+        );
+      }
     }
 
-    if (useBikramSambatMonths) {
-      const bsEnd = toBik(moment(interval.end).locale('en').format('YYYY-MM-DD'));
-      return `${bsEnd.year}-${String(bsEnd.month).padStart(2, '0')}`;
-    }
-    return moment(interval.end)
-      .locale('en')
-      .format(this.INTERVAL_TAG_FORMAT);
+    return this.calendarIntervalService.getIntervalTag(interval, useBikramSambatMonths);
   }
 
   getBSMonthName(monthNumber: number): string {

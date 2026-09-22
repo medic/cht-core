@@ -822,4 +822,44 @@ describe('CalendarInterval', () => {
       chai.expect(futureIntervalBS).to.deep.equal(futureIntervalGreg);
     });
   });
+
+  describe('locale-independent date helpers', () => {
+    it('formats a local date with ASCII digits without changing the active locale', () => {
+      const previousLocale = moment.locale();
+      moment.defineLocale('calendar-interval-test', {
+        parentLocale: 'en',
+        postformat: value => value.replace(/\d/g, digit => 'ABCDEFGHIJ'[digit]),
+      });
+
+      try {
+        moment.locale('calendar-interval-test');
+        chai.expect(service.toLocalIsoDate(moment('2026-09-22 23:30'))).to.equal('2026-09-22');
+        chai.expect(moment.locale()).to.equal('calendar-interval-test');
+      } finally {
+        moment.locale(previousLocale);
+        moment.defineLocale('calendar-interval-test', null);
+      }
+    });
+
+    it('formats Gregorian and Bikram Sambat interval tags', () => {
+      const interval = { end: moment('2025-03-13 23:59:59.999').valueOf() };
+
+      chai.expect(service.getIntervalTag(interval, false)).to.equal('2025-03');
+      chai.expect(service.getIntervalTag(interval, true)).to.equal('2081-11');
+    });
+
+    it('falls back to the Gregorian tag for an out-of-range Bikram Sambat date', () => {
+      const interval = { end: moment('2150-05-15').valueOf() };
+
+      chai.expect(service.getIntervalTag(interval, true)).to.equal('2150-05');
+    });
+
+    it('falls back to the Gregorian tag when Bikram Sambat conversion fails', () => {
+      const bikramSambat = require('bikram-sambat');
+      sinon.stub(bikramSambat, 'toBik').throws(new Error('invalid date'));
+
+      const interval = { end: moment('2025-03-13').valueOf() };
+      chai.expect(service.getIntervalTag(interval, true)).to.equal('2025-03');
+    });
+  });
 });
