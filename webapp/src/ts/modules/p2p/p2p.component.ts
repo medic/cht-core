@@ -1,5 +1,4 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { NgIf } from '@angular/common';
 import { MatCard, MatCardContent, MatCardHeader, MatCardTitle } from '@angular/material/card';
 import { MatButton } from '@angular/material/button';
 import { MatProgressBar } from '@angular/material/progress-bar';
@@ -21,7 +20,6 @@ type P2pState = 'idle' | 'starting' | 'hosting' | 'joining' | 'paired' | 'failed
   templateUrl: './p2p.component.html',
   imports: [
     ToolBarComponent,
-    NgIf,
     MatCard,
     MatCardHeader,
     MatCardTitle,
@@ -33,22 +31,22 @@ type P2pState = 'idle' | 'starting' | 'hosting' | 'joining' | 'paired' | 'failed
   ],
 })
 export class P2pComponent implements OnInit, OnDestroy {
-  private subscriptions = new Subscription();
+  private readonly subscriptions = new Subscription();
 
-  state:P2pState = 'idle';
+  state: P2pState = 'idle';
   /** Set only while hosting: the QR image a peer scans. */
-  qrImage:string | null = null;
+  qrImage: string | null = null;
   /** Set only once joined: what the host calls itself, so the user can confirm the right device. */
-  hostLabel:string | null = null;
+  hostLabel: string | null = null;
   /** A translation key, never a message built natively. */
-  errorKey:string | null = null;
+  errorKey: string | null = null;
 
   supported = false;
   canHost = false;
   canJoin = false;
   loading = true;
 
-  constructor(private p2pService:P2pService) { }
+  constructor(private readonly p2pService: P2pService) { }
 
   async ngOnInit() {
     this.supported = this.p2pService.isSupported();

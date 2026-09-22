@@ -12,13 +12,13 @@ import { AuthService } from '@mm-services/auth.service';
 declare const medicmobile_android:any;
 
 export interface P2pResult {
-  ok:boolean;
+  ok: boolean;
   /**
    * On success, what the result means for that call: the pairing payload when hosting starts, or
    * the host's label when joining succeeds. On failure, a stable code with a translation key,
    * never a message to show directly.
    */
-  detail:string;
+  detail: string;
 }
 
 /**
@@ -35,7 +35,7 @@ export class P2pService {
   private readonly pairingSubject = new Subject<P2pResult>();
   private readonly permissionsSubject = new Subject<boolean>();
 
-  constructor(private authService:AuthService) { }
+  constructor(private readonly authService:AuthService) { }
 
   private get bridge() {
     return typeof medicmobile_android === 'undefined' ? null : medicmobile_android;
