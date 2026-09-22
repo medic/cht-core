@@ -3,13 +3,6 @@ import { Observable, Subject } from 'rxjs';
 
 import { AuthService } from '@mm-services/auth.service';
 
-/**
- * The native bridge cht-android exposes to the WebView.
- *
- * Absent in a browser, which is the normal case for most of CHT: everything here degrades to
- * "not available" rather than failing, so the rest of the app is unaffected.
- */
-declare const medicmobile_android:any;
 
 export interface P2pResult {
   ok: boolean;
@@ -37,8 +30,15 @@ export class P2pService {
 
   constructor(private readonly authService:AuthService) { }
 
+  /**
+   * The native bridge cht-android exposes to the WebView.
+   *
+   * Absent in a browser, which is the normal case for most of CHT, so this is read off globalThis
+   * the way the rest of the app reads it: everything here degrades to "not available" rather than
+   * failing, and the rest of the app is unaffected.
+   */
   private get bridge() {
-    return typeof medicmobile_android === 'undefined' ? null : medicmobile_android;
+    return (globalThis as any)?.medicmobile_android ?? null;
   }
 
   /** True only when running inside cht-android with the P2P methods present. */
