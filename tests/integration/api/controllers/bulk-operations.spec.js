@@ -62,7 +62,10 @@ describe('Bulk operations API', () => {
     });
 
     it('reports the operation as completed once it is processed', async () => {
-      const person = personFactory.build();
+      // An explicit shortcode: the factory defaults every person to `test_woman_1`, and delete
+      // matches reports by shortcode as well as by uuid, so the default would pull in any report
+      // another spec left behind.
+      const person = personFactory.build({ patient_id: 'bulk-op-status' });
       await utils.saveDoc(person);
 
       const { id } = await utils.request({ path: `/api/v1/person/${person._id}`, method: 'DELETE' });
@@ -74,10 +77,13 @@ describe('Bulk operations API', () => {
       expect(log.params).to.deep.equal({ contact_id: person._id, delete_users: false });
       expect(log.summary.delete).to.deep.equal({ contacts: 1, reports: 0 });
       expect(new Date(log.start_date).getTime()).to.be.closeTo(Date.now(), 60000);
-      const [[actionId, action], ...additional] = Object.entries(log.actions);
+
+      const planned = JSON.stringify(log.actions);
+      const deleted = Object.entries(log.actions).filter(([ , entry ]) => entry.action === 'delete');
+      expect(deleted, planned).to.have.lengthOf(1);
+      const [[ actionId, action ]] = deleted;
       expect(actionId.slice(PREFIXES.BULK_OPERATION_ACTION.length)
         .startsWith(id.slice(PREFIXES.BULK_OPERATION_LOG.length))).to.be.true;
-      expect(additional).to.be.empty;
       expect(action).excluding('updated_date').to.deep.equal({
         action: 'delete',
         total_changes_count: 1
