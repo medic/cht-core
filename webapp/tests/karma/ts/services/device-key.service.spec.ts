@@ -64,8 +64,8 @@ describe('DeviceKey service', () => {
 
   const tick = () => new Promise(resolve => setTimeout(resolve));
 
-  // Key generation is asynchronous (dynamic imports plus the keypairs), so the request is not
-  // there on the first tick. Wait for it rather than guessing a delay.
+  // The permission check and the local doc read both resolve before the request goes out, so it is
+  // not there on the first tick. Wait for it rather than guessing a delay.
   const waitForRequest = async () => {
     for (let attempt = 0; attempt < 100; attempt++) {
       const matches = httpMock.match(() => true);
@@ -131,6 +131,27 @@ describe('DeviceKey service', () => {
 
     expect(authService.has.args[0][0]).to.equal('can_send_offline_data_bundle');
     expect(medicDb.put.callCount).to.equal(0);
+  });
+
+  it('does nothing when the session has no username', async () => {
+    sessionService.userCtx.returns({});
+    service.init();
+
+    await syncListener({ to: SyncStatus.Success, from: SyncStatus.Success });
+
+    // nothing is read or written: the request could only have been sent to /users/undefined/...
+    expect(medicDb.get.callCount).to.equal(0);
+    expect(medicDb.put.callCount).to.equal(0);
+  });
+
+  it('reads the local doc once per registration', async () => {
+    medicDb.get.rejects(notFound());
+    service.init();
+
+    await syncSuccessAndFlush();
+
+    // the _rev for the save comes from this same read, rather than a second one
+    expect(medicDb.get.callCount).to.equal(1);
   });
 
   it('does not register again once this device is registered', async () => {

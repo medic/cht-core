@@ -89,22 +89,29 @@ export class DeviceKeyService {
   }
 
   private async registerDeviceKeys() {
-    const deviceId = this.telemetryService.getUniqueDeviceId();
-    if (await this.isRegistered(deviceId)) {
+    // Ordered cheapest first: both of these are free, and neither a database read nor a keypair is
+    // worth doing for a device that is already registered or a session that cannot name itself.
+    const username = this.sessionService.userCtx()?.name;
+    if (!username) {
       return;
     }
 
-    const deviceKeys = await this.generateDeviceKeys();
-    const serverKeys = await this.sendDeviceKeys(deviceId, deviceKeys);
-    await this.saveKeys(deviceId, deviceKeys, serverKeys);
+    const deviceId = this.telemetryService.getUniqueDeviceId();
+    const existing = await this.getLocalDoc();
+    if (this.isRegistered(existing, deviceId)) {
+      return;
+    }
+
+    const deviceKeys = this.generateDeviceKeys();
+    const serverKeys = await this.sendDeviceKeys(username, deviceId, deviceKeys);
+    await this.saveKeys(existing, deviceId, deviceKeys, serverKeys);
   }
 
-  private async isRegistered(deviceId: string): Promise<boolean> {
-    const doc = await this.getLocalDoc();
+  private isRegistered(doc: any, deviceId: string): boolean {
     return doc?.device_id === deviceId && !!doc?.server_encryption_public_key;
   }
 
-  private async generateDeviceKeys(): Promise<DeviceKeys> {
+  private generateDeviceKeys(): DeviceKeys {
     const signingPrivateKey = ed25519.utils.randomSecretKey();
 
     return {
@@ -117,8 +124,7 @@ export class DeviceKeyService {
     };
   }
 
-  private async sendDeviceKeys(deviceId: string, deviceKeys: DeviceKeys): Promise<ServerKeys> {
-    const username = this.sessionService.userCtx()?.name;
+  private async sendDeviceKeys(username: string, deviceId: string, deviceKeys: DeviceKeys): Promise<ServerKeys> {
     const url = `/api/v1/users/${username}/devices/${deviceId}/keys`;
     const body = { signing_key: deviceKeys.signing_public_key };
 
@@ -136,8 +142,7 @@ export class DeviceKeyService {
     }
   }
 
-  private async saveKeys(deviceId: string, deviceKeys: DeviceKeys, serverKeys: ServerKeys) {
-    const existing = await this.getLocalDoc();
+  private async saveKeys(existing: any, deviceId: string, deviceKeys: DeviceKeys, serverKeys: ServerKeys) {
     await this.dbService.get().put({
       _id: LOCAL_DOC_ID,
       _rev: existing?._rev,
