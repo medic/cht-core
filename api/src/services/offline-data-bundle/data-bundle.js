@@ -1,6 +1,7 @@
-const crypto = require('node:crypto');
-const { Readable, Transform } = require('node:stream');
+const { Readable } = require('node:stream');
+const { TransformStream } = require('node:stream/web');
 const logger = require('@medic/logger');
+const { MAX_REQUEST_SIZE } = require('@medic/constants');
 const db = require('../../db');
 const config = require('../../config');
 const dataContext = require('../data-context');
@@ -16,9 +17,7 @@ const bulkDocsService = require('../replication/bulk-docs');
 // never held whole in memory. 100 matches the batch size the webapp replicates with
 // (`webapp/src/ts/services/db-sync.service.ts`).
 const DOC_BATCH_SIZE = 100;
-// Matches nginx's `client_max_body_size` and api's own MAX_REQUEST_SIZE, so an oversized bundle is
-// refused from its declared size rather than after we have read it.
-const MAX_BODY_SIZE = 32 * 1024 * 1024;
+const SEND_PERMISSION = 'can_send_offline_data_bundle';
 
 // ---------------------------------------------------------------------------
 // Wire contract (the client MUST match this byte-for-byte).
@@ -31,9 +30,7 @@ const MAX_BODY_SIZE = 32 * 1024 * 1024;
 //   <body> = the raw age ciphertext (NDJSON of the docs, encrypted to the server)
 //
 // The signed message is the DECODED envelope header bytes exactly as they arrived, so the server
-// verifies what it received instead of reproducing a canonical form of it. The envelope binds
-// itself to the body through `payload_sha256`, so the signature still covers the payload
-// transitively while staying verifiable before a single body byte is read.
+// verifies what it received instead of reproducing a canonical form of it.
 //
 // DOC ORDER IS THE CLIENT'S JOB. Docs are authorized in batches, and a batch can only grant access
 // from the docs it contains plus what is already in the database. A report whose contact arrives in
@@ -44,29 +41,22 @@ const MAX_BODY_SIZE = 32 * 1024 * 1024;
 
 const isNonEmptyString = (value) => typeof value === 'string' && value.length > 0;
 
-// The declared size is checked before the body is read, the same way archive.js guards its upload.
-const checkDeclaredSize = (req, envelope) => {
-  const contentLength = Number(req.headers['content-length']);
-  if (contentLength > MAX_BODY_SIZE) {
-    throw new PayloadTooLargeError(`Request body is larger than ${MAX_BODY_SIZE} bytes`);
-  }
-  if (Number.isFinite(contentLength) && contentLength !== envelope.payload_bytes) {
-    throw new BadRequestError('Content-Length does not match the envelope.');
+// Content-Length is optional on a streamed request, so it is only worth checking when the caller
+// sent one: it lets an oversized bundle be refused from its declared size rather than after we
+// have read it. The body is bounded again as it streams for callers that send no length.
+const checkDeclaredSize = (req) => {
+  if (Number(req.headers['content-length']) > MAX_REQUEST_SIZE) {
+    throw new PayloadTooLargeError(`Request body is larger than ${MAX_REQUEST_SIZE} bytes`);
   }
 };
 
-// `bundle_seq` is the only sequence the server needs: it lets a relay order bundles and spot a gap
-// without opening them. Where those docs sat in the peer's own change feed is the peer's business.
+// `bundle_seq` is carried for the relay, which uses it to order bundles and spot a gap without
+// opening them. The server itself does not act on it, so it is not required here.
 const isValidEnvelope = (envelope) => {
   return !!envelope &&
     typeof envelope === 'object' &&
     isNonEmptyString(envelope.user) &&
-    isNonEmptyString(envelope.device_id) &&
-    isNonEmptyString(envelope.payload_sha256) &&
-    Number.isFinite(envelope.bundle_seq) &&
-    Number.isFinite(envelope.payload_bytes) &&
-    envelope.payload_bytes >= 0 &&
-    envelope.payload_bytes <= MAX_BODY_SIZE;
+    isNonEmptyString(envelope.device_id);
 };
 
 // Unpacks the two request headers. The decoded envelope bytes are kept as they arrived because
@@ -92,12 +82,16 @@ const unpackHeaders = (encodedEnvelope, signature) => {
 
 // Builds the CHW's userCtx the same way the session middleware does: `auth.getUserSettings` reads
 // the _users doc (for roles) and the medic user-settings doc, then hydrates
-// facility_id/contact_id onto it. Resolved BEFORE the payload is touched: an online-only user must
-// never be pushed through the offline write-authorization pipeline, and finding that out is cheap.
+// facility_id/contact_id onto it. Resolved BEFORE the payload is touched: a user who may not send
+// bundles, or who is online-only and so must never be pushed through the offline
+// write-authorization pipeline, is cheap to find out about.
 const getOfflineUserCtx = async (username) => {
   const userCtx = await auth.getUserSettings({ name: username });
   if (auth.isOnlineOnly(userCtx)) {
     throw new BadRequestError('Bundles can only be ingested for offline users.');
+  }
+  if (!auth.hasAllPermissions(userCtx, [SEND_PERMISSION])) {
+    throw new BadRequestError('This user cannot send offline data bundles.');
   }
   return userCtx;
 };
@@ -106,26 +100,24 @@ const getOfflineUserCtx = async (username) => {
 // Streaming ingest.
 //
 // The request body is piped straight into age, so the ciphertext is never held whole, and the docs
-// it decrypts to are written as they arrive. Every byte on the way past feeds a sha256 and a length
-// counter, checked against the envelope once the stream ends.
+// it decrypts to are written as they arrive.
 // ---------------------------------------------------------------------------
-const digestingStream = (body, digest, maxBytes) => {
-  const counting = new Transform({
-    transform(chunk, _encoding, callback) {
-      digest.hash.update(chunk);
-      digest.bytes += chunk.length;
-      // Stop as soon as the body outgrows what the envelope declared, rather than reading on
-      // through a body that is already known to be wrong.
-      if (digest.bytes > maxBytes) {
-        return callback(new PayloadTooLargeError('Payload is larger than the envelope declared.'));
-      }
-      callback(null, chunk);
-    },
-  });
-  // `pipe` does not forward a source failure, so an aborted request would leave the decrypter
-  // waiting on a stream nobody is going to end.
-  body.on('error', err => counting.destroy(err));
-  return Readable.toWeb(body.pipe(counting));
+
+// Stops as soon as the body outgrows the cap, rather than reading on through a body that is
+// already known to be too large.
+const boundedStream = (body, maxBytes) => {
+  let bytes = 0;
+  return Readable
+    .toWeb(body)
+    .pipeThrough(new TransformStream({
+      transform(chunk, controller) {
+        bytes += chunk.byteLength;
+        if (bytes > maxBytes) {
+          throw new PayloadTooLargeError(`Request body is larger than ${maxBytes} bytes`);
+        }
+        controller.enqueue(chunk);
+      },
+    }), { preventCancel: true });
 };
 
 const corruptPayload = (err, envelope) => {
@@ -232,45 +224,35 @@ const getUserDoc = (username) => users
 // secureSettings vault. Either being absent means the server never registered this device.
 const getKeys = async (envelope) => {
   const { user, device_id: deviceId } = envelope;
-  const userDoc = await getUserDoc(user);
-  const deviceSigningKey = userDoc?.keys_by_device?.[deviceId]?.signing_public_key;
-  const serverEncryptionKey = await serverKey.getServerPrivateKey(user, deviceId);
+  const [deviceSigningKey, serverEncryptionKey] = await Promise.all([
+    getUserDoc(user).then(userDoc => userDoc?.keys_by_device?.[deviceId]?.signing_public_key),
+    serverKey.getServerPrivateKey(user, deviceId)
+  ]);
 
   // The caller gets one error either way, but log which half is missing so this is debuggable.
-  if (!deviceSigningKey) {
-    logger.error(`offline-data-bundle: no registered device key for ${user}/${deviceId}.`);
-  }
-  if (!serverEncryptionKey) {
-    logger.error(`offline-data-bundle: no server key material for ${user}/${deviceId}.`);
-  }
   if (!deviceSigningKey || !serverEncryptionKey) {
+    if (!deviceSigningKey) {
+      logger.error(`offline-data-bundle: no registered device key for ${user}/${deviceId}.`);
+    }
+    if (!serverEncryptionKey) {
+      logger.error(`offline-data-bundle: no server key material for ${user}/${deviceId}.`);
+    }
     throw new BadRequestError('Unknown device.');
   }
 
   return { deviceSigningKey, serverEncryptionKey };
 };
 
-// The envelope carries the payload's digest, so verifying the signature also pins the body. This
-// runs BEFORE the body is touched: an unsigned or misattributed bundle costs us nothing.
+// Runs BEFORE the body is touched: an unsigned or misattributed bundle costs us nothing.
 const verifyEnvelope = async (keys, envelopeBytes, signature) => {
   if (!(await signing.verify(keys.deviceSigningKey, signature, envelopeBytes))) {
     throw new BadRequestError('Bad signature.');
   }
 };
 
-// Docs are already written by the time this runs, so it no longer gates them. It still rejects the
-// request, which is what tells the peer to send the bundle again; the rewrite is harmless because
-// new_edits:false replays the same revisions.
-const assertPayloadMatchesEnvelope = (envelope, digest) => {
-  const actual = digest.hash.digest('base64');
-  if (actual !== envelope.payload_sha256 || digest.bytes !== envelope.payload_bytes) {
-    throw new BadRequestError('Payload does not match the envelope.');
-  }
-};
-
-const decrypt = async (identity, ciphertext, envelope) => {
+const decrypt = async (identity, encryptedReadStream, envelope) => {
   try {
-    return await age.decryptStream(identity, ciphertext);
+    return await age.decryptStream(identity, encryptedReadStream);
   } catch (err) {
     throw corruptPayload(err, envelope);
   }
@@ -282,17 +264,15 @@ module.exports = {
   // bundle cannot be trusted; otherwise ingests the docs.
   process: async (encodedEnvelope, signature, req) => {
     const { envelope, envelopeBytes } = unpackHeaders(encodedEnvelope, signature);
-    checkDeclaredSize(req, envelope);
+    checkDeclaredSize(req);
 
     const keys = await getKeys(envelope);
     await verifyEnvelope(keys, envelopeBytes, signature);
     const userCtx = await getOfflineUserCtx(envelope.user);
 
-    const digest = { hash: crypto.createHash('sha256'), bytes: 0 };
-    const ciphertext = digestingStream(req, digest, envelope.payload_bytes);
-    const plaintext = await decrypt(keys.serverEncryptionKey, ciphertext, envelope);
+    const encryptedReadStream = boundedStream(req, MAX_REQUEST_SIZE);
+    const plaintext = await decrypt(keys.serverEncryptionKey, encryptedReadStream, envelope);
     const { total, dropped } = await ingest(userCtx, plaintext, envelope);
-    assertPayloadMatchesEnvelope(envelope, digest);
 
     // The peer is not told which docs were dropped: the relay carrying this response cannot read
     // the bundle, and has no business learning what was in it.

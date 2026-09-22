@@ -56,7 +56,7 @@ module.exports = {
    *           bundles and detect gaps without reading the payload.
    *         schema:
    *           type: object
-   *           required: [user, device_id, bundle_seq, payload_sha256, payload_bytes]
+   *           required: [user, device_id]
    *           properties:
    *             user:
    *               type: string
@@ -64,15 +64,6 @@ module.exports = {
    *             device_id:
    *               type: string
    *               description: Identifier of the peer device that produced the bundle.
-   *             bundle_seq:
-   *               type: number
-   *               description: Monotonic bundle sequence number.
-   *             payload_sha256:
-   *               type: string
-   *               description: Base64 SHA-256 of the request body, which binds the body to this envelope.
-   *             payload_bytes:
-   *               type: number
-   *               description: Length of the request body in bytes.
    *       - in: header
    *         name: X-Medic-Bundle-Signature
    *         required: true
@@ -95,12 +86,7 @@ module.exports = {
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               required: [ok]
-   *               properties:
-   *                 ok:
-   *                   type: boolean
-   *                   description: Always true.
+   *               $ref: '#/components/schemas/OkResponse'
    *       '400':
    *         $ref: '#/components/responses/BadRequest'
    *       '401':
