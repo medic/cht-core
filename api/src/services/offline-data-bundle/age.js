@@ -12,12 +12,14 @@ const load = () => {
 module.exports = {
   generateIdentity: async () => (await load()).generateIdentity(),
   identityToRecipient: async (identity) => (await load()).identityToRecipient(identity),
-  isValidRecipient: async (recipient) => {
-    try {
-      new (await load()).Encrypter().addRecipient(recipient);
-      return true;
-    } catch {
-      return false;
-    }
+  // Decrypts an age ciphertext STREAM with the given identity. `ciphertext` is a web
+  // ReadableStream of the raw age bytes; the returned value is a ReadableStream of the plaintext.
+  // age authenticates every chunk, so a tampered or truncated stream errors while reading. The
+  // header is parsed before this resolves, so a key that cannot decrypt fails before any payload
+  // byte is handed back.
+  decryptStream: async (identity, ciphertext) => {
+    const decrypter = new (await load()).Decrypter();
+    decrypter.addIdentity(identity);
+    return decrypter.decrypt(ciphertext);
   },
 };

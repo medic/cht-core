@@ -1,5 +1,5 @@
 // Ed25519 signature helpers for offline data bundles. Web Crypto Ed25519 is built into Node,
-// so no external dependency is required. This is the future home for verify() too.
+// so no external dependency is required.
 const { webcrypto } = require('node:crypto');
 
 module.exports = {
@@ -15,13 +15,20 @@ module.exports = {
     }
   },
 
-  // Generates a server Ed25519 signing keypair and exports both halves as JWK.
-  generateKeyPair: async () => {
-    const keyPair = await webcrypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']);
-    const [publicKey, privateKey] = await Promise.all([
-      webcrypto.subtle.exportKey('jwk', keyPair.publicKey),
-      webcrypto.subtle.exportKey('jwk', keyPair.privateKey),
-    ]);
-    return { publicKey, privateKey };
+  // Verifies an Ed25519 signature. `publicKeyJwk` is the device's signing public key JWK (as stored
+  // on the _users doc), `signatureBase64` the base64 signature, and `message` the signed bytes.
+  // Returns false on any error (malformed key, malformed signature) so a bad bundle never throws.
+  verify: async (publicKeyJwk, signatureBase64, message) => {
+    try {
+      const key = await webcrypto.subtle.importKey('jwk', publicKeyJwk, { name: 'Ed25519' }, false, ['verify']);
+      return await webcrypto.subtle.verify(
+        { name: 'Ed25519' },
+        key,
+        Buffer.from(signatureBase64, 'base64'),
+        message
+      );
+    } catch {
+      return false;
+    }
   },
 };
