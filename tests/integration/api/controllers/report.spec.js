@@ -132,74 +132,6 @@ describe('Report API', () => {
     await utils.deleteUsers([ userNoPerms, offlineUser ]);
   });
 
-  // Every list query param is served the same way on every route: comma-joined or repeated, matched
-  // verbatim, paged by a row-offset cursor, and rejected with one message shape when it is empty,
-  // padded or object-shaped. Each call pins that contract for one param on one endpoint; what is
-  // specific to a param or a route stays as its own test beside it.
-  const describeListParam = ({ endpoint, param, invalidName, toIds, values, expectedIds, emptyValue, walk }) => {
-    const [ first ] = values;
-
-    it(`returns the matches for a comma-separated list of ${param} values`, async () => {
-      const responsePage = await utils.request({ path: endpoint, qs: { [param]: values.join(',') } });
-
-      expect(toIds(responsePage)).to.deep.equalInAnyOrder(expectedIds);
-    });
-
-    it(`returns the matches when the ${param} param is repeated`, async () => {
-      const query = values.map(value => `${param}=${value}`).join('&');
-      const responsePage = await utils.request({ path: `${endpoint}?${query}` });
-
-      expect(toIds(responsePage)).to.deep.equalInAnyOrder(expectedIds);
-    });
-
-    it('returns an empty page for a value with no matches', async () => {
-      const responsePage = await utils.request({ path: endpoint, qs: { [param]: 'no-such-value' } });
-
-      expect(responsePage.data).to.deep.equal([]);
-      expect(responsePage.cursor).to.be.null;
-    });
-
-    it('walks every page with the cursor without dropping or repeating a result', async () => {
-      const qs = { [param]: walk.value, limit: walk.limit };
-      let cursor = null;
-      for (const [ i, pageIds ] of walk.pages.entries()) {
-        const page = await utils.request({ path: endpoint, qs: cursor ? { ...qs, cursor } : qs });
-        expect(toIds(page)).to.deep.equal(pageIds);
-        expect(page.cursor).to.equal(walk.cursors[i]);
-        cursor = page.cursor;
-      }
-    });
-
-    it(`throws 400 error when ${param} is ${JSON.stringify(emptyValue)}`, async () => {
-      await expect(utils.request({ path: endpoint, qs: { [param]: emptyValue } }))
-        .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid ${invalidName} [[]]."}`);
-    });
-
-    it('throws 400 error when a value is padded, rather than matching nothing', async () => {
-      await expect(utils.request({ path: endpoint, qs: { [param]: `  ${first}  ` } })).to.be.rejectedWith(
-        `400 - {"code":400,"error":"Invalid ${invalidName} [[\\"  ${first}  \\"]]."}`
-      );
-    });
-
-    it(`throws 400 error, not 500, when the ${param} param is object-shaped`, async () => {
-      await expect(utils.request({ path: `${endpoint}?${param}[a]=b` })).to.be.rejectedWith(
-        `400 - {"code":400,"error":"Invalid ${invalidName} [{\\"a\\":\\"b\\"}]."}`
-      );
-    });
-
-    it('throws 400 error when limit is invalid', async () => {
-      await expect(utils.request({ path: endpoint, qs: { [param]: first, limit: -1 } })).to.be.rejectedWith(
-        `400 - {"code":400,"error":"The limit must be a positive integer: [\\"-1\\"]."}`
-      );
-    });
-
-    it('throws 400 error when cursor is invalid, unlike the 500 the freetext path throws', async () => {
-      await expect(utils.request({ path: endpoint, qs: { [param]: first, cursor: '-1' } })).to.be.rejectedWith(
-        `400 - {"code":400,"error":"The cursor must be a string or null for first page: [\\"-1\\"]."}`
-      );
-    });
-  };
-
   describe('GET /api/v1/report/:uuid', async () => {
     const endpoint = '/api/v1/report';
 
@@ -485,71 +417,207 @@ describe('Report API', () => {
   });
 
   describe('GET /api/v1/report/uuid with form param', () => {
+    const forms = 'report0,report1,report2,report3,report4,report5';
+    const fourLimit = 4;
     const endpoint = '/api/v1/report/uuid';
-    const formReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
 
-    describeListParam({
-      endpoint,
-      param: 'form',
-      invalidName: 'forms',
-      toIds: (page) => page.data,
-      values: [ 'report0', 'report1', 'report2', 'report3', 'report4', 'report5' ],
-      expectedIds: formReportIds,
-      emptyValue: '',
-      // One report per form, so the walk is in the order the forms are given.
-      walk: {
-        value: 'report0,report1,report2,report3,report4,report5',
-        limit: 4,
-        pages: [ formReportIds.slice(0, 4), formReportIds.slice(4) ],
-        cursors: [ '4', null ],
-      },
+    it('returns a page of report ids for a comma-separated list of forms', async () => {
+      const qs = {
+        form: forms
+      };
+      const opts = {
+        path: `${endpoint}`,
+        qs
+      };
+      const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
+      const responsePage = await utils.request(opts);
+
+      expect(responsePage.data).to.deep.equalInAnyOrder(expectedReportIds);
     });
 
     it('returns only the reports matching a single form', async () => {
-      const responsePage = await utils.request({ path: endpoint, qs: { form: 'report0' } });
+      const qs = {
+        form: 'report0'
+      };
+      const opts = {
+        path: `${endpoint}`,
+        qs
+      };
+      const responsePage = await utils.request(opts);
 
       expect(responsePage.data).to.deep.equal([ report0._id ]);
+    });
+
+    it('returns a page of report ids when limit and cursor is passed and cursor can be reused', async () => {
+      const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
+      const qs = {
+        form: forms,
+        limit: fourLimit
+      };
+      const opts = {
+        path: `${endpoint}`,
+        qs
+      };
+      const firstPage = await utils.request(opts);
+
+      qs.cursor = firstPage.cursor;
+      const opts2 = {
+        path: `${endpoint}`,
+        qs
+      };
+      const secondPage = await utils.request(opts2);
+
+      const allReportIds = [ ...firstPage.data, ...secondPage.data ];
+
+      expect(allReportIds).to.deep.equalInAnyOrder(expectedReportIds);
+      expect(firstPage.data).to.have.lengthOf(4);
+      expect(secondPage.data).to.have.lengthOf(2);
+      expect(secondPage.cursor).to.be.null;
+    });
+
+    it('throws 400 error when form is present but empty', async () => {
+      const qs = {
+        form: ''
+      };
+      const opts = {
+        path: `${endpoint}`,
+        qs
+      };
+
+      await expect(utils.request(opts))
+        .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid forms [[]]."}`);
+    });
+
+    it('throws 400 error when limit is invalid', async () => {
+      const qs = {
+        form: forms, limit: -1
+      };
+      const opts = {
+        path: `${endpoint}`,
+        qs
+      };
+
+      await expect(utils.request(opts)).to.be.rejectedWith(
+        `400 - {"code":400,"error":"The limit must be a positive integer: [\\"-1\\"]."}`
+      );
+    });
+
+    it('throws 400 error when cursor is invalid, unlike the 500 the freetext path throws', async () => {
+      const qs = {
+        form: forms, cursor: '-1'
+      };
+      const opts = {
+        path: `${endpoint}`,
+        qs
+      };
+
+      await expect(utils.request(opts)).to.be.rejectedWith(
+        `400 - {"code":400,"error":"The cursor must be a string or null for first page: [\\"-1\\"]."}`
+      );
     });
   });
 
   describe('GET /api/v1/report/uuid with subject param', () => {
+    const fourLimit = 4;
     const endpoint = '/api/v1/report/uuid';
     // Every report in this fixture set is about the same patient, and the factory writes both
     // `fields.patient_id` (the shortcode) and `fields.patient_uuid` (the UUID), so the view emits
-    // each report twice - once under each key. Rows under one key come back in doc id order, which
-    // is what makes the cursor walk exact.
+    // each report twice - once under each key.
     const allReportIds = allReports.map(report => report._id);
+    // Rows under one key come back in doc id order, which is what makes the cursor walk below exact.
     const sortedReportIds = [ ...allReportIds ].sort();
 
-    describeListParam({
-      endpoint,
-      param: 'subject',
-      invalidName: 'subjects',
-      toIds: (page) => page.data,
-      values: [ patient.patient_id, 'no-such-subject' ],
-      expectedIds: allReportIds,
-      emptyValue: '',
-      walk: {
-        value: patient.patient_id,
-        limit: 4,
-        pages: [ sortedReportIds.slice(0, 4), sortedReportIds.slice(4, 8), sortedReportIds.slice(8) ],
-        cursors: [ '4', '8', null ],
-      },
+    it('returns a page of report ids for a subject shortcode', async () => {
+      const opts = { path: endpoint, qs: { subject: patient.patient_id } };
+
+      const responsePage = await utils.request(opts);
+
+      expect(responsePage.data).to.deep.equalInAnyOrder(allReportIds);
     });
 
     it('returns a page of report ids for a subject UUID', async () => {
-      const responsePage = await utils.request({ path: endpoint, qs: { subject: patient._id } });
+      const opts = { path: endpoint, qs: { subject: patient._id } };
+
+      const responsePage = await utils.request(opts);
 
       expect(responsePage.data).to.deep.equalInAnyOrder(allReportIds);
     });
 
     it('returns a report matching both a shortcode and a UUID exactly once', async () => {
-      const responsePage = await utils.request({
-        path: endpoint, qs: { subject: `${patient.patient_id},${patient._id}` }
-      });
+      const opts = { path: endpoint, qs: { subject: `${patient.patient_id},${patient._id}` } };
+
+      const responsePage = await utils.request(opts);
 
       expect(responsePage.data).to.deep.equalInAnyOrder(allReportIds);
       expect(responsePage.data).to.have.lengthOf(allReportIds.length);
+    });
+
+    it('returns a page of report ids when the subject param is repeated', async () => {
+      const responsePage = await utils.request({
+        path: `${endpoint}?subject=no-such-subject&subject=${patient.patient_id}`
+      });
+
+      expect(responsePage.data).to.deep.equalInAnyOrder(allReportIds);
+    });
+
+    it('returns an empty page for a subject with no reports', async () => {
+      const opts = { path: endpoint, qs: { subject: 'no-such-subject' } };
+
+      const responsePage = await utils.request(opts);
+
+      expect(responsePage.data).to.deep.equal([]);
+      expect(responsePage.cursor).to.be.null;
+    });
+
+    it('walks every page with the cursor without dropping or repeating a report', async () => {
+      const qs = { subject: patient.patient_id, limit: fourLimit };
+      const firstPage = await utils.request({ path: endpoint, qs });
+      const secondPage = await utils.request({ path: endpoint, qs: { ...qs, cursor: firstPage.cursor } });
+      const thirdPage = await utils.request({ path: endpoint, qs: { ...qs, cursor: secondPage.cursor } });
+
+      expect(firstPage.data).to.deep.equal(sortedReportIds.slice(0, 4));
+      expect(firstPage.cursor).to.equal('4');
+      expect(secondPage.data).to.deep.equal(sortedReportIds.slice(4, 8));
+      expect(secondPage.cursor).to.equal('8');
+      expect(thirdPage.data).to.deep.equal(sortedReportIds.slice(8));
+      expect(thirdPage.cursor).to.be.null;
+    });
+
+    it('throws 400 error when subject is present but empty', async () => {
+      const opts = { path: endpoint, qs: { subject: '' } };
+
+      await expect(utils.request(opts))
+        .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid subjects [[]]."}`);
+    });
+
+    it('throws 400 error when a subject is padded, rather than matching nothing', async () => {
+      const opts = { path: endpoint, qs: { subject: `  ${patient.patient_id}  ` } };
+
+      await expect(utils.request(opts)).to.be.rejectedWith(
+        `400 - {"code":400,"error":"Invalid subjects [[\\"  ${patient.patient_id}  \\"]]."}`
+      );
+    });
+
+    it('throws 400 error, not 500, when the subject param is object-shaped', async () => {
+      await expect(utils.request({ path: `${endpoint}?subject[a]=b` })).to.be.rejectedWith(
+        `400 - {"code":400,"error":"Invalid subjects [{\\"a\\":\\"b\\"}]."}`
+      );
+    });
+
+    it('throws 400 error when limit is invalid', async () => {
+      const opts = { path: endpoint, qs: { subject: patient.patient_id, limit: -1 } };
+
+      await expect(utils.request(opts)).to.be.rejectedWith(
+        `400 - {"code":400,"error":"The limit must be a positive integer: [\\"-1\\"]."}`
+      );
+    });
+
+    it('throws 400 error when cursor is invalid, unlike the 500 the freetext path throws', async () => {
+      const opts = { path: endpoint, qs: { subject: patient.patient_id, cursor: '-1' } };
+
+      await expect(utils.request(opts)).to.be.rejectedWith(
+        `400 - {"code":400,"error":"The cursor must be a string or null for first page: [\\"-1\\"]."}`
+      );
     });
   });
 
@@ -612,34 +680,24 @@ describe('Report API', () => {
     });
 
     describe('with subject param', () => {
-      // As on the uuid endpoint: every report is emitted under both the shortcode and the UUID, and
-      // rows under one key come back in doc id order.
+      const fourLimit = 4;
+      // As on the uuid endpoint: every report is about the same patient and is emitted under both the
+      // shortcode and the UUID, and rows under one key come back in doc id order.
       const sortedReportIds = [ ...allReportIds ].sort();
       const responseIds = (page) => page.data.map(doc => doc._id);
 
-      describeListParam({
-        endpoint,
-        param: 'subject',
-        invalidName: 'subjects',
-        toIds: responseIds,
-        values: [ patient.patient_id, 'no-such-subject' ],
-        expectedIds: allReportIds,
-        // `?subject=` with no value is caught by the missing-param 400 above, so the empty-list case
-        // here is a list of empty entries.
-        emptyValue: ',,',
-        walk: {
-          value: patient.patient_id,
-          limit: 4,
-          pages: [ sortedReportIds.slice(0, 4), sortedReportIds.slice(4, 8), sortedReportIds.slice(8) ],
-          cursors: [ '4', '8', null ],
-        },
-      });
-
-      it('returns the report docs, not just ids', async () => {
+      it('returns a page of reports for a subject shortcode', async () => {
         const responsePage = await utils.request({ path: endpoint, qs: { subject: patient.patient_id } });
 
         expect(responseIds(responsePage)).to.deep.equalInAnyOrder(allReportIds);
+        expect(responsePage.cursor).to.be.null;
         responsePage.data.forEach(doc => expect(doc._rev).to.be.a('string'));
+      });
+
+      it('returns a page of reports for a subject UUID', async () => {
+        const responsePage = await utils.request({ path: endpoint, qs: { subject: patient._id } });
+
+        expect(responseIds(responsePage)).to.deep.equalInAnyOrder(allReportIds);
       });
 
       it('returns a report matching both a shortcode and a UUID exactly once', async () => {
@@ -651,12 +709,70 @@ describe('Report API', () => {
         expect(responsePage.data).to.have.lengthOf(allReportIds.length);
       });
 
+      it('returns a page of reports when the subject param is repeated', async () => {
+        const responsePage = await utils.request({
+          path: `${endpoint}?subject=no-such-subject&subject=${patient.patient_id}`
+        });
+
+        expect(responseIds(responsePage)).to.deep.equalInAnyOrder(allReportIds);
+      });
+
+      it('returns an empty page for a subject with no reports', async () => {
+        const responsePage = await utils.request({ path: endpoint, qs: { subject: 'no-such-subject' } });
+
+        expect(responsePage.data).to.deep.equal([]);
+        expect(responsePage.cursor).to.be.null;
+      });
+
       it('prefers ids over subject when both are given', async () => {
         const responsePage = await utils.request({
           path: endpoint, qs: { ids: report0._id, subject: patient.patient_id }
         });
 
         expect(responseIds(responsePage)).to.deep.equal([ report0._id ]);
+      });
+
+      it('walks every page with the cursor without dropping or repeating a report', async () => {
+        const qs = { subject: patient.patient_id, limit: fourLimit };
+        const firstPage = await utils.request({ path: endpoint, qs });
+        const secondPage = await utils.request({ path: endpoint, qs: { ...qs, cursor: firstPage.cursor } });
+        const thirdPage = await utils.request({ path: endpoint, qs: { ...qs, cursor: secondPage.cursor } });
+
+        expect(responseIds(firstPage)).to.deep.equal(sortedReportIds.slice(0, 4));
+        expect(firstPage.cursor).to.equal('4');
+        expect(responseIds(secondPage)).to.deep.equal(sortedReportIds.slice(4, 8));
+        expect(secondPage.cursor).to.equal('8');
+        expect(responseIds(thirdPage)).to.deep.equal(sortedReportIds.slice(8));
+        expect(thirdPage.cursor).to.be.null;
+      });
+
+      it('throws 400 error when every entry in the subject list is empty', async () => {
+        const opts = { path: endpoint, qs: { subject: ',,' } };
+
+        await expect(utils.request(opts))
+          .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid subjects [[]]."}`);
+      });
+
+      it('throws 400 error when a subject is padded, rather than matching nothing', async () => {
+        const opts = { path: endpoint, qs: { subject: `  ${patient.patient_id}  ` } };
+
+        await expect(utils.request(opts)).to.be.rejectedWith(
+          `400 - {"code":400,"error":"Invalid subjects [[\\"  ${patient.patient_id}  \\"]]."}`
+        );
+      });
+
+      it('throws 400 error, not 500, when the subject param is object-shaped', async () => {
+        await expect(utils.request({ path: `${endpoint}?subject[a]=b` })).to.be.rejectedWith(
+          `400 - {"code":400,"error":"Invalid subjects [{\\"a\\":\\"b\\"}]."}`
+        );
+      });
+
+      it('throws 400 error when cursor is invalid', async () => {
+        const opts = { path: endpoint, qs: { subject: patient.patient_id, cursor: '-1' } };
+
+        await expect(utils.request(opts)).to.be.rejectedWith(
+          `400 - {"code":400,"error":"The cursor must be a string or null for first page: [\\"-1\\"]."}`
+        );
       });
     });
   });
