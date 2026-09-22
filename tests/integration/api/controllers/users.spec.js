@@ -2559,8 +2559,9 @@ describe('Users API', () => {
       chai.expect(Object.keys(userDoc.keys_by_device)).to.deep.equal(['device-A']);
       const entry = userDoc.keys_by_device['device-A'];
       chai.expect(entry.signing_public_key).to.deep.equal(signingKeyA);
-      chai.expect(entry.server_encryption_public_key).to.equal(response.server_encryption_public_key);
-      // the server PRIVATE key must live in the secureSettings vault, never on the _users doc
+      // neither half of the server key belongs on the _users doc: the private half lives in the
+      // secureSettings vault and the public half is only ever returned to the device
+      chai.expect(entry.server_encryption_public_key).to.be.undefined;
       chai.expect(entry.server_encryption_private_key).to.be.undefined;
       chai.expect(entry.updated_date).to.be.a('number');
     });

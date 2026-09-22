@@ -1040,7 +1040,7 @@ describe('Users Controller', () => {
 
   describe('deviceKey', () => {
     const signingJwk = { kty: 'OKP', crv: 'Ed25519', x: 'device-pub' };
-    // Only the PUBLIC server key is persisted on the _users doc (passed to setDeviceKey and returned).
+    // The server's PUBLIC key is only returned to the device, never persisted.
     const serverPublicKeys = { server_encryption_public_key: 'age1serverrecipient' };
     // The PRIVATE server key goes to the secureSettings vault, keyed per user + device.
     const vaultKey = 'offline-data-bundle-server-key:chw:device-1';
@@ -1051,7 +1051,7 @@ describe('Users Controller', () => {
       sinon.stub(auth, 'assertPermissions').resolves({ name: 'chw', roles: ['chw'] });
       sinon.stub(auth, 'isDbAdmin').returns(false);
       sinon.stub(auth, 'basicAuthCredentials').returns(false);
-      sinon.stub(users, 'setDeviceKey').resolves(serverPublicKeys);
+      sinon.stub(users, 'setDeviceKey').resolves();
       sinon.stub(secureSettings, 'setCredentials').resolves();
       sinon.stub(age, 'generateIdentity').resolves('AGE-SECRET-KEY-1SERVER');
       sinon.stub(age, 'identityToRecipient').resolves('age1serverrecipient');
@@ -1124,9 +1124,7 @@ describe('Users Controller', () => {
       return controller.deviceKey(req, res).then(() => {
         chai.expect(serverUtils.error.notCalled).to.be.true;
         chai.expect(secureSettings.setCredentials.args[0]).to.deep.equal([vaultKey, vaultValue]);
-        chai.expect(users.setDeviceKey.args[0]).to.deep.equal([
-          'chw', 'device-1', signingJwk, 'age1serverrecipient',
-        ]);
+        chai.expect(users.setDeviceKey.args[0]).to.deep.equal(['chw', 'device-1', signingJwk]);
         chai.expect(res.json.args[0]).to.deep.equal([serverPublicKeys]);
       });
     });
@@ -1143,9 +1141,7 @@ describe('Users Controller', () => {
       return controller.deviceKey(req, res).then(() => {
         chai.expect(serverUtils.error.notCalled).to.be.true;
         chai.expect(secureSettings.setCredentials.args[0]).to.deep.equal([vaultKey, vaultValue]);
-        chai.expect(users.setDeviceKey.args[0]).to.deep.equal([
-          'chw', 'device-1', signingJwk, 'age1serverrecipient',
-        ]);
+        chai.expect(users.setDeviceKey.args[0]).to.deep.equal(['chw', 'device-1', signingJwk]);
         chai.expect(res.json.args[0]).to.deep.equal([serverPublicKeys]);
       });
     });

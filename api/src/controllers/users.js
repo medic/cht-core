@@ -560,17 +560,13 @@ module.exports = {
 
       const identity = await age.generateIdentity();
       // The server PRIVATE key must never touch the _users doc (the user can read it via the
-      // CouchDB proxy). It goes to the secureSettings vault; only public keys go on the _users doc.
+      // CouchDB proxy). It goes to the secureSettings vault; only the device's public key goes on
+      // the _users doc.
       await serverKey.setServerPrivateKey(username, deviceId, identity);
-      const serverPublicKey = await users.setDeviceKey(
-        username,
-        deviceId,
-        req.body.signing_key,
-        await age.identityToRecipient(identity)
-      );
+      await users.setDeviceKey(username, deviceId, req.body.signing_key);
 
       logger.info(`REQ ${req.id} - Registered device key for device '${deviceId}' on user '${username}'.`);
-      res.json(serverPublicKey);
+      res.json({ server_encryption_public_key: await age.identityToRecipient(identity) });
     } catch (err) {
       serverUtils.error(err, req, res);
     }

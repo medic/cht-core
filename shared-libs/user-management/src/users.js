@@ -621,16 +621,17 @@ const saveUserSettingsUpdates = async (userSettings) => {
   };
 };
 
-const upsertDeviceKey = async (username, deviceId, signingKey, serverEncryptionKey) => {
+// The server's encryption PUBLIC key is not stored here: it is returned to the device that just
+// registered, and nothing on the server ever reads it back. A device that loses it re-registers and
+// gets a fresh pair.
+const upsertDeviceKey = async (username, deviceId, signingKey) => {
   const userDoc = await getUserDoc(username, 'users');
   userDoc.keys_by_device = userDoc.keys_by_device || {};
   userDoc.keys_by_device[deviceId] = {
     signing_public_key: signingKey,
-    server_encryption_public_key: serverEncryptionKey,
     updated_date: Date.now(),
   };
   await saveUserUpdates(userDoc);
-  return { server_encryption_public_key: serverEncryptionKey };
 };
 
 const validateFacilityIsNeeded = (data, user) => {

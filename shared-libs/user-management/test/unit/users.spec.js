@@ -1150,16 +1150,16 @@ describe('Users service', () => {
   describe('setDeviceKey', () => {
     const userId = PREFIXES.COUCH_USER + 'steve';
 
-    // Only PUBLIC keys reach this layer; the server private key is stored in the secureSettings
-    // vault by the api controller and must never be written to the _users doc.
-    const serverEncryptionKey = 'age1serverrecipient';
+    // Only the device's PUBLIC signing key reaches this layer. The server private key is stored in
+    // the secureSettings vault by the api controller and must never be written to the _users doc,
+    // and the matching server public key is only returned to the device, never stored.
     const signingKey = { kty: 'OKP', crv: 'Ed25519', x: 'device-pub' };
 
     it('adds a new device key entry to the _users doc', async () => {
       db.users.get.resolves({ _id: userId, name: 'steve', type: 'user' });
       db.users.put.resolves({ id: userId, rev: '2-abc' });
 
-      const result = await service.setDeviceKey('steve', 'device-1', signingKey, serverEncryptionKey);
+      await service.setDeviceKey('steve', 'device-1', signingKey);
 
       chai.expect(db.users.get.args[0]).to.deep.equal([userId]);
       chai.expect(db.users.put.calledOnce).to.be.true;
@@ -1169,16 +1169,14 @@ describe('Users service', () => {
       chai.expect(Object.keys(saved.keys_by_device)).to.deep.equal(['device-1']);
       const entry = saved.keys_by_device['device-1'];
       chai.expect(entry.signing_public_key).to.deep.equal(signingKey);
-      chai.expect(entry.server_encryption_public_key).to.equal(serverEncryptionKey);
+      chai.expect(entry.server_encryption_public_key).to.be.undefined;
       chai.expect(entry.server_encryption_private_key).to.be.undefined;
       chai.expect(entry.updated_date).to.be.a('number');
-      chai.expect(result).to.deep.equal({ server_encryption_public_key: serverEncryptionKey });
     });
 
     it('replaces the existing entry when the same device re-registers', async () => {
       const otherEntry = {
         signing_public_key: { kty: 'OKP', crv: 'Ed25519', x: 'other-pub' },
-        server_encryption_public_key: 'age1serverother',
         updated_date: 1000,
       };
       db.users.get.resolves({
@@ -1188,7 +1186,6 @@ describe('Users service', () => {
         keys_by_device: {
           'device-1': {
             signing_public_key: { kty: 'OKP', crv: 'Ed25519', x: 'old-pub' },
-            server_encryption_public_key: 'age1serverold',
             updated_date: 1000,
           },
           'device-2': otherEntry,
@@ -1196,12 +1193,11 @@ describe('Users service', () => {
       });
       db.users.put.resolves({ id: userId, rev: '3-abc' });
 
-      await service.setDeviceKey('steve', 'device-1', signingKey, 'age1servernew');
+      await service.setDeviceKey('steve', 'device-1', signingKey);
 
       const savedDevices = db.users.put.args[0][0].keys_by_device;
       chai.expect(Object.keys(savedDevices)).to.have.members(['device-1', 'device-2']);
       chai.expect(savedDevices['device-1'].signing_public_key).to.deep.equal(signingKey);
-      chai.expect(savedDevices['device-1'].server_encryption_public_key).to.equal('age1servernew');
       chai.expect(savedDevices['device-1'].updated_date).to.be.a('number');
       chai.expect(savedDevices['device-2']).to.deep.equal(otherEntry);
     });
@@ -1209,7 +1205,7 @@ describe('Users service', () => {
     it('rejects when the _users doc is not found', () => {
       db.users.get.rejects({ status: 404 });
 
-      return chai.expect(service.setDeviceKey('steve', 'device-1', signingKey, serverEncryptionKey)).to.be.rejected;
+      return chai.expect(service.setDeviceKey('steve', 'device-1', signingKey)).to.be.rejected;
     });
   });
 
