@@ -8,6 +8,6 @@ export const routes: Routes = [
     path: 'p2p',
     component: P2pComponent,
     data: { tab: 'p2p' },
-    canDeactivate: [TrainingCardDeactivationGuardProvider],
+    canDeactivate: [ TrainingCardDeactivationGuardProvider ],
   },
 ];
