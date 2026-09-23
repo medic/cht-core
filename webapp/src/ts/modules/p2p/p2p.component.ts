@@ -50,8 +50,10 @@ export class P2pComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.supported = this.p2pService.isSupported();
-    this.canHost = await this.p2pService.canHost();
-    this.canJoin = await this.p2pService.canJoin();
+    [this.canHost, this.canJoin] = await Promise.all([
+      this.p2pService.canHost(),
+      this.p2pService.canJoin(),
+    ]);
     this.loading = false;
 
     this.subscriptions.add(this.p2pService.hostingResult()
