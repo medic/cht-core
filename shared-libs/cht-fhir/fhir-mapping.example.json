@@ -1,0 +1,79 @@
+{
+  "facade": {
+    "canonicalBase": "https://cht.example.org/api/v1/fhir",
+    "resources": {
+      "Patient/contact_type/person": {
+        "sourceFilter": null,
+        "elements": {
+          "Patient.name.text": { "source": { "kind": "doc", "path": "doc.name" } },
+          "Patient.gender": { "source": { "kind": "doc", "path": "doc.sex" } },
+          "Patient.birthDate": { "source": { "kind": "doc", "path": "doc.date_of_birth" } },
+          "Patient.deceasedDateTime": { "source": { "kind": "doc", "path": "doc.date_of_death" } },
+          "Patient.telecom.phone": { "source": { "kind": "doc", "path": "doc.phone" } },
+          "Patient.managingOrganization": { "source": { "kind": "doc", "path": "doc.parent._id" } }
+        },
+        "identifiers": [
+          {
+            "system": "{base}/identifier/patient-id",
+            "use": "official",
+            "type": {
+              "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+              "code": "MR",
+              "display": "Medical record number"
+            },
+            "source": { "kind": "doc", "path": "doc.patient_id" }
+          }
+        ]
+      },
+      "Encounter/form/app:pregnancy": {
+        "elements": {
+          "Encounter.status": { "source": { "kind": "const", "value": "finished" } },
+          "Encounter.class": { "source": { "kind": "const", "value": "HH" } },
+          "Encounter.type": { "source": { "kind": "const", "value": "Pregnancy registration" } },
+          "Encounter.period.start": { "source": { "kind": "doc", "path": "doc.reported_date" } },
+          "Encounter.subject": { "source": { "kind": "doc", "path": "doc.fields.inputs.contact._id" } },
+          "Encounter.participant.individual": { "source": { "kind": "doc", "path": "doc.contact._id" } }
+        },
+        "observations": {
+          "app:pregnancy/edd_8601": {
+            "include": true,
+            "codeSource": "question-mapping",
+            "valueMode": "valueDateTime",
+            "source": { "kind": "field", "path": "edd_8601" }
+          },
+          "app:pregnancy/lmp_date_8601": {
+            "include": true,
+            "codeSource": "question-mapping",
+            "valueMode": "valueDateTime",
+            "source": { "kind": "field", "path": "lmp_date_8601" }
+          },
+          "app:pregnancy/weeks_since_lmp": {
+            "include": true,
+            "codeSource": "ad-hoc",
+            "valueMode": "valueQuantity",
+            "unit": { "system": "http://unitsofmeasure.org", "code": "wk", "display": "wk" },
+            "source": { "kind": "field", "path": "weeks_since_lmp" }
+          }
+        }
+      }
+    }
+  },
+  "questionMappings": {
+    "app:pregnancy/edd_8601": {
+      "system": "http://loinc.org",
+      "code": "11778-8",
+      "display": "Delivery date Estimated"
+    },
+    "app:pregnancy/lmp_date_8601": {
+      "system": "http://loinc.org",
+      "code": "8665-2",
+      "display": "Last menstrual period start date"
+    }
+  },
+  "adHocCodeSystem": {
+    "canonical": "https://cht.example.org/api/v1/fhir/CodeSystem/cht-fields",
+    "codes": {
+      "app:pregnancy/weeks_since_lmp": { "code": "weeks-since-lmp", "display": "Weeks since LMP" }
+    }
+  }
+}

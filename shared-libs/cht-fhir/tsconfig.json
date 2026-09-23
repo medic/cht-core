@@ -1,0 +1,15 @@
+{
+  "extends": "@tsconfig/node22/tsconfig.json",
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "composite": true,
+    "declarationMap": true,
+    "outDir": "dist",
+    "sourceMap": true,
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo",
+  },
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ]
+}

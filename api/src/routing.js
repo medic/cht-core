@@ -42,6 +42,7 @@ const contact = require('./controllers/contact');
 const person = require('./controllers/person');
 const place = require('./controllers/place');
 const report = require('./controllers/report');
+const fhirController = require('./controllers/fhir');
 const { people, places } = require('@medic/contacts')(config, db, dataContext);
 const upgrade = require('./controllers/upgrade');
 const settings = require('./controllers/settings');
@@ -747,6 +748,13 @@ app.postJson('/api/v1/report/summary', report.v1.getSummaries);
 app.get('/api/v1/report/:uuid', report.v1.get);
 app.postJson('/api/v1/report', report.v1.create);
 app.putJson('/api/v1/report/:uuid', report.v1.update);
+
+// The FHIR facade. `/api/v1/fhir` is the FHIR service base, so clients
+// resolve `metadata` and every resource path relative to it. `metadata` must
+// stay ahead of the `:resourceType` route, or it would be read as a resource type.
+app.get('/api/v1/fhir/metadata', fhirController.v1.metadata);
+app.get('/api/v1/fhir/:resourceType', fhirController.v1.search);
+app.get('/api/v1/fhir/:resourceType/:id', fhirController.v1.read);
 
 app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
 
