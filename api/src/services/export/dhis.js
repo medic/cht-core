@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const moment = require('moment');
+const CalendarInterval = require('@medic/calendar-interval');
 
 const db = require('../../db');
 const config = require('../../config');
@@ -45,7 +46,7 @@ module.exports = async (filters, options = {}) => {
 
   const result = {
     dataSet,
-    completeDate: moment().format('YYYY-MM-DD'),
+    completeDate: CalendarInterval.toLocalIsoDate(moment()),
     period: moment(from).format('YYYYMM'),
     dataValues: buildDataValues(dhisTargetDefinitions, targetDocsInHierarchy, mapContactIdToOrgUnit),
   };
@@ -79,14 +80,7 @@ const fetch = {
   },
 
   targetDocsInMonth: async (timestamp, useBikramSambatMonths) => {
-    let interval;
-    if (useBikramSambatMonths) {
-      const { toBik } = require('bikram-sambat');
-      const bsDate = toBik(moment(timestamp).format('YYYY-MM-DD'));
-      interval = `${bsDate.year}-${String(bsDate.month).padStart(2, '0')}`;
-    } else {
-      interval = moment(timestamp).format('YYYY-MM');
-    }
+    const interval = CalendarInterval.getIntervalTag({ end: timestamp }, useBikramSambatMonths);
     const result = await db.medic.allDocs({
       startkey: `target~${interval}~`,
       endkey: `target~${interval}~\ufff0`,

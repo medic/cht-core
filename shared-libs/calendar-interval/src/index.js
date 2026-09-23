@@ -60,7 +60,7 @@ const getBSEnd = (bikramSambat, year, month, intervalStartDate) => {
 
 const getBikramSambatInterval = (intervalStartDate, referenceDate) => {
   const bikramSambat = require('bikram-sambat');
-  const bsRef = bikramSambat.toBik(referenceDate.clone().locale('en').format('YYYY-MM-DD'));
+  const bsRef = bikramSambat.toBik(toLocalIsoDate(referenceDate));
 
   let startBS;
   let endBS;
@@ -139,6 +139,25 @@ const getPreviousInterval = (intervalStartDate, referenceDate, useBikramSambatMo
   return getInterval(intervalStartDate, prevDate, useBikramSambatMonths);
 };
 
+/** Formats a date as an ASCII ISO date while preserving its local calendar day. */
+const toLocalIsoDate = date => moment(date).locale('en').format('YYYY-MM-DD');
+
+/** Formats the end month of an interval as an ASCII Gregorian or Bikram Sambat tag. */
+const getIntervalTag = (interval, useBikramSambatMonths) => {
+  const gregorianTag = moment(interval.end).locale('en').format('YYYY-MM');
+  if (!useBikramSambatMonths) {
+    return gregorianTag;
+  }
+
+  try {
+    const { toBik } = require('bikram-sambat');
+    const bsEnd = toBik(toLocalIsoDate(interval.end));
+    return `${bsEnd.year}-${String(bsEnd.month).padStart(2, '0')}`;
+  } catch {
+    return gregorianTag;
+  }
+};
+
 module.exports = {
   // Returns the timestamps of the start and end of the current calendar interval
   // @param {Number} [intervalStartDate=1] - day of month when interval starts
@@ -184,6 +203,10 @@ module.exports = {
   getInterval: (intervalStartDate, timestamp, useBikramSambatMonths) => {
     return getInterval(intervalStartDate, moment(timestamp), useBikramSambatMonths);
   },
+
+  toLocalIsoDate,
+
+  getIntervalTag,
 
   isEqual: (intervalA, intervalB) => !!intervalA &&
                                      intervalA?.start === intervalB?.start &&

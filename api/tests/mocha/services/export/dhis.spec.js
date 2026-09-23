@@ -106,13 +106,27 @@ describe('dhis export service', () => {
       mockTargetDoc('chu1', '2056-11'),
       mockTargetDoc('ignore1', '2000-02'), // Gregorian-tagged doc, should be ignored in BS mode
     ]);
- 
-    const actual = await service({
-      date: {
-        from: moment(NOW).valueOf(),
-      },
-      dataSet,
+
+    const previousLocale = moment.locale();
+    moment.defineLocale('dhis-export-test', {
+      parentLocale: 'en',
+      postformat: value => value.includes('-') ? value.replace(/\d/g, digit => 'ABCDEFGHIJ'[digit]) : value,
     });
+
+    let actual;
+    try {
+      moment.locale('dhis-export-test');
+      actual = await service({
+        date: {
+          from: moment(NOW).valueOf(),
+        },
+        dataSet,
+      });
+      expect(moment.locale()).to.equal('dhis-export-test');
+    } finally {
+      moment.locale(previousLocale);
+      moment.defineLocale('dhis-export-test', null);
+    }
  
     expect(actual).to.deep.eq({
       completeDate: '2000-02-21',
