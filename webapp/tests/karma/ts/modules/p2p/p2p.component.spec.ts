@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { Subject } from 'rxjs';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 
@@ -30,7 +30,7 @@ describe('P2p component', () => {
     TestBed.configureTestingModule({
       imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        NoopAnimationsModule,
+        BrowserAnimationsModule,
         P2pComponent,
       ],
       providers: [{ provide: P2pService, useValue: p2pService }],
