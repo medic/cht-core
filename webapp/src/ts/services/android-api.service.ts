@@ -5,6 +5,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { SessionService } from '@mm-services/session.service';
 import { NavigationService } from '@mm-services/navigation.service';
+import { P2pService } from '@mm-services/p2p.service';
 
 /**
  * An API to provide integration with the medic-android app.
@@ -24,6 +25,7 @@ export class AndroidApiService {
     private sessionService:SessionService,
     private zone:NgZone,
     private navigationService:NavigationService,
+    private readonly p2pService:P2pService,
   ) { }
 
   private runInZone(property:string, args:any[]=[]) {
@@ -214,6 +216,18 @@ export class AndroidApiService {
     this.androidAppLauncherService.resolveAndroidAppResponse(response);
   }
 
+  resolveP2pHostingResult(ok, detail) {
+    this.p2pService.hostingResolved(ok, detail);
+  }
+
+  resolveP2pPairing(ok, detail) {
+    this.p2pService.pairingResolved(ok, detail);
+  }
+
+  p2pPermissionsResolved(granted) {
+    this.p2pService.permissionsResolvedBy(granted);
+  }
+
   v1 = {
     back: () => this.runInZone('back'),
     logout: () => this.runInZone('logout'),
@@ -222,5 +236,8 @@ export class AndroidApiService {
     smsStatusUpdate: (...args) => this.runInZone('smsStatusUpdate', args),
     locationPermissionRequestResolved: () => this.runInZone('locationPermissionRequestResolve'),
     resolveCHTExternalAppResponse: (...args) => this.runInZone('resolveCHTExternalAppResponse', args),
+    resolveP2pHostingResult: (...args) => this.runInZone('resolveP2pHostingResult', args),
+    resolveP2pPairing: (...args) => this.runInZone('resolveP2pPairing', args),
+    p2pPermissionsResolved: (...args) => this.runInZone('p2pPermissionsResolved', args),
   };
 }

@@ -19,6 +19,7 @@ import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 import { HeaderLogoPipe, ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 
 import { HeaderTab, HeaderTabsService, SidebarTab } from '@mm-services/header-tabs.service';
+import { P2pService } from '@mm-services/p2p.service';
 
 export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
 
@@ -45,6 +46,8 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
   @Input() adminUrl;
   @Input() canLogOut;
 
+  /** Shown only for a user who can take part, on a device that can. */
+  p2pVisible = false;
   showPrivacyPolicy = false;
   // replicationStatus;
   currentTab;
@@ -58,6 +61,7 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
     protected readonly modalService: ModalService,
     protected readonly storageInfoService: StorageInfoService,
     private headerTabsService: HeaderTabsService,
+    private readonly p2pService: P2pService,
   ) {
     super(store, dbSyncService, modalService, storageInfoService);
   }
@@ -65,10 +69,24 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
   ngOnInit(): void {
     super.ngOnInit();
     this.additionalSubscriptions();
+    this.checkP2pVisibility();
     this.getHeaderTabs();
     this.headerTabsService
       .getSidebarTabs()
       .then(tabs => this.headerTabsForLegacySidebar = tabs);
+  }
+
+  /**
+   * Hides the entry unless the user can take part AND the device can, since a permitted user on a
+   * browser or an older phone would only find a page telling them so.
+   */
+  private async checkP2pVisibility() {
+    try {
+      this.p2pVisible = await this.p2pService.canHost() || await this.p2pService.canJoin();
+    } catch (err) {
+      console.debug('HeaderComponent :: could not check P2P visibility', err);
+      this.p2pVisible = false;
+    }
   }
 
   ngOnDestroy() {

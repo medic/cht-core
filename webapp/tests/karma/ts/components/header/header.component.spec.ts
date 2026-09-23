@@ -13,6 +13,7 @@ import { StorageInfoService } from '@mm-services/storage-info.service';
 import { HeaderTabsService } from '@mm-services/header-tabs.service';
 import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { ChangesService } from '@mm-services/changes.service';
+import { P2pService } from '@mm-services/p2p.service';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 import { Selectors } from '@mm-selectors/index';
 
@@ -26,6 +27,7 @@ describe('Header Component', () => {
   let headerTabsService;
   let customResourceService;
   let changesService;
+  let p2pService;
 
   beforeEach(waitForAsync(() => {
     dbSyncService = { sync: sinon.stub() };
@@ -49,6 +51,10 @@ describe('Header Component', () => {
     };
     changesService = {
       subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }),
+    };
+    p2pService = {
+      canHost: sinon.stub().resolves(false),
+      canJoin: sinon.stub().resolves(false),
     };
 
     const mockedSelectors = [
@@ -74,6 +80,7 @@ describe('Header Component', () => {
           { provide: HeaderTabsService, useValue: headerTabsService },
           { provide: CustomResourceService, useValue: customResourceService },
           { provide: ChangesService, useValue: changesService },
+          { provide: P2pService, useValue: p2pService },
         ]
       })
       .compileComponents()
