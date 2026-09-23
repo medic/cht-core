@@ -44,10 +44,10 @@ export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
 
 export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDestroy {
   @Input() adminUrl;
-  /** Shown only for a user who can take part, on a device that can. */
-  p2pVisible = false;
   @Input() canLogOut;
 
+  /** Shown only for a user who can take part, on a device that can. */
+  p2pVisible = false;
   showPrivacyPolicy = false;
   // replicationStatus;
   currentTab;
