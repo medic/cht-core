@@ -190,7 +190,9 @@ export class DBSyncService {
     return this.dbService.get().info().then(info => info.update_seq);
   }
 
-  private getLastReplicatedSeq(): number {
+  // Public because it is also how far the server is known to have received this device's data,
+  // which is what an offline data bundle is packed against.
+  getLastReplicatedSeq(): number {
     return Number(window.localStorage.getItem(LAST_REPLICATED_SEQ_KEY)) || 0;
   }
 
