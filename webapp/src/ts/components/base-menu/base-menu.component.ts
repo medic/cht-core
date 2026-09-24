@@ -10,23 +10,47 @@ import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 
 import { StorageInfo, StorageStatus } from '@mm-reducers/global';
 import { StorageInfoService } from '@mm-services/storage-info.service';
+import { P2pService } from '@mm-services/p2p.service';
 
 @Directive()
 export abstract class BaseMenuComponent implements OnInit, OnDestroy {
   protected subscriptions = new Subscription();
   protected replicationStatus;
   protected storageInfo?: StorageInfo;
+  /**
+   * Whether to offer sharing with a nearby device.
+   *
+   * Lives here because there are two menus, the header dropdown and the sidebar, and which one a
+   * user sees depends on `can_view_old_navigation`. An entry in only one of them is invisible to
+   * half the deployments.
+   */
+  p2pVisible = false;
 
   constructor(
     protected store: Store,
     protected dbSyncService: DBSyncService,
     protected modalService: ModalService,
-    protected storageInfoService: StorageInfoService
+    protected storageInfoService: StorageInfoService,
+    protected p2pService: P2pService,
   ) {}
 
   ngOnInit(): void {
     this.subscribeToStore();
     this.storageInfoService.init();
+    this.checkP2pVisibility();
+  }
+
+  /**
+   * Hidden unless the user may take part AND the device can, since a permitted user on a browser or
+   * an older phone would only find a page telling them so.
+   */
+  private async checkP2pVisibility() {
+    try {
+      this.p2pVisible = await this.p2pService.canHost() || await this.p2pService.canJoin();
+    } catch (err) {
+      console.debug('BaseMenuComponent :: could not check P2P visibility', err);
+      this.p2pVisible = false;
+    }
   }
 
   ngOnDestroy(): void {

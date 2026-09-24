@@ -20,6 +20,7 @@ import { StorageInfoService } from '@mm-services/storage-info.service';
 
 import { filter } from 'rxjs/operators';
 import { Selectors } from '@mm-selectors/index';
+import { P2pService } from '@mm-services/p2p.service';
 import { HeaderTabsService, SidebarTab } from '@mm-services/header-tabs.service';
 
 @Component({
@@ -57,9 +58,10 @@ export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, O
     protected modalService: ModalService,
     private router: Router,
     protected readonly storageInfoService: StorageInfoService,
-    private readonly headerTabsService: HeaderTabsService
+    private readonly headerTabsService: HeaderTabsService,
+    p2pService: P2pService,
   ) {
-    super(store, dbSyncService, modalService, storageInfoService);
+    super(store, dbSyncService, modalService, storageInfoService, p2pService);
     this.globalActions = new GlobalActions(store);
   }
 
