@@ -1,16 +1,21 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatCard, MatCardContent, MatCardHeader, MatCardTitle } from '@angular/material/card';
 import { MatButton } from '@angular/material/button';
+import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
+import { FormsModule } from '@angular/forms';
 import { MatProgressBar } from '@angular/material/progress-bar';
 import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
 import { FeedbackService } from '@mm-services/feedback.service';
+import { BundleScope } from '@mm-services/offline-data-bundle.service';
+import { OfflineSyncBundleStoreService } from '@mm-services/offline-sync-bundle-store.service';
 import { HostingSession, OfflineSyncResult, OfflineSyncService } from '@mm-services/offline-sync.service';
+import { OfflineSyncTransferService } from '@mm-services/offline-sync-transfer.service';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 
 /** What the screen is doing right now. */
-type OfflineSyncState = 'idle' | 'starting' | 'hosting' | 'joining' | 'paired' | 'failed';
+type OfflineSyncState = 'idle' | 'starting' | 'hosting' | 'joining' | 'paired' | 'sending' | 'sent' | 'failed';
 
 @Component({
   templateUrl: './offline-sync.component.html',
@@ -22,6 +27,9 @@ type OfflineSyncState = 'idle' | 'starting' | 'hosting' | 'joining' | 'paired' |
     MatCardContent,
     MatButton,
     MatProgressBar,
+    MatRadioButton,
+    MatRadioGroup,
+    FormsModule,
     TranslateDirective,
     TranslatePipe,
   ],
@@ -37,8 +45,19 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   password: string | null = null;
   /** Set only once joined: what the host calls itself, so the user can confirm the right device. */
   hostLabel: string | null = null;
-  /** A translation key, not text from the native side. */
+  /** A translation key, never a message built natively. */
   errorKey: string | null = null;
+
+  /**
+   * How far back to send. `sync` covers everything the server has not confirmed receiving, which
+   * re-sends anything handed to a relay that never arrived; `export` covers only what is new since
+   * the last handover and trusts that the earlier ones landed.
+   */
+  scope: BundleScope = 'sync';
+  /** How many bundles the host took, shown once a handover finishes. */
+  delivered = 0;
+  /** How many bundles this device is carrying for other people. */
+  carrying = 0;
 
   supported = false;
   canHost = false;
@@ -48,6 +67,8 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   constructor(
     private readonly offlineSyncService: OfflineSyncService,
     private readonly feedbackService: FeedbackService,
+    private readonly bundleStoreService: OfflineSyncBundleStoreService,
+    private readonly transferService: OfflineSyncTransferService,
   ) { }
 
   async ngOnInit() {
@@ -72,6 +93,8 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
     // offering the action rather than leaving them looking at a message they have already acted on.
     this.subscriptions.add(this.offlineSyncService.permissionsResolved()
       .subscribe(granted => granted && this.startOver()));
+    this.subscriptions.add(this.offlineSyncService.bundleReceived()
+      .subscribe(() => this.collectBundles()));
   }
 
   ngOnDestroy() {
@@ -119,6 +142,35 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
     this.state = 'hosting';
   }
 
+  /**
+   * Hands this device's data to the paired host.
+   *
+   * Nothing is retried here. A handover that stops leaves the rest of the data on this device and
+   * the user is told, because a relay that has gone out of range is not something to work around
+   * quietly.
+   */
+  async send() {
+    this.state = 'sending';
+    this.errorKey = null;
+    try {
+      this.delivered = await this.transferService.handOver(this.scope);
+      this.state = 'sent';
+    } catch (err: any) {
+      this.fail(err?.message);
+    }
+  }
+
+  /** Takes what a peer has just delivered into this device's store. */
+  private async collectBundles() {
+    try {
+      this.carrying += await this.bundleStoreService.collect();
+    } catch (err: any) {
+      // The bundle stays on the native side and is collected again, so this is worth reporting
+      // without tearing down a session that is otherwise working.
+      console.error('OfflineSyncComponent :: Error collecting a delivered bundle', err);
+    }
+  }
+
   private onPairingResult(result: OfflineSyncResult) {
     if (!result.ok) {
       return this.fail(result.detail, result.diagnostic);
@@ -163,5 +215,6 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
     this.password = null;
     this.hostLabel = null;
     this.errorKey = null;
+    this.delivered = 0;
   }
 }
