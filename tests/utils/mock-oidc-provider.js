@@ -38,14 +38,21 @@ const generateIdToken =  (issuer) => {
     expiresIn: 3600,
   };
   const { privateKey }  = getJWT_KEYS();
+  const claims = {
+    preferred_username: 'testuser',
+    sub: '12345',
+    name: 'John Doe',
+    aud: 'cht',
+    email: EMAIL,
+  };
+  
+  // Include auth_time if provided
+  if (authTime !== null) {
+    claims.auth_time = authTime;
+  }
+  
   return jwt.sign(
-    {
-      preferred_username: 'testuser',
-      sub: '12345',
-      name: 'John Doe',
-      aud: 'cht',
-      email: EMAIL,
-    },
+    claims,
     { key: privateKey.replace(/\\n/gm, '\n'), passphrase: SECRET },
     payload
   );
@@ -53,6 +60,7 @@ const generateIdToken =  (issuer) => {
 
 const mockApp = express();
 let server;
+let authTime = null;
 
 mockApp.use(bodyParser.json());
 mockApp.use(bodyParser.urlencoded({ extended: true }));
@@ -142,6 +150,11 @@ const stopOidcServer = () => {
 
   server.close();
   server = null;
+  authTime = null;
+};
+
+const setAuthTime = (time) => {
+  authTime = time;
 };
 
 module.exports = {
@@ -150,5 +163,6 @@ module.exports = {
   getDiscoveryUrl: () => `${getOidcBaseUrl()}.well-known/openid-configuration`,
   appTokenUrl,
   startOidcServer,
-  stopOidcServer
+  stopOidcServer,
+  setAuthTime
 };
