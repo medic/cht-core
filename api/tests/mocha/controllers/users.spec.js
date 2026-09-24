@@ -1053,6 +1053,7 @@ describe('Users Controller', () => {
       sinon.stub(auth, 'basicAuthCredentials').returns(false);
       sinon.stub(users, 'setDeviceKey').resolves();
       sinon.stub(secureSettings, 'setCredentials').resolves();
+      sinon.stub(secureSettings, 'getCredentials').resolves();
       sinon.stub(age, 'generateIdentity').resolves('AGE-SECRET-KEY-1SERVER');
       sinon.stub(age, 'identityToRecipient').resolves('age1serverrecipient');
       sinon.stub(signing, 'isValidPublicKey').resolves(true);

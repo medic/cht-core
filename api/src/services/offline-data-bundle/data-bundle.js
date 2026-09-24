@@ -296,8 +296,12 @@ const getUserDoc = (username) => users
   });
 
 // Resolves both halves of the per-(user, device) key material: the device's registered signing
-// public key from the _users doc, and the server's encryption private key for that device from the
+// public key from the _users doc, and the server's encryption private keys for that device from the
 // secureSettings vault. Either being absent means the server never registered this device.
+//
+// Keys plural: a device that was reinstalled or replaced re-registers and gets a new one, while a
+// bundle it sealed beforehand may still be on its way. Keeping the previous few means that bundle
+// can still be opened, and the device that made it no longer holds the data.
 const getKeys = async (envelope) => {
   const { user, device_id: deviceId } = envelope;
   const [deviceSigningKey, serverEncryptionKey] = await Promise.all([
@@ -306,11 +310,11 @@ const getKeys = async (envelope) => {
   ]);
 
   // The caller gets one error either way, but log which half is missing so this is debuggable.
-  if (!deviceSigningKey || !serverEncryptionKey) {
+  if (!deviceSigningKey || !serverEncryptionKey.length) {
     if (!deviceSigningKey) {
       logger.error(`offline-data-bundle: no registered device key for ${user}/${deviceId}.`);
     }
-    if (!serverEncryptionKey) {
+    if (!serverEncryptionKey.length) {
       logger.error(`offline-data-bundle: no server key material for ${user}/${deviceId}.`);
     }
     throw new BadRequestError('Unknown device.');
