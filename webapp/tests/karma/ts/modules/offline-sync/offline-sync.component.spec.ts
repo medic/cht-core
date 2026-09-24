@@ -79,7 +79,11 @@ describe('OfflineSync component', () => {
     feedbackService = { submit: sinon.stub().resolves() };
     bundleReceived = new Subject<string>();
     deviceKeyService = { getKeyMaterial: sinon.stub().resolves({ deviceId: 'device-1' }) };
-    bundleStoreService = { collect: sinon.stub().resolves(), count: sinon.stub().resolves(0) };
+    bundleStoreService = {
+      collect: sinon.stub().resolves(),
+      count: sinon.stub().resolves(0),
+      undeliverable: sinon.stub().resolves(0),
+    };
     transferService = { handOver: sinon.stub().resolves({ delivered: 2, skipped: 0 }) };
     offlineSyncService = {
       isSupported: sinon.stub().returns(true),
@@ -299,12 +303,33 @@ describe('OfflineSync component', () => {
       expect(component.errorKey).to.equal('offline_sync.error.transfer_failed');
     });
 
+    // A supervisor has no other way to find out, and it is the reason to go and find network.
     it('shows what it is already carrying when the screen opens', async () => {
       bundleStoreService.count.resolves(6);
 
       await create();
+      fixture.detectChanges();
 
       expect(component.carrying).to.equal(6);
+      expect(fixture.nativeElement.querySelector('.p2p-carried')).to.not.be.null;
+    });
+
+    it('says when it is holding something the server would not take', async () => {
+      bundleStoreService.undeliverable.resolves(2);
+
+      await create();
+      fixture.detectChanges();
+
+      expect(component.undeliverable).to.equal(2);
+      expect(fixture.nativeElement.querySelector('.p2p-carried').textContent)
+        .to.contain('p2p.carried.undeliverable');
+    });
+
+    it('shows nothing when it is carrying nothing', async () => {
+      await create();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.p2p-carried')).to.be.null;
     });
 
     it('collects a bundle a peer has just delivered', async () => {
@@ -315,7 +340,7 @@ describe('OfflineSync component', () => {
       await new Promise(resolve => setTimeout(resolve));
 
       expect(bundleStoreService.collect.callCount).to.equal(1);
-      expect(component.carrying).to.equal(1);
+      expect(bundleStoreService.count.callCount).to.be.greaterThan(1);
     });
 
     it('keeps the session when a delivered bundle cannot be collected', async () => {

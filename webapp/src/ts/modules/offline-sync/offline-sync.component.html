@@ -104,6 +104,7 @@
             <p>{{ 'offline_sync.host.carrying' | translate:{ count: carrying } }}</p>
           }
           <button mat-button color="primary" (click)="stopHosting()">{{ 'offline_sync.host.stop' | translate }}</button>
+          <button mat-stroked-button (click)="stopHosting()" translate>offline_sync.host.stop</button>
         </mat-card-content>
       </mat-card>
     }
@@ -153,6 +154,24 @@
             <p>{{ 'offline_sync.transfer.too_large' | translate:{ count: skipped } }}</p>
           }
           <button mat-button color="primary" (click)="leaveSession()">{{ 'offline_sync.peer.leave' | translate }}</button>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <!-- What this phone is holding for other people, shown whatever the screen is doing: a
+         supervisor has no other way to find out, and it is the reason to go and find network. -->
+    @if (carrying || undeliverable) {
+      <mat-card class="offline-sync-carried">
+        <mat-card-header>
+          <mat-card-title translate>offline_sync.carried.title</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @if (carrying) {
+            <p>{{ 'offline_sync.carried.description' | translate:{ count: carrying } }}</p>
+          }
+          @if (undeliverable) {
+            <p>{{ 'offline_sync.carried.undeliverable' | translate:{ count: undeliverable } }}</p>
+          }
         </mat-card-content>
       </mat-card>
     }
