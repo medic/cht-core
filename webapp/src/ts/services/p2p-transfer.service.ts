@@ -27,11 +27,19 @@ export class P2pTransferService {
    */
   async handOver(scope: BundleScope): Promise<number> {
     let delivered = 0;
-    for await (const bundle of this.bundleService.packBundles(this.bundleService.getPosition(scope))) {
-      await this.deliver(bundle);
-      this.bundleService.recordExported(bundle.lastSeq);
-      delivered += 1;
+    this.p2pService.transferStarted();
+    try {
+      for await (const bundle of this.bundleService.packBundles(this.bundleService.getPosition(scope))) {
+        await this.deliver(bundle);
+        this.bundleService.recordExported(bundle.lastSeq);
+        delivered += 1;
+        this.p2pService.transferProgress(delivered);
+      }
+    } catch (err) {
+      this.p2pService.transferFinished(false);
+      throw err;
     }
+    this.p2pService.transferFinished(true);
     return delivered;
   }
 
@@ -46,6 +54,9 @@ export class P2pTransferService {
     for (let offset = 0; offset < bundle.ciphertext.length; offset += BRIDGE_CHUNK_BYTES) {
       const chunk = bundle.ciphertext.subarray(offset, offset + BRIDGE_CHUNK_BYTES);
       if (!this.p2pService.writeBundle(id, toBase64(chunk))) {
+        // Half a bundle is of no use to anyone: the next attempt packs the same data again from
+        // the position this one never moved.
+        this.p2pService.abortBundle(id);
         throw new Error('bundle_write_failed');
       }
     }
