@@ -129,14 +129,9 @@ export class OfflineSyncBundleStoreService {
     return this.db.remove(bundle);
   }
 
-  /** How many bundles this device is carrying. */
-  /**
-   * Counted from the documents rather than `info().doc_count`, which PouchDB does not increment for a
-   * document written with an inline attachment, and every bundle has one.
-   */
+  /** How many bundles are still waiting to reach the server. */
   async count(): Promise<number> {
-    const response = await this.db.allDocs();
-    return response.rows.length;
+    return (await this.pending()).length;
   }
 
   /**
