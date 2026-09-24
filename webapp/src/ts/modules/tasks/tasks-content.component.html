@@ -47,7 +47,7 @@
     </div>
   </div>
 
-  <div class="task-wrap" [hidden]="!selectedTask || !form || loadingForm || loadingContent || contentError">
+  <div class="task-wrap" [class.content-loading]="!selectedTask || !form || loadingForm || loadingContent || contentError">
     <div class="body">
       <mm-enketo formId="task-report" [status]="enketoStatus" (onSubmit)="save()" (onCancel)="navigationCancel()"></mm-enketo>
     </div>
