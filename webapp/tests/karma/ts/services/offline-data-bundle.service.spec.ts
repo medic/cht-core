@@ -53,6 +53,7 @@ describe('OfflineDataBundle service', () => {
 
   afterEach(() => {
     window.localStorage.removeItem('medic-last-exported-seq');
+    window.localStorage.removeItem('medic-last-bundle-seq');
     sinon.restore();
   });
 
@@ -128,6 +129,28 @@ describe('OfflineDataBundle service', () => {
     const [bundle] = await collect();
 
     expect(Object.keys(openEnvelope(bundle)).sort((a, b) => a.localeCompare(b))).to.deep.equal(['bundle_seq', 'device_id', 'user']);
+  });
+
+  // A relay orders bundles by this number and spots a gap with it, so two bundles from the same
+  // device must never share one.
+  it('numbers bundles across handovers, not within one', async () => {
+    medicDb.changes.resolves(onePageOf([{ _id: 'a' }]));
+
+    const [first] = await collect();
+    const [second] = await collect();
+
+    expect(openEnvelope(first).bundle_seq).to.equal(1);
+    expect(openEnvelope(second).bundle_seq).to.equal(2);
+  });
+
+  // They arrive by replication and the server drops them again on the way in, so a bundle spent
+  // on one is a bundle wasted.
+  it('leaves design documents out', async () => {
+    medicDb.changes.resolves(onePageOf([{ _id: '_design/medic-client' }, { _id: 'report-1' }]));
+
+    const [bundle] = await collect();
+
+    expect((await openBundle(bundle)).map(doc => doc._id)).to.deep.equal(['report-1']);
   });
 
   it('packs the docs in the order they changed', async () => {
