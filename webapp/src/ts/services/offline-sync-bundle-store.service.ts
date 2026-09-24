@@ -5,9 +5,14 @@ import { BRIDGE_CHUNK_BYTES, OfflineSyncService, ReceivedBundle } from '@mm-serv
 
 export interface StoredBundle {
   _id: string;
+  _rev?: string;
   envelope: string;
   signature: string;
   received_date: number;
+  /** How many times the server has refused this bundle for a reason that might not last. */
+  attempts?: number;
+  /** Set once it is no longer worth offering. The bytes are kept: nothing else holds them. */
+  undeliverable?: boolean;
 }
 
 /**
@@ -75,13 +80,43 @@ export class OfflineSyncBundleStoreService {
     this.offlineSyncService.deleteBundle(bundle.id);
   }
 
-  /** Every bundle waiting to be delivered to the server, oldest first, which is the order they
-   * must leave in: a relay carrying two bundles from one device carries them in sequence. */
+  /**
+   * Every bundle still worth offering to the server, oldest first.
+   *
+   * Oldest first because a relay carrying two bundles from one device carries them in sequence,
+   * and the server has to see them in that order.
+   */
   async pending(): Promise<StoredBundle[]> {
     const response = await this.db.allDocs({ include_docs: true });
     return response.rows
       .map(row => row.doc)
+      .filter(doc => !doc.undeliverable)
       .sort((left, right) => left.received_date - right.received_date);
+  }
+
+  /** How many bundles this device is holding that the server would not take. */
+  async undeliverable(): Promise<number> {
+    const response = await this.db.allDocs({ include_docs: true });
+    return response.rows.filter(row => row.doc.undeliverable).length;
+  }
+
+  /** Counts a refusal that might not last, and answers how many there have now been. */
+  async recordAttempt(id: string): Promise<number> {
+    const doc = await this.db.get(id);
+    const attempts = (doc.attempts || 0) + 1;
+    await this.db.put({ ...doc, attempts });
+    return attempts;
+  }
+
+  /**
+   * Stops offering a bundle, without throwing it away.
+   *
+   * The bytes stay on the phone because no one else has them: this device cannot read the bundle
+   * to judge what is in it, so destroying it is not a call it is in any position to make.
+   */
+  async markUndeliverable(id: string, reason: number) {
+    const doc = await this.db.get(id);
+    await this.db.put({ ...doc, undeliverable: true, undeliverable_status: reason });
   }
 
   /** The sealed bytes of one stored bundle, ready to send on untouched. */
@@ -89,10 +124,9 @@ export class OfflineSyncBundleStoreService {
     return this.db.getAttachment(id, PAYLOAD);
   }
 
-  /** Drops a bundle the server has taken, or one it will never take. */
-  async remove(id: string) {
-    const doc = await this.db.get(id);
-    await this.db.remove(doc);
+  /** Drops a bundle the server has taken. The caller already holds the doc, so no second read. */
+  remove(bundle: StoredBundle) {
+    return this.db.remove(bundle);
   }
 
   /** How many bundles this device is carrying. */

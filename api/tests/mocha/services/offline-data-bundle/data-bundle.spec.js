@@ -7,7 +7,7 @@ const { ReadableStream } = require('stream/web');
 const db = require('../../../../src/db');
 const auth = require('../../../../src/auth');
 const logger = require('@medic/logger');
-const { BadRequestError, PayloadTooLargeError } = require('../../../../src/errors');
+const { BadRequestError, PayloadTooLargeError, PermissionError } = require('../../../../src/errors');
 const age = require('../../../../src/services/offline-data-bundle/age');
 const signing = require('../../../../src/services/offline-data-bundle/signing');
 const serverKey = require('../../../../src/services/offline-data-bundle/server-key');
@@ -426,12 +426,14 @@ describe('offline-data-bundle data-bundle service', () => {
   });
 
   describe('user', () => {
+    // 403 and not 400: nothing is wrong with the bundle, it is the origin user's setup. A relay
+    // told 400 has reason to treat the bundle as spoiled, and it holds the only copy.
     it('rejects an online-only user before any payload is read', async () => {
       auth.isOnlineOnly.returns(true);
       const decryptStream = stubDecryptStream(ndjson([{ _id: 'a' }]));
 
       await expect(service.process(encode(envelopeFor()), 'sig', bodyStream()))
-        .to.be.rejectedWith(BadRequestError, 'Bundles can only be ingested for offline users.');
+        .to.be.rejectedWith(PermissionError, 'Bundles can only be ingested for offline users.');
       expect(decryptStream.called).to.be.false;
       expect(db.medic.bulkDocs.called).to.be.false;
     });
@@ -441,7 +443,7 @@ describe('offline-data-bundle data-bundle service', () => {
       const decryptStream = stubDecryptStream(ndjson([{ _id: 'a' }]));
 
       await expect(service.process(encode(envelopeFor()), 'sig', bodyStream()))
-        .to.be.rejectedWith(BadRequestError, 'This user cannot send offline data bundles.');
+        .to.be.rejectedWith(PermissionError, 'This user cannot send offline data bundles.');
       expect(auth.hasAllPermissions.args[0]).to.deep.equal([
         { name: USER, roles: ['chw'] },
         ['can_send_offline_data_bundle'],

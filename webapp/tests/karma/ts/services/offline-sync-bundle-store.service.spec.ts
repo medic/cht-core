@@ -169,11 +169,40 @@ describe('OfflineSyncBundleStore service', () => {
     });
 
     it('removes a bundle that has been delivered', async () => {
+      const bundle: any = { _id: 'bundle-1', _rev: '1-a' };
+
+      await service.remove(bundle);
+
+      expect(bundlesDb.remove.args).to.deep.equal([[bundle]]);
+    });
+
+    it('leaves out a bundle it has stopped offering', async () => {
+      bundlesDb.allDocs.resolves({ rows: [
+        { doc: { _id: 'good', received_date: 100 } },
+        { doc: { _id: 'refused', received_date: 200, undeliverable: true } },
+      ] });
+
+      expect((await service.pending()).map(doc => doc._id)).to.deep.equal(['good']);
+      expect(await service.undeliverable()).to.equal(1);
+    });
+
+    it('counts how often the server has refused a bundle', async () => {
+      bundlesDb.get.resolves({ _id: 'bundle-1', _rev: '1-a', attempts: 2 });
+
+      expect(await service.recordAttempt('bundle-1')).to.equal(3);
+      expect(bundlesDb.put.args[0][0].attempts).to.equal(3);
+    });
+
+    // The bytes stay: this device cannot read a bundle to judge what is in it, and it holds the
+    // only copy, so stopping is as far as it may go.
+    it('keeps a bundle it has stopped offering', async () => {
       bundlesDb.get.resolves({ _id: 'bundle-1', _rev: '1-a' });
 
-      await service.remove('bundle-1');
+      await service.markUndeliverable('bundle-1', 400);
 
-      expect(bundlesDb.remove.args).to.deep.equal([[{ _id: 'bundle-1', _rev: '1-a' }]]);
+      expect(bundlesDb.put.args[0][0].undeliverable).to.be.true;
+      expect(bundlesDb.put.args[0][0].undeliverable_status).to.equal(400);
+      expect(bundlesDb.remove.notCalled).to.be.true;
     });
   });
 });
