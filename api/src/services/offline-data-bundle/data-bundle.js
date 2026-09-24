@@ -8,7 +8,7 @@ const config = require('../../config');
 const dataContext = require('../data-context');
 const auth = require('../../auth');
 const { users } = require('@medic/user-management')(config, db, dataContext);
-const { BadRequestError, PayloadTooLargeError } = require('../../errors');
+const { BadRequestError, PayloadTooLargeError, PermissionError } = require('../../errors');
 const age = require('./age');
 const signing = require('./signing');
 const serverKey = require('./server-key');
@@ -102,13 +102,18 @@ const unpackHeaders = (encodedEnvelope, signature) => {
 // facility_id/contact_id onto it. Resolved BEFORE the payload is touched: a user who may not send
 // bundles, or who is online-only and so must never be pushed through the offline
 // write-authorization pipeline, is cheap to find out about.
+//
+// Both refusals here are 403 and not 400, and the difference matters to the caller. Nothing is
+// wrong with the bundle: it is the origin user's roles or permissions that do not allow it, and an
+// administrator can change either in a minute. A relay told 400 has every reason to treat the
+// bundle as spoiled and stop carrying it, and it holds the only copy.
 const getOfflineUserCtx = async (username) => {
   const userCtx = await auth.getUserSettings({ name: username });
   if (auth.isOnlineOnly(userCtx)) {
-    throw new BadRequestError('Bundles can only be ingested for offline users.');
+    throw new PermissionError('Bundles can only be ingested for offline users.');
   }
   if (!auth.hasAllPermissions(userCtx, [SEND_PERMISSION])) {
-    throw new BadRequestError('This user cannot send offline data bundles.');
+    throw new PermissionError('This user cannot send offline data bundles.');
   }
   return userCtx;
 };

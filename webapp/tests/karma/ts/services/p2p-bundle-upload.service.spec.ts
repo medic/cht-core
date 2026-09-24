@@ -18,6 +18,7 @@ describe('P2pBundleUpload service', () => {
   let bundleStoreService;
   let dbSyncService;
   let syncListener;
+  let payload;
 
   const stored = (id, receivedDate = 1) => ({
     _id: id,
@@ -28,10 +29,14 @@ describe('P2pBundleUpload service', () => {
 
   beforeEach(() => {
     authService = { has: sinon.stub().resolves(true) };
+    payload = new Blob(['ciphertext']);
     bundleStoreService = {
+      collect: sinon.stub().resolves(0),
       pending: sinon.stub().resolves([]),
-      getPayload: sinon.stub().resolves(new Blob(['ciphertext'])),
+      getPayload: sinon.stub().resolves(payload),
       remove: sinon.stub().resolves(),
+      recordAttempt: sinon.stub().resolves(1),
+      markUndeliverable: sinon.stub().resolves(),
     };
     dbSyncService = { subscribe: sinon.stub().callsFake(listener => syncListener = listener) };
 
@@ -61,8 +66,15 @@ describe('P2pBundleUpload service', () => {
    * takes more than one turn of the loop to reach the wire.
    */
   const answer = async (status?: number) => {
-    await new Promise(resolve => setTimeout(resolve));
-    const request = httpMock.expectOne(URL);
+    // Polled rather than waiting a fixed number of turns: how many awaits it takes to reach the
+    // wire is an implementation detail, and a helper that encodes it would report a timing miss as
+    // a missing request.
+    let matches = httpMock.match(URL);
+    for (let attempt = 0; !matches.length && attempt < 20; attempt++) {
+      await new Promise(resolve => setTimeout(resolve));
+      matches = httpMock.match(URL);
+    }
+    const [request] = matches;
     if (status) {
       request.flush('nope', { status, statusText: 'rejected' });
     } else {
@@ -86,6 +98,8 @@ describe('P2pBundleUpload service', () => {
     expect(request.request.headers.get('X-Medic-Bundle-Envelope')).to.equal('envelope-bundle-1');
     expect(request.request.headers.get('X-Medic-Bundle-Signature')).to.equal('signature-bundle-1');
     expect(request.request.headers.get('Content-Type')).to.equal('application/octet-stream');
+    // The bytes themselves, not the document that describes them.
+    expect(request.request.body).to.equal(payload);
     expect(await delivered).to.equal(1);
   });
 
@@ -96,7 +110,7 @@ describe('P2pBundleUpload service', () => {
     await answer();
     await delivered;
 
-    expect(bundleStoreService.remove.args).to.deep.equal([['bundle-1']]);
+    expect(bundleStoreService.remove.args[0][0]._id).to.equal('bundle-1');
   });
 
   it('sends the oldest first', async () => {
@@ -107,7 +121,7 @@ describe('P2pBundleUpload service', () => {
     await answer();
 
     expect(await delivered).to.equal(2);
-    expect(bundleStoreService.remove.args).to.deep.equal([['older'], ['newer']]);
+    expect(bundleStoreService.remove.args.map(([doc]) => doc._id)).to.deep.equal(['older', 'newer']);
   });
 
   // The server was unreachable or broke: the bundle is still good and is the only copy anyone has.
@@ -122,27 +136,60 @@ describe('P2pBundleUpload service', () => {
   });
 
   /**
-   * A bundle the server will refuse every time, most likely sealed to a key it has since replaced.
-   * Keeping it would mean retrying it on every sync for as long as the phone lasts.
+   * A 400 from this endpoint is eight different things, and several of them are an administrator
+   * not having finished setting the CHW up. Discarding on the first one destroys health data that
+   * nothing else holds a copy of.
    */
-  it('gives up on a bundle the server will never take', async () => {
+  it('keeps a bundle refused with a 400, because that may not be about the bundle', async () => {
     bundleStoreService.pending.resolves([stored('bundle-1')]);
 
     const delivered = service.deliverPending();
     await answer(400);
 
-    expect(await delivered).to.equal(1);
-    expect(bundleStoreService.remove.args).to.deep.equal([['bundle-1']]);
+    expect(await delivered).to.equal(0);
+    expect(bundleStoreService.remove.notCalled).to.be.true;
+    expect(bundleStoreService.markUndeliverable.notCalled).to.be.true;
+    expect(bundleStoreService.recordAttempt.args).to.deep.equal([['bundle-1']]);
   });
 
-  it('gives up on a bundle the server says is too large', async () => {
+  // Enough tries for someone to fix a permission, then it stops holding up everything behind it.
+  it('stops offering a bundle the server has refused too many times', async () => {
+    bundleStoreService.pending.resolves([stored('bundle-1')]);
+    bundleStoreService.recordAttempt.resolves(10);
+
+    const delivered = service.deliverPending();
+    await answer(400);
+    await delivered;
+
+    expect(bundleStoreService.markUndeliverable.args).to.deep.equal([['bundle-1', 400]]);
+    expect(bundleStoreService.remove.notCalled).to.be.true;
+  });
+
+  // It is over the size limit and will not shrink, so there is nothing to wait for.
+  it('stops offering a bundle that is too large straight away', async () => {
     bundleStoreService.pending.resolves([stored('bundle-1')]);
 
     const delivered = service.deliverPending();
     await answer(413);
     await delivered;
 
-    expect(bundleStoreService.remove.args).to.deep.equal([['bundle-1']]);
+    expect(bundleStoreService.markUndeliverable.args).to.deep.equal([['bundle-1', 413]]);
+    expect(bundleStoreService.recordAttempt.notCalled).to.be.true;
+  });
+
+  // Nothing this device does may destroy a bundle except the server confirming it has it.
+  it('never deletes a bundle the server did not take', async () => {
+    bundleStoreService.pending.resolves([stored('bundle-1')]);
+    bundleStoreService.recordAttempt.resolves(10);
+
+    for (const status of [400, 413, 401, 403, 500]) {
+      bundleStoreService.remove.resetHistory();
+      const delivered = service.deliverPending();
+      await answer(status);
+      await delivered;
+
+      expect(bundleStoreService.remove.notCalled, `deleted on ${status}`).to.be.true;
+    }
   });
 
   // Bundles from one device are a sequence, so a later one must not overtake an earlier one that
@@ -170,7 +217,15 @@ describe('P2pBundleUpload service', () => {
       await answer();
       await done;
 
-      expect(bundleStoreService.remove.args).to.deep.equal([['bundle-1']]);
+      expect(bundleStoreService.remove.args[0][0]._id).to.equal('bundle-1');
+    });
+
+    // The screen that takes bundles off the native side only exists while it is open, so a
+    // handover the supervisor walked away from would otherwise sit there for good.
+    it('takes anything waiting on the native side before delivering', async () => {
+      await sync({ to: SyncStatus.Success });
+
+      expect(bundleStoreService.collect.calledBefore(bundleStoreService.pending)).to.be.true;
     });
 
     it('does nothing when the sync did not get through', async () => {
