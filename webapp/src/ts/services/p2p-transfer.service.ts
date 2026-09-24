@@ -1,13 +1,9 @@
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
+import { toBase64 } from '../base64';
 import { BundleScope, OfflineDataBundleService, SealedBundle } from '@mm-services/offline-data-bundle.service';
-import { P2pService } from '@mm-services/p2p.service';
-
-// How much of a bundle to push across the bridge per call. A bundle is megabytes and a single
-// call that size risks the WebView, so it goes over in pieces. A multiple of 3 so each chunk
-// base64-encodes without padding, which is what lets the chunks be joined again on the way back.
-const CHUNK_BYTES = 3 * 128 * 1024;
+import { BRIDGE_CHUNK_BYTES, P2pService } from '@mm-services/p2p.service';
 
 /**
  * Hands this device's data to a paired relay.
@@ -45,8 +41,10 @@ export class P2pTransferService {
       throw new Error('bundle_open_failed');
     }
 
-    for (let offset = 0; offset < bundle.ciphertext.length; offset += CHUNK_BYTES) {
-      const chunk = bundle.ciphertext.subarray(offset, offset + CHUNK_BYTES);
+    // A bundle is megabytes, too much for one call, so it goes over in pieces. Native decodes
+    // each piece on its own, so nothing here depends on how they line up.
+    for (let offset = 0; offset < bundle.ciphertext.length; offset += BRIDGE_CHUNK_BYTES) {
+      const chunk = bundle.ciphertext.subarray(offset, offset + BRIDGE_CHUNK_BYTES);
       if (!this.p2pService.writeBundle(id, toBase64(chunk))) {
         throw new Error('bundle_write_failed');
       }
@@ -62,7 +60,3 @@ export class P2pTransferService {
     }
   }
 }
-
-const toBase64 = (bytes: Uint8Array): string => {
-  return window.btoa(Array.from(bytes, byte => String.fromCodePoint(byte)).join(''));
-};

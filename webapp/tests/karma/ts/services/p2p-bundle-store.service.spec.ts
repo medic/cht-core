@@ -8,6 +8,7 @@ import { P2pService } from '@mm-services/p2p.service';
 
 describe('P2pBundleStore service', () => {
   const CHUNK_BYTES = 3 * 128 * 1024;
+  const toBase64 = bytes => window.btoa(Array.from(bytes, byte => String.fromCodePoint(byte as number)).join(''));
 
   let service: P2pBundleStoreService;
   let dbService;
@@ -24,6 +25,7 @@ describe('P2pBundleStore service', () => {
   beforeEach(() => {
     bundlesDb = {
       put: sinon.stub().resolves(),
+      info: sinon.stub().resolves({ doc_count: 0 }),
     };
     dbService = { get: sinon.stub().returns(bundlesDb) };
     p2pService = {
@@ -66,17 +68,21 @@ describe('P2pBundleStore service', () => {
     expect(doc._attachments.payload.data).to.equal('AAAA');
   });
 
-  it('pulls a large bundle back in pieces and joins them', async () => {
-    p2pService.receivedBundles.returns([received('bundle-1', 2 * CHUNK_BYTES + 1)]);
-    p2pService.readBundle.onFirstCall().returns('AAA');
-    p2pService.readBundle.onSecondCall().returns('BBB');
-    p2pService.readBundle.onThirdCall().returns('CCC');
+  // The pieces are joined as base64 text rather than decoded and re-encoded, which only works
+  // because each one covers a whole number of 3-byte groups. Encoding real bytes and decoding the
+  // join back is what catches a chunk size that breaks that, or a padded piece in the middle.
+  it('pulls a large bundle back in pieces and joins them into the original bytes', async () => {
+    const payload = new Uint8Array(2 * CHUNK_BYTES + 5).map((unused, index) => index % 251);
+    p2pService.receivedBundles.returns([received('bundle-1', payload.length)]);
+    p2pService.readBundle.callsFake(
+      (unusedId, offset, length) => toBase64(payload.subarray(offset, offset + length)));
 
     await service.collect();
 
     expect(p2pService.readBundle.args.map(([, offset]) => offset))
       .to.deep.equal([0, CHUNK_BYTES, 2 * CHUNK_BYTES]);
-    expect(bundlesDb.put.args[0][0]._attachments.payload.data).to.equal('AAABBBCCC');
+    const stored = window.atob(bundlesDb.put.args[0][0]._attachments.payload.data);
+    expect(Array.from(stored, character => character.codePointAt(0))).to.deep.equal(Array.from(payload));
   });
 
   // Dropping the native copy before the store has it would lose a bundle nobody else holds.

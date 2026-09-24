@@ -3,6 +3,7 @@ import { DOCUMENT } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 
+import { fromBase64Url, toBase64Url } from '../base64';
 import { AuthService } from '@mm-services/auth.service';
 import { DBSyncService, SyncStatus } from '@mm-services/db-sync.service';
 import { SessionService } from '@mm-services/session.service';

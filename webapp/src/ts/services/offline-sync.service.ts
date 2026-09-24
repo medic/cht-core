@@ -12,11 +12,20 @@ export interface HostingSession {
   /** The network a peer joins. Named by the OS, so it is read back rather than chosen. */
   ssid: string;
   password: string;
+/**
+ * How much of a bundle crosses the bridge per call, in decoded bytes.
+ *
+ * A multiple of 3, which matters on the way in: chunks read back are joined as base64 text, and
+ * only a whole number of 3-byte groups encodes without padding in the middle of the result.
+ */
+export const BRIDGE_CHUNK_BYTES = 3 * 128 * 1024;
+
 /** A bundle held by the native side, waiting for the webapp to take it. */
 export interface ReceivedBundle {
   id: string;
   envelope: string;
   signature: string;
+  /** Decoded size, which is what the read offsets count in. */
   bytes: number;
 }
 
@@ -185,7 +194,14 @@ export class OfflineSyncService {
     return JSON.parse(this.bridge?.offline_sync_received_bundles() || '[]');
   }
 
-  /** One base64 chunk of a received bundle. An empty string means there is no more to read. */
+  /**
+   * One chunk of a received bundle, base64 encoded, starting at a decoded byte offset.
+   *
+   * Native must encode without line breaks: the chunks are joined as text, and Android's default
+   * base64 wraps at 76 characters, which would make the joined result unreadable. An empty string
+   * means the chunk could not be read, and the caller stops rather than storing a hole: how much
+   * there is to read comes from `bytes`, not from this returning nothing.
+   */
   readBundle(id: string, offset: number, length: number): string {
     return this.bridge?.offline_sync_bundle_read(id, offset, length) || '';
   }
