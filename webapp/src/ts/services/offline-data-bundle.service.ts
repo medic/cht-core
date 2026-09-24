@@ -22,6 +22,11 @@ const CHANGES_PAGE_SIZE = 100;
 // replication, so the two positions a bundle can be packed from are stored the same way.
 const LAST_EXPORTED_SEQ_KEY = 'medic-last-exported-seq';
 
+// Bundle numbering is per device and never restarts, because it is what lets a relay order
+// bundles and spot a gap between them. A counter that began again at 1 each handover would give
+// two different bundles the same number.
+const LAST_BUNDLE_SEQ_KEY = 'medic-last-bundle-seq';
+
 /**
  * How far back to pack.
  *
@@ -81,6 +86,19 @@ export class OfflineDataBundleService {
     return exported > replicated ? exported : replicated;
   }
 
+  /**
+   * The number for the next bundle this device produces.
+   *
+   * Consumed whether or not the bundle is delivered: the number identifies a bundle, so reusing it
+   * for a different one would be worse than leaving a gap where an undelivered bundle would have
+   * been.
+   */
+  private nextBundleSeq(): number {
+    const next = Number(window.localStorage.getItem(LAST_BUNDLE_SEQ_KEY)) + 1;
+    window.localStorage.setItem(LAST_BUNDLE_SEQ_KEY, next.toString());
+    return next;
+  }
+
   /** Records how far a completed handover reached. Only ever moves forward. */
   recordExported(seq: number) {
     if (seq > this.getPosition('export')) {
@@ -106,9 +124,8 @@ export class OfflineDataBundleService {
       throw new Error('This device is not registered to send offline data bundles.');
     }
 
-    let bundleSeq = 1;
     for await (const group of this.groupChanges(sinceSeq)) {
-      yield await this.seal(username, keys, bundleSeq++, group.lines, group.lastSeq);
+      yield await this.seal(username, keys, this.nextBundleSeq(), group.lines, group.lastSeq);
     }
   }
 
@@ -157,7 +174,9 @@ export class OfflineDataBundleService {
         limit: CHANGES_PAGE_SIZE,
       });
 
-      yield* page.results.filter(change => change.doc);
+      // Design documents come down from the server and are dropped again by its authorization
+      // filter, so packing one only spends a phone's bundle on data that cannot land.
+      yield* page.results.filter(change => change.doc && !change.id.startsWith('_design/'));
       since = page.last_seq;
     } while (page.results.length === CHANGES_PAGE_SIZE);
   }
