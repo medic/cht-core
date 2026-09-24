@@ -93,7 +93,7 @@ describe('offline-data-bundle data-bundle service', () => {
       keys_by_device: { [DEVICE]: { signing_public_key: SIGNING_JWK } },
     };
     sinon.stub(userManagement.users, 'getUserDoc').resolves(userDoc);
-    sinon.stub(serverKey, 'getServerPrivateKey').resolves(SERVER_IDENTITY);
+    sinon.stub(serverKey, 'getServerPrivateKey').resolves([SERVER_IDENTITY]);
     sinon.stub(signing, 'verify').resolves(true);
     sinon.stub(db.medic, 'bulkDocs').resolves([]);
     sinon.stub(auth, 'getUserSettings').resolves({ name: USER, roles: ['chw'] });
@@ -289,7 +289,7 @@ describe('offline-data-bundle data-bundle service', () => {
     });
 
     it('rejects when the server holds no private key for the device', async () => {
-      serverKey.getServerPrivateKey.resolves(null);
+      serverKey.getServerPrivateKey.resolves([]);
       await expect(service.process(encode(envelopeFor()), 'sig', bodyStream()))
         .to.be.rejectedWith(BadRequestError, 'Unknown device.');
     });
@@ -365,11 +365,13 @@ describe('offline-data-bundle data-bundle service', () => {
       expect(db.medic.bulkDocs.called).to.be.false;
     });
 
-    it('decrypts with the server private key for this device', async () => {
+    // Every identity this device may have sealed to, so a bundle made before it last re-registered
+    // can still be opened. The device that made it no longer holds the data.
+    it('decrypts with every server private key held for this device', async () => {
       const decryptStream = stubDecryptStream(ndjson([{ _id: 'a' }]));
       await service.process(encode(envelopeFor()), 'sig', bodyStream());
       expect(serverKey.getServerPrivateKey.args[0]).to.deep.equal([USER, DEVICE]);
-      expect(decryptStream.args[0][0]).to.equal(SERVER_IDENTITY);
+      expect(decryptStream.args[0][0]).to.deep.equal([SERVER_IDENTITY]);
     });
 
     it('parses NDJSON lines that straddle stream chunks', async () => {
