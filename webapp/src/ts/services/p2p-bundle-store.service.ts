@@ -1,11 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { DbService } from '@mm-services/db.service';
-import { P2pService, ReceivedBundle } from '@mm-services/p2p.service';
-
-// How much of a bundle to pull back across the bridge per call, matching the outbound chunk.
-// The multiple of 3 matters here: it is what makes the base64 chunks joinable without re-encoding.
-const CHUNK_BYTES = 3 * 128 * 1024;
+import { BRIDGE_CHUNK_BYTES, P2pService, ReceivedBundle } from '@mm-services/p2p.service';
 
 /**
  * Holds the bundles this device is carrying for other people.
@@ -59,16 +55,24 @@ export class P2pBundleStoreService {
     this.p2pService.deleteBundle(bundle.id);
   }
 
+  /** How many bundles this device is carrying. */
+  async count(): Promise<number> {
+    const response = await this.db.info();
+    return response.doc_count;
+  }
+
   /**
    * Reads a bundle back across the bridge.
    *
    * Kept as base64 rather than decoded into bytes because that is what PouchDB stores an
-   * attachment as, so decoding it here would only be undone on the way in.
+   * attachment as, so decoding it here would only be undone on the way in. Joining the chunks as
+   * text is only sound because each one covers a whole number of 3-byte groups, so none of them
+   * pads except the last.
    */
   private readPayload(bundle: ReceivedBundle): string {
     const chunks: string[] = [];
-    for (let offset = 0; offset < bundle.bytes; offset += CHUNK_BYTES) {
-      const chunk = this.p2pService.readBundle(bundle.id, offset, CHUNK_BYTES);
+    for (let offset = 0; offset < bundle.bytes; offset += BRIDGE_CHUNK_BYTES) {
+      const chunk = this.p2pService.readBundle(bundle.id, offset, BRIDGE_CHUNK_BYTES);
       if (!chunk) {
         throw new Error('bundle_read_failed');
       }

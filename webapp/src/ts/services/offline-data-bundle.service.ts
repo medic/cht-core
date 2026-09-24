@@ -5,8 +5,9 @@ import { Injectable } from '@angular/core';
 import { Encrypter } from 'age-encryption';
 import { ed25519 } from '@noble/curves/ed25519.js';
 
+import { toBase64 } from '../base64';
 import { DbService } from '@mm-services/db.service';
-import { DBSyncService } from '@mm-services/db-sync.service';
+import { DBSyncService, readOnlyFilter } from '@mm-services/db-sync.service';
 import { DeviceKeyMaterial, DeviceKeyService } from '@mm-services/device-key.service';
 import { SessionService } from '@mm-services/session.service';
 
@@ -111,21 +112,24 @@ export class OfflineDataBundleService {
    *
    * Order matters and is this side's responsibility: the server authorizes docs a batch at a time,
    * and a batch can only grant access from the docs it holds plus what the server already has. A
-   * report whose contact arrives in a later batch is dropped and never retried. The webapp always
-   * writes a contact before a report that needs it, so replaying the changes feed in order is what
-   * keeps them together.
+   * report whose contact arrives in a later batch is dropped and never retried.
    *
-   * @throws if the device has no keys, which means it was never registered to send bundles
+   * Change order covers the common case, because the webapp writes a contact before any report
+   * that needs it. It does NOT cover a contact edited after such a report: the feed carries one
+   * entry per document at its latest position, so the edit moves the contact behind the report.
+   * That case still depends on the server already holding the contact.
+   *
+   * @throws a stable code, `device_not_registered`, when this device has no keys
    */
   async *packBundles(sinceSeq: any): AsyncGenerator<SealedBundle> {
     const username = this.sessionService.userCtx()?.name;
     const keys = await this.deviceKeyService.getKeyMaterial();
     if (!username || !keys) {
-      throw new Error('This device is not registered to send offline data bundles.');
+      throw new Error('device_not_registered');
     }
 
     for await (const group of this.groupChanges(sinceSeq)) {
-      yield await this.seal(username, keys, this.nextBundleSeq(), group.lines, group.lastSeq);
+      yield await this.seal(username, keys, group);
     }
   }
 
@@ -133,7 +137,8 @@ export class OfflineDataBundleService {
    * Gathers changes into groups small enough to seal, each carrying the position it ends at.
    *
    * A group is closed by the line that would take it over the cap rather than by the one that
-   * did, so a bundle is never larger than a phone can hand over.
+   * did, so a bundle stays within what a phone can hand over, unless a single document is larger
+   * than the cap on its own.
    */
   private async *groupChanges(sinceSeq: any) {
     let lines: string[] = [];
@@ -174,9 +179,10 @@ export class OfflineDataBundleService {
         limit: CHANGES_PAGE_SIZE,
       });
 
-      // Design documents come down from the server and are dropped again by its authorization
-      // filter, so packing one only spends a phone's bundle on data that cannot land.
-      yield* page.results.filter(change => change.doc && !change.id.startsWith('_design/'));
+      // The same filter replication uses to decide what may travel up. Settings, forms,
+      // translations and design documents all come down from the server and would be refused on
+      // the way back, so packing one only spends a bundle on data that cannot land.
+      yield* page.results.filter(change => change.doc && readOnlyFilter(change.doc));
       since = page.last_seq;
     } while (page.results.length === CHANGES_PAGE_SIZE);
   }
@@ -184,16 +190,14 @@ export class OfflineDataBundleService {
   private async seal(
     username: string,
     keys: DeviceKeyMaterial,
-    bundleSeq: number,
-    lines: string[],
-    lastSeq: any,
+    group: { lines: string[]; lastSeq: any },
   ): Promise<SealedBundle> {
     // `bundle_seq` is the only field the relay reads: it orders bundles and spots a gap without
     // opening them. Nothing here names what changed, or when, because the relay would see it.
     const envelopeBytes = new TextEncoder().encode(JSON.stringify({
       user: username,
       device_id: keys.deviceId,
-      bundle_seq: bundleSeq,
+      bundle_seq: this.nextBundleSeq(),
     }));
 
     const encrypter = new Encrypter();
@@ -202,17 +206,15 @@ export class OfflineDataBundleService {
     return {
       envelope: toBase64(envelopeBytes),
       signature: toBase64(ed25519.sign(envelopeBytes, keys.signingPrivateKey)),
-      ciphertext: await encrypter.encrypt(lines.join('')),
-      lastSeq,
-      docCount: lines.length,
+      ciphertext: await encrypter.encrypt(group.lines.join('')),
+      lastSeq: group.lastSeq,
+      docCount: group.lines.length,
     };
   }
 }
 
+// A group always takes at least one line, so a single document larger than the cap becomes an
+// oversized bundle of its own rather than one that can never be sent.
 const isFull = (bytes: number, lineLength: number): boolean => {
   return bytes > 0 && bytes + lineLength > MAX_BUNDLE_BYTES;
-};
-
-const toBase64 = (bytes: Uint8Array): string => {
-  return window.btoa(Array.from(bytes, byte => String.fromCodePoint(byte)).join(''));
 };

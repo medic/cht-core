@@ -89,22 +89,27 @@ describe('OfflineDataBundle service', () => {
   it('refuses to pack when the device has no keys', async () => {
     deviceKeyService.getKeyMaterial.resolves(null);
 
-    await expect(collect()).to.be.rejectedWith(
-      Error, 'This device is not registered to send offline data bundles.'
-    );
+    await expect(collect()).to.be.rejectedWith(Error, 'device_not_registered');
   });
 
   it('refuses to pack when the session cannot name the user', async () => {
     sessionService.userCtx.returns(undefined);
 
-    await expect(collect()).to.be.rejectedWith(
-      Error, 'This device is not registered to send offline data bundles.'
-    );
+    await expect(collect()).to.be.rejectedWith(Error, 'device_not_registered');
   });
 
   // The whole wire contract in one test: what the server does with a bundle is decode the
   // envelope, verify the signature over those exact bytes, and decrypt the body. If any of the
   // three encodings drift, this fails.
+  // Anything the screen can be handed has to be a code, because it becomes a translation key.
+  it('fails with a code, never a sentence', async () => {
+    deviceKeyService.getKeyMaterial.resolves(null);
+
+    const failure = await collect().catch(err => err);
+
+    expect(failure.message).to.match(/^[a-z0-9_]+$/);
+  });
+
   it('seals a bundle the server can open, verify and read', async () => {
     const docs = [{ _id: 'contact-1', _rev: '1-a' }, { _id: 'report-1', _rev: '1-b' }];
     medicDb.changes.resolves(onePageOf(docs));
@@ -143,10 +148,15 @@ describe('OfflineDataBundle service', () => {
     expect(openEnvelope(second).bundle_seq).to.equal(2);
   });
 
-  // They arrive by replication and the server drops them again on the way in, so a bundle spent
-  // on one is a bundle wasted.
-  it('leaves design documents out', async () => {
-    medicDb.changes.resolves(onePageOf([{ _id: '_design/medic-client' }, { _id: 'report-1' }]));
+  // They come down from the server and are refused on the way back, so a bundle spent on one is a
+  // bundle wasted. The same filter replication uses decides this, so the case covers the class.
+  it('leaves out what replication would never send up', async () => {
+    medicDb.changes.resolves(onePageOf([
+      { _id: '_design/medic-client' },
+      { _id: 'settings' },
+      { _id: 'form:pregnancy', type: 'form' },
+      { _id: 'report-1' },
+    ]));
 
     const [bundle] = await collect();
 

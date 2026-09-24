@@ -72,7 +72,7 @@ describe('OfflineSync component', () => {
     permissionsResolved = new Subject<boolean>();
     feedbackService = { submit: sinon.stub().resolves() };
     bundleReceived = new Subject<string>();
-    bundleStoreService = { collect: sinon.stub().resolves(1) };
+    bundleStoreService = { collect: sinon.stub().resolves(1), count: sinon.stub().resolves(0) };
     transferService = { handOver: sinon.stub().resolves({ delivered: 2, skipped: 0 }) };
     offlineSyncService = {
       isSupported: sinon.stub().returns(true),
@@ -295,6 +295,14 @@ describe('OfflineSync component', () => {
       expect(component.errorKey).to.equal('offline_sync.error.transfer_failed');
     });
 
+    it('shows what it is already carrying when the screen opens', async () => {
+      bundleStoreService.count.resolves(6);
+
+      await create();
+
+      expect(component.carrying).to.equal(6);
+    });
+
     it('collects a bundle a peer has just delivered', async () => {
       await create();
 
@@ -316,6 +324,7 @@ describe('OfflineSync component', () => {
 
       expect(component.state).to.not.equal('failed');
       expect(component.carrying).to.equal(0);
+      expect(component.errorKey).to.equal('p2p.error.bundle_store_failed');
     });
   });
 
