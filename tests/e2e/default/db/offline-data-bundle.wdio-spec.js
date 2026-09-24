@@ -23,10 +23,27 @@ describe('offline data bundle relay', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
 
-  const chw = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
-  const supervisor = userFactory.build({ place: healthCenter._id, roles: ['chw_supervisor'] });
+  // The factory pins username and contact._id, so two users built from it collide on both.
+  const chw = userFactory.build({
+    username: 'offlineuser-bundle-chw',
+    place: healthCenter._id,
+    roles: ['chw'],
+    contact: { _id: 'fixture:user:bundle-chw', name: 'BundleChw' },
+  });
+  const supervisor = userFactory.build({
+    username: 'offlineuser-bundle-relay',
+    place: healthCenter._id,
+    roles: ['chw_supervisor'],
+    contact: { _id: 'fixture:user:bundle-relay', name: 'BundleRelay' },
+  });
   const deviceId = uuid();
-  const patient = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
+  // Sealed with a revision, because that is what a real bundle carries: the CHW packs documents
+  // off her own changes feed, and the server ingests them with `new_edits: false` to keep her
+  // revisions intact. A document with no `_rev` fails the whole bundle with a 400.
+  const patient = {
+    ...personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } }),
+    _rev: '1-00000000000000000000000000000001',
+  };
 
   const toBase64 = bytes => Buffer.from(bytes).toString('base64');
 
@@ -82,9 +99,11 @@ describe('offline data bundle relay', () => {
     });
   }, `medic-user-${supervisor.username}-bundles`, bundle);
 
+  // Counted from the rows, not from `info().doc_count`: PouchDB does not increment its cached
+  // count for a document written with an inline attachment, and every bundle has one.
   const carriedCount = () => browser.execute(async (dbName) => {
-    const info = await new window.PouchDB(dbName).info();
-    return info.doc_count;
+    const response = await new window.PouchDB(dbName).allDocs();
+    return response.rows.length;
   }, `medic-user-${supervisor.username}-bundles`);
 
   before(async () => {
