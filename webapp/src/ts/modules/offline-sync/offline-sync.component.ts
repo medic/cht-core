@@ -58,6 +58,8 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   scope: BundleScope = 'sync';
   /** How many bundles the host took, shown once a handover finishes. */
   delivered = 0;
+  /** How many documents were too large to travel this way, so the user is not left guessing. */
+  skipped = 0;
   /** How many bundles this device is carrying for other people. */
   carrying = 0;
 
@@ -156,7 +158,7 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
     this.state = 'sending';
     this.errorKey = null;
     try {
-      this.delivered = await this.transferService.handOver(this.scope);
+      ({ delivered: this.delivered, skipped: this.skipped } = await this.transferService.handOver(this.scope));
       this.state = 'sent';
     } catch (err: any) {
       this.fail(err?.message);
@@ -222,5 +224,6 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
     this.hostLabel = null;
     this.errorKey = null;
     this.delivered = 0;
+    this.skipped = 0;
   }
 }

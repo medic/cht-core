@@ -22,24 +22,29 @@ export class P2pTransferService {
   /**
    * Packs and hands over everything the scope covers.
    *
-   * @returns how many bundles the host took
+   * @returns how many bundles the host took, and how many documents could not be sent this way
    * @throws with a stable code the webapp can translate, never a message
    */
-  async handOver(scope: BundleScope): Promise<number> {
+  async handOver(scope: BundleScope): Promise<{ delivered: number; skipped: number }> {
     const session = new Handover(this.p2pService);
+    let skipped = 0;
     try {
       for await (const bundle of this.bundleService.packBundles(this.bundleService.getPosition(scope))) {
-        session.begin();
-        await this.deliver(bundle);
+        skipped += bundle.skipped;
+        // A bundle with nothing in it is a position reached past documents too large to send.
+        if (bundle.ciphertext.length) {
+          session.begin();
+          await this.deliver(bundle);
+          session.delivered();
+        }
         this.bundleService.recordExported(bundle.lastSeq);
-        session.delivered();
       }
     } catch (err) {
       session.end(false);
       throw err;
     }
     session.end(true);
-    return session.count;
+    return { delivered: session.count, skipped };
   }
 
   private async deliver(bundle: SealedBundle) {
