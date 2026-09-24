@@ -228,6 +228,14 @@ export class AndroidApiService {
     this.offlineSyncService.permissionsResolvedBy(granted);
   }
 
+  resolveOfflineSyncTransfer(ok, detail) {
+    this.offlineSyncService.transferResolved(ok, detail);
+  }
+
+  resolveOfflineSyncBundleReceived(id) {
+    this.offlineSyncService.bundleReceivedBy(id);
+  }
+
   v1 = {
     back: () => this.runInZone('back'),
     logout: () => this.runInZone('logout'),
@@ -239,5 +247,7 @@ export class AndroidApiService {
     resolveOfflineSyncHostingResult: (...args) => this.runInZone('resolveOfflineSyncHostingResult', args),
     resolveOfflineSyncPairing: (...args) => this.runInZone('resolveOfflineSyncPairing', args),
     offlineSyncPermissionsResolved: (...args) => this.runInZone('offlineSyncPermissionsResolved', args),
+    resolveOfflineSyncTransfer: (...args) => this.runInZone('resolveOfflineSyncTransfer', args),
+    resolveOfflineSyncBundleReceived: (...args) => this.runInZone('resolveOfflineSyncBundleReceived', args),
   };
 }

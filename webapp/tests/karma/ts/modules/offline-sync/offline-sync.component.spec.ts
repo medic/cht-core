@@ -10,8 +10,14 @@ import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 
 import { OfflineSyncComponent } from '@mm-modules/offline-sync/offline-sync.component';
 import { FeedbackService } from '@mm-services/feedback.service';
+import { OfflineSyncBundleStoreService } from '@mm-services/offline-sync-bundle-store.service';
 import { OfflineSyncResult, OfflineSyncService } from '@mm-services/offline-sync.service';
+import { OfflineSyncTransferService } from '@mm-services/offline-sync-transfer.service';
 
+/**
+ * The real toolbar reaches the session, the database and PouchDB, none of which this component
+ * touches. Standing in for it keeps the test about pairing.
+ */
 @Component({ selector: 'mm-tool-bar', template: '', standalone: true })
 class StubToolBarComponent { }
 
@@ -26,9 +32,12 @@ describe('OfflineSync component', () => {
   let fixture: ComponentFixture<OfflineSyncComponent>;
   let offlineSyncService;
   let feedbackService;
+  let bundleStoreService;
+  let transferService;
   let hostingResult: Subject<OfflineSyncResult>;
   let pairingResult: Subject<OfflineSyncResult>;
   let permissionsResolved: Subject<boolean>;
+  let bundleReceived: Subject<string>;
 
   const create = async (overrides:any = {}) => {
     Object.assign(offlineSyncService, overrides);
@@ -41,6 +50,8 @@ describe('OfflineSync component', () => {
       providers: [
         { provide: OfflineSyncService, useValue: offlineSyncService },
         { provide: FeedbackService, useValue: feedbackService },
+        { provide: OfflineSyncBundleStoreService, useValue: bundleStoreService },
+        { provide: OfflineSyncTransferService, useValue: transferService },
       ],
     });
     TestBed.overrideComponent(OfflineSyncComponent, {
@@ -60,6 +71,9 @@ describe('OfflineSync component', () => {
     pairingResult = new Subject<OfflineSyncResult>();
     permissionsResolved = new Subject<boolean>();
     feedbackService = { submit: sinon.stub().resolves() };
+    bundleReceived = new Subject<string>();
+    bundleStoreService = { collect: sinon.stub().resolves(1) };
+    transferService = { handOver: sinon.stub().resolves({ delivered: 2, skipped: 0 }) };
     offlineSyncService = {
       isSupported: sinon.stub().returns(true),
       deviceDescription: sinon.stub().returns('Pixel 7, Android 14 (API 34)'),
@@ -69,6 +83,7 @@ describe('OfflineSync component', () => {
       hostingResult: () => hostingResult.asObservable(),
       pairingResult: () => pairingResult.asObservable(),
       permissionsResolved: () => permissionsResolved.asObservable(),
+      bundleReceived: () => bundleReceived.asObservable(),
       startHosting: sinon.stub(),
       stopHosting: sinon.stub(),
       scanAndJoin: sinon.stub(),
@@ -91,6 +106,7 @@ describe('OfflineSync component', () => {
       expect(component.canJoin).to.be.false;
     });
 
+    /** A device can be able to send but not receive, so the two are asked separately. */
     it('offers only joining on a device that cannot host', async () => {
       await create({ canHost: sinon.stub().resolves(false) });
 
@@ -206,6 +222,7 @@ describe('OfflineSync component', () => {
       expect(component.hostLabel).to.equal('Supervisor phone');
     });
 
+    /** The security-critical one: the user must be told, not quietly left connected. */
     it('reports a host that could not be verified', async () => {
       await create();
 
@@ -239,7 +256,72 @@ describe('OfflineSync component', () => {
     expect(component.state).to.equal('idle');
   });
 
+  describe('handing data over', () => {
+    const pair = async () => {
+      pairingResult.next({ ok: true, detail: 'Supervisor phone' });
+      await fixture.whenStable();
+    };
+
+    it('sends everything the server has not received unless the user chooses otherwise', async () => {
+      await create();
+      await pair();
+
+      await component.send();
+
+      expect(transferService.handOver.args).to.deep.equal([['sync']]);
+      expect(component.state).to.equal('sent');
+      expect(component.delivered).to.equal(2);
+    });
+
+    it('sends only what is new when the user asks for that', async () => {
+      await create();
+      await pair();
+      component.scope = 'export';
+
+      await component.send();
+
+      expect(transferService.handOver.args).to.deep.equal([['export']]);
+    });
+
+    // A handover that stops leaves data on the phone, so saying nothing would be a lie.
+    it('turns a transfer failure into a translation key', async () => {
+      await create();
+      await pair();
+      transferService.handOver.rejects(new Error('transfer_failed'));
+
+      await component.send();
+
+      expect(component.state).to.equal('failed');
+      expect(component.errorKey).to.equal('offline_sync.error.transfer_failed');
+    });
+
+    it('collects a bundle a peer has just delivered', async () => {
+      await create();
+
+      bundleReceived.next('bundle-1');
+      await fixture.whenStable();
+
+      expect(bundleStoreService.collect.callCount).to.equal(1);
+      expect(component.carrying).to.equal(1);
+    });
+
+    // The peer keeps the bundle and it is collected again, so a session that is otherwise working
+    // must not be torn down over it.
+    it('keeps the session when a delivered bundle cannot be collected', async () => {
+      await create();
+      bundleStoreService.collect.rejects(new Error('no space'));
+
+      bundleReceived.next('bundle-1');
+      await fixture.whenStable();
+
+      expect(component.state).to.not.equal('failed');
+      expect(component.carrying).to.equal(0);
+    });
+  });
+
   describe('recovering from a failure', () => {
+    // Every failure message tells the user to try again, and the start and scan buttons only render
+    // while idle, so without this the only way out is to navigate away.
     it('offers a way back after a failure', async () => {
       await create();
       hostingResult.next({ ok: false, detail: 'server_start_failed' });
@@ -247,8 +329,7 @@ describe('OfflineSync component', () => {
       fixture.detectChanges();
 
       expect(component.state).to.equal('failed');
-      const retry = fixture.nativeElement.querySelector('.mat-mdc-card button');
-      expect(retry).to.not.be.null;
+      expect(fixture.nativeElement.querySelector('.mat-mdc-card button')).to.not.be.null;
 
       component.startOver();
       fixture.detectChanges();
@@ -257,6 +338,8 @@ describe('OfflineSync component', () => {
       expect(component.errorKey).to.be.null;
     });
 
+    // Granting the permission is exactly what the failure asked for, so the screen should not still
+    // be showing it.
     it('clears the failure once the user grants the permission', async () => {
       await create();
       hostingResult.next({ ok: false, detail: 'permissions_required' });
