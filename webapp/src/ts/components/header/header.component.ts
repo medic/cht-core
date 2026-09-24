@@ -47,7 +47,6 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
   @Input() canLogOut;
 
   /** Shown only for a user who can take part, on a device that can. */
-  p2pVisible = false;
   showPrivacyPolicy = false;
   // replicationStatus;
   currentTab;
@@ -61,32 +60,18 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
     protected readonly modalService: ModalService,
     protected readonly storageInfoService: StorageInfoService,
     private headerTabsService: HeaderTabsService,
-    private readonly p2pService: P2pService,
+    p2pService: P2pService,
   ) {
-    super(store, dbSyncService, modalService, storageInfoService);
+    super(store, dbSyncService, modalService, storageInfoService, p2pService);
   }
 
   ngOnInit(): void {
     super.ngOnInit();
     this.additionalSubscriptions();
-    this.checkP2pVisibility();
     this.getHeaderTabs();
     this.headerTabsService
       .getSidebarTabs()
       .then(tabs => this.headerTabsForLegacySidebar = tabs);
-  }
-
-  /**
-   * Hides the entry unless the user can take part AND the device can, since a permitted user on a
-   * browser or an older phone would only find a page telling them so.
-   */
-  private async checkP2pVisibility() {
-    try {
-      this.p2pVisible = await this.p2pService.canHost() || await this.p2pService.canJoin();
-    } catch (err) {
-      console.debug('HeaderComponent :: could not check P2P visibility', err);
-      this.p2pVisible = false;
-    }
   }
 
   ngOnDestroy() {

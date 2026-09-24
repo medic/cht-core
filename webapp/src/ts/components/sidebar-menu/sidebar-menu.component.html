@@ -74,6 +74,13 @@
         </ng-container>
       </div>
 
+      <div class="nav-section" *ngIf="p2pVisible">
+        <a class="nav-item" routerLink="p2p" (click)="close()">
+          <mat-icon fontIcon="fa-exchange"></mat-icon>
+          <span>{{ 'p2p.menu.title' | translate }}</span>
+        </a>
+      </div>
+
       <div class="nav-section">
         <a *ngIf="canLogOut" class="nav-item" (click)="logout()">
           <mat-icon fontIcon="fa-power-off"></mat-icon>
