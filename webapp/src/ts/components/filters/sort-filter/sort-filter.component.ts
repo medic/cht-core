@@ -10,6 +10,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 })
 export class SortFilterComponent {
   @Input() lastVisitedDateExtras;
+  @Input() taskCountExtras;
   @Input() sortDirection;
   @Output() sort: EventEmitter<any> = new EventEmitter();
 

@@ -75,6 +75,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
   allowedChildPlaces = [];
   lastVisitedDateExtras;
   visitCountSettings;
+  taskCountExtras = false;
   defaultSortDirection = 'alpha';
   sortDirection = this.defaultSortDirection;
   isAllowedToSort = true;
@@ -114,10 +115,11 @@ export class ContactsComponent implements OnInit, OnDestroy {
     this.manageChangesSubscription();
 
     try {
-      const [settings, homePlaceSummary, viewLastVisitedDate, contactTypes] = await Promise.all([
+      const [settings, homePlaceSummary, viewLastVisitedDate, viewTaskCount, contactTypes] = await Promise.all([
         this.settingsService.get(),
         this.getUserHomePlaceSummary(),
         this.canViewLastVisitedDate(),
+        this.canViewTaskCount(),
         this.contactTypesService.getAll(),
       ]);
 
@@ -127,6 +129,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
         this.isAllowedToSort = false;
       }
       this.lastVisitedDateExtras = viewLastVisitedDate;
+      this.taskCountExtras = viewTaskCount;
       this.contactTypes = contactTypes;
 
       if (this.lastVisitedDateExtras && this.UHCSettings.getContactsDefaultSort(settings)) {
@@ -258,6 +261,17 @@ export class ContactsComponent implements OnInit, OnDestroy {
     return this.authService.has('can_view_last_visited_date');
   }
 
+  private canViewTaskCount() {
+    if (this.sessionService.isAdmin()) {
+      return Promise.resolve(false);
+    }
+    return this.authService.has('can_view_tasks');
+  }
+
+  private isSortedByTaskCount() {
+    return this.sortDirection === 'task_count';
+  }
+
   private formatContacts(contacts) {
     return contacts.map(contact => this.formatContact(contact));
   }
@@ -267,6 +281,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
     const type = this.getContactType(contact);
     this.populateContactDetails(contact, type);
     this.setVisitDetails(contact, type);
+    this.setTaskCountDetails(contact, type);
     return contact;
   }
 
@@ -287,6 +302,13 @@ export class ContactsComponent implements OnInit, OnDestroy {
     contact.summary = null;
     contact.primary = this.isPrimaryContact(contact);
     contact.dod = contact.date_of_death;
+  }
+
+  private setTaskCountDetails(contact, type) {
+    if (!this.taskCountExtras || !type?.count_tasks) {
+      return;
+    }
+    contact.taskCount = contact.taskCount || 0;
   }
 
   private setVisitDetails(contact, type) {
@@ -380,6 +402,13 @@ export class ContactsComponent implements OnInit, OnDestroy {
     }
     if (this.isSortedByLastVisited()) {
       options.sortByLastVisitedDate = true;
+    }
+
+    if (this.taskCountExtras) {
+      options.displayTaskCount = true;
+    }
+    if (this.isSortedByTaskCount()) {
+      options.sortByTaskCount = true;
     }
 
     if (options.withIds) {
