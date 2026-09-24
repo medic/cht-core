@@ -102,6 +102,9 @@
         </mat-card-header>
         <mat-card-content>
           <p translate>{{ errorKey }}</p>
+          <!-- Every one of these messages tells the user to try again, so there has to be
+               something to press: the start and scan buttons only show while idle. -->
+          <button mat-flat-button color="primary" (click)="startOver()" translate>p2p.failed.retry</button>
         </mat-card-content>
       </mat-card>
     }

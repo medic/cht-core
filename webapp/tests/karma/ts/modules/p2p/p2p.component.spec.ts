@@ -24,6 +24,7 @@ describe('P2p component', () => {
   let p2pService;
   let hostingResult: Subject<P2pResult>;
   let pairingResult: Subject<P2pResult>;
+  let permissionsResolved: Subject<boolean>;
 
   const create = async (overrides:any = {}) => {
     Object.assign(p2pService, overrides);
@@ -49,12 +50,14 @@ describe('P2p component', () => {
   beforeEach(() => {
     hostingResult = new Subject<P2pResult>();
     pairingResult = new Subject<P2pResult>();
+    permissionsResolved = new Subject<boolean>();
     p2pService = {
       isSupported: sinon.stub().returns(true),
       canHost: sinon.stub().resolves(true),
       canJoin: sinon.stub().resolves(true),
       hostingResult: () => hostingResult.asObservable(),
       pairingResult: () => pairingResult.asObservable(),
+      permissionsResolved: () => permissionsResolved.asObservable(),
       startHosting: sinon.stub(),
       stopHosting: sinon.stub(),
       scanAndJoin: sinon.stub(),
@@ -181,5 +184,50 @@ describe('P2p component', () => {
     hostingResult.next({ ok: true, detail: 'ignored' });
 
     expect(component.state).to.equal('idle');
+  });
+
+  describe('recovering from a failure', () => {
+    // Every failure message tells the user to try again, and the start and scan buttons only render
+    // while idle, so without this the only way out is to navigate away.
+    it('offers a way back after a failure', async () => {
+      await create();
+      hostingResult.next({ ok: false, detail: 'server_start_failed' });
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(component.state).to.equal('failed');
+      const retry = fixture.nativeElement.querySelector('.mat-mdc-card button');
+      expect(retry).to.not.be.null;
+
+      component.startOver();
+      fixture.detectChanges();
+
+      expect(component.state).to.equal('idle');
+      expect(component.errorKey).to.be.null;
+    });
+
+    // The native side asks for the permission and reports the answer; granting it is exactly what
+    // the failure asked for, so the screen should not still be showing the failure.
+    it('clears the failure once the user grants the permission', async () => {
+      await create();
+      hostingResult.next({ ok: false, detail: 'permissions_required' });
+      await fixture.whenStable();
+
+      permissionsResolved.next(true);
+      await fixture.whenStable();
+
+      expect(component.state).to.equal('idle');
+    });
+
+    it('leaves the failure showing when the user refuses', async () => {
+      await create();
+      hostingResult.next({ ok: false, detail: 'permissions_required' });
+      await fixture.whenStable();
+
+      permissionsResolved.next(false);
+      await fixture.whenStable();
+
+      expect(component.state).to.equal('failed');
+    });
   });
 });

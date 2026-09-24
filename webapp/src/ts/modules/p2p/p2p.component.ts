@@ -60,10 +60,19 @@ export class P2pComponent implements OnInit, OnDestroy {
       .subscribe(result => this.onHostingResult(result)));
     this.subscriptions.add(this.p2pService.pairingResult()
       .subscribe(result => this.onPairingResult(result)));
+    // Granting the permission is what the failure asked the user to do, so the screen goes back to
+    // offering the action rather than leaving them looking at a message they have already acted on.
+    this.subscriptions.add(this.p2pService.permissionsResolved()
+      .subscribe(granted => granted && this.startOver()));
   }
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
+  }
+
+  /** Clears a failure, so the user can act again. */
+  startOver() {
+    this.reset();
   }
 
   startHosting() {
