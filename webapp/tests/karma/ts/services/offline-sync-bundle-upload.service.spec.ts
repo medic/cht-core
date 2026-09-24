@@ -6,13 +6,13 @@ import sinon from 'sinon';
 
 import { AuthService } from '@mm-services/auth.service';
 import { DBSyncService, SyncStatus } from '@mm-services/db-sync.service';
-import { P2pBundleStoreService } from '@mm-services/p2p-bundle-store.service';
-import { P2pBundleUploadService } from '@mm-services/p2p-bundle-upload.service';
+import { OfflineSyncBundleStoreService } from '@mm-services/offline-sync-bundle-store.service';
+import { OfflineSyncBundleUploadService } from '@mm-services/offline-sync-bundle-upload.service';
 
-describe('P2pBundleUpload service', () => {
+describe('OfflineSyncBundleUpload service', () => {
   const URL = '/api/v1/replication/data-bundle';
 
-  let service: P2pBundleUploadService;
+  let service: OfflineSyncBundleUploadService;
   let httpMock: HttpTestingController;
   let authService;
   let bundleStoreService;
@@ -46,11 +46,11 @@ describe('P2pBundleUpload service', () => {
         provideHttpClientTesting(),
         { provide: AuthService, useValue: authService },
         { provide: DBSyncService, useValue: dbSyncService },
-        { provide: P2pBundleStoreService, useValue: bundleStoreService },
+        { provide: OfflineSyncBundleStoreService, useValue: bundleStoreService },
       ]
     });
 
-    service = TestBed.inject(P2pBundleUploadService);
+    service = TestBed.inject(OfflineSyncBundleUploadService);
     httpMock = TestBed.inject(HttpTestingController);
   });
 

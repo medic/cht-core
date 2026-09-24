@@ -6,7 +6,7 @@ import { HTTP_HEADERS } from '@medic/constants';
 
 import { AuthService } from '@mm-services/auth.service';
 import { DBSyncService, SyncStatus } from '@mm-services/db-sync.service';
-import { P2pBundleStoreService, StoredBundle } from '@mm-services/p2p-bundle-store.service';
+import { OfflineSyncBundleStoreService, StoredBundle } from '@mm-services/offline-sync-bundle-store.service';
 
 const PERMISSION = 'can_relay_offline_data_bundle';
 const ENDPOINT = '/api/v1/replication/data-bundle';
@@ -30,10 +30,10 @@ const MAX_ATTEMPTS = 10;
  * than losing them.
  */
 @Injectable({ providedIn: 'root' })
-export class P2pBundleUploadService {
+export class OfflineSyncBundleUploadService {
   constructor(
     private readonly authService: AuthService,
-    private readonly bundleStoreService: P2pBundleStoreService,
+    private readonly bundleStoreService: OfflineSyncBundleStoreService,
     private readonly dbSyncService: DBSyncService,
     private readonly http: HttpClient,
   ) { }
@@ -65,14 +65,14 @@ export class P2pBundleUploadService {
     try {
       await this.bundleStoreService.collect();
     } catch (err) {
-      console.error('P2pBundleUploadService :: Error collecting delivered bundles', err);
+      console.error('OfflineSyncBundleUploadService :: Error collecting delivered bundles', err);
     }
 
     try {
       await this.deliverPending();
     } catch (err) {
       // Never break syncing over this. The bundles are still held and the next sync tries again.
-      console.error('P2pBundleUploadService :: Error delivering offline data bundles', err);
+      console.error('OfflineSyncBundleUploadService :: Error delivering offline data bundles', err);
     }
   }
 
@@ -144,7 +144,7 @@ export class P2pBundleUploadService {
   private async giveUp(bundle: StoredBundle, status: number) {
     // The id and the status only. This device cannot read the bundle, and the reason the server
     // gave is about someone else's data.
-    console.warn(`P2pBundleUploadService :: No longer offering bundle ${bundle._id}, refused with ${status}`);
+    console.warn(`OfflineSyncBundleUploadService :: No longer offering bundle ${bundle._id}, refused with ${status}`);
     await this.bundleStoreService.markUndeliverable(bundle._id, status);
   }
 

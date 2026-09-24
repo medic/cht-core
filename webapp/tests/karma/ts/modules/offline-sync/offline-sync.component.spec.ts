@@ -311,7 +311,7 @@ describe('OfflineSync component', () => {
       fixture.detectChanges();
 
       expect(component.carrying).to.equal(6);
-      expect(fixture.nativeElement.querySelector('.p2p-carried')).to.not.be.null;
+      expect(fixture.nativeElement.querySelector('.offline-sync-carried')).to.not.be.null;
     });
 
     it('says when it is holding something the server would not take', async () => {
@@ -321,15 +321,15 @@ describe('OfflineSync component', () => {
       fixture.detectChanges();
 
       expect(component.undeliverable).to.equal(2);
-      expect(fixture.nativeElement.querySelector('.p2p-carried').textContent)
-        .to.contain('p2p.carried.undeliverable');
+      expect(fixture.nativeElement.querySelector('.offline-sync-carried').textContent)
+        .to.contain('offline_sync.carried.undeliverable');
     });
 
     it('shows nothing when it is carrying nothing', async () => {
       await create();
       fixture.detectChanges();
 
-      expect(fixture.nativeElement.querySelector('.p2p-carried')).to.be.null;
+      expect(fixture.nativeElement.querySelector('.offline-sync-carried')).to.be.null;
     });
 
     it('collects a bundle a peer has just delivered', async () => {

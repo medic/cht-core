@@ -40,7 +40,7 @@ import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-m
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
-import { P2pBundleUploadService } from '@mm-services/p2p-bundle-upload.service';
+import { OfflineSyncBundleUploadService } from '@mm-services/offline-sync-bundle-upload.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TranslateService } from '@mm-services/translate.service';
@@ -173,7 +173,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     private readonly formService: FormService,
     private readonly taskNotificationService: TasksNotificationService,
     private readonly interactionTrackingService: InteractionTrackingService,
-    private readonly p2pBundleUploadService: P2pBundleUploadService,
+    private readonly offlineSyncBundleUploadService: OfflineSyncBundleUploadService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
@@ -328,7 +328,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       .then(() => (this.initialisationComplete = true))
       .then(() => this.initUser())
       .then(() => this.interactionTrackingService.init())
-      .then(() => this.p2pBundleUploadService.init())
+      .then(() => this.offlineSyncBundleUploadService.init())
       .then(() => this.initRulesEngine())
       .then(() => this.initTransitions())
       .then(() => this.initForms())
