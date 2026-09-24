@@ -12,6 +12,12 @@ export interface HostingSession {
   /** The network a peer joins. Named by the OS, so it is read back rather than chosen. */
   ssid: string;
   password: string;
+/** A bundle held by the native side, waiting for the webapp to take it. */
+export interface ReceivedBundle {
+  id: string;
+  envelope: string;
+  signature: string;
+  bytes: number;
 }
 
 export interface OfflineSyncResult {
@@ -44,6 +50,8 @@ export class OfflineSyncService {
   private readonly hostingSubject = new Subject<OfflineSyncResult>();
   private readonly pairingSubject = new Subject<OfflineSyncResult>();
   private readonly permissionsSubject = new Subject<boolean>();
+  private readonly transferSubject = new Subject<OfflineSyncResult>();
+  private readonly receivedSubject = new Subject<string>();
 
   constructor(
     private readonly authService: AuthService,
@@ -142,6 +150,50 @@ export class OfflineSyncService {
     return this.permissionsSubject.asObservable();
   }
 
+  /** Emits once per bundle handed over, successfully or not. */
+  transferResult(): Observable<OfflineSyncResult> {
+    return this.transferSubject.asObservable();
+  }
+
+  /** Emits the id of each bundle a peer has just delivered to this device. */
+  bundleReceived(): Observable<string> {
+    return this.receivedSubject.asObservable();
+  }
+
+  // --- Moving a bundle across the bridge --------------------------------------------------
+  //
+  // A bundle is megabytes of ciphertext, too much to pass in one call, so both directions move it
+  // a chunk at a time and it rests in native storage in between. The webapp drives both: it pushes
+  // the chunks out, and it pulls the chunks in.
+
+  /** Opens an outbound bundle, returning the id the chunks belong to. */
+  openBundle(): string | null {
+    return this.bridge?.offline_sync_bundle_open() || null;
+  }
+
+  /** Appends one base64 chunk. False means the bundle could not be written and is abandoned. */
+  writeBundle(id: string, chunk: string): boolean {
+    return !!this.bridge?.offline_sync_bundle_write(id, chunk);
+  }
+
+  /** Hands the assembled bundle to the paired host. The outcome arrives on transferResult(). */
+  sendBundle(id: string, envelope: string, signature: string) {
+    this.bridge?.offline_sync_bundle_send(id, envelope, signature);
+  }
+
+  receivedBundles(): ReceivedBundle[] {
+    return JSON.parse(this.bridge?.offline_sync_received_bundles() || '[]');
+  }
+
+  /** One base64 chunk of a received bundle. An empty string means there is no more to read. */
+  readBundle(id: string, offset: number, length: number): string {
+    return this.bridge?.offline_sync_bundle_read(id, offset, length) || '';
+  }
+
+  deleteBundle(id: string): boolean {
+    return !!this.bridge?.offline_sync_bundle_delete(id);
+  }
+
   startHosting() {
     this.bridge?.offline_sync_start_hosting();
   }
@@ -184,5 +236,13 @@ export class OfflineSyncService {
 
   permissionsResolvedBy(granted: boolean) {
     this.permissionsSubject.next(granted);
+  }
+
+  transferResolved(ok: boolean, detail: string) {
+    this.transferSubject.next({ ok, detail });
+  }
+
+  bundleReceivedBy(id: string) {
+    this.receivedSubject.next(id);
   }
 }
