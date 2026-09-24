@@ -58,10 +58,17 @@ export class P2pBundleUploadService {
       return;
     }
 
+    // Anything a peer handed over while the user was elsewhere in the app is still sitting in
+    // native storage: the screen that receives them only exists while it is open. Collecting is
+    // deliberately not allowed to stop the delivery below it, or one bundle this phone cannot take
+    // off the native side would keep everything it is already holding from ever being sent.
     try {
-      // Anything a peer handed over while the user was elsewhere in the app is still sitting in
-      // native storage: the screen that receives them only exists while it is open.
       await this.bundleStoreService.collect();
+    } catch (err) {
+      console.error('P2pBundleUploadService :: Error collecting delivered bundles', err);
+    }
+
+    try {
       await this.deliverPending();
     } catch (err) {
       // Never break syncing over this. The bundles are still held and the next sync tries again.
