@@ -163,6 +163,28 @@ describe('OfflineDataBundle service', () => {
     expect((await openBundle(bundle)).map(doc => doc._id)).to.deep.equal(['report-1']);
   });
 
+  // A stub would make CouchDB reject the whole write with a 412, so the bytes have to travel.
+  it('asks for the attachment bytes, not the stubs', async () => {
+    medicDb.changes.resolves(onePageOf([{ _id: 'report-1' }]));
+
+    await collect();
+
+    expect(medicDb.changes.args[0][0].attachments).to.be.true;
+  });
+
+  // An attachment can be 30mb, which is over the endpoint's limit once encoded. It cannot go this
+  // way at all, so the position moves past it and the caller is told rather than left guessing.
+  it('leaves out a document too large to fit a bundle, and says so', async () => {
+    const huge = { _id: 'huge', data: 'x'.repeat(9 * 1024 * 1024) };
+    medicDb.changes.resolves(onePageOf([huge, { _id: 'report-1' }]));
+
+    const bundles = await collect();
+
+    expect(bundles).to.have.lengthOf(1);
+    expect(bundles[0].skipped).to.equal(1);
+    expect((await openBundle(bundles[0])).map(doc => doc._id)).to.deep.equal(['report-1']);
+  });
+
   it('packs the docs in the order they changed', async () => {
     const docs = [{ _id: 'c' }, { _id: 'a' }, { _id: 'b' }];
     medicDb.changes.resolves(onePageOf(docs));

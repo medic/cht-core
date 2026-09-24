@@ -48,7 +48,18 @@ export interface SealedBundle {
    * than skipping what never left the device.
    */
   lastSeq: any;
+  /** Documents too large to send this way, which the user has to be told about. */
+  skipped: number;
 }
+
+/**
+ * A position reached with nothing to send, because every document there was too large.
+ *
+ * Yielded rather than swallowed so the caller still moves its position past those documents and
+ * still learns they exist: they cannot travel this way, and offering them again every time would
+ * stall every later handover behind them.
+ */
+const NOTHING_TO_SEND = { envelope: '', signature: '', ciphertext: new Uint8Array() };
 
 /**
  * Packs the documents this device has changed into sealed bundles for a relay to carry.
@@ -128,8 +139,26 @@ export class OfflineDataBundleService {
     }
 
     for await (const group of this.groupChanges(sinceSeq)) {
-      yield await this.seal(username, keys, group);
+      const bundle = await this.toBundle(username, keys, group);
+      if (bundle) {
+        yield bundle;
+      }
     }
+  }
+
+  /** Null for a group that reached a position without producing anything worth reporting. */
+  private async toBundle(
+    username: string,
+    keys: DeviceKeyMaterial,
+    group: { lines: string[]; lastSeq: any; skipped: number },
+  ): Promise<SealedBundle | null> {
+    if (group.lines.length) {
+      return this.seal(username, keys, group);
+    }
+    if (group.skipped) {
+      return { ...NOTHING_TO_SEND, lastSeq: group.lastSeq, skipped: group.skipped };
+    }
+    return null;
   }
 
   /**
@@ -142,23 +171,34 @@ export class OfflineDataBundleService {
   private async *groupChanges(sinceSeq: any) {
     let lines: string[] = [];
     let bytes = 0;
+    let skipped = 0;
     let lastSeq = sinceSeq;
 
     for await (const change of this.readChanges(sinceSeq)) {
       const line = JSON.stringify(change.doc) + '\n';
+
+      if (isTooLarge(line.length)) {
+        skipped += 1;
+        lastSeq = change.seq;
+        continue;
+      }
+
       if (isFull(bytes, line.length)) {
-        yield { lines, lastSeq };
+        yield { lines, lastSeq, skipped };
         lines = [];
         bytes = 0;
+        skipped = 0;
       }
       lines.push(line);
       bytes += line.length;
+      // Only once the line is in: a bundle must never claim a position it does not cover, or a
+      // transfer that stops here would skip whatever sits between the two.
       lastSeq = change.seq;
     }
 
-    if (lines.length) {
-      yield { lines, lastSeq };
-    }
+    // Always: an empty one is discarded by the caller, which already has to tell a sealed group
+    // from a skipped one.
+    yield { lines, lastSeq, skipped };
   }
 
   /**
@@ -175,6 +215,11 @@ export class OfflineDataBundleService {
       page = await this.dbService.get().changes({
         since,
         include_docs: true,
+        // Bytes, not stubs. The changes feed hands back attachment metadata only, and CouchDB
+        // rejects the WHOLE write with a 412 when it is given a stub whose bytes it does not
+        // have, so one photo would take a bundle down rather than arrive without its image.
+        // Inlining them is what `sentinel/src/lib/archiving.js` and `replication.service.ts` do.
+        attachments: true,
         limit: CHANGES_PAGE_SIZE,
       });
 
@@ -189,7 +234,7 @@ export class OfflineDataBundleService {
   private async seal(
     username: string,
     keys: DeviceKeyMaterial,
-    group: { lines: string[]; lastSeq: any },
+    group: { lines: string[]; lastSeq: any; skipped: number },
   ): Promise<SealedBundle> {
     // `bundle_seq` is the only field the relay reads: it orders bundles and spots a gap without
     // opening them. Nothing here names what changed, or when, because the relay would see it.
@@ -207,12 +252,20 @@ export class OfflineDataBundleService {
       signature: toBase64(ed25519.sign(envelopeBytes, keys.signingPrivateKey)),
       ciphertext: await encrypter.encrypt(group.lines.join('')),
       lastSeq: group.lastSeq,
+      skipped: group.skipped,
     };
   }
 }
 
-// A group always takes at least one line, so a single document larger than the cap becomes an
-// oversized bundle of its own rather than one that can never be sent.
 const isFull = (bytes: number, lineLength: number): boolean => {
   return bytes > 0 && bytes + lineLength > MAX_BUNDLE_BYTES;
 };
+
+/**
+ * A document that cannot fit a bundle on its own cannot be sent this way at all.
+ *
+ * An attachment may be up to 30mb, which is over the endpoint's limit once encoded, so there is no
+ * bundle that could carry it. Skipping keeps the rest moving, and the caller tells the user rather
+ * than dropping it in silence.
+ */
+const isTooLarge = (lineLength: number): boolean => lineLength > MAX_BUNDLE_BYTES;

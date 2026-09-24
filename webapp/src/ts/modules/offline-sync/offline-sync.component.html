@@ -138,6 +138,10 @@
           } @else {
             <p translate>offline_sync.transfer.nothing</p>
           }
+          <!-- Said plainly: these stay on the phone and only a direct sync will move them. -->
+          @if (skipped) {
+            <p>{{ 'offline_sync.transfer.too_large' | translate:{ count: skipped } }}</p>
+          }
           <button mat-stroked-button (click)="leaveSession()" translate>offline_sync.peer.leave</button>
         </mat-card-content>
       </mat-card>
@@ -146,7 +150,7 @@
     <!-- A session can go wrong without being over: a bundle that could not be stored leaves the
          host still hosting, and saying nothing would leave the user believing it arrived. -->
     @if (errorKey && state !== 'failed') {
-      <mat-card class="p2p-warning">
+      <mat-card class="offline-sync-warning">
         <mat-card-content>
           <p translate>{{ errorKey }}</p>
         </mat-card-content>
