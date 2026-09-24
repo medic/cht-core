@@ -151,4 +151,24 @@ describe('P2pTransfer service', () => {
     expect(await service.handOver('export')).to.equal(0);
     expect(p2pService.openBundle.notCalled).to.be.true;
   });
+
+  // Asking the native side to hold a session open and then letting go before it has begun is not
+  // something Android forgives: it kills the app.
+  it('does not open a session it has nothing to put in', async () => {
+    await service.handOver('export');
+
+    expect(p2pService.transferStarted.notCalled).to.be.true;
+    expect(p2pService.transferFinished.notCalled).to.be.true;
+  });
+
+  it('does not open a session when there is nothing to pack from', async () => {
+    bundleService.packBundles = sinon.stub().returns((async function* () {
+      throw new Error('device_not_registered');
+    })());
+
+    await service.handOver('export').catch(() => {});
+
+    expect(p2pService.transferStarted.notCalled).to.be.true;
+    expect(p2pService.transferFinished.notCalled).to.be.true;
+  });
 });

@@ -26,21 +26,20 @@ export class P2pTransferService {
    * @throws with a stable code the webapp can translate, never a message
    */
   async handOver(scope: BundleScope): Promise<number> {
-    let delivered = 0;
-    this.p2pService.transferStarted();
+    const session = new Handover(this.p2pService);
     try {
       for await (const bundle of this.bundleService.packBundles(this.bundleService.getPosition(scope))) {
+        session.begin();
         await this.deliver(bundle);
         this.bundleService.recordExported(bundle.lastSeq);
-        delivered += 1;
-        this.p2pService.transferProgress(delivered);
+        session.delivered();
       }
     } catch (err) {
-      this.p2pService.transferFinished(false);
+      session.end(false);
       throw err;
     }
-    this.p2pService.transferFinished(true);
-    return delivered;
+    session.end(true);
+    return session.count;
   }
 
   private async deliver(bundle: SealedBundle) {
@@ -68,6 +67,39 @@ export class P2pTransferService {
     const { ok, detail } = await result;
     if (!ok) {
       throw new Error(detail);
+    }
+  }
+}
+
+/**
+ * The native side's view of one handover.
+ *
+ * It holds the app alive for as long as a handover runs, so it must not be told to start and then
+ * to stop before it has had a chance to begin: Android kills an app that does that. Nothing is
+ * said until there is a first bundle, and nothing is said at the end unless something was said at
+ * the start.
+ */
+class Handover {
+  private started = false;
+  count = 0;
+
+  constructor(private readonly p2pService: P2pService) { }
+
+  begin() {
+    if (!this.started) {
+      this.started = true;
+      this.p2pService.transferStarted();
+    }
+  }
+
+  delivered() {
+    this.count += 1;
+    this.p2pService.transferProgress(this.count);
+  }
+
+  end(ok: boolean) {
+    if (this.started) {
+      this.p2pService.transferFinished(ok);
     }
   }
 }
