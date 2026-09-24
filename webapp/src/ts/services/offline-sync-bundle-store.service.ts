@@ -3,6 +3,13 @@ import { Injectable } from '@angular/core';
 import { DbService } from '@mm-services/db.service';
 import { BRIDGE_CHUNK_BYTES, OfflineSyncService, ReceivedBundle } from '@mm-services/offline-sync.service';
 
+export interface StoredBundle {
+  _id: string;
+  envelope: string;
+  signature: string;
+  received_date: number;
+}
+
 /**
  * Holds the bundles this device is carrying for other people.
  *
@@ -68,10 +75,30 @@ export class OfflineSyncBundleStoreService {
     this.offlineSyncService.deleteBundle(bundle.id);
   }
 
+  /** Every bundle waiting to be delivered to the server, oldest first, which is the order they
+   * must leave in: a relay carrying two bundles from one device carries them in sequence. */
+  async pending(): Promise<StoredBundle[]> {
+    const response = await this.db.allDocs({ include_docs: true });
+    return response.rows
+      .map(row => row.doc)
+      .sort((left, right) => left.received_date - right.received_date);
+  }
+
+  /** The sealed bytes of one stored bundle, ready to send on untouched. */
+  getPayload(id: string): Promise<Blob> {
+    return this.db.getAttachment(id, PAYLOAD);
+  }
+
+  /** Drops a bundle the server has taken, or one it will never take. */
+  async remove(id: string) {
+    const doc = await this.db.get(id);
+    await this.db.remove(doc);
+  }
+
+  /** How many bundles this device is carrying. */
   /**
-   * How many bundles this device is carrying, counted from the documents rather than
-   * `info().doc_count`, which PouchDB does not increment for a document written with an inline
-   * attachment, and every bundle has one.
+   * Counted from the documents rather than `info().doc_count`, which PouchDB does not increment for a
+   * document written with an inline attachment, and every bundle has one.
    */
   async count(): Promise<number> {
     const response = await this.db.allDocs();

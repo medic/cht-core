@@ -25,7 +25,10 @@ describe('OfflineSyncBundleStore service', () => {
   beforeEach(() => {
     bundlesDb = {
       put: sinon.stub().resolves(),
+      get: sinon.stub().resolves(),
+      remove: sinon.stub().resolves(),
       allDocs: sinon.stub().resolves({ rows: [] }),
+      getAttachment: sinon.stub().resolves(),
     };
     dbService = { get: sinon.stub().returns(bundlesDb) };
     offlineSyncService = {
@@ -144,5 +147,33 @@ describe('OfflineSyncBundleStore service', () => {
 
     await expect(service.collect()).to.be.rejectedWith(Error, 'bundle_read_failed');
     expect(bundlesDb.put.notCalled).to.be.true;
+  });
+
+  describe('delivering onward', () => {
+    // Bundles from one device are a sequence, and they have to reach the server in that order.
+    it('lists what is waiting, oldest first', async () => {
+      bundlesDb.allDocs.resolves({ rows: [
+        { doc: { _id: 'newer', received_date: 200 } },
+        { doc: { _id: 'older', received_date: 100 } },
+      ] });
+
+      expect((await service.pending()).map(doc => doc._id)).to.deep.equal(['older', 'newer']);
+    });
+
+    it('hands over the sealed bytes as they arrived', async () => {
+      const payload = new Blob(['ciphertext']);
+      bundlesDb.getAttachment.resolves(payload);
+
+      expect(await service.getPayload('bundle-1')).to.equal(payload);
+      expect(bundlesDb.getAttachment.args).to.deep.equal([['bundle-1', 'payload']]);
+    });
+
+    it('removes a bundle that has been delivered', async () => {
+      bundlesDb.get.resolves({ _id: 'bundle-1', _rev: '1-a' });
+
+      await service.remove('bundle-1');
+
+      expect(bundlesDb.remove.args).to.deep.equal([[{ _id: 'bundle-1', _rev: '1-a' }]]);
+    });
   });
 });
