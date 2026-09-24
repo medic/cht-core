@@ -7,13 +7,6 @@ import { P2pService, ReceivedBundle } from '@mm-services/p2p.service';
 // The multiple of 3 matters here: it is what makes the base64 chunks joinable without re-encoding.
 const CHUNK_BYTES = 3 * 128 * 1024;
 
-export interface StoredBundle {
-  _id: string;
-  envelope: string;
-  signature: string;
-  received_date: number;
-}
-
 /**
  * Holds the bundles this device is carrying for other people.
  *
@@ -48,25 +41,6 @@ export class P2pBundleStoreService {
       collected += 1;
     }
     return collected;
-  }
-
-  /** Every bundle waiting to be delivered to the server, oldest first. */
-  async pending(): Promise<StoredBundle[]> {
-    const response = await this.db.allDocs({ include_docs: true });
-    return response.rows
-      .map(row => row.doc)
-      .sort((left, right) => left.received_date - right.received_date);
-  }
-
-  /** The sealed bytes of one stored bundle, ready to send on. */
-  getPayload(id: string): Promise<Blob> {
-    return this.db.getAttachment(id, PAYLOAD);
-  }
-
-  /** Drops a bundle that has been delivered to the server, or that can never be. */
-  async remove(id: string) {
-    const doc = await this.db.get(id);
-    await this.db.remove(doc);
   }
 
   private async take(bundle: ReceivedBundle) {
