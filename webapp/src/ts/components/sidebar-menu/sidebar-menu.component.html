@@ -44,6 +44,11 @@
           <mat-icon fontIcon="fa-refresh"></mat-icon>
           <span>{{ 'sync.now' | translate }}</span>
         </a>
+
+        <a *ngIf="p2pVisible" class="nav-item" routerLink="p2p" (click)="close()">
+          <mat-icon fontIcon="fa-exchange"></mat-icon>
+          <span>{{ 'p2p.menu.title' | translate }}</span>
+        </a>
       </div>
 
       <div class="nav-section" *ngIf="!replicationStatus?.disabled && (replicationStatus?.lastSuccessTo || replicationStatus?.current)">
@@ -72,13 +77,6 @@
               <span>{{ tab.translation | translate }}</span>
           </a>
         </ng-container>
-      </div>
-
-      <div class="nav-section" *ngIf="p2pVisible">
-        <a class="nav-item" routerLink="p2p" (click)="close()">
-          <mat-icon fontIcon="fa-exchange"></mat-icon>
-          <span>{{ 'p2p.menu.title' | translate }}</span>
-        </a>
       </div>
 
       <div class="nav-section">
