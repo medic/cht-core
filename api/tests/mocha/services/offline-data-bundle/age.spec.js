@@ -36,12 +36,24 @@ describe('offline-data-bundle age service', () => {
   });
 
   describe('decryptStream', () => {
+    // A device that was reinstalled re-registers and gets a new identity, while a bundle it sealed
+    // beforehand may still be travelling. Every identity is tried so that bundle still opens.
+    it('decrypts a stream sealed to an identity the server has since replaced', async () => {
+      const retired = await service.generateIdentity();
+      const current = await service.generateIdentity();
+      const ciphertext = await encryptTo(await service.identityToRecipient(retired), 'hello');
+
+      const decrypted = await collect(await service.decryptStream([current, retired], streamOf(ciphertext)));
+
+      chai.expect(decrypted.toString('utf8')).to.equal('hello');
+    });
+
     it('decrypts a stream encrypted to the matching identity', async () => {
       const identity = await service.generateIdentity();
       const recipient = await service.identityToRecipient(identity);
       const ciphertext = await encryptTo(recipient, Buffer.from('hello bundle', 'utf8'));
 
-      const decrypted = await collect(await service.decryptStream(identity, streamOf(ciphertext)));
+      const decrypted = await collect(await service.decryptStream([identity], streamOf(ciphertext)));
 
       chai.expect(decrypted.toString('utf8')).to.equal('hello bundle');
     });
@@ -53,7 +65,7 @@ describe('offline-data-bundle age service', () => {
 
       let threw = false;
       try {
-        await collect(await service.decryptStream(otherIdentity, streamOf(ciphertext)));
+        await collect(await service.decryptStream([otherIdentity], streamOf(ciphertext)));
       } catch {
         threw = true;
       }
