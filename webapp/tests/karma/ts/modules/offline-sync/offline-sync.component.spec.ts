@@ -10,6 +10,7 @@ import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 
 import { OfflineSyncComponent } from '@mm-modules/offline-sync/offline-sync.component';
 import { FeedbackService } from '@mm-services/feedback.service';
+import { DeviceKeyService } from '@mm-services/device-key.service';
 import { OfflineSyncBundleStoreService } from '@mm-services/offline-sync-bundle-store.service';
 import { OfflineSyncResult, OfflineSyncService } from '@mm-services/offline-sync.service';
 import { OfflineSyncTransferService } from '@mm-services/offline-sync-transfer.service';
@@ -33,6 +34,7 @@ describe('OfflineSync component', () => {
   let offlineSyncService;
   let feedbackService;
   let bundleStoreService;
+  let deviceKeyService;
   let transferService;
   let hostingResult: Subject<OfflineSyncResult>;
   let pairingResult: Subject<OfflineSyncResult>;
@@ -51,6 +53,7 @@ describe('OfflineSync component', () => {
         { provide: OfflineSyncService, useValue: offlineSyncService },
         { provide: FeedbackService, useValue: feedbackService },
         { provide: OfflineSyncBundleStoreService, useValue: bundleStoreService },
+        { provide: DeviceKeyService, useValue: deviceKeyService },
         { provide: OfflineSyncTransferService, useValue: transferService },
       ],
     });
@@ -72,6 +75,7 @@ describe('OfflineSync component', () => {
     permissionsResolved = new Subject<boolean>();
     feedbackService = { submit: sinon.stub().resolves() };
     bundleReceived = new Subject<string>();
+    deviceKeyService = { getKeyMaterial: sinon.stub().resolves({ deviceId: 'device-1' }) };
     bundleStoreService = { collect: sinon.stub().resolves(1), count: sinon.stub().resolves(0) };
     transferService = { handOver: sinon.stub().resolves({ delivered: 2, skipped: 0 }) };
     offlineSyncService = {
@@ -327,8 +331,8 @@ describe('OfflineSync component', () => {
       // Asserted through the rendered page, not the field: a message the template never shows is
       // the same as no message at all to the supervisor whose phone is full.
       fixture.detectChanges();
-      expect(fixture.nativeElement.querySelector('.p2p-warning').textContent)
-        .to.contain('p2p.error.bundle_store_failed');
+      expect(fixture.nativeElement.querySelector('.offline-sync-warning').textContent)
+        .to.contain('offline_sync.error.bundle_store_failed');
     });
   });
 
@@ -393,6 +397,38 @@ describe('OfflineSync component', () => {
       await fixture.whenStable();
 
       expect(component.state).to.equal('failed');
+    });
+  });
+
+  describe('being ready to send', () => {
+    // The key only arrives on a successful sync. Finding that out when she taps send means finding
+    // out in the field, where the only fix is back where she came from.
+    it('warns before she leaves that the phone cannot send yet', async () => {
+      deviceKeyService.getKeyMaterial.resolves(null);
+
+      await create();
+      fixture.detectChanges();
+
+      expect(component.ready).to.be.false;
+      expect(fixture.nativeElement.querySelector('.offline-sync-not-ready')).to.not.be.null;
+    });
+
+    it('says nothing once the phone has its key', async () => {
+      await create();
+      fixture.detectChanges();
+
+      expect(component.ready).to.be.true;
+      expect(fixture.nativeElement.querySelector('.offline-sync-not-ready')).to.be.null;
+    });
+
+    // A relay does not seal anything, so it has no key and must not be told it is not ready.
+    it('does not warn a device that only relays', async () => {
+      deviceKeyService.getKeyMaterial.resolves(null);
+
+      await create({ canJoin: sinon.stub().resolves(false) });
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.offline-sync-not-ready')).to.be.null;
     });
   });
 });

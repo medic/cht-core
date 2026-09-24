@@ -8,6 +8,7 @@ import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
 import { FeedbackService } from '@mm-services/feedback.service';
+import { DeviceKeyService } from '@mm-services/device-key.service';
 import { BundleScope } from '@mm-services/offline-data-bundle.service';
 import { OfflineSyncBundleStoreService } from '@mm-services/offline-sync-bundle-store.service';
 import { HostingSession, OfflineSyncResult, OfflineSyncService } from '@mm-services/offline-sync.service';
@@ -66,9 +67,21 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   supported = false;
   canHost = false;
   canJoin = false;
+  /**
+   * Whether this phone can actually seal anything yet.
+   *
+   * Keys are handed out by the server on a successful sync, so a phone that has never been online
+   * since the permission was granted cannot send. Asked here rather than at the moment of sending,
+   * because by then the user is standing next to a colleague with no network, and the only fix is
+   * back where they came from.
+   */
+  ready = false;
   loading = true;
 
   constructor(
+
+    private readonly bundleStoreService: OfflineSyncBundleStoreService,
+    private readonly deviceKeyService: DeviceKeyService,
     private readonly offlineSyncService: OfflineSyncService,
     private readonly feedbackService: FeedbackService,
     private readonly bundleStoreService: OfflineSyncBundleStoreService,
@@ -78,10 +91,14 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     this.supported = this.offlineSyncService.isSupported();
     this.carrying = await this.bundleStoreService.count();
-    [this.canHost, this.canJoin] = await Promise.all([
+    const [canHost, canJoin, keys] = await Promise.all([
       this.offlineSyncService.canHost(),
       this.offlineSyncService.canJoin(),
+      this.deviceKeyService.getKeyMaterial(),
     ]);
+    this.canHost = canHost;
+    this.canJoin = canJoin;
+    this.ready = !!keys;
     this.loading = false;
 
     // Hosting carries on while the user is elsewhere in the app, so coming back shows the same code.
