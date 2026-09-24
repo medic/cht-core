@@ -20,7 +20,6 @@ describe('P2pTransfer service', () => {
     signature: `signature-${seq}`,
     ciphertext: new Uint8Array(bytes),
     lastSeq: seq,
-    docCount: 1,
   });
 
   const packing = (bundles) => sinon.stub().returns((async function* () {
@@ -35,6 +34,10 @@ describe('P2pTransfer service', () => {
       recordExported: sinon.stub(),
     };
     p2pService = {
+      abortBundle: sinon.stub(),
+      transferStarted: sinon.stub(),
+      transferProgress: sinon.stub(),
+      transferFinished: sinon.stub(),
       openBundle: sinon.stub().returns('transfer-1'),
       writeBundle: sinon.stub().returns(true),
       sendBundle: sinon.stub().callsFake(() => transfers.next({ ok: true, detail: '' })),
@@ -102,6 +105,38 @@ describe('P2pTransfer service', () => {
 
     await expect(service.handOver('export')).to.be.rejectedWith(Error, 'bundle_write_failed');
     expect(p2pService.sendBundle.notCalled).to.be.true;
+  });
+
+  // Half a bundle is of no use to anyone, and the phone this runs on has little room to spare.
+  it('drops a bundle it could not finish writing', async () => {
+    bundleService.packBundles = packing([bundle(1)]);
+    p2pService.writeBundle.returns(false);
+
+    await service.handOver('export').catch(() => {});
+
+    expect(p2pService.abortBundle.args).to.deep.equal([['transfer-1']]);
+  });
+
+  // The native side holds the app alive for the length of the handover. Letting go between
+  // bundles would give the system a chance to stop it half way through.
+  it('holds the session open across the whole handover, not each bundle', async () => {
+    bundleService.packBundles = packing([bundle(1), bundle(2)]);
+
+    await service.handOver('export');
+
+    expect(p2pService.transferStarted.callCount).to.equal(1);
+    expect(p2pService.transferProgress.args).to.deep.equal([[1], [2]]);
+    expect(p2pService.transferFinished.args).to.deep.equal([[true]]);
+  });
+
+  /** A user who switched to another app has only the notification to tell them it broke. */
+  it('says the handover failed rather than just going quiet', async () => {
+    bundleService.packBundles = packing([bundle(1)]);
+    p2pService.sendBundle.callsFake(() => transfers.next({ ok: false, detail: 'host_unreachable' }));
+
+    await service.handOver('export').catch(() => {});
+
+    expect(p2pService.transferFinished.args).to.deep.equal([[false]]);
   });
 
   it('pushes a large bundle across in pieces', async () => {

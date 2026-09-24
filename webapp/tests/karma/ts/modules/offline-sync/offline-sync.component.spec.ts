@@ -324,7 +324,11 @@ describe('OfflineSync component', () => {
 
       expect(component.state).to.not.equal('failed');
       expect(component.carrying).to.equal(0);
-      expect(component.errorKey).to.equal('p2p.error.bundle_store_failed');
+      // Asserted through the rendered page, not the field: a message the template never shows is
+      // the same as no message at all to the supervisor whose phone is full.
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.p2p-warning').textContent)
+        .to.contain('p2p.error.bundle_store_failed');
     });
   });
 

@@ -182,7 +182,7 @@ describe('OfflineDataBundle service', () => {
 
     const [bundle] = await collect();
 
-    expect(bundle.docCount).to.equal(2 * CHANGES_PAGE_SIZE + 1);
+    expect(await openBundle(bundle)).to.have.lengthOf(2 * CHANGES_PAGE_SIZE + 1);
     expect(medicDb.changes.callCount).to.equal(3);
     expect(medicDb.changes.args.map(([options]) => options.since))
       .to.deep.equal([0, CHANGES_PAGE_SIZE, 2 * CHANGES_PAGE_SIZE]);
@@ -204,7 +204,7 @@ describe('OfflineDataBundle service', () => {
 
     expect(bundles).to.have.lengthOf(2);
     expect(bundles.map(bundle => openEnvelope(bundle).bundle_seq)).to.deep.equal([1, 2]);
-    expect(bundles.map(bundle => bundle.docCount)).to.deep.equal([1, 1]);
+    expect(await openBundle(bundles[0])).to.have.lengthOf(1);
     expect((await openBundle(bundles[0])).map(doc => doc._id)).to.deep.equal(['one']);
     expect((await openBundle(bundles[1])).map(doc => doc._id)).to.deep.equal(['two']);
   });
