@@ -6,6 +6,7 @@ import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { ErrorLogComponent } from '@mm-components/error-log/error-log.component';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -31,6 +32,7 @@ export class UiExtensionsTabComponent implements AfterViewInit, OnDestroy {
     private readonly performanceService: PerformanceService,
     private readonly uiExtensionsService: UiExtensionsService,
     private readonly userContactSummaryService: UserContactSummaryService,
+    private readonly userSettingsService: UserSettingsService,
   ) {}
 
   ngAfterViewInit() {
@@ -106,16 +108,12 @@ export class UiExtensionsTabComponent implements AfterViewInit, OnDestroy {
         inputs: {
           config,
           userContactSummary: (await this.userContactSummaryService.get())?.context,
+          user: await this.userSettingsService.get(),
         },
       });
 
       this.container.nativeElement.appendChild(element);
     } catch (error) {
-      // Note this catch block does not catch errors propagating from the actual web component code. The error
-      // listener registered above handles those errors (but intentionally does not set this.errorStack). The
-      // web component is responsible for handling the UX of its errors (e.g. showing an error message to the user).
-      // This catch block is for handling errors when loading the extension code (e.g. if the extension's .js file
-      // does not export an HTMLElement).
       console.error(`Error initializing UI extension: "${extensionId}"`, error);
       this.errorStack = error?.stack;
     } finally {
