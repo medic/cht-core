@@ -65,6 +65,8 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   skipped = 0;
   /** How many bundles this device is carrying for other people. */
   carrying = 0;
+  /** How many it has stopped offering to the server, which nobody can fix from this phone. */
+  undeliverable = 0;
 
   supported = false;
   canHost = false;
@@ -138,9 +140,12 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   private async countCarried() {
     const run = ++this.countRuns;
     try {
-      const carrying = await this.bundleStoreService.count();
+      const [carrying, undeliverable] = await Promise.all([
+        this.bundleStoreService.count(),
+        this.bundleStoreService.undeliverable(),
+      ]);
       if (run === this.countRuns) {
-        this.showCount(carrying);
+        this.showCount(carrying, undeliverable);
       }
     } catch (err: any) {
       console.error('OfflineSyncComponent :: Error counting the bundles this device carries', err);
@@ -150,8 +155,9 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
     }
   }
 
-  private showCount(carrying: number) {
+  private showCount(carrying: number, undeliverable: number) {
     this.carrying = carrying;
+    this.undeliverable = undeliverable;
     if (this.errorKey === STORE_UNREADABLE) {
       this.errorKey = null;
     }
