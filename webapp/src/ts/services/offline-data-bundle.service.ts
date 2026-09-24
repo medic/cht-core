@@ -48,7 +48,6 @@ export interface SealedBundle {
    * than skipping what never left the device.
    */
   lastSeq: any;
-  docCount: number;
 }
 
 /**
@@ -208,7 +207,6 @@ export class OfflineDataBundleService {
       signature: toBase64(ed25519.sign(envelopeBytes, keys.signingPrivateKey)),
       ciphertext: await encrypter.encrypt(group.lines.join('')),
       lastSeq: group.lastSeq,
-      docCount: group.lines.length,
     };
   }
 }
