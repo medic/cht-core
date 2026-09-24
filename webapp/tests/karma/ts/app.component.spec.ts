@@ -55,6 +55,7 @@ import { TasksNotificationService } from '@mm-services/task-notifications.servic
 import { DOC_IDS, PREFIXES } from '@medic/constants';
 import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 import { DeviceKeyService } from '@mm-services/device-key.service';
+import { P2pBundleUploadService } from '@mm-services/p2p-bundle-upload.service';
 import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 import { HeaderTabsService } from '@mm-services/header-tabs.service';
 
@@ -93,6 +94,7 @@ describe('AppComponent', () => {
   let telemetryService;
   let interactionTrackingService;
   let deviceKeyService;
+  let p2pBundleUploadService;
   let transitionsService;
   let chtDatasourceService;
   let analyticsModulesService;
@@ -200,6 +202,7 @@ describe('AppComponent', () => {
     telemetryService = { record: sinon.stub() };
     interactionTrackingService = { init: sinon.stub(), persistBuffer: sinon.stub() };
     deviceKeyService = { init: sinon.stub() };
+    p2pBundleUploadService = { init: sinon.stub() };
     trainingCardsService = { initTrainingCards: sinon.stub() };
     userSettingsService = {
       get: sinon.stub().resolves({ facility_id: ['facility'], contact_id: 'contact' }),
@@ -269,6 +272,7 @@ describe('AppComponent', () => {
           { provide: TasksNotificationService, useValue: tasksNotificationService },
           { provide: InteractionTrackingService, useValue: interactionTrackingService },
           { provide: DeviceKeyService, useValue: deviceKeyService },
+          { provide: P2pBundleUploadService, useValue: p2pBundleUploadService },
           { provide: UiExtensionsService, useValue: uiExtensionsService },
           { provide: HeaderTabsService, useValue: headerTabsService },
         ]
