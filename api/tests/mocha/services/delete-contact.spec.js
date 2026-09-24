@@ -42,8 +42,10 @@ describe('Delete contact service', () => {
         { isOnline: true, hasAll: [ 'can_delete_contact_hierarchy', 'can_delete_users' ] }
       )).to.be.true;
 
-      expect(validate.calledOnceWithExactly('delete-contact', { contact_id: 'target', delete_users: true }))
-        .to.be.true;
+      // the contact is handed over rather than looked up again
+      expect(validate.calledOnceWithExactly(
+        'delete-contact', { contact_id: 'target', delete_users: true, contact: { _id: 'target' } }
+      )).to.be.true;
       expect(queue.calledOnceWithExactly(
         'delete-contact', { contact_id: 'target', delete_users: true }, 'jsmith'
       )).to.be.true;

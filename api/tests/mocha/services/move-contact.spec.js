@@ -60,8 +60,10 @@ describe('move-contact service', () => {
       isOnline: true,
       hasAll: [ 'can_move_contact_hierarchy' ],
     });
-    expect(validate.calledOnceWithExactly('move-contact', { contact_id: 'clinic-1', parent_id: 'hc-b' }))
-      .to.be.true;
+    // the contacts are handed over rather than looked up again
+    expect(validate.calledOnceWithExactly('move-contact', {
+      contact_id: 'clinic-1', parent_id: 'hc-b', contact: clinic, destination: healthCenterB,
+    })).to.be.true;
     expect(queue.calledOnceWithExactly(
       'move-contact', { contact_id: 'clinic-1', parent_id: 'hc-b' }, 'jsmith'
     )).to.be.true;

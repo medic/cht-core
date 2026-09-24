@@ -50,30 +50,16 @@ const getLinkedUserIds = async (contactIds) => {
   return [ ...new Set(result.rows.map(row => row.id)) ];
 };
 
-/**
- * Checks that the delete can legally run, against the documents as they are now. Called by the API
- * before queuing, so the caller gets a 400 rather than an operation that is only going to fail, and
- * again by Sentinel at plan time, because the hierarchy may have changed in between.
- * @param {Object} params
- * @param {string} params.contact_id - the target contact id
- * @param {boolean} [params.delete_users] - also remove users linked to the deleted contacts
- * @throws {ValidationError} when the contact is gone, or when linked users would be left behind and
- *   `delete_users` was not set
- */
-const validate = async ({ contact_id: contactId, delete_users: deleteUsers }) => {
-  const getContact = dataContext.bind(Contact.v1.get);
-  const contact = await getContact(Qualifier.byUuid(contactId));
+const assertContactExists = (contact, contactId) => {
   if (!contact) {
     throw new ValidationError(`contact '${contactId}' not found`);
   }
+};
 
-  if (deleteUsers) {
-    return;
-  }
-
-  const subtree = await getSubtree(contactId);
-  const userIds = await getLinkedUserIds(subtree.rows.map(row => row.id));
-  if (userIds.length) {
+// Deleting a contact whose user account would be left behind needs saying so explicitly, because it
+// leaves someone unable to log in.
+const assertUsersMayGo = (userIds, deleteUsers) => {
+  if (userIds.length && !deleteUsers) {
     throw new ValidationError(
       `${userIds.length} user(s) are linked to contacts in this hierarchy. ` +
         `Set delete_users=true (requires can_delete_users) to remove them.`
@@ -82,23 +68,51 @@ const validate = async ({ contact_id: contactId, delete_users: deleteUsers }) =>
 };
 
 /**
- * Gathers everything a contact-hierarchy delete touches. Assumes `validate` has passed.
+ * Checks that the delete can legally run, against the documents as they are now. Only the API calls
+ * this, and only when it is going to queue the operation: Sentinel gets the same checks for free
+ * because `plan` runs them itself.
+ * @param {Object} params
+ * @param {string} params.contact_id - the target contact id
+ * @param {boolean} [params.delete_users] - also remove users linked to the deleted contacts
+ * @param {Object} params.contact - the target, already loaded by the caller
+ * @throws {ValidationError} when the contact is gone, or when linked users would be left behind and
+ *   `delete_users` was not set
+ */
+const validate = async ({ contact_id: contactId, delete_users: deleteUsers, contact }) => {
+  assertContactExists(contact, contactId);
+
+  if (deleteUsers) {
+    return;
+  }
+
+  const subtree = await getSubtree(contactId);
+  assertUsersMayGo(await getLinkedUserIds(subtree.rows.map(row => row.id)), deleteUsers);
+};
+
+/**
+ * Gathers everything a contact-hierarchy delete touches, validating as it goes: the queries it needs
+ * are the queries the checks need, so it costs nothing to be sure the operation is still legal.
  * @param {Object} params
  * @param {string} params.contact_id - the target contact id
  * @param {boolean} [params.delete_users] - also remove users linked to the deleted contacts
  * @returns {Promise<Object>} the summary of changes and the actions to run, in execution order
+ * @throws {ValidationError} when the delete is no longer legal
  */
 const plan = async ({ contact_id: contactId, delete_users: deleteUsers }) => {
+  const getContact = dataContext.bind(Contact.v1.get);
+  assertContactExists(await getContact(Qualifier.byUuid(contactId)), contactId);
+
   const subtree = await getSubtree(contactId);
   const contactIds = subtree.rows.map(row => row.id);
 
   const [ reportIds, setContactOperations, userIds ] = await Promise.all([
     getReportIds(getSubjectKeys(subtree.rows)),
     getPrimaryContactClears(contactIds),
-    deleteUsers ? getLinkedUserIds(contactIds) : [],
+    getLinkedUserIds(contactIds),
   ]);
+  assertUsersMayGo(userIds, deleteUsers);
 
-  const userOperations = userIds.map(userId => ({ id: userId }));
+  const userOperations = deleteUsers ? userIds.map(userId => ({ id: userId })) : [];
   const summary = {
     delete: { contacts: contactIds.length, reports: reportIds.length },
     'set-contact': { places: setContactOperations.length },

@@ -159,41 +159,51 @@ const resolveContacts = async ({ contact_id: contactId, parent_id: parentId }) =
     parentId ? getContact(Qualifier.byUuid(parentId)) : null,
   ]);
 
+  assertContactsExist({ contact_id: contactId, parent_id: parentId }, source, destination);
+  return { source, destination };
+};
+
+const assertContactsExist = ({ contact_id: contactId, parent_id: parentId }, source, destination) => {
   if (!source) {
     throw new ValidationError(`contact '${contactId}' not found`);
   }
   if (parentId && !destination) {
     throw new ValidationError(`destination contact '${parentId}' not found`);
   }
-  return { source, destination };
 };
 
 /**
- * Checks that the move can legally run, against the documents as they are now. Called by the API
- * before queuing, so the caller gets a 400 rather than an operation that is only going to fail, and
- * again by Sentinel at plan time, because the hierarchy may have changed in between.
+ * Checks that the move can legally run, against the documents as they are now. Only the API calls
+ * this, and only when it is going to queue the operation: Sentinel gets the same checks for free
+ * because `plan` runs them itself.
  * @param {Object} params
  * @param {string} params.contact_id - the contact being moved
  * @param {string|null} [params.parent_id] - the new parent, or null to move to the top level
+ * @param {Object} params.contact - the contact being moved, already loaded by the caller
+ * @param {Object|null} [params.destination] - the new parent, already loaded by the caller
  * @throws {ValidationError} when the move would be illegal
  */
 const validate = async (params) => {
-  const { source, destination } = await resolveContacts(params);
-  const contactIds = await getSubtreeIds(source._id);
-  await constraints.assertMoveIsLegal(source, destination, contactIds);
+  const { contact, destination = null } = params;
+  assertContactsExist(params, contact, destination);
+  const contactIds = await getSubtreeIds(contact._id);
+  await constraints.assertMoveIsLegal(contact, destination, contactIds);
 };
 
 /**
- * Gathers everything a move touches. Assumes `validate` has passed.
+ * Gathers everything a move touches, validating as it goes: the subtree it needs is the subtree the
+ * legality checks need, so it costs nothing to be sure the move is still legal.
  * @param {Object} params
  * @param {string} params.contact_id - the contact being moved
  * @param {string|null} [params.parent_id] - the new parent, or null to move to the top level
  * @returns {Promise<Object>} the summary of changes and the actions to run, in execution order
+ * @throws {ValidationError} when the move is no longer legal
  */
 const plan = async (params) => {
   const { source, destination } = await resolveContacts(params);
   const id = source._id;
   const contactIds = await getSubtreeIds(id);
+  await constraints.assertMoveIsLegal(source, destination, contactIds);
 
   // `|| undefined` so a move to the root carries the absence of a parent rather than a null.
   const replacementLineage = lineage.minifyLineage(destination) || undefined;

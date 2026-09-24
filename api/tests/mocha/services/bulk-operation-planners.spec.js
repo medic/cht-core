@@ -21,7 +21,8 @@ describe('Bulk operation planners', () => {
     sinon.stub(db.medic, 'query').resolves({ rows: [ { id: 'place', value: {} } ] });
     sinon.stub(db.users, 'query').resolves({ rows: [ { id: 'org.couchdb.user:chw' } ] });
 
-    const err = await planners.validate('delete-contact', { contact_id: 'place' }).catch(e => e);
+    const contact = { _id: 'place', _rev: '1-a', type: 'clinic' };
+    const err = await planners.validate('delete-contact', { contact_id: 'place', contact }).catch(e => e);
 
     expect(err).to.be.an.instanceOf(BadRequestError);
     expect(err.code).to.equal(400);
