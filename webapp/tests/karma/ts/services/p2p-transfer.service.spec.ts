@@ -20,6 +20,7 @@ describe('P2pTransfer service', () => {
     signature: `signature-${seq}`,
     ciphertext: new Uint8Array(bytes),
     lastSeq: seq,
+    skipped: 0,
   });
 
   const packing = (bundles) => sinon.stub().returns((async function* () {
@@ -66,7 +67,7 @@ describe('P2pTransfer service', () => {
   it('hands each bundle over with the envelope it was sealed with', async () => {
     bundleService.packBundles = packing([bundle(1), bundle(2)]);
 
-    expect(await service.handOver('export')).to.equal(2);
+    expect((await service.handOver('export')).delivered).to.equal(2);
     expect(p2pService.sendBundle.args).to.deep.equal([
       ['transfer-1', 'envelope-1', 'signature-1'],
       ['transfer-1', 'envelope-2', 'signature-2'],
@@ -147,8 +148,21 @@ describe('P2pTransfer service', () => {
     expect(p2pService.writeBundle.callCount).to.equal(3);
   });
 
+  // They cannot travel this way at all, so the position moves past them and the user is told.
+  it('reports documents too large to send, without sending anything for them', async () => {
+    bundleService.packBundles = packing([
+      { envelope: '', signature: '', ciphertext: new Uint8Array(), lastSeq: 9, skipped: 2 },
+    ]);
+
+    const result = await service.handOver('export');
+
+    expect(result).to.deep.equal({ delivered: 0, skipped: 2 });
+    expect(p2pService.openBundle.notCalled).to.be.true;
+    expect(bundleService.recordExported.args).to.deep.equal([[9]]);
+  });
+
   it('sends nothing when nothing has changed', async () => {
-    expect(await service.handOver('export')).to.equal(0);
+    expect((await service.handOver('export')).delivered).to.equal(0);
     expect(p2pService.openBundle.notCalled).to.be.true;
   });
 
