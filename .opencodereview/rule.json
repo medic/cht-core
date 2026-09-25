@@ -12,7 +12,8 @@
   "rules": [
     {
       "path": "api/resources/translations/*.properties",
-      "rule": ".opencodereview/rules/translations.md"
+      "rule": ".opencodereview/rules/translations.md",
+      "merge_system_rule": true
     },
     {
       "path": "ddocs/**/*.js",

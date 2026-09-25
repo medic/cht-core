@@ -12,6 +12,6 @@ Applies on top of the generic checklist above. Where the two disagree, this sect
 
 #### Security and access control
 
-- `api/src/services/replication/authorization.js` and `api/src/middleware/authorization.js` decide what an offline  user may replicate and what an online user may call. Any change that widens the doc set an offline user can read or write, or that relaxes a role/permission check, is a high-severity finding unless the PR explicitly says that widening is the goal.
-- A new route in an `api/src/controllers/*` file that omits the permission or authentication check its siblings in the same controller apply is a finding.
+- `api/src/services/replication/authorization.js` decides what an offline user may replicate, and `api/src/middleware/authorization.js` is the offline-user firewall that blocks offline users from online-only endpoints. Any change that widens the doc set an offline user can read or write, lets offline users through to an endpoint they were blocked from, or relaxes a role/permission check, is a high-severity finding unless the PR explicitly says that widening is the goal.
+- Routes are registered in `api/src/routing.js`, and permission checks go through `api/src/auth.js` (e.g. `auth.assertPermissions`, `auth.isDbAdmin`), called from the controller or the route. A new route that omits the firewall, authentication, or permission check its siblings apply is a finding.
 - User-supplied values reaching a CouchDB view key, a `_find` selector, a shell command, or a URL built by string concatenation must be validated or encoded first.
