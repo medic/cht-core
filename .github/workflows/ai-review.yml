@@ -127,17 +127,23 @@ jobs:
             } catch (error) {
               core.warning(`Could not parse structured_output: ${error.message}`);
             }
-            if (!report_markdown) {
-              core.setFailed('Review produced no report_markdown; nothing to post.');
+            // GitHub renders newlines in comments as hard breaks, so keep the callout text on one line
+            const intro = '> [!NOTE]\n> ' + [
+              `🤖 **This is an AI-generated review**, requested by @${context.payload.sender.login}.`,
+              'Its content and suggestions can be wrong. Please respond with a comment if you doubts regarding any ',
+              'of the review. A maintainer will also review this PR.',
+            ].join(' ');
+            const commentId = process.env.SUMMARY_COMMENT_URL?.match(/#issuecomment-(\d+)$/)?.[1];
+            if (!commentId && !report_markdown) {
+              core.setFailed('Neither review produced anything to post.');
               return;
             }
-            const commentId = process.env.SUMMARY_COMMENT_URL?.match(/#issuecomment-(\d+)$/)?.[1];
             if (!commentId) {
               core.warning('Found no OpenCodeReview summary comment for this run; posting the report on its own.');
               await github.rest.issues.createComment({
                 ...context.repo,
                 issue_number: context.issue.number,
-                body: report_markdown,
+                body: `${intro}\n\n${report_markdown}`,
               });
               return;
             }
@@ -145,11 +151,15 @@ jobs:
               ...context.repo,
               comment_id: commentId,
             });
+            const sections = [intro, summary.body, '---', report_markdown];
             await github.rest.issues.updateComment({
               ...context.repo,
               comment_id: summary.id,
-              body: `${summary.body}\n\n---\n\n${report_markdown}`,
+              body: sections.join('\n\n'),
             });
+            if (!report_markdown) {
+              core.setFailed('Completeness review produced no report_markdown.');
+            }
       - name: Remove the ai-review label
         if: always()
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
