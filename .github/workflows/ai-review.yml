@@ -39,7 +39,7 @@ jobs:
           effort: medium # Controls number of review rounds - low=1, medium=2, high=3 - default=medium
           incremental: 'true'
           llm_auth_header: "x-api-key"
-          llm_auth_token: ${{ secrets.OCR_LLM_AUTH_TOKEN }}
+          llm_auth_token: ${{ secrets.ANTHROPIC_AUTH_TOKEN }}
           llm_extra_body: '{"output_config": {"effort": "xhigh"}}'
           llm_model: ${{ env.OCR_LLM_MODEL }}
           llm_url: ${{ env.OCR_LLM_URL }}
@@ -79,7 +79,7 @@ jobs:
           OTEL_LOG_TOOL_DETAILS: "1"
           OTEL_RESOURCE_ATTRIBUTES: deployment.environment.name=ci,cicd.pipeline.task.name=${{ github.job }},vcs.repository.name=${{ github.repository }},vcs.change.id=${{ github.event.pull_request.number }},cicd.pipeline.run.id=${{ github.run_id }}
         with:
-          anthropic_api_key: ${{ secrets.OCR_LLM_AUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_AUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           plugin_marketplaces: https://github.com/medic/cht-ai-tools.git
           plugins: |
@@ -92,7 +92,6 @@ jobs:
 
             Return the skill's report verbatim as `report_markdown`. If the skill concludes the PR's intent could not 
             be established, return that as the report; an inconclusive report is still the result.
-          # Keep the configured tools synced up with what is configured in the frontmatter of the skill
           claude_args: |
             --model ${{ env.CLAUDE_LLM_MODEL }}
             --allowedTools "Skill,Bash(/home/runner/.claude/plugins/cache/medic-cht-ai-tools/cht-pr-review/*/scripts/pr-context.sh:*),Bash(/home/runner/.claude/plugins/cache/medic-cht-ai-tools/cht-pr-review/*/scripts/pr-diff.sh:*),mcp__plugin_cht-docs-mcp_cht-docs__ask_question,mcp__plugin_cht-docs-mcp_cht-docs__search_docs"
@@ -127,7 +126,6 @@ jobs:
             } catch (error) {
               core.warning(`Could not parse structured_output: ${error.message}`);
             }
-            // GitHub renders newlines in comments as hard breaks, so keep the callout text on one line
             const intro = '> [!NOTE]\n> ' + [
               `🤖 **This is an AI-generated review**, requested by @${context.payload.sender.login}.`,
               'Its content and suggestions can be wrong. Please respond with a comment if you doubts regarding any ',
