@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
   <h:head>
     <h:title>New Household</h:title>
     <model odk:xforms-version="1.0.0">
@@ -92,11 +92,17 @@
           <text id="/data/contact/name:label">
             <value>Full Name</value>
           </text>
+          <text id="/data/contact/short_name:jr:constraintMsg">
+            <value>Short name can not be more than 10 characters long.</value>
+          </text>
           <text id="/data/contact/short_name:label">
             <value>Short name</value>
           </text>
           <text id="/data/contact/short_name:hint">
             <value>Please enter a short name that is preferred by the person.</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_calendar:jr:constraintMsg">
+            <value>Date must be before today</value>
           </text>
           <text id="/data/contact/ephemeral_dob/dob_calendar:label">
             <value>Age</value>
@@ -107,25 +113,31 @@
           <text id="/data/contact/ephemeral_dob/age_label:label">
             <value>**Age**</value>
           </text>
+          <text id="/data/contact/ephemeral_dob/age_years:jr:constraintMsg">
+            <value>Age must be between 0 and 130</value>
+          </text>
           <text id="/data/contact/ephemeral_dob/age_years:label">
             <value>Years</value>
           </text>
+          <text id="/data/contact/ephemeral_dob/age_months:jr:constraintMsg">
+            <value>Months must between 0 and 11</value>
+          </text>
           <text id="/data/contact/ephemeral_dob/age_months:label">
             <value>Months</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_approx:label">
-            <value>DOB</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_iso:label">
-            <value>Date of Birth</value>
           </text>
           <text id="/data/contact/ephemeral_dob/dob_debug:label">
             <value> DOB Approx: <output value=" /data/contact/ephemeral_dob/dob_approx "/>
 DOB Calendar: <output value=" /data/contact/ephemeral_dob/dob_calendar "/>
 DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           </text>
+          <text id="/data/contact/phone:jr:constraintMsg">
+            <value>Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678</value>
+          </text>
           <text id="/data/contact/phone:label">
             <value>Phone Number</value>
+          </text>
+          <text id="/data/contact/phone_alternate:jr:constraintMsg">
+            <value>Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678</value>
           </text>
           <text id="/data/contact/phone_alternate:label">
             <value>Alternate Phone Number</value>
@@ -147,9 +159,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           </text>
           <text id="/data/clinic/is_name_generated:label">
             <value> Would you like to name the place after the primary contact: "<output value=" /data/init/generated_name_translation "/>"?</value>
-          </text>
-          <text id="/data/clinic/name:label">
-            <value>Name</value>
           </text>
           <text id="/data/clinic/external_id:label">
             <value>External ID</value>
@@ -267,9 +276,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/clinic/is_name_generated:label">
             <value> क्या आप इस स्थान को प्राथमिक कॉंटॅक्ट का नाम देना चाहेंगे?: <output value=" /data/init/generated_name_translation "/></value>
           </text>
-          <text id="/data/clinic/name:label">
-            <value>नाम</value>
-          </text>
           <text id="/data/clinic/external_id:label">
             <value>बाहरी ID</value>
           </text>
@@ -279,10 +285,16 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="select_dob_method-0">
             <value>-</value>
           </text>
+          <text id="/data/contact/short_name:jr:constraintMsg">
+            <value>-</value>
+          </text>
           <text id="/data/contact/short_name:label">
             <value>-</value>
           </text>
           <text id="/data/contact/short_name:hint">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_calendar:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/data/contact/ephemeral_dob/dob_calendar:label">
@@ -294,25 +306,25 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/contact/ephemeral_dob/age_label:label">
             <value>-</value>
           </text>
+          <text id="/data/contact/ephemeral_dob/age_years:jr:constraintMsg">
+            <value>-</value>
+          </text>
           <text id="/data/contact/ephemeral_dob/age_years:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/age_months:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/data/contact/ephemeral_dob/age_months:label">
             <value>-</value>
           </text>
-          <text id="/data/contact/ephemeral_dob/dob_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_iso:label">
-            <value>-</value>
-          </text>
           <text id="/data/contact/ephemeral_dob/dob_debug:label">
             <value>-</value>
           </text>
-          <text id="/data/contact/meta:label">
+          <text id="/data/contact/phone:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/phone_alternate:jr:constraintMsg">
             <value>-</value>
           </text>
         </translation>
@@ -425,9 +437,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/clinic/is_name_generated:label">
             <value> Apakah Anda ingin nama tempat setelah kontak utama: "<output value=" /data/init/generated_name_translation "/>"?</value>
           </text>
-          <text id="/data/clinic/name:label">
-            <value>Nama</value>
-          </text>
           <text id="/data/clinic/external_id:label">
             <value>Eksternal ID</value>
           </text>
@@ -437,10 +446,16 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="select_dob_method-0">
             <value>-</value>
           </text>
+          <text id="/data/contact/short_name:jr:constraintMsg">
+            <value>-</value>
+          </text>
           <text id="/data/contact/short_name:label">
             <value>-</value>
           </text>
           <text id="/data/contact/short_name:hint">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_calendar:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/data/contact/ephemeral_dob/dob_calendar:label">
@@ -452,25 +467,25 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/contact/ephemeral_dob/age_label:label">
             <value>-</value>
           </text>
+          <text id="/data/contact/ephemeral_dob/age_years:jr:constraintMsg">
+            <value>-</value>
+          </text>
           <text id="/data/contact/ephemeral_dob/age_years:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/age_months:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/data/contact/ephemeral_dob/age_months:label">
             <value>-</value>
           </text>
-          <text id="/data/contact/ephemeral_dob/dob_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_iso:label">
-            <value>-</value>
-          </text>
           <text id="/data/contact/ephemeral_dob/dob_debug:label">
             <value>-</value>
           </text>
-          <text id="/data/contact/meta:label">
+          <text id="/data/contact/phone:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/phone_alternate:jr:constraintMsg">
             <value>-</value>
           </text>
         </translation>
@@ -583,9 +598,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/clinic/is_name_generated:label">
             <value> Je, Ungependa kuita eneo hii kama mwasilishi mkuu wa eneo hii? "<output value=" /data/init/generated_name_translation "/>"?</value>
           </text>
-          <text id="/data/clinic/name:label">
-            <value>Jina</value>
-          </text>
           <text id="/data/clinic/external_id:label">
             <value>Namba ya nje</value>
           </text>
@@ -595,10 +607,16 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="select_dob_method-0">
             <value>-</value>
           </text>
+          <text id="/data/contact/short_name:jr:constraintMsg">
+            <value>-</value>
+          </text>
           <text id="/data/contact/short_name:label">
             <value>-</value>
           </text>
           <text id="/data/contact/short_name:hint">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_calendar:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/data/contact/ephemeral_dob/dob_calendar:label">
@@ -610,25 +628,25 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/contact/ephemeral_dob/age_label:label">
             <value>-</value>
           </text>
+          <text id="/data/contact/ephemeral_dob/age_years:jr:constraintMsg">
+            <value>-</value>
+          </text>
           <text id="/data/contact/ephemeral_dob/age_years:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/age_months:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/data/contact/ephemeral_dob/age_months:label">
             <value>-</value>
           </text>
-          <text id="/data/contact/ephemeral_dob/dob_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_iso:label">
-            <value>-</value>
-          </text>
           <text id="/data/contact/ephemeral_dob/dob_debug:label">
             <value>-</value>
           </text>
-          <text id="/data/contact/meta:label">
+          <text id="/data/contact/phone:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/phone_alternate:jr:constraintMsg">
             <value>-</value>
           </text>
         </translation>
@@ -741,9 +759,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/clinic/is_name_generated:label">
             <value> के तपाइ यस स्थानकाे प्राथमिक सम्पर्क नाम दिन चाहानु हुन्छ?:<output value=" /data/init/generated_name_translation "/></value>
           </text>
-          <text id="/data/clinic/name:label">
-            <value>नाम</value>
-          </text>
           <text id="/data/clinic/external_id:label">
             <value>बाहिरि ID</value>
           </text>
@@ -753,10 +768,16 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="select_dob_method-0">
             <value>-</value>
           </text>
+          <text id="/data/contact/short_name:jr:constraintMsg">
+            <value>-</value>
+          </text>
           <text id="/data/contact/short_name:label">
             <value>-</value>
           </text>
           <text id="/data/contact/short_name:hint">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_calendar:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/data/contact/ephemeral_dob/dob_calendar:label">
@@ -768,25 +789,25 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/contact/ephemeral_dob/age_label:label">
             <value>-</value>
           </text>
+          <text id="/data/contact/ephemeral_dob/age_years:jr:constraintMsg">
+            <value>-</value>
+          </text>
           <text id="/data/contact/ephemeral_dob/age_years:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/age_months:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/data/contact/ephemeral_dob/age_months:label">
             <value>-</value>
           </text>
-          <text id="/data/contact/ephemeral_dob/dob_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_iso:label">
-            <value>-</value>
-          </text>
           <text id="/data/contact/ephemeral_dob/dob_debug:label">
             <value>-</value>
           </text>
-          <text id="/data/contact/meta:label">
+          <text id="/data/contact/phone:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/phone_alternate:jr:constraintMsg">
             <value>-</value>
           </text>
         </translation>
@@ -899,9 +920,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/clinic/is_name_generated:label">
             <value> Voulez-vous nommer l'endroit: "<output value=" /data/init/generated_name_translation "/>"?</value>
           </text>
-          <text id="/data/clinic/name:label">
-            <value>Nom</value>
-          </text>
           <text id="/data/clinic/external_id:label">
             <value>Identifiant externe</value>
           </text>
@@ -911,10 +929,16 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="select_dob_method-0">
             <value>-</value>
           </text>
+          <text id="/data/contact/short_name:jr:constraintMsg">
+            <value>-</value>
+          </text>
           <text id="/data/contact/short_name:label">
             <value>-</value>
           </text>
           <text id="/data/contact/short_name:hint">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/dob_calendar:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/data/contact/ephemeral_dob/dob_calendar:label">
@@ -926,31 +950,31 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <text id="/data/contact/ephemeral_dob/age_label:label">
             <value>-</value>
           </text>
+          <text id="/data/contact/ephemeral_dob/age_years:jr:constraintMsg">
+            <value>-</value>
+          </text>
           <text id="/data/contact/ephemeral_dob/age_years:label">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/ephemeral_dob/age_months:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/data/contact/ephemeral_dob/age_months:label">
             <value>-</value>
           </text>
-          <text id="/data/contact/ephemeral_dob/dob_method:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_approx:label">
-            <value>-</value>
-          </text>
-          <text id="/data/contact/ephemeral_dob/dob_iso:label">
-            <value>-</value>
-          </text>
           <text id="/data/contact/ephemeral_dob/dob_debug:label">
             <value>-</value>
           </text>
-          <text id="/data/contact/meta:label">
+          <text id="/data/contact/phone:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/data/contact/phone_alternate:jr:constraintMsg">
             <value>-</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:clinic:create" version="2025-05-01 22-44" prefix="J1!contact:clinic:create!" delimiter="#">
+        <data id="contact:clinic:create" version="2026-09-25  10-41" prefix="J1!contact:clinic:create!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -1180,20 +1204,20 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
       <bind nodeset="/data/contact/parent" type="string"/>
       <bind nodeset="/data/contact/type" type="string"/>
       <bind nodeset="/data/contact/name" type="string" required="true()"/>
-      <bind nodeset="/data/contact/short_name" type="string" required="false()" constraint="string-length(.) &lt;= 10" jr:constraintMsg="Short name can not be more than 10 characters long."/>
+      <bind nodeset="/data/contact/short_name" type="string" required="false()" constraint="string-length(.) &lt;= 10" jr:constraintMsg="jr:itext('/data/contact/short_name:jr:constraintMsg')"/>
       <bind nodeset="/data/contact/date_of_birth" type="string" required="true()" calculate="../ephemeral_dob/dob_iso"/>
       <bind nodeset="/data/contact/date_of_birth_method" type="string" calculate="../ephemeral_dob/dob_method"/>
-      <bind nodeset="/data/contact/ephemeral_dob/dob_calendar" type="date" required="true()" relevant="not(selected(../dob_method,'approx'))" constraint=". &lt;= now()" jr:constraintMsg="Date must be before today"/>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_calendar" type="date" required="true()" relevant="not(selected(../dob_method,'approx'))" constraint=". &lt;= now()" jr:constraintMsg="jr:itext('/data/contact/ephemeral_dob/dob_calendar:jr:constraintMsg')"/>
       <bind nodeset="/data/contact/ephemeral_dob/age_label" readonly="true()" type="string" relevant="selected(../dob_method,'approx')"/>
-      <bind nodeset="/data/contact/ephemeral_dob/age_years" type="int" required="true()" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 130" jr:constraintMsg="Age must be between 0 and 130"/>
-      <bind nodeset="/data/contact/ephemeral_dob/age_months" type="int" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 11" jr:constraintMsg="Months must between 0 and 11"/>
+      <bind nodeset="/data/contact/ephemeral_dob/age_years" type="int" required="true()" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 130" jr:constraintMsg="jr:itext('/data/contact/ephemeral_dob/age_years:jr:constraintMsg')"/>
+      <bind nodeset="/data/contact/ephemeral_dob/age_months" type="int" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 11" jr:constraintMsg="jr:itext('/data/contact/ephemeral_dob/age_months:jr:constraintMsg')"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_method" type="string"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_approx" type="string" calculate="add-date(today(), 0- /data/contact/ephemeral_dob/age_years , 0- /data/contact/ephemeral_dob/age_months )"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected( ../dob_method,'approx')), &#10;../dob_calendar,&#10;../dob_approx)"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"/>
-      <bind nodeset="/data/contact/phone" type="tel" relevant="selected( /data/init/create_new_person ,'new_person')" constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678"/>
-      <bind nodeset="/data/contact/phone_alternate" type="tel" relevant="selected( /data/init/create_new_person ,'new_person')" constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678"/>
+      <bind nodeset="/data/contact/phone" type="tel" relevant="selected( /data/init/create_new_person ,'new_person')" constraint="true()" jr:constraintMsg="jr:itext('/data/contact/phone:jr:constraintMsg')"/>
+      <bind nodeset="/data/contact/phone_alternate" type="tel" relevant="selected( /data/init/create_new_person ,'new_person')" constraint="true()" jr:constraintMsg="jr:itext('/data/contact/phone_alternate:jr:constraintMsg')"/>
       <bind nodeset="/data/contact/sex" type="string" required="true()" relevant="selected( /data/init/create_new_person ,'new_person')"/>
       <bind nodeset="/data/contact/role" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"/>
       <bind nodeset="/data/contact/role_other" type="string" required="true()" relevant="selected(  /data/contact/role ,'other')"/>
@@ -1289,38 +1313,38 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
             <label ref="jr:itext('/data/contact/ephemeral_dob/dob_debug:label')"/>
           </input>
         </group>
+        <input ref="/data/contact/phone">
+          <label ref="jr:itext('/data/contact/phone:label')"/>
+        </input>
+        <input ref="/data/contact/phone_alternate">
+          <label ref="jr:itext('/data/contact/phone_alternate:label')"/>
+        </input>
+        <select1 ref="/data/contact/sex" appearance="columns">
+          <label ref="jr:itext('/data/contact/sex:label')"/>
+          <itemset nodeset="instance('male_female')/root/item">
+            <value ref="name"/>
+            <label ref="jr:itext(itextId)"/>
+          </itemset>
+        </select1>
+        <select1 ref="/data/contact/role">
+          <label ref="jr:itext('/data/contact/role:label')"/>
+          <itemset nodeset="instance('roles')/root/item">
+            <value ref="name"/>
+            <label ref="jr:itext(itextId)"/>
+          </itemset>
+        </select1>
+        <input ref="/data/contact/role_other">
+          <label ref="jr:itext('/data/contact/role_other:label')"/>
+        </input>
+        <input ref="/data/contact/external_id">
+          <label ref="jr:itext('/data/contact/external_id:label')"/>
+        </input>
+        <input ref="/data/contact/notes" appearance="multiline">
+          <label ref="jr:itext('/data/contact/notes:label')"/>
+        </input>
+        <group ref="/data/contact/user_for_contact"/>
+        <group appearance="hidden" ref="/data/contact/meta"/>
       </group>
-      <input ref="/data/contact/phone">
-        <label ref="jr:itext('/data/contact/phone:label')"/>
-      </input>
-      <input ref="/data/contact/phone_alternate">
-        <label ref="jr:itext('/data/contact/phone_alternate:label')"/>
-      </input>
-      <select1 ref="/data/contact/sex" appearance="columns">
-        <label ref="jr:itext('/data/contact/sex:label')"/>
-        <itemset nodeset="instance('male_female')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
-      <select1 ref="/data/contact/role">
-        <label ref="jr:itext('/data/contact/role:label')"/>
-        <itemset nodeset="instance('roles')/root/item">
-          <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
-        </itemset>
-      </select1>
-      <input ref="/data/contact/role_other">
-        <label ref="jr:itext('/data/contact/role_other:label')"/>
-      </input>
-      <input ref="/data/contact/external_id">
-        <label ref="jr:itext('/data/contact/external_id:label')"/>
-      </input>
-      <input ref="/data/contact/notes" appearance="multiline">
-        <label ref="jr:itext('/data/contact/notes:label')"/>
-      </input>
-      <group ref="/data/contact/user_for_contact"/>
-      <group appearance="hidden" ref="/data/contact/meta"/>
     </group>
     <group appearance="field-list" ref="/data/clinic">
       <select1 ref="/data/clinic/is_name_generated" appearance="columns-pack">
