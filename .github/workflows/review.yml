@@ -95,10 +95,11 @@ jobs:
           # Keep the configured tools synced up with what is configured in the frontmatter of the skill
           claude_args: |
             --model ${{ env.CLAUDE_LLM_MODEL }}
-            --allowedTools "Skill,Read,Grep,Glob,Bash(/home/runner/.claude/plugins/cache/medic-cht-ai-tools/cht-pr-review/*/scripts/pr-context.sh:*),Bash(/home/runner/.claude/plugins/cache/medic-cht-ai-tools/cht-pr-review/*/scripts/pr-diff.sh:*),mcp__plugin_cht-docs-mcp_cht-docs__ask_question,mcp__plugin_cht-docs-mcp_cht-docs__search_docs"
+            --allowedTools "Skill,Bash(/home/runner/.claude/plugins/cache/medic-cht-ai-tools/cht-pr-review/*/scripts/pr-context.sh:*),Bash(/home/runner/.claude/plugins/cache/medic-cht-ai-tools/cht-pr-review/*/scripts/pr-diff.sh:*),mcp__plugin_cht-docs-mcp_cht-docs__ask_question,mcp__plugin_cht-docs-mcp_cht-docs__search_docs"
             --disallowedTools "Edit,Write,NotebookEdit"
             --json-schema '{"type":"object","required":["report_markdown"],"additionalProperties":false,"properties":{"report_markdown":{"type":"string","description":"The complete review report as GitHub-flavored markdown."}}}'
       - name: Upload Claude execution log
+        if: ${{ !cancelled() && steps.review.outputs.execution_file }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: completeness-review-${{ github.run_id }}-${{ github.run_attempt }}
