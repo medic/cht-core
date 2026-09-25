@@ -36,6 +36,7 @@ jobs:
           OTEL_RESOURCE_ATTRIBUTES: deployment.environment.name=ci,cicd.pipeline.task.name=${{ github.job }},vcs.repository.name=${{ github.repository }},vcs.change.id=${{ github.event.pull_request.number }},cicd.pipeline.run.id=${{ github.run_id }}
         with:
           background: ${{ github.event.pull_request.title }}
+          effort: medium # Controls number of review rounds - low=1, medium=2, high=3 - default=medium
           incremental: 'true'
           llm_auth_header: "x-api-key"
           llm_auth_token: ${{ secrets.OCR_LLM_AUTH_TOKEN }}
