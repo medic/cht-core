@@ -22,8 +22,11 @@ jobs:
       contents: read # to read the diff under review
       pull-requests: write # to post the review summary and inline comments
     timeout-minutes: 30
+    outputs:
+      summary_comment_url: ${{ steps.ocr.outputs.summary_comment_url }}
     steps:
       - name: Run OpenCodeReview
+        id: ocr
         uses: alibaba/open-code-review@420bae824a43335e2fc4266eb71f33756715e232 # v1.10.1
         env:
           OCR_ENABLE_TELEMETRY: "1"
@@ -112,6 +115,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           STRUCTURED_OUTPUT: ${{ needs.completeness-review.outputs.structured_output }}
+          SUMMARY_COMMENT_URL: ${{ needs.code-review.outputs.summary_comment_url }}
         with:
           script: |
             let report_markdown;
@@ -124,15 +128,8 @@ jobs:
               core.setFailed('Review produced no report_markdown; nothing to post.');
               return;
             }
-            // Every OCR summary comment opens with this marker
-            const marker = '<!-- ocr-summary';
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              ...context.repo,
-              issue_number: context.issue.number,
-              per_page: 100,
-            });
-            const summary = comments.findLast(comment => comment.body?.includes(marker));
-            if (!summary) {
+            const commentId = process.env.SUMMARY_COMMENT_URL?.match(/#issuecomment-(\d+)$/)?.[1];
+            if (!commentId) {
               core.warning('Found no OpenCodeReview summary comment for this run; posting the report on its own.');
               await github.rest.issues.createComment({
                 ...context.repo,
@@ -141,6 +138,10 @@ jobs:
               });
               return;
             }
+            const { data: summary } = await github.rest.issues.getComment({
+              ...context.repo,
+              comment_id: commentId,
+            });
             await github.rest.issues.updateComment({
               ...context.repo,
               comment_id: summary.id,
