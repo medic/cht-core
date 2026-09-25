@@ -27,7 +27,7 @@ jobs:
     steps:
       - name: Run OpenCodeReview
         id: ocr
-        uses: alibaba/open-code-review@420bae824a43335e2fc4266eb71f33756715e232 # v1.10.1
+        uses: alibaba/open-code-review@bccbc15f785269400735d5255540c231e6c02b6d # v1.12.9 - keep in sync with the ocr_version below
         env:
           OCR_ENABLE_TELEMETRY: "1"
           OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
@@ -35,16 +35,16 @@ jobs:
           OTEL_EXPORTER_OTLP_HEADERS: Authorization=Basic ${{ secrets.LANGFUSE_OTEL_BASIC_AUTH }},x-langfuse-ingestion-version=4
           OTEL_RESOURCE_ATTRIBUTES: deployment.environment.name=ci,cicd.pipeline.task.name=${{ github.job }},vcs.repository.name=${{ github.repository }},vcs.change.id=${{ github.event.pull_request.number }},cicd.pipeline.run.id=${{ github.run_id }}
         with:
-          llm_url: ${{ env.OCR_LLM_URL }}
-          llm_auth_token: ${{ secrets.OCR_LLM_AUTH_TOKEN }}
-          llm_auth_header: "x-api-key"
-          llm_model: ${{ env.OCR_LLM_MODEL }}
-          llm_use_anthropic: "true"
-          incremental: 'true'
-          sticky_summary: 'false'
           background: ${{ github.event.pull_request.title }}
-          # '{"output_config": {"effort": "high"}}' — low|medium|high|xhigh|max.
+          incremental: 'true'
+          llm_auth_header: "x-api-key"
+          llm_auth_token: ${{ secrets.OCR_LLM_AUTH_TOKEN }}
           llm_extra_body: '{"output_config": {"effort": "xhigh"}}'
+          llm_model: ${{ env.OCR_LLM_MODEL }}
+          llm_url: ${{ env.OCR_LLM_URL }}
+          llm_use_anthropic: "true"
+          ocr_version: '1.12.9' # keep in sync with the action version above
+          sticky_summary: 'false'
 
   # completeness review that confirms the PR deliver what the linked issue and its description promise
   completeness-review:
