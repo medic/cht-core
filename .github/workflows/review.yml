@@ -106,6 +106,7 @@ jobs:
 
   post-review:
     needs: [code-review, completeness-review]
+    if: ${{ !cancelled() && github.event.label.name == 'review' }}
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write # to update (or post) the review summary comment and clear the label
@@ -148,6 +149,7 @@ jobs:
               body: `${summary.body}\n\n---\n\n${report_markdown}`,
             });
       - name: Remove the review label
+        if: always()
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
