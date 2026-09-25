@@ -1,5 +1,5 @@
-# Triggered by setting the `review` label on a PR.
-name: PR Review
+# Triggered by setting the `ai-review` label on a PR.
+name: AI Review
 
 env:
   OCR_LLM_MODEL: claude-sonnet-5
@@ -16,7 +16,7 @@ permissions: {}
 jobs:
   # Line-by-line correctness review of the diff based on https://github.com/alibaba/open-code-review/blob/main/examples/github_actions/ocr-review.yml
   code-review:
-    if: github.event.label.name == 'review'
+    if: github.event.label.name == 'ai-review'
     runs-on: ubuntu-latest
     permissions:
       contents: read # to read the diff under review
@@ -49,7 +49,7 @@ jobs:
 
   # completeness review that confirms the PR deliver what the linked issue and its description promise
   completeness-review:
-    if: github.event.label.name == 'review'
+    if: github.event.label.name == 'ai-review'
     runs-on: ubuntu-latest
     permissions:
       contents: read # to read the diff under review
@@ -108,7 +108,7 @@ jobs:
 
   post-review:
     needs: [code-review, completeness-review]
-    if: ${{ !cancelled() && github.event.label.name == 'review' }}
+    if: ${{ !cancelled() && github.event.label.name == 'ai-review' }}
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write # to update (or post) the review summary comment and clear the label
@@ -150,7 +150,7 @@ jobs:
               comment_id: summary.id,
               body: `${summary.body}\n\n---\n\n${report_markdown}`,
             });
-      - name: Remove the review label
+      - name: Remove the ai-review label
         if: always()
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
@@ -159,11 +159,11 @@ jobs:
               await github.rest.issues.removeLabel({
                 ...context.repo,
                 issue_number: context.issue.number,
-                name: 'review',
+                name: 'ai-review',
               });
             } catch (error) {
               if (error.status !== 404) {
                 throw error;
               }
-              core.info('Label "review" was already gone.');
+              core.info('Label "ai-review" was already gone.');
             }
