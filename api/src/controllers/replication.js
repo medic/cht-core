@@ -68,7 +68,7 @@ module.exports = {
    *         name: X-Medic-Bundle-Signature
    *         required: true
    *         description: >
-   *           Base64 Ed25519 signature over the envelope header bytes, made with the peer
+   *           Base64 ECDSA P-256 signature over the envelope header bytes, made with the peer
    *           device's registered signing key.
    *         schema:
    *           type: string

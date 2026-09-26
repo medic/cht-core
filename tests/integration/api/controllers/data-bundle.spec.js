@@ -103,7 +103,9 @@ const encryptToServer = async (serverKey, ndjson) => {
 const buildSignedRequest = async ({ envelope, ciphertext, privateKey, auth }) => {
   // the signed message is exactly the bytes that travel in the header, no canonical form involved
   const envelopeBytes = Buffer.from(JSON.stringify(envelope), 'utf8');
-  const signature = Buffer.from(await webcrypto.subtle.sign({ name: 'Ed25519' }, privateKey, envelopeBytes));
+  const signature = Buffer.from(
+    await webcrypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, privateKey, envelopeBytes)
+  );
 
   return {
     path: '/api/v1/replication/data-bundle',
@@ -121,7 +123,7 @@ const buildSignedRequest = async ({ envelope, ciphertext, privateKey, auth }) =>
 // Registers a device for a user (as admin) and returns the keys a bundle from that device needs:
 // the device's own signing private key and the server's age recipient for that device.
 const registerDevice = async (username, deviceId) => {
-  const keyPair = await webcrypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']);
+  const keyPair = await webcrypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
   const response = await utils.request({
     path: `/api/v1/users/${username}/devices/${deviceId}/keys`,
     method: 'POST',

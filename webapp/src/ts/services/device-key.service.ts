@@ -1,54 +1,55 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
-// Imported statically on purpose. A dynamic import becomes its own webpack chunk, which the
-// service worker then precaches, and the precached list is asserted in
-// tests/e2e/default/service-worker. The `.js` suffix is required by the package's exports map.
-import { ed25519 } from '@noble/curves/ed25519.js';
 
 import { AuthService } from '@mm-services/auth.service';
-import { DbService } from '@mm-services/db.service';
 import { DBSyncService, SyncStatus } from '@mm-services/db-sync.service';
 import { SessionService } from '@mm-services/session.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 
-// Keys are kept in a `_local` doc: `_local` docs never replicate, so the device private keys
-// stay on the device that generated them.
-const LOCAL_DOC_ID = '_local/offline-device-keys';
+// Key material lives in IndexedDB rather than in a doc, because the private key is a CryptoKey and
+// not something that can be written as JSON. Nothing here replicates.
+const DB_NAME = 'medic-offline-device-keys';
+const STORE_NAME = 'keys';
+const RECORD_KEY = 'current';
 const PERMISSION = 'can_send_offline_data_bundle';
 
-interface PublicKeyJwk {
+/** ECDSA P-256, the shape the device-key endpoint stores and the api verifies against. */
+const SIGNING_ALGORITHM = { name: 'ECDSA', namedCurve: 'P-256' };
+
+export interface PublicKeyJwk {
   kty: string;
   crv: string;
   x: string;
+  y: string;
 }
 
-interface DeviceKeys {
-  signing_private_key: string;
-  signing_public_key: PublicKeyJwk;
+/** What this device holds for as long as it stays registered. */
+interface StoredKeys {
+  device_id: string;
+  /** Non-extractable: it can sign, and nothing can read it back out, not even us. */
+  signing_private_key: CryptoKey;
+  server_encryption_public_key: string;
+  updated_date: number;
 }
 
 interface ServerKeys {
   server_encryption_public_key: string;
 }
 
-const toBase64Url = (bytes: Uint8Array): string => {
-  const binary = Array.from(bytes, byte => String.fromCodePoint(byte)).join('');
-  return window.btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-};
-
 /**
  * Registers this device's offline data bundle signing key with the server, and stores the
- * server's encryption public key locally, so a user that later goes offline can sign bundles and
- * encrypt them to the server.
+ * server's encryption public key beside it, so a user that later goes offline can sign bundles
+ * and encrypt them to the server.
  *
  * Registration runs after a fully successful sync only. At that point the device has just been
  * in direct contact with the server, so any bundle still sealed under older keys is stale by
  * definition and nothing unsent is lost when the server replaces the device entry.
  *
- * Ed25519 is not available in Web Crypto on the browsers the webapp still supports (Chrome 107),
- * so signing keys come from @noble/curves, which is pure JS. Consequence: the private key is raw
- * material, it cannot be a non-extractable Web Crypto key.
+ * The private key is generated non-extractable and kept as a CryptoKey, so it can sign and can
+ * never be read back, by us or by anything with a dev console. That rules out Ed25519, which Web
+ * Crypto only offers from Chrome 137 while the webapp still supports far older, and ECDSA on
+ * P-256 is the usual stand-in.
  */
 @Injectable({
   providedIn: 'root'
@@ -56,7 +57,6 @@ const toBase64Url = (bytes: Uint8Array): string => {
 export class DeviceKeyService {
   constructor(
     private readonly authService: AuthService,
-    private readonly dbService: DbService,
     private readonly dbSyncService: DBSyncService,
     private readonly http: HttpClient,
     private readonly sessionService: SessionService,
@@ -96,74 +96,88 @@ export class DeviceKeyService {
    * re-register, leaving it unable to send.
    */
   async forget() {
-    const doc = await this.getLocalDoc();
-    if (doc) {
-      await this.dbService.get().remove(doc);
-    }
+    await this.write(store => store.delete(RECORD_KEY));
   }
 
   private async registerDeviceKeys() {
-    // Ordered cheapest first: both of these are free, and neither a database read nor a keypair is
-    // worth doing for a device that is already registered or a session that cannot name itself.
-    const username = this.sessionService.userCtx()?.name;
-    if (!username) {
-      return;
-    }
-
+    // Ordered cheapest first: a database read is not worth doing for a device that is already
+    // registered, and neither is generating a keypair.
     const deviceId = this.telemetryService.getUniqueDeviceId();
-    const existing = await this.getLocalDoc();
+    const existing = await this.read();
     if (this.isRegistered(existing, deviceId)) {
       return;
     }
 
-    const deviceKeys = this.generateDeviceKeys();
-    const serverKeys = await this.sendDeviceKeys(username, deviceId, deviceKeys);
-    await this.saveKeys(existing, deviceId, deviceKeys, serverKeys);
+    const username = this.sessionService.userCtx().name;
+    const pair = await crypto.subtle.generateKey(SIGNING_ALGORITHM, false, ['sign', 'verify']);
+    const serverKeys = await this.sendPublicKey(username, deviceId, pair.publicKey);
+    await this.save(deviceId, pair.privateKey, serverKeys);
   }
 
-  private isRegistered(doc: any, deviceId: string): boolean {
-    return doc?.device_id === deviceId && !!doc?.server_encryption_public_key;
+  private isRegistered(keys: StoredKeys | null, deviceId: string): boolean {
+    return keys?.device_id === deviceId && !!keys?.server_encryption_public_key;
   }
 
-  private generateDeviceKeys(): DeviceKeys {
-    const signingPrivateKey = ed25519.utils.randomSecretKey();
-
-    return {
-      signing_private_key: toBase64Url(signingPrivateKey),
-      signing_public_key: {
-        kty: 'OKP',
-        crv: 'Ed25519',
-        x: toBase64Url(ed25519.getPublicKey(signingPrivateKey)),
-      },
-    };
-  }
-
-  private async sendDeviceKeys(username: string, deviceId: string, deviceKeys: DeviceKeys): Promise<ServerKeys> {
+  private async sendPublicKey(username: string, deviceId: string, publicKey: CryptoKey): Promise<ServerKeys> {
+    // Only the four members the api needs: exportKey also reports how the key may be used here,
+    // which says nothing about how the server may use it.
+    const { kty, crv, x, y } = await crypto.subtle.exportKey('jwk', publicKey);
     const url = `/api/v1/users/${username}/devices/${deviceId}/keys`;
-    const body = { signing_key: deviceKeys.signing_public_key };
+    const body = { signing_key: { kty, crv, x, y } as PublicKeyJwk };
 
     return lastValueFrom(this.http.post<ServerKeys>(url, body, { responseType: 'json' }));
   }
 
-  private async getLocalDoc(): Promise<any> {
+  private async save(deviceId: string, signingPrivateKey: CryptoKey, serverKeys: ServerKeys) {
+    const record: StoredKeys = {
+      device_id: deviceId,
+      signing_private_key: signingPrivateKey,
+      ...serverKeys,
+      updated_date: Date.now(),
+    };
+    await this.write(store => store.put(record, RECORD_KEY));
+  }
+
+  // --- IndexedDB ---------------------------------------------------------------------------
+  //
+  // Small and hand rolled because this is the only thing in the webapp that has to keep something
+  // IndexedDB can store but a doc cannot.
+
+  private openDatabase(): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, 1);
+      request.onupgradeneeded = () => request.result.createObjectStore(STORE_NAME);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  private async read(): Promise<StoredKeys | null> {
+    const database = await this.openDatabase();
     try {
-      return await this.dbService.get().get(LOCAL_DOC_ID);
-    } catch (err: any) {
-      if (err.status === 404) {
-        return null;
-      }
-      throw err;
+      return await new Promise((resolve, reject) => {
+        const request = database.transaction(STORE_NAME, 'readonly')
+          .objectStore(STORE_NAME)
+          .get(RECORD_KEY);
+        request.onsuccess = () => resolve(request.result ?? null);
+        request.onerror = () => reject(request.error);
+      });
+    } finally {
+      database.close();
     }
   }
 
-  private async saveKeys(existing: any, deviceId: string, deviceKeys: DeviceKeys, serverKeys: ServerKeys) {
-    await this.dbService.get().put({
-      _id: LOCAL_DOC_ID,
-      _rev: existing?._rev,
-      device_id: deviceId,
-      ...deviceKeys,
-      ...serverKeys,
-      updated_date: Date.now(),
-    });
+  private async write(operation: (store: IDBObjectStore) => IDBRequest): Promise<void> {
+    const database = await this.openDatabase();
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const transaction = database.transaction(STORE_NAME, 'readwrite');
+        operation(transaction.objectStore(STORE_NAME));
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+      });
+    } finally {
+      database.close();
+    }
   }
 }

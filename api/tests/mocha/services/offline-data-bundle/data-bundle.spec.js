@@ -21,9 +21,9 @@ const service = require('../../../../src/services/offline-data-bundle/data-bundl
 const USER = 'chw1';
 const DEVICE = 'device-a';
 const USER_DOC_ID = `org.couchdb.user:${USER}`;
-// A stand-in for the device's Ed25519 signing public key JWK (verify is stubbed, so the exact
+// A stand-in for the device's signing public key JWK (verify is stubbed, so the exact
 // contents do not matter - only that this object is the one handed to signing.verify).
-const SIGNING_JWK = { kty: 'OKP', crv: 'Ed25519', x: 'device-a-pub' };
+const SIGNING_JWK = { kty: 'EC', crv: 'P-256', x: 'device-a-pub-x', y: 'device-a-pub-y' };
 const SERVER_IDENTITY = 'AGE-SECRET-KEY-1SERVER';
 const MAX_BODY_SIZE = 32 * 1024 * 1024;
 

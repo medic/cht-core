@@ -26,7 +26,7 @@ const SEND_PERMISSION = 'can_send_offline_data_bundle';
 //   POST /api/v1/replication/data-bundle
 //   Content-Type: application/octet-stream
 //   X-Medic-Bundle-Envelope:  base64( utf8( JSON envelope ) )
-//   X-Medic-Bundle-Signature: base64( Ed25519 signature )
+//   X-Medic-Bundle-Signature: base64( ECDSA P-256 signature )
 //   <body> = the raw age ciphertext (NDJSON of the docs, encrypted to the server)
 //
 // The signed message is the DECODED envelope header bytes exactly as they arrived, so the server

@@ -2521,12 +2521,14 @@ describe('Users API', () => {
       contact: { _id: 'fixture:contact:devkey-other', name: 'DeviceKeyOther' },
       roles: ['data_entry']
     };
-    // real Ed25519 public key JWKs generated in the before() below
+    // real public key JWKs generated in the before() below
     let signingKeyA;
     let signingKeyB;
 
     const generateSigningKey = async () => {
-      const keyPair = await webcrypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']);
+      const keyPair = await webcrypto.subtle.generateKey(
+        { name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']
+      );
       return webcrypto.subtle.exportKey('jwk', keyPair.publicKey);
     };
 
@@ -2579,12 +2581,11 @@ describe('Users API', () => {
       chai.expect(userDoc.keys_by_device['device-A'].signing_public_key).to.deep.equal(signingKeyB);
     });
 
-    // The webapp cannot use Web Crypto for Ed25519 (not in Chrome 107, the minimum browser), so it
-    // hand-builds the JWK from @noble/curves: kty, crv and x only, none of the extra members
-    // Web Crypto's exportKey adds. This asserts the server accepts that minimal client shape.
+    // The webapp sends only the four members that describe the key, not the extra ones
+    // exportKey adds to say how the key may be used locally. This asserts the server takes that.
     it('accepts a signing key built the way the webapp builds it', async () => {
       const exported = await generateSigningKey();
-      const signingKey = { kty: exported.kty, crv: exported.crv, x: exported.x };
+      const signingKey = { kty: exported.kty, crv: exported.crv, x: exported.x, y: exported.y };
 
       const response = await utils.request({
         path: `/api/v1/users/${senderUser.username}/devices/device-webapp/keys`,

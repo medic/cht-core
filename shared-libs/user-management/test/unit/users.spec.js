@@ -1176,7 +1176,7 @@ describe('Users service', () => {
     // Only the device's PUBLIC signing key reaches this layer. The server private key is stored in
     // the secureSettings vault by the api controller and must never be written to the _users doc,
     // and the matching server public key is only returned to the device, never stored.
-    const signingKey = { kty: 'OKP', crv: 'Ed25519', x: 'device-pub' };
+    const signingKey = { kty: 'EC', crv: 'P-256', x: 'device-pub-x', y: 'device-pub-y' };
 
     it('adds a new device key entry to the _users doc', async () => {
       db.users.get.resolves({ _id: userId, name: 'steve', type: 'user' });
@@ -1199,7 +1199,7 @@ describe('Users service', () => {
 
     it('replaces the existing entry when the same device re-registers', async () => {
       const otherEntry = {
-        signing_public_key: { kty: 'OKP', crv: 'Ed25519', x: 'other-pub' },
+        signing_public_key: { kty: 'EC', crv: 'P-256', x: 'other-pub-x', y: 'other-pub-y' },
         updated_date: 1000,
       };
       db.users.get.resolves({
@@ -1208,7 +1208,7 @@ describe('Users service', () => {
         type: 'user',
         keys_by_device: {
           'device-1': {
-            signing_public_key: { kty: 'OKP', crv: 'Ed25519', x: 'old-pub' },
+            signing_public_key: { kty: 'EC', crv: 'P-256', x: 'old-pub-x', y: 'old-pub-y' },
             updated_date: 1000,
           },
           'device-2': otherEntry,

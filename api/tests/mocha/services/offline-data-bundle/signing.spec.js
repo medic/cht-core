@@ -5,11 +5,11 @@ const service = require('../../../../src/services/offline-data-bundle/signing');
 
 // The service only ever verifies, so the test plays the device's part and signs with webcrypto.
 const deviceKeyPair = async () => {
-  const keyPair = await webcrypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']);
+  const keyPair = await webcrypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
   return {
     publicKey: await webcrypto.subtle.exportKey('jwk', keyPair.publicKey),
     sign: async (message) => {
-      const signature = await webcrypto.subtle.sign({ name: 'Ed25519' }, keyPair.privateKey, message);
+      const signature = await webcrypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, keyPair.privateKey, message);
       return Buffer.from(signature).toString('base64');
     },
   };
@@ -23,12 +23,13 @@ describe('offline-data-bundle signing service', () => {
       validJwk = (await deviceKeyPair()).publicKey;
     });
 
-    it('returns true for a real Ed25519 public key JWK', async () => {
+    it('returns true for a real ECDSA P-256 public key JWK', async () => {
       chai.expect(await service.isValidPublicKey(validJwk)).to.be.true;
     });
 
     it('returns false for a JWK with the wrong key material', async () => {
-      chai.expect(await service.isValidPublicKey({ kty: 'OKP', crv: 'Ed25519', x: 'not-a-key' })).to.be.false;
+      const notAKey = { kty: 'EC', crv: 'P-256', x: 'not-a-key', y: 'not-a-key' };
+      chai.expect(await service.isValidPublicKey(notAKey)).to.be.false;
     });
 
     it('returns false for a non-object input', async () => {
