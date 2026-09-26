@@ -314,6 +314,10 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.setupRouter();
     this.loadTranslations();
     this.setupDb();
+    // In the same tick as setupDb, and not in the chain below: the first sync it schedules can
+    // complete while that chain is still working, and a registration that missed the only
+    // successful sync of the session never happens.
+    this.deviceKeyService.init();
     this.countMessageService.init();
     this.feedbackService.init();
     this.sessionService.init();
@@ -326,7 +330,6 @@ export class AppComponent implements OnInit, AfterViewInit {
       .then(() => (this.initialisationComplete = true))
       .then(() => this.initUser())
       .then(() => this.interactionTrackingService.init())
-      .then(() => this.deviceKeyService.init())
       .then(() => this.initRulesEngine())
       .then(() => this.initTransitions())
       .then(() => this.initForms())
