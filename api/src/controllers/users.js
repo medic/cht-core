@@ -10,6 +10,7 @@ const replication = require('../services/replication/replication');
 const age = require('../services/offline-data-bundle/age');
 const signing = require('../services/offline-data-bundle/signing');
 const serverKey = require('../services/offline-data-bundle/server-key');
+const { PublicError } = require('../errors');
 
 const validateDeviceKeyBody = async (body) => {
   const { signing_key: signingKey } = body;
@@ -310,14 +311,14 @@ const storeServerKey = async (req, username, deviceId, identity) => {
     await serverKey.setServerPrivateKey(username, deviceId, identity);
   } catch (err) {
     logger.error(`REQ ${req.id} - Could not store the server key for '${username}'/'${deviceId}': %o`, err);
-    // publicMessage, not message: server-utils sends a bare "Server error" for any 5xx and passes
-    // only publicMessage through as the details, so a message left on `message` is logged and
-    // never seen by whoever is holding the device.
-    throw {
-      code: 500,
-      message: 'Could not store the server key for this device.',
-      publicMessage: 'Could not store the key for this device. Check that the CouchDB secret is configured.',
-    };
+    // PublicError, because server-utils sends a bare "Server error" for any 5xx and passes only
+    // publicMessage through as the details: a message left anywhere else is logged and never seen
+    // by whoever is holding the device.
+    const error = new PublicError(
+      'Could not store the key for this device. Check that the CouchDB secret is configured.'
+    );
+    error.code = 500;
+    throw error;
   }
 };
 

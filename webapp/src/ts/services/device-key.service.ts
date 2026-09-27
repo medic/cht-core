@@ -14,6 +14,11 @@ const STORE_NAME = 'keys';
 const RECORD_KEY = 'current';
 const PERMISSION = 'can_send_offline_data_bundle';
 
+/** IndexedDB reports a failure as a DOMException, or as nothing at all when it is shutting down. */
+const asError = (reason: DOMException | null): Error => {
+  return reason ?? new Error('IndexedDB request failed');
+};
+
 /** ECDSA P-256, the shape the device-key endpoint stores and the api verifies against. */
 const SIGNING_ALGORITHM = { name: 'ECDSA', namedCurve: 'P-256' };
 
@@ -157,7 +162,7 @@ export class DeviceKeyService {
       const request = indexedDB.open(DB_NAME, 1);
       request.onupgradeneeded = () => request.result.createObjectStore(STORE_NAME);
       request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
+      request.onerror = () => reject(asError(request.error));
     });
   }
 
@@ -169,7 +174,7 @@ export class DeviceKeyService {
           .objectStore(STORE_NAME)
           .get(RECORD_KEY);
         request.onsuccess = () => resolve(request.result ?? null);
-        request.onerror = () => reject(request.error);
+        request.onerror = () => reject(asError(request.error));
       });
     } finally {
       database.close();
@@ -183,7 +188,7 @@ export class DeviceKeyService {
         const transaction = database.transaction(STORE_NAME, 'readwrite');
         operation(transaction.objectStore(STORE_NAME));
         transaction.oncomplete = () => resolve();
-        transaction.onerror = () => reject(transaction.error);
+        transaction.onerror = () => reject(asError(transaction.error));
       });
     } finally {
       database.close();
