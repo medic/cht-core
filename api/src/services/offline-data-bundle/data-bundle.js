@@ -1,3 +1,4 @@
+const { createHash } = require('node:crypto');
 const { Readable } = require('node:stream');
 const { TransformStream } = require('node:stream/web');
 const logger = require('@medic/logger');
@@ -17,6 +18,10 @@ const bulkDocsService = require('../replication/bulk-docs');
 // never held whole in memory. 100 matches the batch size the webapp replicates with
 // (`webapp/src/ts/services/db-sync.service.ts`).
 const DOC_BATCH_SIZE = 100;
+
+// An age header is a short text prefix. One recipient is under 200 bytes; this is only a bound on
+// how much is held while looking for the end of it.
+const MAX_HEADER_BYTES = 16 * 1024;
 const SEND_PERMISSION = 'can_send_offline_data_bundle';
 
 // ---------------------------------------------------------------------------
@@ -31,6 +36,14 @@ const SEND_PERMISSION = 'can_send_offline_data_bundle';
 //
 // The signed message is the DECODED envelope header bytes exactly as they arrived, so the server
 // verifies what it received instead of reproducing a canonical form of it.
+//
+// The envelope carries `payload_header_sha256`, which is what ties it to this exact body. Without
+// it the signature covers only who sent the bundle, and anyone who can read the server's public
+// key off a device could pair their own ciphertext with a captured envelope. Hashing the AGE
+// HEADER rather than the whole body is what makes that check affordable: the header is a short
+// prefix, so it is verified before a single doc is written, and the docs can still be written as
+// they stream. It binds the body because the file key is wrapped inside that header to the
+// server's key, so a header cannot be reused under a body its author could not encrypt.
 //
 // DOC ORDER IS THE CLIENT'S JOB. Docs are authorized in batches, and a batch can only grant access
 // from the docs it contains plus what is already in the database. A report whose contact arrives in
@@ -56,7 +69,8 @@ const isValidEnvelope = (envelope) => {
   return !!envelope &&
     typeof envelope === 'object' &&
     isNonEmptyString(envelope.user) &&
-    isNonEmptyString(envelope.device_id);
+    isNonEmptyString(envelope.device_id) &&
+    isNonEmptyString(envelope.payload_header_sha256);
 };
 
 // Unpacks the two request headers. The decoded envelope bytes are kept as they arrived because
@@ -118,6 +132,52 @@ const boundedStream = (body, maxBytes) => {
         controller.enqueue(chunk);
       },
     }), { preventCancel: true });
+};
+
+// The end of the age header: the first line that starts with "---". Returns -1 until the whole
+// line is present, so a header split across chunks is simply waited for.
+const headerEnd = (bytes) => {
+  const marker = bytes.indexOf('\n---');
+  if (marker === -1) {
+    return -1;
+  }
+  const lineEnd = bytes.indexOf('\n', marker + 1);
+  return lineEnd === -1 ? -1 : lineEnd + 1;
+};
+
+// Holds the front of the ciphertext until the age header is complete, checks it against the signed
+// envelope, then lets everything through untouched. Nothing downstream runs until it matches, so a
+// body that does not belong to this envelope never reaches age, let alone the database.
+const headerVerifiedStream = (source, expectedHash) => {
+  let held = Buffer.alloc(0);
+  let verified = false;
+  return source.pipeThrough(new TransformStream({
+    transform(chunk, controller) {
+      if (verified) {
+        return controller.enqueue(chunk);
+      }
+      held = Buffer.concat([held, Buffer.from(chunk)]);
+      const end = headerEnd(held);
+      if (end === -1) {
+        if (held.length > MAX_HEADER_BYTES) {
+          throw new BadRequestError('Payload has no age header.');
+        }
+        return;
+      }
+      const actual = createHash('sha256').update(held.subarray(0, end)).digest('base64');
+      if (actual !== expectedHash) {
+        throw new BadRequestError('Payload does not match the envelope.');
+      }
+      verified = true;
+      controller.enqueue(held);
+      held = Buffer.alloc(0);
+    },
+    flush() {
+      if (!verified) {
+        throw new BadRequestError('Payload has no age header.');
+      }
+    },
+  }), { preventCancel: true });
 };
 
 const corruptPayload = (err, envelope) => {
@@ -270,7 +330,10 @@ module.exports = {
     await verifyEnvelope(keys, envelopeBytes, signature);
     const userCtx = await getOfflineUserCtx(envelope.user);
 
-    const encryptedReadStream = boundedStream(req, MAX_REQUEST_SIZE);
+    const encryptedReadStream = headerVerifiedStream(
+      boundedStream(req, MAX_REQUEST_SIZE),
+      envelope.payload_header_sha256
+    );
     const plaintext = await decrypt(keys.serverEncryptionKey, encryptedReadStream, envelope);
     const { total, dropped } = await ingest(userCtx, plaintext, envelope);
 
