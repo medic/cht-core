@@ -8,11 +8,13 @@ import { USER_ROLES } from '@medic/constants';
 const { COUCHDB_ADMIN } = USER_ROLES;
 
 import { SessionService } from '@mm-services/session.service';
+import { DeviceKeyService } from '@mm-services/device-key.service';
 import { LocationService } from '@mm-services/location.service';
 import { CookieService } from 'ngx-cookie-service';
 
 describe('Session service', () => {
   let service:SessionService;
+  let deviceKeyService;
   let cookieSet;
   let cookieGet;
   let cookieDelete;
@@ -30,6 +32,7 @@ describe('Session service', () => {
       get: sinon.stub(),
       delete: sinon.stub(),
     };
+    deviceKeyService = { forget: sinon.stub().resolves() };
     const documentMock = {
       location: location,
       querySelectorAll: sinon.stub().returns([]),
@@ -41,6 +44,7 @@ describe('Session service', () => {
         { provide: LocationService, useValue: Location },
         { provide: DOCUMENT, useValue: documentMock },
         { provide: HttpClient, useValue: $httpBackend },
+        { provide: DeviceKeyService, useValue: deviceKeyService },
       ],
     });
     service = TestBed.inject(SessionService);
@@ -87,6 +91,35 @@ describe('Session service', () => {
     expect(cookieDelete.args[0][0]).to.equal('userCtx');
     expect(consoleWarnMock.callCount).to.equal(1);
     expect(consoleWarnMock.args[0][0]).to.equal('User must reauthenticate');
+  });
+
+  /**
+   * A password change logs every other device out and drops the keys the server held for them.
+   * Those devices only learn of it here, so the local key goes now and the next sign-in registers
+   * a fresh one, which is what the design ties re-registration to.
+   */
+  it('forgets the device key when logging out', async () => {
+    sinon.stub(console, 'warn');
+    cookieGet.returns(JSON.stringify({ name: 'bryan' }));
+    $httpBackend.delete.withArgs('/_session').returns(of());
+
+    await service.logout();
+
+    expect(deviceKeyService.forget.callCount).to.equal(1);
+  });
+
+  it('logs out even when the device key cannot be forgotten', async () => {
+    sinon.stub(console, 'warn');
+    const consoleErrorMock = sinon.stub(console, 'error');
+    cookieGet.returns(JSON.stringify({ name: 'bryan' }));
+    Location.dbName = 'DB_NAME';
+    deviceKeyService.forget.rejects(new Error('indexeddb is unavailable'));
+    $httpBackend.delete.withArgs('/_session').returns(of());
+
+    await service.logout();
+
+    expect(location.href).to.include('/DB_NAME/login');
+    expect(consoleErrorMock.args[0][0]).to.equal('SessionService :: Error forgetting the device key');
   });
 
   it('logs out if no user context', async () => {
