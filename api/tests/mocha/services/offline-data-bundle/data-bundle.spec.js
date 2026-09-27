@@ -146,6 +146,16 @@ describe('offline-data-bundle data-bundle service', () => {
       expect(docsWritten()).to.deep.equal([]);
     });
 
+    /** Chunks are whatever size the network made them, and a body dwarfs its header. */
+    it('accepts a header that arrives inside a chunk far larger than a header', async () => {
+      stubDecryptStream(ndjson([{ _id: 'a' }]));
+      const oneBigChunk = Buffer.concat([AGE_HEADER, Buffer.alloc(64 * 1024, 1)]);
+
+      await service.process(encode(envelopeFor()), 'sig', bodyStream(oneBigChunk));
+
+      expect(docsWritten()).to.deep.equal([{ _id: 'a' }]);
+    });
+
     /**
      * A header is a short text prefix. Without a bound that applies before the terminator is
      * found, a body whose first line runs for megabytes is buffered whole while looking for it.

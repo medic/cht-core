@@ -36,7 +36,13 @@ export class UpdatePasswordService {
 
     // The server has just dropped every device key for this user, so the copy held here is no
     // longer trusted by anything. Forgetting it is what makes the next sync provision a new one.
-    await this.deviceKeyService.forget();
+    // Never let this fail the password change: the server has already accepted it, and rejecting
+    // here would tell the user their new password did not take while it quietly had.
+    try {
+      await this.deviceKeyService.forget();
+    } catch (err) {
+      console.error('UpdatePasswordService :: Error forgetting the device key', err);
+    }
 
     return result as Object;
   }

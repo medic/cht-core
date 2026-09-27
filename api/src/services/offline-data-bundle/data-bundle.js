@@ -147,6 +147,15 @@ const headerEnd = (bytes) => {
   return lineEnd === -1 ? -1 : lineEnd + 1;
 };
 
+// Measured on the HEADER, not on what arrived with it: a chunk is whatever size the network made
+// it, and a body dwarfs the header it carries. A header that has not ended by here is as good as
+// absent, so both the found and the not-yet-found cases answer the same way.
+const refuseAnOverlongHeader = (length) => {
+  if (length > MAX_HEADER_BYTES) {
+    throw new BadRequestError('Payload has no age header.');
+  }
+};
+
 // Holds the front of the ciphertext until the age header is complete, checks it against the signed
 // envelope, then lets everything through untouched. Nothing downstream runs until it matches, so a
 // body that does not belong to this envelope never reaches age, let alone the database.
@@ -159,15 +168,12 @@ const headerVerifiedStream = (source, expectedHash) => {
         return controller.enqueue(chunk);
       }
       held = Buffer.concat([held, Buffer.from(chunk)]);
-      // Before looking for the terminator, not only when it is missing: a first line longer than
-      // this would otherwise be buffered whole, and "no header yet" is the same answer either way.
-      if (held.length > MAX_HEADER_BYTES) {
-        throw new BadRequestError('Payload has no age header.');
-      }
       const end = headerEnd(held);
       if (end === -1) {
+        refuseAnOverlongHeader(held.length);
         return;
       }
+      refuseAnOverlongHeader(end);
       const actual = createHash('sha256').update(held.subarray(0, end)).digest('base64');
       if (actual !== expectedHash) {
         throw new BadRequestError('Payload does not match the envelope.');

@@ -142,6 +142,7 @@ describe('DeviceKey service', () => {
     await syncSuccessAndFlush();
 
     const record = await readRecord();
+    expect(record.user).to.equal('chw-user');
     expect(record.device_id).to.equal(DEVICE_ID);
     expect(record.server_encryption_public_key).to.equal(SERVER_KEYS.server_encryption_public_key);
     expect(record.signing_private_key).to.be.an.instanceof(CryptoKey);
@@ -197,6 +198,7 @@ describe('DeviceKey service', () => {
 
   it('does not register again once this device is registered', async () => {
     await writeRecord({
+      user: 'chw-user',
       device_id: DEVICE_ID,
       signing_private_key: 'whatever',
       server_encryption_public_key: 'age1server',
@@ -210,6 +212,7 @@ describe('DeviceKey service', () => {
 
   it('registers again when the stored key belongs to another device', async () => {
     await writeRecord({
+      user: 'chw-user',
       device_id: 'another-device',
       signing_private_key: 'whatever',
       server_encryption_public_key: 'age1server',
@@ -220,6 +223,23 @@ describe('DeviceKey service', () => {
 
     const record = await readRecord();
     expect(record.device_id).to.equal(DEVICE_ID);
+    expect(record.signing_private_key).to.be.an.instanceof(CryptoKey);
+  });
+
+  /** Phones get handed round. A key belongs to the user it was issued to, not to the device. */
+  it('registers again when the stored key belongs to another user', async () => {
+    await writeRecord({
+      user: 'someone-else',
+      device_id: DEVICE_ID,
+      signing_private_key: 'their-key',
+      server_encryption_public_key: 'age1server',
+    });
+    service.init();
+
+    await syncSuccessAndFlush();
+
+    const record = await readRecord();
+    expect(record.user).to.equal('chw-user');
     expect(record.signing_private_key).to.be.an.instanceof(CryptoKey);
   });
 

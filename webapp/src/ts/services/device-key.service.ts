@@ -26,6 +26,8 @@ export interface PublicKeyJwk {
 
 /** What this device holds for as long as it stays registered. */
 interface StoredKeys {
+  /** Devices are shared, and a key belongs to the user it was issued to, not to the phone. */
+  user: string;
   device_id: string;
   /** Non-extractable: it can sign, and nothing can read it back out, not even us. */
   signing_private_key: CryptoKey;
@@ -100,22 +102,26 @@ export class DeviceKeyService {
   }
 
   private async registerDeviceKeys() {
-    // Ordered cheapest first: a database read is not worth doing for a device that is already
-    // registered, and neither is generating a keypair.
+    // Cheapest first: neither the store nor a keypair is worth touching for a device that is
+    // already registered to this user.
+    const username = this.sessionService.userCtx().name;
     const deviceId = this.telemetryService.getUniqueDeviceId();
     const existing = await this.read();
-    if (this.isRegistered(existing, deviceId)) {
+    if (this.isRegistered(existing, username, deviceId)) {
       return;
     }
 
-    const username = this.sessionService.userCtx().name;
     const pair = await crypto.subtle.generateKey(SIGNING_ALGORITHM, false, ['sign', 'verify']);
     const serverKeys = await this.sendPublicKey(username, deviceId, pair.publicKey);
-    await this.save(deviceId, pair.privateKey, serverKeys);
+    await this.save(username, deviceId, pair.privateKey, serverKeys);
   }
 
-  private isRegistered(keys: StoredKeys | null, deviceId: string): boolean {
-    return keys?.device_id === deviceId && !!keys?.server_encryption_public_key;
+  // The user as well as the device: a phone passed to a colleague would otherwise keep the first
+  // user's private key, and the second would never register and never be able to send.
+  private isRegistered(keys: StoredKeys | null, username: string, deviceId: string): boolean {
+    return keys?.user === username &&
+      keys?.device_id === deviceId &&
+      !!keys?.server_encryption_public_key;
   }
 
   private async sendPublicKey(username: string, deviceId: string, publicKey: CryptoKey): Promise<ServerKeys> {
@@ -128,8 +134,11 @@ export class DeviceKeyService {
     return lastValueFrom(this.http.post<ServerKeys>(url, body, { responseType: 'json' }));
   }
 
-  private async save(deviceId: string, signingPrivateKey: CryptoKey, serverKeys: ServerKeys) {
+  private async save(
+    username: string, deviceId: string, signingPrivateKey: CryptoKey, serverKeys: ServerKeys
+  ) {
     const record: StoredKeys = {
+      user: username,
       device_id: deviceId,
       signing_private_key: signingPrivateKey,
       ...serverKeys,

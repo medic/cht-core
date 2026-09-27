@@ -298,9 +298,9 @@ describe('AppComponent', () => {
    * only successful sync came early never registers at all.
    */
   it('should subscribe for device keys without waiting for the post-render chain', async () => {
-    await getComponent();
+    getComponent();
 
-    // asserted before setupPromise is awaited on purpose: that is the whole point
+    // synchronously in ngOnInit, which is the claim: nothing in the chain has run yet
     expect(deviceKeyService.init.callCount).to.equal(1);
 
     await component.setupPromise;
