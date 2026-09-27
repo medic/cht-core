@@ -310,9 +310,13 @@ const storeServerKey = async (req, username, deviceId, identity) => {
     await serverKey.setServerPrivateKey(username, deviceId, identity);
   } catch (err) {
     logger.error(`REQ ${req.id} - Could not store the server key for '${username}'/'${deviceId}': %o`, err);
+    // publicMessage, not message: server-utils sends a bare "Server error" for any 5xx and passes
+    // only publicMessage through as the details, so a message left on `message` is logged and
+    // never seen by whoever is holding the device.
     throw {
       code: 500,
-      message: 'Could not store the key for this device. Check that the CouchDB secret is configured.',
+      message: 'Could not store the server key for this device.',
+      publicMessage: 'Could not store the key for this device. Check that the CouchDB secret is configured.',
     };
   }
 };

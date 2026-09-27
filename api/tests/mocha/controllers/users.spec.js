@@ -1197,7 +1197,8 @@ describe('Users Controller', () => {
         chai.expect(users.setDeviceKey.called).to.be.false;
         const [reported] = serverUtils.error.args[0];
         chai.expect(reported.code).to.equal(500);
-        chai.expect(reported.message).to.match(/CouchDB secret/);
+        // on publicMessage, because that is the only part of a 5xx that server-utils passes on
+        chai.expect(reported.publicMessage).to.match(/CouchDB secret/);
       });
     });
   });

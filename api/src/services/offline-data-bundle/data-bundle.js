@@ -37,7 +37,9 @@ const SEND_PERMISSION = 'can_send_offline_data_bundle';
 // The signed message is the DECODED envelope header bytes exactly as they arrived, so the server
 // verifies what it received instead of reproducing a canonical form of it.
 //
-// The envelope carries `payload_header_sha256`, which is what ties it to this exact body. Without
+// `payload_header_sha256` is base64( sha256( ciphertext[0 .. end of the "--- <mac>" line] ) ),
+// that is the age header including the newline that ends it, and nothing after. It ties the
+// envelope to this exact body. Without
 // it the signature covers only who sent the bundle, and anyone who can read the server's public
 // key off a device could pair their own ciphertext with a captured envelope. Hashing the AGE
 // HEADER rather than the whole body is what makes that check affordable: the header is a short
@@ -157,11 +159,13 @@ const headerVerifiedStream = (source, expectedHash) => {
         return controller.enqueue(chunk);
       }
       held = Buffer.concat([held, Buffer.from(chunk)]);
+      // Before looking for the terminator, not only when it is missing: a first line longer than
+      // this would otherwise be buffered whole, and "no header yet" is the same answer either way.
+      if (held.length > MAX_HEADER_BYTES) {
+        throw new BadRequestError('Payload has no age header.');
+      }
       const end = headerEnd(held);
       if (end === -1) {
-        if (held.length > MAX_HEADER_BYTES) {
-          throw new BadRequestError('Payload has no age header.');
-        }
         return;
       }
       const actual = createHash('sha256').update(held.subarray(0, end)).digest('base64');

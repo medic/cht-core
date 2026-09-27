@@ -292,6 +292,21 @@ describe('AppComponent', () => {
     window.medicmobile_android = originalMedicMobileAndroid;
   });
 
+  /**
+   * Registration only happens on a fully successful sync, and the first one can complete while the
+   * post-render chain is still working. Subscribing from inside that chain means a session whose
+   * only successful sync came early never registers at all.
+   */
+  it('should subscribe for device keys without waiting for the post-render chain', async () => {
+    await getComponent();
+
+    // asserted before setupPromise is awaited on purpose: that is the whole point
+    expect(deviceKeyService.init.callCount).to.equal(1);
+
+    await component.setupPromise;
+    expect(deviceKeyService.init.callCount).to.equal(1);
+  });
+
   it('should create component and init services', async () => {
     await getComponent();
     await component.setupPromise;

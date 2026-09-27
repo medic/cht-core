@@ -146,6 +146,19 @@ describe('offline-data-bundle data-bundle service', () => {
       expect(docsWritten()).to.deep.equal([]);
     });
 
+    /**
+     * A header is a short text prefix. Without a bound that applies before the terminator is
+     * found, a body whose first line runs for megabytes is buffered whole while looking for it.
+     */
+    it('refuses a header longer than a header could be', async () => {
+      stubDecryptStream(ndjson([{ _id: 'a' }]));
+      const runOn = Buffer.concat([Buffer.alloc(64 * 1024, 0x41), Buffer.from('\n--- mac\n')]);
+
+      await expect(service.process(encode(envelopeFor()), 'sig', bodyStream(runOn)))
+        .to.be.rejectedWith(BadRequestError, 'Payload has no age header.');
+      expect(docsWritten()).to.deep.equal([]);
+    });
+
     /** The header arrives in whatever pieces the network gives us, not conveniently whole. */
     it('accepts a header split across chunks', async () => {
       stubDecryptStream(ndjson([{ _id: 'a' }]));
