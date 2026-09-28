@@ -78,6 +78,16 @@
           @if (qrImage) {
             <img class="offline-sync-qr" [src]="qrImage" alt="{{ 'offline_sync.host.ready.qr_alt' | translate }}">
           }
+          <!-- The same network the code carries, as text: the OS names it, so the only way anyone
+               can read it is if we show it. -->
+          @if (ssid) {
+            <dl class="offline-sync-network">
+              <dt translate>offline_sync.wifi.ssid</dt>
+              <dd>{{ ssid }}</dd>
+              <dt translate>offline_sync.wifi.password</dt>
+              <dd>{{ password }}</dd>
+            </dl>
+          }
           <button mat-button color="primary" (click)="stopHosting()">{{ 'offline_sync.host.stop' | translate }}</button>
         </mat-card-content>
       </mat-card>

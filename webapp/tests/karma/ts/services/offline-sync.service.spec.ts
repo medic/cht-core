@@ -121,18 +121,31 @@ describe('OfflineSync service', () => {
   });
 
   describe('results from the native side', () => {
-    it('emits the hosting result', (done) => {
+    it('emits the hosting result with the network the peer must join', (done) => {
+      const session = { qr: 'data:image/png;base64,abc', ssid: 'AndroidShare_1234', password: 'a-pwd' };
       service.hostingResult().subscribe(result => {
-        expect(result).to.deep.equal({ ok: true, detail: 'data:image/png;base64,abc' });
+        expect(result.ok).to.be.true;
+        expect(result.session).to.deep.equal(session);
         done();
       });
 
-      service.hostingResolved(true, 'data:image/png;base64,abc');
+      service.hostingResolved(true, JSON.stringify(session));
+    });
+
+    /** Nothing to put on screen, so this is a failure rather than an empty hosting card. */
+    it('reports a session it cannot read as a failure', (done) => {
+      service.hostingResult().subscribe(result => {
+        expect(result.ok).to.be.false;
+        expect(result.detail).to.equal('payload_failed');
+        done();
+      });
+
+      service.hostingResolved(true, 'not json');
     });
 
     it('emits a hosting failure with its code', (done) => {
       service.hostingResult().subscribe(result => {
-        expect(result).to.deep.equal({ ok: false, detail: 'hotspot_unsupported' });
+        expect(result).to.deep.equal({ ok: false, detail: 'hotspot_unsupported', diagnostic: undefined });
         done();
       });
 

@@ -9,6 +9,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 
 import { OfflineSyncComponent } from '@mm-modules/offline-sync/offline-sync.component';
+import { FeedbackService } from '@mm-services/feedback.service';
 import { OfflineSyncResult, OfflineSyncService } from '@mm-services/offline-sync.service';
 
 /**
@@ -18,10 +19,17 @@ import { OfflineSyncResult, OfflineSyncService } from '@mm-services/offline-sync
 @Component({ selector: 'mm-tool-bar', template: '', standalone: true })
 class StubToolBarComponent { }
 
+const HOSTING_SESSION = {
+  qr: 'data:image/png;base64,abc',
+  ssid: 'AndroidShare_1234',
+  password: 'a-password',
+};
+
 describe('OfflineSync component', () => {
   let component: OfflineSyncComponent;
   let fixture: ComponentFixture<OfflineSyncComponent>;
   let offlineSyncService;
+  let feedbackService;
   let hostingResult: Subject<OfflineSyncResult>;
   let pairingResult: Subject<OfflineSyncResult>;
   let permissionsResolved: Subject<boolean>;
@@ -34,7 +42,10 @@ describe('OfflineSync component', () => {
         BrowserAnimationsModule,
         OfflineSyncComponent,
       ],
-      providers: [{ provide: OfflineSyncService, useValue: offlineSyncService }],
+      providers: [
+        { provide: OfflineSyncService, useValue: offlineSyncService },
+        { provide: FeedbackService, useValue: feedbackService },
+      ],
     });
     TestBed.overrideComponent(OfflineSyncComponent, {
       remove: { imports: [ToolBarComponent] },
@@ -51,8 +62,10 @@ describe('OfflineSync component', () => {
     hostingResult = new Subject<OfflineSyncResult>();
     pairingResult = new Subject<OfflineSyncResult>();
     permissionsResolved = new Subject<boolean>();
+    feedbackService = { submit: sinon.stub().resolves() };
     offlineSyncService = {
       isSupported: sinon.stub().returns(true),
+      deviceDescription: sinon.stub().returns('Pixel 7, Android 14 (API 34)'),
       canHost: sinon.stub().resolves(true),
       canJoin: sinon.stub().resolves(true),
       hostingResult: () => hostingResult.asObservable(),
@@ -101,7 +114,7 @@ describe('OfflineSync component', () => {
       component.startHosting();
       expect(component.state).to.equal('starting');
 
-      hostingResult.next({ ok: true, detail: 'data:image/png;base64,abc' });
+      hostingResult.next({ ok: true, detail: '', session: HOSTING_SESSION });
 
       expect(component.state).to.equal('hosting');
       expect(component.qrImage).to.equal('data:image/png;base64,abc');
@@ -129,7 +142,7 @@ describe('OfflineSync component', () => {
     it('clears the code when hosting stops', async () => {
       await create();
       component.startHosting();
-      hostingResult.next({ ok: true, detail: 'data:image/png;base64,abc' });
+      hostingResult.next({ ok: true, detail: '', session: HOSTING_SESSION });
 
       component.stopHosting();
 

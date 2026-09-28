@@ -168,13 +168,15 @@ describe('AndroidApi service', () => {
     it('should pass a hosting result on to the offline sync service', () => {
       service.resolveOfflineSyncHostingResult(true, 'data:image/png;base64,abc');
 
-      expect(offlineSyncService.hostingResolved.args).to.deep.equal([[ true, 'data:image/png;base64,abc' ]]);
+      expect(offlineSyncService.hostingResolved.args)
+        .to.deep.equal([[ true, 'data:image/png;base64,abc', undefined ]]);
     });
 
     it('should pass a hosting failure code on unchanged', () => {
       service.resolveOfflineSyncHostingResult(false, 'hotspot_unsupported');
 
-      expect(offlineSyncService.hostingResolved.args).to.deep.equal([[ false, 'hotspot_unsupported' ]]);
+      expect(offlineSyncService.hostingResolved.args)
+        .to.deep.equal([[ false, 'hotspot_unsupported', undefined ]]);
     });
 
     it('should pass a pairing result on to the offline sync service', () => {
