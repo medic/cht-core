@@ -2521,12 +2521,14 @@ describe('Users API', () => {
       contact: { _id: 'fixture:contact:devkey-other', name: 'DeviceKeyOther' },
       roles: ['data_entry']
     };
-    // real Ed25519 public key JWKs generated in the before() below
+    // real public key JWKs generated in the before() below
     let signingKeyA;
     let signingKeyB;
 
     const generateSigningKey = async () => {
-      const keyPair = await webcrypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']);
+      const keyPair = await webcrypto.subtle.generateKey(
+        { name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']
+      );
       return webcrypto.subtle.exportKey('jwk', keyPair.publicKey);
     };
 
@@ -2577,6 +2579,25 @@ describe('Users API', () => {
       const userDoc = await utils.usersDb.get(getUserId(senderUser.username));
       chai.expect(Object.keys(userDoc.keys_by_device)).to.deep.equal(['device-A']);
       chai.expect(userDoc.keys_by_device['device-A'].signing_public_key).to.deep.equal(signingKeyB);
+    });
+
+    // The webapp sends only the four members that describe the key, not the extra ones
+    // exportKey adds to say how the key may be used locally. This asserts the server takes that.
+    it('accepts a signing key built the way the webapp builds it', async () => {
+      const exported = await generateSigningKey();
+      const signingKey = { kty: exported.kty, crv: exported.crv, x: exported.x, y: exported.y };
+
+      const response = await utils.request({
+        path: `/api/v1/users/${senderUser.username}/devices/device-webapp/keys`,
+        method: 'POST',
+        body: { signing_key: signingKey },
+        auth: { username: senderUser.username, password },
+      });
+
+      chai.expect(response.server_encryption_public_key).to.match(/^age1/);
+
+      const userDoc = await utils.usersDb.get(getUserId(senderUser.username));
+      chai.expect(userDoc.keys_by_device['device-webapp'].signing_public_key).to.deep.equal(signingKey);
     });
 
     it('403s when the user lacks the offline-data-bundle permission', async () => {

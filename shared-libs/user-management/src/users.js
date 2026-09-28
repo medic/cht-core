@@ -491,6 +491,14 @@ const getUserUpdates = (user, data, fullAccess = false) => {
   if (data.password) {
     updatedUser.password_change_required = data.password_change_required === false ? false :
       isPasswordChangeRequired(updatedUser, data, fullAccess);
+    // Every device this user has registered stops being trusted.
+    //
+    // A device key lets a phone produce signed offline data bundles that are written as this user,
+    // and it does not depend on the password. So changing the password, which is what someone does
+    // when a phone is lost or an account is compromised, would otherwise lock the old phone out of
+    // ordinary sync while leaving it able to keep injecting data through a relay. Each device
+    // re-registers on its next successful sync.
+    delete updatedUser.keys_by_device;
   }
 
   USER_EDITABLE_FIELDS.forEach(key => {

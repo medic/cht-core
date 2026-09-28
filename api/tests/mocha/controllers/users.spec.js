@@ -1039,7 +1039,7 @@ describe('Users Controller', () => {
   });
 
   describe('deviceKey', () => {
-    const signingJwk = { kty: 'OKP', crv: 'Ed25519', x: 'device-pub' };
+    const signingJwk = { kty: 'EC', crv: 'P-256', x: 'device-pub-x', y: 'device-pub-y' };
     // The server's PUBLIC key is only returned to the device, never persisted.
     const serverPublicKeys = { server_encryption_public_key: 'age1serverrecipient' };
     // The PRIVATE server key goes to the secureSettings vault, keyed per user + device.
@@ -1078,7 +1078,7 @@ describe('Users Controller', () => {
       });
     });
 
-    it('should respond with 400 when signing_key is not a valid Ed25519 public key JWK', () => {
+    it('should respond with 400 when signing_key is not a valid ECDSA P-256 public key JWK', () => {
       signing.isValidPublicKey.resolves(false);
       req = {
         params: { username: 'chw', device_id: 'device-1' },
@@ -1087,7 +1087,7 @@ describe('Users Controller', () => {
       return controller.deviceKey(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(serverUtils.error.args[0][0]).to.deep.equal(
-          { code: 400, reason: 'Invalid signing_key: expected an Ed25519 public key JWK' }
+          { code: 400, reason: 'Invalid signing_key: expected an ECDSA P-256 public key JWK' }
         );
         chai.expect(users.setDeviceKey.notCalled).to.be.true;
       });
@@ -1174,6 +1174,31 @@ describe('Users Controller', () => {
       return controller.deviceKey(req, res).then(() => {
         chai.expect(res.json.notCalled).to.be.true;
         chai.expect(serverUtils.error.args[0]).to.deep.equal([saveError, req, res]);
+      });
+    });
+
+    /**
+     * The vault encrypts with the CouchDB auth secret, and CouchDB answers 404 when that is not
+     * configured. Passed through untouched, the device reads that as "this device is not
+     * registered" and the person looking goes to the phone, where there is nothing to fix.
+     */
+    it('reports a vault failure as a server problem, not as an unknown device', () => {
+      const vaultError = new Error('missing');
+      vaultError.status = 404;
+      secureSettings.setCredentials.rejects(vaultError);
+      req = {
+        id: 'req-4',
+        params: { username: 'chw', device_id: 'device-1' },
+        body: { signing_key: signingJwk },
+      };
+
+      return controller.deviceKey(req, res).then(() => {
+        chai.expect(res.json.notCalled).to.be.true;
+        chai.expect(users.setDeviceKey.called).to.be.false;
+        const [reported] = serverUtils.error.args[0];
+        chai.expect(reported.code).to.equal(500);
+        // on publicMessage, because that is the only part of a 5xx that server-utils passes on
+        chai.expect(reported.publicMessage).to.match(/CouchDB secret/);
       });
     });
   });

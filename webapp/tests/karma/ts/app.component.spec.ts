@@ -54,6 +54,7 @@ import { StorageInfoService } from '@mm-services/storage-info.service';
 import { TasksNotificationService } from '@mm-services/task-notifications.service';
 import { DOC_IDS, PREFIXES } from '@medic/constants';
 import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
+import { DeviceKeyService } from '@mm-services/device-key.service';
 import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 import { HeaderTabsService } from '@mm-services/header-tabs.service';
 
@@ -91,6 +92,7 @@ describe('AppComponent', () => {
   let translateLocaleService;
   let telemetryService;
   let interactionTrackingService;
+  let deviceKeyService;
   let transitionsService;
   let chtDatasourceService;
   let analyticsModulesService;
@@ -197,6 +199,7 @@ describe('AppComponent', () => {
     };
     telemetryService = { record: sinon.stub() };
     interactionTrackingService = { init: sinon.stub(), persistBuffer: sinon.stub() };
+    deviceKeyService = { init: sinon.stub() };
     trainingCardsService = { initTrainingCards: sinon.stub() };
     userSettingsService = {
       get: sinon.stub().resolves({ facility_id: ['facility'], contact_id: 'contact' }),
@@ -265,6 +268,7 @@ describe('AppComponent', () => {
           { provide: Router, useValue: router },
           { provide: TasksNotificationService, useValue: tasksNotificationService },
           { provide: InteractionTrackingService, useValue: interactionTrackingService },
+          { provide: DeviceKeyService, useValue: deviceKeyService },
           { provide: UiExtensionsService, useValue: uiExtensionsService },
           { provide: HeaderTabsService, useValue: headerTabsService },
         ]
@@ -286,6 +290,21 @@ describe('AppComponent', () => {
     window.PouchDB = originalPouchDB;
     window.localStorage.removeItem('medic-last-replicated-date');
     window.medicmobile_android = originalMedicMobileAndroid;
+  });
+
+  /**
+   * Registration only happens on a fully successful sync, and the first one can complete while the
+   * post-render chain is still working. Subscribing from inside that chain means a session whose
+   * only successful sync came early never registers at all.
+   */
+  it('should subscribe for device keys without waiting for the post-render chain', async () => {
+    getComponent();
+
+    // synchronously in ngOnInit, which is the claim: nothing in the chain has run yet
+    expect(deviceKeyService.init.callCount).to.equal(1);
+
+    await component.setupPromise;
+    expect(deviceKeyService.init.callCount).to.equal(1);
   });
 
   it('should create component and init services', async () => {

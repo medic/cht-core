@@ -2,7 +2,7 @@ const chai = require('chai');
 const chaiExclude = require('chai-exclude');
 chai.use(chaiExclude);
 const { expect } = chai;
-const { webcrypto } = require('node:crypto');
+const { createHash, webcrypto } = require('node:crypto');
 const utils = require('@utils');
 const userFactory = require('@factories/cht/users/users');
 const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
@@ -97,13 +97,29 @@ const encryptToServer = async (serverKey, ndjson) => {
   return encrypter.encrypt(Buffer.from(ndjson, 'utf8'));
 };
 
+// The age header, which is the text prefix up to and including the line starting with "---".
+const headerHashOf = (ciphertext) => {
+  const bytes = Buffer.from(ciphertext);
+  const marker = bytes.indexOf('\n---');
+  const end = bytes.indexOf('\n', marker + 1) + 1;
+  return createHash('sha256').update(bytes.subarray(0, end)).digest('base64');
+};
+
 // Builds the request the way a relaying device does: the signature covers the envelope alone, so
 // the server can check it before reading a single body byte, and the ciphertext travels as the raw
 // octet-stream body.
 const buildSignedRequest = async ({ envelope, ciphertext, privateKey, auth }) => {
+  // What ties the envelope to this exact body. Filled in from the ciphertext the way a device
+  // does, unless the caller set it themselves to stand in for a bundle that does not match.
+  const sealed = { ...envelope };
+  if (!sealed.payload_header_sha256) {
+    sealed.payload_header_sha256 = headerHashOf(ciphertext);
+  }
   // the signed message is exactly the bytes that travel in the header, no canonical form involved
-  const envelopeBytes = Buffer.from(JSON.stringify(envelope), 'utf8');
-  const signature = Buffer.from(await webcrypto.subtle.sign({ name: 'Ed25519' }, privateKey, envelopeBytes));
+  const envelopeBytes = Buffer.from(JSON.stringify(sealed), 'utf8');
+  const signature = Buffer.from(
+    await webcrypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, privateKey, envelopeBytes)
+  );
 
   return {
     path: '/api/v1/replication/data-bundle',
@@ -121,7 +137,7 @@ const buildSignedRequest = async ({ envelope, ciphertext, privateKey, auth }) =>
 // Registers a device for a user (as admin) and returns the keys a bundle from that device needs:
 // the device's own signing private key and the server's age recipient for that device.
 const registerDevice = async (username, deviceId) => {
-  const keyPair = await webcrypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']);
+  const keyPair = await webcrypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
   const response = await utils.request({
     path: `/api/v1/users/${username}/devices/${deviceId}/keys`,
     method: 'POST',
@@ -214,6 +230,39 @@ describe('offline data-bundle handler', () => {
       expect(doc, `${docs[i]._id} was not written`).to.not.be.undefined;
       expect(doc._rev).to.equal(CLIENT_REV);
     });
+  });
+
+  /**
+   * The envelope says who sent a bundle. Without binding it to the body, a relay holding a captured
+   * envelope and the server public key from a device could put its own docs under someone else's
+   * name, and everything would verify.
+   */
+  it('rejects a body that does not belong to the signed envelope', async () => {
+    const device = chwDevice;
+    const genuine = await encryptToServer(device.serverKey, toNdjson([allowedDoc]));
+    const forged = await encryptToServer(device.serverKey, toNdjson([{
+      ...allowedDoc,
+      _id: 'forged-report',
+      content: 'not what the CHW sent',
+    }]));
+
+    // the genuine envelope, correctly signed, carried over a body the CHW never produced
+    const requestOptions = await buildSignedRequest({
+      envelope: {
+        user: 'bundlechw',
+        device_id: DEVICE_ID,
+        bundle_seq: 9,
+        payload_header_sha256: headerHashOf(genuine),
+      },
+      ciphertext: forged,
+      privateKey: device.privateKey,
+    });
+
+    const error = await utils.request(requestOptions).catch(err => err);
+    expect(error.status).to.equal(400);
+
+    const written = await utils.db.allDocs({ keys: ['forged-report'] });
+    expect(written.rows[0].error).to.equal('not_found');
   });
 
   it('rejects a relaying user without the relay permission', async () => {
