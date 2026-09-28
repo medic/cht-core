@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
-// Both imported statically: a dynamic import becomes its own webpack chunk, which the service
-// worker precaches, and the precached list is asserted in tests/e2e/default/service-worker.
-// The `.js` suffix is required by @noble's exports map.
+// Imported statically: a dynamic import becomes its own webpack chunk, which the service worker
+// precaches, and the precached list is asserted in tests/e2e/default/service-worker.
 import { Encrypter } from 'age-encryption';
-import { ed25519 } from '@noble/curves/ed25519.js';
 
 import { toBase64 } from '../base64';
 import { DbService } from '@mm-services/db.service';
@@ -69,6 +67,43 @@ const NOTHING_TO_SEND = { envelope: '', signature: '', ciphertext: new Uint8Arra
  * bundles and moving them are separate jobs, because the same bundles are meant to travel by other
  * transports later.
  */
+/**
+ * SHA-256 of the age header of a ciphertext, base64, which is what the api checks the body against.
+ *
+ * The header is the text prefix up to and including the newline that ends the `--- <mac>` line.
+ * Hashing only that is what keeps the check affordable on the api side: it can be verified off the
+ * front of the stream, before any doc is written, and it still binds the whole body because the
+ * file key is wrapped inside that header to the server's key.
+ */
+const headerHash = async (ciphertext: Uint8Array): Promise<string> => {
+  const end = headerEnd(ciphertext);
+  if (end === -1) {
+    throw new Error('bundle_seal_failed');
+  }
+  return toBase64(new Uint8Array(await crypto.subtle.digest('SHA-256', ciphertext.subarray(0, end))));
+};
+
+/** Whether a "\n---" starts here, which is how the age header's last line begins. */
+const startsTerminator = (bytes: Uint8Array, at: number): boolean => {
+  return bytes[at] === 0x0a && bytes[at + 1] === 0x2d && bytes[at + 2] === 0x2d && bytes[at + 3] === 0x2d;
+};
+
+/** The byte after the next newline, or -1 when the line never ends. */
+const afterNextNewline = (bytes: Uint8Array, from: number): number => {
+  const lineEnd = bytes.indexOf(0x0a, from);
+  return lineEnd === -1 ? -1 : lineEnd + 1;
+};
+
+/** The byte after the newline that ends the `--- <mac>` line, or -1 when there is no header. */
+const headerEnd = (bytes: Uint8Array): number => {
+  for (let i = 0; i < bytes.length - 3; i++) {
+    if (startsTerminator(bytes, i)) {
+      return afterNextNewline(bytes, i + 1);
+    }
+  }
+  return -1;
+};
+
 @Injectable({ providedIn: 'root' })
 export class OfflineDataBundleService {
   constructor(
@@ -236,21 +271,28 @@ export class OfflineDataBundleService {
     keys: DeviceKeyMaterial,
     group: { lines: string[]; lastSeq: any; skipped: number },
   ): Promise<SealedBundle> {
+    // Encrypted before the envelope is built, because the envelope has to carry a hash of this
+    // ciphertext's age header. That is what ties the signature to the body: without it the
+    // signature says who sent a bundle but not what is in it.
+    const encrypter = new Encrypter();
+    encrypter.addRecipient(keys.serverEncryptionPublicKey);
+    const ciphertext = await encrypter.encrypt(group.lines.join(''));
+
     // `bundle_seq` is the only field the relay reads: it orders bundles and spots a gap without
     // opening them. Nothing here names what changed, or when, because the relay would see it.
     const envelopeBytes = new TextEncoder().encode(JSON.stringify({
       user: username,
       device_id: keys.deviceId,
       bundle_seq: this.nextBundleSeq(),
+      payload_header_sha256: await headerHash(ciphertext),
     }));
-
-    const encrypter = new Encrypter();
-    encrypter.addRecipient(keys.serverEncryptionPublicKey);
 
     return {
       envelope: toBase64(envelopeBytes),
-      signature: toBase64(ed25519.sign(envelopeBytes, keys.signingPrivateKey)),
-      ciphertext: await encrypter.encrypt(group.lines.join('')),
+      signature: toBase64(new Uint8Array(
+        await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, keys.signingPrivateKey, envelopeBytes)
+      )),
+      ciphertext,
       lastSeq: group.lastSeq,
       skipped: group.skipped,
     };
