@@ -4,7 +4,7 @@ import { Observable, Subject } from 'rxjs';
 import { AuthService } from '@mm-services/auth.service';
 
 
-export interface P2pResult {
+export interface OfflineSyncResult {
   ok: boolean;
   /**
    * On success, what the result means for that call: the pairing payload when hosting starts, or
@@ -23,9 +23,9 @@ export interface P2pResult {
  * newer Android than joining.
  */
 @Injectable({ providedIn: 'root' })
-export class P2pService {
-  private readonly hostingSubject = new Subject<P2pResult>();
-  private readonly pairingSubject = new Subject<P2pResult>();
+export class OfflineSyncService {
+  private readonly hostingSubject = new Subject<OfflineSyncResult>();
+  private readonly pairingSubject = new Subject<OfflineSyncResult>();
   private readonly permissionsSubject = new Subject<boolean>();
 
   constructor(private readonly authService: AuthService) { }
@@ -41,14 +41,14 @@ export class P2pService {
     return (globalThis as any)?.medicmobile_android ?? null;
   }
 
-  /** True only when running inside cht-android with the P2P methods present. */
+  /** True only when running inside cht-android with the offline sync methods present. */
   isSupported(): boolean {
-    return !!this.bridge && typeof this.bridge.p2p_host_available === 'function';
+    return !!this.bridge && typeof this.bridge.offline_sync_host_available === 'function';
   }
 
   /** Whether this user may relay another device's data, and this device can host a session. */
   async canHost(): Promise<boolean> {
-    if (!this.isSupported() || !this.bridge.p2p_host_available()) {
+    if (!this.isSupported() || !this.bridge.offline_sync_host_available()) {
       return false;
     }
     return this.authService.has('can_relay_offline_data_bundle');
@@ -56,18 +56,18 @@ export class P2pService {
 
   /** Whether this user may send their data to a relay, and this device can join a session. */
   async canJoin(): Promise<boolean> {
-    if (!this.isSupported() || !this.bridge.p2p_join_available()) {
+    if (!this.isSupported() || !this.bridge.offline_sync_join_available()) {
       return false;
     }
     return this.authService.has('can_send_offline_data_bundle');
   }
 
   /** Results arrive asynchronously: bringing a hotspot up takes seconds. */
-  hostingResult(): Observable<P2pResult> {
+  hostingResult(): Observable<OfflineSyncResult> {
     return this.hostingSubject.asObservable();
   }
 
-  pairingResult(): Observable<P2pResult> {
+  pairingResult(): Observable<OfflineSyncResult> {
     return this.pairingSubject.asObservable();
   }
 
@@ -77,23 +77,23 @@ export class P2pService {
   }
 
   startHosting() {
-    this.bridge?.p2p_start_hosting();
+    this.bridge?.offline_sync_start_hosting();
   }
 
   stopHosting() {
-    this.bridge?.p2p_stop_hosting();
+    this.bridge?.offline_sync_stop_hosting();
   }
 
   isHosting(): boolean {
-    return !!this.bridge?.p2p_is_hosting();
+    return !!this.bridge?.offline_sync_is_hosting();
   }
 
   scanAndJoin() {
-    this.bridge?.p2p_scan_and_join();
+    this.bridge?.offline_sync_scan_and_join();
   }
 
   leaveSession() {
-    this.bridge?.p2p_leave_session();
+    this.bridge?.offline_sync_leave_session();
   }
 
   // Called by AndroidApiService when the native side reports back.

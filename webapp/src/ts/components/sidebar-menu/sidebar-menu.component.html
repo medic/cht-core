@@ -45,9 +45,9 @@
           <span>{{ 'sync.now' | translate }}</span>
         </a>
 
-        <a *ngIf="p2pVisible" class="nav-item" routerLink="p2p" (click)="close()">
+        <a *ngIf="offlineSyncVisible" class="nav-item" routerLink="offline-sync" (click)="close()">
           <mat-icon fontIcon="fa-exchange"></mat-icon>
-          <span>{{ 'p2p.menu.title' | translate }}</span>
+          <span>{{ 'offline_sync.menu.title' | translate }}</span>
         </a>
       </div>
 

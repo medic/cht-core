@@ -19,7 +19,7 @@ import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 import { HeaderLogoPipe, ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 
 import { HeaderTab, HeaderTabsService, SidebarTab } from '@mm-services/header-tabs.service';
-import { P2pService } from '@mm-services/p2p.service';
+import { OfflineSyncService } from '@mm-services/offline-sync.service';
 
 export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
 
@@ -60,9 +60,9 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
     protected readonly modalService: ModalService,
     protected readonly storageInfoService: StorageInfoService,
     private headerTabsService: HeaderTabsService,
-    p2pService: P2pService,
+    offlineSyncService: OfflineSyncService,
   ) {
-    super(store, dbSyncService, modalService, storageInfoService, p2pService);
+    super(store, dbSyncService, modalService, storageInfoService, offlineSyncService);
   }
 
   ngOnInit(): void {

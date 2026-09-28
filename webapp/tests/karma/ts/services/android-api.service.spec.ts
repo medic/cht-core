@@ -9,7 +9,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.service';
-import { P2pService } from '@mm-services/p2p.service';
+import { OfflineSyncService } from '@mm-services/offline-sync.service';
 
 describe('AndroidApi service', () => {
 
@@ -20,7 +20,7 @@ describe('AndroidApi service', () => {
   let consoleErrorMock;
   let navigationService;
   let androidAppLauncherService;
-  let p2pService;
+  let offlineSyncService;
 
   beforeEach(() => {
     sessionService = {
@@ -43,7 +43,7 @@ describe('AndroidApi service', () => {
       goToPrimaryTab: sinon.stub(),
     };
 
-    p2pService = {
+    offlineSyncService = {
       hostingResolved: sinon.stub(),
       pairingResolved: sinon.stub(),
       permissionsResolvedBy: sinon.stub(),
@@ -62,7 +62,7 @@ describe('AndroidApi service', () => {
         { provide: MRDTService, useValue: mrdtService },
         { provide: NavigationService, useValue: navigationService },
         { provide: AndroidAppLauncherService, useValue: androidAppLauncherService },
-        { provide: P2pService, useValue: p2pService },
+        { provide: OfflineSyncService, useValue: offlineSyncService },
       ],
     });
 
@@ -164,35 +164,35 @@ describe('AndroidApi service', () => {
     });
   });
 
-  describe('p2p callbacks', () => {
-    it('should pass a hosting result on to the p2p service', () => {
-      service.resolveP2pHostingResult(true, 'data:image/png;base64,abc');
+  describe('offline sync callbacks', () => {
+    it('should pass a hosting result on to the offline sync service', () => {
+      service.resolveOfflineSyncHostingResult(true, 'data:image/png;base64,abc');
 
-      expect(p2pService.hostingResolved.args).to.deep.equal([[ true, 'data:image/png;base64,abc' ]]);
+      expect(offlineSyncService.hostingResolved.args).to.deep.equal([[ true, 'data:image/png;base64,abc' ]]);
     });
 
     it('should pass a hosting failure code on unchanged', () => {
-      service.resolveP2pHostingResult(false, 'hotspot_unsupported');
+      service.resolveOfflineSyncHostingResult(false, 'hotspot_unsupported');
 
-      expect(p2pService.hostingResolved.args).to.deep.equal([[ false, 'hotspot_unsupported' ]]);
+      expect(offlineSyncService.hostingResolved.args).to.deep.equal([[ false, 'hotspot_unsupported' ]]);
     });
 
-    it('should pass a pairing result on to the p2p service', () => {
-      service.resolveP2pPairing(true, 'Supervisor phone');
+    it('should pass a pairing result on to the offline sync service', () => {
+      service.resolveOfflineSyncPairing(true, 'Supervisor phone');
 
-      expect(p2pService.pairingResolved.args).to.deep.equal([[ true, 'Supervisor phone' ]]);
+      expect(offlineSyncService.pairingResolved.args).to.deep.equal([[ true, 'Supervisor phone' ]]);
     });
 
-    it('should pass the permission answer on to the p2p service', () => {
-      service.p2pPermissionsResolved(false);
+    it('should pass the permission answer on to the offline sync service', () => {
+      service.offlineSyncPermissionsResolved(false);
 
-      expect(p2pService.permissionsResolvedBy.args).to.deep.equal([[ false ]]);
+      expect(offlineSyncService.permissionsResolvedBy.args).to.deep.equal([[ false ]]);
     });
 
-    it('should expose the p2p callbacks on v1, since that is what android calls', () => {
-      expect(service.v1.resolveP2pHostingResult).to.be.a('function');
-      expect(service.v1.resolveP2pPairing).to.be.a('function');
-      expect(service.v1.p2pPermissionsResolved).to.be.a('function');
+    it('should expose the offline sync callbacks on v1, since that is what android calls', () => {
+      expect(service.v1.resolveOfflineSyncHostingResult).to.be.a('function');
+      expect(service.v1.resolveOfflineSyncPairing).to.be.a('function');
+      expect(service.v1.offlineSyncPermissionsResolved).to.be.a('function');
     });
   });
 

@@ -8,8 +8,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 
-import { P2pComponent } from '@mm-modules/p2p/p2p.component';
-import { P2pResult, P2pService } from '@mm-services/p2p.service';
+import { OfflineSyncComponent } from '@mm-modules/offline-sync/offline-sync.component';
+import { OfflineSyncResult, OfflineSyncService } from '@mm-services/offline-sync.service';
 
 /**
  * The real toolbar reaches the session, the database and PouchDB, none of which this component
@@ -18,40 +18,40 @@ import { P2pResult, P2pService } from '@mm-services/p2p.service';
 @Component({ selector: 'mm-tool-bar', template: '', standalone: true })
 class StubToolBarComponent { }
 
-describe('P2p component', () => {
-  let component: P2pComponent;
-  let fixture: ComponentFixture<P2pComponent>;
-  let p2pService;
-  let hostingResult: Subject<P2pResult>;
-  let pairingResult: Subject<P2pResult>;
+describe('OfflineSync component', () => {
+  let component: OfflineSyncComponent;
+  let fixture: ComponentFixture<OfflineSyncComponent>;
+  let offlineSyncService;
+  let hostingResult: Subject<OfflineSyncResult>;
+  let pairingResult: Subject<OfflineSyncResult>;
   let permissionsResolved: Subject<boolean>;
 
   const create = async (overrides:any = {}) => {
-    Object.assign(p2pService, overrides);
+    Object.assign(offlineSyncService, overrides);
     TestBed.configureTestingModule({
       imports: [
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         BrowserAnimationsModule,
-        P2pComponent,
+        OfflineSyncComponent,
       ],
-      providers: [{ provide: P2pService, useValue: p2pService }],
+      providers: [{ provide: OfflineSyncService, useValue: offlineSyncService }],
     });
-    TestBed.overrideComponent(P2pComponent, {
+    TestBed.overrideComponent(OfflineSyncComponent, {
       remove: { imports: [ToolBarComponent] },
       add: { imports: [StubToolBarComponent] },
     });
     await TestBed.compileComponents();
 
-    fixture = TestBed.createComponent(P2pComponent);
+    fixture = TestBed.createComponent(OfflineSyncComponent);
     component = fixture.componentInstance;
     await component.ngOnInit();
   };
 
   beforeEach(() => {
-    hostingResult = new Subject<P2pResult>();
-    pairingResult = new Subject<P2pResult>();
+    hostingResult = new Subject<OfflineSyncResult>();
+    pairingResult = new Subject<OfflineSyncResult>();
     permissionsResolved = new Subject<boolean>();
-    p2pService = {
+    offlineSyncService = {
       isSupported: sinon.stub().returns(true),
       canHost: sinon.stub().resolves(true),
       canJoin: sinon.stub().resolves(true),
@@ -114,7 +114,7 @@ describe('P2p component', () => {
       hostingResult.next({ ok: false, detail: 'hotspot_unsupported' });
 
       expect(component.state).to.equal('failed');
-      expect(component.errorKey).to.equal('p2p.error.hotspot_unsupported');
+      expect(component.errorKey).to.equal('offline_sync.error.hotspot_unsupported');
       expect(component.qrImage).to.be.null;
     });
 
@@ -123,7 +123,7 @@ describe('P2p component', () => {
 
       hostingResult.next({ ok: false, detail: '' });
 
-      expect(component.errorKey).to.equal('p2p.error.unknown');
+      expect(component.errorKey).to.equal('offline_sync.error.unknown');
     });
 
     it('clears the code when hosting stops', async () => {
@@ -133,7 +133,7 @@ describe('P2p component', () => {
 
       component.stopHosting();
 
-      expect(p2pService.stopHosting.callCount).to.equal(1);
+      expect(offlineSyncService.stopHosting.callCount).to.equal(1);
       expect(component.state).to.equal('idle');
       expect(component.qrImage).to.be.null;
     });
@@ -160,7 +160,7 @@ describe('P2p component', () => {
       pairingResult.next({ ok: false, detail: 'host_not_verified' });
 
       expect(component.state).to.equal('failed');
-      expect(component.errorKey).to.equal('p2p.error.host_not_verified');
+      expect(component.errorKey).to.equal('offline_sync.error.host_not_verified');
       expect(component.hostLabel).to.be.null;
     });
 
@@ -171,7 +171,7 @@ describe('P2p component', () => {
 
       component.leaveSession();
 
-      expect(p2pService.leaveSession.callCount).to.equal(1);
+      expect(offlineSyncService.leaveSession.callCount).to.equal(1);
       expect(component.state).to.equal('idle');
       expect(component.hostLabel).to.be.null;
     });
