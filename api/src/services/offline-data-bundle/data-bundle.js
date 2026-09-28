@@ -242,7 +242,7 @@ const readDocs = async function* (plaintext, envelope) {
 };
 
 // Writes one batch with new_edits:false to preserve the CHW's original revisions. The design relies
-// on CouchDB's revision-based dedup so a doc arriving via both P2P and direct sync does not
+// on CouchDB's revision-based dedup so a doc arriving via both an offline bundle and direct sync does not
 // duplicate or conflict. Under new_edits:false CouchDB only returns entries for docs that FAILED.
 // Returns how many of the batch did not make it, for the server-side log.
 const writeBatch = async (userCtx, batch) => {

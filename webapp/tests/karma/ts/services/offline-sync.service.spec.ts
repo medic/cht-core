@@ -3,20 +3,20 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import { AuthService } from '@mm-services/auth.service';
-import { P2pService } from '@mm-services/p2p.service';
+import { OfflineSyncService } from '@mm-services/offline-sync.service';
 
-describe('P2p service', () => {
-  let service: P2pService;
+describe('OfflineSync service', () => {
+  let service: OfflineSyncService;
   let authService;
 
   const bridge = (overrides:any = {}) => ({
-    p2p_host_available: sinon.stub().returns(true),
-    p2p_join_available: sinon.stub().returns(true),
-    p2p_start_hosting: sinon.stub(),
-    p2p_stop_hosting: sinon.stub(),
-    p2p_is_hosting: sinon.stub().returns(false),
-    p2p_scan_and_join: sinon.stub(),
-    p2p_leave_session: sinon.stub(),
+    offline_sync_host_available: sinon.stub().returns(true),
+    offline_sync_join_available: sinon.stub().returns(true),
+    offline_sync_start_hosting: sinon.stub(),
+    offline_sync_stop_hosting: sinon.stub(),
+    offline_sync_is_hosting: sinon.stub().returns(false),
+    offline_sync_scan_and_join: sinon.stub(),
+    offline_sync_leave_session: sinon.stub(),
     ...overrides,
   });
 
@@ -29,7 +29,7 @@ describe('P2p service', () => {
     TestBed.configureTestingModule({
       providers: [{ provide: AuthService, useValue: authService }],
     });
-    service = TestBed.inject(P2pService);
+    service = TestBed.inject(OfflineSyncService);
   });
 
   afterEach(() => {
@@ -74,14 +74,14 @@ describe('P2p service', () => {
 
     /** An older phone can still send its own data, so the two answers are independent. */
     it('allows joining on a device that cannot host', async () => {
-      withBridge(bridge({ p2p_host_available: sinon.stub().returns(false) }));
+      withBridge(bridge({ offline_sync_host_available: sinon.stub().returns(false) }));
 
       expect(await service.canHost()).to.be.false;
       expect(await service.canJoin()).to.be.true;
     });
 
     it('does not ask for the permission when the device cannot do it anyway', async () => {
-      withBridge(bridge({ p2p_host_available: sinon.stub().returns(false) }));
+      withBridge(bridge({ offline_sync_host_available: sinon.stub().returns(false) }));
 
       await service.canHost();
 
@@ -97,8 +97,8 @@ describe('P2p service', () => {
       service.startHosting();
       service.stopHosting();
 
-      expect(android.p2p_start_hosting.callCount).to.equal(1);
-      expect(android.p2p_stop_hosting.callCount).to.equal(1);
+      expect(android.offline_sync_start_hosting.callCount).to.equal(1);
+      expect(android.offline_sync_stop_hosting.callCount).to.equal(1);
     });
 
     it('passes joining calls through to the bridge', () => {
@@ -108,8 +108,8 @@ describe('P2p service', () => {
       service.scanAndJoin();
       service.leaveSession();
 
-      expect(android.p2p_scan_and_join.callCount).to.equal(1);
-      expect(android.p2p_leave_session.callCount).to.equal(1);
+      expect(android.offline_sync_scan_and_join.callCount).to.equal(1);
+      expect(android.offline_sync_leave_session.callCount).to.equal(1);
     });
 
     /** In a browser these are no-ops rather than crashes, so the page still renders. */

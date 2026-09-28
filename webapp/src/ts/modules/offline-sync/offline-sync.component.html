@@ -1,11 +1,11 @@
-<mm-tool-bar title="p2p.title"></mm-tool-bar>
+<mm-tool-bar title="offline_sync.title"></mm-tool-bar>
 <div class="inner">
-  <div class="col-sm-12 page p2p scrolling">
+  <div class="col-sm-12 page offline-sync scrolling">
 
     @if (loading) {
       <mat-card>
         <mat-card-content>
-          <p translate>p2p.loading</p>
+          <p translate>offline_sync.loading</p>
         </mat-card-content>
       </mat-card>
     }
@@ -14,10 +14,10 @@
     @if (!loading && !supported) {
       <mat-card>
         <mat-card-header>
-          <mat-card-title translate>p2p.unsupported.title</mat-card-title>
+          <mat-card-title translate>offline_sync.unsupported.title</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <p translate>p2p.unsupported.description</p>
+          <p translate>offline_sync.unsupported.description</p>
         </mat-card-content>
       </mat-card>
     }
@@ -26,10 +26,10 @@
     @if (!loading && supported && !canHost && !canJoin) {
       <mat-card>
         <mat-card-header>
-          <mat-card-title translate>p2p.no_role.title</mat-card-title>
+          <mat-card-title translate>offline_sync.no_role.title</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <p translate>p2p.no_role.description</p>
+          <p translate>offline_sync.no_role.description</p>
         </mat-card-content>
       </mat-card>
     }
@@ -37,11 +37,11 @@
     @if (!loading && canHost && state === 'idle') {
       <mat-card>
         <mat-card-header>
-          <mat-card-title translate>p2p.host.title</mat-card-title>
+          <mat-card-title translate>offline_sync.host.title</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <p translate>p2p.host.description</p>
-          <button mat-flat-button color="primary" (click)="startHosting()" translate>p2p.host.start</button>
+          <p translate>offline_sync.host.description</p>
+          <button mat-flat-button color="primary" (click)="startHosting()" translate>offline_sync.host.start</button>
         </mat-card-content>
       </mat-card>
     }
@@ -49,11 +49,11 @@
     @if (!loading && canJoin && state === 'idle') {
       <mat-card>
         <mat-card-header>
-          <mat-card-title translate>p2p.peer.title</mat-card-title>
+          <mat-card-title translate>offline_sync.peer.title</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <p translate>p2p.peer.description</p>
-          <button mat-flat-button color="primary" (click)="scanAndJoin()" translate>p2p.peer.scan</button>
+          <p translate>offline_sync.peer.description</p>
+          <button mat-flat-button color="primary" (click)="scanAndJoin()" translate>offline_sync.peer.scan</button>
         </mat-card-content>
       </mat-card>
     }
@@ -61,7 +61,7 @@
     @if (state === 'starting' || state === 'joining') {
       <mat-card>
         <mat-card-content>
-          <p translate>{{ state === 'starting' ? 'p2p.host.starting' : 'p2p.peer.joining' }}</p>
+          <p translate>{{ state === 'starting' ? 'offline_sync.host.starting' : 'offline_sync.peer.joining' }}</p>
           <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         </mat-card-content>
       </mat-card>
@@ -71,14 +71,14 @@
     @if (state === 'hosting') {
       <mat-card>
         <mat-card-header>
-          <mat-card-title translate>p2p.host.ready.title</mat-card-title>
+          <mat-card-title translate>offline_sync.host.ready.title</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <p translate>p2p.host.ready.description</p>
+          <p translate>offline_sync.host.ready.description</p>
           @if (qrImage) {
-            <img class="p2p-qr" [src]="qrImage" alt="{{ 'p2p.host.ready.qr_alt' | translate }}">
+            <img class="offline-sync-qr" [src]="qrImage" alt="{{ 'offline_sync.host.ready.qr_alt' | translate }}">
           }
-          <button mat-stroked-button (click)="stopHosting()" translate>p2p.host.stop</button>
+          <button mat-stroked-button (click)="stopHosting()" translate>offline_sync.host.stop</button>
         </mat-card-content>
       </mat-card>
     }
@@ -86,11 +86,11 @@
     @if (state === 'paired') {
       <mat-card>
         <mat-card-header>
-          <mat-card-title translate>p2p.peer.paired.title</mat-card-title>
+          <mat-card-title translate>offline_sync.peer.paired.title</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <p>{{ 'p2p.peer.paired.description' | translate:{ host: hostLabel } }}</p>
-          <button mat-stroked-button (click)="leaveSession()" translate>p2p.peer.leave</button>
+          <p>{{ 'offline_sync.peer.paired.description' | translate:{ host: hostLabel } }}</p>
+          <button mat-stroked-button (click)="leaveSession()" translate>offline_sync.peer.leave</button>
         </mat-card-content>
       </mat-card>
     }
@@ -98,13 +98,13 @@
     @if (state === 'failed') {
       <mat-card>
         <mat-card-header>
-          <mat-card-title translate>p2p.failed.title</mat-card-title>
+          <mat-card-title translate>offline_sync.failed.title</mat-card-title>
         </mat-card-header>
         <mat-card-content>
           <p translate>{{ errorKey }}</p>
           <!-- Every one of these messages tells the user to try again, so there has to be
                something to press: the start and scan buttons only show while idle. -->
-          <button mat-flat-button color="primary" (click)="startOver()" translate>p2p.failed.retry</button>
+          <button mat-flat-button color="primary" (click)="startOver()" translate>offline_sync.failed.retry</button>
         </mat-card-content>
       </mat-card>
     }
