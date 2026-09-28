@@ -32,7 +32,7 @@ describe('Session service', () => {
       get: sinon.stub(),
       delete: sinon.stub(),
     };
-    deviceKeyService = { forget: sinon.stub().resolves() };
+    deviceKeyService = { forgetOnNextStart: sinon.stub() };
     const documentMock = {
       location: location,
       querySelectorAll: sinon.stub().returns([]),
@@ -105,15 +105,15 @@ describe('Session service', () => {
 
     await service.logout();
 
-    expect(deviceKeyService.forget.callCount).to.equal(1);
+    expect(deviceKeyService.forgetOnNextStart.callCount).to.equal(1);
   });
 
-  it('logs out even when the device key cannot be forgotten', async () => {
+  it('logs out even when the device key cannot be marked', async () => {
     sinon.stub(console, 'warn');
     const consoleErrorMock = sinon.stub(console, 'error');
     cookieGet.returns(JSON.stringify({ name: 'bryan' }));
     Location.dbName = 'DB_NAME';
-    deviceKeyService.forget.rejects(new Error('indexeddb is unavailable'));
+    deviceKeyService.forgetOnNextStart.throws(new Error('storage is unavailable'));
     $httpBackend.delete.withArgs('/_session').returns(of());
 
     await service.logout();

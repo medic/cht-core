@@ -13,6 +13,10 @@ const DB_NAME = 'medic-offline-device-keys';
 const STORE_NAME = 'keys';
 const RECORD_KEY = 'current';
 const PERMISSION = 'can_send_offline_data_bundle';
+// Set when signing out and acted on at the next start. Logging out navigates the page away, so
+// anything done there has to be synchronous: an IndexedDB open that never calls back would leave
+// the user staring at the app they just left.
+const FORGET_FLAG = 'medic-offline-device-keys-forget';
 
 /** IndexedDB reports a failure as a DOMException, or as nothing at all when it is shutting down. */
 const asError = (reason: DOMException | null): Error => {
@@ -72,7 +76,32 @@ export class DeviceKeyService {
   }
 
   init() {
+    this.forgetIfSignedOut();
     this.dbSyncService.subscribe(status => this.syncStatusChanged(status));
+  }
+
+  /**
+   * Notes that this device should drop its key, without doing any of the work.
+   *
+   * Called while signing out, where the page is already on its way somewhere else.
+   */
+  forgetOnNextStart() {
+    try {
+      localStorage.setItem(FORGET_FLAG, 'true');
+    } catch (err) {
+      // Private browsing and full storage both throw here. A key that outlives its session is
+      // worth knowing about, but not worth failing a sign out over.
+      console.error('DeviceKeyService :: Error marking the device key to be forgotten', err);
+    }
+  }
+
+  private forgetIfSignedOut() {
+    if (localStorage.getItem(FORGET_FLAG) !== 'true') {
+      return;
+    }
+    this.forget()
+      .then(() => localStorage.removeItem(FORGET_FLAG))
+      .catch(err => console.error('DeviceKeyService :: Error forgetting the device key', err));
   }
 
   private async syncStatusChanged({ to, from }: { to?: SyncStatus; from?: SyncStatus }) {

@@ -90,6 +90,7 @@ describe('DeviceKey service', () => {
   });
 
   afterEach(async () => {
+    localStorage.removeItem('medic-offline-device-keys-forget');
     httpMock.verify();
     sinon.restore();
     await clearRecords();
@@ -255,6 +256,29 @@ describe('DeviceKey service', () => {
   });
 
   describe('forgetting the key', () => {
+    /** Signing out only leaves a note: the page is navigating away and cannot wait for storage. */
+    it('drops the key at the next start after signing out', async () => {
+      await writeRecord({ user: 'chw-user', device_id: DEVICE_ID, server_encryption_public_key: 'age1' });
+      service.forgetOnNextStart();
+
+      service.init();
+      for (let attempt = 0; attempt < 50 && await readRecord(); attempt++) {
+        await tick();
+      }
+
+      expect(await readRecord()).to.be.undefined;
+      expect(localStorage.getItem('medic-offline-device-keys-forget')).to.be.null;
+    });
+
+    it('keeps the key when signing out did not happen', async () => {
+      await writeRecord({ user: 'chw-user', device_id: DEVICE_ID, server_encryption_public_key: 'age1' });
+
+      service.init();
+      await tick();
+
+      expect(await readRecord()).to.not.be.undefined;
+    });
+
     // A device key does not depend on the password, so a lost phone could keep sending through a
     // relay after the password was changed. The server drops every key; this drops the local copy
     // so the next sync provisions a new one instead of believing it is still registered.

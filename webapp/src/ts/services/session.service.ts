@@ -45,35 +45,36 @@ export class SessionService {
   }
 
   logout() {
-    return this.forgetDeviceKey()
-      // defaultIfEmpty because lastValueFrom rejects on an observable that completes without
-      // emitting, which is what a delete with no body does.
-      .then(() => lastValueFrom(this.http.delete('/_session', this.httpOptions).pipe(defaultIfEmpty(null)))
-        .catch(() => {
-          // Set cookie to force login before using app
-          this.cookieService.set('login', 'force', undefined, '/');
-        }))
+    this.forgetDeviceKey();
+    // defaultIfEmpty because lastValueFrom rejects on an observable that completes without
+    // emitting, which is what a delete with no body does.
+    return lastValueFrom(this.http.delete('/_session', this.httpOptions).pipe(defaultIfEmpty(null)))
+      .catch(() => {
+        // Set cookie to force login before using app
+        this.cookieService.set('login', 'force', undefined, '/');
+      })
       .then(() => {
         this.navigateToLogin();
       });
   }
 
   /**
-   * Drops this device's offline sync key, so signing in again registers a fresh one.
+   * Marks this device's offline sync key to be dropped, so signing in again registers a fresh one.
    *
    * A password change invalidates the server session on every device the user has, and drops the
    * keys the server held for all of them. Only the device that typed the new password knows it
    * happened; the rest are logged out and would otherwise come back believing their key was still
-   * good, and be refused every time they sent anything. Signing in is what the design ties
-   * re-registration to, and this is that boundary.
+   * good, and be refused every time they sent anything.
+   *
+   * Only a note is left here, because this runs while the page is navigating away. The key itself
+   * goes at the next start, which is before anything could use it.
    */
   private forgetDeviceKey() {
-    return this.injector.get(DeviceKeyService)
-      .forget()
-      .catch(err => {
-        // Never block a logout: a key left behind is re-registered on the next successful sync.
-        console.error('SessionService :: Error forgetting the device key', err);
-      });
+    try {
+      this.injector.get(DeviceKeyService).forgetOnNextStart();
+    } catch (err) {
+      console.error('SessionService :: Error forgetting the device key', err);
+    }
   }
 
   /**
@@ -124,7 +125,8 @@ export class SessionService {
         if (name !== userCtx.name) {
           // connected to the internet but server session is different. Awaited so a caller of
           // init() can know the logout finished: it clears key material before navigating away.
-          return this.logout().then(() => false);
+          this.logout();
+          return;
         }
         if (_.difference(userCtx.roles, value!.userCtx.roles).length ||
           _.difference(value!.userCtx.roles, userCtx.roles).length) {
