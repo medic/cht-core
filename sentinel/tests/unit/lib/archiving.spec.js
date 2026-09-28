@@ -596,7 +596,8 @@ describe('Sentinel archiving lib', () => {
     beforeEach(() => {
       lib = rewire('../../../src/lib/archiving');
       lib.__set__('indexViews', sinon.stub().resolves());
-      clock.setSystemTime(new Date('2026-08-27T12:00:00Z').getTime());
+      // local noon: expiry keys are built from the server's local date, which must be 27 Aug in any timezone
+      clock.setSystemTime(new Date(2026, 7, 27, 12).getTime());
       sinon.stub(logger, 'error');
       sinon.stub(logger, 'info');
     });

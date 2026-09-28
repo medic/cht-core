@@ -1,6 +1,7 @@
 const assert = require('chai').assert;
 const sinon = require('sinon');
 const rewire = require('rewire');
+const later = require('later');
 
 const config = require('../../../src/config');
 const db = require('../../../src/db');
@@ -773,7 +774,12 @@ describe('outbound schedule', () => {
       configGet.returns(configs);
       batch.resolvesArg(0);
 
-      clock = sinon.useFakeTimers({now: new Date('2023-07-11T03:05:00+0000').getTime()});
+      // Sentinel evaluates cron in local time (see lib/scheduling), so use local time for both the
+      // schedule and the clock: 03:05 is due for '5 * * * *' and not for '15 * * * *' in any timezone.
+      const wasUTC = later.date.isUTC;
+      later.date.localTime();
+      restores.push(() => wasUTC ? later.date.UTC() : later.date.localTime());
+      clock = sinon.useFakeTimers({now: new Date(2023, 6, 11, 3, 5).getTime()});
 
       return outbound.execute().then((dueConfigs) => {
         assert.equal(configGet.callCount, 1);
