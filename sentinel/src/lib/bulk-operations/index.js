@@ -253,8 +253,16 @@ const runNext = async () => {
   }
 
   const log = await getNextLog();
-  if (log) {
-    await (log.status === STATUSES.RUNNING ? finishOperation(log) : planOperation(log));
+  // The key comes from the view and the doc comes from `include_docs`, so an index that has not
+  // caught up can hand back a log that has already finished. Each status says what to do, and a log
+  // in any other state is left alone: planning a terminal operation would run it a second time.
+  if (log?.status === STATUSES.RUNNING) {
+    await finishOperation(log);
+    return true;
+  }
+
+  if (log?.status === STATUSES.QUEUED) {
+    await planOperation(log);
     return true;
   }
 

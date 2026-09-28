@@ -286,6 +286,18 @@ describe('bulk-operations sentinel scheduler', () => {
       expect(planners.plan.called).to.equal(true);
     });
 
+    it('leaves a finished operation alone when the view has not caught up', async () => {
+      // the key comes from the index and the doc from include_docs, so a completed log can still be
+      // indexed as queued. Planning it again would run the whole operation a second time.
+      stubOldestAction(null);
+      db.medicLogs.query.withArgs(sinon.match.any, sinon.match({ keys: [ 'running', 'queued' ] }))
+        .resolves({ rows: [ { doc: buildLog({ status: 'completed' }) } ] });
+
+      expect(await runNext()).to.equal(false);
+      expect(planners.plan.called).to.equal(false);
+      expect(db.medicLogs.put.called).to.equal(false);
+    });
+
     it('returns nothing when there is no work', async () => {
       stubOldestAction(null);
 
