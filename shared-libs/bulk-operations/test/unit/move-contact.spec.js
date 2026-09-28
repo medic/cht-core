@@ -250,34 +250,50 @@ describe('move-contact planner', () => {
     });
   });
 
+  describe('plan validates as it goes', () => {
+    it('refuses a move that has become illegal since it was queued', async () => {
+      constraints.assertMoveIsLegal.rejects(new ValidationError('circular hierarchy'));
+
+      await expect(plan(PARAMS)).to.be.rejectedWith('circular hierarchy');
+    });
+
+    it('refuses a destination that has gone since the move was queued', async () => {
+      contactGet.withArgs(Qualifier.byUuid('hc-b')).resolves(null);
+
+      const err = await plan(PARAMS).catch(e => e);
+
+      expect(err).to.be.an.instanceOf(ValidationError);
+      expect(err.message).to.equal(`destination contact 'hc-b' not found`);
+    });
+  });
+
   describe('validate', () => {
-    it('passes when the move is legal', async () => {
-      await expect(validate(PARAMS)).to.be.fulfilled;
+    it('passes when the move is legal, using the contacts the caller loaded', async () => {
+      await expect(validate({ ...PARAMS, contact: clinic, destination: healthCenterB })).to.be.fulfilled;
 
       expect(constraints.assertMoveIsLegal.args[0][0]).to.deep.equal(clinic);
       expect(constraints.assertMoveIsLegal.args[0][1]).to.deep.equal(healthCenterB);
       expect(constraints.assertMoveIsLegal.args[0][2]).to.deep.equal([ 'clinic-1', 'person-1' ]);
+      // the caller already loaded them, so validate does not read them again
+      expect(contactGet.called).to.equal(false);
     });
 
     it('reports an illegal move', async () => {
       constraints.assertMoveIsLegal.rejects(new ValidationError('circular hierarchy'));
 
-      await expect(validate(PARAMS)).to.be.rejectedWith('circular hierarchy');
+      await expect(validate({ ...PARAMS, contact: clinic, destination: healthCenterB }))
+        .to.be.rejectedWith('circular hierarchy');
     });
 
-    it('refuses a contact that no longer exists', async () => {
-      contactGet.withArgs(Qualifier.byUuid('clinic-1')).resolves(null);
-
-      const err = await validate(PARAMS).catch(e => e);
+    it('refuses a contact the caller could not load', async () => {
+      const err = await validate({ ...PARAMS, contact: null, destination: healthCenterB }).catch(e => e);
 
       expect(err).to.be.an.instanceOf(ValidationError);
       expect(err.message).to.equal(`contact 'clinic-1' not found`);
     });
 
-    it('refuses a destination that no longer exists', async () => {
-      contactGet.withArgs(Qualifier.byUuid('hc-b')).resolves(null);
-
-      const err = await validate(PARAMS).catch(e => e);
+    it('refuses a destination the caller could not load', async () => {
+      const err = await validate({ ...PARAMS, contact: clinic, destination: null }).catch(e => e);
 
       expect(err).to.be.an.instanceOf(ValidationError);
       expect(err.message).to.equal(`destination contact 'hc-b' not found`);

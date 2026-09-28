@@ -42,8 +42,10 @@ describe('Delete contact service', () => {
         { isOnline: true, hasAll: [ 'can_delete_contact_hierarchy', 'can_delete_users' ] }
       )).to.be.true;
 
-      expect(validate.calledOnceWithExactly('delete-contact', { contact_id: 'target', delete_users: true }))
-        .to.be.true;
+      // the contact is handed over rather than looked up again
+      expect(validate.calledOnceWithExactly(
+        'delete-contact', { contact_id: 'target', delete_users: true, contact: { _id: 'target' } }
+      )).to.be.true;
       expect(queue.calledOnceWithExactly(
         'delete-contact', { contact_id: 'target', delete_users: true }, 'jsmith'
       )).to.be.true;
@@ -80,6 +82,20 @@ describe('Delete contact service', () => {
       expect(queue.called).to.equal(false);
       expect(res.status.calledOnceWithExactly(200)).to.be.true;
       expect(res.json.calledOnceWithExactly({ summary: { delete: { contacts: 1, reports: 1 } } })).to.be.true;
+    });
+
+    it('responds 400 when the planner refuses a dry run', async () => {
+      // the dry run no longer calls validate, so the refusal has to come through plan
+      const get = sinon.stub().resolves({ _id: 'place' });
+      plan.rejects(new BadRequestError('1 user(s) are linked to contacts in this hierarchy.'));
+
+      const req = { params: { uuid: 'place' }, query: { dry_run: 'true' } };
+      await handlerFor(get)(req, res);
+
+      const err = serverUtils.error.args[0][0];
+      expect(err).to.be.an.instanceOf(BadRequestError);
+      expect(queue.called).to.equal(false);
+      expect(res.json.called).to.equal(false);
     });
 
     it('responds 404 and validates nothing when the target is not the expected type', async () => {

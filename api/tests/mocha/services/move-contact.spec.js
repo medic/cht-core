@@ -60,8 +60,10 @@ describe('move-contact service', () => {
       isOnline: true,
       hasAll: [ 'can_move_contact_hierarchy' ],
     });
-    expect(validate.calledOnceWithExactly('move-contact', { contact_id: 'clinic-1', parent_id: 'hc-b' }))
-      .to.be.true;
+    // the contacts are handed over rather than looked up again
+    expect(validate.calledOnceWithExactly('move-contact', {
+      contact_id: 'clinic-1', parent_id: 'hc-b', contact: clinic, destination: healthCenterB,
+    })).to.be.true;
     expect(queue.calledOnceWithExactly(
       'move-contact', { contact_id: 'clinic-1', parent_id: 'hc-b' }, 'jsmith'
     )).to.be.true;
@@ -90,6 +92,20 @@ describe('move-contact service', () => {
     expect(res.json.args[0][0]).to.deep.equal({
       summary: { 'set-parent': 2, 'set-contact': { reports: 0, places: 0 } },
     });
+  });
+
+  it('responds 400 when the planner refuses a dry run', async () => {
+    // the dry run no longer calls validate, so the refusal has to come through plan
+    plan.rejects(new BadRequestError('circular hierarchy'));
+    const res = buildRes();
+
+    await handler(buildReq({ query: { dry_run: 'true' } }), res);
+
+    const err = serverUtils.error.args[0][0];
+    expect(err).to.be.an.instanceOf(BadRequestError);
+    expect(err.message).to.equal('circular hierarchy');
+    expect(queue.called).to.equal(false);
+    expect(res.json.called).to.equal(false);
   });
 
   it('records a move to the top level when parent_id is omitted', async () => {

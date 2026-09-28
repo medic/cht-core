@@ -143,9 +143,11 @@ const getOldestActionDoc = async () => {
   return result.rows[0]?.doc;
 };
 
-const getOldestLog = async (status) => {
+// Running comes before queued in the view, so the oldest of the two is one round trip: an operation
+// that is already under way is always finished before a new one is planned.
+const getNextLog = async () => {
   const result = await db.medicLogs.query('logs/bulk_operations_by_status', {
-    key: status,
+    keys: [ STATUSES.RUNNING, STATUSES.QUEUED ],
     include_docs: true,
     reduce: false,
     limit: 1,
@@ -223,7 +225,7 @@ const planOperation = async (log) => {
   let summary;
   let actions;
   try {
-    await planners.validate(log.type, log.params);
+    // plan validates as it goes, so the operation is checked against the documents as they are now.
     ({ summary, actions } = await planners.plan(log.type, log.params));
   } catch (err) {
     if (err instanceof planners.ValidationError) {
@@ -269,54 +271,51 @@ const discardActionDocs = async (logId) => {
 /**
  * What an outstanding action doc means, which depends on the state of the operation that owns it.
  */
-const workForAction = (action, log) => {
+const runForAction = async (action, log) => {
   if (log?.status === STATUSES.RUNNING) {
-    return () => runAction(action, log);
+    return runAction(action, log);
   }
 
   if (log?.status === STATUSES.QUEUED) {
     // An interrupted plan: nothing has run yet, so throw the actions away and plan again.
-    return async () => {
-      await discardActionDocs(log._id);
-      await planOperation(log);
-    };
+    await discardActionDocs(log._id);
+    return planOperation(log);
   }
 
   // Terminal, or the log is gone entirely: these actions must not run.
-  return () => discardActionDocs(action.bulk_operation_id);
+  return discardActionDocs(action.bulk_operation_id);
 };
 
 /**
- * Asks the database what to do next, in a fixed order of preference, and returns the work to do or
- * null when there is none. Each rule is one lookup and the first that finds something wins.
+ * Asks the database what to do next, in a fixed order of preference, and does it. An outstanding
+ * action always wins, so no new operation is planned while one is in flight.
+ * @returns {Promise<boolean>} whether there was anything to do
  */
-const pullNext = async () => {
+const runNext = async () => {
   const action = await getOldestActionDoc();
   if (action) {
     // Still cooling down after a failed attempt. Nothing else may be planned while it is
     // outstanding, so the pass ends here and wakes again when it is due.
     if (!isDue(action)) {
       waitFor(action);
-      return null;
+      return false;
     }
-    return workForAction(action, await getLog(action.bulk_operation_id));
+    await runForAction(action, await getLog(action.bulk_operation_id));
+    return true;
   }
 
-  const running = await getOldestLog(STATUSES.RUNNING);
-  if (running) {
-    return () => finishOperation(running);
-  }
-
-  const queued = await getOldestLog(STATUSES.QUEUED);
-  if (queued) {
-    if (!isDue(queued)) {
-      waitFor(queued);
-      return null;
+  const log = await getNextLog();
+  if (log) {
+    // A plan that failed for a repeatable reason waits for its cool-down before trying again.
+    if (log.status === STATUSES.QUEUED && !isDue(log)) {
+      waitFor(log);
+      return false;
     }
-    return () => planOperation(queued);
+    await (log.status === STATUSES.RUNNING ? finishOperation(log) : planOperation(log));
+    return true;
   }
 
-  return null;
+  return false;
 };
 
 let running = false;
@@ -335,16 +334,15 @@ const runPass = async () => {
     do {
       wakeRequested = false;
       waitingUntil = null;
-      let work;
-      while ((work = await pullNext())) {
-        await work();
+      while (await runNext()) {
+        // keep going until there is nothing left
       }
       if (waitingUntil) {
         setTimeout(wake, Math.max(waitingUntil - Date.now(), 0));
       }
     } while (wakeRequested); // a change landed mid-pass: look again before going idle
   } catch (err) {
-    logger.error('bulk-operations: %o', err);
+    logger.error(`bulk-operations: Error. Retrying in ${RETRY_TIMEOUT}ms. %o`, err);
     setTimeout(wake, RETRY_TIMEOUT); // bookkeeping failed; the work is still in the database
   } finally {
     running = false;

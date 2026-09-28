@@ -35,6 +35,7 @@ const resolveTargets = async (getContact, get, { uuid, parentId, type }) => {
   if (parentId && !destination) {
     throw new NotFoundError(`Destination contact ${parentId} not found`);
   }
+  return { contact, destination };
 };
 
 /**
@@ -60,16 +61,18 @@ const handleMove = ({ get, type }) => {
 
     const parentId = parseParentId(req.body);
     const { uuid } = req.params;
-    await resolveTargets(getContact, get, { uuid, parentId, type });
+    const { contact, destination } = await resolveTargets(getContact, get, { uuid, parentId, type });
 
     const params = { contact_id: uuid, parent_id: parentId };
-    // Advisory: the caller is told now rather than being handed an operation that can only fail.
-    await planners.validate(TYPES.MOVE_CONTACT, params);
-
     if (dryRun) {
+      // plan validates as it goes, so a dry run needs nothing else.
       const { summary } = await planners.plan(TYPES.MOVE_CONTACT, params);
       return res.status(200).json({ summary });
     }
+
+    // Advisory: the caller is told now rather than being handed an operation that can only fail. The
+    // contacts are passed in because they have already been loaded above.
+    await planners.validate(TYPES.MOVE_CONTACT, { ...params, contact, destination });
 
     const id = await bulkOperations.queue(TYPES.MOVE_CONTACT, params, userCtx.name);
     return res.status(202).json({ id });

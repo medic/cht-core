@@ -3,12 +3,12 @@ const chai = require('chai');
 chai.use(require('chai-as-promised'));
 const { expect } = chai;
 
-const { Qualifier } = require('@medic/cht-datasource');
-
 const db = require('../../src/libs/db');
 const dataContext = require('../../src/libs/data-context');
 const { ValidationError } = require('../../src/errors');
 const { validate, plan } = require('../../src/delete-contact');
+
+const contact = { _id: 'place', type: 'clinic' };
 
 describe('delete-contact planner', () => {
   let medicQuery;
@@ -81,16 +81,33 @@ describe('delete-contact planner', () => {
       });
     });
 
-    it('leaves the linked users alone when delete_users was not set', async () => {
+    it('queues no user removals when delete_users was not set', async () => {
       stubViews({ contacts: [ { id: 'place', value: {} } ] });
-      usersQuery.resolves({ rows: [ { id: 'org.couchdb.user:chw' } ] });
 
       const { summary, actions } = await plan({ contact_id: 'place' });
 
       const byAction = Object.fromEntries(actions.map(a => [ a.action, a.operations ]));
       expect(byAction['delete-user']).to.deep.equal([]);
       expect(summary['delete-user']).to.equal(0);
-      expect(usersQuery.called).to.equal(false);
+    });
+
+    it('refuses the delete when it would strand linked users', async () => {
+      stubViews({ contacts: [ { id: 'place', value: {} } ] });
+      usersQuery.resolves({ rows: [ { id: 'org.couchdb.user:chw' } ] });
+
+      const err = await plan({ contact_id: 'place' }).catch(e => e);
+
+      expect(err).to.be.an.instanceOf(ValidationError);
+      expect(err.message).to.contain('1 user(s) are linked to contacts');
+    });
+
+    it('refuses a contact that has gone since the operation was queued', async () => {
+      contactGet.resolves(null);
+
+      const err = await plan({ contact_id: 'place' }).catch(e => e);
+
+      expect(err).to.be.an.instanceOf(ValidationError);
+      expect(err.message).to.equal(`contact 'place' not found`);
     });
   });
 
@@ -99,7 +116,7 @@ describe('delete-contact planner', () => {
       stubViews({ contacts: [ { id: 'place', value: {} } ] });
       usersQuery.resolves({ rows: [ { id: 'org.couchdb.user:chw' } ] });
 
-      const err = await validate({ contact_id: 'place' }).catch(e => e);
+      const err = await validate({ contact_id: 'place', contact }).catch(e => e);
 
       expect(err).to.be.an.instanceOf(ValidationError);
       expect(err.message).to.contain('1 user(s) are linked to contacts');
@@ -109,7 +126,7 @@ describe('delete-contact planner', () => {
       stubViews({ contacts: [ { id: 'place', value: {} } ] });
       usersQuery.resolves({ rows: [ { id: 'org.couchdb.user:chw' } ] });
 
-      await expect(validate({ contact_id: 'place', delete_users: true })).to.be.fulfilled;
+      await expect(validate({ contact_id: 'place', delete_users: true, contact })).to.be.fulfilled;
       // nothing to check when the users are being removed anyway
       expect(usersQuery.called).to.equal(false);
     });
@@ -117,14 +134,13 @@ describe('delete-contact planner', () => {
     it('allows the delete when no users are linked', async () => {
       stubViews({ contacts: [ { id: 'place', value: {} } ] });
 
-      await expect(validate({ contact_id: 'place' })).to.be.fulfilled;
-      expect(contactGet.args[0]).to.deep.equal([ Qualifier.byUuid('place') ]);
+      await expect(validate({ contact_id: 'place', contact })).to.be.fulfilled;
+      // the caller already loaded the contact, so validate does not read it again
+      expect(contactGet.called).to.equal(false);
     });
 
-    it('refuses a contact that no longer exists', async () => {
-      contactGet.resolves(null);
-
-      const err = await validate({ contact_id: 'place', delete_users: true }).catch(e => e);
+    it('refuses a contact the caller could not load', async () => {
+      const err = await validate({ contact_id: 'place', delete_users: true, contact: null }).catch(e => e);
 
       expect(err).to.be.an.instanceOf(ValidationError);
       expect(err.message).to.equal(`contact 'place' not found`);

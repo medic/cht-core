@@ -160,19 +160,19 @@ describe('bulk-operations sentinel scheduler', () => {
 
     it('fails the operation when it is no longer valid, without writing any actions', async () => {
       sinon.stub(logger, 'warn');
-      planners.validate.rejects(new ValidationError('contact is gone'));
+      // plan validates as it goes, so this is how Sentinel learns the operation is no longer legal
+      planners.plan.rejects(new ValidationError('contact is gone'));
 
       await service.__get__('planOperation')(buildLog({ status: 'queued' }));
 
       expect(db.sentinel.bulkDocs.called).to.equal(false);
-      expect(planners.plan.called).to.equal(false);
       const [ log ] = db.medicLogs.put.args[0];
       expect(log.status).to.equal('failed');
       expect(log.error).to.deep.equal({ message: 'contact is gone' });
     });
 
-    it('lets an unexpected validation failure propagate rather than failing the operation', async () => {
-      planners.validate.rejects(new Error('couch is down'));
+    it('lets an unexpected planning failure propagate rather than failing the operation', async () => {
+      planners.plan.rejects(new Error('couch is down'));
 
       await expect(service.__get__('planOperation')(buildLog({ status: 'queued' })))
         .to.be.rejectedWith('couch is down');
@@ -207,8 +207,8 @@ describe('bulk-operations sentinel scheduler', () => {
     });
   });
 
-  describe('pullNext', () => {
-    const pullNext = () => service.__get__('pullNext')();
+  describe('runNext', () => {
+    const runNext = () => service.__get__('runNext')();
 
     const stubOldestAction = (action) => db.sentinel.allDocs
       .withArgs(sinon.match({ startkey: 'bulk-operation-action:' }))
@@ -222,7 +222,7 @@ describe('bulk-operations sentinel scheduler', () => {
       db.sentinel.getAttachment.resolves(Buffer.from('[]'));
       service.__set__('HANDLERS', { 'set-contact': sinon.stub().resolves([]) });
 
-      await (await pullNext())();
+      expect(await runNext()).to.equal(true);
 
       expect(db.medicLogs.put.called).to.equal(true);
     });
@@ -235,7 +235,7 @@ describe('bulk-operations sentinel scheduler', () => {
       db.sentinel.allDocs.withArgs(sinon.match({ startkey: 'bulk-operation-action:op:' }))
         .resolves({ rows: [ { id: ACTION_ID, value: { rev: '1-a' } } ] });
 
-      await (await pullNext())();
+      expect(await runNext()).to.equal(true);
 
       expect(db.sentinel.bulkDocs.args[0][0]).to.deep.equal([ { _id: ACTION_ID, _rev: '1-a', _deleted: true } ]);
       expect(planners.plan.called).to.equal(true);
@@ -248,7 +248,7 @@ describe('bulk-operations sentinel scheduler', () => {
       db.sentinel.allDocs.withArgs(sinon.match({ startkey: 'bulk-operation-action:op:' }))
         .resolves({ rows: [ { id: ACTION_ID, value: { rev: '1-a' } } ] });
 
-      await (await pullNext())();
+      expect(await runNext()).to.equal(true);
 
       expect(db.sentinel.bulkDocs.args[0][0][0]._deleted).to.equal(true);
       expect(planners.plan.called).to.equal(false);
@@ -261,27 +261,27 @@ describe('bulk-operations sentinel scheduler', () => {
       db.sentinel.allDocs.withArgs(sinon.match({ startkey: 'bulk-operation-action:op:' }))
         .resolves({ rows: [ { id: ACTION_ID, value: { rev: '1-a' } } ] });
 
-      await (await pullNext())();
+      expect(await runNext()).to.equal(true);
 
       expect(db.sentinel.bulkDocs.args[0][0][0]._deleted).to.equal(true);
     });
 
     it('finishes a running operation once no actions are left', async () => {
       stubOldestAction(null);
-      db.medicLogs.query.withArgs(sinon.match.any, sinon.match({ key: 'running' }))
+      db.medicLogs.query.withArgs(sinon.match.any, sinon.match({ keys: [ 'running', 'queued' ] }))
         .resolves({ rows: [ { doc: buildLog() } ] });
 
-      await (await pullNext())();
+      expect(await runNext()).to.equal(true);
 
       expect(db.medicLogs.put.args[0][0].status).to.equal('completed');
     });
 
     it('plans the oldest queued operation when nothing else is outstanding', async () => {
       stubOldestAction(null);
-      db.medicLogs.query.withArgs(sinon.match.any, sinon.match({ key: 'queued' }))
+      db.medicLogs.query.withArgs(sinon.match.any, sinon.match({ keys: [ 'running', 'queued' ] }))
         .resolves({ rows: [ { doc: buildLog({ status: 'queued' }) } ] });
 
-      await (await pullNext())();
+      expect(await runNext()).to.equal(true);
 
       expect(planners.plan.called).to.equal(true);
     });
@@ -289,7 +289,7 @@ describe('bulk-operations sentinel scheduler', () => {
     it('returns nothing when there is no work', async () => {
       stubOldestAction(null);
 
-      expect(await pullNext()).to.equal(null);
+      expect(await runNext()).to.equal(false);
     });
   });
 
@@ -339,7 +339,7 @@ describe('bulk-operations sentinel scheduler', () => {
 
     it('keeps a plan that failed for a repeatable reason queued', async () => {
       sinon.stub(logger, 'warn');
-      planners.validate.rejects(Object.assign(new Error('couch down'), { status: 503 }));
+      planners.plan.rejects(Object.assign(new Error('couch down'), { status: 503 }));
       const log = buildLog({ status: 'queued' });
       db.medicLogs.get.resolves(log);
 
@@ -352,7 +352,7 @@ describe('bulk-operations sentinel scheduler', () => {
     });
 
     it('lets an unexpected plan failure fail the action rather than retrying forever', async () => {
-      planners.validate.rejects(new Error('programming error'));
+      planners.plan.rejects(new Error('programming error'));
 
       await expect(service.__get__('planOperation')(buildLog({ status: 'queued' })))
         .to.be.rejectedWith('programming error');
@@ -366,7 +366,7 @@ describe('bulk-operations sentinel scheduler', () => {
         .withArgs(sinon.match({ startkey: 'bulk-operation-action:' }))
         .resolves({ rows: [ { id: ACTION_ID, doc: buildAction({ next_attempt_date: soon }) } ] });
 
-      expect(await service.__get__('pullNext')()).to.equal(null);
+      expect(await service.__get__('runNext')()).to.equal(false);
       // and nothing else is planned while it is outstanding
       expect(db.medicLogs.query.called).to.equal(false);
     });
@@ -376,10 +376,10 @@ describe('bulk-operations sentinel scheduler', () => {
       db.sentinel.allDocs
         .withArgs(sinon.match({ startkey: 'bulk-operation-action:' }))
         .resolves({ rows: [] });
-      db.medicLogs.query.withArgs(sinon.match.any, sinon.match({ key: 'queued' }))
+      db.medicLogs.query.withArgs(sinon.match.any, sinon.match({ keys: [ 'running', 'queued' ] }))
         .resolves({ rows: [ { doc: buildLog({ status: 'queued', next_attempt_date: soon }) } ] });
 
-      expect(await service.__get__('pullNext')()).to.equal(null);
+      expect(await service.__get__('runNext')()).to.equal(false);
     });
   });
 
