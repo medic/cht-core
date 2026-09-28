@@ -18,7 +18,7 @@ export abstract class BaseMenuComponent implements OnInit, OnDestroy {
   protected replicationStatus;
   protected storageInfo?: StorageInfo;
   /**
-   * Whether to offer sharing with a nearby device.
+   * Whether to offer the offline sync page.
    *
    * Lives here because there are two menus, the header dropdown and the sidebar, and which one a
    * user sees depends on `can_view_old_navigation`. An entry in only one of them is invisible to
