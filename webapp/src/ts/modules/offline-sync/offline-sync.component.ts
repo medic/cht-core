@@ -5,6 +5,7 @@ import { MatProgressBar } from '@angular/material/progress-bar';
 import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
+import { FeedbackService } from '@mm-services/feedback.service';
 import { OfflineSyncResult, OfflineSyncService } from '@mm-services/offline-sync.service';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 
@@ -36,6 +37,9 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   state: OfflineSyncState = 'idle';
   /** Set only while hosting: the QR image a peer scans. */
   qrImage: string | null = null;
+  /** Shown beside the code, so a peer who cannot scan can still join the network. */
+  ssid: string | null = null;
+  password: string | null = null;
   /** Set only once joined: what the host calls itself, so the user can confirm the right device. */
   hostLabel: string | null = null;
   /** A translation key, never a message built natively. */
@@ -46,7 +50,10 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   canJoin = false;
   loading = true;
 
-  constructor(private readonly offlineSyncService: OfflineSyncService) { }
+  constructor(
+    private readonly offlineSyncService: OfflineSyncService,
+    private readonly feedbackService: FeedbackService,
+  ) { }
 
   async ngOnInit() {
     this.supported = this.offlineSyncService.isSupported();
@@ -99,15 +106,17 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
 
   private onHostingResult(result: OfflineSyncResult) {
     if (!result.ok) {
-      return this.fail(result.detail);
+      return this.fail(result.detail, result.diagnostic);
     }
-    this.qrImage = result.detail;
+    this.qrImage = result.session?.qr ?? null;
+    this.ssid = result.session?.ssid ?? null;
+    this.password = result.session?.password ?? null;
     this.state = 'hosting';
   }
 
   private onPairingResult(result: OfflineSyncResult) {
     if (!result.ok) {
-      return this.fail(result.detail);
+      return this.fail(result.detail, result.diagnostic);
     }
     this.hostLabel = result.detail;
     this.state = 'paired';
@@ -119,14 +128,25 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
    * cht-android can report has a key in messages-en.properties, checked by check-offline-sync-codes.sh.
    * The fallback only covers an empty detail.
    */
-  private fail(code: string) {
+  private fail(code: string, diagnostic?: string) {
     this.errorKey = `offline_sync.error.${code || 'unknown'}`;
     this.state = 'failed';
+    // Hosting is entirely on-device, so nothing about a failure reaches the server on its own.
+    // Without this, the only record of why a session failed is a sentence on a screen in the
+    // field, and support has nothing to look at.
+    this.feedbackService
+      .submit({
+        message: `Offline sync failed: ${code} [${this.offlineSyncService.deviceDescription()}]`
+          + (diagnostic ? ` ${diagnostic}` : ''),
+      })
+      .catch(err => console.error('OfflineSyncComponent :: Error recording the failure', err));
   }
 
   private reset() {
     this.state = 'idle';
     this.qrImage = null;
+    this.ssid = null;
+    this.password = null;
     this.hostLabel = null;
     this.errorKey = null;
   }

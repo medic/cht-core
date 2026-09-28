@@ -216,8 +216,8 @@ export class AndroidApiService {
     this.androidAppLauncherService.resolveAndroidAppResponse(response);
   }
 
-  resolveOfflineSyncHostingResult(ok, detail) {
-    this.offlineSyncService.hostingResolved(ok, detail);
+  resolveOfflineSyncHostingResult(ok, detail, diagnostic?) {
+    this.offlineSyncService.hostingResolved(ok, detail, diagnostic);
   }
 
   resolveOfflineSyncPairing(ok, detail) {
