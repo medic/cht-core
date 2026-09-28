@@ -1,0 +1,387 @@
+{
+  "languages": [
+    {
+      "locale": "bm",
+      "enabled": false
+    },
+    {
+      "locale": "en",
+      "enabled": true
+    },
+    {
+      "locale": "es",
+      "enabled": true
+    },
+    {
+      "locale": "fr",
+      "enabled": true
+    },
+    {
+      "locale": "hi",
+      "enabled": false
+    },
+    {
+      "locale": "id",
+      "enabled": false
+    },
+    {
+      "locale": "ne",
+      "enabled": true
+    },
+    {
+      "locale": "sw",
+      "enabled": true
+    }
+  ],
+  "locale": "en",
+  "locale_outgoing": "en",
+  "date_format": "D MMM, YYYY",
+  "reported_date_format": "DD-MMM-YYYY HH:mm:ss",
+  "forms_only_mode": false,
+  "place_hierarchy_types": [
+    "district_hospital",
+    "health_center"
+  ],
+  "default_responses": {
+    "start_date": ""
+  },
+  "district_admins_access_unallocated_messages": false,
+  "public_access": false,
+  "default_country_code": 1,
+  "gateway_number": "+13125551212",
+  "dhis_data_sets": [
+    {
+      "id": "VMuFODsyWaO",
+      "translation_key": "dhis.dataset.monthly.integration"
+    }
+  ],
+  "schedule_morning_hours": 0,
+  "schedule_morning_minutes": 0,
+  "schedule_evening_hours": 23,
+  "schedule_evening_minutes": 0,
+  "synthetic_date": "",
+  "contact_display_short": "clinic.name",
+  "roles": {
+    "national_admin": {
+      "name": "usertype.national_admin"
+    },
+    "data_entry": {
+      "name": "usertype.data-entry"
+    },
+    "analytics": {
+      "name": "usertype.analytics"
+    },
+    "gateway": {
+      "name": "usertype.gateway"
+    },
+    "program_officer": {
+      "name": "usertype.program-officer"
+    },
+    "crfo": {
+      "name": "usertype.crfo"
+    },
+    "chw_supervisor": {
+      "name": "usertype.chw-supervisor",
+      "offline": true
+    },
+    "chw": {
+      "name": "usertype.chw",
+      "offline": true
+    }
+  },
+  "permissions": {
+    "can_access_gateway_api": [
+      "gateway"
+    ],
+    "can_bulk_delete_reports": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_configure": [
+      "program_officer",
+      "crfo"
+    ],
+    "can_create_people": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_create_places": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_create_records": [
+      "data_entry",
+      "gateway",
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_create_users": [
+      "program_officer"
+    ],
+    "can_delete_contacts": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_delete_messages": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_delete_reports": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_delete_users": [
+      "program_officer"
+    ],
+    "can_edit": [
+      "gateway",
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_edit_profile": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_edit_verification": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_export_all": [
+      "program_officer",
+      "crfo"
+    ],
+    "can_export_contacts": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_export_feedback": [
+      "program_officer"
+    ],
+    "can_export_messages": [
+      "analytics",
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_log_out_on_android": [],
+    "can_update_places": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_update_reports": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_update_users": [
+      "program_officer"
+    ],
+    "can_export_dhis": [
+      "national_admin",
+      "crfo"
+    ],
+    "can_verify_reports": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_analytics": [
+      "analytics",
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_analytics_tab": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_call_action": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_contacts": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_contacts_tab": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_last_visited_date": [],
+    "can_view_uhc_stats": [],
+    "can_view_message_action": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_messages": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_messages_tab": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_outgoing_messages": [
+      "program_officer"
+    ],
+    "can_view_reports": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_reports_tab": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_tasks": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_tasks_tab": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_tasks_group": [
+      "chw"
+    ],
+    "can_track_task_interactions": [],
+    "can_view_unallocated_data_records": [
+      "gateway",
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_users": [
+      "program_officer"
+    ],
+    "can_write_wealth_quintiles": [],
+    "can_aggregate_targets": [
+      "chw_supervisor"
+    ],
+    "can_upgrade": [
+      "program_officer"
+    ],
+    "can_view_old_navigation": [],
+    "can_default_facility_filter": [],
+    "can_have_multiple_places": [],
+    "can_skip_password_change": [],
+    "can_get_task_notifications": [
+      "chw",
+      "chw_supervisor"
+    ],
+    "can_export_devices_details": [
+      "national_admin"
+    ]
+  },
+  "uhc": {
+    "contacts_default_sort": "",
+    "visit_count": {
+      "month_start_date": 1,
+      "visit_count_goal": 0,
+      "use_bikram_sambat_months": false
+    }
+  },
+  "death_reporting": {
+    "mark_deceased_forms": [
+      "death_report"
+    ],
+    "date_field": "fields.death_details.date_of_death",
+    "undo_deceased_forms": [
+      "undo_death_report"
+    ]
+  },
+  "contact_types": [
+    {
+      "id": "district_hospital",
+      "name_key": "contact.type.district_hospital",
+      "group_key": "contact.type.district_hospital.plural",
+      "create_key": "contact.type.district_hospital.new",
+      "edit_key": "contact.type.place.edit",
+      "icon": "medic-district-hospital",
+      "create_form": "form:contact:district_hospital:create",
+      "edit_form": "form:contact:district_hospital:edit"
+    },
+    {
+      "id": "health_center",
+      "name_key": "contact.type.health_center",
+      "group_key": "contact.type.health_center.plural",
+      "create_key": "contact.type.health_center.new",
+      "edit_key": "contact.type.place.edit",
+      "parents": [
+        "district_hospital"
+      ],
+      "icon": "medic-health-center",
+      "create_form": "form:contact:health_center:create",
+      "edit_form": "form:contact:health_center:edit"
+    },
+    {
+      "id": "clinic",
+      "name_key": "contact.type.clinic",
+      "group_key": "contact.type.clinic.plural",
+      "create_key": "contact.type.clinic.new",
+      "edit_key": "contact.type.place.edit",
+      "parents": [
+        "health_center"
+      ],
+      "icon": "medic-clinic",
+      "create_form": "form:contact:clinic:create",
+      "edit_form": "form:contact:clinic:edit",
+      "count_visits": true
+    },
+    {
+      "id": "person",
+      "name_key": "contact.type.person",
+      "group_key": "contact.type.person.plural",
+      "create_key": "contact.type.person.new",
+      "edit_key": "contact.type.person.edit",
+      "primary_contact_key": "clinic.field.contact",
+      "parents": [
+        "district_hospital",
+        "health_center",
+        "clinic"
+      ],
+      "icon": "medic-person",
+      "create_form": "form:contact:person:create",
+      "edit_form": "form:contact:person:edit",
+      "person": true
+    }
+  ],
+  "create_user_for_contacts": {
+    "replace_forms": [
+      "replace_user"
+    ]
+  },
+  "transitions": {
+    "accept_patient_reports": false,
+    "conditional_alerts": false,
+    "default_responses": false,
+    "update_sent_by": false,
+    "registration": false,
+    "update_clinics": false,
+    "update_notifications": false,
+    "update_scheduled_reports": false,
+    "generate_shortcode_on_contacts": true,
+    "death_reporting": true,
+    "create_user_for_contacts": false
+  }
+}
