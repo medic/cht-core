@@ -2,7 +2,6 @@ import { TestBed } from '@angular/core/testing';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { Decrypter, generateIdentity, identityToRecipient } from 'age-encryption';
-import { ed25519 } from '@noble/curves/ed25519.js';
 
 import { DbService } from '@mm-services/db.service';
 import { DBSyncService } from '@mm-services/db-sync.service';
@@ -21,11 +20,13 @@ describe('OfflineDataBundle service', () => {
   let sessionService;
   let medicDb;
   let identity;
-  let signingPrivateKey;
+  let signingKeyPair;
 
   beforeEach(async () => {
     identity = await generateIdentity();
-    signingPrivateKey = ed25519.utils.randomSecretKey();
+    signingKeyPair = await crypto.subtle.generateKey(
+      { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign', 'verify']
+    );
 
     medicDb = { changes: sinon.stub() };
     dbService = { get: sinon.stub().returns(medicDb) };
@@ -34,7 +35,7 @@ describe('OfflineDataBundle service', () => {
     deviceKeyService = {
       getKeyMaterial: sinon.stub().resolves({
         deviceId: DEVICE_ID,
-        signingPrivateKey,
+        signingPrivateKey: signingKeyPair.privateKey,
         serverEncryptionPublicKey: await identityToRecipient(identity),
       }),
     };
@@ -110,6 +111,15 @@ describe('OfflineDataBundle service', () => {
     expect(failure.message).to.match(/^[a-z0-9_]+$/);
   });
 
+  /** The api derives this from the body it receives, so the test derives it the same way. */
+  const ageHeaderHash = async (ciphertext) => {
+    const text = new TextDecoder('utf8', { fatal: false }).decode(ciphertext.subarray(0, 400));
+    const marker = text.indexOf('\n---');
+    const end = text.indexOf('\n', marker + 1) + 1;
+    const digest = await crypto.subtle.digest('SHA-256', ciphertext.subarray(0, end));
+    return btoa(String.fromCharCode(...new Uint8Array(digest)));
+  };
+
   it('seals a bundle the server can open, verify and read', async () => {
     const docs = [{ _id: 'contact-1', _rev: '1-a' }, { _id: 'report-1', _rev: '1-b' }];
     medicDb.changes.resolves(onePageOf(docs));
@@ -118,12 +128,15 @@ describe('OfflineDataBundle service', () => {
 
     const envelopeBytes = Uint8Array.from(atob(bundle.envelope), character => character.codePointAt(0)!);
     const signature = Uint8Array.from(atob(bundle.signature), character => character.codePointAt(0)!);
-    expect(ed25519.verify(signature, envelopeBytes, ed25519.getPublicKey(signingPrivateKey))).to.be.true;
-    expect(JSON.parse(new TextDecoder().decode(envelopeBytes))).to.deep.equal({
-      user: 'chw-user',
-      device_id: DEVICE_ID,
-      bundle_seq: 1,
-    });
+    const verified = await crypto.subtle.verify(
+      { name: 'ECDSA', hash: 'SHA-256' }, signingKeyPair.publicKey, signature, envelopeBytes
+    );
+    expect(verified, 'the api must be able to verify this signature').to.be.true;
+
+    const envelope = JSON.parse(new TextDecoder().decode(envelopeBytes));
+    expect(envelope).to.include({ user: 'chw-user', device_id: DEVICE_ID, bundle_seq: 1 });
+    // what ties the envelope to this body, checked by api before it writes anything
+    expect(envelope.payload_header_sha256).to.equal(await ageHeaderHash(bundle.ciphertext));
     expect(await openBundle(bundle)).to.deep.equal(docs);
   });
 
@@ -133,7 +146,10 @@ describe('OfflineDataBundle service', () => {
 
     const [bundle] = await collect();
 
-    expect(Object.keys(openEnvelope(bundle)).sort((a, b) => a.localeCompare(b))).to.deep.equal(['bundle_seq', 'device_id', 'user']);
+    // payload_header_sha256 included: it hashes the age header, which is an ephemeral public key
+    // and a file key wrapped to the server, so it says nothing about what the bundle contains.
+    expect(Object.keys(openEnvelope(bundle)).sort((a, b) => a.localeCompare(b)))
+      .to.deep.equal(['bundle_seq', 'device_id', 'payload_header_sha256', 'user']);
   });
 
   // A relay orders bundles by this number and spots a gap with it, so two bundles from the same
