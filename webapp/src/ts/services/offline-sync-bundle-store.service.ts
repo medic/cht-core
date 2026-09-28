@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { DbService } from '@mm-services/db.service';
-import { BRIDGE_CHUNK_BYTES, P2pService, ReceivedBundle } from '@mm-services/p2p.service';
+import { BRIDGE_CHUNK_BYTES, OfflineSyncService, ReceivedBundle } from '@mm-services/offline-sync.service';
 
 /**
  * Holds the bundles this device is carrying for other people.
@@ -12,10 +12,10 @@ import { BRIDGE_CHUNK_BYTES, P2pService, ReceivedBundle } from '@mm-services/p2p
  * this user's documents and must not travel up as if they were.
  */
 @Injectable({ providedIn: 'root' })
-export class P2pBundleStoreService {
+export class OfflineSyncBundleStoreService {
   constructor(
     private readonly dbService: DbService,
-    private readonly p2pService: P2pService,
+    private readonly offlineSyncService: OfflineSyncService,
   ) { }
 
   private get db() {
@@ -32,7 +32,7 @@ export class P2pBundleStoreService {
    */
   async collect(): Promise<number> {
     let collected = 0;
-    for (const bundle of this.p2pService.receivedBundles()) {
+    for (const bundle of this.offlineSyncService.receivedBundles()) {
       await this.take(bundle);
       collected += 1;
     }
@@ -52,7 +52,7 @@ export class P2pBundleStoreService {
         },
       },
     });
-    this.p2pService.deleteBundle(bundle.id);
+    this.offlineSyncService.deleteBundle(bundle.id);
   }
 
   /** How many bundles this device is carrying. */
@@ -72,7 +72,7 @@ export class P2pBundleStoreService {
   private readPayload(bundle: ReceivedBundle): string {
     const chunks: string[] = [];
     for (let offset = 0; offset < bundle.bytes; offset += BRIDGE_CHUNK_BYTES) {
-      const chunk = this.p2pService.readBundle(bundle.id, offset, BRIDGE_CHUNK_BYTES);
+      const chunk = this.offlineSyncService.readBundle(bundle.id, offset, BRIDGE_CHUNK_BYTES);
       if (!chunk) {
         throw new Error('bundle_read_failed');
       }

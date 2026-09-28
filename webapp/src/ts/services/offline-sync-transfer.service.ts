@@ -3,7 +3,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { toBase64 } from '../base64';
 import { BundleScope, OfflineDataBundleService, SealedBundle } from '@mm-services/offline-data-bundle.service';
-import { BRIDGE_CHUNK_BYTES, P2pService } from '@mm-services/p2p.service';
+import { BRIDGE_CHUNK_BYTES, OfflineSyncService } from '@mm-services/offline-sync.service';
 
 /**
  * Hands this device's data to a paired relay.
@@ -13,10 +13,10 @@ import { BRIDGE_CHUNK_BYTES, P2pService } from '@mm-services/p2p.service';
  * packed again next time rather than skipping it.
  */
 @Injectable({ providedIn: 'root' })
-export class P2pTransferService {
+export class OfflineSyncTransferService {
   constructor(
     private readonly bundleService: OfflineDataBundleService,
-    private readonly p2pService: P2pService,
+    private readonly offlineSyncService: OfflineSyncService,
   ) { }
 
   /**
@@ -26,7 +26,7 @@ export class P2pTransferService {
    * @throws with a stable code the webapp can translate, never a message
    */
   async handOver(scope: BundleScope): Promise<{ delivered: number; skipped: number }> {
-    const session = new Handover(this.p2pService);
+    const session = new Handover(this.offlineSyncService);
     let skipped = 0;
     try {
       for await (const bundle of this.bundleService.packBundles(this.bundleService.getPosition(scope))) {
@@ -48,7 +48,7 @@ export class P2pTransferService {
   }
 
   private async deliver(bundle: SealedBundle) {
-    const id = this.p2pService.openBundle();
+    const id = this.offlineSyncService.openBundle();
     if (!id) {
       throw new Error('bundle_open_failed');
     }
@@ -57,17 +57,17 @@ export class P2pTransferService {
     // each piece on its own, so nothing here depends on how they line up.
     for (let offset = 0; offset < bundle.ciphertext.length; offset += BRIDGE_CHUNK_BYTES) {
       const chunk = bundle.ciphertext.subarray(offset, offset + BRIDGE_CHUNK_BYTES);
-      if (!this.p2pService.writeBundle(id, toBase64(chunk))) {
+      if (!this.offlineSyncService.writeBundle(id, toBase64(chunk))) {
         // Half a bundle is of no use to anyone: the next attempt packs the same data again from
         // the position this one never moved.
-        this.p2pService.abortBundle(id);
+        this.offlineSyncService.abortBundle(id);
         throw new Error('bundle_write_failed');
       }
     }
 
     // Subscribed before the send, because the native side can answer immediately.
-    const result = firstValueFrom(this.p2pService.transferResult());
-    this.p2pService.sendBundle(id, bundle.envelope, bundle.signature);
+    const result = firstValueFrom(this.offlineSyncService.transferResult());
+    this.offlineSyncService.sendBundle(id, bundle.envelope, bundle.signature);
 
     const { ok, detail } = await result;
     if (!ok) {
@@ -88,23 +88,23 @@ class Handover {
   private started = false;
   count = 0;
 
-  constructor(private readonly p2pService: P2pService) { }
+  constructor(private readonly offlineSyncService: OfflineSyncService) { }
 
   begin() {
     if (!this.started) {
       this.started = true;
-      this.p2pService.transferStarted();
+      this.offlineSyncService.transferStarted();
     }
   }
 
   delivered() {
     this.count += 1;
-    this.p2pService.transferProgress(this.count);
+    this.offlineSyncService.transferProgress(this.count);
   }
 
   end(ok: boolean) {
     if (this.started) {
-      this.p2pService.transferFinished(ok);
+      this.offlineSyncService.transferFinished(ok);
     }
   }
 }
