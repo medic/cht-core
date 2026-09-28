@@ -75,7 +75,8 @@ describe('P2pBundleStore service', () => {
     const payload = new Uint8Array(2 * CHUNK_BYTES + 5).map((unused, index) => index % 251);
     p2pService.receivedBundles.returns([received('bundle-1', payload.length)]);
     p2pService.readBundle.callsFake(
-      (unusedId, offset, length) => toBase64(payload.subarray(offset, offset + length)));
+      (unusedId, offset, length) => toBase64(payload.subarray(offset, offset + length))
+    );
 
     await service.collect();
 

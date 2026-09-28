@@ -176,9 +176,12 @@ describe('P2pTransfer service', () => {
   });
 
   it('does not open a session when there is nothing to pack from', async () => {
-    bundleService.packBundles = sinon.stub().returns((async function* () {
-      throw new Error('device_not_registered');
-    })());
+    // An async iterable that fails on the first pull, which is what a device with no keys does.
+    bundleService.packBundles = sinon.stub().returns({
+      [Symbol.asyncIterator]: () => ({
+        next: () => Promise.reject(new Error('device_not_registered')),
+      }),
+    });
 
     await service.handOver('export').catch(() => {});
 
