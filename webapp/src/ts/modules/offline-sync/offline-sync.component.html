@@ -48,12 +48,12 @@
 
     <!-- Said before they leave, not when they are already standing in front of a colleague. -->
     @if (!loading && canJoin && !ready) {
-      <mat-card class="p2p-not-ready">
+      <mat-card class="offline-sync-not-ready">
         <mat-card-header>
-          <mat-card-title translate>p2p.not_ready.title</mat-card-title>
+          <mat-card-title translate>offline_sync.not_ready.title</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <p translate>p2p.not_ready.description</p>
+          <p translate>offline_sync.not_ready.description</p>
         </mat-card-content>
       </mat-card>
     }

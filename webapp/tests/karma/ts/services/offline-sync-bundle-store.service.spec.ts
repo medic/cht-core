@@ -3,16 +3,16 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import { DbService } from '@mm-services/db.service';
-import { P2pBundleStoreService } from '@mm-services/p2p-bundle-store.service';
-import { P2pService } from '@mm-services/p2p.service';
+import { OfflineSyncBundleStoreService } from '@mm-services/offline-sync-bundle-store.service';
+import { OfflineSyncService } from '@mm-services/offline-sync.service';
 
-describe('P2pBundleStore service', () => {
+describe('OfflineSyncBundleStore service', () => {
   const CHUNK_BYTES = 3 * 128 * 1024;
   const toBase64 = bytes => window.btoa(Array.from(bytes, byte => String.fromCodePoint(byte as number)).join(''));
 
-  let service: P2pBundleStoreService;
+  let service: OfflineSyncBundleStoreService;
   let dbService;
-  let p2pService;
+  let offlineSyncService;
   let bundlesDb;
 
   const received = (id, bytes = 4) => ({
@@ -28,7 +28,7 @@ describe('P2pBundleStore service', () => {
       info: sinon.stub().resolves({ doc_count: 0 }),
     };
     dbService = { get: sinon.stub().returns(bundlesDb) };
-    p2pService = {
+    offlineSyncService = {
       receivedBundles: sinon.stub().returns([]),
       readBundle: sinon.stub().returns('AAAA'),
       deleteBundle: sinon.stub().returns(true),
@@ -37,11 +37,11 @@ describe('P2pBundleStore service', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: DbService, useValue: dbService },
-        { provide: P2pService, useValue: p2pService },
+        { provide: OfflineSyncService, useValue: offlineSyncService },
       ]
     });
 
-    service = TestBed.inject(P2pBundleStoreService);
+    service = TestBed.inject(OfflineSyncBundleStoreService);
   });
 
   afterEach(() => sinon.restore());
@@ -49,7 +49,7 @@ describe('P2pBundleStore service', () => {
   // These are another user's documents, encrypted to the server. Replicating them up as if they
   // were this user's own is exactly what must never happen.
   it('keeps bundles in a local database of their own', async () => {
-    p2pService.receivedBundles.returns([received('bundle-1')]);
+    offlineSyncService.receivedBundles.returns([received('bundle-1')]);
 
     await service.collect();
 
@@ -57,7 +57,7 @@ describe('P2pBundleStore service', () => {
   });
 
   it('stores a received bundle with the envelope it must be sent on with', async () => {
-    p2pService.receivedBundles.returns([received('bundle-1')]);
+    offlineSyncService.receivedBundles.returns([received('bundle-1')]);
 
     expect(await service.collect()).to.equal(1);
     const [doc] = bundlesDb.put.args[0];
@@ -73,14 +73,14 @@ describe('P2pBundleStore service', () => {
   // join back is what catches a chunk size that breaks that, or a padded piece in the middle.
   it('pulls a large bundle back in pieces and joins them into the original bytes', async () => {
     const payload = new Uint8Array(2 * CHUNK_BYTES + 5).map((unused, index) => index % 251);
-    p2pService.receivedBundles.returns([received('bundle-1', payload.length)]);
-    p2pService.readBundle.callsFake(
+    offlineSyncService.receivedBundles.returns([received('bundle-1', payload.length)]);
+    offlineSyncService.readBundle.callsFake(
       (unusedId, offset, length) => toBase64(payload.subarray(offset, offset + length))
     );
 
     await service.collect();
 
-    expect(p2pService.readBundle.args.map(([, offset]) => offset))
+    expect(offlineSyncService.readBundle.args.map(([, offset]) => offset))
       .to.deep.equal([0, CHUNK_BYTES, 2 * CHUNK_BYTES]);
     const stored = window.atob(bundlesDb.put.args[0][0]._attachments.payload.data);
     expect(Array.from(stored, character => character.codePointAt(0))).to.deep.equal(Array.from(payload));
@@ -88,25 +88,25 @@ describe('P2pBundleStore service', () => {
 
   // Dropping the native copy before the store has it would lose a bundle nobody else holds.
   it('drops the native copy only after the bundle is stored', async () => {
-    p2pService.receivedBundles.returns([received('bundle-1')]);
+    offlineSyncService.receivedBundles.returns([received('bundle-1')]);
 
     await service.collect();
 
-    expect(bundlesDb.put.calledBefore(p2pService.deleteBundle)).to.be.true;
-    expect(p2pService.deleteBundle.args).to.deep.equal([['bundle-1']]);
+    expect(bundlesDb.put.calledBefore(offlineSyncService.deleteBundle)).to.be.true;
+    expect(offlineSyncService.deleteBundle.args).to.deep.equal([['bundle-1']]);
   });
 
   it('leaves the native copy alone when storing fails', async () => {
-    p2pService.receivedBundles.returns([received('bundle-1')]);
+    offlineSyncService.receivedBundles.returns([received('bundle-1')]);
     bundlesDb.put.rejects(new Error('no space'));
 
     await expect(service.collect()).to.be.rejectedWith(Error, 'no space');
-    expect(p2pService.deleteBundle.notCalled).to.be.true;
+    expect(offlineSyncService.deleteBundle.notCalled).to.be.true;
   });
 
   it('reports a partly readable bundle as a code rather than storing it', async () => {
-    p2pService.receivedBundles.returns([received('bundle-1')]);
-    p2pService.readBundle.returns('');
+    offlineSyncService.receivedBundles.returns([received('bundle-1')]);
+    offlineSyncService.readBundle.returns('');
 
     await expect(service.collect()).to.be.rejectedWith(Error, 'bundle_read_failed');
     expect(bundlesDb.put.notCalled).to.be.true;

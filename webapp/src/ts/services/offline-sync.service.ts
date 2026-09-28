@@ -192,21 +192,21 @@ export class OfflineSyncService {
 
   /** Drops an outbound bundle that will not be sent, so a failed attempt leaves nothing behind. */
   abortBundle(id: string) {
-    this.bridge?.p2p_bundle_abort(id);
+    this.bridge?.offline_sync_bundle_abort(id);
   }
 
   // A handover is bracketed rather than each bundle, because the native side holds the session
   // open for as long as it is running and should not let go between bundles.
   transferStarted() {
-    this.bridge?.p2p_transfer_started();
+    this.bridge?.offline_sync_transfer_started();
   }
 
   transferProgress(delivered: number) {
-    this.bridge?.p2p_transfer_progress(delivered);
+    this.bridge?.offline_sync_transfer_progress(delivered);
   }
 
   transferFinished(ok: boolean) {
-    this.bridge?.p2p_transfer_finished(ok);
+    this.bridge?.offline_sync_transfer_finished(ok);
   }
 
   receivedBundles(): ReceivedBundle[] {

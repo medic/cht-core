@@ -4,15 +4,15 @@ import sinon from 'sinon';
 import { Subject } from 'rxjs';
 
 import { OfflineDataBundleService } from '@mm-services/offline-data-bundle.service';
-import { P2pService } from '@mm-services/p2p.service';
-import { P2pTransferService } from '@mm-services/p2p-transfer.service';
+import { OfflineSyncService } from '@mm-services/offline-sync.service';
+import { OfflineSyncTransferService } from '@mm-services/offline-sync-transfer.service';
 
-describe('P2pTransfer service', () => {
+describe('OfflineSyncTransfer service', () => {
   const CHUNK_BYTES = 3 * 128 * 1024;
 
-  let service: P2pTransferService;
+  let service: OfflineSyncTransferService;
   let bundleService;
-  let p2pService;
+  let offlineSyncService;
   let transfers;
 
   const bundle = (seq, bytes = 8) => ({
@@ -34,7 +34,7 @@ describe('P2pTransfer service', () => {
       packBundles: packing([]),
       recordExported: sinon.stub(),
     };
-    p2pService = {
+    offlineSyncService = {
       abortBundle: sinon.stub(),
       transferStarted: sinon.stub(),
       transferProgress: sinon.stub(),
@@ -48,11 +48,11 @@ describe('P2pTransfer service', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: OfflineDataBundleService, useValue: bundleService },
-        { provide: P2pService, useValue: p2pService },
+        { provide: OfflineSyncService, useValue: offlineSyncService },
       ]
     });
 
-    service = TestBed.inject(P2pTransferService);
+    service = TestBed.inject(OfflineSyncTransferService);
   });
 
   afterEach(() => sinon.restore());
@@ -68,7 +68,7 @@ describe('P2pTransfer service', () => {
     bundleService.packBundles = packing([bundle(1), bundle(2)]);
 
     expect((await service.handOver('export')).delivered).to.equal(2);
-    expect(p2pService.sendBundle.args).to.deep.equal([
+    expect(offlineSyncService.sendBundle.args).to.deep.equal([
       ['transfer-1', 'envelope-1', 'signature-1'],
       ['transfer-1', 'envelope-2', 'signature-2'],
     ]);
@@ -86,7 +86,7 @@ describe('P2pTransfer service', () => {
 
   it('stops at the first bundle the host refuses, and does not record it', async () => {
     bundleService.packBundles = packing([bundle(11), bundle(22)]);
-    p2pService.sendBundle.callsFake(() => transfers.next({ ok: false, detail: 'host_unreachable' }));
+    offlineSyncService.sendBundle.callsFake(() => transfers.next({ ok: false, detail: 'host_unreachable' }));
 
     await expect(service.handOver('export')).to.be.rejectedWith(Error, 'host_unreachable');
     expect(bundleService.recordExported.notCalled).to.be.true;
@@ -94,28 +94,28 @@ describe('P2pTransfer service', () => {
 
   it('reports a failure to open native storage as a code', async () => {
     bundleService.packBundles = packing([bundle(1)]);
-    p2pService.openBundle.returns(null);
+    offlineSyncService.openBundle.returns(null);
 
     await expect(service.handOver('export')).to.be.rejectedWith(Error, 'bundle_open_failed');
-    expect(p2pService.sendBundle.notCalled).to.be.true;
+    expect(offlineSyncService.sendBundle.notCalled).to.be.true;
   });
 
   it('reports a failure to write as a code, and sends nothing', async () => {
     bundleService.packBundles = packing([bundle(1)]);
-    p2pService.writeBundle.returns(false);
+    offlineSyncService.writeBundle.returns(false);
 
     await expect(service.handOver('export')).to.be.rejectedWith(Error, 'bundle_write_failed');
-    expect(p2pService.sendBundle.notCalled).to.be.true;
+    expect(offlineSyncService.sendBundle.notCalled).to.be.true;
   });
 
   // Half a bundle is of no use to anyone, and the phone this runs on has little room to spare.
   it('drops a bundle it could not finish writing', async () => {
     bundleService.packBundles = packing([bundle(1)]);
-    p2pService.writeBundle.returns(false);
+    offlineSyncService.writeBundle.returns(false);
 
     await service.handOver('export').catch(() => {});
 
-    expect(p2pService.abortBundle.args).to.deep.equal([['transfer-1']]);
+    expect(offlineSyncService.abortBundle.args).to.deep.equal([['transfer-1']]);
   });
 
   // The native side holds the app alive for the length of the handover. Letting go between
@@ -125,19 +125,19 @@ describe('P2pTransfer service', () => {
 
     await service.handOver('export');
 
-    expect(p2pService.transferStarted.callCount).to.equal(1);
-    expect(p2pService.transferProgress.args).to.deep.equal([[1], [2]]);
-    expect(p2pService.transferFinished.args).to.deep.equal([[true]]);
+    expect(offlineSyncService.transferStarted.callCount).to.equal(1);
+    expect(offlineSyncService.transferProgress.args).to.deep.equal([[1], [2]]);
+    expect(offlineSyncService.transferFinished.args).to.deep.equal([[true]]);
   });
 
   /** A user who switched to another app has only the notification to tell them it broke. */
   it('says the handover failed rather than just going quiet', async () => {
     bundleService.packBundles = packing([bundle(1)]);
-    p2pService.sendBundle.callsFake(() => transfers.next({ ok: false, detail: 'host_unreachable' }));
+    offlineSyncService.sendBundle.callsFake(() => transfers.next({ ok: false, detail: 'host_unreachable' }));
 
     await service.handOver('export').catch(() => {});
 
-    expect(p2pService.transferFinished.args).to.deep.equal([[false]]);
+    expect(offlineSyncService.transferFinished.args).to.deep.equal([[false]]);
   });
 
   it('pushes a large bundle across in pieces', async () => {
@@ -145,7 +145,7 @@ describe('P2pTransfer service', () => {
 
     await service.handOver('export');
 
-    expect(p2pService.writeBundle.callCount).to.equal(3);
+    expect(offlineSyncService.writeBundle.callCount).to.equal(3);
   });
 
   // They cannot travel this way at all, so the position moves past them and the user is told.
@@ -157,13 +157,13 @@ describe('P2pTransfer service', () => {
     const result = await service.handOver('export');
 
     expect(result).to.deep.equal({ delivered: 0, skipped: 2 });
-    expect(p2pService.openBundle.notCalled).to.be.true;
+    expect(offlineSyncService.openBundle.notCalled).to.be.true;
     expect(bundleService.recordExported.args).to.deep.equal([[9]]);
   });
 
   it('sends nothing when nothing has changed', async () => {
     expect((await service.handOver('export')).delivered).to.equal(0);
-    expect(p2pService.openBundle.notCalled).to.be.true;
+    expect(offlineSyncService.openBundle.notCalled).to.be.true;
   });
 
   // Asking the native side to hold a session open and then letting go before it has begun is not
@@ -171,8 +171,8 @@ describe('P2pTransfer service', () => {
   it('does not open a session it has nothing to put in', async () => {
     await service.handOver('export');
 
-    expect(p2pService.transferStarted.notCalled).to.be.true;
-    expect(p2pService.transferFinished.notCalled).to.be.true;
+    expect(offlineSyncService.transferStarted.notCalled).to.be.true;
+    expect(offlineSyncService.transferFinished.notCalled).to.be.true;
   });
 
   it('does not open a session when there is nothing to pack from', async () => {
@@ -185,7 +185,7 @@ describe('P2pTransfer service', () => {
 
     await service.handOver('export').catch(() => {});
 
-    expect(p2pService.transferStarted.notCalled).to.be.true;
-    expect(p2pService.transferFinished.notCalled).to.be.true;
+    expect(offlineSyncService.transferStarted.notCalled).to.be.true;
+    expect(offlineSyncService.transferFinished.notCalled).to.be.true;
   });
 });
