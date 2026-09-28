@@ -41,7 +41,7 @@
         </mat-card-header>
         <mat-card-content>
           <p translate>offline_sync.host.description</p>
-          <button mat-flat-button color="primary" (click)="startHosting()" translate>offline_sync.host.start</button>
+          <button mat-flat-button color="primary" (click)="startHosting()">{{ 'offline_sync.host.start' | translate }}</button>
         </mat-card-content>
       </mat-card>
     }
@@ -53,7 +53,7 @@
         </mat-card-header>
         <mat-card-content>
           <p translate>offline_sync.peer.description</p>
-          <button mat-flat-button color="primary" (click)="scanAndJoin()" translate>offline_sync.peer.scan</button>
+          <button mat-flat-button color="primary" (click)="scanAndJoin()">{{ 'offline_sync.peer.scan' | translate }}</button>
         </mat-card-content>
       </mat-card>
     }
@@ -61,7 +61,7 @@
     @if (state === 'starting' || state === 'joining') {
       <mat-card>
         <mat-card-content>
-          <p translate>{{ state === 'starting' ? 'offline_sync.host.starting' : 'offline_sync.peer.joining' }}</p>
+          <p>{{ (state === 'starting' ? 'offline_sync.host.starting' : 'offline_sync.peer.joining') | translate }}</p>
           <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         </mat-card-content>
       </mat-card>
@@ -78,7 +78,7 @@
           @if (qrImage) {
             <img class="offline-sync-qr" [src]="qrImage" alt="{{ 'offline_sync.host.ready.qr_alt' | translate }}">
           }
-          <button mat-stroked-button (click)="stopHosting()" translate>offline_sync.host.stop</button>
+          <button mat-button color="primary" (click)="stopHosting()">{{ 'offline_sync.host.stop' | translate }}</button>
         </mat-card-content>
       </mat-card>
     }
@@ -90,7 +90,7 @@
         </mat-card-header>
         <mat-card-content>
           <p>{{ 'offline_sync.peer.paired.description' | translate:{ host: hostLabel } }}</p>
-          <button mat-stroked-button (click)="leaveSession()" translate>offline_sync.peer.leave</button>
+          <button mat-button color="primary" (click)="leaveSession()">{{ 'offline_sync.peer.leave' | translate }}</button>
         </mat-card-content>
       </mat-card>
     }
@@ -101,10 +101,10 @@
           <mat-card-title translate>offline_sync.failed.title</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <p translate>{{ errorKey }}</p>
+          <p>{{ errorKey | translate }}</p>
           <!-- Every one of these messages tells the user to try again, so there has to be
                something to press: the start and scan buttons only show while idle. -->
-          <button mat-flat-button color="primary" (click)="startOver()" translate>offline_sync.failed.retry</button>
+          <button mat-flat-button color="primary" (click)="startOver()">{{ 'offline_sync.failed.retry' | translate }}</button>
         </mat-card-content>
       </mat-card>
     }
