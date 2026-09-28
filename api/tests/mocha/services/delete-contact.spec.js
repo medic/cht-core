@@ -84,6 +84,20 @@ describe('Delete contact service', () => {
       expect(res.json.calledOnceWithExactly({ summary: { delete: { contacts: 1, reports: 1 } } })).to.be.true;
     });
 
+    it('responds 400 when the planner refuses a dry run', async () => {
+      // the dry run no longer calls validate, so the refusal has to come through plan
+      const get = sinon.stub().resolves({ _id: 'place' });
+      plan.rejects(new BadRequestError('1 user(s) are linked to contacts in this hierarchy.'));
+
+      const req = { params: { uuid: 'place' }, query: { dry_run: 'true' } };
+      await handlerFor(get)(req, res);
+
+      const err = serverUtils.error.args[0][0];
+      expect(err).to.be.an.instanceOf(BadRequestError);
+      expect(queue.called).to.equal(false);
+      expect(res.json.called).to.equal(false);
+    });
+
     it('responds 404 and validates nothing when the target is not the expected type', async () => {
       const get = sinon.stub().resolves(null);
 

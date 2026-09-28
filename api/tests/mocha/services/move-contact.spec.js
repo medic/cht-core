@@ -94,6 +94,20 @@ describe('move-contact service', () => {
     });
   });
 
+  it('responds 400 when the planner refuses a dry run', async () => {
+    // the dry run no longer calls validate, so the refusal has to come through plan
+    plan.rejects(new BadRequestError('circular hierarchy'));
+    const res = buildRes();
+
+    await handler(buildReq({ query: { dry_run: 'true' } }), res);
+
+    const err = serverUtils.error.args[0][0];
+    expect(err).to.be.an.instanceOf(BadRequestError);
+    expect(err.message).to.equal('circular hierarchy');
+    expect(queue.called).to.equal(false);
+    expect(res.json.called).to.equal(false);
+  });
+
   it('records a move to the top level when parent_id is omitted', async () => {
     const res = buildRes();
 
