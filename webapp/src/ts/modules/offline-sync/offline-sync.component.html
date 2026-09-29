@@ -100,10 +100,10 @@
               <dd>{{ password }}</dd>
             </dl>
           }
-          <button mat-button color="primary" (click)="stopHosting()">{{ 'offline_sync.host.stop' | translate }}</button>
           @if (carrying) {
             <p>{{ 'offline_sync.host.carrying' | translate:{ count: carrying } }}</p>
-          <button mat-stroked-button (click)="stopHosting()" translate>offline_sync.host.stop</button>
+          }
+          <button mat-button color="primary" (click)="stopHosting()">{{ 'offline_sync.host.stop' | translate }}</button>
         </mat-card-content>
       </mat-card>
     }
@@ -115,17 +115,15 @@
         </mat-card-header>
         <mat-card-content>
           <p>{{ 'offline_sync.peer.paired.description' | translate:{ host: hostLabel } }}</p>
-          <button mat-button color="primary" (click)="leaveSession()">{{ 'offline_sync.peer.leave' | translate }}</button>
-
           <!-- Neither option is an acknowledgement from the server: the choice is how much to
                re-send, and the user is the one who knows whether the last handover arrived. -->
           <mat-radio-group class="offline-sync-scope" [(ngModel)]="scope">
-            <mat-radio-button value="sync" translate>offline_sync.transfer.scope.sync</mat-radio-button>
-            <mat-radio-button value="export" translate>offline_sync.transfer.scope.export</mat-radio-button>
+            <mat-radio-button value="sync">{{ 'offline_sync.transfer.scope.sync' | translate }}</mat-radio-button>
+            <mat-radio-button value="export">{{ 'offline_sync.transfer.scope.export' | translate }}</mat-radio-button>
           </mat-radio-group>
 
-          <button mat-flat-button color="primary" (click)="send()" translate>offline_sync.transfer.send</button>
-          <button mat-stroked-button (click)="leaveSession()" translate>offline_sync.peer.leave</button>
+          <button mat-flat-button color="primary" (click)="send()">{{ 'offline_sync.transfer.send' | translate }}</button>
+          <button mat-button color="primary" (click)="leaveSession()">{{ 'offline_sync.peer.leave' | translate }}</button>
         </mat-card-content>
       </mat-card>
     }
@@ -154,7 +152,7 @@
           @if (skipped) {
             <p>{{ 'offline_sync.transfer.too_large' | translate:{ count: skipped } }}</p>
           }
-          <button mat-stroked-button (click)="leaveSession()" translate>offline_sync.peer.leave</button>
+          <button mat-button color="primary" (click)="leaveSession()">{{ 'offline_sync.peer.leave' | translate }}</button>
         </mat-card-content>
       </mat-card>
     }
