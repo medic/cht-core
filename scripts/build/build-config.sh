@@ -9,6 +9,7 @@ node ./node_modules/.bin/cht \
   --archive \
   --source=config/default \
   --destination=api/build/default-docs \
+  compile-app-settings \
   upload-app-settings \
   upload-app-forms \
   upload-collect-forms \
