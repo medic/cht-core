@@ -5,7 +5,6 @@ const moment = require('moment');
 const sinon = require('sinon');
 const { PREFIXES } = require('@medic/constants');
 
-const defaultSettings = require('../../../../../config/default/app_settings.json');
 const service = require('../../../../src/services/export/dhis');
 const config = require('../../../../src/config');
 const db = require('../../../../src/db');
@@ -13,6 +12,31 @@ const db = require('../../../../src/db');
 const NOW = moment('2000-02-21');
 const dataSet = 'VMuFODsyWaO';
 const filterNow = { from: Date.now() };
+const defaultSettings = {
+  dhis_data_sets: [
+    { id: 'VMuFODsyWaO', translation_key: 'dhis.dataset.monthly.integration' },
+  ],
+  tasks: {
+    targets: {
+      items: [
+        {
+          id: 'births-this-month',
+          type: 'count',
+          dhis: { dataElement: 'kB0ZBFisE0e' },
+        },
+        {
+          id: 'facility-deliveries',
+          type: 'percent',
+          dhis: {
+            dataElement: 'e22tIwy1nKR',
+            categoryOptionCombo: 'HllvX50cXC0',
+            attributeOptionCombo: 'HllvX50cXC0',
+          },
+        },
+      ],
+    },
+  },
+};
 
 describe('dhis export service', () => {
   let medic;

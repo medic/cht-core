@@ -343,7 +343,7 @@ describe('rules-state-store', () => {
     });
 
     it('cht config', () => {
-      const settings = require('../../../config/default/app_settings.json');
+      const settings = require('./app_settings.json');
       const actual = hashRulesConfig(settings);
       expect(actual).to.not.be.empty;
     });
