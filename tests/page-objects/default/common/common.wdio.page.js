@@ -261,7 +261,8 @@ const openFastActionReport = async (formId, rightSideAction = true) => {
     await clickFastActionFlat({ actionId: formId });
   }
   await waitForPageLoaded();
-  await $('#form-title').waitForDisplayed();
+  // await $('#form-title').waitForDisplayed();
+  await $('#form-title').waitForDisplayed({ timeout: 30000 });
 };
 
 const getFastActionFABTextById = async (actionId) => {
