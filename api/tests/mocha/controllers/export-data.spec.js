@@ -1,6 +1,7 @@
 require('chai').should();
 
 const sinon = require('sinon');
+const { PassThrough, Readable } = require('stream');
 const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
 const db = require('../../../src/db');
@@ -223,6 +224,27 @@ describe('Export Data controller', () => {
           res.end.args[0][0].should.equal('--ERROR--\nError exporting data: db not found\n');
         });
       });
+    });
+
+    it('stops the export when the response closes', () => {
+      const req = { params: { type: 'messages' } };
+      const res = new PassThrough();
+      res.set = set;
+      res.flushHeaders = sinon.stub();
+      const exportStream = new Readable({ read: () => {} });
+      auth.check.resolves();
+      auth.getUserCtx.returns(Promise.resolve({}));
+      auth.isOnlineOnly.returns(true);
+      sinon.stub(service, 'exportStream').returns(exportStream);
+
+      return controller.get(req, res)
+        .then(() => {
+          res.destroy(); // the user cancels the download
+          return new Promise(resolve => setImmediate(resolve));
+        })
+        .then(() => {
+          exportStream.destroyed.should.equal(true);
+        });
     });
   });
 

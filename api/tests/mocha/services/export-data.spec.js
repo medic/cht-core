@@ -145,6 +145,95 @@ describe('Export Data Service', () => {
       });
     });
 
+    describe('duplicate doc ids', () => {
+      const pendingTask = (uuid, to) => ({ state: 'pending', messages: [{ uuid, to, message: `message ${uuid}` }] });
+      const docs = {
+        abc: { _id: 'abc', reported_date: 1, tasks: [ pendingTask('m1', '+111') ] },
+        def: { _id: 'def', reported_date: 2, tasks: [ pendingTask('m2', '+222'), pendingTask('m3', '+333') ] },
+        ghi: { _id: 'ghi', reported_date: 3, tasks: [ pendingTask('m4', '+444') ] },
+      };
+      // message_id column of every data line
+      const exportedMessageIds = csv => csv
+        .trim()
+        .split('\n')
+        .slice(1)
+        .map(line => line.split(',')[12].replace(/"/g, ''));
+
+      it('exports each message once when the view lists its doc once per message', () => {
+        // Rows as medic/messages_by_state emits them for a doc with 1 pending message (abc) and a doc with
+        // 2 pending messages (def): one row per message plus one 'pending-or-forwarded' row per message.
+        const viewRows = [
+          { id: 'abc', key: [ 'pending', 1 ], value: { id: 'm1' } },
+          { id: 'def', key: [ 'pending', 2 ], value: { id: 'm2' } },
+          { id: 'def', key: [ 'pending', 2 ], value: { id: 'm3' } },
+          { id: 'abc', key: [ 'pending-or-forwarded', 1 ], value: { id: 'm1' } },
+          { id: 'def', key: [ 'pending-or-forwarded', 2 ], value: { id: 'm2' } },
+          { id: 'def', key: [ 'pending-or-forwarded', 2 ], value: { id: 'm3' } },
+        ];
+        sinon.stub(db.medic, 'query').callsFake((view, { skip, limit }) => {
+          return Promise.resolve({ rows: viewRows.slice(skip, skip + limit) });
+        });
+        const mapper = service._mapper('messages');
+        sinon.stub(mapper, 'getDocs').callsFake(ids => Promise.resolve(ids.map(id => docs[id])));
+
+        return mockRequest('messages', {}, { limit: 2 }).then(actual => {
+          exportedMessageIds(actual).should.deep.equal([ 'm1', 'm2', 'm3' ]);
+        });
+      });
+
+      it('fetches and writes a doc once when it repeats within and across batches', () => {
+        const mapper = service._mapper('messages');
+        const getDocIds = sinon.stub(mapper, 'getDocIds');
+        getDocIds.onCall(0).resolves([ 'abc', 'def', 'abc' ]);
+        getDocIds.onCall(1).resolves([ 'def', 'ghi' ]);
+        getDocIds.onCall(2).resolves([]);
+        const getDocs = sinon.stub(mapper, 'getDocs').callsFake(ids => Promise.resolve(ids.map(id => docs[id])));
+
+        return mockRequest('messages').then(actual => {
+          exportedMessageIds(actual).should.deep.equal([ 'm1', 'm2', 'm3', 'm4' ]);
+          getDocs.args.should.deep.equal([ [ [ 'abc', 'def' ] ], [ [ 'ghi' ] ] ]);
+        });
+      });
+
+      it('keeps reading after a batch made only of already exported docs', () => {
+        const mapper = service._mapper('messages');
+        const getDocIds = sinon.stub(mapper, 'getDocIds');
+        getDocIds.onCall(0).resolves([ 'abc' ]);
+        getDocIds.onCall(1).resolves([ 'abc' ]);
+        getDocIds.onCall(2).resolves([ 'ghi' ]);
+        getDocIds.onCall(3).resolves([]);
+        const getDocs = sinon.stub(mapper, 'getDocs').callsFake(ids => Promise.resolve(ids.map(id => docs[id])));
+
+        return mockRequest('messages').then(actual => {
+          exportedMessageIds(actual).should.deep.equal([ 'm1', 'm4' ]);
+          getDocs.args.should.deep.equal([ [ [ 'abc' ] ], [ [ 'ghi' ] ] ]);
+          getDocIds.callCount.should.equal(4);
+        });
+      });
+
+      it('stops querying when the export is destroyed during a run of already exported docs', () => {
+        const mapper = service._mapper('messages');
+        const duplicateBatches = 1000;
+        let callsWhenDestroyed;
+        // Answers asynchronously, like CouchDB: first a new doc, then a long run of batches that only repeat it.
+        const getDocIds = sinon.stub(mapper, 'getDocIds').callsFake(() => new Promise(resolve => setImmediate(() => {
+          if (getDocIds.callCount === 5) { // inside the run of repeats: the user cancels the download
+            callsWhenDestroyed = getDocIds.callCount;
+            stream.destroy();
+          }
+          resolve(getDocIds.callCount <= duplicateBatches + 1 ? [ 'abc' ] : []);
+        })));
+        sinon.stub(mapper, 'getDocs').callsFake(ids => Promise.resolve(ids.map(id => docs[id])));
+
+        const stream = service.exportStream('messages', {}, {});
+        stream.on('data', () => {});
+
+        return new Promise(resolve => setTimeout(resolve, 100)).then(() => {
+          (getDocIds.callCount - callsWhenDestroyed).should.be.at.most(1);
+        });
+      });
+    });
+
   });
 
   describe('Export reports', () => {

@@ -675,8 +675,10 @@ module.exports = {
         // To respond as quickly to the request as possible
         res.flushHeaders();
 
-        service
-          .exportStream(type, filters, options)
+        const stream = service.exportStream(type, filters, options);
+        res.on('close', () => stream.destroy());
+
+        stream
           .on('error', err => {
             // Because we've already flushed the headers above we can't use
             // serverUtils anymore, we just have to close the connection
