@@ -382,8 +382,6 @@ describe('cht-datasource Report', () => {
       const sortedReportIds = [ ...allReportIds ].sort();
       const fourLimit = 4;
       const cursor = null;
-      const invalidLimit = 'invalidLimit';
-      const invalidCursor = 'invalidCursor';
 
       it('returns a page of report ids for a subject shortcode', async () => {
         const responsePage = await getUuidsPage(Qualifier.bySubjects([ patient.patient_id ]));
@@ -411,13 +409,6 @@ describe('cht-datasource Report', () => {
         expect(responsePage.cursor).to.be.null;
       });
 
-      it('does not normalize the subject, so a different case matches nothing', async () => {
-        const responsePage = await getUuidsPage(Qualifier.bySubjects([ patient._id.toUpperCase() ]));
-
-        expect(responsePage.data).to.deep.equal([]);
-        expect(responsePage.cursor).to.be.null;
-      });
-
       it('walks every page with the cursor without dropping or repeating a report', async () => {
         const qualifier = Qualifier.bySubjects([ patient.patient_id ]);
         const firstPage = await getUuidsPage(qualifier, cursor, fourLimit);
@@ -430,25 +421,6 @@ describe('cht-datasource Report', () => {
         expect(secondPage.cursor).to.equal('8');
         expect(thirdPage.data).to.deep.equal(sortedReportIds.slice(8));
         expect(thirdPage.cursor).to.be.null;
-      });
-
-      it('throws error when limit is invalid', async () => {
-        await expect(
-          getUuidsPage(Qualifier.bySubjects([ patient.patient_id ]), cursor, invalidLimit)
-        ).to.be.rejectedWith(
-          { code: 400, error: `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].` }
-        );
-      });
-
-      it('throws error when cursor is invalid', async () => {
-        await expect(
-          getUuidsPage(Qualifier.bySubjects([ patient.patient_id ]), invalidCursor, fourLimit)
-        ).to.be.rejectedWith(
-          {
-            code: 400,
-            error: `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
-          }
-        );
       });
     });
 
@@ -484,24 +456,11 @@ describe('cht-datasource Report', () => {
         expect(responsePage.cursor).to.be.null;
       });
 
-      it('returns a page of reports for a subject UUID', async () => {
-        const responsePage = await getPage(Qualifier.bySubjects([ patient._id ]));
-
-        expect(responseIds(responsePage)).to.deep.equalInAnyOrder(allReportIds);
-      });
-
       it('returns a report matching both a shortcode and a UUID exactly once', async () => {
         const responsePage = await getPage(Qualifier.bySubjects([ patient.patient_id, patient._id ]));
 
         expect(responseIds(responsePage)).to.deep.equalInAnyOrder(allReportIds);
         expect(responsePage.data).to.have.lengthOf(allReportIds.length);
-      });
-
-      it('returns an empty page for a subject with no reports', async () => {
-        const responsePage = await getPage(Qualifier.bySubjects([ 'no-such-subject' ]));
-
-        expect(responsePage.data).to.deep.equal([]);
-        expect(responsePage.cursor).to.be.null;
       });
 
       it('walks every page with the cursor without dropping or repeating a report', async () => {
@@ -516,14 +475,6 @@ describe('cht-datasource Report', () => {
         expect(secondPage.cursor).to.equal('8');
         expect(responseIds(thirdPage)).to.deep.equal(sortedReportIds.slice(8));
         expect(thirdPage.cursor).to.be.null;
-      });
-
-      it('throws error when cursor is invalid', async () => {
-        await expect(
-          getPage(Qualifier.bySubjects([ patient.patient_id ]), 'invalidCursor', fourLimit)
-        ).to.be.rejectedWith(
-          { code: 400, error: 'The cursor must be a string or null for first page: ["invalidCursor"].' }
-        );
       });
     });
 

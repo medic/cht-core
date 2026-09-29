@@ -19,10 +19,7 @@ const buildIdsQualifier = (ids) => {
   return Qualifier.byIds(idsArray);
 };
 
-// Accepts `?form=a,b` and `?form=a&form=b` alike, matching how `ids` is handled above rather than
-// picking one convention per parameter. `?subject=` is parsed the same way. `name` is only used in the
-// error, and matches the message shape the by*() builders throw below for other invalid input, so every
-// path that can reject a value gives a caller one consistent body to parse.
+// Accepts `?x=a,b` and `?x=a&x=b` alike, as `ids` does. Errors match the by*() builders' messages.
 const parseListParam = (name, value) => {
   // `qs.parse` turns `?form[a]=b` into an object, which has nothing to split.
   if (!Array.isArray(value) && typeof value !== 'string') {
@@ -40,8 +37,7 @@ const buildFormsQualifier = (form) => Qualifier.byForms(parseListParam('forms', 
 const buildSubjectsQualifier = (subject) => Qualifier.bySubjects(parseListParam('subjects', subject));
 
 const buildUuidsQualifier = ({ freetext, form, subject }) => {
-  // Freetext wins when more than one is given, then form, so a caller that already sends `freetext`
-  // keeps its existing behavior no matter what else is on the query string.
+  // Freetext wins, then form.
   if (freetext !== undefined) {
     return Qualifier.byFreetext(freetext);
   }
@@ -51,8 +47,7 @@ const buildUuidsQualifier = ({ freetext, form, subject }) => {
   if (subject !== undefined) {
     return buildSubjectsQualifier(subject);
   }
-  // None of them given: fall through to `byFreetext` so the missing-parameter error stays the one
-  // this endpoint has always thrown.
+  // None given: `byFreetext(undefined)` throws the missing-parameter error.
   return Qualifier.byFreetext(freetext);
 };
 
@@ -121,12 +116,8 @@ module.exports = {
      *     description: >
      *       Returns a paginated array of report identifiers matching the given freetext search term, form codes,
      *       or subject identifiers. Exactly one of `freetext`, `form` and `subject` is required; if more than one
-     *       is given, `freetext` wins, then `form`, and the rest are ignored.
-     *
-     *
-     *       Each identifier appears at most once on a page. A report is indexed once per subject field it sets,
-     *       so one report can match several of the values given to `subject`; those repeats are collapsed within
-     *       the page.
+     *       is given, `freetext` wins, then `form`, and the rest are ignored. Each identifier appears at most once
+     *       on a page, but may reappear on a later page.
      *     tags: [Report]
      *     x-since: 4.18.0
      *     x-permissions:
@@ -253,12 +244,8 @@ module.exports = {
      *     description: >
      *       Returns a paginated array of report records for the given ids, or of the reports about the given
      *       subjects. At least one of `ids` or `subject` must be provided; if both are given, `ids` is used and
-     *       `subject` is ignored. Use the `cursor` returned in each response to retrieve subsequent pages.
-     *
-     *
-     *       Each report appears at most once on a page. A report is indexed once per subject field it sets, so
-     *       one report can match several of the values given to `subject`; those repeats are collapsed within
-     *       the page.
+     *       `subject` is ignored. Use the `cursor` returned in each response to retrieve subsequent pages. Each
+     *       report appears at most once on a page, but may reappear on a later page.
      *     tags: [Report]
      *     x-since: 5.3.0
      *     x-permissions:
@@ -315,8 +302,6 @@ module.exports = {
           { status: 400, message: 'Either query param ids or subject is required' }, req, res
         );
       }
-      // Ids win when both are given, so a caller that already sends `ids` keeps its existing behavior
-      // no matter what else is on the query string.
       const qualifier = req.query.ids
         ? buildIdsQualifier(req.query.ids)
         : buildSubjectsQualifier(req.query.subject);

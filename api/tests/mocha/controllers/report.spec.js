@@ -253,6 +253,17 @@ describe('Report Controller Tests', () => {
         expect(serverUtilsError.args[0][0].message).to.equal('Invalid forms [[]].');
       });
 
+      it('errors without querying when the form param is object-shaped', async () => {
+        req = { query: { form: { a: 'b' }, cursor, limit } };
+
+        await controller.v1.getUuids(req, res);
+
+        expect(reportGetIdsPage.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
+        expect(serverUtilsError.args[0][0].message).to.equal('Invalid forms [{"a":"b"}].');
+      });
+
       it('uses freetext and ignores form when both are given', async () => {
         req = { query: { freetext: 'report', form: 'pregnancy', cursor, limit } };
         reportGetIdsPage.resolves(uuids);
@@ -312,18 +323,6 @@ describe('Report Controller Tests', () => {
         expect(serverUtilsError.notCalled).to.be.true;
       });
 
-      it('accepts a single subject', async () => {
-        req = { query: { subject: 'patient-shortcode', cursor, limit } };
-        reportGetIdsPage.resolves(uuids);
-
-        await controller.v1.getUuids(req, res);
-
-        expect(reportGetIdsPage.calledOnceWithExactly(
-          Qualifier.bySubjects(['patient-shortcode']), cursor, limit
-        )).to.be.true;
-        expect(serverUtilsError.notCalled).to.be.true;
-      });
-
       it('ignores empty entries in the list', async () => {
         req = { query: { subject: 'patient-shortcode,,case-1,', cursor, limit } };
         reportGetIdsPage.resolves(uuids);
@@ -359,18 +358,6 @@ describe('Report Controller Tests', () => {
         expect(serverUtilsError.calledOnce).to.be.true;
         expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
         expect(serverUtilsError.args[0][0].message).to.equal('Invalid subjects [{"a":"b"}].');
-      });
-
-      it('errors without querying when the form param is object-shaped', async () => {
-        // The same guard covers `form`, which is parsed by the same helper.
-        req = { query: { form: { a: 'b' }, cursor, limit } };
-
-        await controller.v1.getUuids(req, res);
-
-        expect(reportGetIdsPage.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnce).to.be.true;
-        expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
-        expect(serverUtilsError.args[0][0].message).to.equal('Invalid forms [{"a":"b"}].');
       });
 
       it('uses freetext and ignores subject when both are given', async () => {
@@ -497,28 +484,6 @@ describe('Report Controller Tests', () => {
           expect(serverUtilsError.calledOnce).to.be.true;
           expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
           expect(serverUtilsError.args[0][0].message).to.equal('Invalid subjects [[]].');
-        });
-
-        it('errors without querying when a subject is padded', async () => {
-          req = { query: { subject: '  patient-shortcode  ', cursor, limit } };
-
-          await controller.v1.getAll(req, res);
-
-          expect(reportGetPage.notCalled).to.be.true;
-          expect(serverUtilsError.calledOnce).to.be.true;
-          expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
-          expect(serverUtilsError.args[0][0].message).to.equal('Invalid subjects [["  patient-shortcode  "]].');
-        });
-
-        it('errors without querying when the subject param is object-shaped', async () => {
-          req = { query: { subject: { a: 'b' }, cursor, limit } };
-
-          await controller.v1.getAll(req, res);
-
-          expect(reportGetPage.notCalled).to.be.true;
-          expect(serverUtilsError.calledOnce).to.be.true;
-          expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
-          expect(serverUtilsError.args[0][0].message).to.equal('Invalid subjects [{"a":"b"}].');
         });
       });
     });

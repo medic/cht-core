@@ -64,6 +64,25 @@ export namespace v1 {
     return getPagedGenerator(fetchPage, qualifier);
   };
 
+  // Some views emit a report more than once (e.g. once per subject field it sets), so paging can return the
+  // same report on more than one page. Pages only dedupe within themselves (a cursor cannot carry what was
+  // already seen), so the generator tracks every id it has yielded and skips repeats. This holds one id per
+  // distinct report for the life of the generator.
+  const getUniqueGenerator = async function* <T>(
+    generator: AsyncGenerator<T, null>,
+    getId: (entry: T) => string
+  ): AsyncGenerator<T, null> {
+    const seen = new Set<string>();
+    for await (const entry of generator) {
+      const id = getId(entry);
+      if (!seen.has(id)) {
+        seen.add(id);
+        yield entry;
+      }
+    }
+    return null;
+  };
+
   /**
    * Returns a function for retrieving a report from the given data context.
    * @param context the current data context
@@ -168,8 +187,7 @@ export namespace v1 {
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of identifiers to return. Default is 10000.
      * @returns a page of report identifiers for the provided specification. Each identifier appears at most once
-     * on a page. A report is indexed once per subject field it sets, so one report can match several of the
-     * subjects given to a {@link SubjectsQualifier}; those repeats are collapsed within the page.
+     * on a page, but may reappear on a later page.
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      * @throws InvalidArgumentError if the provided `limit` value is `<=0`
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
@@ -204,9 +222,9 @@ export namespace v1 {
      * freetext search, a {@link FormsQualifier} to return the reports recorded with any of the given forms, or a
      * {@link SubjectsQualifier} to return the reports about any of the given subjects. If more than one is
      * provided, the freetext search takes precedence, then the forms.
-     * @returns a generator for fetching all report identifiers that match the given qualifier. Identifiers are
-     * deduplicated within a page rather than across the whole generator, so a report matching more than one of
-     * the subjects given to a {@link SubjectsQualifier} can be yielded more than once.
+     * @returns a generator for fetching all report identifiers that match the given qualifier. Each identifier is
+     * yielded at most once, even when the report matches more than one of the subjects given to a
+     * {@link SubjectsQualifier}; the generator holds every identifier it has yielded in memory to do this.
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      */
     const curriedGen = (
@@ -214,7 +232,7 @@ export namespace v1 {
     ): AsyncGenerator<string, null> => {
       assertFreetextFormsOrSubjectsQualifier(qualifier);
 
-      return getPagedGenerator(getPage, qualifier);
+      return getUniqueGenerator(getPagedGenerator(getPage, qualifier), id => id);
     };
     return curriedGen;
   };
@@ -238,9 +256,8 @@ export namespace v1 {
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of reports to return. Default is 100.
-     * @returns a page of reports for the provided specification. Each report appears at most once on a page. A
-     * report is indexed once per subject field it sets, so one report can match several of the subjects given to a
-     * {@link SubjectsQualifier}; those repeats are collapsed within the page.
+     * @returns a page of reports for the provided specification. Each report appears at most once on a page, but
+     * may reappear on a later page.
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      * @throws InvalidArgumentError if the provided `limit` value is `<=0`
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
@@ -274,15 +291,15 @@ export namespace v1 {
      * @param qualifier the limiter defining which reports to return. Either an {@link IdsQualifier} holding the
      * UUIDs of the reports, or a {@link SubjectsQualifier} to return the reports about any of the given subjects.
      * If both are provided, the ids take precedence.
-     * @returns a generator for fetching all reports that match the given qualifier. Reports are deduplicated
-     * within a page rather than across the whole generator, so a report matching more than one of the subjects
-     * given to a {@link SubjectsQualifier} can be yielded more than once.
+     * @returns a generator for fetching all reports that match the given qualifier. Each report is yielded at most
+     * once, even when it matches more than one of the subjects given to a {@link SubjectsQualifier}; the generator
+     * holds the id of every report it has yielded in memory to do this.
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      */
     const curriedGen = (qualifier: IdsQualifier | SubjectsQualifier): AsyncGenerator<Report, null> => {
       assertIdsOrSubjectsQualifier(qualifier);
 
-      return getPagedGenerator(getPage, qualifier);
+      return getUniqueGenerator(getPagedGenerator(getPage, qualifier), report => report._id);
     };
     return curriedGen;
   };
@@ -483,8 +500,7 @@ export namespace v1 {
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of identifiers to return. Default is 10000.
      * @returns a page of report identifiers for the provided specification. Each identifier appears at most once on
-     * a page: a report is indexed once per subject field it sets, so one report can match several of the given
-     * subjects, and those repeats are collapsed within the page.
+     * a page, but may reappear on a later page.
      * @throws InvalidArgumentError if the subjects are not a non-empty array of non-blank strings with no
      * leading or trailing whitespace
      * @throws InvalidArgumentError if the provided `limit` value is `<=0`
@@ -499,9 +515,9 @@ export namespace v1 {
     /**
      * Returns a generator for fetching all the identifiers of reports about any of the given subjects.
      * @param subjects the identifiers of the subjects the reports are about, either shortcodes or UUIDs
-     * @returns a generator for fetching all matching report identifiers. Identifiers are deduplicated within a
-     * page rather than across the whole generator, so a report matching more than one of the given subjects can
-     * be yielded more than once.
+     * @returns a generator for fetching all matching report identifiers. Each identifier is yielded at most once,
+     * even when the report matches more than one of the given subjects; the generator holds every identifier it
+     * has yielded in memory to do this.
      * @throws InvalidArgumentError if the subjects are not a non-empty array of non-blank strings with no
      * leading or trailing whitespace
      */
@@ -540,9 +556,8 @@ export namespace v1 {
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of reports to return. Default is 100.
-     * @returns a page of reports for the provided specification. Each report appears at most once on a page: a
-     * report is indexed once per subject field it sets, so one report can match several of the given subjects,
-     * and those repeats are collapsed within the page.
+     * @returns a page of reports for the provided specification. Each report appears at most once on a page, but
+     * may reappear on a later page.
      * @throws InvalidArgumentError if the subjects are not a non-empty array of non-blank strings with no
      * leading or trailing whitespace
      * @throws InvalidArgumentError if the provided `limit` value is `<=0`
@@ -557,9 +572,9 @@ export namespace v1 {
     /**
      * Returns a generator for fetching all the reports about any of the given subjects.
      * @param subjects the identifiers of the subjects the reports are about, either shortcodes or UUIDs
-     * @returns a generator for fetching all matching reports. Reports are deduplicated within a page rather than
-     * across the whole generator, so a report matching more than one of the given subjects can be yielded more
-     * than once.
+     * @returns a generator for fetching all matching reports. Each report is yielded at most once, even when it
+     * matches more than one of the given subjects; the generator holds the id of every report it has yielded in
+     * memory to do this.
      * @throws InvalidArgumentError if the subjects are not a non-empty array of non-blank strings with no
      * leading or trailing whitespace
      */

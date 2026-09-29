@@ -85,12 +85,8 @@ const assertUpdatedForm = async <T extends Report.v1.Report | Report.v1.ReportWi
   }
 };
 
-// The view emits the subject value itself as the key rather than wrapping it in an array, so the
-// subjects are the keys as given. Duplicates are dropped here rather than trusted from the qualifier,
-// since a hand-built qualifier can reach the adapter without going through bySubjects(). Order is
-// preserved, which is what keeps `skip` meaningful from one page to the next: the view returns rows
-// grouped by key in the order supplied. Both the uuid and the doc arm derive their keys here so the
-// two page the same rows.
+// The view emits the raw subject value as the key, unlike reports_by_form's `[form]`. Deduped in order
+// for the same reasons as the form keys in getUuidsPage.
 const subjectViewKeys = (qualifier: SubjectsQualifier): string[] => [...new Set(qualifier.subjects)];
 
 /** @internal */
@@ -184,9 +180,7 @@ export namespace v1 {
         return fetchAndFilterIds(getPageFn, limit)(limit, skip);
       }
 
-      // A report is emitted once for every subject field it sets, so one report can match several of
-      // the requested subjects; fetchAndFilterIds collapses those repeats, giving each identifier at
-      // most once per page.
+      // A report is emitted once per subject field it sets; fetchAndFilterIds collapses the repeats.
       const keys = subjectViewKeys(qualifier);
       const getPageFn = (limit: number, skip: number) => queryViewBySubjects(keys, limit, skip);
       return fetchAndFilterIds(getPageFn, limit)(limit, skip);
@@ -204,7 +198,7 @@ export namespace v1 {
       limit: number,
     ): Promise<Page<Report.v1.Report>> => {
       const skip = validateCursor(cursor);
-      // Ids are matched first so the behavior of existing ids callers is unchanged.
+      // Ids take precedence.
       if (isIdsQualifier(qualifier)) {
         const getPageFn = (
           limit: number,
@@ -214,10 +208,6 @@ export namespace v1 {
         return await fetchAndFilter(getPageFn, isReport, limit)(limit, skip) as Page<Report.v1.Report>;
       }
 
-      // Same keys and the same rows as the uuid arm, with the docs attached. A report matching several
-      // of the requested subjects comes back once per match, each row carrying the whole doc; the id
-      // set in fetchAndFilterUniqueDocs collapses those so each report appears at most once per page,
-      // the same as its identifier does on the uuid arm.
       const keys = subjectViewKeys(qualifier);
       const getPageFn = (limit: number, skip: number) => queryDocsBySubjects(keys, limit, skip);
       return await fetchAndFilterUniqueDocs(getPageFn, isReport, limit)(limit, skip) as Page<Report.v1.Report>;

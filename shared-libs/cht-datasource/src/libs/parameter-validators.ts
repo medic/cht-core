@@ -136,8 +136,7 @@ export const assertFreetextFormsOrSubjectsQualifier: (
   if (isFreetextQualifier(qualifier) || isFormsQualifier(qualifier) || isSubjectsQualifier(qualifier)) {
     return;
   }
-  // Only form- or subject-shaped input gets the newer messages. Everything else keeps the original
-  // freetext error verbatim, so callers (and the 400 bodies the API surfaces from them) are unchanged.
+  // Report the error for the qualifier the input looks like; anything else gets the freetext error.
   if (isRecord(qualifier) && 'forms' in qualifier) {
     throw new InvalidArgumentError(`Invalid forms [${JSON.stringify(qualifier)}].`);
   }
@@ -194,8 +193,7 @@ export const assertIdsOrSubjectsQualifier: (
   if (isIdsQualifier(qualifier) || isSubjectsQualifier(qualifier)) {
     return;
   }
-  // Only subject-shaped input gets the newer message. Everything else keeps the original identifiers
-  // error verbatim, so callers (and the 400 bodies the API surfaces from them) are unchanged.
+  // Report the error for the qualifier the input looks like; anything else gets the identifiers error.
   if (isRecord(qualifier) && 'subjects' in qualifier) {
     throw new InvalidArgumentError(`Invalid subjects [${JSON.stringify(qualifier)}].`);
   }

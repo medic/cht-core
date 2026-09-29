@@ -451,13 +451,17 @@ describe('report', () => {
         getPagedGenerator = sinon.stub(Core, 'getPagedGenerator');
       });
 
-      it('should get report generator with correct parameters', () => {
+      it('should get report generator with correct parameters', async () => {
         isFreetextQualifier.returns(true);
         getPagedGenerator.returns(mockGenerator);
 
         const generator = Report.v1.getUuids(dataContext)(freetextQualifier);
 
-        expect(generator).to.deep.equal(mockGenerator);
+        const ids = [];
+        for await (const id of generator) {
+          ids.push(id);
+        }
+        expect(ids).to.deep.equal(reportIds);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(getPagedGenerator.calledOnceWithExactly(reportGetIdsPage, freetextQualifier)).to.be.true;
         expect(isFreetextQualifier.calledOnceWithExactly(freetextQualifier)).to.be.true;
@@ -600,7 +604,6 @@ describe('report', () => {
 
     describe('getAll', () => {
       const idsQualifier: Qualifier.IdsQualifier = { ids: ['r1'] };
-      const mockGenerator = {} as AsyncGenerator<Report.v1.Report, null>;
       let reportGetPage: sinon.SinonStub;
       let getPagedGenerator: sinon.SinonStub;
 
@@ -610,13 +613,18 @@ describe('report', () => {
         getPagedGenerator = sinon.stub(Core, 'getPagedGenerator');
       });
 
-      it('returns a generator for an ids qualifier', () => {
+      it('returns a generator for an ids qualifier', async () => {
+        const r1 = { _id: 'r1' } as Report.v1.Report;
         isIdsQualifier.returns(true);
-        getPagedGenerator.returns(mockGenerator);
+        getPagedGenerator.returns(fakeGenerator([r1]));
 
         const generator = Report.v1.getAll(dataContext)(idsQualifier);
 
-        expect(generator).to.deep.equal(mockGenerator);
+        const reports = [];
+        for await (const report of generator) {
+          reports.push(report);
+        }
+        expect(reports).to.deep.equal([r1]);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(getPagedGenerator.calledOnceWithExactly(reportGetPage, idsQualifier)).to.be.true;
         expect(isIdsQualifier.calledOnceWithExactly(idsQualifier)).to.be.true;
@@ -638,14 +646,20 @@ describe('report', () => {
         expect(reportGetPage.notCalled).to.be.true;
       });
 
-      it('returns a generator for a subjects qualifier', () => {
+      it('returns a generator for a subjects qualifier that yields each report once', async () => {
         const subjectsQualifier = Qualifier.bySubjects(['patient-shortcode']);
+        const r1 = { _id: 'r1' } as Report.v1.Report;
+        const r2 = { _id: 'r2' } as Report.v1.Report;
         isIdsQualifier.returns(false);
-        getPagedGenerator.returns(mockGenerator);
+        getPagedGenerator.returns(fakeGenerator([r1, r2, r1]));
 
         const generator = Report.v1.getAll(dataContext)(subjectsQualifier);
 
-        expect(generator).to.deep.equal(mockGenerator);
+        const reports = [];
+        for await (const report of generator) {
+          reports.push(report);
+        }
+        expect(reports).to.deep.equal([r1, r2]);
         expect(getPagedGenerator.calledOnceWithExactly(reportGetPage, subjectsQualifier)).to.be.true;
       });
 

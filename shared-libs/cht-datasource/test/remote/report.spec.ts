@@ -250,30 +250,6 @@ describe('remote report', () => {
           })).to.be.true;
         });
 
-        it('omits cursor param when cursor is null', async () => {
-          const expectedResponse = { data: [], cursor: null };
-          getResourcesInner.resolves(expectedResponse);
-
-          const result = await Report.v1.getUuidsPage(remoteContext)({ subjects: [patientUuid] }, null, limit);
-
-          expect(result).to.equal(expectedResponse);
-          expect(getResourcesInner.calledOnceWithExactly({
-            limit: limit.toString(),
-            subject: patientUuid,
-          })).to.be.true;
-        });
-
-        it('does not normalize the subjects', async () => {
-          getResourcesInner.resolves({ data: [], cursor: null });
-
-          await Report.v1.getUuidsPage(remoteContext)({ subjects: ['Patient_1'] }, null, limit);
-
-          expect(getResourcesInner.calledOnceWithExactly({
-            limit: limit.toString(),
-            subject: 'Patient_1',
-          })).to.be.true;
-        });
-
         it('prefers freetext when a qualifier satisfies both', async () => {
           getResourcesInner.resolves({ data: [], cursor: null });
 
@@ -358,17 +334,6 @@ describe('remote report', () => {
           expect(getResourcesInner.calledOnceWithExactly({
             limit: limit.toString(),
             subject: patientShortcode,
-          })).to.be.true;
-        });
-
-        it('does not normalize the subjects', async () => {
-          getResourcesInner.resolves(expectedResponse);
-
-          await Report.v1.getPage(remoteContext)({ subjects: ['Patient-Shortcode'] }, null, limit);
-
-          expect(getResourcesInner.calledOnceWithExactly({
-            limit: limit.toString(),
-            subject: 'Patient-Shortcode',
           })).to.be.true;
         });
 

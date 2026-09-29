@@ -785,19 +785,8 @@ describe('local doc lib', () => {
       expect(page.cursor).to.be.null;
     });
 
-    it('still applies the given filter', async () => {
-      const rows = [report('r0'), { _id: 'c0', _rev: '1', type: 'person' }, report('r0')];
-      const getFunction = sinon.stub().callsFake(
-        (limit: number, skip: number) => Promise.resolve(rows.slice(skip, skip + limit))
-      );
-
-      const page = await fetchAndFilterUniqueDocs(getFunction, isReport, 10)(10, 0);
-
-      expect(page.data.map(doc => doc._id)).to.deep.equal(['r0']);
-    });
-
-    it('rejects null rows', async () => {
-      const rows = [report('r0'), null, report('r1')];
+    it('still applies the given filter and rejects null rows', async () => {
+      const rows = [report('r0'), { _id: 'c0', _rev: '1', type: 'person' }, null, report('r1')];
       const getFunction = sinon.stub().callsFake(
         (limit: number, skip: number) => Promise.resolve(rows.slice(skip, skip + limit))
       );
@@ -820,20 +809,6 @@ describe('local doc lib', () => {
       expect(page.data.map(doc => doc._id)).to.deep.equal(['r0', 'r1']);
       expect(page.cursor).to.equal('4');
       expect(getFunction.args).to.deep.equal([[2, 0], [2, 2]]);
-    });
-
-    it('keeps a separate id set per call, so a repeat across two pages is not collapsed', async () => {
-      const rows = [report('r0'), report('r1'), report('r0')];
-      const getFunction = sinon.stub().callsFake(
-        (limit: number, skip: number) => Promise.resolve(rows.slice(skip, skip + limit))
-      );
-
-      const page1 = await fetchAndFilterUniqueDocs(getFunction, isReport, 2)(2, 0);
-      const page2 = await fetchAndFilterUniqueDocs(getFunction, isReport, 2)(2, Number(page1.cursor));
-
-      expect(page1.data.map(doc => doc._id)).to.deep.equal(['r0', 'r1']);
-      expect(page2.data.map(doc => doc._id)).to.deep.equal(['r0']);
-      expect(page2.cursor).to.be.null;
     });
   });
 

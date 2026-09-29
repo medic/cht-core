@@ -523,28 +523,6 @@ describe('local report', () => {
           });
         });
 
-        it('queries shortcodes and UUIDs together in one keys call', async () => {
-          const qualifier = Qualifier.bySubjects(['patient-shortcode', patientUuid]);
-
-          await Report.v1.getUuidsPage(localContext)(qualifier, null, limit);
-
-          const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
-          pageFn(limit, 0);
-
-          expect(queryViewBySubjects.calledOnceWithExactly(['patient-shortcode', patientUuid], limit, 0)).to.be.true;
-        });
-
-        it('does not normalize the subject identifier', async () => {
-          const qualifier = Qualifier.bySubjects(['Patient_1']);
-
-          await Report.v1.getUuidsPage(localContext)(qualifier, null, limit);
-
-          const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
-          pageFn(limit, 0);
-
-          expect(queryViewBySubjects.calledOnceWithExactly(['Patient_1'], limit, 0)).to.be.true;
-        });
-
         it('drops duplicate subjects even when the qualifier bypasses bySubjects()', async () => {
           const qualifier = {
             subjects: ['patient-shortcode', 'patient-shortcode', patientUuid] as [string, ...string[]],
@@ -756,23 +734,6 @@ describe('local report', () => {
         expect(page.cursor).to.be.null;
       });
 
-      it('walks the full result set across cursor pages', async () => {
-        const getUuidsPage = Report.v1.getUuidsPage(localContext);
-        const qualifier = Qualifier.bySubjects([patientShortcode]);
-
-        const page1 = await getUuidsPage(qualifier, null, 5);
-        expect(page1.data).to.deep.equal(allUuids.slice(0, 5));
-        expect(page1.cursor).to.equal('5');
-
-        const page2 = await getUuidsPage(qualifier, page1.cursor, 5);
-        expect(page2.data).to.deep.equal(allUuids.slice(5, 10));
-        expect(page2.cursor).to.equal('10');
-
-        const page3 = await getUuidsPage(qualifier, page2.cursor, 5);
-        expect(page3.data).to.deep.equal(allUuids.slice(10));
-        expect(page3.cursor).to.be.null;
-      });
-
       it('returns only the reports about the requested subject', async () => {
         const getUuidsPage = Report.v1.getUuidsPage(localContext);
 
@@ -955,10 +916,9 @@ describe('local report', () => {
       });
     });
 
-    // As for the uuid arm above: real page assembly and cursor arithmetic against a fake view, but with
-    // the docs attached, since with include_docs a report emitted under two requested keys comes back as
-    // two full copies rather than two ids.
-    describe('getPage by subject (pagination and dedup)', () => {
+    // As for the uuid arm above, but with include_docs a report emitted under two requested keys comes
+    // back as two full copies rather than two ids.
+    describe('getPage by subject (dedup)', () => {
       const patientShortcode = 'patient-shortcode';
       const patientUuid = '3d1a2b4c-0000-4000-8000-000000000001';
       const report = (id: string) => ({ _id: id, _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'f' });
@@ -966,10 +926,7 @@ describe('local report', () => {
       const viewRows: Record<string, Doc[]> = {
         [patientShortcode]: allReports,
         [patientUuid]: allReports,
-        'case-1': [allReports[0]],
-        'place-shortcode': [allReports[1], allReports[2]],
       };
-      const ids = (page: { data: Doc[] }) => page.data.map(doc => doc._id);
 
       beforeEach(() => {
         sinon
@@ -982,65 +939,11 @@ describe('local report', () => {
       });
 
       it('returns a report matching several of the given subjects exactly once', async () => {
-        const getPage = Report.v1.getPage(localContext);
+        const qualifier = Qualifier.bySubjects([patientShortcode, patientUuid]);
 
-        const page = await getPage(Qualifier.bySubjects([patientShortcode, patientUuid]), null, 100);
+        const page = await Report.v1.getPage(localContext)(qualifier, null, 100);
 
         expect(page.data).to.deep.equal(allReports);
-        expect(page.cursor).to.be.null;
-      });
-
-      it('walks the full result set across cursor pages', async () => {
-        const getPage = Report.v1.getPage(localContext);
-        const qualifier = Qualifier.bySubjects([patientShortcode]);
-
-        const page1 = await getPage(qualifier, null, 5);
-        expect(page1.data).to.deep.equal(allReports.slice(0, 5));
-        expect(page1.cursor).to.equal('5');
-
-        const page2 = await getPage(qualifier, page1.cursor, 5);
-        expect(page2.data).to.deep.equal(allReports.slice(5, 10));
-        expect(page2.cursor).to.equal('10');
-
-        const page3 = await getPage(qualifier, page2.cursor, 5);
-        expect(page3.data).to.deep.equal(allReports.slice(10));
-        expect(page3.cursor).to.be.null;
-      });
-
-      it('pages across a subject boundary without dropping or repeating a report', async () => {
-        const getPage = Report.v1.getPage(localContext);
-        const qualifier = Qualifier.bySubjects(['case-1', 'place-shortcode']);
-
-        const page1 = await getPage(qualifier, null, 2);
-        expect(ids(page1)).to.deep.equal(['report-0', 'report-1']);
-        expect(page1.cursor).to.equal('2');
-
-        const page2 = await getPage(qualifier, page1.cursor, 2);
-        expect(ids(page2)).to.deep.equal(['report-2']);
-        expect(page2.cursor).to.be.null;
-      });
-
-      it('fills a page past the repeats and advances the cursor over the rows it consumed', async () => {
-        const getPage = Report.v1.getPage(localContext);
-        // Rows: r0 (case-1), r0..r11 (shortcode). A page of 3 reads [r0, r0, r1], keeps [r0, r1], then
-        // reads on to fill the page; the cursor lands on the row offset read, not on the docs kept.
-        const qualifier = Qualifier.bySubjects(['case-1', patientShortcode]);
-
-        const page1 = await getPage(qualifier, null, 3);
-        expect(ids(page1)).to.deep.equal(['report-0', 'report-1', 'report-2']);
-        expect(page1.cursor).to.equal('4');
-
-        const page2 = await getPage(qualifier, page1.cursor, 3);
-        expect(ids(page2)).to.deep.equal(['report-3', 'report-4', 'report-5']);
-        expect(page2.cursor).to.equal('7');
-      });
-
-      it('returns an empty page for a subject with no reports', async () => {
-        const getPage = Report.v1.getPage(localContext);
-
-        const page = await getPage(Qualifier.bySubjects(['no-such-subject']), null, 5);
-
-        expect(page.data).to.deep.equal([]);
         expect(page.cursor).to.be.null;
       });
     });

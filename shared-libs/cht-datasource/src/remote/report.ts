@@ -25,12 +25,8 @@ export namespace v1 {
     identifier: UuidQualifier
   ): Promise<Nullable<Report.v1.Report>> => getReport(remoteContext)(identifier.uuid);
 
-  // Every qualifier hits the same route, differing only in which parameter it sets - the shape
-  // `?freetext=` already established. Freetext is matched first, then forms, so existing callers are
-  // unchanged. Lists are comma-joined rather than repeated, matching how `ids` is sent on
-  // `api/v1/report`. Neither form codes nor subject identifiers are normalized, so a value containing
-  // a comma could not round-trip; the view keys are the raw document values, and neither CHT form
-  // codes nor the shortcodes/UUIDs that identify a subject contain commas.
+  // Freetext wins, then forms. Lists are comma-joined, so a value containing a comma could not
+  // round-trip; neither CHT form codes nor subject shortcodes/UUIDs contain commas.
   const getQualifierParam = (
     qualifier: FreetextQualifier | FormsQualifier | SubjectsQualifier
   ): Record<string, string> => {
@@ -72,9 +68,6 @@ export namespace v1 {
     cursor: Nullable<string>,
     limit: number
   ): Promise<Page<Report.v1.Report>> => {
-    // Ids are matched first so existing callers are unchanged. The subject list is comma-joined the
-    // same way, and the same route serves both, mirroring `?freetext=`/`?form=`/`?subject=` on the uuid
-    // endpoint.
     const queryParams = {
       limit: limit.toString(),
       ...(isIdsQualifier(qualifier)

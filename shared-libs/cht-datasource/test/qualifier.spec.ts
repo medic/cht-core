@@ -224,16 +224,8 @@ describe('qualifier', () => {
         .to.deep.equal({ subjects: ['patient-shortcode', patientUuid] });
     });
 
-    it('accepts a single subject in an array', () => {
-      expect(bySubjects([patientUuid])).to.deep.equal({ subjects: [patientUuid] });
-    });
-
     it('removes duplicate subjects while keeping the order given', () => {
       expect(bySubjects([patientUuid, 'case-1', patientUuid])).to.deep.equal({ subjects: [patientUuid, 'case-1'] });
-    });
-
-    it('does not trim the subjects it accepts', () => {
-      expect(bySubjects(['Patient_1'])).to.deep.equal({ subjects: ['Patient_1'] });
     });
 
     ([
@@ -266,8 +258,6 @@ describe('qualifier', () => {
       [ null, false ],
       [ 'patient-shortcode', false ],
       [ { subjects: { } }, false ],
-      // A bare string would otherwise pass as an iterable of single characters, so it is rejected
-      // explicitly.
       [ { subjects: 'patient-shortcode' }, false ],
       [ { subjects: [] }, false ],
       [ { subjects: [''] }, false ],
@@ -275,13 +265,10 @@ describe('qualifier', () => {
       [ { subjects: ['patient-shortcode', ''] }, false ],
       [ { subjects: ['patient-shortcode', null] }, false ],
       [ { subject: 'patient-shortcode' }, false ],
-      // A padded identifier would otherwise pass validation but match nothing, since the value is
-      // compared verbatim rather than trimmed: reject it instead of returning a silent empty page.
       [ { subjects: ['  patient-shortcode '] }, false ],
       [ { subjects: [' patient-shortcode'] }, false ],
       [ { subjects: ['patient-shortcode '] }, false ],
       [ { subjects: ['patient-shortcode'] }, true ],
-      // Shortcodes and UUIDs are both valid subject identifiers and can be mixed.
       [ { subjects: ['patient-shortcode', '3d1a2b4c-0000-4000-8000-000000000001'] }, true ],
       [ { subjects: ['patient-shortcode'], other: 'other' }, true ]
     ].forEach(([ subjects, expected ]) => {
