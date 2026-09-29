@@ -347,7 +347,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
   filterTasks(weeks?, tasks?) {
     this.tasksTimeWindowWeeks = weeks;
-    const taskEndDate = weeks ? moment().add(weeks, 'weeks').format('YYYY-MM-DD') : null;
+    const taskEndDate = weeks ? moment().add(weeks, 'weeks').locale('en').format('YYYY-MM-DD') : null;
     const allTasks = tasks || this.selectedContact?.tasks || [];
     this.filteredTasks = allTasks
       .filter((task) => !taskEndDate || task.dueDate <= taskEndDate)

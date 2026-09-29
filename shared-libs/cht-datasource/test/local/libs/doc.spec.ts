@@ -380,9 +380,9 @@ describe('local doc lib', () => {
   describe('queryDocsByKeys', () => {
     const limit = 100;
     const skip = 0;
-    const keys = ['patient-shortcode', '3d1a2b4c-0000-4000-8000-000000000001'];
+    const keys = ['+254712345678', '+254798765432'];
 
-    it('returns docs based on multiple keys in pages', async () => {
+    it('returns docs for multiple keys in pages', async () => {
       const doc0 = { _id: 'doc0' };
       const doc1 = { _id: 'doc1' };
       const doc2 = { _id: 'doc2' };
@@ -396,10 +396,10 @@ describe('local doc lib', () => {
       });
       isDoc.returns(true);
 
-      const result = await queryDocsByKeys(db, 'medic-client/reports_by_subject')(keys, limit, skip);
+      const result = await queryDocsByKeys(db, 'medic-client/contacts_by_phone')(keys, limit, skip);
 
       expect(result).to.deep.equal([doc0, doc1, doc2]);
-      expect(dbQuery.calledOnceWithExactly('medic-client/reports_by_subject', {
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_phone', {
         include_docs: true,
         keys,
         limit,
@@ -409,28 +409,29 @@ describe('local doc lib', () => {
       expect(isDoc.args).to.deep.equal([[doc0], [doc1], [doc2]]);
     });
 
-    it('returns null for a row whose doc is not a doc', async () => {
-      const doc0 = { _id: 'doc0' };
-
-      dbQuery.resolves({ rows: [{ doc: doc0 }, { doc: undefined }] });
-      isDoc.withArgs(doc0).returns(true);
-      isDoc.withArgs(undefined).returns(false);
-
-      const result = await queryDocsByKeys(db, 'medic-client/reports_by_subject')(keys, limit, skip);
-
-      expect(result).to.deep.equal([doc0, null]);
-    });
-
     it('returns empty array if docs are not found', async () => {
       dbQuery.resolves({ rows: [] });
       isDoc.returns(true);
 
-      const result = await queryDocsByKeys(db, 'medic-client/reports_by_subject')(keys, limit, skip);
+      const result = await queryDocsByKeys(db, 'medic-client/contacts_by_phone')(keys, limit, skip);
 
       expect(result).to.deep.equal([]);
-      expect(dbQuery.calledOnceWithExactly('medic-client/reports_by_subject', {
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_phone', {
         include_docs: true, keys, limit, skip, reduce: false
       })).to.be.true;
+      expect(isDoc.args).to.deep.equal([]);
+    });
+
+    it('returns null valued array if rows from database are not docs', async () => {
+      const doc0 = { _id: 'doc0' };
+
+      dbQuery.resolves({ rows: [{ doc: doc0 }] });
+      isDoc.returns(false);
+
+      const result = await queryDocsByKeys(db, 'medic-client/contacts_by_phone')(keys, limit, skip);
+
+      expect(result).to.deep.equal([null]);
+      expect(isDoc.args).to.deep.equal([[doc0]]);
     });
   });
 
