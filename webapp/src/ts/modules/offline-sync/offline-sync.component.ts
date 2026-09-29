@@ -79,12 +79,10 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   loading = true;
 
   constructor(
-
     private readonly bundleStoreService: OfflineSyncBundleStoreService,
     private readonly deviceKeyService: DeviceKeyService,
-    private readonly offlineSyncService: OfflineSyncService,
     private readonly feedbackService: FeedbackService,
-    private readonly bundleStoreService: OfflineSyncBundleStoreService,
+    private readonly offlineSyncService: OfflineSyncService,
     private readonly transferService: OfflineSyncTransferService,
   ) { }
 

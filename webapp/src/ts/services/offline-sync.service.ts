@@ -12,6 +12,8 @@ export interface HostingSession {
   /** The network a peer joins. Named by the OS, so it is read back rather than chosen. */
   ssid: string;
   password: string;
+}
+
 /**
  * How much of a bundle crosses the bridge per call, in decoded bytes.
  *
