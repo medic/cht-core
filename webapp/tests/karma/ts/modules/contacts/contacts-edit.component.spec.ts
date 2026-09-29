@@ -8,6 +8,7 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClient } from '@angular/common/http';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { GeolocationService } from '@mm-services/geolocation.service';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
@@ -47,6 +48,7 @@ describe('ContactsEdit component', () => {
   let getContact;
   let getFormConfig;
   let fileReaderService;
+  let geolocationService;
   const loadContactSummary = sinon.stub();
 
   beforeEach(() => {
@@ -65,6 +67,7 @@ describe('ContactsEdit component', () => {
       })
     };
     fileReaderService = { base64: sinon.stub() };
+    geolocationService = { init: sinon.stub() };
     router = { navigate: sinon.stub() };
     routeSnapshot = { params: {}, queryParams: {} };
     route = {
@@ -121,6 +124,7 @@ describe('ContactsEdit component', () => {
         { provide: CHTDatasourceService, useValue: chtDatasourceService },
         { provide: XmlFormsService, useValue: { getFormConfig } },
         { provide: FileReaderService, useValue: fileReaderService },
+        { provide: GeolocationService, useValue: geolocationService },
         { provide: HttpClient, useValue: {} },
       ],
     });
@@ -291,6 +295,23 @@ describe('ContactsEdit component', () => {
       expect(formService.unload.args[0]).to.deep.equal(['form instance']);
     });
 
+    it('should cancel its own geolocation handle on destroy when one exists', async () => {
+      await createComponent();
+
+      const cancel = sinon.stub();
+      component.geoHandle = { cancel };
+      component.ngOnDestroy();
+
+      expect(cancel.callCount).to.equal(1);
+    });
+
+    it('should not throw on destroy when no geolocation watcher is active', async () => {
+      await createComponent();
+
+      component.geoHandle = undefined;
+      expect(() => component.ngOnDestroy()).to.not.throw();
+    });
+
     it('should respond to url changes', fakeAsync(async () => {
       routeSnapshot.params = { type: 'random', parent_id: 'the_district' };
       route.params.next({ type: 'random', parent_id: 'the_district' });
@@ -347,6 +368,50 @@ describe('ContactsEdit component', () => {
         titleKey: 'other_key',
       });
     }));
+  });
+
+  describe('geolocation handle lifecycle', () => {
+    it('should call geolocationService.init() and store the result as its own handle', async () => {
+      const handle = { cancel: sinon.stub() };
+      geolocationService.init.returns(handle);
+
+      await createComponent();
+      await fixture.whenStable();
+
+      expect(geolocationService.init.callCount).to.equal(1);
+      expect(component.geoHandle).to.equal(handle);
+    });
+
+    it('should cancel the previous geo handle and acquire a new one when navigating to a different contact',
+      fakeAsync(async () => {
+        routeSnapshot.params = { id: 'contact_a' };
+        route.params.next({ id: 'contact_a' });
+
+        const handleA = { cancel: sinon.stub() };
+        const handleB = { cancel: sinon.stub() };
+        geolocationService.init.onFirstCall().returns(handleA).onSecondCall().returns(handleB);
+
+        lineageModelGeneratorService.contact
+          .withArgs('contact_a', { merge: true }).resolves({ doc: { _id: 'contact_a', type: 'clinic' } })
+          .withArgs('contact_b', { merge: true }).resolves({ doc: { _id: 'contact_b', type: 'clinic' } });
+        contactTypesService.get.resolves({ edit_form: 'clinic_edit_form_id', edit_key: 'clinic_edit_key' });
+        dbGet.resolves({ _id: 'clinic_edit_form_id', the: 'form' });
+
+        await createComponent();
+        await fixture.whenStable();
+
+        expect(component.geoHandle).to.equal(handleA);
+        expect(handleA.cancel.callCount).to.equal(0);
+
+        routeSnapshot = { params: { id: 'contact_b' } };
+        route.params.next({ id: 'contact_b' });
+
+        await fixture.whenStable();
+        flushMicrotasks();
+
+        expect(handleA.cancel.callCount).to.equal(1);
+        expect(component.geoHandle).to.equal(handleB);
+      }));
   });
 
   describe('loading form', () => {
@@ -982,7 +1047,8 @@ describe('ContactsEdit component', () => {
       expect(formService.saveContact.args).to.deep.equal([[
         { docId: null, type: CONTACT_TYPES.CLINIC },
         form,
-        false
+        false,
+        undefined,
       ]]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'new_clinic_id']]);
@@ -1018,9 +1084,10 @@ describe('ContactsEdit component', () => {
       expect(setEnketoError.callCount).to.equal(1);
       expect(formService.saveContact.callCount).to.equal(1);
       expect(formService.saveContact.args[0]).to.deep.equal([
-        { docId: 'the_person', type: 'person',  },
+        { docId: 'the_person', type: 'person' },
         form,
-        false
+        false,
+        undefined,
       ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_person']]);
@@ -1071,7 +1138,8 @@ describe('ContactsEdit component', () => {
       expect(formService.saveContact.args[0]).to.deep.equal([
         { docId: 'the_patient', type: 'patient' },
         form,
-        false
+        false,
+        undefined,
       ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_patient']]);
@@ -1173,7 +1241,8 @@ describe('ContactsEdit component', () => {
       expect(formService.saveContact.args[0]).to.deep.equal([
         { docId: null, type: CONTACT_TYPES.CLINIC },
         form,
-        true
+        true,
+        undefined,
       ]);
       expect(telemetryService.record.calledOnceWithExactly(
         'enketo:contacts:clinic:duplicates_acknowledged'
@@ -1220,9 +1289,12 @@ describe('ContactsEdit component', () => {
       expect(formService.saveContact.args[0]).to.deep.equal([
         { docId: null, type: CONTACT_TYPES.CLINIC },
         form,
-        true
+        true,
+        undefined,
       ]);
       expect(telemetryService.record.notCalled).to.be.true;
     });
   });
+
 });
+

@@ -44,6 +44,11 @@ export class AppModule implements DoBootstrap {
   ngDoBootstrap() {
     window.CHTCore = {
       AndroidAppLauncher: { isEnabled: () => false },
+      Geolocation: {
+        isAvailable: () => !!window.navigator?.geolocation,
+        isPermissionDenied: () => false,
+        retry: () => {},
+      },
       Language: { get: async () => 'en' },
       MRDT: { enabled: () => false },
       Select2Search: {

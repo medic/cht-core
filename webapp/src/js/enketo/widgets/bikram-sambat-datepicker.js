@@ -3,10 +3,62 @@ const Widget = require( 'enketo-core/src/js/widget' ).default;
 const $ = require( 'jquery' );
 require( 'enketo-core/src/js/plugins' );
 const bikram_sambat_bs = require( 'bikram-sambat-bootstrap' );
+const eurodigit = require( 'eurodigit' );
+const toDevanagari = eurodigit.to_non_euro.devanagari;
+const fromDevanagari = eurodigit.to_euro;
+const BikramSambat = require( 'bikram-sambat' );
+
+const {
+  setupNepaliDatePicker,
+  hideDatePicker,
+  destroyDatePicker,
+} = require('./bikram-sambat-picker-shared');
+
+const activeWidgets = new Set();
+let domObserver = null;
+
+const startDOMObserver = () => {
+  if (domObserver) {
+    return;
+  }
+  domObserver = new MutationObserver(() => {
+    activeWidgets.forEach(widget => {
+      if (!document.body.contains(widget.element)) {
+        widget.destroy();
+      }
+    });
+  });
+  domObserver.observe(document.body, { childList: true, subtree: true });
+};
+
+const NEPALI_MONTH_NAMES = [
+  'बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ', 'असोज', 'कार्तिक', 'मंसिर', 'पौष', 'माघ', 'फाल्गुन', 'चैत'
+];
+
+const MONTH_PLACEHOLDER = 'महिना';
+
+const isDayValid = (day, month, year) => {
+  try {
+    return day >= 1 && day <= BikramSambat.daysInMonth(year, month);
+  } catch (_e) {
+    console.warn('BikramSambat validation error:', _e);
+    return false;
+  }
+};
 
 class Bikramsambatdatepicker extends Widget {
   static get selector() {
     return 'input[type=date]';
+  }
+
+  static globalReset() {
+    if (domObserver) {
+      domObserver.disconnect();
+      domObserver = null;
+    }
+    activeWidgets.forEach(widget => widget.destroy());
+    activeWidgets.clear();
+    return super.globalReset();
   }
 
   _init() {
@@ -14,11 +66,9 @@ class Bikramsambatdatepicker extends Widget {
 
     window.CHTCore.Language
       .get()
-      .then( function( language ) {
+      .then( ( language ) => {
         const $el = $( el );
 
-        // Here we support the appearance="bikram-sambat" attribute as
-        // well to maintain compatibility with collect.
         if ( language.indexOf( 'ne' ) !== 0 &&
           $el.parent('.or-appearance-bikram-sambat').length === 0) {
           return;
@@ -38,6 +88,52 @@ class Bikramsambatdatepicker extends Widget {
 
         bikram_sambat_bs.initListeners( $parent, $realDateInput );
 
+        // The bikram-sambat-library converts the date on both
+        // "change" and "blur" of the day/year inputs, but the month input
+        // is type="hidden" and only gets a value when the user clicks the
+        // dropdown. If day/year are entered without selecting a month, the
+        // library converts with an empty month, defaulting to Baisakh
+        // (month 1), and writes that incorrect date to the real date input.
+        //
+        // A guard on "change" alone is not enough: the library's own "blur"
+        // handler fires after a delegated "blur"/"focusout" guard, so it
+        // would overwrite a cleared value with the incorrect date again.
+        // To win that race, the guard re-checks on the next tick (via
+        // setTimeout) after both "change" and "blur", once the library's
+        // own handlers have finished running.
+        const clearIfIncomplete = () => {
+          const dayDev   = $parent.find( 'input[name="day"]' ).val();
+          const monthDev = $parent.find( 'input[name="month"]' ).val();
+          const yearDev  = $parent.find( 'input[name="year"]' ).val();
+
+          if ( !dayDev || !monthDev || !yearDev ) {
+            $realDateInput.val( '' );
+            $realDateInput.trigger( 'change' );
+            return;
+          }
+
+          const day = Number(fromDevanagari(dayDev));
+          const month = Number(fromDevanagari(monthDev));
+          const year = Number(fromDevanagari(yearDev));
+
+          if (Number.isNaN(day) || Number.isNaN(month) || Number.isNaN(year) || !isDayValid(day, month, year)) {
+            $realDateInput.val( '' );
+            $realDateInput.trigger( 'change' );
+            $parent.find( 'input[name="day"]' ).val( '' );
+          }
+        };
+
+        $parent.on( 'change blur', 'input', function( event ) {
+          if ( $( event.target ).is( $realDateInput ) ) {
+            return;
+          }
+          event.stopPropagation();
+          clearIfIncomplete();
+          // Re-check after the library's own change/blur handlers have run,
+          // in case they wrote a value back after our guard cleared it.
+          setTimeout( clearIfIncomplete, 0 );
+        });
+
         if ( initialVal ) {
           bikram_sambat_bs.setDate_greg_text(
             $parent.children( '.bikram-sambat-input-group' ),
@@ -45,36 +141,146 @@ class Bikramsambatdatepicker extends Widget {
             initialVal 
           );
         }
+
+        // Initialize Nepali Calendar Popup picker
+        setupCalendarPicker($parent, this);
       });
+  }
+
+  destroy() {
+    if ( this.$hiddenDateInput ) {
+      destroyDatePicker(this.$hiddenDateInput, this.$picker);
+      this.$hiddenDateInput = null;
+      this.$picker = null;
+    }
+    activeWidgets.delete(this);
   }
 }
 
+const setupCalendarPicker = ($parent, widget) => {
+  const $group = $parent.find('.bikram-sambat-input-group');
+  const $calendarBtn = $group.find('.calendar-btn');
+
+  // Create hidden input to attach the nepaliDatePicker instance
+  const $hiddenDateInput = $('<input type="text" class="nepali-datepicker-input ignore">');
+  $calendarBtn.after($hiddenDateInput);
+  widget.$hiddenDateInput = $hiddenDateInput;
+  activeWidgets.add(widget);
+  startDOMObserver();
+
+  setupNepaliDatePicker($hiddenDateInput, {
+    closeOnDateSelect: false,
+    onDateSelect: (data) => {
+      const year = data.bsYear;
+      const monthNum = data.bsMonth;
+      const day = data.bsDate;
+
+      // Guard against invalid days (e.g. Mansir 30, 2082)
+      // Clicks on non-existent/phantom days are ignored intentionally (see #11252)
+      try {
+        if (day > BikramSambat.daysInMonth(year, monthNum)) {
+          return;
+        }
+      } catch ( _e ) {
+        console.warn('BikramSambat date limit check error:', _e);
+        return; // Ignore if the library throws for out-of-range years/months
+      }
+      const monthName = NEPALI_MONTH_NAMES[monthNum - 1];
+      if (monthName) {
+        // Set all values first to prevent validation checks against stale/intermediate DOM states (see #11252)
+        $parent.find('input[name="day"]').val(toDevanagari(day.toString()));
+        $parent.find('input[name="month"]').val(toDevanagari(monthNum.toString()));
+        $parent.find('input[name="year"]').val(toDevanagari(year.toString()));
+
+        // Then trigger change and blur events so validation runs on the complete set of values
+        $parent.find('input[name="day"]').trigger('change');
+        $parent.find('input[name="month"]').trigger('change');
+        $parent.find('input[name="year"]').trigger('change').trigger('blur');
+        $group.find('.month-dropdown button').html(monthName + ' <span class="caret"></span>');
+      }
+    },
+    onClear: () => {
+      // Set all values first to prevent validation checks against stale/intermediate DOM states
+      $parent.find('input[name="day"]').val('');
+      $parent.find('input[name="month"]').val('');
+      $parent.find('input[name="year"]').val('');
+
+      // Then trigger change and blur events so validation runs on the complete set of values
+      $parent.find('input[name="day"]').trigger('change');
+      $parent.find('input[name="month"]').trigger('change');
+      $parent.find('input[name="year"]').trigger('change').trigger('blur');
+
+      $group.find('.month-dropdown button').html(`${MONTH_PLACEHOLDER} <span class="caret"></span>`);
+      $hiddenDateInput.val('');
+      const $picker = $hiddenDateInput.data('picker');
+      if ($picker) {
+        if ($picker.length) {
+          $picker.find('td.active').removeClass('active');
+        }
+      }
+      const $realDateInput = $parent.children('input[type="date"]');
+      $realDateInput.val('').trigger('change');
+      hideDatePicker($hiddenDateInput);
+    }
+  });
+  widget.$picker = $hiddenDateInput.data('picker');
+
+  $calendarBtn.on('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Set initial date in picker if inputs are populated
+    const dayDev = $parent.find('input[name="day"]').val();
+    const monthDev = $parent.find('input[name="month"]').val();
+    const yearDev = $parent.find('input[name="year"]').val();
+
+    // Convert Devanagari digits to Latin for parser compatibility
+    const day = fromDevanagari(dayDev);
+    const monthNumStr = fromDevanagari(monthDev);
+    const year = fromDevanagari(yearDev);
+    const monthNum = Number.parseInt(monthNumStr, 10);
+    
+    if (day && year && !Number.isNaN(monthNum) && monthNum >= 1 && monthNum <= 12) {
+      $hiddenDateInput.val(toDevanagari(`${year}-${monthNum}-${Number.parseInt(day, 10)}`));
+    } else {
+      $hiddenDateInput.val('');
+    }
+
+    $hiddenDateInput.click();
+  });
+};
+
 module.exports = Bikramsambatdatepicker;
 
-const TEMPLATE =
-  '<div class="input-group bikram-sambat-input-group">' +
-    '<input name="day" type="tel" class="form-control devanagari-number-input" placeholder="गते" aria-label="गते" ' +
-      'maxlength="2">' +
-    '<input name="month" type="hidden">' +
-    '<div class="input-group-btn">' +
-      '<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" ' +
-        'aria-expanded="false">महिना <span class="caret"></span>' +
-      '</button>' +
-      '<ul class="dropdown-menu">' +
-        '<li><a>बैशाख</a></li>' +
-        '<li><a>जेठ</a></li>' +
-        '<li><a>असार</a></li>' +
-        '<li><a>साउन</a></li>' +
-        '<li><a>भदौ</a></li>' +
-        '<li><a>असोज</a></li>' +
-        '<li><a>कार्तिक</a></li>' +
-        '<li><a>मंसिर</a></li>' +
-        '<li><a>पौष</a></li>' +
-        '<li><a>माघ</a></li>' +
-        '<li><a>फाल्गुन</a></li>' +
-        '<li><a>चैत</a></li>' +
-      '</ul>' +
-    '</div>' +
-    '<input name="year" type="tel" class="form-control devanagari-number-input" placeholder="साल" aria-label="साल" ' +
-      'maxlength="4">' +
-  '</div>';
+const TEMPLATE = `
+  <div class="input-group bikram-sambat-input-group bikram-sambat-widget">
+    <input name="day" type="tel" class="form-control devanagari-number-input day-field ignore" 
+      placeholder="गते" aria-label="गते" maxlength="2">
+    <input name="month" type="hidden" class="ignore">
+    <div class="input-group-btn month-dropdown">
+      <button type="button" class="btn btn-default dropdown-toggle" 
+        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        ${MONTH_PLACEHOLDER} <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu">
+        <li><a>बैशाख</a></li>
+        <li><a>जेठ</a></li>
+        <li><a>असार</a></li>
+        <li><a>साउन</a></li>
+        <li><a>भदौ</a></li>
+        <li><a>असोज</a></li>
+        <li><a>कार्तिक</a></li>
+        <li><a>मंसिर</a></li>
+        <li><a>पौष</a></li>
+        <li><a>माघ</a></li>
+        <li><a>फाल्गुन</a></li>
+        <li><a>चैत</a></li>
+      </ul>
+    </div>
+    <input name="year" type="tel" class="form-control devanagari-number-input year-field ignore" 
+      placeholder="साल" aria-label="साल" maxlength="4">
+    <button type="button" class="calendar-btn" title="मिति रोज्नुहोस्">
+      <span class="calendar-icon"></span>
+    </button>
+  </div>
+`;

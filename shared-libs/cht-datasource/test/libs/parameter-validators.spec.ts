@@ -1,7 +1,8 @@
 import { ContactTypeQualifier, FormsQualifier, FreetextQualifier } from '../../src/qualifier';
 import { expect } from 'chai';
 import {
-  assertContactTypeFreetextQualifier,
+  assertContactTypeFreetextPhonesQualifier,
+  assertContactTypeIdsPhonesQualifier,
   assertCursor,
   assertFreetextOrFormsQualifier,
   assertFreetextQualifier,
@@ -157,38 +158,44 @@ describe('libs parameter-validators', () => {
     });
   });
 
-  describe('assertContactTypeFreetextQualifier', () => {
+  describe('assertContactTypeFreetextPhonesQualifier', () => {
     it('should pass when given a valid contact type qualifier', () => {
       const validContactType = { contactType: 'email' };
 
-      expect(() => assertContactTypeFreetextQualifier(validContactType)).to.not.throw();
+      expect(() => assertContactTypeFreetextPhonesQualifier(validContactType)).to.not.throw();
     });
 
     it('should pass when given a valid freetext qualifier', () => {
       const validFreetext = { freetext: 'some-text' };
 
-      expect(() => assertContactTypeFreetextQualifier(validFreetext)).to.not.throw();
+      expect(() => assertContactTypeFreetextPhonesQualifier(validFreetext)).to.not.throw();
+    });
+
+    it('should pass when given a valid phones qualifier', () => {
+      const validPhones = { phones: ['+254712345678'] };
+
+      expect(() => assertContactTypeFreetextPhonesQualifier(validPhones)).to.not.throw();
     });
 
     it('should throw InvalidArgumentError when given an invalid qualifier', () => {
       const invalidQualifier = { invalid: 'data' };
 
-      expect(() => assertContactTypeFreetextQualifier(invalidQualifier)).to.throw(InvalidArgumentError);
+      expect(() => assertContactTypeFreetextPhonesQualifier(invalidQualifier)).to.throw(InvalidArgumentError);
     });
 
     it('should throw InvalidArgumentError with correct message for invalid qualifier', () => {
       const invalidQualifier = { invalid: 'data' };
 
-      expect(() => assertContactTypeFreetextQualifier(invalidQualifier)).to.throw(
+      expect(() => assertContactTypeFreetextPhonesQualifier(invalidQualifier)).to.throw(
         InvalidArgumentError,
-        'Invalid qualifier [{"invalid":"data"}]. Must be a contact type and/or freetext qualifier.'
+        'Invalid qualifier [{"invalid":"data"}]. Must be a contact type, freetext, and/or phones qualifier.'
       );
     });
 
     it('should throw InvalidArgumentError when freetext is too short', () => {
       const shortFreetext = { freetext: 'ab' };  // Less than 3 characters
 
-      expect(() => assertContactTypeFreetextQualifier(shortFreetext)).to.throw(InvalidArgumentError);
+      expect(() => assertContactTypeFreetextPhonesQualifier(shortFreetext)).to.throw(InvalidArgumentError);
     });
 
     it('should pass when object satisfies both qualifier types', () => {
@@ -197,15 +204,58 @@ describe('libs parameter-validators', () => {
         freetext: 'some text'
       };
 
-      expect(() => assertContactTypeFreetextQualifier(validBothTypes)).to.not.throw();
+      expect(() => assertContactTypeFreetextPhonesQualifier(validBothTypes)).to.not.throw();
     });
 
     it('should handle null input appropriately', () => {
-      expect(() => assertContactTypeFreetextQualifier(null)).to.throw(InvalidArgumentError);
+      expect(() => assertContactTypeFreetextPhonesQualifier(null)).to.throw(InvalidArgumentError);
     });
 
     it('should handle undefined input appropriately', () => {
-      expect(() => assertContactTypeFreetextQualifier(undefined)).to.throw(InvalidArgumentError);
+      expect(() => assertContactTypeFreetextPhonesQualifier(undefined)).to.throw(InvalidArgumentError);
+    });
+  });
+
+  describe('assertContactTypeIdsPhonesQualifier', () => {
+    it('should pass when given a valid contact type qualifier', () => {
+      const validContactType = { contactType: 'person' };
+
+      expect(() => assertContactTypeIdsPhonesQualifier(validContactType)).to.not.throw();
+    });
+
+    it('should pass when given a valid ids qualifier', () => {
+      const validIds = { ids: ['contact-1', 'contact-2'] };
+
+      expect(() => assertContactTypeIdsPhonesQualifier(validIds)).to.not.throw();
+    });
+
+    it('should pass when given a valid phones qualifier', () => {
+      const validPhones = { phones: ['+254712345678'] };
+
+      expect(() => assertContactTypeIdsPhonesQualifier(validPhones)).to.not.throw();
+    });
+
+    it('should throw InvalidArgumentError with correct message for invalid qualifier', () => {
+      const invalidQualifier = { invalid: 'data' };
+
+      expect(() => assertContactTypeIdsPhonesQualifier(invalidQualifier)).to.throw(
+        InvalidArgumentError,
+        'Invalid qualifier [{"invalid":"data"}]. Must be a contact type, ids, or phones qualifier.'
+      );
+    });
+
+    it('should throw InvalidArgumentError when the phone numbers are padded', () => {
+      const paddedPhones = { phones: ['  +254712345678  '] };
+
+      expect(() => assertContactTypeIdsPhonesQualifier(paddedPhones)).to.throw(InvalidArgumentError);
+    });
+
+    it('should handle null input appropriately', () => {
+      expect(() => assertContactTypeIdsPhonesQualifier(null)).to.throw(InvalidArgumentError);
+    });
+
+    it('should handle undefined input appropriately', () => {
+      expect(() => assertContactTypeIdsPhonesQualifier(undefined)).to.throw(InvalidArgumentError);
     });
   });
 

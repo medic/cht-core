@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const fs = require('fs');
 const path = require('path');
 
-const andraBot = require('../../../../../scripts/ci/andra-bot');
+const andraBot = require('../../../../../.github/actions/andrabot/andra-bot');
 
 const TEMPLATE = fs.readFileSync(
   path.resolve(__dirname, '../../../../../.github/PULL_REQUEST_TEMPLATE.md'),
@@ -12,16 +12,32 @@ const TEMPLATE = fs.readFileSync(
 const COMMENT_MARKER = '<!-- andra-bot -->';
 const FAILURE_LABEL = 'Waiting for contributor';
 const SUCCESS_LABEL = 'Ready for review';
-const MESSAGES_DIR = path.resolve(__dirname, '../../../../../scripts/ci/andra-bot-messages');
+const TEMPLATE_PATH = '.github/PULL_REQUEST_TEMPLATE.md';
+const TEMPLATE_URL = `https://github.com/medic/cht-core/blob/master/${TEMPLATE_PATH}`;
+const MESSAGES_DIR = path.resolve(__dirname, '../../../../../.github/actions/andrabot/andra-bot-messages');
 
 // Mirrors the message rendering in andra-bot.js so assertions track the message
 // files instead of hardcoding prose that editors are free to change.
 const getMessage = (name, replacements = {}) => {
   const template = fs.readFileSync(path.join(MESSAGES_DIR, `${name}.md`), 'utf8').trim();
   return Object
-    .entries(replacements)
+    .entries({
+      author: 'external-dev',
+      templateUrl: TEMPLATE_URL,
+      failureLabel: FAILURE_LABEL,
+      successLabel: SUCCESS_LABEL,
+      ...replacements,
+    })
     .reduce((text, [key, value]) => text.replaceAll(`{{${key}}}`, value), template);
 };
+
+// The REST shape returned by repos.getContent for a file.
+const templateFile = (content, url = TEMPLATE_URL) => ({
+  type: 'file',
+  encoding: 'base64',
+  content: Buffer.from(content).toString('base64'),
+  html_url: url,
+});
 
 const stripComments = (text) => {
   let previous;
@@ -56,6 +72,7 @@ describe('AndraBot', () => {
   const graphqlCalls = (fragment) => github.graphql.args.filter(([query]) => query.includes(fragment));
 
   const getContext = (pr) => ({
+    eventName: 'pull_request_target',
     repo: { owner: 'medic', repo: 'cht-core' },
     payload: { pull_request: pr },
   });
@@ -112,13 +129,16 @@ describe('AndraBot', () => {
     .withArgs(github.rest.issues.listLabelsOnIssue)
     .resolves(names.map(name => ({ name })));
 
-  const run = (pr) => andraBot({ github, context: getContext(pr), core });
+  const run = (pr, options) => andraBot({ github, context: getContext(pr), core }, options);
 
   beforeEach(() => {
     github = {
       graphql: sinon.stub(),
       paginate: sinon.stub().resolves([]),
       rest: {
+        repos: {
+          getContent: sinon.stub().resolves({ data: templateFile(TEMPLATE) }),
+        },
         issues: {
           createComment: sinon.stub().resolves(),
           deleteComment: sinon.stub().resolves(),
@@ -246,13 +266,7 @@ describe('AndraBot', () => {
 
     it('should pick up changes to the PR template without script changes', async () => {
       const customTemplate = '# Summary\n<!-- fill me in -->\n\n# Testing\nDescribe the steps taken.\n';
-      const realRead = fs.readFileSync;
-      sinon.stub(fs, 'readFileSync').callsFake((filePath, ...args) => {
-        if (String(filePath).endsWith('PULL_REQUEST_TEMPLATE.md')) {
-          return customTemplate;
-        }
-        return realRead(filePath, ...args);
-      });
+      github.rest.repos.getContent.resolves({ data: templateFile(customTemplate) });
       setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
 
       await run(getPr({ body: '# Summary\nI did things.\n\n# Testing\nRan the tests.\n' }));
@@ -262,6 +276,86 @@ describe('AndraBot', () => {
       expect(core.setFailed.calledOnce).to.be.true;
       const commentBody = github.rest.issues.createComment.args[0][0].body;
       expect(commentBody).to.contain(getMessage('template-mismatch', { sections: 'Summary, Testing' }));
+    });
+
+    it('should read the template from the default branch of the target repository', async () => {
+      await run(getPr());
+
+      expect(github.rest.repos.getContent.calledOnce).to.be.true;
+      expect(github.rest.repos.getContent.args[0][0]).to.deep.equal({
+        owner: 'medic',
+        repo: 'cht-core',
+        path: TEMPLATE_PATH,
+      });
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(`(${TEMPLATE_URL})`);
+    });
+
+    it('should read the template from the configured path and link to it', async () => {
+      const url = 'https://github.com/medic/cht-core/blob/main/docs/pull_request_template.md';
+      github.rest.repos.getContent.resolves({ data: templateFile(TEMPLATE, url) });
+
+      await run(getPr(), { prTemplatePath: 'docs/pull_request_template.md' });
+
+      expect(github.rest.repos.getContent.args[0][0].path).to.equal('docs/pull_request_template.md');
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('template-mismatch', {
+        sections: TEMPLATE_SECTIONS,
+        templateUrl: url,
+      }));
+      expect(commentBody).to.not.contain(TEMPLATE_URL);
+    });
+
+    it('should fail the job with a clear error when the template cannot be read', async () => {
+      github.rest.repos.getContent.rejects(Object.assign(new Error('Not Found'), { status: 404 }));
+
+      await expect(run(getPr()))
+        .to.be.rejectedWith(`Could not read the PR template at medic/cht-core:${TEMPLATE_PATH}: Not Found`);
+      expect(github.rest.issues.createComment.called).to.be.false;
+      expect(github.rest.issues.addLabels.called).to.be.false;
+    });
+
+    it('should fail the job with a clear error when the template path is a directory', async () => {
+      github.rest.repos.getContent.resolves({ data: [templateFile(TEMPLATE)] });
+
+      await expect(run(getPr(), { prTemplatePath: '.github' }))
+        .to.be.rejectedWith('The PR template at medic/cht-core:.github is not a file.');
+      expect(github.rest.issues.createComment.called).to.be.false;
+    });
+  });
+
+  describe('configuration', () => {
+    it('should fail without running any check when not triggered by a pull request event', async () => {
+      const context = { eventName: 'push', repo: { owner: 'medic', repo: 'cht-core' }, payload: {} };
+      await andraBot({ github, context, core });
+
+      expect(core.setFailed.calledOnce).to.be.true;
+      expect(core.setFailed.args[0][0]).to.contain('"push"');
+      expect(github.rest.repos.getContent.called).to.be.false;
+      expect(github.graphql.called).to.be.false;
+      expect(github.rest.issues.createComment.called).to.be.false;
+    });
+
+    it('should use the configured labels', async () => {
+      const options = { failureLabel: 'needs work', successLabel: 'ready' };
+      setLabels(['ready']);
+      await run(getPr(), options);
+
+      expect(github.rest.issues.addLabels.args[0][0].labels).to.deep.equal(['needs work']);
+      expect(github.rest.issues.removeLabel.args[0][0].name).to.equal('ready');
+      const commentBody = github.rest.issues.createComment.args[0][0].body;
+      expect(commentBody).to.contain(getMessage('outro', options));
+      expect(commentBody).to.not.contain(FAILURE_LABEL);
+      expect(commentBody).to.not.contain(SUCCESS_LABEL);
+
+      sinon.resetHistory();
+      setLinkedIssues([linkedIssue(1234, ['external-dev'])]);
+      setLabels(['needs work']);
+      await run(getPr({ body: filledTemplate }), options);
+
+      expect(core.setFailed.called).to.be.false;
+      expect(github.rest.issues.addLabels.args[0][0].labels).to.deep.equal(['ready']);
+      expect(github.rest.issues.removeLabel.args[0][0].name).to.equal('needs work');
     });
   });
 

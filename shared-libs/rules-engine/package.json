@@ -19,6 +19,7 @@
   "homepage": "https://github.com/medic/medic/tree/master/shared-libs/rules-engine#readme",
   "dependencies": {
     "@medic/calendar-interval": "file:../calendar-interval",
-    "@medic/registration-utils": "file:../registration-utils"
+    "@medic/registration-utils": "file:../registration-utils",
+    "bikram-sambat": "^1.8.1"
   }
 }

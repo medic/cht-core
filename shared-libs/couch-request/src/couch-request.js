@@ -144,6 +144,22 @@ const lowercaseHeaders = headers => Object.assign(
   ...Object.keys(headers).map(key => ({ [key.toLowerCase()]: headers[key] }))
 );
 
+const setRequestDispatcher = (options) => {
+  const proxy = options.proxy;
+  delete options.proxy;
+
+  if (!proxy) {
+    options.dispatcher = new undici.Agent({
+      headersTimeout: 0,
+      connectTimeout: 0,
+      bodyTimeout: 0
+    });
+    return;
+  }
+
+  options.dispatcher = new undici.ProxyAgent(proxy);
+};
+
 const setRequestOptions = async (options) => {
   options.headers = lowercaseHeaders(options.headers || {});
 
@@ -166,11 +182,7 @@ const setRequestOptions = async (options) => {
     options.headers['user-agent'] = await getUserAgent();
   }
 
-  options.dispatcher = new undici.Agent({
-    headersTimeout: 0,
-    connectTimeout: 0,
-    bodyTimeout: 0
-  });
+  setRequestDispatcher(options);
 };
 
 const getResponseBody = async (response, sendJson) => {
@@ -269,6 +281,7 @@ const request = async (options = {}) => {
  * @property {Object|undefined} form - when passed an object, this sets body to a querystring representation of value,
  * and adds content-type: application/x-www-form-urlencoded header
  * @property {Object|undefined} auth - a hash containing values username, password
+ * @property {string|Object|undefined} proxy - passed through to undici.ProxyAgent
  * @property {Boolean|undefined} simple - if true, returns full response object instead of parsed body.
  * @property {Number|undefined} timeout - integer containing number of milliseconds. Adds an abortSignal.
  */

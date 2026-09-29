@@ -1,8 +1,8 @@
 # AndraBot messages
 
 These files contain the messages AndraBot posts on pull requests from external
-contributors (see `.github/workflows/andra-bot.yml`). Edit them freely — the bot
-reads them at run time, so no script changes are needed.
+contributors (see `../README.md`). Edit them freely — the bot reads them at run
+time, so no script changes are needed.
 
 | File | When it is used |
 | ---- | --------------- |
@@ -19,9 +19,15 @@ Guidelines:
 - Keep each message a single paragraph — failure messages are rendered as bullet
   list items.
 - Markdown works: links, `code`, **bold**, etc.
-- Placeholders in `{{double braces}}` are filled in by the bot; keep them intact:
+- Placeholders in `{{double braces}}` are filled in by the bot; keep them intact.
+  Available in every message:
   - `{{author}}` — the GitHub username of the PR author (without the `@`)
-  - `{{issueList}}` — the linked issue number(s), e.g. `#1234, #5678`
-  - `{{sections}}` — the section names required by the PR template, e.g.
-    `Description, Code review checklist, License` (read from the template
-    itself, so it stays current when the template changes)
+  - `{{templateUrl}}` — link to the PR template of the repository the PR targets
+  - `{{failureLabel}}` / `{{successLabel}}` — the label names the action is
+    configured with
+
+  Message-specific:
+  - `{{issueList}}` (`not-assigned.md`) — the linked issue number(s), e.g. `#1234, #5678`
+  - `{{sections}}` (`template-mismatch.md`) — the section names required by the PR
+    template, e.g. `Description, Code review checklist, License` (read from the
+    template itself, so it stays current when the template changes)

@@ -8,7 +8,12 @@ const getCurrentPageSection = async () => (await currentSection().isExisting()) 
 
 const enabledFieldset = (section) => section.$$('fieldset.or-branch:not(.disabled)');
 
-const addRepeatSectionButton = () => $(`button.add-repeat-btn`);
+const addRepeatSectionButton = (title) => {
+  if (!title) {
+    return $(`button.add-repeat-btn`);
+  }
+  return $(`//section[h4//span[normalize-space(text())="${title}"]]//button[contains(@class, "add-repeat-btn")]`);
+};
 
 const radioButtonElement = async (question, value) => {
   return (await getCurrentPageSection())
@@ -42,24 +47,24 @@ const selectCheckBox = async (question, value) => {
     .click();
 };
 
-const setValue = async (typeSelector, question, value) => {
+const setValue = async (typeSelector, question, value, { repeatIndex = 0 } = {}) => {
   await (await getCurrentPageSection())
-    .$(`label*=${question}`)
+    .$$(`label*=${question}`)[repeatIndex]
     .$(typeSelector).setValue(value);
 };
 
-const setInputValue = async (question, value) => {
-  await setValue('input', question, value);
+const setInputValue = async (question, value, options) => {
+  await setValue('input', question, value, options);
 };
 
-const setDateValue = async (question, value) => {
-  await setValue('input.ignore.input-small', question, value);
+const setDateValue = async (question, value, options) => {
+  await setValue('input.ignore.input-small', question, value, options);
   //To close the date widget
   await formTitle().click();
 };
 
-const setTextareaValue = async (question, value) => {
-  await setValue('textarea', question, value);
+const setTextareaValue = async (question, value, options) => {
+  await setValue('textarea', question, value, options);
 };
 
 const addFileInputValue = async (question, value, { repeatIndex = 0 } = {}) => {
@@ -77,19 +82,19 @@ const validateSummaryReport = async (textArray) => {
   }
 };
 
-const getValue = async (typeSelector, question) => {
+const getValue = async (typeSelector, question, { repeatIndex = 0 } = {}) => {
   return await (await getCurrentPageSection())
-    .$(`label*=${question}`)
+    .$$(`label*=${question}`)[repeatIndex]
     .$(typeSelector)
     .getValue();
 };
 
-const getInputValue = async (question) => {
-  return await getValue('input', question);
+const getInputValue = async (question, options) => {
+  return await getValue('input', question, options);
 };
 
-const getTextareaValue = async (question) => {
-  return await getValue('textarea', question);
+const getTextareaValue = async (question, options) => {
+  return await getValue('textarea', question, options);
 };
 
 const scrollToQuestion = async (label) => {
@@ -114,8 +119,8 @@ const isConstraintMessageDisplayed = async (question) => {
     .isDisplayed();
 };
 
-const addRepeatSection = async () => {
-  await addRepeatSectionButton().click();
+const addRepeatSection = async (title) => {
+  await addRepeatSectionButton(title).click();
 };
 
 const drawShapeOnCanvas = async (question) => {
@@ -140,6 +145,7 @@ const isRadioButtonSelected = async (question, value) => {
 };
 
 module.exports = {
+  getCurrentPageSection,
   isElementDisplayed,
   selectRadioButton,
   selectCheckBox,

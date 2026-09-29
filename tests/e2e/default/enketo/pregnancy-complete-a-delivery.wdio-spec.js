@@ -200,13 +200,8 @@ describe('Contact Delivery Form', () => {
     }
 
     // Verify alive babies UUIDs are unique
-    const aliveBabyUUIds = [];
-    for (let i = 0; i < noOfAliveBabies; i++) {
-      aliveBabyUUIds.push((await reportsPage
-        .getDetailReportRowContent(
-          `report.delivery.babys_condition.baby_repeat.${i}.baby_details.child_doc`
-        )).rowValues[0]);
-    }
+    const aliveBabyUUIds = initialReport.fields.babys_condition.baby_repeat
+      .map(({ baby_details }) => baby_details.child_doc);
 
     expect(deadBabyUUIds.length).to.equal(noOfDeadBabies);
     expect(aliveBabyUUIds.length).to.deep.equal(noOfAliveBabies);
@@ -279,13 +274,8 @@ describe('Contact Delivery Form', () => {
     }
 
     // Verify alive babies UUIDs are unique
-    const updatedAliveBabyUUIds = [];
-    for (let i = 0; i < noOfAliveBabies; i++) {
-      updatedAliveBabyUUIds.push((await reportsPage
-        .getDetailReportRowContent(
-          `report.delivery.babys_condition.baby_repeat.${i}.baby_details.child_doc`
-        )).rowValues[0]);
-    }
+    const updatedAliveBabyUUIds = updatedReport.fields.babys_condition.baby_repeat
+      .map(({ baby_details }) => baby_details.child_doc);
 
     expect(updatedDeadBabyUUIds.length).to.equal(noOfDeadBabies);
     expect(updatedAliveBabyUUIds.length).to.deep.equal(noOfAliveBabies);

@@ -123,6 +123,42 @@ describe('multi_report_alerts', () => {
       });
   });
 
+  it('should add phone_number_error code on errors when phone recipient lookup fails', () => {
+    const settings = {
+      transitions: { multi_report_alerts: true },
+      multi_report_alerts: [{
+        name: 'test',
+        is_report_counted: 'function(r, l) { return true }',
+        num_reports_threshold: 1,
+        message: 'multi_report_message',
+        recipients: ['new_report.this.does.not.exist.at.all'],
+        time_window_in_days: 1,
+        forms: ['FORM']
+      }],
+      forms: { FORM: { } }
+    };
+
+    const doc = {
+      _id: uuid(),
+      type: DOC_TYPES.DATA_RECORD,
+      form: 'FORM',
+      from: '0123456789',
+      reported_date: new Date().getTime(),
+      contact: { _id: 'person' }
+    };
+
+    return utils
+      .updateSettings(settings, { ignoreReload: 'sentinel' })
+      .then(() => utils.saveDoc(doc))
+      .then(() => sentinelUtils.waitForSentinel(doc._id))
+      .then(() => utils.getDoc(doc._id))
+      .then(updated => {
+        expect(updated.errors).to.not.be.undefined;
+        expect(updated.errors).to.have.lengthOf(1);
+        expect(updated.errors[0].code).to.equal('phone_number_error');
+      });
+  });
+
   it('should not add task when threshold not reached', () => {
     const settings = {
       transitions: { multi_report_alerts: true },

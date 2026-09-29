@@ -21,6 +21,7 @@ import { DuplicateContactsComponent } from '@mm-components/duplicate-contacts/du
 import { Contact, Qualifier } from '@medic/cht-datasource';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { GeolocationService } from '@mm-services/geolocation.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { FormType } from '@mm-services/form/form-config';
 import { FormValidationError } from '@mm-services/enketo.service';
@@ -45,6 +46,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly translateService: TranslateService,
     private readonly ngZone: NgZone,
     private readonly fileReaderService: FileReaderService,
+    private readonly geolocationService: GeolocationService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
@@ -68,6 +70,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   enketoContact;
 
   private routeSnapshot;
+  private geoHandle: any;
   private trackRender;
   private trackEditDuration;
   private trackSave;
@@ -167,6 +170,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnDestroy() {
     this.subscription.unsubscribe();
     this.translationsLoadedSubscription?.unsubscribe();
+    this.geoHandle?.cancel();
     this.globalActions.setTitle();
     if (this.enketoContact?.formInstance) {
       this.formService.unload(this.enketoContact.formInstance);
@@ -182,6 +186,8 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private async initForm() {
     this.contentError = false;
     this.errorTranslationKey = false;
+    this.geoHandle?.cancel();
+    this.geoHandle = this.geolocationService.init();
 
     try {
       const contact = await this.getContact();
@@ -437,7 +443,8 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       const result = await this.formService.saveContact(
         { docId, type: this.enketoContact.type },
         form,
-        this.duplicatesAcknowledged
+        this.duplicatesAcknowledged,
+        this.geoHandle,
       );
 
       console.debug('saved contact', result);

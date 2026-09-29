@@ -27,20 +27,24 @@ const rightPanelSelectors = {
   emptySelection: () => $('contacts-content .empty-selection'),
   childrenCards: () => $$('.right-pane .card.children'),
   contactCardTitle: () => $('.inbox .content-pane .material .body .action-header'),
+  primaryContactName: () => $('i[title="Primary contact"]').nextElement(),
+  personsCardList: () => $$('.card.children.persons h4 span'),
+  placesCardRows: () => $$('.card.children.places li.content-row'),
+};
+
+const childRowSelectors = {
+  childContactRow: (contactId) => $(`.right-pane .card.children li.content-row[data-record-id="${contactId}"]`),
+  childVisitBadge: (contactId) => childRowSelectors.childContactRow(contactId).$('.heading .visits'),
 };
 
 const contactCardSelectors = {
   contactCardName: () => $('h2[test-id="contact-name"]'),
   contactCardIcon: (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`),
+  contactCardProfileImage: () => $('.card .heading mm-contact-profile-image img'),
   contactSummaryContainer: () => $('#contact_summary'),
   contactMedicID: () => $('#contact_summary .cell.patient_id > div > p:not(.summary_label)'),
   contactDeceasedStatus: () => $('div[test-id="deceased-title"]'),
   contactMuted: () => $('.heading-content .muted'),
-};
-
-const peopleCardSelectors = {
-  primaryContactName: () => $('i[title="Primary contact"]').nextElement(),
-  rhsPeopleListSelector: () => $$('.card.children.persons h4 span'),
 };
 
 const RHS_TASK_LIST_CARD =  '.card.tasks';
@@ -299,7 +303,7 @@ const getContactSummaryField = async (fieldName) => {
 };
 
 const getPrimaryContactName = async () => {
-  return await peopleCardSelectors.primaryContactName().getText();
+  return await rightPanelSelectors.primaryContactName().getText();
 };
 
 const getAllLHSContactsNames = async () => {
@@ -308,7 +312,32 @@ const getAllLHSContactsNames = async () => {
 };
 
 const getAllRHSPeopleNames = () => {
-  return commonPage.getTextForElements(peopleCardSelectors.rhsPeopleListSelector);
+  return commonPage.getTextForElements(rightPanelSelectors.personsCardList);
+};
+
+const getAllRHSPlaceIds = async () => {
+  const placeRows = await rightPanelSelectors.placesCardRows();
+  return placeRows.map(row => row.getAttribute('data-record-id'));
+};
+
+const getChildVisitStats = async (contactId) => {
+  const row = childRowSelectors.childContactRow(contactId);
+  await row.waitForDisplayed();
+  const overdue = (await row.getAttribute('class')).includes('overdue');
+
+  const visitBadge = childRowSelectors.childVisitBadge(contactId);
+  if (!await visitBadge.isExisting()) {
+    return { hasVisitBadge: false, overdue };
+  }
+
+  const badgeClass = await visitBadge.getAttribute('class');
+  return {
+    hasVisitBadge: true,
+    overdue,
+    count: await visitBadge.$('span').getText(),
+    status: ['danger', 'warning', 'success'].find(status => badgeClass.includes(status)),
+    summary: await row.$('.summary p').getText(),
+  };
 };
 
 const getAllRHSReportsNames = async () => {
@@ -397,6 +426,8 @@ const getCurrentContactId = async () => {
   return currentUrl.slice(contactBaseUrl.length);
 };
 
+const getContactCardProfileImage = () => contactCardSelectors.contactCardProfileImage();
+
 const getContactListLoadingStatus = async () => {
   await leftPanelSelectors.contactListLoadingStatus().waitForDisplayed();
   return await leftPanelSelectors.contactListLoadingStatus().getText();
@@ -435,7 +466,11 @@ const openFirstContact = async () => {
 };
 
 const openNthContact = async (n) => {
-  const nthContact = leftPanelSelectors.nthContact(n);
+  const nthContact = await leftPanelSelectors.nthContact(n);
+  await nthContact.waitForExist();
+  // wdio's scrollIntoView doesn't scroll the inner list container, so the row stays hidden
+  // under the fast-action button and the click gets intercepted - scroll natively instead
+  await browser.execute((el) => el.scrollIntoView({ block: 'center' }), nthContact);
   await nthContact.click();
 };
 
@@ -464,6 +499,7 @@ module.exports = {
   genericForm,
   leftPanelSelectors,
   rightPanelSelectors,
+  childRowSelectors,
   contactCardSelectors,
   tasksCardSelectors,
   reportsCardSelectors,
@@ -480,6 +516,8 @@ module.exports = {
   addPlace,
   getPrimaryContactName,
   getAllRHSPeopleNames,
+  getChildVisitStats,
+  getAllRHSPlaceIds,
   waitForContactLoaded,
   waitForContactUnloaded,
   editPerson,
@@ -491,6 +529,7 @@ module.exports = {
   deletePerson,
   allContactsList,
   openReport,
+  getContactCardProfileImage,
   getContactCardTitle,
   getContactInfoName,
   getContactMedicID,

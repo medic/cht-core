@@ -1,17 +1,23 @@
 name: Push Helm Charts→Docs Site
 
 on:
+  workflow_run:
+    workflows:
+      - 'Build and test'
+    types:
+      - completed
+    branches:
+      - '[0-9]+.[0-9]+.[0-9]+'
 
-  # CHT Core only pushes new tags when we do a release
-  push:
-    tags:
-      - '*'
-  # allow this to be run manually in case a change is made outside
-  # of a release
-  workflow_dispatch:
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   checkout-repo-upload-chart-artifacts:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
