@@ -169,6 +169,50 @@ describe('SSO login', () => {
       )).to.be.true;
     });
 
+    it('returns the authorization URL with max_age when configured', async () => {
+      settingsService.get.resolves({ oidc_provider: {
+        ...SETTINGS.oidc_provider,
+        max_age: 60
+      } });
+      secureSettings.getCredentials.resolves(CLIENT_SECRET);
+      client.discovery.resolves(idServerConfig);
+
+      const url = await service.getAuthorizationUrl(REDIRECT_URL);
+
+      expect(url).to.equal(AUTH_URL);
+      expect(settingsService.get.calledOnceWithExactly()).to.be.true;
+      expect(client.buildAuthorizationUrl.calledOnceWithExactly(
+        idServerConfig,
+        {
+          redirect_uri: REDIRECT_URL,
+          scope: 'openid email',
+          max_age: 60
+        }
+      )).to.be.true;
+    });
+
+    it('returns the authorization URL with max_age when max_age is 0', async () => {
+      settingsService.get.resolves({ oidc_provider: {
+        ...SETTINGS.oidc_provider,
+        max_age: 0
+      } });
+      secureSettings.getCredentials.resolves(CLIENT_SECRET);
+      client.discovery.resolves(idServerConfig);
+
+      const url = await service.getAuthorizationUrl(REDIRECT_URL);
+
+      expect(url).to.equal(AUTH_URL);
+      expect(settingsService.get.calledOnceWithExactly()).to.be.true;
+      expect(client.buildAuthorizationUrl.calledOnceWithExactly(
+        idServerConfig,
+        {
+          redirect_uri: REDIRECT_URL,
+          scope: 'openid email',
+          max_age: 0
+        }
+      )).to.be.true;
+    });
+
     it('returns the authorization URL after retrying request three times', async () => {
       settingsService.get.resolves(SETTINGS);
       secureSettings.getCredentials.resolves(CLIENT_SECRET);
@@ -302,6 +346,60 @@ describe('SSO login', () => {
         `Authorization server config loaded: ${JSON.stringify(SERVER_METADATA)}`
       )).to.be.true;
       expect(client.authorizationCodeGrant.calledOnceWithExactly(...expectedAuthCodeGrantParams)).to.be.true;
+      expect(translations.getEnabledLocales.calledOnceWithExactly()).to.be.true;
+    });
+
+    it('returns the id token data with maxAge check when max_age is configured', async () => {
+      settingsService.get.resolves({ oidc_provider: {
+        ...SETTINGS.oidc_provider,
+        max_age: 60
+      } });
+      const expectedClaims = {
+        preferred_username: 'test',
+        locale: 'en',
+        email: 'test@email.com'
+      };
+      claims.returns(expectedClaims);
+      client.authorizationCodeGrant.resolves({ claims });
+
+      const idTokenClaims = await service.getIdToken(REDIRECT_URL);
+
+      expect(idTokenClaims).to.deep.equal({
+        locale: 'en',
+        username: 'test@email.com'
+      });
+      expect(client.authorizationCodeGrant.calledOnceWithExactly(
+        idServerConfig,
+        REDIRECT_URL,
+        { idTokenExpected: true, maxAge: 60 }
+      )).to.be.true;
+      expect(translations.getEnabledLocales.calledOnceWithExactly()).to.be.true;
+    });
+
+    it('returns the id token data with maxAge check when max_age is 0', async () => {
+      settingsService.get.resolves({ oidc_provider: {
+        ...SETTINGS.oidc_provider,
+        max_age: 0
+      } });
+      const expectedClaims = {
+        preferred_username: 'test',
+        locale: 'en',
+        email: 'test@email.com'
+      };
+      claims.returns(expectedClaims);
+      client.authorizationCodeGrant.resolves({ claims });
+
+      const idTokenClaims = await service.getIdToken(REDIRECT_URL);
+
+      expect(idTokenClaims).to.deep.equal({
+        locale: 'en',
+        username: 'test@email.com'
+      });
+      expect(client.authorizationCodeGrant.calledOnceWithExactly(
+        idServerConfig,
+        REDIRECT_URL,
+        { idTokenExpected: true, maxAge: 0 }
+      )).to.be.true;
       expect(translations.getEnabledLocales.calledOnceWithExactly()).to.be.true;
     });
 
