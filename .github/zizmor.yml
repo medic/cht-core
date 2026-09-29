@@ -22,6 +22,12 @@ rules:
       # drops any run whose upstream event was not a push. No fork code runs
       # with elevated privilege. Risk accepted: 2026-09-18.
       - release-helm-charts.yml
+      # ai-review.yml uses pull_request_target so fork PRs can be reviewed with
+      # the API secrets and a token that can comment. Each run is gated by a
+      # maintainer applying the `ai-review` label (triage/write access only). It
+      # checks out the PR head pinned to the labelled SHA but never executes PR code.
+      # Risk accepted: 2026-09-25.
+      - ai-review.yml
 
   unpinned-uses:
     config:
