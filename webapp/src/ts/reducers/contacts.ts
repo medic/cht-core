@@ -48,6 +48,15 @@ const orderBy = (c1, c2) => {
     return c1.lastVisitedDate - c2.lastVisitedDate;
   }
 
+  if (c1.sortByTaskCount) {
+    const count1 = c1.taskCount || 0;
+    const count2 = c2.taskCount || 0;
+    if (count1 !== count2) {
+      return count2 - count1;
+    }
+    return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
+  }
+
   const c1Type = getContactTypeOrder(c1) || '';
   const c2Type = getContactTypeOrder(c2) || '';
 

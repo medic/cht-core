@@ -11,6 +11,7 @@
   <mm-sort-filter
     *ngIf="showSort"
     [lastVisitedDateExtras]="lastVisitedDateExtras"
+    [taskCountExtras]="taskCountExtras"
     (sort)="applySort($event)"
     [sortDirection]="sortDirection">
   </mm-sort-filter>
