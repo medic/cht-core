@@ -1,9 +1,11 @@
 import * as _ from 'lodash-es';
-import { Injectable, Inject } from '@angular/core';
+import { Injectable, Inject, Injector } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
+import { defaultIfEmpty, lastValueFrom } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
 
+import { DeviceKeyService } from '@mm-services/device-key.service';
 import { LocationService } from '@mm-services/location.service';
 import { USER_ROLES } from '@medic/constants';
 
@@ -21,7 +23,10 @@ export class SessionService {
     private cookieService: CookieService,
     private http: HttpClient,
     @Inject(DOCUMENT) private document: Document,
-    private location: LocationService
+    private readonly location: LocationService,
+    // Resolved when logging out rather than injected: DeviceKeyService depends on this service,
+    // and asking for it here up front would be a cycle.
+    private readonly injector: Injector
   ) {}
 
   navigateToLogin() {
@@ -40,9 +45,10 @@ export class SessionService {
   }
 
   logout() {
-    return this.http
-      .delete('/_session', this.httpOptions)
-      .toPromise()
+    this.forgetDeviceKey();
+    // defaultIfEmpty because lastValueFrom rejects on an observable that completes without
+    // emitting, which is what a delete with no body does.
+    return lastValueFrom(this.http.delete('/_session', this.httpOptions).pipe(defaultIfEmpty(null)))
       .catch(() => {
         // Set cookie to force login before using app
         this.cookieService.set('login', 'force', undefined, '/');
@@ -50,6 +56,25 @@ export class SessionService {
       .then(() => {
         this.navigateToLogin();
       });
+  }
+
+  /**
+   * Marks this device's offline sync key to be dropped, so signing in again registers a fresh one.
+   *
+   * A password change invalidates the server session on every device the user has, and drops the
+   * keys the server held for all of them. Only the device that typed the new password knows it
+   * happened; the rest are logged out and would otherwise come back believing their key was still
+   * good, and be refused every time they sent anything.
+   *
+   * Only a note is left here, because this runs while the page is navigating away. The key itself
+   * goes at the next start, which is before anything could use it.
+   */
+  private forgetDeviceKey() {
+    try {
+      this.injector.get(DeviceKeyService).forgetOnNextStart();
+    } catch (err) {
+      console.error('SessionService :: Error forgetting the device key', err);
+    }
   }
 
   /**
@@ -98,7 +123,8 @@ export class SessionService {
       .then(value => {
         const name = value && value.userCtx && value.userCtx.name;
         if (name !== userCtx.name) {
-          // connected to the internet but server session is different
+          // connected to the internet but server session is different. Awaited so a caller of
+          // init() can know the logout finished: it clears key material before navigating away.
           this.logout();
           return;
         }

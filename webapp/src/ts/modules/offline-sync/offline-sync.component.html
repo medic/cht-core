@@ -1,0 +1,125 @@
+<mm-tool-bar title="offline_sync.title"></mm-tool-bar>
+<div class="inner">
+  <div class="col-sm-12 page offline-sync scrolling">
+
+    @if (loading) {
+      <mat-card>
+        <mat-card-content>
+          <p translate>offline_sync.loading</p>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <!-- Browsers have no radio to share; this only works inside the Android app. -->
+    @if (!loading && !supported) {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title translate>offline_sync.unsupported.title</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p translate>offline_sync.unsupported.description</p>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <!-- Neither permission, or a device too old for either role. -->
+    @if (!loading && supported && !canHost && !canJoin) {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title translate>offline_sync.no_role.title</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p translate>offline_sync.no_role.description</p>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    @if (!loading && canHost && state === 'idle') {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title translate>offline_sync.host.title</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p translate>offline_sync.host.description</p>
+          <button mat-flat-button color="primary" (click)="startHosting()">{{ 'offline_sync.host.start' | translate }}</button>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    @if (!loading && canJoin && state === 'idle') {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title translate>offline_sync.peer.title</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p translate>offline_sync.peer.description</p>
+          <button mat-flat-button color="primary" (click)="scanAndJoin()">{{ 'offline_sync.peer.scan' | translate }}</button>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    @if (state === 'starting' || state === 'joining') {
+      <mat-card>
+        <mat-card-content>
+          <p>{{ (state === 'starting' ? 'offline_sync.host.starting' : 'offline_sync.peer.joining') | translate }}</p>
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <!-- Hosting: the code carries the network details and the certificate to expect. -->
+    @if (state === 'hosting') {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title translate>offline_sync.host.ready.title</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p translate>offline_sync.host.ready.description</p>
+          @if (qrImage) {
+            <img class="offline-sync-qr" [src]="qrImage" alt="{{ 'offline_sync.host.ready.qr_alt' | translate }}">
+          }
+          <!-- The same network the code carries, as text: the OS names it, so the only way anyone
+               can read it is if we show it. -->
+          @if (ssid) {
+            <dl class="offline-sync-network">
+              <dt translate>offline_sync.wifi.ssid</dt>
+              <dd>{{ ssid }}</dd>
+              <dt translate>offline_sync.wifi.password</dt>
+              <dd>{{ password }}</dd>
+            </dl>
+          }
+          <button mat-button color="primary" (click)="stopHosting()">{{ 'offline_sync.host.stop' | translate }}</button>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    @if (state === 'paired') {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title translate>offline_sync.peer.paired.title</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p>{{ 'offline_sync.peer.paired.description' | translate:{ host: hostLabel } }}</p>
+          <button mat-button color="primary" (click)="leaveSession()">{{ 'offline_sync.peer.leave' | translate }}</button>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    @if (state === 'failed') {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title translate>offline_sync.failed.title</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @if (errorKey) {
+            <p>{{ errorKey | translate }}</p>
+          }
+          <!-- Every one of these messages tells the user to try again, so there has to be
+               something to press: the start and scan buttons only show while idle. -->
+          <button mat-flat-button color="primary" (click)="startOver()">{{ 'offline_sync.failed.retry' | translate }}</button>
+        </mat-card-content>
+      </mat-card>
+    }
+
+  </div>
+</div>

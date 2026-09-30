@@ -112,6 +112,29 @@ describe('Users service', () => {
       chai.expect(settings.password).to.equal(undefined);
     });
 
+    /**
+     * A device key lets a phone produce signed offline data bundles that are written as this user,
+     * and it does not depend on the password. Without this, changing the password after a phone is
+     * lost would block ordinary sync while leaving that phone able to keep injecting data through
+     * a relay.
+     */
+    it('drops every registered device key when the password changes', () => {
+      const user = { name: 'john', keys_by_device: { 'device-a': { signing_public_key: {} } } };
+
+      const updated = service.__get__('getUserUpdates')(user, { password: 'new-one' }, true);
+
+      chai.expect(updated.keys_by_device).to.equal(undefined);
+    });
+
+    it('leaves device keys alone when the password is not changing', () => {
+      const keys = { 'device-a': { signing_public_key: {} } };
+      const user = { name: 'john', keys_by_device: keys };
+
+      const updated = service.__get__('getUserUpdates')(user, { roles: ['chw'] }, true);
+
+      chai.expect(updated.keys_by_device).to.deep.equal(keys);
+    });
+
     it('reassigns place and contact fields', () => {
       const data = {
         place: 'abc',
@@ -1153,7 +1176,7 @@ describe('Users service', () => {
     // Only the device's PUBLIC signing key reaches this layer. The server private key is stored in
     // the secureSettings vault by the api controller and must never be written to the _users doc,
     // and the matching server public key is only returned to the device, never stored.
-    const signingKey = { kty: 'OKP', crv: 'Ed25519', x: 'device-pub' };
+    const signingKey = { kty: 'EC', crv: 'P-256', x: 'device-pub-x', y: 'device-pub-y' };
 
     it('adds a new device key entry to the _users doc', async () => {
       db.users.get.resolves({ _id: userId, name: 'steve', type: 'user' });
@@ -1176,7 +1199,7 @@ describe('Users service', () => {
 
     it('replaces the existing entry when the same device re-registers', async () => {
       const otherEntry = {
-        signing_public_key: { kty: 'OKP', crv: 'Ed25519', x: 'other-pub' },
+        signing_public_key: { kty: 'EC', crv: 'P-256', x: 'other-pub-x', y: 'other-pub-y' },
         updated_date: 1000,
       };
       db.users.get.resolves({
@@ -1185,7 +1208,7 @@ describe('Users service', () => {
         type: 'user',
         keys_by_device: {
           'device-1': {
-            signing_public_key: { kty: 'OKP', crv: 'Ed25519', x: 'old-pub' },
+            signing_public_key: { kty: 'EC', crv: 'P-256', x: 'old-pub-x', y: 'old-pub-y' },
             updated_date: 1000,
           },
           'device-2': otherEntry,

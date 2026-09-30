@@ -20,6 +20,7 @@ import { StorageInfoService } from '@mm-services/storage-info.service';
 
 import { filter } from 'rxjs/operators';
 import { Selectors } from '@mm-selectors/index';
+import { OfflineSyncService } from '@mm-services/offline-sync.service';
 import { HeaderTabsService, SidebarTab } from '@mm-services/header-tabs.service';
 
 @Component({
@@ -57,9 +58,10 @@ export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, O
     protected modalService: ModalService,
     private router: Router,
     protected readonly storageInfoService: StorageInfoService,
-    private readonly headerTabsService: HeaderTabsService
+    private readonly headerTabsService: HeaderTabsService,
+    offlineSyncService: OfflineSyncService,
   ) {
-    super(store, dbSyncService, modalService, storageInfoService);
+    super(store, dbSyncService, modalService, storageInfoService, offlineSyncService);
     this.globalActions = new GlobalActions(store);
   }
 

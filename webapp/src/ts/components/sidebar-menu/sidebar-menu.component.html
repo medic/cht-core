@@ -44,6 +44,11 @@
           <mat-icon fontIcon="fa-refresh"></mat-icon>
           <span>{{ 'sync.now' | translate }}</span>
         </a>
+
+        <a *ngIf="offlineSyncVisible" class="nav-item" routerLink="offline-sync" (click)="close()">
+          <mat-icon fontIcon="fa-exchange"></mat-icon>
+          <span>{{ 'offline_sync.menu.title' | translate }}</span>
+        </a>
       </div>
 
       <div class="nav-section" *ngIf="!replicationStatus?.disabled && (replicationStatus?.lastSuccessTo || replicationStatus?.current)">

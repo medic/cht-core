@@ -56,7 +56,7 @@ module.exports = {
    *           bundles and detect gaps without reading the payload.
    *         schema:
    *           type: object
-   *           required: [user, device_id]
+   *           required: [user, device_id, payload_header_sha256]
    *           properties:
    *             user:
    *               type: string
@@ -64,11 +64,23 @@ module.exports = {
    *             device_id:
    *               type: string
    *               description: Identifier of the peer device that produced the bundle.
+   *             payload_header_sha256:
+   *               type: string
+   *               description: >
+   *                 Base64 sha256 of the age header of the body, meaning the bytes from the start
+   *                 of the ciphertext up to and including the newline that ends the "--- <mac>"
+   *                 line. This is what ties the signed envelope to the body it was sent with, so
+   *                 a body that does not hash to it is refused before any doc is written.
+   *             bundle_seq:
+   *               type: integer
+   *               description: >
+   *                 Per device counter, carried for the relay so it can order bundles and spot a
+   *                 gap without opening them. The server does not act on it.
    *       - in: header
    *         name: X-Medic-Bundle-Signature
    *         required: true
    *         description: >
-   *           Base64 Ed25519 signature over the envelope header bytes, made with the peer
+   *           Base64 ECDSA P-256 signature over the envelope header bytes, made with the peer
    *           device's registered signing key.
    *         schema:
    *           type: string

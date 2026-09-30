@@ -10,6 +10,7 @@ const replication = require('../services/replication/replication');
 const age = require('../services/offline-data-bundle/age');
 const signing = require('../services/offline-data-bundle/signing');
 const serverKey = require('../services/offline-data-bundle/server-key');
+const { PublicError } = require('../errors');
 
 const validateDeviceKeyBody = async (body) => {
   const { signing_key: signingKey } = body;
@@ -17,7 +18,7 @@ const validateDeviceKeyBody = async (body) => {
     return 'Missing required field: signing_key';
   }
   if (!(await signing.isValidPublicKey(signingKey))) {
-    return 'Invalid signing_key: expected an Ed25519 public key JWK';
+    return 'Invalid signing_key: expected an ECDSA P-256 public key JWK';
   }
   return null;
 };
@@ -296,6 +297,31 @@ const verifyUpdateRequest = async (req) => {
  *               - fields: [password, 'type or roles']
  *                 index: 1
  */
+/**
+ * Stores the server's key for this device, turning a vault failure into something a person can act
+ * on.
+ *
+ * The vault encrypts what it stores with the CouchDB auth secret, and CouchDB answers 404 when that
+ * secret is not configured. Left alone, that 404 reaches the device unchanged, which reads as "this
+ * device is not registered" and sends whoever is looking to the phone, when the fault is on the
+ * server and nothing the phone does will fix it.
+ */
+const storeServerKey = async (req, username, deviceId, identity) => {
+  try {
+    await serverKey.setServerPrivateKey(username, deviceId, identity);
+  } catch (err) {
+    logger.error(`REQ ${req.id} - Could not store the server key for '${username}'/'${deviceId}': %o`, err);
+    // PublicError, because server-utils sends a bare "Server error" for any 5xx and passes only
+    // publicMessage through as the details: a message left anywhere else is logged and never seen
+    // by whoever is holding the device.
+    const error = new PublicError(
+      'Could not store the key for this device. Check that the CouchDB secret is configured.'
+    );
+    error.code = 500;
+    throw error;
+  }
+};
+
 module.exports = {
   /**
    * @openapi
@@ -489,7 +515,7 @@ module.exports = {
    *     summary: Register a device's public key
    *     operationId: v1UsersUsernameDeviceKeysPost
    *     description: >
-   *       Stores the device's Ed25519 signing public key against the user and returns the server's encryption
+   *       Stores the device's ECDSA P-256 signing public key against the user and returns the server's encryption
    *       public key generated for this device, which the device encrypts its data bundles to. Keys are
    *       per-device: re-registering the same `device_id` replaces the stored key. Requires the
    *       `can_send_offline_data_bundle` permission. Non-admin users can only register keys for themselves.
@@ -520,7 +546,7 @@ module.exports = {
    *               signing_key:
    *                 type: object
    *                 additionalProperties: true
-   *                 description: The device's Ed25519 public signing key as a JWK.
+   *                 description: The device's ECDSA P-256 public signing key as a JWK.
    *     responses:
    *       '200':
    *         description: Device key registered
@@ -562,7 +588,7 @@ module.exports = {
       // The server PRIVATE key must never touch the _users doc (the user can read it via the
       // CouchDB proxy). It goes to the secureSettings vault; only the device's public key goes on
       // the _users doc.
-      await serverKey.setServerPrivateKey(username, deviceId, identity);
+      await storeServerKey(req, username, deviceId, identity);
       await users.setDeviceKey(username, deviceId, req.body.signing_key);
 
       logger.info(`REQ ${req.id} - Registered device key for device '${deviceId}' on user '${username}'.`);

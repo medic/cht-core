@@ -39,6 +39,7 @@ import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-m
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
+import { DeviceKeyService } from '@mm-services/device-key.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TranslateService } from '@mm-services/translate.service';
@@ -170,6 +171,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     private readonly formService: FormService,
     private readonly taskNotificationService: TasksNotificationService,
     private readonly interactionTrackingService: InteractionTrackingService,
+    private readonly deviceKeyService: DeviceKeyService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
@@ -312,6 +314,10 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.setupRouter();
     this.loadTranslations();
     this.setupDb();
+    // In the same tick as setupDb, and not in the chain below: the first sync it schedules can
+    // complete while that chain is still working, and a registration that missed the only
+    // successful sync of the session never happens.
+    this.deviceKeyService.init();
     this.countMessageService.init();
     this.feedbackService.init();
     this.sessionService.init();
