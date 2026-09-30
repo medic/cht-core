@@ -111,7 +111,9 @@
           <mat-card-title translate>offline_sync.failed.title</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <p>{{ errorKey | translate }}</p>
+          @if (errorKey) {
+            <p>{{ errorKey | translate }}</p>
+          }
           <!-- Every one of these messages tells the user to try again, so there has to be
                something to press: the start and scan buttons only show while idle. -->
           <button mat-flat-button color="primary" (click)="startOver()">{{ 'offline_sync.failed.retry' | translate }}</button>
