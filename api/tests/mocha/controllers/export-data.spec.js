@@ -246,6 +246,23 @@ describe('Export Data controller', () => {
           exportStream.destroyed.should.equal(true);
         });
     });
+
+    it('responds with JSON for JSON exports', () => {
+      const req = { params: { type: 'user-devices' } };
+      const res = { set: set, json: sinon.stub() };
+      const devices = [ { user: 'a', deviceId: 'd1' } ];
+      auth.check.resolves();
+      auth.getUserCtx.returns(Promise.resolve({}));
+      auth.isOnlineOnly.returns(true);
+      sinon.stub(service, 'exportObject').resolves(devices);
+      sinon.stub(service, 'exportStream');
+
+      return controller.get(req, res).then(() => {
+        service.exportObject.args.should.deep.equal([ [ 'user-devices', {}, { humanReadable: false } ] ]);
+        res.json.args.should.deep.equal([ [ devices ] ]);
+        service.exportStream.callCount.should.equal(0);
+      });
+    });
   });
 
 });

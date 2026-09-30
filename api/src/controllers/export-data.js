@@ -661,14 +661,14 @@ module.exports = {
           return auth.check(req, service.permission(type));
         }
       })
-      .then(() => {
+      .then(async () => {
         const format = service.format(type);
         writeExportHeaders(res, type, format);
 
         const writeAsStream = format === 'csv';
         if (!writeAsStream) {
-          return service.exportObject(type, filters, options)
-            .then(obj => res.json(obj));
+          const obj = await service.exportObject(type, filters, options);
+          return res.json(obj);
         }
 
 

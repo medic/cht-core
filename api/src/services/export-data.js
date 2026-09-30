@@ -75,7 +75,7 @@ class SearchResultReader extends Readable {
     }
 
     return this.mapper.getDocIds(this.options, this.filters)
-      .then(ids => {
+      .then(async ids => {
 
         if (!ids.length) {
           return this.push(null);
@@ -88,13 +88,11 @@ class SearchResultReader extends Readable {
           return this.destroyed ? undefined : this._read();
         }
 
-        return this.mapper.getDocs(newIds)
-          .then(docs => {
-            const lines = docs.map(doc => {
-              return this.getRows(doc).map(csvLineToString).join('');
-            });
-            this.push(lines.join(''));
-          });
+        const docs = await this.mapper.getDocs(newIds);
+        const lines = docs.map(doc => {
+          return this.getRows(doc).map(csvLineToString).join('');
+        });
+        this.push(lines.join(''));
       })
       .catch(err => {
         process.nextTick(() => this.emit('error', err));
