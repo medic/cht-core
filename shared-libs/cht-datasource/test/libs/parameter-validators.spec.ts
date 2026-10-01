@@ -177,6 +177,19 @@ describe('libs parameter-validators', () => {
       expect(() => assertContactTypeFreetextPhonesQualifier(validPhones)).to.not.throw();
     });
 
+    it('should pass when given a valid shortcodes qualifier', () => {
+      expect(() => assertContactTypeFreetextPhonesQualifier({ shortcodes: ['12345'] })).to.not.throw();
+    });
+
+    it('should pass when given a valid external refs qualifier', () => {
+      expect(() => assertContactTypeFreetextPhonesQualifier({ externalRefs: ['RC1'] })).to.not.throw();
+    });
+
+    it('should throw InvalidArgumentError when an external ref is not upper-case', () => {
+      expect(() => assertContactTypeFreetextPhonesQualifier({ externalRefs: ['rc1'] }))
+        .to.throw(InvalidArgumentError);
+    });
+
     it('should throw InvalidArgumentError when given an invalid qualifier', () => {
       const invalidQualifier = { invalid: 'data' };
 
@@ -188,7 +201,8 @@ describe('libs parameter-validators', () => {
 
       expect(() => assertContactTypeFreetextPhonesQualifier(invalidQualifier)).to.throw(
         InvalidArgumentError,
-        'Invalid qualifier [{"invalid":"data"}]. Must be a contact type, freetext, and/or phones qualifier.'
+        'Invalid qualifier [{"invalid":"data"}]. ' +
+        'Must be a contact type and/or freetext, phones, shortcodes, or external refs qualifier.'
       );
     });
 
@@ -235,12 +249,29 @@ describe('libs parameter-validators', () => {
       expect(() => assertContactTypeIdsPhonesQualifier(validPhones)).to.not.throw();
     });
 
+    it('should pass when given a valid shortcodes qualifier', () => {
+      expect(() => assertContactTypeIdsPhonesQualifier({ shortcodes: ['12345'] })).to.not.throw();
+    });
+
+    it('should pass when given a valid external refs qualifier', () => {
+      expect(() => assertContactTypeIdsPhonesQualifier({ externalRefs: ['RC1'] })).to.not.throw();
+    });
+
+    it('should throw InvalidArgumentError when a shortcode is padded', () => {
+      expect(() => assertContactTypeIdsPhonesQualifier({ shortcodes: [' 12345'] })).to.throw(InvalidArgumentError);
+    });
+
+    it('should throw InvalidArgumentError when an external ref is not upper-case', () => {
+      expect(() => assertContactTypeIdsPhonesQualifier({ externalRefs: ['rc1'] })).to.throw(InvalidArgumentError);
+    });
+
     it('should throw InvalidArgumentError with correct message for invalid qualifier', () => {
       const invalidQualifier = { invalid: 'data' };
 
       expect(() => assertContactTypeIdsPhonesQualifier(invalidQualifier)).to.throw(
         InvalidArgumentError,
-        'Invalid qualifier [{"invalid":"data"}]. Must be a contact type, ids, or phones qualifier.'
+        'Invalid qualifier [{"invalid":"data"}]. ' +
+        'Must be a contact type, ids, phones, shortcodes, or external refs qualifier.'
       );
     });
 

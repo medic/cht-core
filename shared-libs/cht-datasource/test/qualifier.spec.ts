@@ -3,21 +3,25 @@ import {
   byContactType,
   byContactId,
   byContactIds,
+  byExternalRefs,
   byForms,
   byFreetext,
   byPhones,
   byReportingPeriod,
+  byShortcodes,
   byUsername,
   byUuid,
   byIds, FreetextQualifier,
   isContactTypeQualifier,
   isContactIdQualifier,
   isContactIdsQualifier,
+  isExternalRefsQualifier,
   isFormsQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
   isPhonesQualifier,
   isReportingPeriodQualifier,
+  isShortcodesQualifier,
   isUsernameQualifier,
   isUuidQualifier,
   isIdsQualifier,
@@ -294,6 +298,127 @@ describe('qualifier', () => {
     ].forEach(([ qualifier, expected ]) => {
       it(`evaluates ${JSON.stringify(qualifier)}`, () => {
         expect(isPhonesQualifier(qualifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byShortcodes', () => {
+    it('builds a qualifier that identifies contacts by their shortcodes', () => {
+      expect(byShortcodes(['12345', 'abc'])).to.deep.equal({ shortcodes: ['12345', 'abc'] });
+    });
+
+    it('removes duplicate shortcodes while keeping the order given', () => {
+      expect(byShortcodes(['2', '1', '2'])).to.deep.equal({ shortcodes: ['2', '1'] });
+    });
+
+    it('does not change the case of the shortcodes', () => {
+      expect(byShortcodes(['abc', 'ABC'])).to.deep.equal({ shortcodes: ['abc', 'ABC'] });
+    });
+
+    ([
+      null,
+      undefined,
+      '12345',
+      [],
+      [''],
+      ['   '],
+      ['12345', ''],
+      [' 12345'],
+      ['12345 '],
+      [null],
+      [12345],
+      { },
+    ] as [string, ...string[]][]).forEach(shortcodes => {
+      it(`throws an error for ${JSON.stringify(shortcodes)}`, () => {
+        expect(() => byShortcodes(shortcodes)).to.throw(
+          `Invalid shortcodes [${JSON.stringify(shortcodes)}].`
+        );
+      });
+    });
+  });
+
+  describe('isShortcodesQualifier', () => {
+    [
+      [ null, false ],
+      [ '12345', false ],
+      [ { shortcodes: { } }, false ],
+      [ { shortcodes: '12345' }, false ],
+      [ { shortcodes: [] }, false ],
+      [ { shortcodes: [''] }, false ],
+      [ { shortcodes: ['   '] }, false ],
+      [ { shortcodes: ['12345', null] }, false ],
+      [ { shortcodes: [12345] }, false ],
+      [ { shortcodes: [' 12345'] }, false ],
+      [ { shortcodes: ['12345 '] }, false ],
+      [ { shortcode: '12345' }, false ],
+      [ { shortcodes: ['12345'] }, true ],
+      [ { shortcodes: ['abc'] }, true ],
+      [ { shortcodes: ['12345', '67890'] }, true ],
+      [ { shortcodes: ['12345'], other: 'other' }, true ]
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isShortcodesQualifier(qualifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byExternalRefs', () => {
+    it('builds a qualifier that identifies contacts by their external references', () => {
+      expect(byExternalRefs(['RC1', 'RC2'])).to.deep.equal({ externalRefs: ['RC1', 'RC2'] });
+    });
+
+    it('upper-cases the external references', () => {
+      expect(byExternalRefs(['rc1', 'Rc2'])).to.deep.equal({ externalRefs: ['RC1', 'RC2'] });
+    });
+
+    it('removes references that are duplicates once upper-cased while keeping the order given', () => {
+      expect(byExternalRefs(['rc2', 'RC1', 'RC2'])).to.deep.equal({ externalRefs: ['RC2', 'RC1'] });
+    });
+
+    ([
+      null,
+      undefined,
+      'RC1',
+      [],
+      [''],
+      ['   '],
+      ['RC1', ''],
+      [' rc1'],
+      ['RC1 '],
+      [null],
+      [1],
+      { },
+    ] as [string, ...string[]][]).forEach(externalRefs => {
+      it(`throws an error for ${JSON.stringify(externalRefs)}`, () => {
+        expect(() => byExternalRefs(externalRefs)).to.throw(
+          `Invalid external refs [${JSON.stringify(externalRefs)}].`
+        );
+      });
+    });
+  });
+
+  describe('isExternalRefsQualifier', () => {
+    [
+      [ null, false ],
+      [ 'RC1', false ],
+      [ { externalRefs: { } }, false ],
+      [ { externalRefs: 'RC1' }, false ],
+      [ { externalRefs: [] }, false ],
+      [ { externalRefs: [''] }, false ],
+      [ { externalRefs: ['   '] }, false ],
+      [ { externalRefs: ['RC1', null] }, false ],
+      [ { externalRefs: [' RC1'] }, false ],
+      [ { externalRefs: ['RC1 '] }, false ],
+      [ { externalRefs: ['rc1'] }, false ],
+      [ { externalRefs: ['RC1', 'Rc2'] }, false ],
+      [ { externalRef: 'RC1' }, false ],
+      [ { externalRefs: ['RC1'] }, true ],
+      [ { externalRefs: ['123'] }, true ],
+      [ { externalRefs: ['RC1', 'RC2'] }, true ],
+      [ { externalRefs: ['RC1'], other: 'other' }, true ]
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isExternalRefsQualifier(qualifier)).to.equal(expected);
       });
     });
   });

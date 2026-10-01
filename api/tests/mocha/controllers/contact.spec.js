@@ -241,7 +241,10 @@ describe('Contact Controller', () => {
             limit,
           }
         };
-        const err = { status: 400, message: 'Either query param freetext, type or phone is required' };
+        const err = {
+          status: 400,
+          message: 'Either query param freetext, type, phone, shortcode or external_ref is required'
+        };
         contactGetUuidsPage.throws(err);
 
         await controller.v1.getUuids(req, res);
@@ -357,6 +360,114 @@ describe('Contact Controller', () => {
           Qualifier.byPhones(['+254712345678']), cursor, limit
         )).to.be.true;
       });
+
+      it('builds a shortcodes qualifier from a comma-separated list', async () => {
+        req = { query: { shortcode: '12345,67890', cursor, limit } };
+        contactGetUuidsPage.resolves(contacts);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(qualifierByContactType.notCalled).to.be.true;
+        expect(qualifierByFreetext.notCalled).to.be.true;
+        expect(contactGetUuidsPage.calledOnceWithExactly(
+          Qualifier.byShortcodes(['12345', '67890']), cursor, limit
+        )).to.be.true;
+        expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('builds a shortcodes qualifier from a repeated query param', async () => {
+        req = { query: { shortcode: ['12345', '67890'], cursor, limit } };
+        contactGetUuidsPage.resolves(contacts);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(contactGetUuidsPage.calledOnceWithExactly(
+          Qualifier.byShortcodes(['12345', '67890']), cursor, limit
+        )).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('builds an upper-cased external refs qualifier from a comma-separated list', async () => {
+        req = { query: { external_ref: 'abc1,DEF2', cursor, limit } };
+        contactGetUuidsPage.resolves(contacts);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(qualifierByContactType.notCalled).to.be.true;
+        expect(qualifierByFreetext.notCalled).to.be.true;
+        expect(contactGetUuidsPage.calledOnceWithExactly(
+          { externalRefs: ['ABC1', 'DEF2'] }, cursor, limit
+        )).to.be.true;
+        expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('builds an external refs qualifier from a repeated query param', async () => {
+        req = { query: { external_ref: ['ABC1', 'DEF2'], cursor, limit } };
+        contactGetUuidsPage.resolves(contacts);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(contactGetUuidsPage.calledOnceWithExactly(
+          { externalRefs: ['ABC1', 'DEF2'] }, cursor, limit
+        )).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      [
+        ['shortcode', 'Invalid shortcodes [{"a":"b"}].'],
+        ['external_ref', 'Invalid external refs [{"a":"b"}].'],
+      ].forEach(([param, message]) => {
+        it(`errors without querying when the ${param} param is object-shaped`, async () => {
+          req = { query: { [param]: { a: 'b' }, cursor, limit } };
+
+          await controller.v1.getUuids(req, res);
+
+          expect(contactGetUuidsPage.notCalled).to.be.true;
+          expect(res.json.notCalled).to.be.true;
+          expect(serverUtilsError.calledOnce).to.be.true;
+          expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
+          expect(serverUtilsError.args[0][0].message).to.equal(message);
+        });
+      });
+
+      it('prefers phone over shortcode and external_ref', async () => {
+        req = { query: { phone: '+254712345678', shortcode: '12345', external_ref: 'ABC1', cursor, limit } };
+        contactGetUuidsPage.resolves(contacts);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(contactGetUuidsPage.calledOnceWithExactly(
+          Qualifier.byPhones(['+254712345678']), cursor, limit
+        )).to.be.true;
+      });
+
+      it('prefers shortcode over external_ref, type and freetext', async () => {
+        req = { query: { shortcode: '12345', external_ref: 'ABC1', type: contactType, freetext, cursor, limit } };
+        contactGetUuidsPage.resolves(contacts);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(qualifierByContactType.notCalled).to.be.true;
+        expect(qualifierByFreetext.notCalled).to.be.true;
+        expect(contactGetUuidsPage.calledOnceWithExactly(
+          Qualifier.byShortcodes(['12345']), cursor, limit
+        )).to.be.true;
+      });
+
+      it('prefers external_ref over type and freetext', async () => {
+        req = { query: { external_ref: 'ABC1', type: contactType, freetext, cursor, limit } };
+        contactGetUuidsPage.resolves(contacts);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(qualifierByContactType.notCalled).to.be.true;
+        expect(qualifierByFreetext.notCalled).to.be.true;
+        expect(contactGetUuidsPage.calledOnceWithExactly(
+          Qualifier.byExternalRefs(['ABC1']), cursor, limit
+        )).to.be.true;
+      });
     });
 
     describe('getAll', () => {
@@ -436,7 +547,96 @@ describe('Contact Controller', () => {
         )).to.be.true;
       });
 
-      it('returns a 400 error when neither ids, type nor phone is provided', async () => {
+      it('returns a page of contacts for the given comma-separated shortcodes', async () => {
+        req = { query: { shortcode: '12345,67890', cursor, limit } };
+        contactGetPage.resolves(contacts);
+
+        await controller.v1.getAll(req, res);
+
+        expect(contactGetPage.calledOnceWithExactly(
+          Qualifier.byShortcodes(['12345', '67890']), cursor, limit
+        )).to.be.true;
+        expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('returns a page of contacts for the given repeated external refs, upper-cased', async () => {
+        req = { query: { external_ref: ['abc1', 'def2'], cursor, limit } };
+        contactGetPage.resolves(contacts);
+
+        await controller.v1.getAll(req, res);
+
+        expect(contactGetPage.calledOnceWithExactly(
+          { externalRefs: ['ABC1', 'DEF2'] }, cursor, limit
+        )).to.be.true;
+        expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      [
+        ['shortcode', 'Invalid shortcodes [{"a":"b"}].'],
+        ['external_ref', 'Invalid external refs [{"a":"b"}].'],
+      ].forEach(([param, message]) => {
+        it(`errors without querying when the ${param} param is object-shaped`, async () => {
+          req = { query: { [param]: { a: 'b' }, cursor, limit } };
+
+          await controller.v1.getAll(req, res);
+
+          expect(contactGetPage.notCalled).to.be.true;
+          expect(res.json.notCalled).to.be.true;
+          expect(serverUtilsError.calledOnce).to.be.true;
+          expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
+          expect(serverUtilsError.args[0][0].message).to.equal(message);
+        });
+      });
+
+      it('prefers ids over phone, shortcode and external_ref', async () => {
+        req = { query: { ids: 'a', phone: '+254712345678', shortcode: '12345', external_ref: 'ABC1', cursor, limit } };
+        contactGetPage.resolves(contacts);
+
+        await controller.v1.getAll(req, res);
+
+        expect(contactGetPage.calledOnceWithExactly(Qualifier.byIds(['a']), cursor, limit)).to.be.true;
+      });
+
+      it('prefers phone over shortcode and external_ref', async () => {
+        req = { query: { phone: '+254712345678', shortcode: '12345', external_ref: 'ABC1', cursor, limit } };
+        contactGetPage.resolves(contacts);
+
+        await controller.v1.getAll(req, res);
+
+        expect(contactGetPage.calledOnceWithExactly(
+          Qualifier.byPhones(['+254712345678']), cursor, limit
+        )).to.be.true;
+      });
+
+      it('prefers shortcode over external_ref and type', async () => {
+        const qualifierByContactType = sinon.stub(Qualifier, 'byContactType');
+        req = { query: { shortcode: '12345', external_ref: 'ABC1', type: 'person', cursor, limit } };
+        contactGetPage.resolves(contacts);
+
+        await controller.v1.getAll(req, res);
+
+        expect(qualifierByContactType.notCalled).to.be.true;
+        expect(contactGetPage.calledOnceWithExactly(
+          Qualifier.byShortcodes(['12345']), cursor, limit
+        )).to.be.true;
+      });
+
+      it('prefers external_ref over type', async () => {
+        const qualifierByContactType = sinon.stub(Qualifier, 'byContactType');
+        req = { query: { external_ref: 'ABC1', type: 'person', cursor, limit } };
+        contactGetPage.resolves(contacts);
+
+        await controller.v1.getAll(req, res);
+
+        expect(qualifierByContactType.notCalled).to.be.true;
+        expect(contactGetPage.calledOnceWithExactly(
+          Qualifier.byExternalRefs(['ABC1']), cursor, limit
+        )).to.be.true;
+      });
+
+      it('returns a 400 error when none of ids, type, phone, shortcode or external_ref is provided', async () => {
         req = { query: { cursor, limit } };
 
         await controller.v1.getAll(req, res);
@@ -444,7 +644,7 @@ describe('Contact Controller', () => {
         expect(contactGetPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(
-          { status: 400, message: 'Either query param ids, type or phone is required' },
+          { status: 400, message: 'Either query param ids, type, phone, shortcode or external_ref is required' },
           req,
           res
         )).to.be.true;
