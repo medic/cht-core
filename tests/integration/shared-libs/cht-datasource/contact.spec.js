@@ -786,7 +786,7 @@ describe('cht-datasource Contact', () => {
       });
     });
 
-    describe('Contact.v1.getAll', async () => {
+    describe('Contact.v1.getAll', () => {
       it('fetches all contacts with the given shortcodes by iterating through generator', async () => {
         const docs = [];
 
