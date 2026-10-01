@@ -19,7 +19,7 @@ describe('FHIR facade API', () => {
   // The permission is granted to both roles; only the user also given the
   // online role (USER_ROLES.ONLINE) is online, which isolates "online without
   // the permission" from "has the permission but is offline".
-  const ONLINE_ROLE = 'program_officer';
+  const ONLINE_ROLE = 'data_entry';
   const OFFLINE_ROLE = 'chw';
 
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
