@@ -4,7 +4,7 @@
  * Wireup a data provider to the rules-engine
  */
 
-const moment = require('moment');
+const CalendarInterval = require('@medic/calendar-interval');
 const registrationUtils = require('@medic/registration-utils');
 
 const TaskStates = require('./task-states');
@@ -286,18 +286,7 @@ const getTargetDocTag = (filterInterval) => {
   if (!filterInterval) {
     return 'latest';
   }
-  if (!rulesStateStore.getUseBikramSambatMonths()) {
-    return moment(filterInterval.end).locale('en').format('YYYY-MM');
-  }
-  try {
-    const { toBik } = require('bikram-sambat');
-    const bsEnd = toBik(moment(filterInterval.end).locale('en').format('YYYY-MM-DD'));
-    return `${bsEnd.year}-${String(bsEnd.month).padStart(2, '0')}`;
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.warn('Failed to parse BS date for target document tag, falling back to Gregorian tag:', err);
-    return moment(filterInterval.end).locale('en').format('YYYY-MM');
-  }
+  return CalendarInterval.getIntervalTag(filterInterval, rulesStateStore.getUseBikramSambatMonths());
 };
 
 const storeTargetsDoc = (provider, aggregate, updatedTargets) => {
