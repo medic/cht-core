@@ -36,6 +36,7 @@ import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 import {
   ContactSummaryContentComponent
 } from '@mm-components/contact-summary-content/contact-summary-content.component';
+import { MapComponent } from '@mm-components/map/map.component';
 
 @Component({
   selector: 'contacts-content',
@@ -56,7 +57,8 @@ import {
     SummaryPipe,
     FormIconNamePipe,
     LocalizeNumberPipe,
-    ContactSummaryContentComponent
+    ContactSummaryContentComponent,
+    MapComponent,
   ]
 })
 export class ContactsContentComponent implements OnInit, OnDestroy {

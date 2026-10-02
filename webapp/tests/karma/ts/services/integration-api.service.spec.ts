@@ -14,13 +14,16 @@ import { DbService } from '@mm-services/db.service';
 import { EnketoService } from '@mm-services/enketo.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
+import { MapTilesPrefetchService } from '@mm-services/map-tiles-prefetch.service';
 
 describe('IntegrationApiService', () => {
   let service;
   let geolocationService;
+  let mapTilesPrefetchService;
 
   beforeEach(() => {
     geolocationService = { init: sinon.stub() };
+    mapTilesPrefetchService = { getCacheSize: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -35,6 +38,7 @@ describe('IntegrationApiService', () => {
         { provide: EnketoService, useValue: {} },
         { provide: TranslateService, useValue: {} },
         { provide: InteractionTrackingService, useValue: {} },
+        { provide: MapTilesPrefetchService, useValue: mapTilesPrefetchService },
       ]
     });
     service = TestBed.inject(IntegrationApiService);
@@ -44,5 +48,9 @@ describe('IntegrationApiService', () => {
 
   it('should expose GeolocationService as Geolocation', () => {
     expect(service.Geolocation).to.equal(geolocationService);
+  });
+
+  it('should expose MapTilesPrefetchService as MapTiles', () => {
+    expect(service.MapTiles).to.equal(mapTilesPrefetchService);
   });
 });

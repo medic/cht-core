@@ -181,6 +181,20 @@ const cards = [
     }
   },
   {
+    label: 'Location',
+    appliesToType: 'clinic',
+    appliesIf: function () {
+      return thisContact.geolocation && thisContact.geolocation.latitude;
+    },
+    fields: function () {
+      return [{
+        label: '',
+        value: thisContact.geolocation,
+        filter: 'map'
+      }];
+    },
+  },
+  {
     label: 'contact.profile.pregnancy.past',
     appliesToType: 'report',
     appliesIf: function (report) {
