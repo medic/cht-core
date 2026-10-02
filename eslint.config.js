@@ -49,6 +49,7 @@ module.exports = defineConfig([
     'jsdocs/**/*',
     'shared-libs/cht-datasource/dist/**/*',
     'shared-libs/cht-datasource/docs/**/*',
+    'shared-libs/cht-fhir/dist/**/*',
     'tests/scalability/report*/**/*',
     'tests/scalability/jmeter/**/*',
     'webapp/dist/**/*',
@@ -524,6 +525,33 @@ module.exports = defineConfig([
     },
     rules: {
       'no-console': 'off',
+    },
+  },
+  {
+    // TypeScript, so it needs the TS parser: the base `no-unused-vars` rule
+    // flags the parameter names in a function *type* as unused variables.
+    files: ['shared-libs/cht-fhir/**/*.ts'],
+
+    plugins: {
+      '@typescript-eslint': typescriptEslint,
+    },
+
+    languageOptions: {
+      parser: tsParser,
+      globals: {
+        ...globalsPlugin.mocha,
+        ...globalsPlugin.node,
+      },
+    },
+
+    rules: {
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', {
+        args: 'after-used',
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+      }],
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
   {
