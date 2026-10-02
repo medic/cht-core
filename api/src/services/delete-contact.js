@@ -41,9 +41,8 @@ const handleDelete = ({ get, type }) => serverUtils.doOrError(async (req, res) =
     return res.status(200).json({ summary });
   }
 
-  // Advisory: the caller is told now rather than being handed an operation that can only fail. The
-  // contact is passed in because it has already been loaded above.
-  await planners.validate(TYPES.DELETE_CONTACT, { ...params, contact });
+  // Advisory: the caller is told now rather than being handed an operation that can only fail.
+  await planners.validate(TYPES.DELETE_CONTACT, params);
 
   const id = await bulkOperations.queue(TYPES.DELETE_CONTACT, params, userCtx.name);
   return res.status(202).json({ id });

@@ -68,19 +68,14 @@ const assertUsersMayGo = (userIds, deleteUsers) => {
 };
 
 /**
- * Checks that the delete can legally run, against the documents as they are now. Only the API calls
- * this, and only when it is going to queue the operation: Sentinel gets the same checks for free
- * because `plan` runs them itself.
+ * Checks that the delete can legally run, against the documents as they are now. It is assumed that the identified
+ * contact has already been confirmed to exist.
  * @param {Object} params
  * @param {string} params.contact_id - the target contact id
  * @param {boolean} [params.delete_users] - also remove users linked to the deleted contacts
- * @param {Object} params.contact - the target, already loaded by the caller
- * @throws {ValidationError} when the contact is gone, or when linked users would be left behind and
- *   `delete_users` was not set
+ * @throws {ValidationError} when linked users would be left behind and `delete_users` was not set
  */
-const validate = async ({ contact_id: contactId, delete_users: deleteUsers, contact }) => {
-  assertContactExists(contact, contactId);
-
+const validate = async ({ contact_id: contactId, delete_users: deleteUsers }) => {
   if (deleteUsers) {
     return;
   }

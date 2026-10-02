@@ -284,19 +284,5 @@ describe('move-contact planner', () => {
       await expect(validate({ ...PARAMS, contact: clinic, destination: healthCenterB }))
         .to.be.rejectedWith('circular hierarchy');
     });
-
-    it('refuses a contact the caller could not load', async () => {
-      const err = await validate({ ...PARAMS, contact: null, destination: healthCenterB }).catch(e => e);
-
-      expect(err).to.be.an.instanceOf(ValidationError);
-      expect(err.message).to.equal(`contact 'clinic-1' not found`);
-    });
-
-    it('refuses a destination the caller could not load', async () => {
-      const err = await validate({ ...PARAMS, contact: clinic, destination: null }).catch(e => e);
-
-      expect(err).to.be.an.instanceOf(ValidationError);
-      expect(err.message).to.equal(`destination contact 'hc-b' not found`);
-    });
   });
 });

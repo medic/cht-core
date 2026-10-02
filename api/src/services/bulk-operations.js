@@ -31,8 +31,7 @@ const getLog = async (id) => {
  * written here and the work itself is decided against the documents as they are then.
  * @param {string} type - the operation type, one of `BULK_OPERATIONS.TYPES`
  * @param {Object} params - the request parameters the planner needs
- * @param {string} requester - the username of the user who asked for it, recorded as `user`,
- *   matching the upgrade log
+ * @param {string} requester - the username of the user who asked for it
  * @returns {Promise<string>} the bulk operation id
  */
 const queue = async (type, params, requester) => {
