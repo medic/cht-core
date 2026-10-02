@@ -117,6 +117,11 @@ const updateFields = function(currentForm, data, keyRoot, index, originatingKeyP
     const node = currentForm.model.node(path, index, { onlyLeaf: true });
     if (node.getElements().length) {
       node.setVal(value);
+      // Setting the model value does not update the form control, so show the loaded value to the user.
+      const control = currentForm.input.find(path, index);
+      if (control) {
+        currentForm.input.setVal(control, node.getVal());
+      }
     }
   });
 
