@@ -26,7 +26,8 @@ const DOC_TYPES = {
   TOKEN_LOGIN: 'token_login',
   TRANSLATIONS: 'translations',
   DATA_RECORD: 'data_record',
-  UI_EXTENSION: 'ui-extension'
+  UI_EXTENSION: 'ui-extension',
+  CONTACT: 'contact'
 };
 
 // HTTP Headers
