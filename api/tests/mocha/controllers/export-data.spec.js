@@ -239,8 +239,9 @@ describe('Export Data controller', () => {
 
       return controller.get(req, res)
         .then(() => {
+          const closed = new Promise(resolve => res.on('close', resolve));
           res.destroy(); // the user cancels the download
-          return new Promise(resolve => setImmediate(resolve));
+          return closed;
         })
         .then(() => {
           exportStream.destroyed.should.equal(true);

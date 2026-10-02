@@ -214,11 +214,10 @@ describe('Export Data Service', () => {
       it('stops querying when the export is destroyed during a run of already exported docs', () => {
         const mapper = service._mapper('messages');
         const duplicateBatches = 1000;
-        let callsWhenDestroyed;
+        const destroyOnCall = 5; // inside the run of repeats: the user cancels the download
         // Answers asynchronously, like CouchDB: first a new doc, then a long run of batches that only repeat it.
         const getDocIds = sinon.stub(mapper, 'getDocIds').callsFake(() => new Promise(resolve => setImmediate(() => {
-          if (getDocIds.callCount === 5) { // inside the run of repeats: the user cancels the download
-            callsWhenDestroyed = getDocIds.callCount;
+          if (getDocIds.callCount === destroyOnCall) {
             stream.destroy();
           }
           resolve(getDocIds.callCount <= duplicateBatches + 1 ? [ 'abc' ] : []);
@@ -228,9 +227,12 @@ describe('Export Data Service', () => {
         const stream = service.exportStream('messages', {}, {});
         stream.on('data', () => {});
 
-        return new Promise(resolve => setTimeout(resolve, 100)).then(() => {
-          (getDocIds.callCount - callsWhenDestroyed).should.be.at.most(1);
-        });
+        // Once closed, let the in-flight batch settle: a reader that ignored the destroy would query again.
+        return new Promise(resolve => stream.on('close', resolve))
+          .then(() => new Promise(resolve => setImmediate(resolve)))
+          .then(() => {
+            getDocIds.callCount.should.equal(destroyOnCall);
+          });
       });
     });
 
@@ -406,6 +408,25 @@ describe('Export Data Service', () => {
         actual.should.equal(expected);
       });
 
+    });
+
+    it('does not track exported ids when the mapper does not flag duplicates', () => {
+      const contact = { _id: '1', name: 'gdawg', type: 'person' };
+      const mapper = service._mapper('contacts');
+      const getDocIds = sinon.stub(mapper, 'getDocIds');
+      getDocIds.onCall(0).resolves([ contact._id ]);
+      getDocIds.onCall(1).resolves([ contact._id ]);
+      getDocIds.onCall(2).resolves([]);
+      const getDocs = sinon.stub(mapper, 'getDocs').resolves([ contact ]);
+
+      return mockRequest('contacts').then(actual => {
+        actual.should.equal(
+          'id,rev,name,patient_id,type,contact_type,place_id\n' +
+          '"1",,"gdawg",,"person",,\n' +
+          '"1",,"gdawg",,"person",,\n'
+        );
+        getDocs.args.should.deep.equal([ [ [ contact._id ] ], [ [ contact._id ] ] ]);
+      });
     });
 
   });
