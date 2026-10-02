@@ -231,6 +231,28 @@ describe('remote contact', () => {
           phone: '+1 234 567',
         })).to.be.true;
       });
+
+      ([
+        [{ shortcodes: ['12345', 'abc'] }, { shortcode: '12345,abc' }],
+        [{ externalRefs: ['RC1', 'RC2'] }, { external_ref: 'RC1,RC2' }],
+      ] as const).forEach(([qualifier, params]) => {
+        it(`serializes ${JSON.stringify(qualifier)} over the uuid endpoint`, async () => {
+          const expectedResponse = { data: [], cursor };
+          getResourcesInner.resolves(expectedResponse);
+
+          const result = await Contact.v1.getUuidsPage(remoteContext)(
+            qualifier as unknown as { shortcodes: [string, ...string[]] }, cursor, limit
+          );
+
+          expect(result).to.equal(expectedResponse);
+          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact/uuid')).to.be.true;
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            cursor,
+            ...params,
+          })).to.be.true;
+        });
+      });
     });
 
     describe('getPage', () => {
@@ -292,6 +314,28 @@ describe('remote contact', () => {
           cursor,
           phone: '+254712345678,+254798765432',
         })).to.be.true;
+      });
+
+      ([
+        [{ shortcodes: ['12345', 'abc'] }, { shortcode: '12345,abc' }],
+        [{ externalRefs: ['RC1', 'RC2'] }, { external_ref: 'RC1,RC2' }],
+      ] as const).forEach(([qualifier, params]) => {
+        it(`serializes ${JSON.stringify(qualifier)} over the contact endpoint`, async () => {
+          const expectedResponse = { data: [], cursor };
+          getResourcesInner.resolves(expectedResponse);
+
+          const result = await Contact.v1.getPage(remoteContext)(
+            qualifier as unknown as { shortcodes: [string, ...string[]] }, cursor, limit
+          );
+
+          expect(result).to.equal(expectedResponse);
+          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact')).to.be.true;
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            cursor,
+            ...params,
+          })).to.be.true;
+        });
       });
     });
   });

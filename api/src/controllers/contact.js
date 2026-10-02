@@ -18,21 +18,35 @@ const buildIdsQualifier = (ids) => {
 };
 
 // Accepts `?phone=a,b` and `?phone=a&phone=b`, like `ids` above.
-const buildPhonesQualifier = (phone) => {
+const buildListQualifier = (value, name, buildQualifier) => {
   // `qs.parse` turns `?phone[a]=b` into an object, which has nothing to split.
-  if (!Array.isArray(phone) && typeof phone !== 'string') {
-    throw new InvalidArgumentError(`Invalid phones [${JSON.stringify(phone)}].`);
+  if (!Array.isArray(value) && typeof value !== 'string') {
+    throw new InvalidArgumentError(`Invalid ${name} [${JSON.stringify(value)}].`);
   }
-  const phonesArray = (Array.isArray(phone) ? phone : phone.split(',')).filter(Boolean);
-  if (!phonesArray.length) {
-    throw new InvalidArgumentError(`Invalid phones [${JSON.stringify(phonesArray)}].`);
+  const values = (Array.isArray(value) ? value : value.split(',')).filter(Boolean);
+  if (!values.length) {
+    throw new InvalidArgumentError(`Invalid ${name} [${JSON.stringify(values)}].`);
   }
-  return Qualifier.byPhones(phonesArray);
+  return buildQualifier(values);
 };
 
-const buildFreetextTypePhoneQualifier = (query) => {
+// Returns the qualifier for the first of `phone`, `shortcode` and `external_ref` that is present, if any.
+const buildContactKeysQualifier = (query) => {
   if (query.phone) {
-    return buildPhonesQualifier(query.phone);
+    return buildListQualifier(query.phone, 'phones', Qualifier.byPhones);
+  }
+  if (query.shortcode) {
+    return buildListQualifier(query.shortcode, 'shortcodes', Qualifier.byShortcodes);
+  }
+  if (query.external_ref) {
+    return buildListQualifier(query.external_ref, 'external refs', Qualifier.byExternalRefs);
+  }
+};
+
+const buildUuidsQualifier = (query) => {
+  const contactKeysQualifier = buildContactKeysQualifier(query);
+  if (contactKeysQualifier) {
+    return contactKeysQualifier;
   }
   const qualifier = {};
   if (query.freetext) {
@@ -108,8 +122,9 @@ module.exports = {
      *     operationId: v1ContactUuidGet
      *     description: >
      *       Returns a paginated array of contact identifier strings matching the given filter criteria.
-     *       At least one of `type`, `freetext`, or `phone` must be provided. When `phone` is provided, it takes
-     *       precedence and `type` and `freetext` are ignored.
+     *       At least one of `type`, `freetext`, `phone`, `shortcode`, or `external_ref` must be provided. When more
+     *       than one is provided the precedence is `phone`, then `shortcode`, then `external_ref`, then `type`
+     *       and/or `freetext`. Only the param with the highest precedence is used.
      *     tags: [Contact]
      *     x-since: 4.18.0
      *     x-permissions:
@@ -120,8 +135,8 @@ module.exports = {
      *         schema:
      *           type: string
      *         description: >
-     *           The contact_type id for the type of contacts to fetch. Required if `freetext` and `phone` are not
-     *           provided and may be combined with `freetext`.
+     *           The contact_type id for the type of contacts to fetch. Required if none of `freetext`, `phone`,
+     *           `shortcode` or `external_ref` is provided and may be combined with `freetext`.
      *       - in: query
      *         name: freetext
      *         schema:
@@ -129,7 +144,8 @@ module.exports = {
      *           minLength: 3
      *         description: >
      *           A search term for filtering contacts. Must be at least 3 characters and not contain whitespace.
-     *           Required if `type` and `phone` are not provided and may be combined with `type`.
+     *           Required if none of `type`, `phone`, `shortcode` or `external_ref` is provided and may be combined
+     *           with `type`.
      *       - in: query
      *         name: phone
      *         x-since: 5.3.0
@@ -137,7 +153,25 @@ module.exports = {
      *           type: string
      *         description: >
      *           A comma-separated list of phone numbers, each matched verbatim against the contact's `phone`
-     *           field. Required if `type` and `freetext` are not provided. Takes precedence over both.
+     *           field. Takes precedence over `shortcode`, `external_ref`, `type` and `freetext`.
+     *       - in: query
+     *         name: shortcode
+     *         x-since: 5.3.0
+     *         schema:
+     *           type: string
+     *         description: >
+     *           A comma-separated list of shortcodes, each matched verbatim against the contact's `patient_id`
+     *           and `place_id` fields. Takes precedence over `external_ref`, `type` and `freetext`. Ignored if
+     *           `phone` is provided.
+     *       - in: query
+     *         name: external_ref
+     *         x-since: 5.3.0
+     *         schema:
+     *           type: string
+     *         description: >
+     *           A comma-separated list of external references, each matched case-insensitively against the
+     *           contact's `rc_code` field. Takes precedence over `type` and `freetext`. Ignored if `phone` or
+     *           `shortcode` is provided.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitId'
      *     responses:
@@ -165,12 +199,18 @@ module.exports = {
      */
     getUuids: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
-      if (!req.query.freetext && !req.query.type && !req.query.phone) {
+      const { freetext, type, phone, shortcode, external_ref } = req.query;
+      if (!freetext && !type && !phone && !shortcode && !external_ref) {
         return serverUtils.error(
-          { status: 400, message: 'Either query param freetext, type or phone is required' }, req, res
+          {
+            status: 400,
+            message: 'Either query param freetext, type, phone, shortcode or external_ref is required'
+          },
+          req,
+          res
         );
       }
-      const qualifier = buildFreetextTypePhoneQualifier(req.query);
+      const qualifier = buildUuidsQualifier(req.query);
       const docs = await getContactIds(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
     }),
@@ -183,9 +223,10 @@ module.exports = {
      *     operationId: v1ContactGet
      *     description: >
      *       Returns a paginated array of contact records (persons and places) matching the given filter criteria.
-     *       At least one of `ids`, `type`, or `phone` must be provided. When more than one is provided the
-     *       precedence is `ids`, then `phone`, then `type`. Use the `cursor` returned in each response to retrieve
-     *       subsequent pages.
+     *       At least one of `ids`, `type`, `phone`, `shortcode`, or `external_ref` must be provided. When more than
+     *       one is provided the precedence is `ids`, then `phone`, then `shortcode`, then `external_ref`, then
+     *       `type`. Only the param with the highest precedence is used. Use the `cursor` returned in each response
+     *       to retrieve subsequent pages.
      *     tags: [Contact]
      *     x-since: 5.3.0
      *     x-permissions:
@@ -196,22 +237,38 @@ module.exports = {
      *         schema:
      *           type: string
      *         description: >
-     *           A comma-separated list of contact ids to fetch. Required if `type` and `phone` are not provided.
-     *           Takes precedence over `phone` and `type` when more than one is provided.
+     *           A comma-separated list of contact ids to fetch. Takes precedence over `phone`, `shortcode`,
+     *           `external_ref` and `type`.
      *       - in: query
      *         name: type
      *         schema:
      *           type: string
      *         description: >
-     *           The contact_type id for the type of contacts to fetch. Required if `ids` and `phone` are not
-     *           provided.
+     *           The contact_type id for the type of contacts to fetch. Required if none of `ids`, `phone`,
+     *           `shortcode` or `external_ref` is provided. Ignored if any of them is provided.
      *       - in: query
      *         name: phone
      *         schema:
      *           type: string
      *         description: >
      *           A comma-separated list of phone numbers, each matched verbatim against the contact's `phone`
-     *           field. Required if `ids` and `type` are not provided. Takes precedence over `type`.
+     *           field. Takes precedence over `shortcode`, `external_ref` and `type`. Ignored if `ids` is provided.
+     *       - in: query
+     *         name: shortcode
+     *         schema:
+     *           type: string
+     *         description: >
+     *           A comma-separated list of shortcodes, each matched verbatim against the contact's `patient_id`
+     *           and `place_id` fields. Takes precedence over `external_ref` and `type`. Ignored if `ids` or `phone`
+     *           is provided.
+     *       - in: query
+     *         name: external_ref
+     *         schema:
+     *           type: string
+     *         description: >
+     *           A comma-separated list of external references, each matched case-insensitively against the
+     *           contact's `rc_code` field. Takes precedence over `type`. Ignored if `ids`, `phone` or `shortcode`
+     *           is provided.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitEntity'
      *     responses:
@@ -239,19 +296,17 @@ module.exports = {
      */
     getAll: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
-      if (!req.query.ids && !req.query.type && !req.query.phone) {
+      const { ids, type, phone, shortcode, external_ref } = req.query;
+      if (!ids && !type && !phone && !shortcode && !external_ref) {
         return serverUtils.error(
-          { status: 400, message: 'Either query param ids, type or phone is required' }, req, res
+          { status: 400, message: 'Either query param ids, type, phone, shortcode or external_ref is required' },
+          req,
+          res
         );
       }
-      let qualifier;
-      if (req.query.ids) {
-        qualifier = buildIdsQualifier(req.query.ids);
-      } else if (req.query.phone) {
-        qualifier = buildPhonesQualifier(req.query.phone);
-      } else {
-        qualifier = Qualifier.byContactType(req.query.type);
-      }
+      const qualifier = ids
+        ? buildIdsQualifier(ids)
+        : buildContactKeysQualifier(req.query) || Qualifier.byContactType(type);
       const docs = await getContactDocs(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
     }),

@@ -66,6 +66,8 @@ describe('Contact API', () => {
       },
     },
     phone: '1234567890',
+    patient_id: 'patient-10976',
+    rc_code: 'Rc10976',
     role: 'patient',
     short_name: 'Mary'
   }));
@@ -394,6 +396,58 @@ describe('Contact API', () => {
 
       await expect(utils.request(opts)).to.be.rejectedWith(
         `400 - {"code":400,"error":"Invalid phones [[\\"  ${patient.phone}  \\"]]."}`
+      );
+    });
+
+    it('returns a page of contact ids for a comma-separated list of shortcodes', async () => {
+      const responsePage = await utils.request({
+        path: endpoint,
+        qs: { shortcode: `${patient.patient_id},${place0.place_id},00000` }
+      });
+
+      expect(responsePage.data).to.deep.equal([patient._id, place0._id]);
+      expect(responsePage.cursor).to.be.null;
+    });
+
+    it('returns a page of contact ids when the shortcode param is repeated', async () => {
+      const responsePage = await utils.request({
+        path: `${endpoint}?shortcode=00000&shortcode=${patient.patient_id}`
+      });
+
+      expect(responsePage.data).to.deep.equal([patient._id]);
+      expect(responsePage.cursor).to.be.null;
+    });
+
+    it('returns a page of contact ids for a mixed-case external ref', async () => {
+      const responsePage = await utils.request({ path: endpoint, qs: { external_ref: 'rC10976' } });
+
+      expect(responsePage.data).to.deep.equal([patient._id]);
+      expect(responsePage.cursor).to.be.null;
+    });
+
+    it('returns a page of contact ids when the external_ref param is repeated', async () => {
+      const responsePage = await utils.request({
+        path: `${endpoint}?external_ref=NOPE&external_ref=${patient.rc_code}`
+      });
+
+      expect(responsePage.data).to.deep.equal([patient._id]);
+      expect(responsePage.cursor).to.be.null;
+    });
+
+    [
+      ['shortcode', 'shortcodes'],
+      ['external_ref', 'external refs'],
+    ].forEach(([param, name]) => {
+      it(`throws 400 error when the ${param} param is object-shaped`, async () => {
+        await expect(utils.request({ path: `${endpoint}?${param}[a]=b` })).to.be.rejectedWith(
+          `400 - {"code":400,"error":"Invalid ${name} [{\\"a\\":\\"b\\"}]."}`
+        );
+      });
+    });
+
+    it('throws 400 error when no qualifier is provided', async () => {
+      await expect(utils.request({ path: endpoint })).to.be.rejectedWith(
+        '400 - {"code":400,"error":"Either query param freetext, type, phone, shortcode or external_ref is required"}'
       );
     });
 
@@ -759,11 +813,59 @@ describe('Contact API', () => {
       expect(responseIds).to.deep.equalInAnyOrder(allContactIds);
     });
 
-    it('throws 400 error when neither ids, type nor phone is provided', async () => {
+    it('throws 400 error when none of ids, type, phone, shortcode or external_ref is provided', async () => {
       const opts = { path: endpoint };
       await expect(utils.request(opts)).to.be.rejectedWith(
-        `400 - {"code":400,"error":"Either query param ids, type or phone is required"}`
+        `400 - {"code":400,"error":"Either query param ids, type, phone, shortcode or external_ref is required"}`
       );
+    });
+
+    it('returns a page of contacts for a comma-separated list of shortcodes', async () => {
+      const responsePage = await utils.request({
+        path: endpoint,
+        qs: { shortcode: `${patient.patient_id},${place0.place_id},00000` }
+      });
+      const responseIds = responsePage.data.map(doc => doc._id);
+
+      expect(responseIds).to.deep.equal([patient._id, place0._id]);
+      expect(responsePage.cursor).to.be.null;
+      responsePage.data.forEach(doc => expect(doc._rev).to.be.a('string'));
+    });
+
+    it('returns a page of contacts when the shortcode param is repeated', async () => {
+      const responsePage = await utils.request({
+        path: `${endpoint}?shortcode=00000&shortcode=${patient.patient_id}`
+      });
+
+      expect(responsePage.data.map(doc => doc._id)).to.deep.equal([patient._id]);
+      expect(responsePage.cursor).to.be.null;
+    });
+
+    it('returns a page of contacts for a mixed-case external ref', async () => {
+      const responsePage = await utils.request({ path: endpoint, qs: { external_ref: 'rC10976' } });
+
+      expect(responsePage.data.map(doc => doc._id)).to.deep.equal([patient._id]);
+      expect(responsePage.cursor).to.be.null;
+    });
+
+    it('returns a page of contacts when the external_ref param is repeated', async () => {
+      const responsePage = await utils.request({
+        path: `${endpoint}?external_ref=NOPE&external_ref=${patient.rc_code}`
+      });
+
+      expect(responsePage.data.map(doc => doc._id)).to.deep.equal([patient._id]);
+      expect(responsePage.cursor).to.be.null;
+    });
+
+    [
+      ['shortcode', 'shortcodes'],
+      ['external_ref', 'external refs'],
+    ].forEach(([param, name]) => {
+      it(`throws 400 error when the ${param} param is object-shaped`, async () => {
+        await expect(utils.request({ path: `${endpoint}?${param}[a]=b` })).to.be.rejectedWith(
+          `400 - {"code":400,"error":"Invalid ${name} [{\\"a\\":\\"b\\"}]."}`
+        );
+      });
     });
 
     it('returns a page of contacts for the given phone', async () => {
