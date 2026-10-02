@@ -110,7 +110,7 @@ describe('dhis export service', () => {
     const previousLocale = moment.locale();
     moment.defineLocale('dhis-export-test', {
       parentLocale: 'en',
-      postformat: value => value.includes('-') ? value.replace(/\d/g, digit => 'ABCDEFGHIJ'[digit]) : value,
+      postformat: value => value.replace(/\d/g, digit => 'ABCDEFGHIJ'[digit]),
     });
 
     let actual;

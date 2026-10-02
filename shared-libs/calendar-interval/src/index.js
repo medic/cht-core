@@ -153,7 +153,9 @@ const getIntervalTag = (interval, useBikramSambatMonths) => {
     const { toBik } = require('bikram-sambat');
     const bsEnd = toBik(toLocalIsoDate(interval.end));
     return `${bsEnd.year}-${String(bsEnd.month).padStart(2, '0')}`;
-  } catch {
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn('Failed to parse BS date for interval tag, falling back to Gregorian tag:', err);
     return gregorianTag;
   }
 };

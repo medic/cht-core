@@ -857,9 +857,11 @@ describe('CalendarInterval', () => {
     it('falls back to the Gregorian tag when Bikram Sambat conversion fails', () => {
       const bikramSambat = require('bikram-sambat');
       sinon.stub(bikramSambat, 'toBik').throws(new Error('invalid date'));
+      const warning = sinon.stub(console, 'warn');
 
       const interval = { end: moment('2025-03-13').valueOf() };
       chai.expect(service.getIntervalTag(interval, true)).to.equal('2025-03');
+      chai.expect(warning.calledOnce).to.be.true;
     });
   });
 });

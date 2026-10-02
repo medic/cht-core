@@ -47,7 +47,7 @@ module.exports = async (filters, options = {}) => {
   const result = {
     dataSet,
     completeDate: CalendarInterval.toLocalIsoDate(moment()),
-    period: moment(from).format('YYYYMM'),
+    period: moment(from).locale('en').format('YYYYMM'),
     dataValues: buildDataValues(dhisTargetDefinitions, targetDocsInHierarchy, mapContactIdToOrgUnit),
   };
 
