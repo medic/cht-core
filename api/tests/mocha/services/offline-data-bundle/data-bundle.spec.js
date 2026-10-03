@@ -1,5 +1,6 @@
 const { expect } = require('chai').use(require('chai-as-promised'));
 const sinon = require('sinon');
+const { createHash } = require('node:crypto');
 const { Readable } = require('stream');
 const { ReadableStream } = require('stream/web');
 
@@ -21,13 +22,21 @@ const service = require('../../../../src/services/offline-data-bundle/data-bundl
 const USER = 'chw1';
 const DEVICE = 'device-a';
 const USER_DOC_ID = `org.couchdb.user:${USER}`;
-// A stand-in for the device's Ed25519 signing public key JWK (verify is stubbed, so the exact
+// A stand-in for the device's signing public key JWK (verify is stubbed, so the exact
 // contents do not matter - only that this object is the one handed to signing.verify).
-const SIGNING_JWK = { kty: 'OKP', crv: 'Ed25519', x: 'device-a-pub' };
+const SIGNING_JWK = { kty: 'EC', crv: 'P-256', x: 'device-a-pub-x', y: 'device-a-pub-y' };
 const SERVER_IDENTITY = 'AGE-SECRET-KEY-1SERVER';
 const MAX_BODY_SIZE = 32 * 1024 * 1024;
 
-const CIPHERTEXT = Buffer.from('an-age-ciphertext-payload');
+// Shaped like a real age ciphertext: a text header ending at the "---" line, then the body. The
+// envelope binds itself to the body by carrying a hash of that header, so a fixture without one
+// would never get past the check.
+const AGE_HEADER = Buffer.from(
+  'age-encryption.org/v1\n-> X25519 ZXBoZW1lcmFs\nd3JhcHBlZC1maWxlLWtleQ\n--- bWFj\n', 'utf8'
+);
+const AGE_BODY = Buffer.from('an-age-ciphertext-payload');
+const CIPHERTEXT = Buffer.concat([AGE_HEADER, AGE_BODY]);
+const HEADER_HASH = createHash('sha256').update(AGE_HEADER).digest('base64');
 
 const ndjson = (docs) => Buffer.from(docs.map(doc => JSON.stringify(doc)).join('\n'), 'utf8');
 
@@ -37,6 +46,7 @@ const envelopeFor = (overrides = {}) => ({
   user: USER,
   device_id: DEVICE,
   bundle_seq: 1,
+  payload_header_sha256: HEADER_HASH,
   ...overrides,
 });
 
@@ -96,7 +106,7 @@ describe('offline-data-bundle data-bundle service', () => {
   afterEach(() => sinon.restore());
 
   describe('envelope validation', () => {
-    ['user', 'device_id'].forEach(field => {
+    ['user', 'device_id', 'payload_header_sha256'].forEach(field => {
       it(`rejects an envelope missing ${field}`, async () => {
         const envelope = envelopeFor();
         delete envelope[field];
@@ -107,7 +117,136 @@ describe('offline-data-bundle data-bundle service', () => {
 
     it('accepts an envelope carrying only what the server acts on', async () => {
       stubDecryptStream(ndjson([{ _id: 'a' }]));
-      await service.process(encode({ user: USER, device_id: DEVICE }), 'sig', bodyStream());
+      const envelope = { user: USER, device_id: DEVICE, payload_header_sha256: HEADER_HASH };
+      await service.process(encode(envelope), 'sig', bodyStream());
+      expect(docsWritten()).to.deep.equal([{ _id: 'a' }]);
+    });
+  });
+
+  // Without this the signature says only who sent the bundle, not what is in it, so anyone who can
+  // read the server's public key off a device could pair their own ciphertext with a captured
+  // envelope. Checked before a single doc is written.
+  describe('binding the body to the envelope', () => {
+    it('refuses a body whose header is not the one that was signed', async () => {
+      stubDecryptStream(ndjson([{ _id: 'a' }]));
+      const envelope = envelopeFor({ payload_header_sha256: 'some-other-bundles-header' });
+
+      await expect(service.process(encode(envelope), 'sig', bodyStream()))
+        .to.be.rejectedWith(BadRequestError, 'Payload does not match the envelope.');
+      expect(docsWritten()).to.deep.equal([]);
+    });
+
+    /**
+     * The check belongs where the header goes past, not at the end of the stream. age hands back
+     * plaintext while the body is still arriving, so docs reach the database before the last chunk
+     * does, and a refusal that waited for the end would come after they had been written.
+     */
+    it('refuses it before any doc is written, while the body is still arriving', async () => {
+      // Plaintext as the ciphertext is consumed, rather than only once all of it has arrived, and
+      // more docs than one write batch so a refusal that came too late would leave some behind.
+      sinon.stub(age, 'decryptStream').callsFake(async (identity, cipherStream) => {
+        const reader = cipherStream.getReader();
+        let chunk = 0;
+        return new ReadableStream({
+          pull: async (controller) => {
+            const { done } = await reader.read();
+            if (done) {
+              return controller.close();
+            }
+            const docs = Array.from({ length: 60 }, (unused, i) => ({ _id: `leaked-${chunk}-${i}` }));
+            chunk++;
+            controller.enqueue(new Uint8Array(Buffer.concat([ndjson(docs), Buffer.from('\n')])));
+          },
+        });
+      });
+      const envelope = envelopeFor({ payload_header_sha256: 'some-other-bundles-header' });
+      const body = Readable.from([AGE_HEADER, AGE_BODY, AGE_BODY, AGE_BODY, AGE_BODY]);
+      body.headers = {};
+
+      await expect(service.process(encode(envelope), 'sig', body))
+        .to.be.rejectedWith(BadRequestError, 'Payload does not match the envelope.');
+      expect(docsWritten()).to.deep.equal([]);
+    });
+
+    it('refuses a body with no age header at all', async () => {
+      stubDecryptStream(ndjson([{ _id: 'a' }]));
+      const notAgeAtAll = bodyStream(Buffer.from('nothing that looks like a header'));
+
+      await expect(service.process(encode(envelopeFor()), 'sig', notAgeAtAll))
+        .to.be.rejectedWith(BadRequestError, 'Payload age header is missing or too long.');
+      expect(docsWritten()).to.deep.equal([]);
+    });
+
+    /** Chunks are whatever size the network made them, and a body dwarfs its header. */
+    it('accepts a header that arrives inside a chunk far larger than a header', async () => {
+      stubDecryptStream(ndjson([{ _id: 'a' }]));
+      const oneBigChunk = Buffer.concat([AGE_HEADER, Buffer.alloc(64 * 1024, 1)]);
+
+      await service.process(encode(envelopeFor()), 'sig', bodyStream(oneBigChunk));
+
+      expect(docsWritten()).to.deep.equal([{ _id: 'a' }]);
+    });
+
+    /**
+     * A header is a short text prefix. Without a bound that applies before the terminator is
+     * found, a body whose first line runs for megabytes is buffered whole while looking for it.
+     */
+    it('refuses a header longer than a header could be', async () => {
+      stubDecryptStream(ndjson([{ _id: 'a' }]));
+      const runOn = Buffer.concat([Buffer.alloc(64 * 1024, 0x41), Buffer.from('\n--- mac\n')]);
+
+      await expect(service.process(encode(envelopeFor()), 'sig', bodyStream(runOn)))
+        .to.be.rejectedWith(BadRequestError, 'Payload age header is missing or too long.');
+      expect(docsWritten()).to.deep.equal([]);
+    });
+
+    /**
+     * The other half of the bound, and the one that protects memory. A body with no terminator at
+     * all must be given up on once it passes the header limit, rather than buffered whole while
+     * the search goes on. Asserted on how much of the stream was READ, because the end-of-stream
+     * check rejects with the same error either way and so cannot tell the two apart.
+     */
+    it('stops reading a body that has no header terminator', async () => {
+      stubDecryptStream(ndjson([{ _id: 'a' }]));
+      let chunksRead = 0;
+      const neverTerminates = Readable.from((function* () {
+        for (let i = 0; i < 200; i++) {
+          chunksRead++;
+          yield Buffer.alloc(1024, 0x41);
+        }
+      })());
+      neverTerminates.headers = {};
+
+      await expect(service.process(encode(envelopeFor()), 'sig', neverTerminates))
+        .to.be.rejectedWith(BadRequestError, 'Payload age header is missing or too long.');
+      // bounded at 16kb, so it must give up in the region of 17 chunks, not read all 200
+      expect(chunksRead).to.be.lessThan(32);
+      expect(docsWritten()).to.deep.equal([]);
+    });
+
+    /** The header arrives in whatever pieces the network gives us, not conveniently whole. */
+    it('accepts a header split across chunks and passes the body through unchanged', async () => {
+      let received;
+      sinon.stub(age, 'decryptStream').callsFake(async (identity, cipherStream) => {
+        const chunks = [];
+        for await (const chunk of cipherStream) {
+          chunks.push(Buffer.from(chunk));
+        }
+        received = Buffer.concat(chunks);
+        return webStream([ndjson([{ _id: 'a' }])]);
+      });
+      const headerEnd = AGE_HEADER.length;
+      const split = Readable.from([
+        CIPHERTEXT.subarray(0, 10),                  // header not yet complete
+        CIPHERTEXT.subarray(10, 30),                 // still not complete
+        CIPHERTEXT.subarray(30, headerEnd + 10),     // completes the header, with body bytes riding along
+        CIPHERTEXT.subarray(headerEnd + 10),         // after verification: passed straight through
+      ]);
+      split.headers = {};
+
+      await service.process(encode(envelopeFor()), 'sig', split);
+
+      expect(received).to.deep.equal(CIPHERTEXT);
       expect(docsWritten()).to.deep.equal([{ _id: 'a' }]);
     });
 
