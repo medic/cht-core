@@ -75,6 +75,7 @@ describe('Users service', () => {
       facilityD,
     ]);
     sinon.stub(couchSettings, 'getCouchConfig').resolves();
+    sinon.stub(couchSettings, 'setCredentials').resolves();
     userData = {
       username: 'x',
       password: COMPLEX_PASSWORD,
@@ -1153,7 +1154,7 @@ describe('Users service', () => {
     // Only the device's PUBLIC signing key reaches this layer. The server private key is stored in
     // the secureSettings vault by the api controller and must never be written to the _users doc,
     // and the matching server public key is only returned to the device, never stored.
-    const signingKey = { kty: 'OKP', crv: 'Ed25519', x: 'device-pub' };
+    const signingKey = { kty: 'EC', crv: 'P-256', x: 'device-pub-x', y: 'device-pub-y' };
 
     it('adds a new device key entry to the _users doc', async () => {
       db.users.get.resolves({ _id: userId, name: 'steve', type: 'user' });
@@ -1176,7 +1177,7 @@ describe('Users service', () => {
 
     it('replaces the existing entry when the same device re-registers', async () => {
       const otherEntry = {
-        signing_public_key: { kty: 'OKP', crv: 'Ed25519', x: 'other-pub' },
+        signing_public_key: { kty: 'EC', crv: 'P-256', x: 'other-pub-x', y: 'other-pub-y' },
         updated_date: 1000,
       };
       db.users.get.resolves({
@@ -1185,7 +1186,7 @@ describe('Users service', () => {
         type: 'user',
         keys_by_device: {
           'device-1': {
-            signing_public_key: { kty: 'OKP', crv: 'Ed25519', x: 'old-pub' },
+            signing_public_key: { kty: 'EC', crv: 'P-256', x: 'old-pub-x', y: 'old-pub-y' },
             updated_date: 1000,
           },
           'device-2': otherEntry,
@@ -3408,7 +3409,8 @@ describe('Users service', () => {
       db.users.get.resolves({
         name: 'user',
         type: 'user',
-        roles: ['district_admin']
+        roles: ['district_admin'],
+        keys_by_device: { 'device-a': { signing_public_key: {} } },
       });
       db.medic.get.resolves({});
       db.medic.put.resolves({});
@@ -3422,6 +3424,16 @@ describe('Users service', () => {
         password: COMPLEX_PASSWORD,
         password_change_required: true
       });
+      // A device key signs offline data bundles written as this user and does not depend on the
+      // password, so a password change has to stop trusting the devices the old one left behind.
+      // Asserted on what is actually written, not on an intermediate object.
+      chai.expect(db.users.put.args[0][0].keys_by_device).to.equal(undefined);
+      chai.expect(couchSettings.setCredentials.args).to.deep.equal([
+        ['offline-data-bundle-server-key:user:device-a', ''],
+      ]);
+      // Order, not just occurrence: destroying the server's key is irreversible, so it must not
+      // happen until the write that revokes the device has actually landed.
+      chai.expect(couchSettings.setCredentials.calledAfter(db.users.put)).to.be.true;
     });
 
     it('should set password_change_required to false when user changes their own password', async () => {
@@ -4002,6 +4014,7 @@ describe('Users service', () => {
         name: 'sally',
         type: 'user',
         roles: ['a', 'b', ONLINE],
+        keys_by_device: { 'device-a': { signing_public_key: {} } },
       });
       db.users.put.resolves({ id: PREFIXES.COUCH_USER + 'sally' });
 
@@ -4012,6 +4025,11 @@ describe('Users service', () => {
       chai.expect(db.users.get.args[0]).to.deep.equal([PREFIXES.COUCH_USER + 'sally']);
       chai.expect(db.users.put.callCount).to.equal(1);
       chai.expect(db.users.put.args[0][0]).to.include({ password: expectedPassword, password_change_required: true });
+      chai.expect(db.users.put.args[0][0].keys_by_device).to.equal(undefined);
+      chai.expect(couchSettings.setCredentials.args).to.deep.equal([
+        ['offline-data-bundle-server-key:sally:device-a', ''],
+      ]);
+      chai.expect(couchSettings.setCredentials.calledAfter(db.users.put)).to.be.true;
     });
 
     it('should throw for admin user', async () => {

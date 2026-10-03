@@ -2,6 +2,7 @@ const { DOC_TYPES } = require('@medic/constants');
 const db = require('./libs/db');
 const config = require('./libs/config');
 const passwords = require('./libs/passwords');
+const deviceKeys = require('./libs/device-keys');
 const ssoLogin = require('./sso-login');
 const taskUtils = require('@medic/task-utils');
 const phoneNumber = require('@medic/phone-number');
@@ -316,7 +317,13 @@ const resetPassword = userId => {
     }
 
     user.password = passwords.generate();
-    return db.users.put(user).then(() => ({ user: user.name, password: user.password }));
+    // Destroyed only once the doc write has landed: until then the device is still listed as
+    // trusted and must stay able to send.
+    const revokedDevices = deviceKeys.clearDeviceKeys(user);
+    return db.users
+      .put(user)
+      .then(() => deviceKeys.destroyServerKeys(user.name, revokedDevices))
+      .then(() => ({ user: user.name, password: user.password }));
   });
 };
 

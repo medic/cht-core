@@ -1,4 +1,5 @@
 const utils = require('@utils');
+const { DB_NAME } = require('@constants');
 const uuid = require('uuid').v7;
 const querystring = require('querystring');
 const sentinelUtils = require('@utils/sentinel');
@@ -2521,13 +2522,27 @@ describe('Users API', () => {
       contact: { _id: 'fixture:contact:devkey-other', name: 'DeviceKeyOther' },
       roles: ['data_entry']
     };
-    // real Ed25519 public key JWKs generated in the before() below
+    // real public key JWKs generated in the before() below
     let signingKeyA;
     let signingKeyB;
 
+    // Built the way the webapp builds it: only the four members that describe the key, not the
+    // extra ones exportKey adds to say how the key may be used locally.
     const generateSigningKey = async () => {
-      const keyPair = await webcrypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']);
-      return webcrypto.subtle.exportKey('jwk', keyPair.publicKey);
+      const keyPair = await webcrypto.subtle.generateKey(
+        { name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']
+      );
+      const { kty, crv, x, y } = await webcrypto.subtle.exportKey('jwk', keyPair.publicKey);
+      return { kty, crv, x, y };
+    };
+
+    // The vault stores `<iv hex>:<ciphertext hex>`. Its length is enough to tell an age identity
+    // (dozens of bytes) from the empty string a revocation writes, without the CouchDB secret.
+    const vaultCiphertextBytes = async (deviceId) => {
+      const wanted = `credential:offline-data-bundle-server-key:${senderUser.username}:${deviceId}`;
+      const { rows } = await utils.request({ path: `/${DB_NAME}-vault/_all_docs`, qs: { include_docs: true } });
+      const row = rows.find(r => decodeURIComponent(r.id) === wanted);
+      return row.doc.password.split(':')[1].length / 2;
     };
 
     before(async () => {
@@ -2537,6 +2552,16 @@ describe('Users API', () => {
       await utils.saveDoc(parentPlace);
       await utils.createUsers([senderUser, otherUser]);
       await utils.updatePermissions(['chw'], ['can_send_offline_data_bundle'], [], { ignoreReload: true });
+    });
+
+    // In a hook rather than at the end of the test that changes it: an assertion failing there
+    // would otherwise leave the shared fixture with a password none of the other cases know.
+    afterEach(async () => {
+      await utils.request({
+        path: `/api/v1/users/${senderUser.username}`,
+        method: 'POST',
+        body: { password },
+      });
     });
 
     after(async () => {
@@ -2566,7 +2591,14 @@ describe('Users API', () => {
       chai.expect(entry.updated_date).to.be.a('number');
     });
 
+    // Registers both times itself: the password reset after each test clears every device.
     it('upserts by device_id when the same device re-registers', async () => {
+      await utils.request({
+        path: `/api/v1/users/${senderUser.username}/devices/device-A/keys`,
+        method: 'POST',
+        body: { signing_key: signingKeyA },
+        auth: { username: senderUser.username, password },
+      });
       await utils.request({
         path: `/api/v1/users/${senderUser.username}/devices/device-A/keys`,
         method: 'POST',
@@ -2604,6 +2636,35 @@ describe('Users API', () => {
         body: { signing_key: { not: 'a-jwk' } },
         auth: { username: senderUser.username, password },
       })).to.be.rejectedWith(/400/);
+    });
+
+    /**
+     * A device key signs bundles written as this user and does not depend on the password, so a
+     * password change (what someone does when a phone is lost) has to stop trusting every device.
+     * Asserted end to end, through the real update flow and against the stored doc, because that
+     * is the only level at which "the key is gone afterwards" is actually a guarantee.
+     */
+    it('stops trusting every registered device when the password changes', async () => {
+      await utils.request({
+        path: `/api/v1/users/${senderUser.username}/devices/device-revoke/keys`,
+        method: 'POST',
+        body: { signing_key: signingKeyA },
+        auth: { username: senderUser.username, password },
+      });
+      const before = await utils.usersDb.get(getUserId(senderUser.username));
+      chai.expect(before.keys_by_device).to.have.property('device-revoke');
+      chai.expect(await vaultCiphertextBytes('device-revoke')).to.be.greaterThan(16);
+
+      await utils.request({
+        path: `/api/v1/users/${senderUser.username}`,
+        method: 'POST',
+        body: { password: 'someNewPassword123!@#' },
+      });
+
+      const changed = await utils.usersDb.get(getUserId(senderUser.username));
+      chai.expect(changed.keys_by_device).to.be.undefined;
+      // The vault entry is overwritten with an empty string, which encrypts to a single block.
+      chai.expect(await vaultCiphertextBytes('device-revoke')).to.equal(16);
     });
   });
 });
