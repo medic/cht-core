@@ -13,6 +13,7 @@ import { CookieService } from 'ngx-cookie-service';
 
 describe('Session service', () => {
   let service:SessionService;
+  let sessionEnd;
   let cookieSet;
   let cookieGet;
   let cookieDelete;
@@ -30,6 +31,7 @@ describe('Session service', () => {
       get: sinon.stub(),
       delete: sinon.stub(),
     };
+    sessionEnd = sinon.stub().resolves();
     const documentMock = {
       location: location,
       querySelectorAll: sinon.stub().returns([]),
@@ -81,7 +83,7 @@ describe('Session service', () => {
     cookieGet.returns(JSON.stringify(userCtxExpected));
     location.href = 'CURRENT_URL';
     Location.dbName = 'DB_NAME';
-    $httpBackend.delete.withArgs('/_session').returns(of());
+    $httpBackend.delete.withArgs('/_session').returns(of(null));
     await service.logout();
     expect(location.href).to.equal(`/DB_NAME/login?redirect=CURRENT_URL&username=${userCtxExpected.name}`);
     expect(cookieDelete.args[0][0]).to.equal('userCtx');
@@ -89,12 +91,114 @@ describe('Session service', () => {
     expect(consoleWarnMock.args[0][0]).to.equal('User must reauthenticate');
   });
 
+  /**
+   * The cookie must not outlive the decision to end the session. Ending it can take up to its own
+   * bound, so a cookie deleted afterwards would stay valid for that whole window.
+   */
+  it('deletes the cookie before waiting on the session-end handlers', async () => {
+    sinon.stub(console, 'warn');
+    cookieGet.returns(JSON.stringify({ name: 'bryan' }));
+    Location.dbName = 'DB_NAME';
+    let releaseHandler;
+    service.onSessionEnd(() => new Promise<void>(resolve => {
+      releaseHandler = resolve;
+    }));
+
+    const navigating = service.navigateToLogin();
+    await Promise.resolve();
+
+    expect(cookieDelete.callCount, 'the cookie must already be gone while a handler is still running')
+      .to.equal(1);
+    releaseHandler();
+    await navigating;
+  });
+
+  it('ends the session before sending the user to the login page', async () => {
+    sinon.stub(console, 'warn');
+    cookieGet.returns(JSON.stringify({ name: 'bryan' }));
+    Location.dbName = 'DB_NAME';
+    // The ordering is the whole point: a handler that ran after the navigation had started would
+    // be racing the page unload, which is why this is awaited rather than left to the caller.
+    let hrefWhenHandlerRan;
+    service.onSessionEnd(() => {
+      hrefWhenHandlerRan = location.href;
+      return Promise.resolve();
+    });
+    $httpBackend.delete.withArgs('/_session').returns(of(null));
+
+    await service.logout();
+
+    expect(hrefWhenHandlerRan).to.not.include('/DB_NAME/login');
+    expect(location.href).to.include('/DB_NAME/login');
+  });
+
+  /** Every path back to the login page ends the session, not only an explicit logout. */
+  it('ends the session when the session expired rather than being ended by the user', async () => {
+    sinon.stub(console, 'warn');
+    cookieGet.returns(JSON.stringify({ name: 'bryan' }));
+    service.onSessionEnd(sessionEnd);
+
+    await service.navigateToLogin();
+
+    expect(sessionEnd.callCount).to.equal(1);
+  });
+
+  /** onSessionEnd takes any callback, and one that throws before returning a promise would
+   *  otherwise reject this method before the cookie is deleted and the page navigates. */
+  it('still reaches the login page when a handler throws synchronously', async () => {
+    sinon.stub(console, 'warn');
+    sinon.stub(console, 'error');
+    cookieGet.returns(JSON.stringify({ name: 'bryan' }));
+    Location.dbName = 'DB_NAME';
+    service.onSessionEnd(() => {
+      throw new Error('thrown before any promise');
+    });
+
+    await service.navigateToLogin();
+
+    expect(location.href).to.include('/DB_NAME/login');
+  });
+
+  /**
+   * This path is also the 401 handler and the session-expired modal, where it used to be
+   * synchronous and could not fail. A handler that never settles must not strand the user on a
+   * page they have already been signed out of.
+   */
+  it('still reaches the login page when a handler never settles', async () => {
+    sinon.stub(console, 'warn');
+    const clock = sinon.useFakeTimers({ shouldAdvanceTime: true });
+    cookieGet.returns(JSON.stringify({ name: 'bryan' }));
+    Location.dbName = 'DB_NAME';
+    service.onSessionEnd(() => new Promise<void>(() => undefined));
+
+    const navigated = service.navigateToLogin();
+    await clock.tickAsync(2000);
+    await navigated;
+
+    expect(location.href).to.include('/DB_NAME/login');
+    clock.restore();
+  });
+
+  it('still reaches the login page when a handler fails', async () => {
+    sinon.stub(console, 'warn');
+    const consoleErrorMock = sinon.stub(console, 'error');
+    cookieGet.returns(JSON.stringify({ name: 'bryan' }));
+    Location.dbName = 'DB_NAME';
+    service.onSessionEnd(() => Promise.reject(new Error('storage is unavailable')));
+    $httpBackend.delete.withArgs('/_session').returns(of(null));
+
+    await service.logout();
+
+    expect(location.href).to.include('/DB_NAME/login');
+    expect(consoleErrorMock.args[0][0]).to.equal('SessionService :: Error ending the session');
+  });
+
   it('logs out if no user context', async () => {
     const consoleWarnMock = sinon.stub(console, 'warn');
     cookieGet.returns(JSON.stringify({}));
     location.href = 'CURRENT_URL';
     Location.dbName = 'DB_NAME';
-    $httpBackend.delete.withArgs('/_session').returns(of());
+    $httpBackend.delete.withArgs('/_session').returns(of(null));
     await service.init();
     expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
     expect(cookieDelete.args[0][0]).to.equal('userCtx');
@@ -128,8 +232,8 @@ describe('Session service', () => {
     cookieGet.returns(JSON.stringify(userCtxExpected));
     location.href = 'CURRENT_URL';
     Location.dbName = 'DB_NAME';
-    $httpBackend.get.withArgs('/_session').returns(of([{ data: { userCtx: { name: 'jimmy' } } }]));
-    $httpBackend.delete.withArgs('/_session').returns(of());
+    $httpBackend.get.withArgs('/_session').returns(of({ userCtx: { name: 'jimmy', roles: [] } }));
+    $httpBackend.delete.withArgs('/_session').returns(of(null));
     await service.init();
     expect(location.href).to.equal(`/DB_NAME/login?redirect=CURRENT_URL&username=${userCtxExpected.name}`);
     expect(cookieDelete.args[0][0]).to.equal('userCtx');
@@ -139,7 +243,7 @@ describe('Session service', () => {
 
   it('does not log out if remote userCtx consistent', async () => {
     cookieGet.returns(JSON.stringify({ name: 'bryan' }));
-    $httpBackend.get.withArgs('/_session').returns(of([{ data: { userCtx: { name: 'bryan' } } }]));
+    $httpBackend.get.withArgs('/_session').returns(of({ userCtx: { name: 'bryan', roles: [] } }));
     await service.init();
     expect(cookieDelete.callCount).to.equal(0);
   });

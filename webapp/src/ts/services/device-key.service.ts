@@ -42,7 +42,7 @@ interface ServerKeys {
  * server's encryption public key beside it, so a user that later goes offline can sign bundles
  * and encrypt them to the server.
  *
- * Registration runs as soon as the app starts, and again after any fully successful sync, so a
+ * Registration runs once the startup session check has resolved, and again after any fully successful sync, so a
  * device does not depend on sync timing to get its first key. Registering replaces whatever the
  * server held for this device, so a bundle already sealed under an older key can no longer be
  * decrypted. Retiring a key safely is still an open question.
@@ -58,7 +58,7 @@ interface ServerKeys {
 export class DeviceKeyService {
   /** One registration at a time: init and a sync can both decide to register at the same moment. */
   private registering: Promise<void> | null = null;
-  /** Latched when the session ends, so a registration still in flight cannot write its key back. */
+  /** Latched when the session ends, so a registration still in flight drops its key instead. */
   private ended = false;
   private readonly windowRef: Window | null;
 
@@ -106,7 +106,8 @@ export class DeviceKeyService {
    */
   private async registerIfPermitted() {
     // Whoever asked second joins the attempt already running instead of starting a second one:
-    // two registrations in flight would each generate a keypair and the loser's would be stored.
+    // two registrations in flight would each generate a keypair, and the server could end up
+    // keeping one while the device stores the other.
     if (this.registering) {
       return this.registering;
     }
@@ -123,13 +124,16 @@ export class DeviceKeyService {
   }
 
   private async register() {
-    // Read live rather than kept from startup: a username captured once could be the previous
-    // user's by the time a later sync asks.
-    const username = this.sessionService.userCtx()?.name;
-    if (!username || !await this.authService.has(PERMISSION)) {
+    // The window guard belongs here as well as at the store, since the keypair and the export need
+    // it too. Online-only users (admins included) are refused by the server whatever they send, and
+    // admins hold every permission. Cheapest first, so the permission read is last.
+    if (this.ended || !this.windowRef || this.sessionService.isOnlineOnly() ||
+      !await this.authService.has(PERMISSION)) {
       return;
     }
-    await this.registerDeviceKeys(username);
+    // Read live rather than kept from startup: a username captured once could be the previous
+    // user's by the time a later sync asks.
+    await this.registerDeviceKeys(this.sessionService.userCtx().name);
   }
 
   /**
@@ -141,7 +145,8 @@ export class DeviceKeyService {
    * able to register afterwards.
    */
   private async endSession() {
-    // Set before the clear is issued, so a registration still in flight cannot save afterwards.
+    // Set before the clear is issued, so a registration that has not yet reached its save drops
+    // its key rather than writing it back.
     this.ended = true;
     await this.forget();
   }
@@ -150,8 +155,7 @@ export class DeviceKeyService {
    * Drops this device's key material.
    *
    * Runs when a session ends, so a device the user has signed out of does not keep key material
-   * cached, and again after a password change, where the server has dropped every key it held for
-   * the user and a device that kept its copy would believe it was still registered.
+   * cached. A password change goes to `forgetUser` instead, which takes only that user's record.
    *
    * Best effort, not a guarantee: it only runs for a session ended through the app, and reaching
    * the login page is bounded, so storage that does not answer in time keeps its record. What is
@@ -188,12 +192,10 @@ export class DeviceKeyService {
     // server has just thrown away, and its save would otherwise land after the forget; holding the
     // slot also stops a sync taking it mid-sequence and being joined instead of the fresh one.
     const inFlight = this.registering;
-    const username = this.sessionService.userCtx()?.name;
+    const username = this.sessionService.userCtx().name;
     const attempt: Promise<void> = (async () => {
       await inFlight;
-      if (username) {
-        await this.forgetUser(username);
-      }
+      await this.forgetUser(username);
       await this.register();
     })()
       .catch(err => console.error('DeviceKeyService :: Error renewing the device key', err))

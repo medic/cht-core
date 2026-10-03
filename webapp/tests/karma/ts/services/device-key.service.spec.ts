@@ -78,6 +78,7 @@ describe('DeviceKey service', () => {
     telemetryService = { getUniqueDeviceId: sinon.stub().returns(DEVICE_ID) };
     sessionService = {
       userCtx: sinon.stub().returns({ name: USER }),
+      isOnlineOnly: sinon.stub().returns(false),
       onSessionEnd: sinon.stub().callsFake(handler => sessionEndHandler = handler),
     };
 
@@ -190,22 +191,21 @@ describe('DeviceKey service', () => {
       .to.be.true;
   });
 
+  it('does nothing for an online-only user, admins included', async () => {
+    sessionService.isOnlineOnly.returns(true);
+
+    await service.init();
+
+    expect(await readRecord(KEY)).to.be.undefined;
+    httpMock.expectNone(() => true);
+  });
+
   it('does nothing when the user does not have the permission', async () => {
     authService.has.resolves(false);
 
     await service.init();
 
     expect(authService.has.args[0][0]).to.equal('can_send_offline_data_bundle');
-    expect(await readRecord(KEY)).to.be.undefined;
-  });
-
-  /** What it starts into when the session check has just logged the user out. */
-  it('does nothing when there is no signed in user', async () => {
-    sessionService.userCtx.returns(undefined);
-
-    await service.init();
-
-    expect(authService.has.called).to.be.false;
     expect(await readRecord(KEY)).to.be.undefined;
   });
 
@@ -379,6 +379,24 @@ describe('DeviceKey service', () => {
         .to.be.undefined;
     });
 
+    /**
+     * A sync can still report success while the app is on its way to the login page. Registering
+     * then would mint a server key for a device that is about to drop its half of it, and that
+     * replaces the key any bundle already handed to a relay was sealed to.
+     */
+    it('does not register again once the session has ended', async () => {
+      authService.has.resolves(false);
+      await service.init();
+      await sessionEndHandler();
+
+      authService.has.resolves(true);
+      await syncSuccess();
+      await tick();
+
+      httpMock.expectNone(() => true);
+      expect(await readRecord(KEY)).to.be.undefined;
+    });
+
     it('keeps the key while the session is still good', async () => {
       await writeRecord(KEY, { server_encryption_public_key: 'age1' });
       authService.has.resolves(false);
@@ -393,15 +411,20 @@ describe('DeviceKey service', () => {
     it('removes every record, not just this user\'s', async () => {
       await writeRecord(KEY, { server_encryption_public_key: 'age1server' });
       await writeRecord(`someone-else:${DEVICE_ID}`, { server_encryption_public_key: 'age1other' });
+      authService.has.resolves(false);
+      await service.init();
 
-      await service['forget']();
+      await sessionEndHandler();
 
       expect(await readRecord(KEY)).to.be.undefined;
       expect(await readRecord(`someone-else:${DEVICE_ID}`)).to.be.undefined;
     });
 
     it('does nothing when there is no key to forget', async () => {
-      await service['forget']();
+      authService.has.resolves(false);
+      await service.init();
+
+      await sessionEndHandler();
 
       expect(await readRecord(KEY)).to.be.undefined;
     });
@@ -497,8 +520,8 @@ describe('DeviceKey service', () => {
       await tick();
       await tick();
 
-      expect(httpMock.match(() => true).length, 'exactly one registration may follow a renew')
-        .to.equal(0);
+      expect(httpMock.match(() => true), 'exactly one registration may follow a renew')
+        .to.have.lengthOf(0);
     });
 
     it('drops the stored key and registers a fresh one', async () => {
