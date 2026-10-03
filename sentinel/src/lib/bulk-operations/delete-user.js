@@ -45,7 +45,7 @@ const deleteUser = async (batch, actionId) => {
     if (!op.id) {
       logger.error(`bulk-operations: delete-user skipped an operation with no id (action ${actionId})`);
       failed.push(op);
-    } else if (await removeUser(op, actionId)) {
+    } else if (await removeUser(op, actionId)) { // NOSONAR: the users go one at a time
       failed.push(op);
     }
   }

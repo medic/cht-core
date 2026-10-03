@@ -194,9 +194,8 @@ const runOperations = async (action, handler) => {
     } catch (err) {
       failed = failureFor(err, batch, actionId);
     }
-    // NOSONAR: the batches are deliberately sequential, so the cursor only ever moves past work
-    // that is done.
-    action = await saveProgress(action, batch.length, failed);
+    // The batches are deliberately sequential: the cursor only ever moves past work that is done.
+    action = await saveProgress(action, batch.length, failed); // NOSONAR
   }
   return action;
 };
@@ -222,12 +221,15 @@ const recordAction = async (action, log, completed) => {
  */
 const runAction = async (action, log) => {
   const handler = HANDLERS[action.action];
+  if (!handler) {
+    // Recorded and removed all the same, so one unknown action cannot stall the operation forever.
+    await recordAction(action, log, action);
+    throw new Error(`bulk-operations: no handler for action "${action.action}"`);
+  }
+
   let completed;
   let unexpected;
   try {
-    if (!handler) {
-      throw new Error(`bulk-operations: no handler for action "${action.action}"`);
-    }
     completed = action.cursor < action.total ? await runOperations(action, handler) : action;
   } catch (err) {
     if (err instanceof RetryableError) {
@@ -235,9 +237,10 @@ const runAction = async (action, log) => {
       return scheduleRetry(db.sentinel, action, err.message);
     }
     unexpected = err;
+    completed = action;
   }
 
-  await recordAction(action, log, completed || action);
+  await recordAction(action, log, completed);
 
   if (unexpected) {
     throw unexpected;
@@ -335,35 +338,40 @@ const isWaiting = (doc) => {
   return true;
 };
 
-const runNext = async () => {
-  const action = await getOldestActionDoc();
-  if (action) {
-    if (isWaiting(action)) {
-      return false;
-    }
-    await runForAction(action, await getLog(action.bulk_operation_id));
-    return true;
-  }
-
-  const log = await getNextLog();
-  // The key comes from the view and the doc comes from `include_docs`, so an index that has not
-  // caught up can hand back a log that has already finished. Each status says what to do, and a log
-  // in any other state is left alone: planning a terminal operation would run it a second time.
+/**
+ * What an operation with no outstanding actions means. The key comes from the view and the doc from
+ * `include_docs`, so an index that has not caught up can hand back a log that has already finished:
+ * each status says what to do and a log in any other state is left alone, because planning a
+ * terminal operation would run the whole thing a second time.
+ * @returns {Promise<boolean>} whether there was anything to do
+ */
+const runForLog = async (log) => {
   if (log?.status === STATUSES.RUNNING) {
     await finishOperation(log);
     return true;
   }
 
   // A plan that failed for a repeatable reason waits for its cool-down before trying again.
-  if (log?.status === STATUSES.QUEUED) {
-    if (isWaiting(log)) {
-      return false;
-    }
+  if (log?.status === STATUSES.QUEUED && !isWaiting(log)) {
     await planOperation(log);
     return true;
   }
 
   return false;
+};
+
+const runNext = async () => {
+  const action = await getOldestActionDoc();
+  if (!action) {
+    return runForLog(await getNextLog());
+  }
+
+  if (isWaiting(action)) {
+    return false;
+  }
+
+  await runForAction(action, await getLog(action.bulk_operation_id));
+  return true;
 };
 
 let running = false;
@@ -393,7 +401,7 @@ const runPass = async () => {
   try {
     do {
       wakeRequested = false;
-      await drain();
+      await drain(); // NOSONAR: one pass at a time is the point
     } while (wakeRequested); // a change landed mid-pass: look again before going idle
   } catch (err) {
     logger.error(`bulk-operations: Error. Retrying in ${RETRY_TIMEOUT}ms. %o`, err);
