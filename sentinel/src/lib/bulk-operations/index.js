@@ -219,6 +219,23 @@ const recordAction = async (action, log, completed) => {
  * finished is not decided here: that is the job of the rule that finds a running log with no actions
  * left, once every action has been through this.
  */
+/**
+ * Runs the action's operations and says which of the three things happened, so the caller is left
+ * deciding what to do about it rather than reading it out of a flag.
+ * @returns {Promise<Object>} `completed` with the action to record, `retry` when the failure is
+ *   worth another attempt, and `unexpected` alongside `completed` when it is not
+ */
+const attemptAction = async (action, handler) => {
+  try {
+    return { completed: action.cursor < action.total ? await runOperations(action, handler) : action };
+  } catch (err) {
+    if (err instanceof RetryableError) {
+      return { retry: err };
+    }
+    return { completed: action, unexpected: err };
+  }
+};
+
 const runAction = async (action, log) => {
   const handler = HANDLERS[action.action];
   if (!handler) {
@@ -227,21 +244,14 @@ const runAction = async (action, log) => {
     throw new Error(`bulk-operations: no handler for action "${action.action}"`);
   }
 
-  let completed;
-  let unexpected;
-  try {
-    completed = action.cursor < action.total ? await runOperations(action, handler) : action;
-  } catch (err) {
-    if (err instanceof RetryableError) {
-      // Nothing is recorded and the action doc stays put, so it runs again after the cool-down.
-      return scheduleRetry(db.sentinel, action, err.message);
-    }
-    unexpected = err;
-    completed = action;
+  const { completed, retry, unexpected } = await attemptAction(action, handler);
+  if (retry) {
+    // Nothing is recorded and the action doc stays put, so it runs again after the cool-down.
+    return scheduleRetry(db.sentinel, action, retry.message);
   }
 
+  // Recorded before the error is raised, so an unexpected failure still finishes the bookkeeping.
   await recordAction(action, log, completed);
-
   if (unexpected) {
     throw unexpected;
   }
