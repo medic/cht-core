@@ -28,7 +28,7 @@ describe('bulk-operations sentinel scheduler', () => {
     sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [] });
     sinon.stub(db.sentinel, 'bulkDocs').resolves([]);
     sinon.stub(db.sentinel, 'get');
-    sinon.stub(db.sentinel, 'put').resolves();
+    sinon.stub(db.sentinel, 'put').resolves({ ok: true, id: ACTION_ID, rev: '2-saved' });
     sinon.stub(db.sentinel, 'getAttachment');
     sinon.stub(db.medicLogs, 'get');
     sinon.stub(db.medicLogs, 'put').resolves();
@@ -78,7 +78,20 @@ describe('bulk-operations sentinel scheduler', () => {
       // the operation's own status is not decided here
       expect(log.status).to.equal('running');
 
-      expect(db.sentinel.bulkDocs.args[0][0]).to.deep.equal([ { _id: ACTION_ID, _rev: '1-a', _deleted: true } ]);
+      // deleted with the revision saving the cursor produced, not the one we started with
+      expect(db.sentinel.bulkDocs.args[0][0])
+        .to.deep.equal([ { _id: ACTION_ID, _rev: '2-saved', _deleted: true } ]);
+    });
+
+    it('complains when the action could not be deleted, rather than leaving it to run again', async () => {
+      const action = buildAction();
+      db.sentinel.get.resolves(action);
+      db.sentinel.getAttachment.resolves(Buffer.from(JSON.stringify([ { id: 'a' } ])));
+      db.sentinel.bulkDocs.resolves([ { id: ACTION_ID, error: 'conflict' } ]);
+      service.__set__('HANDLERS', { 'set-contact': sinon.stub().resolves([]) });
+
+      await expect(service.__get__('runAction')(action, buildLog()))
+        .to.be.rejectedWith(/could not delete docs/);
     });
 
     it('records the operations that failed', async () => {

@@ -57,14 +57,16 @@ const readOperations = async (actionId) => {
 };
 
 // Base the cursor update on the latest doc (not our in-memory copy) and hand it back to the caller.
+// `put` does not update `_rev` on the doc it was given, so the revision it reports is carried over:
+// the caller deletes the action when it is done, and a stale revision would lose that write.
 const saveProgress = async (action, processedCount, failed) => {
   const updated = await db.sentinel.get(action._id);
   updated.cursor = (updated.cursor || 0) + processedCount;
   if (failed.length) {
     updated.failed_operations = [ ...(updated.failed_operations || []), ...failed ];
   }
-  await db.sentinel.put(updated);
-  return updated;
+  const { rev } = await db.sentinel.put(updated);
+  return { ...updated, _rev: rev };
 };
 
 const getLog = async (logId) => {
@@ -100,8 +102,14 @@ const writeActionDocs = async (actionDocs) => {
 };
 
 const deleteDocsFrom = async (database, docs) => {
-  if (docs.length) {
-    await database.bulkDocs(docs.map(doc => ({ _id: doc._id, _rev: doc._rev, _deleted: true })));
+  if (!docs.length) {
+    return;
+  }
+
+  const results = await database.bulkDocs(docs.map(doc => ({ _id: doc._id, _rev: doc._rev, _deleted: true })));
+  const errors = results.filter(result => result.error);
+  if (errors.length) {
+    throw new Error(`bulk-operations: could not delete docs: ${JSON.stringify(errors)}`);
   }
 };
 
