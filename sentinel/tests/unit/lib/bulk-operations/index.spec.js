@@ -28,7 +28,7 @@ describe('bulk-operations sentinel scheduler', () => {
     sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [] });
     sinon.stub(db.sentinel, 'bulkDocs').resolves([]);
     sinon.stub(db.sentinel, 'get');
-    sinon.stub(db.sentinel, 'put').resolves();
+    sinon.stub(db.sentinel, 'put').resolves({ ok: true, id: ACTION_ID, rev: '2-saved' });
     sinon.stub(db.sentinel, 'getAttachment');
     sinon.stub(db.medicLogs, 'get');
     sinon.stub(db.medicLogs, 'put').resolves();
@@ -78,7 +78,20 @@ describe('bulk-operations sentinel scheduler', () => {
       // the operation's own status is not decided here
       expect(log.status).to.equal('running');
 
-      expect(db.sentinel.bulkDocs.args[0][0]).to.deep.equal([ { _id: ACTION_ID, _rev: '1-a', _deleted: true } ]);
+      // deleted with the revision saving the cursor produced, not the one we started with
+      expect(db.sentinel.bulkDocs.args[0][0])
+        .to.deep.equal([ { _id: ACTION_ID, _rev: '2-saved', _deleted: true } ]);
+    });
+
+    it('complains when the action could not be deleted, rather than leaving it to run again', async () => {
+      const action = buildAction();
+      db.sentinel.get.resolves(action);
+      db.sentinel.getAttachment.resolves(Buffer.from(JSON.stringify([ { id: 'a' } ])));
+      db.sentinel.bulkDocs.resolves([ { id: ACTION_ID, error: 'conflict' } ]);
+      service.__set__('HANDLERS', { 'set-contact': sinon.stub().resolves([]) });
+
+      await expect(service.__get__('runAction')(action, buildLog()))
+        .to.be.rejectedWith(/could not delete docs/);
     });
 
     it('records the operations that failed', async () => {
@@ -302,6 +315,110 @@ describe('bulk-operations sentinel scheduler', () => {
       stubOldestAction(null);
 
       expect(await runNext()).to.equal(false);
+    });
+  });
+
+  describe('retries', () => {
+    const RetryableError = require('../../../../src/lib/bulk-operations/errors').RetryableError;
+
+    it('ramps the cool-down: immediate, then a minute at a time up to five', () => {
+      const backoffFor = service.__get__('backoffFor');
+
+      expect([ 1, 2, 3, 4, 5, 6, 7, 20 ].map(backoffFor)).to.deep.equal([
+        0, 60000, 120000, 180000, 240000, 300000, 300000, 300000,
+      ]);
+    });
+
+    it('leaves the action in place and schedules another attempt when the handler asks to retry', async () => {
+      const action = buildAction();
+      db.sentinel.get.resolves(action);
+      db.sentinel.getAttachment.resolves(Buffer.from(JSON.stringify([ { id: 'a' } ])));
+      service.__set__('HANDLERS', { 'set-contact': sinon.stub().rejects(new RetryableError('couch down')) });
+      sinon.stub(logger, 'warn');
+
+      await service.__get__('runAction')(action, buildLog());
+
+      const [ saved ] = db.sentinel.put.args[0];
+      expect(saved.error_count).to.equal(1);
+      expect(saved.next_attempt_date).to.be.an.instanceOf(Date);
+      // the cursor has not moved, so the batch that failed is the batch that runs next
+      expect(saved.cursor).to.equal(0);
+      // nothing is recorded and the action doc stays
+      expect(db.medicLogs.put.called).to.equal(false);
+      expect(db.sentinel.bulkDocs.called).to.equal(false);
+    });
+
+    it('counts the failures, so the cool-down lengthens each time', async () => {
+      const action = buildAction();
+      // the count comes off the latest revision, not the copy the scheduler was handed
+      db.sentinel.get.resolves(buildAction({ error_count: 3 }));
+      db.sentinel.getAttachment.resolves(Buffer.from(JSON.stringify([ { id: 'a' } ])));
+      service.__set__('HANDLERS', { 'set-contact': sinon.stub().rejects(new RetryableError('couch down')) });
+      sinon.stub(logger, 'warn');
+
+      await service.__get__('runAction')(action, buildLog());
+
+      const [ saved ] = db.sentinel.put.args[0];
+      expect(saved.error_count).to.equal(4);
+      expect(saved.next_attempt_date.getTime() - Date.now()).to.be.closeTo(3 * 60000, 2000);
+    });
+
+    it('clears the cool-down once the operation is under way', async () => {
+      planners.plan.resolves({ summary: {}, actions: [ { action: 'delete', operations: [ { id: 'a' } ] } ] });
+      const log = buildLog({ status: 'queued', error_count: 2, next_attempt_date: new Date() });
+
+      await service.__get__('planOperation')(log);
+
+      const [ saved ] = db.medicLogs.put.args[0];
+      expect(saved.status).to.equal('running');
+      expect(saved).to.not.have.property('next_attempt_date');
+      // the failure count is kept, the way the archiving jobs keep theirs
+      expect(saved.error_count).to.equal(2);
+    });
+
+    it('keeps a plan that failed for a repeatable reason queued', async () => {
+      sinon.stub(logger, 'warn');
+      planners.plan.rejects(Object.assign(new Error('couch down'), { status: 503 }));
+      const log = buildLog({ status: 'queued' });
+      db.medicLogs.get.resolves(log);
+
+      await service.__get__('planOperation')(log);
+
+      const [ saved ] = db.medicLogs.put.args[0];
+      expect(saved.status).to.equal('queued');
+      expect(saved.error_count).to.equal(1);
+      expect(db.sentinel.bulkDocs.called).to.equal(false);
+    });
+
+    it('lets an unexpected plan failure fail the action rather than retrying forever', async () => {
+      planners.plan.rejects(new Error('programming error'));
+
+      await expect(service.__get__('planOperation')(buildLog({ status: 'queued' })))
+        .to.be.rejectedWith('programming error');
+
+      expect(db.medicLogs.put.called).to.equal(false);
+    });
+
+    it('does not touch an action that is still cooling down', async () => {
+      const soon = new Date(Date.now() + 60000);
+      db.sentinel.allDocs
+        .withArgs(sinon.match({ startkey: 'bulk-operation-action:' }))
+        .resolves({ rows: [ { id: ACTION_ID, doc: buildAction({ next_attempt_date: soon }) } ] });
+
+      expect(await service.__get__('runNext')()).to.equal(false);
+      // and nothing else is planned while it is outstanding
+      expect(db.medicLogs.query.called).to.equal(false);
+    });
+
+    it('does not plan an operation that is still cooling down', async () => {
+      const soon = new Date(Date.now() + 60000);
+      db.sentinel.allDocs
+        .withArgs(sinon.match({ startkey: 'bulk-operation-action:' }))
+        .resolves({ rows: [] });
+      db.medicLogs.query.withArgs(sinon.match.any, sinon.match({ keys: [ 'running', 'queued' ] }))
+        .resolves({ rows: [ { doc: buildLog({ status: 'queued', next_attempt_date: soon }) } ] });
+
+      expect(await service.__get__('runNext')()).to.equal(false);
     });
   });
 

@@ -1,5 +1,6 @@
 const logger = require('@medic/logger');
 const db = require('../../db');
+const { RetryableError, retryable, isConflict } = require('./errors');
 
 const separateIds = (batch, actionId) => {
   const ids = [];
@@ -30,12 +31,10 @@ const buildCopy = (doc, deletedDate) => {
 };
 
 // Attachments are inlined so the copy is complete; conflicts are needed to delete every leaf.
-const readForDelete = (ids) => db.medic.allDocs({
-  keys: ids,
-  include_docs: true,
-  attachments: true,
-  conflicts: true,
-});
+const readForDelete = (ids, actionId) => retryable(
+  `delete could not read the docs (action ${actionId})`,
+  () => db.medic.allDocs({ keys: ids, include_docs: true, attachments: true, conflicts: true })
+);
 
 /**
  * Copies the docs and returns only those the delete database accepted. bulkDocs resolves with an
@@ -45,9 +44,8 @@ const readForDelete = (ids) => db.medic.allDocs({
  */
 const copyDocs = async (docs, actionId) => {
   const deletedDate = Date.now();
-  const results = await db.deleted.bulkDocs(docs.map(doc => buildCopy(doc, deletedDate)), {
-    new_edits: false,
-  });
+  const results = await retryable(`delete could not copy the docs (action ${actionId})`,
+    () => db.deleted.bulkDocs(docs.map(doc => buildCopy(doc, deletedDate)), { new_edits: false }));
   const rejected = results.filter(({ error }) => error).map(({ id }) => id);
   if (rejected.length) {
     logger.error(`bulk-operations: delete could not copy some docs (action ${actionId}): %o`, rejected);
@@ -61,7 +59,14 @@ const copyDocs = async (docs, actionId) => {
  * leaf, so failures are collapsed back down by id.
  */
 const tombstoneDocs = async (docs, actionId) => {
-  const results = await db.medic.bulkDocs(docs.flatMap(buildTombstones));
+  const results = await retryable(`delete could not write the tombstones (action ${actionId})`,
+    () => db.medic.bulkDocs(docs.flatMap(buildTombstones)));
+  const conflicted = results.filter(isConflict);
+  if (conflicted.length) {
+    throw new RetryableError(
+      `bulk-operations: delete lost ${conflicted.length} doc(s) to a concurrent edit (action ${actionId})`
+    );
+  }
   const errors = results.filter(res => res.error);
   if (errors.length) {
     logger.error(`bulk-operations: delete failed for some docs (action ${actionId}): %o`, errors);
@@ -79,7 +84,7 @@ const deleteDocs = async (batch, actionId) => {
   }
 
   try {
-    const result = await readForDelete(ids);
+    const result = await readForDelete(ids, actionId);
     // A row with no doc is already deleted or purged, so there is nothing left to do for it.
     const docs = result.rows.filter(row => row.doc).map(row => row.doc);
     if (!docs.length) {
