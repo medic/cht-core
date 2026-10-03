@@ -134,7 +134,8 @@ const SWAGGER_OPTIONS = {
           schema: { type: 'boolean', default: false },
           description:
             'Return the summary of what would be changed by executing this operation. Nothing is ' +
-            'applied when dry_run is set.',
+            'applied or recorded when dry_run is set. The counts are a point-in-time estimate, ' +
+            'recomputed when the operation actually runs.',
         }
       },
       responses: {
@@ -143,13 +144,14 @@ const SWAGGER_OPTIONS = {
         Unauthorized: { description: 'Not authenticated' },
         Forbidden: { description: 'Insufficient permissions' },
         BulkOperationQueued: {
-          description: 'The bulk operation was queued',
+          description:
+            'The bulk operation was recorded. It is planned and run by Sentinel, so poll the ' +
+            'returned id to follow it.',
           content: {
             'application/json': {
               schema: {
                 type: 'object',
                 properties: {
-                  summary: { $ref: '#/components/schemas/BulkOperationSummary' },
                   id: { type: 'string', description: 'The bulk operation id to poll.' }
                 }
               }
@@ -157,7 +159,9 @@ const SWAGGER_OPTIONS = {
           }
         },
         BulkOperationDryRun: {
-          description: 'The dry-run summary (nothing queued)',
+          description:
+            'The dry-run summary (nothing recorded). The counts are a point-in-time estimate: the ' +
+            'operation is planned again when it runs, against the documents as they are then.',
           content: {
             'application/json': {
               schema: {

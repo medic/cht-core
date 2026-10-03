@@ -1,10 +1,13 @@
 const sinon = require('sinon');
-const { expect } = require('chai');
+const chai = require('chai');
+chai.use(require('chai-as-promised'));
+const { expect } = chai;
 
-const db = require('../../../src/db');
-const { BadRequestError } = require('../../../src/errors');
-const config = require('../../../src/config');
-const { assertMoveIsLegal } = require('../../../src/services/lineage-constraints');
+const db = require('../../src/libs/db');
+const config = require('../../src/libs/config');
+const lineage = require('../../src/libs/lineage');
+const { ValidationError } = require('../../src/errors');
+const { assertMoveIsLegal } = require('../../src/lineage-constraints');
 
 const CONTACT_TYPES = [
   { id: 'district_hospital', parents: [] },
@@ -21,10 +24,18 @@ const clinic = { _id: 'clinic-1', type: 'clinic', parent: { _id: 'hc-a', parent:
 const clinicUnderB = { _id: 'clinic-b', type: 'clinic', parent: { _id: 'hc-b', parent: { _id: 'district' } } };
 
 describe('lineage-constraints', () => {
-  beforeEach(() => sinon.stub(config, 'getAll').returns({ contact_types: CONTACT_TYPES }));
+  let query;
+
+  beforeEach(() => {
+    query = sinon.stub();
+    db.init({ medic: { query } });
+    config.init({ getAll: () => ({ contact_types: CONTACT_TYPES }) });
+    lineage.init(require('@medic/lineage')(Promise, db.medic));
+  });
+
   afterEach(() => sinon.restore());
 
-  const stubNoAncestorLookup = () => sinon.stub(db.medic, 'query').resolves({ rows: [] });
+  const stubNoAncestorLookup = () => query.resolves({ rows: [] });
 
   it('allows a legal move between parents of the same type', async () => {
     stubNoAncestorLookup();
@@ -47,16 +58,16 @@ describe('lineage-constraints', () => {
       .to.be.rejectedWith('already has that parent');
   });
 
-  it('reports violations as BadRequestError so other failures are not masked as 400s', async () => {
+  it('reports violations as ValidationError, so a caller can tell them from a real failure', async () => {
     const err = await assertMoveIsLegal(clinic, clinic, [ 'clinic-1' ]).catch(e => e);
-    expect(err).to.be.an.instanceOf(BadRequestError);
-    expect(err.code).to.equal(400);
+    expect(err).to.be.an.instanceOf(ValidationError);
+    expect(err.name).to.equal('ValidationError');
   });
 
   it('lets a database failure propagate instead of reporting it as an invalid move', async () => {
-    sinon.stub(db.medic, 'query').rejects(new Error('couch is down'));
+    query.rejects(new Error('couch is down'));
     const err = await assertMoveIsLegal(clinic, healthCenterB, [ 'clinic-1' ]).catch(e => e);
-    expect(err).to.not.be.an.instanceOf(BadRequestError);
+    expect(err).to.not.be.an.instanceOf(ValidationError);
     expect(err.message).to.equal('couch is down');
   });
 
@@ -101,7 +112,6 @@ describe('lineage-constraints', () => {
   it('makes no database lookup when the contact stays under the same lineage', async () => {
     // A person moved from a health center down into one of its own clinics keeps every ancestor, so
     // nothing can be stranded and the view is never queried.
-    const query = sinon.stub(db.medic, 'query');
     const person = { _id: 'person-1', type: 'person', parent: { _id: 'hc-a', parent: { _id: 'district' } } };
 
     await expect(assertMoveIsLegal(person, clinic, [ 'person-1' ])).to.be.fulfilled;
@@ -111,7 +121,7 @@ describe('lineage-constraints', () => {
 
   it('rejects a move that would strand a primary contact', async () => {
     // hc-a drops out of the lineage, and its primary contact is inside the moved subtree.
-    sinon.stub(db.medic, 'query').resolves({ rows: [
+    query.resolves({ rows: [
       { id: 'hc-a', value: { primary_contact: 'person-in-subtree' } },
     ] });
 
@@ -120,7 +130,7 @@ describe('lineage-constraints', () => {
   });
 
   it('allows the move when the dropped ancestor keeps a primary contact outside the subtree', async () => {
-    sinon.stub(db.medic, 'query').resolves({ rows: [
+    query.resolves({ rows: [
       { id: 'hc-a', value: { primary_contact: 'someone-else' } },
     ] });
 

@@ -1,0 +1,19 @@
+{
+  "name": "@medic/bulk-operations",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test/**/*"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@medic/cht-datasource": "file:../cht-datasource",
+    "@medic/constants": "file:../constants",
+    "@medic/contact-types-utils": "file:../contact-types-utils",
+    "@medic/couch-request": "file:../couch-request",
+    "@medic/environment": "file:../environment",
+    "@medic/lineage": "file:../lineage",
+    "@medic/nouveau": "file:../nouveau"
+  }
+}

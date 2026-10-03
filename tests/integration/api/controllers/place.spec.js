@@ -727,12 +727,13 @@ describe('Place API', () => {
     });
 
     it('moves a place with minimal data', async () => {
-      const { id, summary } = await utils.request({
+      const { id } = await utils.request({
         path: `${endpoint}/${loneClinic._id}/move`,
         method: 'POST',
         body: { parent_id: hcBId },
       });
-      await utils.waitForBulkOperation(id);
+      // the summary is worked out when Sentinel plans the operation
+      const { summary } = await utils.waitForBulkOperation(id);
 
       expect(summary).to.deep.equal({ 'set-parent': 1, 'set-contact': { reports: 0, places: 0 } });
 
@@ -741,12 +742,13 @@ describe('Place API', () => {
     });
 
     it('moves the subtree and refreshes the lineage cached on its reports', async () => {
-      const { id, summary } = await utils.request({
+      const { id } = await utils.request({
         path: `${endpoint}/${clinicId}/move`,
         method: 'POST',
         body: { parent_id: hcBId },
       });
-      await utils.waitForBulkOperation(id);
+      // the summary is worked out when Sentinel plans the operation
+      const { summary } = await utils.waitForBulkOperation(id);
 
       expect(summary).to.deep.equal({ 'set-parent': 2, 'set-contact': { reports: 1, places: 1 } });
 
@@ -907,8 +909,9 @@ describe('Place API', () => {
     });
 
     it('deletes a place with minimal data', async () => {
-      const { id, summary } = await utils.request({ path: `${endpoint}/${place3._id}`, method: 'DELETE' });
-      await utils.waitForBulkOperation(id);
+      const { id } = await utils.request({ path: `${endpoint}/${place3._id}`, method: 'DELETE' });
+      // the summary is worked out when Sentinel plans the operation
+      const { summary } = await utils.waitForBulkOperation(id);
 
       expect(summary).to.deep.equal({
         delete: { contacts: 1, reports: 0 }, 'set-contact': { places: 0 }, 'delete-user': 0
@@ -917,12 +920,13 @@ describe('Place API', () => {
     });
 
     it('deletes a place with related entities', async () => {
-      const { id, summary } = await utils.request({
+      const { id } = await utils.request({
         path: `${endpoint}/${place1._id}`,
         method: 'DELETE',
         qs: { delete_users: true },
       });
-      await utils.waitForBulkOperation(id);
+      // the summary is worked out when Sentinel plans the operation
+      const { summary } = await utils.waitForBulkOperation(id);
 
       expect(summary).to.deep.equal({
         delete: { contacts: 5, reports: 3 }, 'set-contact': { places: 1 }, 'delete-user': 1
