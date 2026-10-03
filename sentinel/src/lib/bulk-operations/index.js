@@ -169,6 +169,20 @@ const getNextLog = async () => {
   return result.rows[0]?.doc;
 };
 
+/**
+ * What a thrown handler error means for the batch it was given. A retryable one is re-thrown, which
+ * leaves the cursor where it is so the batch that failed is the batch that runs next. Anything else
+ * fails only this batch, so the rest of the action still runs.
+ */
+const failureFor = (err, batch, actionId) => {
+  if (err instanceof RetryableError) {
+    throw err;
+  }
+
+  logger.error(`bulk-operations: error handling action ${actionId}: %o`, err);
+  return batch;
+};
+
 const runOperations = async (action, handler) => {
   const actionId = action._id;
   const operations = await readOperations(actionId);
@@ -178,17 +192,27 @@ const runOperations = async (action, handler) => {
     try {
       failed = await handler(batch, actionId);
     } catch (err) {
-      if (err instanceof RetryableError) {
-        // The batch did not run, so the cursor stays put and this batch is the one tried next.
-        throw err;
-      }
-      // Unexpected handler error: treat the whole batch as failed so the rest still runs.
-      logger.error(`bulk-operations: error handling action ${actionId}: %o`, err);
-      failed = batch;
+      failed = failureFor(err, batch, actionId);
     }
+    // NOSONAR: the batches are deliberately sequential, so the cursor only ever moves past work
+    // that is done.
     action = await saveProgress(action, batch.length, failed);
   }
   return action;
+};
+
+// The action is finished with, either way: its outcome goes on the log and the doc is removed.
+const recordAction = async (action, log, completed) => {
+  const actions = { ...log.actions };
+  actions[action._id] = {
+    action: action.action,
+    updated_date: new Date(),
+    total_changes_count: action.total,
+    failed_operations: completed.failed_operations,
+  };
+  await updateLog(log, { actions });
+  await deleteDocsFrom(db.sentinel, [ completed ]);
+  logger.info(`bulk-operations: completed action ${action._id}`);
 };
 
 /**
@@ -213,17 +237,7 @@ const runAction = async (action, log) => {
     unexpected = err;
   }
 
-  completed = completed || action;
-  const actions = { ...log.actions };
-  actions[action._id] = {
-    action: action.action,
-    updated_date: new Date(),
-    total_changes_count: action.total,
-    failed_operations: completed.failed_operations,
-  };
-  await updateLog(log, { actions });
-  await deleteDocsFrom(db.sentinel, [ completed ]);
-  logger.info(`bulk-operations: completed action ${action._id}`);
+  await recordAction(action, log, completed || action);
 
   if (unexpected) {
     throw unexpected;
@@ -308,13 +322,23 @@ const runForAction = async (action, log) => {
  * action always wins, so no new operation is planned while one is in flight.
  * @returns {Promise<boolean>} whether there was anything to do
  */
+/**
+ * Whether this work is still cooling down after a failed attempt. The pass notes when it comes due
+ * and then ends: nothing else may be planned while an action is outstanding.
+ */
+const isWaiting = (doc) => {
+  if (isDue(doc)) {
+    return false;
+  }
+
+  waitFor(doc);
+  return true;
+};
+
 const runNext = async () => {
   const action = await getOldestActionDoc();
   if (action) {
-    // Still cooling down after a failed attempt. Nothing else may be planned while it is
-    // outstanding, so the pass ends here and wakes again when it is due.
-    if (!isDue(action)) {
-      waitFor(action);
+    if (isWaiting(action)) {
       return false;
     }
     await runForAction(action, await getLog(action.bulk_operation_id));
@@ -330,10 +354,9 @@ const runNext = async () => {
     return true;
   }
 
+  // A plan that failed for a repeatable reason waits for its cool-down before trying again.
   if (log?.status === STATUSES.QUEUED) {
-    // A plan that failed for a repeatable reason waits for its cool-down before trying again.
-    if (!isDue(log)) {
-      waitFor(log);
+    if (isWaiting(log)) {
       return false;
     }
     await planOperation(log);
@@ -353,18 +376,24 @@ const waitFor = (doc) => {
   waitingUntil = waitingUntil ? Math.min(waitingUntil, due) : due;
 };
 
+// Works through everything that is due, then asks to be woken when the soonest cool-down expires.
+const drain = async () => {
+  waitingUntil = null;
+  while (await runNext()) {
+    // keep going until there is nothing left
+  }
+
+  if (waitingUntil) {
+    setTimeout(wake, Math.max(waitingUntil - Date.now(), 0));
+  }
+};
+
 const runPass = async () => {
   running = true;
   try {
     do {
       wakeRequested = false;
-      waitingUntil = null;
-      while (await runNext()) {
-        // keep going until there is nothing left
-      }
-      if (waitingUntil) {
-        setTimeout(wake, Math.max(waitingUntil - Date.now(), 0));
-      }
+      await drain();
     } while (wakeRequested); // a change landed mid-pass: look again before going idle
   } catch (err) {
     logger.error(`bulk-operations: Error. Retrying in ${RETRY_TIMEOUT}ms. %o`, err);
