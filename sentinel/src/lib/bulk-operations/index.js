@@ -79,7 +79,10 @@ const getLog = async (logId) => {
 };
 
 const updateLog = async (log, changes) => {
-  await db.medicLogs.put({ ...log, ...changes, updated_date: new Date() });
+  const updated = { ...log, ...changes, updated_date: new Date() };
+  // A change set to undefined clears the field rather than storing it.
+  Object.keys(updated).forEach(key => updated[key] === undefined && delete updated[key]);
+  await db.medicLogs.put(updated);
 };
 
 // bulkDocs resolves with an error row rather than rejecting, so every row is checked: an action doc
@@ -124,9 +127,10 @@ const isDue = (doc) => !doc.next_attempt_date || new Date(doc.next_attempt_date)
  * so the batch that failed is the batch that runs next.
  */
 const scheduleRetry = async (database, doc, reason) => {
-  // `error_count` is what the archiving jobs call the same thing.
-  const error_count = (doc.error_count || 0) + 1;
+  // Counted off the latest revision rather than the copy we were handed, so a bump someone else
+  // recorded in between is not overwritten. `error_count` is what the archiving jobs call it.
   const latest = await database.get(doc._id);
+  const error_count = (latest.error_count || 0) + 1;
   const next_attempt_date = dueDateFor(error_count);
   await database.put({ ...latest, error_count, next_attempt_date });
   logger.warn(
@@ -251,7 +255,10 @@ const planOperation = async (log) => {
   actionDocs.forEach(({ _id, action, total }) => {
     logActions[_id] = { action, total_changes_count: total, updated_date: new Date() };
   });
-  await updateLog(log, { status: STATUSES.RUNNING, summary, actions: logActions });
+  // The cool-down belonged to the attempt that failed; the operation is under way now.
+  await updateLog(log, {
+    status: STATUSES.RUNNING, summary, actions: logActions, next_attempt_date: undefined,
+  });
   logger.info(`bulk-operations: planned ${log._id} (${actionDocs.length} action(s))`);
 };
 

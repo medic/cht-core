@@ -3,11 +3,11 @@ const db = require('../../db');
 const config = require('../../config');
 const dataContext = require('../../data-context');
 const { PREFIXES } = require('@medic/constants');
-const { RetryableError, isRetryableStatus } = require('./errors');
+const { RetryableError, isRetryableStatus, statusOf } = require('./errors');
 
 const userManagement = require('@medic/user-management')(config, db, dataContext);
 
-const isMissing = (err) => (err?.status ?? err?.statusCode) === 404;
+const isMissing = (err) => statusOf(err) === 404;
 
 /**
  * Remove each linked user via the existing user-delete path. A user that is already gone counts as

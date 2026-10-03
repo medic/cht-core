@@ -336,8 +336,9 @@ describe('bulk-operations sentinel scheduler', () => {
     });
 
     it('counts the failures, so the cool-down lengthens each time', async () => {
-      const action = buildAction({ error_count: 3 });
-      db.sentinel.get.resolves(action);
+      const action = buildAction();
+      // the count comes off the latest revision, not the copy the scheduler was handed
+      db.sentinel.get.resolves(buildAction({ error_count: 3 }));
       db.sentinel.getAttachment.resolves(Buffer.from(JSON.stringify([ { id: 'a' } ])));
       service.__set__('HANDLERS', { 'set-contact': sinon.stub().rejects(new RetryableError('couch down')) });
       sinon.stub(logger, 'warn');
@@ -347,6 +348,19 @@ describe('bulk-operations sentinel scheduler', () => {
       const [ saved ] = db.sentinel.put.args[0];
       expect(saved.error_count).to.equal(4);
       expect(saved.next_attempt_date.getTime() - Date.now()).to.be.closeTo(3 * 60000, 2000);
+    });
+
+    it('clears the cool-down once the operation is under way', async () => {
+      planners.plan.resolves({ summary: {}, actions: [ { action: 'delete', operations: [ { id: 'a' } ] } ] });
+      const log = buildLog({ status: 'queued', error_count: 2, next_attempt_date: new Date() });
+
+      await service.__get__('planOperation')(log);
+
+      const [ saved ] = db.medicLogs.put.args[0];
+      expect(saved.status).to.equal('running');
+      expect(saved).to.not.have.property('next_attempt_date');
+      // the failure count is kept, the way the archiving jobs keep theirs
+      expect(saved.error_count).to.equal(2);
     });
 
     it('keeps a plan that failed for a repeatable reason queued', async () => {

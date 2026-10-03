@@ -14,8 +14,11 @@ class RetryableError extends Error {
 // 408 is a timeout and 409 a conflict; anything 5xx is CouchDB itself rather than the request.
 const RETRYABLE_STATUSES = [ 408, 409 ];
 
+// PouchDB reports `status` and @medic/couch-request reports `statusCode`.
+const statusOf = (err) => err?.status ?? err?.statusCode;
+
 const isRetryableStatus = (err) => {
-  const status = err?.status ?? err?.statusCode;
+  const status = statusOf(err);
   return RETRYABLE_STATUSES.includes(status) || (status >= 500 && status < 600);
 };
 
@@ -43,6 +46,7 @@ const isConflict = (row) => row.error === 'conflict';
 module.exports = {
   RetryableError,
   retryable,
+  statusOf,
   isRetryableStatus,
   isConflict,
 };

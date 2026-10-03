@@ -2,7 +2,7 @@ const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
-const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES, BULK_OPERATIONS } = require('@medic/constants');
 const { v7: uuid } = require('uuid');
 const { expect } = require('chai');
 
@@ -149,6 +149,57 @@ describe('Bulk operations API', () => {
     expect(await getActionDocsFor(bulkOperationLogIds)).to.be.empty;
     const deleted = await utils.getDocs(persons.map(({ _id }) => _id));
     expect(deleted.filter(Boolean)).to.be.empty;
+  });
+
+  it('leaves work alone until its cool-down has passed, then runs it', async () => {
+    const COOL_DOWN_MS = 5000;
+    const person = personFactory.build({ patient_id: 'bulk-op-cooldown' });
+    await utils.saveDocs([ person ]);
+
+    const id = `${PREFIXES.BULK_OPERATION_LOG}${uuid()}`;
+    const actionId = `${PREFIXES.BULK_OPERATION_ACTION}${id.slice(PREFIXES.BULK_OPERATION_LOG.length)}:${uuid()}`;
+    const now = new Date();
+
+    // An action part way through a retry: this is the state Sentinel leaves behind when a handler
+    // reports a failure that is worth another attempt. The action doc is written first, so the log
+    // write is what wakes Sentinel and it sees both.
+    await utils.sentinelDb.put({
+      _id: actionId,
+      bulk_operation_id: id,
+      action: 'delete',
+      cursor: 0,
+      total: 1,
+      error_count: 1,
+      next_attempt_date: new Date(Date.now() + COOL_DOWN_MS),
+      _attachments: {
+        [BULK_OPERATIONS.OPERATIONS_ATTACHMENT]: {
+          content_type: 'application/json',
+          data: Buffer.from(JSON.stringify([ { id: person._id } ])).toString('base64'),
+        },
+      },
+    });
+    await utils.logsDb.put({
+      _id: id,
+      type: 'delete-contact',
+      params: { contact_id: person._id, delete_users: false },
+      status: 'running',
+      start_date: now,
+      updated_date: now,
+      actions: { [actionId]: { action: 'delete', total_changes_count: 1, updated_date: now } },
+    });
+
+    // Still cooling down, so nothing has been touched.
+    await utils.delayPromise(1500);
+    await expect(utils.getDoc(person._id)).to.be.fulfilled;
+    const stillQueued = await utils.sentinelDb.get(actionId);
+    expect(stillQueued.cursor).to.equal(0);
+
+    // Sentinel scheduled its own wake-up for when the cool-down expires, so the action runs without
+    // anything else prompting it.
+    const log = await utils.waitForBulkOperation(id, 200);
+
+    expect(log.status).to.equal('completed');
+    await expect(utils.getDoc(person._id)).to.be.rejectedWith('404 - {"error":"not_found","reason":"deleted"}');
   });
 
   it('fails the operation when it is no longer valid by the time it is planned', async () => {
