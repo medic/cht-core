@@ -177,15 +177,12 @@ const assertContactsExist = ({ contact_id: contactId, parent_id: parentId }, sou
  * this, and only when it is going to queue the operation: Sentinel gets the same checks for free
  * because `plan` runs them itself.
  * @param {Object} params
- * @param {string} params.contact_id - the contact being moved
- * @param {string|null} [params.parent_id] - the new parent, or null to move to the top level
  * @param {Object} params.contact - the contact being moved, already loaded by the caller
- * @param {Object|null} [params.destination] - the new parent, already loaded by the caller
+ * @param {Object|null} [params.destination] - the new parent, already loaded by the caller, or null
+ *   to move to the top level
  * @throws {ValidationError} when the move would be illegal
  */
-const validate = async (params) => {
-  const { contact, destination = null } = params;
-  assertContactsExist(params, contact, destination);
+const validate = async ({ contact, destination = null }) => {
   const contactIds = await getSubtreeIds(contact._id);
   await constraints.assertMoveIsLegal(contact, destination, contactIds);
 };

@@ -93,6 +93,23 @@ describe('move-contact planner', () => {
       expect(parentCalls[0][1].keys).to.deep.equal([ [ 'clinic-1', 1 ], [ 'person-1', 1 ] ]);
     });
 
+    it('rewrites the whole chain up to the source for a contact nested more than one level down', async () => {
+      query.withArgs('medic/contacts_by_depth', subtreeOf)
+        .resolves({ rows: [ { id: 'clinic-1' }, { id: 'household-1' }, { id: 'person-1' } ] });
+      query.withArgs('medic/contacts_by_depth', atDepthOne).resolves({ rows: [
+        { id: 'household-1', key: [ 'clinic-1', 1 ] },
+        { id: 'person-1', key: [ 'household-1', 1 ] },
+      ] });
+
+      const { actions } = await plan(PARAMS);
+
+      expect(actions[0].operations[2]).to.deep.equal({
+        id: 'person-1',
+        current_parent_id: 'household-1',
+        parent: { _id: 'household-1', parent: { _id: 'clinic-1', parent: UNDER_HC_B } },
+      });
+    });
+
     it('takes the source own parent from the document, which the view cannot report', async () => {
       // The view is keyed on the subtree and the source's parent sits outside it, so nothing comes back.
       query.withArgs('medic/contacts_by_depth', atDepthOne).resolves({ rows: [] });
@@ -153,6 +170,15 @@ describe('move-contact planner', () => {
 
       const { actions } = await plan(PARAMS);
 
+      expect(actions[1].operations).to.deep.equal([]);
+    });
+
+    it('treats a nouveau response without hits as an empty page', async () => {
+      reports.resolves({});
+
+      const { actions } = await plan(PARAMS);
+
+      expect(reports.callCount).to.equal(1);
       expect(actions[1].operations).to.deep.equal([]);
     });
 
@@ -257,6 +283,15 @@ describe('move-contact planner', () => {
       await expect(plan(PARAMS)).to.be.rejectedWith('circular hierarchy');
     });
 
+    it('refuses a contact that has gone since the move was queued', async () => {
+      contactGet.withArgs(Qualifier.byUuid('clinic-1')).resolves(null);
+
+      const err = await plan(PARAMS).catch(e => e);
+
+      expect(err).to.be.an.instanceOf(ValidationError);
+      expect(err.message).to.equal(`contact 'clinic-1' not found`);
+    });
+
     it('refuses a destination that has gone since the move was queued', async () => {
       contactGet.withArgs(Qualifier.byUuid('hc-b')).resolves(null);
 
@@ -278,25 +313,17 @@ describe('move-contact planner', () => {
       expect(contactGet.called).to.equal(false);
     });
 
+    it('checks a move to the top level when the caller has no destination', async () => {
+      await expect(validate({ contact_id: 'clinic-1', contact: clinic })).to.be.fulfilled;
+
+      expect(constraints.assertMoveIsLegal.args[0][1]).to.be.null;
+    });
+
     it('reports an illegal move', async () => {
       constraints.assertMoveIsLegal.rejects(new ValidationError('circular hierarchy'));
 
       await expect(validate({ ...PARAMS, contact: clinic, destination: healthCenterB }))
         .to.be.rejectedWith('circular hierarchy');
-    });
-
-    it('refuses a contact the caller could not load', async () => {
-      const err = await validate({ ...PARAMS, contact: null, destination: healthCenterB }).catch(e => e);
-
-      expect(err).to.be.an.instanceOf(ValidationError);
-      expect(err.message).to.equal(`contact 'clinic-1' not found`);
-    });
-
-    it('refuses a destination the caller could not load', async () => {
-      const err = await validate({ ...PARAMS, contact: clinic, destination: null }).catch(e => e);
-
-      expect(err).to.be.an.instanceOf(ValidationError);
-      expect(err.message).to.equal(`destination contact 'hc-b' not found`);
     });
   });
 });

@@ -286,6 +286,18 @@ describe('bulk-operations sentinel scheduler', () => {
       expect(planners.plan.called).to.equal(true);
     });
 
+    it('leaves a finished operation alone when the view has not caught up', async () => {
+      // the key comes from the index and the doc from include_docs, so a completed log can still be
+      // indexed as queued. Planning it again would run the whole operation a second time.
+      stubOldestAction(null);
+      db.medicLogs.query.withArgs(sinon.match.any, sinon.match({ keys: [ 'running', 'queued' ] }))
+        .resolves({ rows: [ { doc: buildLog({ status: 'completed' }) } ] });
+
+      expect(await runNext()).to.equal(false);
+      expect(planners.plan.called).to.equal(false);
+      expect(db.medicLogs.put.called).to.equal(false);
+    });
+
     it('returns nothing when there is no work', async () => {
       stubOldestAction(null);
 
@@ -314,7 +326,7 @@ describe('bulk-operations sentinel scheduler', () => {
       await service.__get__('runAction')(action, buildLog());
 
       const [ saved ] = db.sentinel.put.args[0];
-      expect(saved.attempts).to.equal(1);
+      expect(saved.error_count).to.equal(1);
       expect(saved.next_attempt_date).to.be.an.instanceOf(Date);
       // the cursor has not moved, so the batch that failed is the batch that runs next
       expect(saved.cursor).to.equal(0);
@@ -323,8 +335,8 @@ describe('bulk-operations sentinel scheduler', () => {
       expect(db.sentinel.bulkDocs.called).to.equal(false);
     });
 
-    it('counts the attempts, so the cool-down lengthens each time', async () => {
-      const action = buildAction({ attempts: 3 });
+    it('counts the failures, so the cool-down lengthens each time', async () => {
+      const action = buildAction({ error_count: 3 });
       db.sentinel.get.resolves(action);
       db.sentinel.getAttachment.resolves(Buffer.from(JSON.stringify([ { id: 'a' } ])));
       service.__set__('HANDLERS', { 'set-contact': sinon.stub().rejects(new RetryableError('couch down')) });
@@ -333,7 +345,7 @@ describe('bulk-operations sentinel scheduler', () => {
       await service.__get__('runAction')(action, buildLog());
 
       const [ saved ] = db.sentinel.put.args[0];
-      expect(saved.attempts).to.equal(4);
+      expect(saved.error_count).to.equal(4);
       expect(saved.next_attempt_date.getTime() - Date.now()).to.be.closeTo(3 * 60000, 2000);
     });
 
@@ -347,7 +359,7 @@ describe('bulk-operations sentinel scheduler', () => {
 
       const [ saved ] = db.medicLogs.put.args[0];
       expect(saved.status).to.equal('queued');
-      expect(saved.attempts).to.equal(1);
+      expect(saved.error_count).to.equal(1);
       expect(db.sentinel.bulkDocs.called).to.equal(false);
     });
 

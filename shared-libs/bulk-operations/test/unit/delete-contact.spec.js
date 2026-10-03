@@ -8,8 +8,6 @@ const dataContext = require('../../src/libs/data-context');
 const { ValidationError } = require('../../src/errors');
 const { validate, plan } = require('../../src/delete-contact');
 
-const contact = { _id: 'place', type: 'clinic' };
-
 describe('delete-contact planner', () => {
   let medicQuery;
   let usersQuery;
@@ -116,7 +114,7 @@ describe('delete-contact planner', () => {
       stubViews({ contacts: [ { id: 'place', value: {} } ] });
       usersQuery.resolves({ rows: [ { id: 'org.couchdb.user:chw' } ] });
 
-      const err = await validate({ contact_id: 'place', contact }).catch(e => e);
+      const err = await validate({ contact_id: 'place' }).catch(e => e);
 
       expect(err).to.be.an.instanceOf(ValidationError);
       expect(err.message).to.contain('1 user(s) are linked to contacts');
@@ -126,7 +124,7 @@ describe('delete-contact planner', () => {
       stubViews({ contacts: [ { id: 'place', value: {} } ] });
       usersQuery.resolves({ rows: [ { id: 'org.couchdb.user:chw' } ] });
 
-      await expect(validate({ contact_id: 'place', delete_users: true, contact })).to.be.fulfilled;
+      await expect(validate({ contact_id: 'place', delete_users: true })).to.be.fulfilled;
       // nothing to check when the users are being removed anyway
       expect(usersQuery.called).to.equal(false);
     });
@@ -134,17 +132,9 @@ describe('delete-contact planner', () => {
     it('allows the delete when no users are linked', async () => {
       stubViews({ contacts: [ { id: 'place', value: {} } ] });
 
-      await expect(validate({ contact_id: 'place', contact })).to.be.fulfilled;
-      // the caller already loaded the contact, so validate does not read it again
+      await expect(validate({ contact_id: 'place' })).to.be.fulfilled;
+      // the caller has already confirmed the contact exists, so validate does not read it again
       expect(contactGet.called).to.equal(false);
-    });
-
-    it('refuses a contact the caller could not load', async () => {
-      const err = await validate({ contact_id: 'place', delete_users: true, contact: null }).catch(e => e);
-
-      expect(err).to.be.an.instanceOf(ValidationError);
-      expect(err.message).to.equal(`contact 'place' not found`);
-      expect(usersQuery.called).to.equal(false);
     });
   });
 });

@@ -1074,16 +1074,30 @@ const stopService = async (service) => {
   }
   await saveLogs(); // we lose logs when a pod crashes or is stopped.
   await runCommand(`kubectl ${KUBECTL_CONTEXT} scale deployment cht-${service} --replicas=0`);
-  const deadline = Date.now() + 10 * 1000; // 10 seconds
+  await runCommand(`kubectl ${KUBECTL_CONTEXT} delete pods -l cht.service=${service} --now`);
+  await waitForPodsDeleted(service);
+};
 
+// Pods are deleted with a 1s grace period, so this is only a safety net. It is longer than the default 30s grace
+// period, so a pod that kept the default still has time to go.
+const POD_DELETE_TIMEOUT = 60 * 1000;
+
+// A terminating pod is still running, and starting the service again before it is gone leaves two copies running
+// side by side. A terminating pod is still listed, so an empty list means every pod for the service has gone.
+const waitForPodsDeleted = async (service) => {
+  const deadline = Date.now() + POD_DELETE_TIMEOUT;
   do {
-    try {
-      await getPodName(service, false);
-      await delayPromise(100);
-    } catch {
+    const pods = await runCommand(
+      `kubectl get pods ${KUBECTL_CONTEXT} -l cht.service=${service} -o name`,
+      { verbose: false }
+    );
+    if (!pods.trim()) {
       return;
     }
+    await delayPromise(500);
   } while (Date.now() <= deadline);
+
+  throw new Error(`Pods for service ${service} were not deleted within ${POD_DELETE_TIMEOUT / 1000} seconds`);
 };
 
 const waitForService = async (service) => {

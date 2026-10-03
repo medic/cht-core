@@ -112,9 +112,9 @@ const getActionDocs = async (logId) => {
  * The cool-down before the next attempt: the first retry is immediate, then a minute, two, and so on
  * up to five, which it then stays at for as long as the failure lasts.
  */
-const backoffFor = (attempts) => Math.min(Math.max(attempts - 1, 0), MAX_BACKOFF_MINUTES) * MINUTE;
+const backoffFor = (errorCount) => Math.min(Math.max(errorCount - 1, 0), MAX_BACKOFF_MINUTES) * MINUTE;
 
-const dueDateFor = (attempts) => new Date(Date.now() + backoffFor(attempts));
+const dueDateFor = (errorCount) => new Date(Date.now() + backoffFor(errorCount));
 
 const isDue = (doc) => !doc.next_attempt_date || new Date(doc.next_attempt_date) <= new Date();
 
@@ -124,12 +124,14 @@ const isDue = (doc) => !doc.next_attempt_date || new Date(doc.next_attempt_date)
  * so the batch that failed is the batch that runs next.
  */
 const scheduleRetry = async (database, doc, reason) => {
-  const attempts = (doc.attempts || 0) + 1;
+  // `error_count` is what the archiving jobs call the same thing.
+  const error_count = (doc.error_count || 0) + 1;
   const latest = await database.get(doc._id);
-  const next_attempt_date = dueDateFor(attempts);
-  await database.put({ ...latest, attempts, next_attempt_date });
+  const next_attempt_date = dueDateFor(error_count);
+  await database.put({ ...latest, error_count, next_attempt_date });
   logger.warn(
-    `bulk-operations: ${doc._id} attempt ${attempts} will be retried at ${next_attempt_date.toISOString()}: ${reason}`
+    `bulk-operations: ${doc._id} failed ${error_count} time(s), retrying at ` +
+      `${next_attempt_date.toISOString()}: ${reason}`
   );
 };
 
@@ -305,13 +307,21 @@ const runNext = async () => {
   }
 
   const log = await getNextLog();
-  if (log) {
+  // The key comes from the view and the doc comes from `include_docs`, so an index that has not
+  // caught up can hand back a log that has already finished. Each status says what to do, and a log
+  // in any other state is left alone: planning a terminal operation would run it a second time.
+  if (log?.status === STATUSES.RUNNING) {
+    await finishOperation(log);
+    return true;
+  }
+
+  if (log?.status === STATUSES.QUEUED) {
     // A plan that failed for a repeatable reason waits for its cool-down before trying again.
-    if (log.status === STATUSES.QUEUED && !isDue(log)) {
+    if (!isDue(log)) {
       waitFor(log);
       return false;
     }
-    await (log.status === STATUSES.RUNNING ? finishOperation(log) : planOperation(log));
+    await planOperation(log);
     return true;
   }
 
