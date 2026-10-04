@@ -928,6 +928,70 @@ describe('login controller', () => {
       });
     });
 
+    it('logs in successfully with fallback to lowercase', () => {
+      req.body = { user: 'Sharon', password: 'p4ss', locale: 'es' };
+      const postResponseSuccess = {
+        status: 200,
+        headers: new Headers({ 'set-cookie': [ 'AuthSession=abc;' ] })
+      };
+      const postResponseFail = {
+        status: 401,
+        error: 'Unauthorized'
+      };
+      const post = sinon.stub(request, 'post');
+      post.onCall(0).resolves(postResponseFail);
+      post.onCall(1).resolves(postResponseSuccess);
+
+      const send = sinon.stub(res, 'send');
+      const status = sinon.stub(res, 'status').returns(res);
+      sinon.stub(res, 'cookie').returns(res);
+      sinon.stub(res, 'clearCookie').returns(res);
+      const userCtx = { name: 'sharon', roles: [ 'project-stuff' ] };
+      sinon.stub(auth, 'getUserCtx').resolves(userCtx);
+      sinon.stub(users, 'getUserDoc').resolves({
+        name: 'sharon',
+        type: 'user',
+        password_change_required: false
+      });
+      return controller.post(req, res).then(() => {
+        chai.expect(post.callCount).to.equal(2);
+        chai.expect(post.args[0][0].body.name).to.equal('Sharon');
+        chai.expect(post.args[1][0].body.name).to.equal('sharon');
+        chai.expect(status.args[0][0]).to.equal(302);
+        chai.expect(send.args[0][0]).to.deep.equal('/');
+      });
+    });
+
+    it('logs in successfully with mixed case username if it exists in CouchDB', () => {
+      req.body = { user: 'MyAdminUser', password: 'p4ss', locale: 'es' };
+      const postResponseSuccess = {
+        status: 200,
+        headers: new Headers({ 'set-cookie': [ 'AuthSession=abc;' ] })
+      };
+      const post = sinon.stub(request, 'post').resolves(postResponseSuccess);
+
+      const send = sinon.stub(res, 'send');
+      const status = sinon.stub(res, 'status').returns(res);
+      sinon.stub(res, 'cookie').returns(res);
+      sinon.stub(res, 'clearCookie').returns(res);
+      const userCtx = { name: 'MyAdminUser', roles: [ COUCHDB_ADMIN ] };
+      sinon.stub(auth, 'getUserCtx').resolves(userCtx);
+      sinon.stub(users, 'getUserDoc').resolves({
+        name: 'MyAdminUser',
+        type: 'user',
+        password_change_required: false
+      });
+      sinon.stub(users, 'createAdmin').resolves();
+
+      return controller.post(req, res).then(() => {
+        chai.expect(post.callCount).to.equal(1);
+        chai.expect(post.args[0][0].body.name).to.equal('MyAdminUser');
+        chai.expect(status.args[0][0]).to.equal(302);
+        chai.expect(send.args[0][0]).to.deep.equal('/');
+        chai.expect(users.createAdmin.callCount).to.equal(1);
+      });
+    });
+
     it('sets user settings and cookie to default when no locale selected', () => {
       req.body = { user: 'sharon', password: 'p4ss' };
       const postResponse = {
