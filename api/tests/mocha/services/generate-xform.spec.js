@@ -756,6 +756,23 @@ describe('generate-xform service', () => {
       expect(markdown.toHtml.args[0][0]).to.equal('abc');
     });
 
+    it('replaces details.or-hint guidance hints', () => {
+      sinon.stub(markdown, 'toHtml').returns('def');
+      const given = `
+ <root> 
+  <form>
+    <details class="or-hint">abc</details>
+  </form>
+  </root>`;
+      const expected = `
+  <form>
+    <details class="or-hint">def</details>
+  </form>`;
+      expect(replaceAllMarkdown(given)).to.equal(expected.trim());
+      expect(markdown.toHtml.callCount).to.equal(1);
+      expect(markdown.toHtml.args[0][0]).to.equal('abc');
+    });
+
     it('replaces all questions and hints', () => {
       sinon.stub(markdown, 'toHtml')
         .withArgs('1').returns('a')
@@ -777,7 +794,7 @@ describe('generate-xform service', () => {
   </form>`;
       expect(replaceAllMarkdown(given)).to.equal(expected.trim());
       expect(markdown.toHtml.callCount).to.equal(3);
-      expect(markdown.toHtml.args).to.deep.equal([['1'], ['3'], ['2']]);
+      expect(markdown.toHtml.args).to.deep.equal([['1'], ['2'], ['3']]);
     });
 
     it('does not convert content outside of questions and hints', () => {
