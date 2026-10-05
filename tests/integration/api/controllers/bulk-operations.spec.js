@@ -151,6 +151,68 @@ describe('Bulk operations API', () => {
     expect(deleted.filter(Boolean)).to.be.empty;
   });
 
+  it('finishes a move whose work was partly done by an earlier attempt', async () => {
+    // A batch that failed part way leaves some documents written and some not. Rather than crashing
+    // Sentinel to produce that, the state is set up directly: the person already carries the lineage
+    // the move is about to write, so its guard no longer matches. Re-running has to read that as
+    // done rather than as somebody else's edit.
+    const district = placeFactory.place().build({
+      name: 'partial-district', type: CONTACT_TYPES.DISTRICT_HOSPITAL, contact: {},
+    });
+    const healthCenterA = placeFactory.place().build({
+      name: 'partial-hc-a', type: CONTACT_TYPES.HEALTH_CENTER, contact: {}, parent: district,
+    });
+    const healthCenterB = placeFactory.place().build({
+      name: 'partial-hc-b', type: CONTACT_TYPES.HEALTH_CENTER, contact: {}, parent: district,
+    });
+    const clinic = placeFactory.place().build({
+      name: 'partial-clinic', type: CONTACT_TYPES.CLINIC, contact: {}, parent: healthCenterA,
+    });
+    const underB = { _id: healthCenterB._id, parent: { _id: district._id } };
+    const person = personFactory.build({
+      patient_id: 'bulk-op-partial',
+      // already moved, as a previous attempt would have left it
+      parent: { _id: clinic._id, parent: underB },
+    });
+    await utils.saveDocs([ district, healthCenterA, healthCenterB, clinic, person ]);
+
+    const { id } = await utils.request({
+      path: `/api/v1/place/${clinic._id}/move`,
+      method: 'POST',
+      body: { parent_id: healthCenterB._id },
+    });
+    const log = await utils.waitForBulkOperation(id, 200);
+
+    expect(log.status).to.equal('completed');
+    const failures = Object.values(log.actions).flatMap(action => action.failed_operations || []);
+    expect(failures, JSON.stringify(log.actions)).to.deep.equal([]);
+
+    const [ movedClinic, movedPerson ] = await utils.getDocs([ clinic._id, person._id ]);
+    expect(movedClinic.parent).to.deep.equal(underB);
+    expect(movedPerson.parent).to.deep.equal({ _id: clinic._id, parent: underB });
+  });
+
+  it('finishes a delete when one of the contacts has already been removed', async () => {
+    const place = placeFactory.place().build({
+      name: 'partial-delete-place', type: CONTACT_TYPES.HEALTH_CENTER, contact: {},
+    });
+    const staying = personFactory.build({ patient_id: 'bulk-op-partial-a', parent: { _id: place._id } });
+    const alreadyGone = personFactory.build({ patient_id: 'bulk-op-partial-b', parent: { _id: place._id } });
+    await utils.saveDocs([ place, staying, alreadyGone ]);
+    // removed by somebody else before the operation runs, so it is never part of the plan
+    await utils.deleteDoc(alreadyGone._id);
+
+    const { id } = await utils.request({ path: `/api/v1/place/${place._id}`, method: 'DELETE' });
+    const log = await utils.waitForBulkOperation(id, 200);
+
+    expect(log.status).to.equal('completed');
+    const failures = Object.values(log.actions).flatMap(action => action.failed_operations || []);
+    expect(failures, JSON.stringify(log.actions)).to.deep.equal([]);
+
+    const left = await utils.getDocs([ place._id, staying._id ]);
+    expect(left.filter(Boolean)).to.be.empty;
+  });
+
   it('leaves work alone until its cool-down has passed, then runs it', async () => {
     const COOL_DOWN_MS = 5000;
     const person = personFactory.build({ patient_id: 'bulk-op-cooldown' });
