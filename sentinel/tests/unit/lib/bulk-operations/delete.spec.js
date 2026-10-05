@@ -88,6 +88,24 @@ describe('bulk-operations delete handler', () => {
     expect(db.deleted.bulkDocs.called).to.equal(false);
   });
 
+  it('re-runs the whole batch after a half-finished attempt without reporting failures', async () => {
+    // The state a batch is left in when it failed part way: one doc copied and deleted, one copied
+    // but not yet deleted. Re-copying is a no-op under new_edits: false, so both converge.
+    db.medic.allDocs.resolves({ rows: [
+      { key: 'done-1', id: 'done-1', value: { rev: '2-x', deleted: true } },
+      { doc: { _id: 'copied-1', _rev: '1-c', type: 'person' } },
+    ] });
+    db.medic.bulkDocs.resolves([ { ok: true, id: 'copied-1' } ]);
+
+    const failed = await deleteDocs([ { id: 'done-1' }, { id: 'copied-1' } ], 'action-1');
+
+    expect(failed).to.deep.equal([]);
+    // the one already gone is left alone, and the copy of the other is simply written again
+    expect(db.deleted.bulkDocs.args[0][0].map(doc => doc._id)).to.deep.equal([ 'copied-1' ]);
+    expect(db.deleted.bulkDocs.args[0][1]).to.deep.equal({ new_edits: false });
+    expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([ { _id: 'copied-1', _rev: '1-c', _deleted: true } ]);
+  });
+
   it('skips a doc that is already deleted or purged and still deletes the others', async () => {
     db.medic.allDocs.resolves({ rows: [
       { key: 'gone', error: 'not_found' },

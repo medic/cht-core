@@ -28,6 +28,26 @@ describe('bulk-operations set-parent handler', () => {
     expect(updated.find(d => d._id === 'person-1').parent).to.be.undefined;
   });
 
+  it('re-runs the whole batch after a half-finished attempt without reporting failures', async () => {
+    // The state a batch is left in when it failed part way: one doc written, one not. The guard on
+    // the written one no longer matches, which is exactly what must not be read as a failure.
+    const batch = [
+      { id: 'done-1', parent: { _id: 'hc-b', parent: { _id: 'district' } }, current_parent_id: 'hc-a' },
+      { id: 'todo-1', parent: { _id: 'hc-b', parent: { _id: 'district' } }, current_parent_id: 'hc-a' },
+    ];
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: [
+      { doc: { _id: 'done-1', parent: { _id: 'hc-b', parent: { _id: 'district' } } } },
+      { doc: { _id: 'todo-1', parent: { _id: 'hc-a', parent: { _id: 'district' } } } },
+    ] });
+    const bulkDocs = sinon.stub(db.medic, 'bulkDocs').resolves([ { ok: true } ]);
+
+    const failed = await setParent(batch, 'action-1');
+
+    expect(failed).to.deep.equal([]);
+    // only the one that still needs it is written
+    expect(bulkDocs.args[0][0].map(doc => doc._id)).to.deep.equal([ 'todo-1' ]);
+  });
+
   it('skips a doc that already holds what we are writing, so a re-run converges', async () => {
     sinon.stub(db.medic, 'allDocs').resolves({ rows: [
       { doc: { _id: 'clinic-1', parent: { _id: 'wanted' } } },
