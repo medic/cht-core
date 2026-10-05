@@ -1,8 +1,17 @@
+const _ = require('lodash');
 const logger = require('@medic/logger');
 const db = require('../../db');
+const { writeDocs } = require('./write');
 
-// Point a place's contact at a new value (or clear it), only when the doc still holds the contact we
-// recorded, so a concurrent edit is not clobbered. A missing id/doc or a changed contact is failed.
+// Delete clears the reference and move rewrites it, so "already applied" has to count two absent
+// values as equal: a cleared contact can come back as undefined or as null.
+const isAlreadyApplied = (current, wanted) => (!current && !wanted) || _.isEqual(current, wanted);
+
+/**
+ * Point a place's contact at a new value (or clear it), only when the doc still holds the contact we
+ * recorded, so a concurrent edit is not clobbered. A doc that already holds the value we are writing
+ * is left alone: a re-run has to converge rather than report the guard as a mismatch.
+ */
 const setContact = async (batch, actionId) => {
   const withId = batch.filter(op => op.id);
   const result = withId.length
@@ -29,6 +38,10 @@ const setContact = async (batch, actionId) => {
       failed.push(op);
       return;
     }
+    if (isAlreadyApplied(doc.contact, op.contact)) {
+      // Already applied, by us on an earlier attempt or by someone else: nothing left to do.
+      return;
+    }
     const currentContactId = doc.contact?._id || doc.contact;
     if (currentContactId !== op.current_contact_id) {
       logger.error(`bulk-operations: set-contact failed for ${op.id}: contact changed (action ${actionId})`);
@@ -40,13 +53,10 @@ const setContact = async (batch, actionId) => {
   });
 
   if (toUpdate.length) {
-    // bulkDocs does not reject when an individual doc fails, so check each result.
-    const results = await db.medic.bulkDocs(toUpdate);
-    results.forEach((res, i) => {
-      if (res.error) {
-        logger.error(`bulk-operations: set-contact failed for ${toUpdate[i]._id}: %o (action ${actionId})`, res);
-        failed.push(batch.find(op => op.id === toUpdate[i]._id));
-      }
+    const errors = await writeDocs(db.medic, toUpdate, `bulk-operations: set-contact (action ${actionId})`);
+    errors.forEach(({ id }) => {
+      logger.error(`bulk-operations: set-contact failed for ${id}: (action ${actionId})`);
+      failed.push(batch.find(op => op.id === id));
     });
   }
   return failed;
