@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const logger = require('@medic/logger');
 const db = require('../../db');
-const { RetryableError, retryable, isConflict } = require('./errors');
+const { RetryableError, isConflict } = require('./errors');
 
 /**
  * Point a contact at a new parent lineage, only when the doc still holds the parent we recorded, so
@@ -11,8 +11,7 @@ const { RetryableError, retryable, isConflict } = require('./errors');
 const setParent = async (batch, actionId) => {
   const withId = batch.filter(op => op.id);
   const result = withId.length
-    ? await retryable(`set-parent could not read the docs (action ${actionId})`,
-      () => db.medic.allDocs({ keys: withId.map(op => op.id), include_docs: true }))
+    ? await db.medic.allDocs({ keys: withId.map(op => op.id), include_docs: true })
     : { rows: [] };
   const docsById = {};
   result.rows.forEach(row => {
@@ -51,8 +50,7 @@ const setParent = async (batch, actionId) => {
 
   if (toUpdate.length) {
     // bulkDocs does not reject when an individual doc fails, so check each result.
-    const results = await retryable(`set-parent could not write the docs (action ${actionId})`,
-      () => db.medic.bulkDocs(toUpdate));
+    const results = await db.medic.bulkDocs(toUpdate);
     const conflicted = results.filter(isConflict);
     if (conflicted.length) {
       throw new RetryableError(

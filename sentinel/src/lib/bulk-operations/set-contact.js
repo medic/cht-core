@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const logger = require('@medic/logger');
 const db = require('../../db');
-const { RetryableError, retryable, isConflict } = require('./errors');
+const { RetryableError, isConflict } = require('./errors');
 
 // Delete clears the reference and move rewrites it, so "already applied" has to count two absent
 // values as equal: a cleared contact can come back as undefined or as null.
@@ -15,8 +15,7 @@ const isAlreadyApplied = (current, wanted) => (!current && !wanted) || _.isEqual
 const setContact = async (batch, actionId) => {
   const withId = batch.filter(op => op.id);
   const result = withId.length
-    ? await retryable(`set-contact could not read the docs (action ${actionId})`,
-      () => db.medic.allDocs({ keys: withId.map(op => op.id), include_docs: true }))
+    ? await db.medic.allDocs({ keys: withId.map(op => op.id), include_docs: true })
     : { rows: [] };
   const docsById = {};
   result.rows.forEach(row => {
@@ -55,8 +54,7 @@ const setContact = async (batch, actionId) => {
 
   if (toUpdate.length) {
     // bulkDocs does not reject when an individual doc fails, so check each result.
-    const results = await retryable(`set-contact could not write the docs (action ${actionId})`,
-      () => db.medic.bulkDocs(toUpdate));
+    const results = await db.medic.bulkDocs(toUpdate);
     const conflicted = results.filter(isConflict);
     if (conflicted.length) {
       throw new RetryableError(

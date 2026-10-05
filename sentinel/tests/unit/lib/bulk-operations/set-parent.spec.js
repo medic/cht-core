@@ -44,13 +44,13 @@ describe('bulk-operations set-parent handler', () => {
     expect(bulkDocs.called).to.equal(false);
   });
 
-  it('retries when the read fails with a status worth another attempt', async () => {
+  it('lets a failure worth another attempt through, for the caller to classify', async () => {
     sinon.stub(db.medic, 'allDocs').rejects(Object.assign(new Error('couch down'), { status: 503 }));
 
     await expect(setParent(
       [ { id: 'clinic-1', parent: { _id: 'wanted' }, current_parent_id: 'old' } ],
       'action-1'
-    )).to.be.rejectedWith(RetryableError, /could not read the docs/);
+    )).to.be.rejectedWith('couch down');
   });
 
   it('retries a write that lost to a concurrent edit rather than failing it', async () => {

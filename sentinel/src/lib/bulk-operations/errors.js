@@ -1,8 +1,7 @@
 /**
- * A failure that is worth another attempt: CouchDB unavailable, a request that timed out, or a
- * write that lost to a concurrent edit. The scheduler re-runs the batch rather than recording its
- * operations as permanently failed, so it is kept distinct from an unexpected error, which fails
- * the action.
+ * A failure the handler spotted itself and that is worth another attempt: so far, a write that lost
+ * to a concurrent edit, which `bulkDocs` reports as a row rather than by throwing. Anything the
+ * database throws is classified by its status instead, so this is only for what we detect.
  */
 class RetryableError extends Error {
   constructor(message, options) {
@@ -17,26 +16,18 @@ const RETRYABLE_STATUSES = new Set([ 408, 409 ]);
 // PouchDB reports `status` and @medic/couch-request reports `statusCode`.
 const statusOf = (err) => err?.status ?? err?.statusCode;
 
-const isRetryableStatus = (err) => {
+/**
+ * Whether a failure is worth running the batch again. Unexpected failures are the retryable ones:
+ * CouchDB being unavailable, a request timing out, a write losing a race. Anything we can predict is
+ * handled where it happens and never reaches here.
+ */
+const isRetryable = (err) => {
+  if (err instanceof RetryableError) {
+    return true;
+  }
+
   const status = statusOf(err);
   return RETRYABLE_STATUSES.has(status) || (status >= 500 && status < 600);
-};
-
-/**
- * Runs a database call, turning the failures worth another attempt into a `RetryableError` and
- * leaving every other error to fail the action.
- * @param {string} description - what was being attempted, for the message
- * @param {Function} fn - the call to make
- */
-const retryable = async (description, fn) => {
-  try {
-    return await fn();
-  } catch (err) {
-    if (isRetryableStatus(err)) {
-      throw new RetryableError(`${description}: ${err.message || err.reason || err}`, { cause: err });
-    }
-    throw err;
-  }
 };
 
 // bulkDocs reports a row that lost to a concurrent edit rather than rejecting, and the next attempt
@@ -45,8 +36,7 @@ const isConflict = (row) => row.error === 'conflict';
 
 module.exports = {
   RetryableError,
-  retryable,
+  isRetryable,
   statusOf,
-  isRetryableStatus,
   isConflict,
 };

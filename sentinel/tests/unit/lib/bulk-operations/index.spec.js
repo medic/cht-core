@@ -348,6 +348,39 @@ describe('bulk-operations sentinel scheduler', () => {
       expect(db.sentinel.bulkDocs.called).to.equal(false);
     });
 
+    it('retries a plain database failure, without the handler asking for it', async () => {
+      const action = buildAction();
+      db.sentinel.get.resolves(action);
+      db.sentinel.getAttachment.resolves(Buffer.from(JSON.stringify([ { id: 'a' } ])));
+      // nothing the handler did classified this: it is retried because 503 says nothing about the
+      // operation itself
+      const couchDown = Object.assign(new Error('couch down'), { status: 503 });
+      service.__set__('HANDLERS', { 'set-contact': sinon.stub().rejects(couchDown) });
+      sinon.stub(logger, 'warn');
+
+      await service.__get__('runAction')(action, buildLog());
+
+      const [ saved ] = db.sentinel.put.args[0];
+      expect(saved.error_count).to.equal(1);
+      expect(saved.cursor).to.equal(0);
+      expect(db.medicLogs.put.called).to.equal(false);
+    });
+
+    it('fails the batch for an error that running it again will not fix', async () => {
+      const action = buildAction({ total: 1 });
+      db.sentinel.get.resolves(action);
+      db.sentinel.getAttachment.resolves(Buffer.from(JSON.stringify([ { id: 'a' } ])));
+      sinon.stub(logger, 'error');
+      const badRequest = Object.assign(new Error('nope'), { status: 400 });
+      service.__set__('HANDLERS', { 'set-contact': sinon.stub().rejects(badRequest) });
+
+      await service.__get__('runAction')(action, buildLog());
+
+      // recorded as failed rather than left to run forever
+      expect(db.sentinel.put.args[0][0].failed_operations).to.deep.equal([ { id: 'a' } ]);
+      expect(db.medicLogs.put.called).to.equal(true);
+    });
+
     it('counts the failures, so the cool-down lengthens each time', async () => {
       const action = buildAction();
       // the count comes off the latest revision, not the copy the scheduler was handed

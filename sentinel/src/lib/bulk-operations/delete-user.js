@@ -3,21 +3,17 @@ const db = require('../../db');
 const config = require('../../config');
 const dataContext = require('../../data-context');
 const { PREFIXES } = require('@medic/constants');
-const { RetryableError, isRetryableStatus, statusOf } = require('./errors');
+const { isRetryable, statusOf } = require('./errors');
 
 const userManagement = require('@medic/user-management')(config, db, dataContext);
 
 const isMissing = (err) => statusOf(err) === 404;
 
 /**
- * Remove each linked user via the existing user-delete path. A user that is already gone counts as
- * done, so a re-run converges, and a failure that is worth another attempt stops the batch rather
- * than failing only that operation.
- */
-/**
- * Removes one user.
+ * Removes one user through the existing user-delete path. A user that is already gone counts as
+ * done, so running the batch again converges. A failure worth repeating is left to the caller: it
+ * stops the batch rather than failing this one operation.
  * @returns {Promise<boolean>} whether it failed for good
- * @throws {RetryableError} when it is worth another attempt
  */
 const removeUser = async (op, actionId) => {
   try {
@@ -28,12 +24,10 @@ const removeUser = async (op, actionId) => {
       // Already deleted, by us on an earlier attempt or by someone else.
       return false;
     }
-    if (isRetryableStatus(err)) {
-      throw new RetryableError(
-        `bulk-operations: delete-user could not remove ${op.id} (action ${actionId}): ${err.message || err}`,
-        { cause: err }
-      );
+    if (isRetryable(err)) {
+      throw err;
     }
+
     logger.error(`bulk-operations: delete-user failed for ${op.id} (action ${actionId}): %o`, err);
     return true;
   }

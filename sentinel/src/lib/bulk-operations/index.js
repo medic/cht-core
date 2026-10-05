@@ -4,7 +4,7 @@ const db = require('../../db');
 const config = require('../../config');
 const dataContext = require('../../data-context');
 const { BULK_OPERATIONS, PREFIXES } = require('@medic/constants');
-const { RetryableError, isRetryableStatus } = require('./errors');
+const { isRetryable } = require('./errors');
 const { setContact } = require('./set-contact');
 const { setParent } = require('./set-parent');
 const { deleteUser } = require('./delete-user');
@@ -170,12 +170,14 @@ const getNextLog = async () => {
 };
 
 /**
- * What a thrown handler error means for the batch it was given. A retryable one is re-thrown, which
- * leaves the cursor where it is so the batch that failed is the batch that runs next. Anything else
- * fails only this batch, so the rest of the action still runs.
+ * What a thrown handler error means for the batch it was given. The failures worth repeating are the
+ * ones nothing could have anticipated, so they are the default: the error is re-thrown, which leaves
+ * the cursor where it is and makes the batch that failed the batch that runs next. Everything a
+ * handler can predict it handles itself, so reaching here any other way means the batch is failed
+ * and the rest of the action still runs.
  */
 const failureFor = (err, batch, actionId) => {
-  if (err instanceof RetryableError) {
+  if (isRetryable(err)) {
     throw err;
   }
 
@@ -229,7 +231,7 @@ const attemptAction = async (action, handler) => {
   try {
     return { completed: action.cursor < action.total ? await runOperations(action, handler) : action };
   } catch (err) {
-    if (err instanceof RetryableError) {
+    if (isRetryable(err)) {
       return { retry: err };
     }
     return { completed: action, unexpected: err };
@@ -273,7 +275,7 @@ const planOperation = async (log) => {
       logger.warn(`bulk-operations: ${log._id} is no longer valid: ${err.message}`);
       return updateLog(log, { status: STATUSES.FAILED, error: { message: err.message } });
     }
-    if (err instanceof RetryableError || isRetryableStatus(err)) {
+    if (isRetryable(err)) {
       // Nothing was written, so the operation stays queued and is planned again later.
       return scheduleRetry(db.medicLogs, log, err.message);
     }

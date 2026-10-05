@@ -2,55 +2,48 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 
 const {
-  RetryableError, retryable, isRetryableStatus, isConflict
+  RetryableError, isRetryable, statusOf, isConflict
 } = require('../../../../src/lib/bulk-operations/errors');
 
 describe('bulk-operations errors', () => {
   afterEach(() => sinon.restore());
 
-  describe('retryable', () => {
-    it('returns the result when the call succeeds', async () => {
-      expect(await retryable('reading', () => Promise.resolve('ok'))).to.equal('ok');
+  describe('isRetryable', () => {
+    it('is true for a failure the handler raised itself', () => {
+      expect(isRetryable(new RetryableError('lost to a concurrent edit'))).to.equal(true);
     });
 
     [ 408, 409, 500, 502, 503 ].forEach(status => {
-      it(`turns a ${status} into a RetryableError, so the batch is tried again`, async () => {
-        const err = Object.assign(new Error('couch said no'), { status });
-
-        const thrown = await retryable('reading', () => Promise.reject(err)).catch(e => e);
-
-        expect(thrown).to.be.an.instanceOf(RetryableError);
-        expect(thrown.message).to.equal('reading: couch said no');
-        expect(thrown.cause).to.equal(err);
+      it(`is true for a ${status}, which says nothing about the operation itself`, () => {
+        expect(isRetryable(Object.assign(new Error('couch said no'), { status }))).to.equal(true);
       });
     });
 
-    it('reads the status off a request error too', async () => {
-      const err = Object.assign(new Error('timed out'), { statusCode: 408 });
-
-      await expect(retryable('reading', () => Promise.reject(err))).to.be.rejectedWith(RetryableError);
+    it('reads the status off a request error too', () => {
+      expect(isRetryable(Object.assign(new Error('timed out'), { statusCode: 408 }))).to.equal(true);
     });
 
-    [ 400, 401, 403, 404, undefined ].forEach(status => {
-      it(`lets a ${status} through untouched, since trying again will not help`, async () => {
-        const err = Object.assign(new Error('nope'), { status });
-
-        const thrown = await retryable('reading', () => Promise.reject(err)).catch(e => e);
-
-        expect(thrown).to.equal(err);
-        expect(thrown).to.not.be.an.instanceOf(RetryableError);
+    [ 400, 401, 403, 404 ].forEach(status => {
+      it(`is false for a ${status}, since running it again will not help`, () => {
+        expect(isRetryable(Object.assign(new Error('nope'), { status }))).to.equal(false);
       });
     });
-  });
 
-  describe('isRetryableStatus', () => {
     it('is false when there is no status at all', () => {
-      expect(isRetryableStatus(new Error('boom'))).to.equal(false);
-      expect(isRetryableStatus(undefined)).to.equal(false);
+      expect(isRetryable(new Error('boom'))).to.equal(false);
+      expect(isRetryable(undefined)).to.equal(false);
     });
 
     it('is false for a 6xx, which is not a server error', () => {
-      expect(isRetryableStatus({ status: 600 })).to.equal(false);
+      expect(isRetryable({ status: 600 })).to.equal(false);
+    });
+  });
+
+  describe('statusOf', () => {
+    it('reads either name, and nothing when there is neither', () => {
+      expect(statusOf({ status: 503 })).to.equal(503);
+      expect(statusOf({ statusCode: 408 })).to.equal(408);
+      expect(statusOf(new Error('boom'))).to.equal(undefined);
     });
   });
 
