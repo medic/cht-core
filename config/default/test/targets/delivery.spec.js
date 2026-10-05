@@ -17,7 +17,7 @@ describe('Delivery in facility target tests', () => {
     //await harness.flush(1);
     return await harness.loadForm('delivery');
   });
-  afterEach(() => { expect(harness.consoleErrors).to.be.empty; });
+  afterEach(() => expect(harness.consoleErrors).to.be.empty);
 
   it('Delivery in facility should be counted', async () => {
     await harness.setNow('2000-04-30');//10 weeks after LMP date
