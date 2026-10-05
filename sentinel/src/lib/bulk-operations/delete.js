@@ -1,6 +1,6 @@
 const logger = require('@medic/logger');
 const db = require('../../db');
-const { RetryableError, isConflict } = require('./errors');
+const { writeDocs } = require('./write');
 
 const separateIds = (batch, actionId) => {
   const ids = [];
@@ -45,6 +45,9 @@ const readForDelete = (ids) => db.medic.allDocs({
  * that comes back is one.
  */
 const copyDocs = async (docs, actionId) => {
+  // Not written through `writeDocs`: with `new_edits: false` CouchDB takes any revision, so a row
+  // that comes back is not a lost race and must not be retried blindly. It has to stop the delete,
+  // because a doc whose copy was refused must keep its body.
   const deletedDate = Date.now();
   const results = await db.deleted.bulkDocs(docs.map(doc => buildCopy(doc, deletedDate)), {
     new_edits: false,
@@ -62,14 +65,9 @@ const copyDocs = async (docs, actionId) => {
  * leaf, so failures are collapsed back down by id.
  */
 const tombstoneDocs = async (docs, actionId) => {
-  const results = await db.medic.bulkDocs(docs.flatMap(buildTombstones));
-  const conflicted = results.filter(isConflict);
-  if (conflicted.length) {
-    throw new RetryableError(
-      `bulk-operations: delete lost ${conflicted.length} doc(s) to a concurrent edit (action ${actionId})`
-    );
-  }
-  const errors = results.filter(res => res.error);
+  const errors = await writeDocs(
+    db.medic, docs.flatMap(buildTombstones), `bulk-operations: delete (action ${actionId})`
+  );
   if (errors.length) {
     logger.error(`bulk-operations: delete failed for some docs (action ${actionId}): %o`, errors);
   }

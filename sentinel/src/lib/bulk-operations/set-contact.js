@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const logger = require('@medic/logger');
 const db = require('../../db');
-const { RetryableError, isConflict } = require('./errors');
+const { writeDocs } = require('./write');
 
 // Delete clears the reference and move rewrites it, so "already applied" has to count two absent
 // values as equal: a cleared contact can come back as undefined or as null.
@@ -53,19 +53,10 @@ const setContact = async (batch, actionId) => {
   });
 
   if (toUpdate.length) {
-    // bulkDocs does not reject when an individual doc fails, so check each result.
-    const results = await db.medic.bulkDocs(toUpdate);
-    const conflicted = results.filter(isConflict);
-    if (conflicted.length) {
-      throw new RetryableError(
-        `bulk-operations: set-contact lost ${conflicted.length} doc(s) to a concurrent edit (action ${actionId})`
-      );
-    }
-    results.forEach((res, i) => {
-      if (res.error) {
-        logger.error(`bulk-operations: set-contact failed for ${toUpdate[i]._id}: %o (action ${actionId})`, res);
-        failed.push(batch.find(op => op.id === toUpdate[i]._id));
-      }
+    const errors = await writeDocs(db.medic, toUpdate, `bulk-operations: set-contact (action ${actionId})`);
+    errors.forEach(({ id }) => {
+      logger.error(`bulk-operations: set-contact failed for ${id}: (action ${actionId})`);
+      failed.push(batch.find(op => op.id === id));
     });
   }
   return failed;

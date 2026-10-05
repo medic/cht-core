@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const logger = require('@medic/logger');
 const db = require('../../db');
-const { RetryableError, isConflict } = require('./errors');
+const { writeDocs } = require('./write');
 
 /**
  * Point a contact at a new parent lineage, only when the doc still holds the parent we recorded, so
@@ -49,19 +49,10 @@ const setParent = async (batch, actionId) => {
   });
 
   if (toUpdate.length) {
-    // bulkDocs does not reject when an individual doc fails, so check each result.
-    const results = await db.medic.bulkDocs(toUpdate);
-    const conflicted = results.filter(isConflict);
-    if (conflicted.length) {
-      throw new RetryableError(
-        `bulk-operations: set-parent lost ${conflicted.length} doc(s) to a concurrent edit (action ${actionId})`
-      );
-    }
-    results.forEach((res, i) => {
-      if (res.error) {
-        logger.error(`bulk-operations: set-parent failed for ${toUpdate[i]._id}: %o (action ${actionId})`, res);
-        failed.push(batch.find(op => op.id === toUpdate[i]._id));
-      }
+    const errors = await writeDocs(db.medic, toUpdate, `bulk-operations: set-parent (action ${actionId})`);
+    errors.forEach(({ id }) => {
+      logger.error(`bulk-operations: set-parent failed for ${id}: (action ${actionId})`);
+      failed.push(batch.find(op => op.id === id));
     });
   }
   return failed;
