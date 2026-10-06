@@ -1,7 +1,7 @@
 const chai = require('chai');
 chai.use(require('deep-equal-in-any-order'));
 chai.use(require('chai-shallow-deep-equal'));
-chai.use(require('chai-exclude'));
+chai.use(require('chai-exclude').default);
 const sinon = require('sinon');
 const rewire = require('rewire');
 const moment = require('moment');

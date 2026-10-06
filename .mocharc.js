@@ -1,8 +1,8 @@
-const chaiExclude = require('chai-exclude');
-const chaiAsPromised = require('chai-as-promised');
+const chaiExclude = require('chai-exclude').default;
+const chaiAsPromised = require('chai-as-promised').default;
 const chai = require('chai');
 const deepEqualInAnyOrder = require('deep-equal-in-any-order');
-const sinonChai = require('sinon-chai');
+const sinonChai = require('sinon-chai').default;
 global.expect = chai.expect;
 
 chai.use(chaiExclude);

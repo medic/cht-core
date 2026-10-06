@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const { assert, expect, ...chai } = require('chai');
-const chaiAsPromised = require('chai-as-promised');
+const chaiAsPromised = require('chai-as-promised').default;
 chai.use(chaiAsPromised);
 const transitions = require('../../src/transitions');
 const config = require('../../src/config');

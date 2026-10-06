@@ -4,7 +4,7 @@ const db = require('../../src/db');
 const transitions = require('../../src/transitions/index');
 const infodoc = require('@medic/infodoc');
 const chai = require('chai');
-const chaiExclude = require('chai-exclude');
+const chaiExclude = require('chai-exclude').default;
 
 chai.use(chaiExclude);
 

@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-require('chai').use(require('chai-as-promised'));
+require('chai').use(require('chai-as-promised').default);
 const { expect, assert } = require('chai');
 const { USER_ROLES: { COUCHDB_ADMIN } } = require('@medic/constants');
 const pouchDbOptions = {

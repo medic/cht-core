@@ -1,6 +1,6 @@
 const chai = require('chai');
 const { expect } = chai;
-chai.use(require('chai-exclude'));
+chai.use(require('chai-exclude').default);
 const sinon = require('sinon');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');

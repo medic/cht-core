@@ -1,7 +1,7 @@
 const chai = require('chai');
-const chaiExclude = require('chai-exclude');
+const chaiExclude = require('chai-exclude').default;
 const chaiShallowDeepEqual = require('chai-shallow-deep-equal');
-const chaiAsPromised = require('chai-as-promised');
+const chaiAsPromised = require('chai-as-promised').default;
 
 chai.use(chaiExclude);
 chai.use(chaiShallowDeepEqual);

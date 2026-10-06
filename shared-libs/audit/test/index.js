@@ -1,4 +1,4 @@
-const chai = require('chai').use(require('chai-as-promised'));
+const chai = require('chai').use(require('chai-as-promised').default);
 const expect = chai.expect;
 const sinon = require('sinon');
 const rewire = require('rewire');

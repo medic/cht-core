@@ -2,7 +2,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const chai = require('chai');
 const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
-chai.use(require('chai-exclude'));
+chai.use(require('chai-exclude').default);
 
 const contacts = [
   {

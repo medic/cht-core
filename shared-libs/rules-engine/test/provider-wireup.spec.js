@@ -1,5 +1,5 @@
 const chai = require('chai');
-const chaiExclude = require('chai-exclude');
+const chaiExclude = require('chai-exclude').default;
 const {
   chtDocs,
   RestorableRulesStateStore,

@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-require('chai').use(require('chai-as-promised'));
+require('chai').use(require('chai-as-promised').default);
 const PouchDB = require('pouchdb-core');
 const { expect } = require('chai');
 const rewire = require('rewire');

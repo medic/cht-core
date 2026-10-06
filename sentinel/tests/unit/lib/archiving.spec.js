@@ -1,5 +1,5 @@
 const chai = require('chai');
-chai.use(require('chai-exclude'));
+chai.use(require('chai-exclude').default);
 const sinon = require('sinon');
 const rewire = require('rewire');
 

@@ -3,7 +3,7 @@ const _ = require('lodash');
 const utils = require('@utils');
 const constants = require('@constants');
 const { DOC_IDS, CONTACT_TYPES, PREFIXES, DOC_TYPES } = require('@medic/constants');
-const chaiExclude = require('chai-exclude');
+const chaiExclude = require('chai-exclude').default;
 chai.use(chaiExclude);
 const expect = chai.expect;
 

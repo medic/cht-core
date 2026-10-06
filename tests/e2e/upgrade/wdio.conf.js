@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const chai = require('chai');
-chai.use(require('chai-exclude'));
+chai.use(require('chai-exclude').default);
 const semver = require('semver');
 
 const utils = require('@utils');

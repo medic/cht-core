@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const chai = require('chai').use(require('chai-as-promised'));
+const chai = require('chai').use(require('chai-as-promised').default);
 const expect = chai.expect;
 const rewire = require('rewire');
 
