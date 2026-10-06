@@ -2,7 +2,7 @@ import * as _ from 'lodash-es';
 import { Injectable, Inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
-import { lastValueFrom } from 'rxjs';
+import { from, lastValueFrom, of, timeout } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
 
 import { LocationService } from '@mm-services/location.service';
@@ -88,8 +88,7 @@ export class SessionService {
     // Bounded as well as caught. This runs on the way to the login page, including from a 401 and
     // from an expired session, where it used to be synchronous and could not fail. A handler that
     // never settles must not leave the user sitting on a page they are already signed out of.
-    const bailOut = new Promise(resolve => setTimeout(resolve, SESSION_END_TIMEOUT));
-    return Promise.race([handlers, bailOut]);
+    return lastValueFrom(from(handlers).pipe(timeout({ first: SESSION_END_TIMEOUT, with: () => of(undefined) })));
   }
 
   /**

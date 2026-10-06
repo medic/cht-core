@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { lastValueFrom } from 'rxjs';
+import { from, lastValueFrom, of, timeout } from 'rxjs';
 import { DeviceKeyService } from '@mm-services/device-key.service';
 import { LocationService } from '@mm-services/location.service';
 
@@ -63,7 +63,6 @@ export class UserLoginService {
     // Bounded, because the caller is a modal that shows a spinner until this returns and the
     // password has already changed by now. HttpClient has no timeout of its own, so a socket that
     // accepts and never answers would otherwise leave that spinner up for good.
-    const bailOut = new Promise<void>(resolve => setTimeout(resolve, RENEW_TIMEOUT));
-    return Promise.race([renewed, bailOut]);
+    return lastValueFrom(from(renewed).pipe(timeout({ first: RENEW_TIMEOUT, with: () => of(undefined) })));
   }
 }
