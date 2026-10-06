@@ -233,6 +233,32 @@ describe('offline data-bundle handler', () => {
   });
 
   /**
+   * Our packer reads the changes feed, which yields each doc once at its latest revision, so a bundle
+   * should never carry two revisions of one doc. This pins what happens if one ever does: both land in
+   * the same write under new_edits:false, and the revision tree is merged rather than conflicted.
+   */
+  [ 'oldest first', 'newest first' ].forEach(order => {
+    it(`keeps the latest of several revisions of one doc in a single bundle, ${order}`, async () => {
+      const id = `bundle_multi_rev_${order.split(' ')[0]}`;
+      const first = { ...reportFor(id), _rev: `1-${'1'.repeat(32)}`, _revisions: { start: 1, ids: ['1'.repeat(32)] } };
+      const second = {
+        ...first,
+        _rev: `2-${'2'.repeat(32)}`,
+        _revisions: { start: 2, ids: ['2'.repeat(32), '1'.repeat(32)] },
+        fields: { ...first.fields, edited: true },
+      };
+      const docs = order === 'oldest first' ? [first, second] : [second, first];
+
+      expect(await utils.request(await bundleRequest(docs))).to.deep.equal({ ok: true });
+
+      const stored = await utils.getDoc(id, '', '?conflicts=true');
+      expect(stored._rev).to.equal(second._rev);
+      expect(stored._conflicts).to.be.undefined;
+      expect(stored.fields.edited).to.equal(true);
+    });
+  });
+
+  /**
    * The envelope says who sent a bundle. Without binding it to the body, a relay holding a captured
    * envelope and the server public key from a device could put its own docs under someone else's
    * name, and everything would verify.
