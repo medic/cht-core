@@ -93,17 +93,17 @@ export class DeviceKeyService {
   /**
    * The key material this device seals bundles with, or null when it has none.
    *
-   * Null is the normal state for most of CHT: keys are only ever provisioned for a user holding
-   * `can_send_offline_data_bundle`, and only once they have synced.
+   * Null is the normal state for most of CHT: keys are only ever provisioned for an offline user
+   * holding `can_send_offline_data_bundle`, once the device has registered with the server.
    */
   async getKeyMaterial(): Promise<DeviceKeyMaterial | null> {
-    const keys = await this.read();
-    if (!keys?.device_id || !keys?.signing_private_key || !keys?.server_encryption_public_key) {
+    const keys = await this.read(this.recordKey);
+    if (!keys?.signing_private_key || !keys?.server_encryption_public_key) {
       return null;
     }
 
     return {
-      deviceId: keys.device_id,
+      deviceId: this.deviceId,
       signingPrivateKey: keys.signing_private_key,
       serverEncryptionPublicKey: keys.server_encryption_public_key,
     };
