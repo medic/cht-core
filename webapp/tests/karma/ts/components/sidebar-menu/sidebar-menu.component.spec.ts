@@ -15,6 +15,7 @@ import { ModalService } from '@mm-services/modal.service';
 import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
 import { AuthDirective } from '@mm-directives/auth.directive';
 import { AuthService } from '@mm-services/auth.service';
+import { OfflineSyncService } from '@mm-services/offline-sync.service';
 import { GlobalActions } from '@mm-actions/global';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
@@ -30,6 +31,7 @@ describe('SidebarMenuComponent', () => {
   let dbSyncService;
   let modalService;
   let authService;
+  let offlineSyncService;
   let headerTabsService;
   let customResourceService;
   let changesService;
@@ -54,6 +56,7 @@ describe('SidebarMenuComponent', () => {
           { provide: DBSyncService, useValue: dbSyncService },
           { provide: ModalService, useValue: modalService },
           { provide: AuthService, useValue: authService },
+          { provide: OfflineSyncService, useValue: offlineSyncService },
           { provide: HeaderTabsService, useValue: headerTabsService },
           { provide: CustomResourceService, useValue: customResourceService },
           { provide: ChangesService, useValue: changesService },
@@ -73,6 +76,7 @@ describe('SidebarMenuComponent', () => {
     dbSyncService = { sync: sinon.stub() };
     modalService = { show: sinon.stub() };
     authService = { has: sinon.stub(), online: sinon.stub() };
+    offlineSyncService = { canHost: sinon.stub().resolves(false), canJoin: sinon.stub().resolves(false) };
     headerTabsService = { getSidebarTabs: sinon.stub().resolves([]) };
     customResourceService = { getImg: sinon.stub().returns('') };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };

@@ -4,10 +4,12 @@ import sinon from 'sinon';
 
 import { AuthService } from '@mm-services/auth.service';
 import { OfflineSyncService } from '@mm-services/offline-sync.service';
+import { SessionService } from '@mm-services/session.service';
 
 describe('OfflineSync service', () => {
   let service: OfflineSyncService;
   let authService;
+  let sessionService;
 
   const bridge = (overrides:any = {}) => ({
     offline_sync_host_available: sinon.stub().returns(true),
@@ -26,8 +28,12 @@ describe('OfflineSync service', () => {
 
   beforeEach(() => {
     authService = { has: sinon.stub().resolves(true) };
+    sessionService = { isOnlineOnly: sinon.stub().returns(false) };
     TestBed.configureTestingModule({
-      providers: [{ provide: AuthService, useValue: authService }],
+      providers: [
+        { provide: AuthService, useValue: authService },
+        { provide: SessionService, useValue: sessionService },
+      ],
     });
     service = TestBed.inject(OfflineSyncService);
   });
@@ -78,6 +84,13 @@ describe('OfflineSync service', () => {
 
       expect(await service.canHost()).to.be.false;
       expect(await service.canJoin()).to.be.true;
+    });
+
+    it('refuses joining for an online-only user, admins included', async () => {
+      withBridge(bridge());
+      sessionService.isOnlineOnly.returns(true);
+
+      expect(await service.canJoin()).to.be.false;
     });
 
     it('does not ask for the permission when the device cannot do it anyway', async () => {

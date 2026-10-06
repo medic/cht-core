@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 
 import { AuthService } from '@mm-services/auth.service';
+import { SessionService } from '@mm-services/session.service';
 
 
 /** What the native side reports once a hosting session is up. */
@@ -44,7 +45,10 @@ export class OfflineSyncService {
   private readonly pairingSubject = new Subject<OfflineSyncResult>();
   private readonly permissionsSubject = new Subject<boolean>();
 
-  constructor(private readonly authService: AuthService) { }
+  constructor(
+    private readonly authService: AuthService,
+    private readonly sessionService: SessionService,
+  ) { }
 
   /**
    * The native bridge cht-android exposes to the WebView.
@@ -92,7 +96,9 @@ export class OfflineSyncService {
 
   /** Whether this user may send their data to a relay, and this device can join a session. */
   async canJoin(): Promise<boolean> {
-    if (!this.isSupported() || !this.bridge.offline_sync_join_available()) {
+    // Online-only users, admins included, are never given a key: the server refuses their bundles.
+    if (!this.isSupported() || !this.bridge.offline_sync_join_available() ||
+      this.sessionService.isOnlineOnly()) {
       return false;
     }
     return this.authService.has('can_send_offline_data_bundle');
