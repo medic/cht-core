@@ -34,7 +34,7 @@ describe('Export Data Service', () => {
     it('handles empty db', () => {
       sinon.stub(db.medic, 'query').returns(Promise.resolve({ rows: [] }));
       return mockRequest('messages').then(actual => {
-        // eslint-disable-next-line @stylistic/max-len
+        // eslint-disable-next-line max-len
         actual.should.equal('id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n');
       });
     });
@@ -60,11 +60,11 @@ describe('Export Data Service', () => {
           responses: [ { sent_by: '+987654321', message: 'hi' } ]
         }
       ]));
-      // eslint-disable-next-line @stylistic/max-len
+      // eslint-disable-next-line max-len
       const expected = 'id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n' +
-                       // eslint-disable-next-line @stylistic/max-len
+                       // eslint-disable-next-line max-len
                        '"abc","123456",123456789,,"Automated Reply","sent","","","",123456789,"","",,"+123456789",,"hello"\n' +
-                       // eslint-disable-next-line @stylistic/max-len
+                       // eslint-disable-next-line max-len
                        '"def","654321",987654321,,"Automated Reply","sent","","","",987654321,"","",,"+987654321",,"hi"\n';
       return mockRequest(type).then(actual => {
         actual.should.equal(expected);
@@ -100,7 +100,7 @@ describe('Export Data Service', () => {
           ]
         }
       ]));
-      // eslint-disable-next-line @stylistic/max-len
+      // eslint-disable-next-line max-len
       const expected = 'id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n' +
                        '"abc","123456",123456789,,"Task Message",,"","","","","","",,,"+123456789","hello"\n' +
                        '"abc","123456",123456789,,"Task Message",,"","","","","","",,,"+123456788","goodbye"\n' +
@@ -134,11 +134,11 @@ describe('Export Data Service', () => {
           sms_message: { message: 'hi' }
         }
       ]));
-      // eslint-disable-next-line @stylistic/max-len
+      // eslint-disable-next-line max-len
       const expected = 'id,patient_id,reported_date,from,type,state,received,scheduled,pending,sent,cleared,muted,message_id,sent_by,to_phone,content\n' +
-                       // eslint-disable-next-line @stylistic/max-len
+                       // eslint-disable-next-line max-len
                        '"abc","123456",123456789,"+123456789","Message","received",123456789,"","","","","",,"+123456789",,"hello"\n' +
-                       // eslint-disable-next-line @stylistic/max-len
+                       // eslint-disable-next-line max-len
                        '"def","654321",987654321,"+987654321","Message","received",987654321,"","","","","",,"+987654321",,"hi"\n';
       return mockRequest(type).then(actual => {
         actual.should.equal(expected);
@@ -273,7 +273,7 @@ describe('Export Data Service', () => {
         stockReport,
         visitReport
       ]));
-      // eslint-disable-next-line @stylistic/max-len
+      // eslint-disable-next-line max-len
       const expected = '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,name\n' +
                        '"abc","STCK","123456",123456789,,,,,,\n' +
                        '"def","V","654321",987654321,,,,,,"Sally"\n';
@@ -341,9 +341,9 @@ describe('Export Data Service', () => {
           ]
         }
       ]));
-      // eslint-disable-next-line @stylistic/max-len
+      // eslint-disable-next-line max-len
       const expected = '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,patient_name\n' +
-                       // eslint-disable-next-line @stylistic/max-len
+                       // eslint-disable-next-line max-len
                        '"B87FEE75-D435-A648-BDEA-0A1B61021AA3","assessment",,1450959150540,"+256 787 123 456","my contact","my contacts parent","my contacts grandparent",,"Babyale Elaijah"\n';
       return mockRequest(type).then(actual => {
         actual.should.equal(expected);
@@ -451,7 +451,7 @@ describe('Export Data Service', () => {
             date: '2022-11-21',
             id: 'telemetry-2022-11-21-admin-central-2-d26e2875-53af-4e9b-b695-c82faf0db5d8',
             device: {
-              // eslint-disable-next-line @stylistic/max-len
+              // eslint-disable-next-line max-len
               userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
               versions: { cht: 'unknown', settings: '4-83c8561a13479b245b295e97401f2f55' },
               storage: {
@@ -467,7 +467,7 @@ describe('Export Data Service', () => {
             date: '2022-11-29',
             id: 'telemetry-2022-11-29-chw1-b1c172d8-82b0-42fd-8401-313796b8c801',
             device: {
-              // eslint-disable-next-line @stylistic/max-len
+              // eslint-disable-next-line max-len
               userAgent: 'Mozilla/5.0 (Linux; Android 10; 8094X Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/88.0.4324.181 Mobile Safari/537.36 org.medicmobile.webapp.mobile.moh_mali_chw_training_2/v1.0.4-4',
               versions: {
                 apk: 'v1.0.4-4',
