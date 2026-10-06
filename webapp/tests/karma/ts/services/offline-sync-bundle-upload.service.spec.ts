@@ -27,6 +27,12 @@ describe('OfflineSyncBundleUpload service', () => {
     received_date: receivedDate,
   });
 
+  // A bundle with a real envelope, as a CHW device writes one: base64 of the utf8 json.
+  const from = (id, user, receivedDate) => ({
+    ...stored(id, receivedDate),
+    envelope: btoa(JSON.stringify({ user, device_id: `${user}-phone`, payload_header_sha256: 'x' })),
+  });
+
   beforeEach(() => {
     authService = { has: sinon.stub().resolves(true) };
     payload = new Blob(['ciphertext']);
@@ -202,6 +208,47 @@ describe('OfflineSyncBundleUpload service', () => {
 
     expect(await delivered).to.equal(0);
     expect(bundleStoreService.remove.notCalled).to.be.true;
+  });
+
+  /**
+   * One CHW's refused bundle is about that CHW. Holding everyone else's behind it would let a single
+   * misconfigured user stop a relay delivering for the whole area.
+   */
+  it('holds only the refused sender\'s later bundles, and delivers everyone else\'s', async () => {
+    const alice1 = from('alice-1', 'alice', 100);
+    const bob1 = from('bob-1', 'bob', 150);
+    bundleStoreService.pending.resolves([alice1, bob1, from('alice-2', 'alice', 200)]);
+
+    const delivered = service.deliverPending();
+    const first = await answer(400);
+    const second = await answer();
+
+    expect(await delivered).to.equal(1);
+    expect(first.request.headers.get('X-Medic-Bundle-Envelope')).to.equal(alice1.envelope);
+    expect(second.request.headers.get('X-Medic-Bundle-Envelope')).to.equal(bob1.envelope);
+    expect(bundleStoreService.remove.args.map(([doc]) => doc._id)).to.deep.equal(['bob-1']);
+  });
+
+  // This device's own session has gone: every bundle would be refused the same way.
+  it('stops the whole run when its own session is refused', async () => {
+    bundleStoreService.pending.resolves([from('alice-1', 'alice', 100), from('bob-1', 'bob', 150)]);
+
+    const delivered = service.deliverPending();
+    await answer(401);
+
+    expect(await delivered).to.equal(0);
+    expect(bundleStoreService.remove.notCalled).to.be.true;
+  });
+
+  // The server is down: trying the next sender would only spend that bundle's attempts too.
+  it('stops the whole run when the server is the problem, whoever sent the next bundle', async () => {
+    bundleStoreService.pending.resolves([from('alice-1', 'alice', 100), from('bob-1', 'bob', 150)]);
+
+    const delivered = service.deliverPending();
+    await answer(503);
+
+    expect(await delivered).to.equal(0);
+    expect(bundleStoreService.recordAttempt.args).to.deep.equal([['alice-1']]);
   });
 
   describe('on sync', () => {
