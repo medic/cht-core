@@ -127,13 +127,14 @@ export class DeviceKeyService {
     // The window guard belongs here as well as at the store, since the keypair and the export need
     // it too. Online-only users (admins included) are refused by the server whatever they send, and
     // admins hold every permission. Cheapest first, so the permission read is last.
-    if (this.ended || !this.windowRef || this.sessionService.isOnlineOnly() ||
+    const windowRef = this.windowRef;
+    if (this.ended || !windowRef || this.sessionService.isOnlineOnly() ||
       !await this.authService.has(PERMISSION)) {
       return;
     }
     // Read live rather than kept from startup: a username captured once could be the previous
     // user's by the time a later sync asks.
-    await this.registerDeviceKeys(this.sessionService.userCtx().name);
+    await this.registerDeviceKeys(windowRef.crypto.subtle, this.sessionService.userCtx().name);
   }
 
   /**
@@ -218,7 +219,7 @@ export class DeviceKeyService {
     }
   }
 
-  private async registerDeviceKeys(username: string) {
+  private async registerDeviceKeys(subtle: SubtleCrypto, username: string) {
     // Cheapest first: neither the store nor a keypair is worth touching for a device that is
     // already registered to this user.
     const deviceId = this.telemetryService.getUniqueDeviceId();
@@ -227,15 +228,17 @@ export class DeviceKeyService {
       return;
     }
 
-    const pair = await this.windowRef!.crypto.subtle.generateKey(SIGNING_ALGORITHM, false, ['sign', 'verify']);
-    const serverKeys = await this.sendPublicKey(username, deviceId, pair.publicKey);
+    const pair = await subtle.generateKey(SIGNING_ALGORITHM, false, ['sign', 'verify']);
+    const serverKeys = await this.sendPublicKey(subtle, username, deviceId, pair.publicKey);
     await this.save(username, deviceId, pair.privateKey, serverKeys);
   }
 
-  private async sendPublicKey(username: string, deviceId: string, publicKey: CryptoKey): Promise<ServerKeys> {
+  private async sendPublicKey(
+    subtle: SubtleCrypto, username: string, deviceId: string, publicKey: CryptoKey
+  ): Promise<ServerKeys> {
     // Only the four members the api needs: exportKey also reports how the key may be used here,
     // which says nothing about how the server may use it.
-    const { kty, crv, x, y } = await this.windowRef!.crypto.subtle.exportKey('jwk', publicKey);
+    const { kty, crv, x, y } = await subtle.exportKey('jwk', publicKey);
     const url = `/api/v1/users/${username}/devices/${deviceId}/keys`;
     const body = { signing_key: { kty, crv, x, y } };
 
@@ -261,9 +264,9 @@ export class DeviceKeyService {
   // Small and hand rolled because this is the only thing in the webapp that has to keep something
   // IndexedDB can store but a doc cannot.
 
-  private openDatabase(): Promise<IDBDatabase> {
+  private openDatabase(indexedDB: IDBFactory): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
-      const request = this.windowRef!.indexedDB.open(DB_NAME, 1);
+      const request = indexedDB.open(DB_NAME, 1);
       request.onupgradeneeded = () => request.result.createObjectStore(STORE_NAME);
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(asError(request.error));
@@ -278,7 +281,7 @@ export class DeviceKeyService {
     if (!this.windowRef) {
       return null;
     }
-    const database = await this.openDatabase();
+    const database = await this.openDatabase(this.windowRef.indexedDB);
     try {
       return await new Promise((resolve, reject) => {
         const transaction = database.transaction(STORE_NAME, 'readonly');
@@ -298,7 +301,7 @@ export class DeviceKeyService {
     if (!this.windowRef) {
       return;
     }
-    const database = await this.openDatabase();
+    const database = await this.openDatabase(this.windowRef.indexedDB);
     try {
       await new Promise<void>((resolve, reject) => {
         const transaction = database.transaction(STORE_NAME, 'readwrite');
