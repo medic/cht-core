@@ -137,6 +137,8 @@ const hydrate = records => {
 };
 
 module.exports = {
+  // medic/messages_by_state emits a row per message and another for pending/forwarded, repeating ids across batches.
+  hasDuplicateDocIds: true,
   getDocs: ids => {
     return lineage.fetchHydratedDocs(ids).then(hydrate);
   },
