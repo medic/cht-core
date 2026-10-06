@@ -554,6 +554,9 @@ module.exports = defineConfig([
       ['jsdoc/check-tag-names']: ['error', {
         definedTags: ['typeParam', 'packageDocumentation'],
       }],
+
+      // TypeDoc drops `{Type}` annotations from `@throws`, so keep the error type as plain text instead
+      ['jsdoc/require-throws-type']: 'off',
     },
   },
   {
