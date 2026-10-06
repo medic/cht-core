@@ -22,6 +22,31 @@ const NEVER_ACCEPTABLE = 413;
 const MAX_ATTEMPTS = 10;
 
 /**
+ * A 4xx is about the bundle or whoever sent it, so other senders are worth trying. A 401 is this
+ * device's own session, and a 5xx or no answer at all is the server: every bundle would fare the
+ * same, so trying more only spends their attempts.
+ */
+const isAboutTheBundle = (status: number) => status >= 400 && status < 500 && status !== 401;
+
+/** What became of one bundle, and so what the run does next. */
+type Outcome = 'next' | 'hold_sender' | 'stop';
+
+/**
+ * Who a bundle is from, read off its cleartext envelope, which is there for exactly this.
+ *
+ * A bundle whose envelope cannot be read is a sender of its own: it holds nothing up but itself.
+ */
+const senderOf = (bundle: StoredBundle): string => {
+  try {
+    const bytes = Uint8Array.from(atob(bundle.envelope), char => char.codePointAt(0)!);
+    const { user, device_id: deviceId } = JSON.parse(new TextDecoder().decode(bytes));
+    return user && deviceId ? `${user}:${deviceId}` : bundle._id;
+  } catch {
+    return bundle._id;
+  }
+};
+
+/**
  * Delivers the bundles this device is carrying to the server.
  *
  * Runs on the relay's own sync, because that is when this device is known to be online and the
@@ -79,8 +104,9 @@ export class OfflineSyncBundleUploadService {
   /**
    * Sends everything this device is carrying.
    *
-   * Stops at the first bundle the server could not take for a reason that might pass, so bundles
-   * from one device keep their order.
+   * Bundles from one device are a sequence, so once one of them is refused the rest of that
+   * device's wait for the next sync. Other devices' bundles carry on: they have nothing to do with
+   * it. A failure that is about the server or this device's own session stops the whole run.
    *
    * @returns how many the server took
    */
@@ -99,23 +125,40 @@ export class OfflineSyncBundleUploadService {
 
   private async deliverEach(): Promise<number> {
     let delivered = 0;
+    const held = new Set<string>();
     for (const bundle of await this.bundleStoreService.pending()) {
-      if (!await this.deliver(bundle)) {
+      const outcome = await this.deliverUnlessHeld(bundle, held);
+      if (outcome === 'stop') {
         return delivered;
       }
-      delivered += 1;
+      if (outcome === 'next') {
+        delivered += 1;
+      }
     }
     return delivered;
   }
 
+  /** Skips a bundle whose sender already had one refused this run, so their order is kept. */
+  private async deliverUnlessHeld(bundle: StoredBundle, held: Set<string>): Promise<Outcome> {
+    const sender = senderOf(bundle);
+    if (held.has(sender)) {
+      return 'hold_sender';
+    }
+    const outcome = await this.deliver(bundle);
+    if (outcome === 'hold_sender') {
+      held.add(sender);
+    }
+    return outcome;
+  }
+
   /**
-   * Sends one bundle. False means stop for now and keep the rest for the next sync.
+   * Sends one bundle, and says whether the run carries on.
    *
    * A bundle is deleted only when the server has it. A refusal never destroys it: this device
    * cannot read a bundle to judge what is in it, and it holds the only copy, so the most it will
    * do is stop offering one the server has turned down too many times.
    */
-  private async deliver(bundle: StoredBundle): Promise<boolean> {
+  private async deliver(bundle: StoredBundle): Promise<Outcome> {
     try {
       await this.send(bundle);
     } catch (err) {
@@ -123,22 +166,21 @@ export class OfflineSyncBundleUploadService {
     }
 
     await this.bundleStoreService.remove(bundle);
-    return true;
+    return 'next';
   }
 
-  /** True to carry on with the next bundle, false to stop the run here. */
-  private async refused(bundle: StoredBundle, status: number): Promise<boolean> {
+  private async refused(bundle: StoredBundle, status: number): Promise<Outcome> {
     if (status === NEVER_ACCEPTABLE) {
       await this.giveUp(bundle, status);
-      return true;
+      return 'next';
     }
 
     const attempts = await this.bundleStoreService.recordAttempt(bundle._id);
     if (attempts >= MAX_ATTEMPTS) {
       await this.giveUp(bundle, status);
-      return true;
+      return 'next';
     }
-    return false;
+    return isAboutTheBundle(status) ? 'hold_sender' : 'stop';
   }
 
   private async giveUp(bundle: StoredBundle, status: number) {
