@@ -80,7 +80,7 @@ const fetch = {
   },
 
   targetDocsInMonth: async (timestamp, useBikramSambatMonths) => {
-    const interval = CalendarInterval.getIntervalTag({ end: timestamp }, useBikramSambatMonths);
+    const interval = CalendarInterval.getIntervalTag(timestamp, useBikramSambatMonths);
     const result = await db.medic.allDocs({
       startkey: `target~${interval}~`,
       endkey: `target~${interval}~\ufff0`,

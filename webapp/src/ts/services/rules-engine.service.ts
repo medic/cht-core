@@ -610,7 +610,7 @@ export class RulesEngineService implements OnDestroy {
       }
     }
 
-    return this.calendarIntervalService.getIntervalTag(interval, useBikramSambatMonths);
+    return this.calendarIntervalService.getIntervalTag(interval.end, useBikramSambatMonths);
   }
 
   getBSMonthName(monthNumber: number): string {

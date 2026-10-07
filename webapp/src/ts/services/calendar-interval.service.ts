@@ -25,7 +25,7 @@ export class CalendarIntervalService {
     return CalendarInterval.getInterval(startDate, timestamp, useBikramSambatMonths);
   }
 
-  getIntervalTag(interval: { end: number }, useBikramSambatMonths?: boolean): string {
-    return CalendarInterval.getIntervalTag(interval, useBikramSambatMonths);
+  getIntervalTag(endTimestamp: number, useBikramSambatMonths?: boolean): string {
+    return CalendarInterval.getIntervalTag(endTimestamp, useBikramSambatMonths);
   }
 }

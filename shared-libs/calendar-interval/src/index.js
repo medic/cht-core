@@ -142,16 +142,21 @@ const getPreviousInterval = (intervalStartDate, referenceDate, useBikramSambatMo
 /** Formats a date as an ASCII ISO date while preserving its local calendar day. */
 const toLocalIsoDate = date => moment(date).locale('en').format('YYYY-MM-DD');
 
-/** Formats the end month of an interval as an ASCII Gregorian or Bikram Sambat tag. */
-const getIntervalTag = (interval, useBikramSambatMonths) => {
-  const gregorianTag = moment(interval.end).locale('en').format('YYYY-MM');
+/** Formats a timestamp as an ASCII Gregorian or Bikram Sambat month tag. */
+const getIntervalTag = (endTimestamp, useBikramSambatMonths) => {
+  const endDate = moment(endTimestamp);
+  if (!Number.isFinite(endTimestamp) || !endDate.isValid()) {
+    throw new Error('Invalid interval end timestamp');
+  }
+
+  const gregorianTag = endDate.locale('en').format('YYYY-MM');
   if (!useBikramSambatMonths) {
     return gregorianTag;
   }
 
   try {
     const { toBik } = require('bikram-sambat');
-    const bsEnd = toBik(toLocalIsoDate(interval.end));
+    const bsEnd = toBik(toLocalIsoDate(endTimestamp));
     return `${bsEnd.year}-${String(bsEnd.month).padStart(2, '0')}`;
   } catch (err) {
     // eslint-disable-next-line no-console

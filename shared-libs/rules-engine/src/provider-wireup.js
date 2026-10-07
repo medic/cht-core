@@ -286,7 +286,7 @@ const getTargetDocTag = (filterInterval) => {
   if (!filterInterval) {
     return 'latest';
   }
-  return CalendarInterval.getIntervalTag(filterInterval, rulesStateStore.getUseBikramSambatMonths());
+  return CalendarInterval.getIntervalTag(filterInterval.end, rulesStateStore.getUseBikramSambatMonths());
 };
 
 const storeTargetsDoc = (provider, aggregate, updatedTargets) => {

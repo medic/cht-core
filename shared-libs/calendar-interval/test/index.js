@@ -842,16 +842,16 @@ describe('CalendarInterval', () => {
     });
 
     it('formats Gregorian and Bikram Sambat interval tags', () => {
-      const interval = { end: moment('2025-03-13 23:59:59.999').valueOf() };
+      const endTimestamp = moment('2025-03-13 23:59:59.999').valueOf();
 
-      chai.expect(service.getIntervalTag(interval, false)).to.equal('2025-03');
-      chai.expect(service.getIntervalTag(interval, true)).to.equal('2081-11');
+      chai.expect(service.getIntervalTag(endTimestamp, false)).to.equal('2025-03');
+      chai.expect(service.getIntervalTag(endTimestamp, true)).to.equal('2081-11');
     });
 
     it('falls back to the Gregorian tag for an out-of-range Bikram Sambat date', () => {
-      const interval = { end: moment('2150-05-15').valueOf() };
+      const endTimestamp = moment('1900-05-15').valueOf();
 
-      chai.expect(service.getIntervalTag(interval, true)).to.equal('2150-05');
+      chai.expect(service.getIntervalTag(endTimestamp, true)).to.equal('1900-05');
     });
 
     it('falls back to the Gregorian tag when Bikram Sambat conversion fails', () => {
@@ -859,9 +859,13 @@ describe('CalendarInterval', () => {
       sinon.stub(bikramSambat, 'toBik').throws(new Error('invalid date'));
       const warning = sinon.stub(console, 'warn');
 
-      const interval = { end: moment('2025-03-13').valueOf() };
-      chai.expect(service.getIntervalTag(interval, true)).to.equal('2025-03');
+      const endTimestamp = moment('2025-03-13').valueOf();
+      chai.expect(service.getIntervalTag(endTimestamp, true)).to.equal('2025-03');
       chai.expect(warning.calledOnce).to.be.true;
+    });
+
+    it('throws for an invalid interval end timestamp', () => {
+      chai.expect(() => service.getIntervalTag(NaN, false)).to.throw('Invalid interval end timestamp');
     });
   });
 });
