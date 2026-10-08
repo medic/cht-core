@@ -85,7 +85,7 @@ describe('sms parser', () => {
     chai.expect(smsparser.getFormCode('YYYY CDT33 foo bar')).to.equal('YYYY');
   });
 
-  it('get form with exlamation mark delimiter', () => {
+  it('get form with exclamation mark delimiter', () => {
     chai.expect(smsparser.getFormCode('YYYY!foo#2011#11#')).to.equal('YYYY');
   });
 
@@ -122,7 +122,7 @@ describe('sms parser', () => {
     chai.expect(data.phone_number).to.equal('+9779841202020');
   });
 
-  it('accepts valid phone number in Nepali langauge and saves by converting it to english', () => {
+  it('accepts valid phone number in Nepali language and saves by converting it to english', () => {
     const doc = { message: 'NP 20 ९८४१२३२३२३' };
     const def = definitions.forms.NP;
     sinon.stub(config, 'getAll').returns({
@@ -145,7 +145,7 @@ describe('sms parser', () => {
   });
 
   it('returns provided Nepali number converted ot english if number is invalid', () => {
-    // Looks counter intuitive but validation needs to be done agian in transition so it can
+    // Looks counter intuitive but validation needs to be done again in transition so it can
     // act against the valid or invalid result. Warning is logged just in case.
     const doc = { message: 'NP 20 ९८४१२३' };
     const def = definitions.forms.NP;
@@ -170,7 +170,7 @@ describe('sms parser', () => {
   });
 
   it('returns the exact invalid number if phone number is invalid for the region', () => {
-    // Looks counter intuitive but validation needs to be done agian in transition so it can
+    // Looks counter intuitive but validation needs to be done again in transition so it can
     // act against the valid or invalid result. Warning is logged just in case.
     const doc = { message: 'NP 20 +97712312' };
     const def = definitions.forms.NP;
@@ -905,7 +905,7 @@ describe('sms parser', () => {
     chai.expect(data).to.deep.equal({ foo: '16A' });
   });
 
-  it('parse string field with exlamation mark: textforms', () => {
+  it('parse string field with exclamation mark: textforms', () => {
     const doc = { message: '0000 foo 16A!' };
     const def = {
       meta: {
@@ -925,7 +925,7 @@ describe('sms parser', () => {
     chai.expect(data).to.deep.equal({ foo: '16A!' });
   });
 
-  it('parse string field with exlamation mark: muvuku', () => {
+  it('parse string field with exclamation mark: muvuku', () => {
     const doc = { message: '1!0000!16A!' };
     const def = {
       meta: {

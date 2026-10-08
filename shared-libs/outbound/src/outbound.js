@@ -304,7 +304,7 @@ const logSendError = (configName, recordId, error) => {
     const {statusCode, body} = error.response;
 
     // We got back something from the server but it's not a 2xx
-    logger.error(`Failed to push ${recordId} to ${configName}, server responsed with ${statusCode}`);
+    logger.error(`Failed to push ${recordId} to ${configName}, server responded with ${statusCode}`);
 
     let loggableBody;
     try {

@@ -676,7 +676,7 @@ export class FormatDataRecordService {
   }
 
   /*
-    * Take data record document and return nice formated JSON object.
+    * Take data record document and return nice formatted JSON object.
   */
   private makeDataRecordReadable(doc, settings, language, context) {
     const formatted = _.clone(doc);

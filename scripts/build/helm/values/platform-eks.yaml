@@ -24,7 +24,7 @@ toleration:
   effect: "NoSchedule" # DEFAULT: Good default
 
 # Certificate configuration for EKS
-cert_source: "eks-medic" # # DEFAULT: Good default for EKS (posible values: "eks-medic" or "specify-file-path" or "my-ip-co")
+cert_source: "eks-medic" # # DEFAULT: Good default for EKS (possible values: "eks-medic" or "specify-file-path" or "my-ip-co")
 #certificate_crt_file_path: "/path/to/certificate.crt" # REQUIRED: User must set this (Only required if cert_source is "specify-file-path")
 #certificate_key_file_path: "/path/to/certificate.key" # REQUIRED: User must set this (Only required if cert_source is "specify-file-path")
 

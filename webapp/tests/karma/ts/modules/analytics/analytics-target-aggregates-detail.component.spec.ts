@@ -151,7 +151,7 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
     expect(translateService.instant.args[0]).to.deep.equal(['analytics.target.aggregates', undefined]);
   }));
 
-  it('should update title when aggregrates change', fakeAsync(() => {
+  it('should update title when aggregates change', fakeAsync(() => {
     sinon.reset();
     targetAggregatesService.getAggregateDetails.returns({
       an: 'aggregate',

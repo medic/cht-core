@@ -138,7 +138,7 @@ const verifyUpdateRequest = async (req) => {
   const basic = await basicAuthValid(credentials, username);
   if (basic === false) {
     // If you're passing basic auth we're going to validate it, even if we
-    // technicaly don't need to (because you already have a valid cookie and
+    // technically don't need to (because you already have a valid cookie and
     // full permission).
     // This is to maintain consistency in the personal change password UI:
     // we want to validate the password you pass regardless of your permissions
