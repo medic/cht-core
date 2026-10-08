@@ -15,6 +15,7 @@ describe('UserLogin service', () => {
 
   const user = 'admin';
   const password = 'password';
+  const tick = () => new Promise(resolve => setTimeout(resolve));
 
   const getUrl = function() {
     location.dbName = 'medicdb';
@@ -22,7 +23,10 @@ describe('UserLogin service', () => {
   };
 
   beforeEach(() => {
-    deviceKeyService = { renew: sinon.stub().resolves() };
+    deviceKeyService = {
+      clearDeviceKeys: sinon.stub().resolves(),
+      registerIfPermitted: sinon.stub().resolves(),
+    };
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [{ provide: DeviceKeyService, useValue: deviceKeyService }],
@@ -54,25 +58,49 @@ describe('UserLogin service', () => {
     expect(res.request.body).to.deep.equal(data);
     // a password change logs the user straight back in, and the server has just dropped every
     // device key for them, so what this device holds has to be replaced rather than trusted
-    expect(deviceKeyService.renew.callCount).to.equal(1);
+    await tick();
+    expect(deviceKeyService.clearDeviceKeys.callCount).to.equal(1);
+    expect(deviceKeyService.registerIfPermitted.callCount).to.equal(1);
   });
 
-  /**
-   * The caller is a modal showing a spinner until this returns, and the password has already
-   * changed by the time the key work starts. HttpClient has no timeout of its own, so a request
-   * that never answers must not hold the login open.
-   */
-  it('does not wait forever on a key registration that never answers', async () => {
-    const clock = sinon.useFakeTimers({ shouldAdvanceTime: true });
-    deviceKeyService.renew.returns(new Promise(() => undefined));
+  it('registers only once the old key has been cleared', async () => {
+    let cleared;
+    deviceKeyService.clearDeviceKeys.returns(new Promise<void>(resolve => cleared = resolve));
     const url = getUrl();
 
     const login = service.login(user, password);
     httpMock.expectOne(url).flush({ success: true });
-    await clock.tickAsync(5000);
+    await login;
+    await tick();
+    expect(deviceKeyService.registerIfPermitted.callCount).to.equal(0);
+
+    cleared();
+    await tick();
+    expect(deviceKeyService.registerIfPermitted.callCount).to.equal(1);
+  });
+
+  /** The key work runs in the background, so a request that never answers cannot hold the login. */
+  it('does not wait on the device key', async () => {
+    deviceKeyService.clearDeviceKeys.returns(new Promise(() => undefined));
+    const url = getUrl();
+
+    const login = service.login(user, password);
+    httpMock.expectOne(url).flush({ success: true });
 
     expect(await login).to.deep.equal({ success: true });
-    clock.restore();
+  });
+
+  it('logs a failure to renew the device key', async () => {
+    const consoleError = sinon.stub(console, 'error');
+    deviceKeyService.clearDeviceKeys.rejects(new Error('storage is unavailable'));
+    const url = getUrl();
+
+    const login = service.login(user, password);
+    httpMock.expectOne(url).flush({ success: true });
+    await login;
+    await tick();
+
+    expect(consoleError.args[0][0]).to.equal('UserLogin :: Error renewing the device key');
   });
 
   /** A successful login answers with a redirect, which HttpClient surfaces as an error. */
@@ -82,8 +110,10 @@ describe('UserLogin service', () => {
     httpMock.expectOne(url).flush('', { status: 302, statusText: 'Found' });
 
     await login.catch(() => undefined);
+    await tick();
 
-    expect(deviceKeyService.renew.callCount).to.equal(1);
+    expect(deviceKeyService.clearDeviceKeys.callCount).to.equal(1);
+    expect(deviceKeyService.registerIfPermitted.callCount).to.equal(1);
   });
 
   it('should return error call login backend service', () => {

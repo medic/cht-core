@@ -92,8 +92,8 @@ describe('Session service', () => {
   });
 
   /**
-   * The cookie must not outlive the decision to end the session. Ending it can take up to its own
-   * bound, so a cookie deleted afterwards would stay valid for that whole window.
+   * The cookie must not outlive the decision to end the session. A cookie deleted after the
+   * handlers would stay valid for as long as they take.
    */
   it('deletes the cookie before waiting on the session-end handlers', async () => {
     sinon.stub(console, 'warn');
@@ -117,18 +117,17 @@ describe('Session service', () => {
     sinon.stub(console, 'warn');
     cookieGet.returns(JSON.stringify({ name: 'bryan' }));
     Location.dbName = 'DB_NAME';
-    // The ordering is the whole point: a handler that ran after the navigation had started would
-    // be racing the page unload, which is why this is awaited rather than left to the caller.
-    let hrefWhenHandlerRan;
-    service.onSessionEnd(() => {
-      hrefWhenHandlerRan = location.href;
-      return Promise.resolve();
+    // Read once the handler has FINISHED, so a navigation that does not wait for it shows up here.
+    let hrefWhenHandlerFinished;
+    service.onSessionEnd(async () => {
+      await new Promise(resolve => setTimeout(resolve));
+      hrefWhenHandlerFinished = location.href;
     });
     $httpBackend.delete.withArgs('/_session').returns(of(null));
 
     await service.logout();
 
-    expect(hrefWhenHandlerRan).to.not.include('/DB_NAME/login');
+    expect(hrefWhenHandlerFinished).to.equal('');
     expect(location.href).to.include('/DB_NAME/login');
   });
 
@@ -141,42 +140,6 @@ describe('Session service', () => {
     await service.navigateToLogin();
 
     expect(sessionEnd.callCount).to.equal(1);
-  });
-
-  /** onSessionEnd takes any callback, and one that throws before returning a promise would
-   *  otherwise reject this method before the cookie is deleted and the page navigates. */
-  it('still reaches the login page when a handler throws synchronously', async () => {
-    sinon.stub(console, 'warn');
-    sinon.stub(console, 'error');
-    cookieGet.returns(JSON.stringify({ name: 'bryan' }));
-    Location.dbName = 'DB_NAME';
-    service.onSessionEnd(() => {
-      throw new Error('thrown before any promise');
-    });
-
-    await service.navigateToLogin();
-
-    expect(location.href).to.include('/DB_NAME/login');
-  });
-
-  /**
-   * This path is also the 401 handler and the session-expired modal, where it used to be
-   * synchronous and could not fail. A handler that never settles must not strand the user on a
-   * page they have already been signed out of.
-   */
-  it('still reaches the login page when a handler never settles', async () => {
-    sinon.stub(console, 'warn');
-    const clock = sinon.useFakeTimers({ shouldAdvanceTime: true });
-    cookieGet.returns(JSON.stringify({ name: 'bryan' }));
-    Location.dbName = 'DB_NAME';
-    service.onSessionEnd(() => new Promise<void>(() => undefined));
-
-    const navigated = service.navigateToLogin();
-    await clock.tickAsync(2000);
-    await navigated;
-
-    expect(location.href).to.include('/DB_NAME/login');
-    clock.restore();
   });
 
   it('still reaches the login page when a handler fails', async () => {

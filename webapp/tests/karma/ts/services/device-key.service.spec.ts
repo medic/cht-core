@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { HttpClient, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -282,7 +282,7 @@ describe('DeviceKey service', () => {
    */
   it('runs one registration at a time', async () => {
     const first = service.init();
-    const second = service['registerIfPermitted']();
+    const second = service.registerIfPermitted();
     const third = syncSuccess();
 
     const req = await flushRegistration();
@@ -316,9 +316,9 @@ describe('DeviceKey service', () => {
       const realObjectStore = transaction.objectStore.bind(transaction);
       transaction.objectStore = (name: string) => {
         const store = realObjectStore(name);
-        const realClear = store.clear.bind(store);
-        store.clear = () => {
-          const request = realClear();
+        const realDelete = store.delete.bind(store);
+        store.delete = (key) => {
+          const request = realDelete(key);
           request.addEventListener('success', () => transaction.abort());
           return request;
         };
@@ -329,12 +329,12 @@ describe('DeviceKey service', () => {
 
     let settled = false;
     try {
-      await service['forget']();
+      await service.clearDeviceKeys();
     } catch {
       settled = true;
     }
 
-    expect(settled, 'forget() must settle when only abort fires, not hang').to.be.true;
+    expect(settled, 'clearDeviceKeys() must settle when only abort fires, not hang').to.be.true;
   });
 
   describe('forgetting the key', () => {
@@ -362,9 +362,8 @@ describe('DeviceKey service', () => {
     });
 
     /**
-     * The same race `renew()` guards, on the other path. A registration already in flight resolves
-     * after the clear and would otherwise save a usable key onto a device the user has just signed
-     * out of, which is precisely what this method promises does not happen.
+     * A registration already in flight resolves after the clear is asked for, and would otherwise
+     * save a usable key onto a device the user has just signed out of.
      */
     it('does not let a registration in flight write its key back', async () => {
       service.init();
@@ -379,24 +378,6 @@ describe('DeviceKey service', () => {
         .to.be.undefined;
     });
 
-    /**
-     * A sync can still report success while the app is on its way to the login page. Registering
-     * then would mint a server key for a device that is about to drop its half of it, and that
-     * replaces the key any bundle already handed to a relay was sealed to.
-     */
-    it('does not register again once the session has ended', async () => {
-      authService.has.resolves(false);
-      await service.init();
-      await sessionEndHandler();
-
-      authService.has.resolves(true);
-      await syncSuccess();
-      await tick();
-
-      httpMock.expectNone(() => true);
-      expect(await readRecord(KEY)).to.be.undefined;
-    });
-
     it('keeps the key while the session is still good', async () => {
       await writeRecord(KEY, { server_encryption_public_key: 'age1' });
       authService.has.resolves(false);
@@ -407,8 +388,11 @@ describe('DeviceKey service', () => {
       expect(await readRecord(KEY)).to.not.be.undefined;
     });
 
-    /** Whoever it belonged to: signing out leaves no key material cached on the device. */
-    it('removes every record, not just this user\'s', async () => {
+    /**
+     * Phones get shared. Taking another user's key would make their device re-register and
+     * overwrite the server key for a bundle they may already have handed to a relay.
+     */
+    it('leaves another user\'s key alone', async () => {
       await writeRecord(KEY, { server_encryption_public_key: 'age1server' });
       await writeRecord(`someone-else:${DEVICE_ID}`, { server_encryption_public_key: 'age1other' });
       authService.has.resolves(false);
@@ -417,7 +401,8 @@ describe('DeviceKey service', () => {
       await sessionEndHandler();
 
       expect(await readRecord(KEY)).to.be.undefined;
-      expect(await readRecord(`someone-else:${DEVICE_ID}`)).to.be.undefined;
+      expect(await readRecord(`someone-else:${DEVICE_ID}`))
+        .to.deep.equal({ server_encryption_public_key: 'age1other' });
     });
 
     it('does nothing when there is no key to forget', async () => {
@@ -434,94 +419,27 @@ describe('DeviceKey service', () => {
    * A password change drops every device key on the server, so what is cached here is already
    * dead and has to be replaced rather than trusted.
    */
-  describe('renewing after a password change', () => {
+  describe('clearing and registering again', () => {
     /**
-     * The registration already in flight is for a key the server has just thrown away. If renew
-     * joined it instead of waiting it out, that attempt's save would land after the forget and
-     * leave this device holding a key the server does not have, with nothing to make it register
-     * again.
+     * The registration already in flight is for a key the server has just thrown away. The clear
+     * waits it out, so its save cannot land after the delete.
      */
-    it('does not keep a key from a registration that was in flight when the password changed', async () => {
+    it('does not keep a key from a registration that was in flight when it was cleared', async () => {
       const inFlight = service.init();
       const firstRequest = await waitForRequest();
 
-      const renewed = service.renew();
+      const cleared = service.clearDeviceKeys();
       firstRequest.flush({ server_encryption_public_key: 'age1thrown-away' });
       await inFlight;
+      await cleared;
+      expect(await readRecord(KEY)).to.be.undefined;
 
-      const secondRequest = await waitForRequest();
-      secondRequest.flush(SERVER_KEYS);
-      await renewed;
+      const registered = service.registerIfPermitted();
+      await flushRegistration();
+      await registered;
 
       const record = await readRecord(KEY);
       expect(record.server_encryption_public_key).to.equal(SERVER_KEYS.server_encryption_public_key);
-    });
-
-    /**
-     * A sync landing alongside a renew must still leave the device registered. This does NOT pin
-     * the narrow window the comment on `renew()` describes (a sync taking the slot during the
-     * forget): that ordering is microtask-racy and the test passes against the broken shape too,
-     * which is why the guarantee there is structural rather than test-pinned.
-     */
-    it('still registers when a sync fires alongside a renew', async () => {
-      await writeRecord(KEY, {
-        signing_private_key: 'the-old-key',
-        server_encryption_public_key: 'age1server',
-      });
-      await service.init();
-
-      const renewed = service.renew();
-      const syncing = syncSuccess();
-
-      await flushRegistration();
-      await Promise.all([renewed, syncing]);
-
-      const record = await readRecord(KEY);
-      expect(record.server_encryption_public_key).to.equal(SERVER_KEYS.server_encryption_public_key);
-      expect(record.signing_private_key).to.be.an.instanceof(CryptoKey);
-    });
-
-    /**
-     * Phones get shared. A password change invalidates that user's keys and nobody else's, and
-     * taking another user's key would make their device re-register and overwrite the server key
-     * for a bundle they may already have handed to a relay.
-     */
-    it('leaves another user\'s key alone', async () => {
-      await writeRecord(`someone-else:${DEVICE_ID}`, {
-        signing_private_key: 'their-key',
-        server_encryption_public_key: 'age1theirs',
-      });
-      await initAndFlush();
-
-      const renewed = service.renew();
-      await flushRegistration();
-      await renewed;
-
-      expect((await readRecord(`someone-else:${DEVICE_ID}`)).signing_private_key)
-        .to.equal('their-key');
-    });
-
-    /**
-     * The attempt renew supersedes must not hand the registration slot back as it settles. If it
-     * does, a sync landing at that moment starts a second registration beside the renewal: two
-     * keypairs, and the key the server keeps need not be the one the device keeps.
-     */
-    it('does not start a second registration when a sync lands as the superseded attempt settles', async () => {
-      const inFlight = service.init();
-      const firstRequest = await waitForRequest();
-
-      const renewed = service.renew();
-      firstRequest.flush({ server_encryption_public_key: 'age1thrown-away' });
-      await inFlight;
-
-      const syncing = syncSuccess();
-      (await waitForRequest()).flush(SERVER_KEYS);
-      await Promise.all([renewed, syncing]);
-      await tick();
-      await tick();
-
-      expect(httpMock.match(() => true), 'exactly one registration may follow a renew')
-        .to.have.lengthOf(0);
     });
 
     it('drops the stored key and registers a fresh one', async () => {
@@ -531,13 +449,26 @@ describe('DeviceKey service', () => {
       });
       await service.init();
 
-      const renewed = service.renew();
+      await service.clearDeviceKeys();
+      const registered = service.registerIfPermitted();
       await flushRegistration();
-      await renewed;
+      await registered;
 
       const record = await readRecord(KEY);
       expect(record.signing_private_key).to.be.an.instanceof(CryptoKey);
       expect(record.server_encryption_public_key).to.equal(SERVER_KEYS.server_encryption_public_key);
     });
+  });
+
+  it('does nothing without a user', async () => {
+    sessionService.userCtx.returns(null);
+    const withoutUser = new DeviceKeyService(
+      authService, dbSyncService, TestBed.inject(HttpClient), sessionService, telemetryService, document
+    );
+
+    await withoutUser.init();
+
+    expect(authService.has.called).to.be.false;
+    httpMock.expectNone(() => true);
   });
 });

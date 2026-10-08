@@ -316,8 +316,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.setupDb();
     this.countMessageService.init();
     this.feedbackService.init();
-    // Once the session has been checked, so a key is only registered for a confirmed user. A check
-    // that ended the session has already cleared the user and the key, and registration skips.
     this.sessionService.init().then(() => this.deviceKeyService.init());
     this.warnOutdatedChrome();
 
