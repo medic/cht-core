@@ -1,5 +1,4 @@
 const sinon = require('sinon');
-require('chai').use(require('chai-as-promised').default);
 const { expect } = require('chai');
 const rewire = require('rewire');
 const upgradeLogService = require('../../../../src/services/setup/upgrade-log');

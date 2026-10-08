@@ -1,5 +1,4 @@
 const chai = require('chai');
-chai.use(require('chai-as-promised').default);
 const sinon = require('sinon');
 const config = require('../../src/libs/config');
 const db = require('../../src/libs/db');

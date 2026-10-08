@@ -1,5 +1,4 @@
 const sinon = require('sinon');
-require('chai').use(require('chai-as-promised').default);
 const rewire = require('rewire');
 const { expect } = require('chai');
 const { DOC_IDS, PREFIXES } = require('@medic/constants');

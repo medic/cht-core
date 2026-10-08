@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const chai = require('chai').use(require('chai-as-promised').default);
+const chai = require('chai');
 const expect = chai.expect;
 
 const db = require('../../../../src/db');
