@@ -26,7 +26,7 @@
         </translation>
       </itext>
       <instance>
-        <data id="phone_widget" version="2024-08-16 00:00:00" prefix="J1!phone_widget!" delimiter="#">
+        <data id="phone_widget" version="2026-09-25 00:00:00" prefix="J1!phone_widget!" delimiter="#">
           <phone_widgets>
             <deprecated_phone/>
             <phone/>

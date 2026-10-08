@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
   <h:head>
     <h:title>File Upload</h:title>
     <model odk:xforms-version="1.0.0">
@@ -14,7 +14,7 @@
         </translation>
       </itext>
       <instance>
-        <data id="file-upload" version="2024-06-07 00:00:00" prefix="J1!file-upload!" delimiter="#">
+        <data id="file-upload" version="2026-09-25 00:00:00" prefix="J1!file-upload!" delimiter="#">
           <files>
             <images jr:template="">
               <image/>
@@ -35,6 +35,7 @@
     <group appearance="field-list" ref="/data/files">
       <label ref="jr:itext('/data/files:label')"/>
       <group ref="/data/files/images">
+        <label/>
         <repeat nodeset="/data/files/images">
           <upload ref="/data/files/images/image" mediatype="image/*">
             <label ref="jr:itext('/data/files/images/image:label')"/>

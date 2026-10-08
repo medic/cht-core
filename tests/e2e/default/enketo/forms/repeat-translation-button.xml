@@ -40,7 +40,7 @@
         </translation>
       </itext>
       <instance>
-        <data id="repeat-translation-button" version="20260327115912" prefix="J1!repeat-translation-button!" delimiter="#">
+        <data id="repeat-translation-button" version="20260925110657" prefix="J1!repeat-translation-button!" delimiter="#">
           <basic>
             <state_1/>
             <rep jr:template="">
