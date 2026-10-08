@@ -55,13 +55,19 @@ export class OfflineSyncService {
    *
    * Absent in a browser, which is the normal case for most of CHT, so this is read off globalThis
    * the way the rest of the app reads it: everything here degrades to "not available" rather than
-   * failing, and the rest of the app is unaffected.
+   * failing, and the rest of the app is unaffected. An app older than this webapp has the bridge
+   * but not these methods, so it counts as absent too: every call below would otherwise throw.
    */
   private get bridge() {
-    return (globalThis as any)?.medicmobile_android ?? null;
+    const bridge = (globalThis as any)?.medicmobile_android ?? null;
+    return typeof bridge?.offline_sync_host_available === 'function' ? bridge : null;
   }
 
   /** True only when running inside cht-android with the offline sync methods present. */
+  isSupported(): boolean {
+    return !!this.bridge;
+  }
+
   /**
    * Make, model and Android version, for the record kept when a session fails.
    *
@@ -82,13 +88,9 @@ export class OfflineSyncService {
     }
   }
 
-  isSupported(): boolean {
-    return !!this.bridge && typeof this.bridge.offline_sync_host_available === 'function';
-  }
-
   /** Whether this user may relay another device's data, and this device can host a session. */
   async canHost(): Promise<boolean> {
-    if (!this.isSupported() || !this.bridge.offline_sync_host_available()) {
+    if (!this.bridge?.offline_sync_host_available()) {
       return false;
     }
     return this.authService.has('can_relay_offline_data_bundle');
@@ -97,8 +99,7 @@ export class OfflineSyncService {
   /** Whether this user may send their data to a relay, and this device can join a session. */
   async canJoin(): Promise<boolean> {
     // Online-only users, admins included, are never given a key: the server refuses their bundles.
-    if (!this.isSupported() || !this.bridge.offline_sync_join_available() ||
-      this.sessionService.isOnlineOnly()) {
+    if (!this.bridge?.offline_sync_join_available() || this.sessionService.isOnlineOnly()) {
       return false;
     }
     return this.authService.has('can_send_offline_data_bundle');
