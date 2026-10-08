@@ -14,6 +14,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { MigrationsService } from '@mm-services/migrations.service';
 import { ReplicationService } from '@mm-services/replication.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { SettingsService } from '@mm-services/settings.service';
 import { DOC_IDS, DOC_TYPES } from '@medic/constants';
 
 const READ_ONLY_TYPES = ['form', DOC_TYPES.TRANSLATIONS, DOC_TYPES.UI_EXTENSION];
@@ -29,7 +30,10 @@ const READ_ONLY_IDS = [
 const DDOC_PREFIX = ['_design/'];
 const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';
-const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const DEFAULT_SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const SYNC_INTERVAL_SETTING = 'replication_interval_minutes';
+const MIN_SYNC_INTERVAL_MINUTES = 1;
+const MAX_SYNC_INTERVAL_MINUTES = 24 * 60;
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 const BATCH_SIZE = 100;
 const MAX_SUCCESSIVE_SYNCS = 2;
@@ -89,6 +93,7 @@ export class DBSyncService {
     private translateService:TranslateService,
     private migrationsService:MigrationsService,
     private replicationService:ReplicationService,
+    private settingsService:SettingsService,
   ) {
     this.globalActions = new GlobalActions(this.store);
   }
@@ -98,6 +103,7 @@ export class DBSyncService {
   private knownOnlineState = window.navigator.onLine;
   private canReplicateToServer = false;
   private syncIsRecent = false; // true when a replication has succeeded within one interval
+  private syncInterval = DEFAULT_SYNC_INTERVAL;
   private readonly intervalPromises: { sync?: any; meta?: any} = {
     sync: undefined,
     meta: undefined,
@@ -316,7 +322,7 @@ export class DBSyncService {
     this.intervalPromises.sync = setInterval(() => {
       this.syncIsRecent = false;
       this.sync();
-    }, SYNC_INTERVAL);
+    }, this.syncInterval);
   }
 
   private displayUserFeedback(syncState: SyncState) {
@@ -372,6 +378,33 @@ export class DBSyncService {
     }
   }
 
+  private async loadSyncInterval() {
+    let settings;
+    try {
+      settings = await this.settingsService.get();
+    } catch (err) {
+      console.warn('Error reading settings, keeping the current replication interval', err);
+      return;
+    }
+
+    const minutes = settings?.[SYNC_INTERVAL_SETTING];
+    if (minutes === undefined || minutes === null) {
+      this.syncInterval = DEFAULT_SYNC_INTERVAL;
+      return;
+    }
+
+    if (typeof minutes !== 'number' || !Number.isFinite(minutes) ||
+      minutes < MIN_SYNC_INTERVAL_MINUTES || minutes > MAX_SYNC_INTERVAL_MINUTES) {
+      console.warn(`Invalid "${SYNC_INTERVAL_SETTING}" value: ${JSON.stringify(minutes)}. ` +
+        `It must be a number between ${MIN_SYNC_INTERVAL_MINUTES} and ${MAX_SYNC_INTERVAL_MINUTES}. ` +
+        `Using the default of ${DEFAULT_SYNC_INTERVAL / (60 * 1000)} minutes.`);
+      this.syncInterval = DEFAULT_SYNC_INTERVAL;
+      return;
+    }
+
+    this.syncInterval = minutes * 60 * 1000;
+  }
+
   /**
   * Synchronize the local database with the remote database.
   *
@@ -384,6 +417,7 @@ export class DBSyncService {
     }
 
     await this.migrateDb();
+    await this.loadSyncInterval();
 
     if (force) {
       this.globalActions.setSnackbarContent(this.translateService.instant('sync.status.in_progress'));
