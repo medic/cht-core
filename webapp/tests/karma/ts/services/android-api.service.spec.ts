@@ -179,6 +179,13 @@ describe('AndroidApi service', () => {
         .to.deep.equal([[ false, 'hotspot_unsupported', undefined ]]);
     });
 
+    it('should carry the diagnostic native sends with a failure', () => {
+      service.resolveOfflineSyncHostingResult(false, 'certificate_failed', 'KeyStoreException: NONE');
+
+      expect(offlineSyncService.hostingResolved.args)
+        .to.deep.equal([[ false, 'certificate_failed', 'KeyStoreException: NONE' ]]);
+    });
+
     it('should pass a pairing result on to the offline sync service', () => {
       service.resolveOfflineSyncPairing(true, 'Supervisor phone');
 

@@ -120,6 +120,19 @@ describe('OfflineSync component', () => {
       expect(component.qrImage).to.equal('data:image/png;base64,abc');
     });
 
+    it('shows the network beside the code, for a peer that cannot scan', async () => {
+      await create();
+
+      component.startHosting();
+      hostingResult.next({ ok: true, detail: '', session: HOSTING_SESSION });
+      fixture.detectChanges();
+
+      const network = fixture.nativeElement.querySelector('.offline-sync-network');
+      expect(network).to.not.be.null;
+      expect(network.textContent).to.include(HOSTING_SESSION.ssid);
+      expect(network.textContent).to.include(HOSTING_SESSION.password);
+    });
+
     it('turns a failure code into a translation key, never raw text', async () => {
       await create();
 
@@ -129,6 +142,27 @@ describe('OfflineSync component', () => {
       expect(component.state).to.equal('failed');
       expect(component.errorKey).to.equal('offline_sync.error.hotspot_unsupported');
       expect(component.qrImage).to.be.null;
+    });
+
+    it('records the failure, since a hotspot that will not start never reaches the server', async () => {
+      await create();
+
+      component.startHosting();
+      hostingResult.next({ ok: false, detail: 'hotspot_tethering_disallowed' });
+
+      expect(feedbackService.submit.callCount).to.equal(1);
+      expect(feedbackService.submit.args[0][0].message)
+        .to.equal('Offline sync failed: hotspot_tethering_disallowed [Pixel 7, Android 14 (API 34)]');
+    });
+
+    it('records the diagnostic native sends with the failure', async () => {
+      await create();
+
+      component.startHosting();
+      hostingResult.next({ ok: false, detail: 'certificate_failed', diagnostic: 'KeyStoreException: NONE' });
+
+      expect(feedbackService.submit.args[0][0].message)
+        .to.equal('Offline sync failed: certificate_failed [Pixel 7, Android 14 (API 34)] KeyStoreException: NONE');
     });
 
     it('falls back to a real message for a code it does not know', async () => {
@@ -194,7 +228,7 @@ describe('OfflineSync component', () => {
     await create();
 
     component.ngOnDestroy();
-    hostingResult.next({ ok: true, detail: 'ignored' });
+    hostingResult.next({ ok: true, detail: '', session: HOSTING_SESSION });
 
     expect(component.state).to.equal('idle');
   });
