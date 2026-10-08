@@ -105,6 +105,42 @@ describe('Settings Shared Library', () => {
 
   });
 
+  describe('deleteCredentials', () => {
+
+    it('deletes the stored doc at its current revision', async () => {
+      sinon.stub(request, 'get').resolves({ _id: 'credential:mykey', _rev: '2-abc', password: 'iv:pass' });
+      sinon.stub(request, 'delete').resolves();
+
+      await lib.deleteCredentials('mykey');
+
+      expect(request.get.args[0][0].url).to.equal('http://server.com/medic-vault/credential:mykey');
+      expect(request.delete.args).to.deep.equal([[{
+        url: 'http://server.com/medic-vault/credential:mykey',
+        qs: { rev: '2-abc' },
+        json: true,
+      }]]);
+    });
+
+    it('does nothing when no credentials are stored', async () => {
+      sinon.stub(request, 'get').rejects({ status: 404 });
+      sinon.stub(request, 'delete').resolves();
+
+      await lib.deleteCredentials('mykey');
+
+      expect(request.delete.notCalled).to.be.true;
+    });
+
+    it('rejects with the error from request', () => {
+      sinon.stub(request, 'get').rejects({ status: 503, message: 'down' });
+
+      return lib
+        .deleteCredentials('mykey')
+        .then(() => expect.fail('exception expected'))
+        .catch(err => expect(err.message).to.equal('down'));
+    });
+
+  });
+
   describe('setCredentials', () => {
 
     let cipher;

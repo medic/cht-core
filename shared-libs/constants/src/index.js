@@ -76,6 +76,7 @@ const PREFIXES = {
   FORM: 'form:',
   UI_EXTENSION: `${DOC_TYPES.UI_EXTENSION}:`,
   ARCHIVE_JOB: 'archive:',
+  OFFLINE_DATA_BUNDLE_SERVER_KEY: 'offline-data-bundle-server-key:',
 };
 
 module.exports = {

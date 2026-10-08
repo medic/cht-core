@@ -28,7 +28,3 @@ module.exports = (sourceConfig, sourceDb, sourceDataContext) => {
   };
 };
 
-// Exposed off the entry point rather than reached for at `src/libs/`: `vaultKey` is pure and needs
-// none of the init the factory above does, and the api has to build the exact same string to write
-// the entries this clears.
-module.exports.deviceKeys = require('./libs/device-keys');

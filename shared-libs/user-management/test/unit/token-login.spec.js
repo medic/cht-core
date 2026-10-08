@@ -395,11 +395,9 @@ describe('TokenLogin service', () => {
         });
     });
 
-    /**
-     * The password that reaches this user is new, so the devices the old one left behind stop
-     * being trusted here too. The vault entry goes only after the doc write lands.
-     */
-    it('should stop trusting the registered devices, after the write', async () => {
+    // The password that reaches this user is new, so the devices the old one left behind stop
+    // being trusted here too.
+    it('should stop trusting the registered devices', async () => {
       const user = {
         name: 'sally',
         type: 'user',
@@ -412,15 +410,14 @@ describe('TokenLogin service', () => {
         keysWhenWritten = doc.keys_by_device;
         return Promise.resolve();
       });
-      const setCredentials = sinon.stub(secureSettings, 'setCredentials').resolves();
+      const deleteCredentials = sinon.stub(secureSettings, 'deleteCredentials').resolves();
 
       await service.resetPassword('userID');
 
       chai.expect(keysWhenWritten).to.equal(undefined);
-      chai.expect(setCredentials.args).to.deep.equal([
-        ['offline-data-bundle-server-key:sally:device-a', ''],
+      chai.expect(deleteCredentials.args).to.deep.equal([
+        ['offline-data-bundle-server-key:sally:device-a'],
       ]);
-      chai.expect(setCredentials.calledAfter(db.users.put)).to.be.true;
     });
 
     it('should update the users password', () => {

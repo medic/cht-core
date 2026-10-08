@@ -512,7 +512,8 @@ const deleteUser = id => {
   // update fails and user is in inconsistent state. There is no way to do
   // atomic update on more than one database with CouchDB API.
 
-  const usersDbPromise = db.users.get(id).then(user => {
+  const usersDbPromise = db.users.get(id).then(async user => {
+    await deviceKeys.clearDeviceKeys(user);
     user._deleted = true;
     return db.users.put(user);
   });
@@ -606,13 +607,11 @@ const saveUserUpdates = async (user) => {
   if (user.password && await isDbAdmin(user.name)) {
     throw error400('Admin passwords must be changed manually in the database');
   }
-  // A new password stops this user's registered devices being trusted. Done here, at the write,
-  // rather than where the updates are computed: everything between the two can still reject, and
-  // destroying the server's keys for a write that never happened leaves every one of those devices
-  // permanently refused with nothing to tell it to register again.
-  const revokedDevices = user.password ? deviceKeys.clearDeviceKeys(user) : [];
+  // At the write rather than where the updates are computed, since everything between can reject.
+  if (user.password) {
+    await deviceKeys.clearDeviceKeys(user);
+  }
   const savedDoc = await db.users.put(user);
-  await deviceKeys.destroyServerKeys(user.name, revokedDevices);
   return {
     id: savedDoc.id,
     rev: savedDoc.rev

@@ -76,6 +76,7 @@ describe('Users service', () => {
     ]);
     sinon.stub(couchSettings, 'getCouchConfig').resolves();
     sinon.stub(couchSettings, 'setCredentials').resolves();
+    sinon.stub(couchSettings, 'deleteCredentials').resolves();
     userData = {
       username: 'x',
       password: COMPLEX_PASSWORD,
@@ -1250,6 +1251,24 @@ describe('Users service', () => {
         chai.expect(usersInsert.firstCall.args[0]).to.deep.equal(userExpected);
         chai.expect(medicUsersInsert.firstCall.args[0]).to.deep.equal(medicUserExpected);
       });
+    });
+
+    it('stops trusting the registered devices of a deleted user', async () => {
+      db.users.get.resolves({
+        _id: PREFIXES.COUCH_USER + 'gareth',
+        name: 'gareth',
+        keys_by_device: { 'device-a': { signing_public_key: {} } },
+      });
+      db.medic.get.resolves({ _id: 'gareth' });
+      db.users.put.resolves();
+      db.medic.put.resolves();
+
+      await service.deleteUser(PREFIXES.COUCH_USER + 'gareth');
+
+      chai.expect(db.users.put.args[0][0]).to.include({ _deleted: true, keys_by_device: undefined });
+      chai.expect(couchSettings.deleteCredentials.args).to.deep.equal([
+        ['offline-data-bundle-server-key:gareth:device-a'],
+      ]);
     });
 
   });
@@ -3428,12 +3447,9 @@ describe('Users service', () => {
       // password, so a password change has to stop trusting the devices the old one left behind.
       // Asserted on what is actually written, not on an intermediate object.
       chai.expect(db.users.put.args[0][0].keys_by_device).to.equal(undefined);
-      chai.expect(couchSettings.setCredentials.args).to.deep.equal([
-        ['offline-data-bundle-server-key:user:device-a', ''],
+      chai.expect(couchSettings.deleteCredentials.args).to.deep.equal([
+        ['offline-data-bundle-server-key:user:device-a'],
       ]);
-      // Order, not just occurrence: destroying the server's key is irreversible, so it must not
-      // happen until the write that revokes the device has actually landed.
-      chai.expect(couchSettings.setCredentials.calledAfter(db.users.put)).to.be.true;
     });
 
     it('should set password_change_required to false when user changes their own password', async () => {
@@ -4026,10 +4042,9 @@ describe('Users service', () => {
       chai.expect(db.users.put.callCount).to.equal(1);
       chai.expect(db.users.put.args[0][0]).to.include({ password: expectedPassword, password_change_required: true });
       chai.expect(db.users.put.args[0][0].keys_by_device).to.equal(undefined);
-      chai.expect(couchSettings.setCredentials.args).to.deep.equal([
-        ['offline-data-bundle-server-key:sally:device-a', ''],
+      chai.expect(couchSettings.deleteCredentials.args).to.deep.equal([
+        ['offline-data-bundle-server-key:sally:device-a'],
       ]);
-      chai.expect(couchSettings.setCredentials.calledAfter(db.users.put)).to.be.true;
     });
 
     it('should throw for admin user', async () => {

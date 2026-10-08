@@ -110,6 +110,16 @@ const setCredentials = (id, password) => {
     });
 };
 
+const deleteCredentials = (id) => {
+  return getCredentialsDoc(id)
+    .then(doc => {
+      if (!doc) {
+        return;
+      }
+      return request.delete({ url: getVaultUrl(id), qs: { rev: doc._rev }, json: true });
+    });
+};
+
 const getCouchConfigUrl = (nodeName = '_local') => {
   const serverUrl = getServerUrl();
   if (!serverUrl) {
@@ -131,5 +141,6 @@ const getCouchConfig = (param, nodeName) => {
 module.exports = {
   getCredentials,
   setCredentials,
+  deleteCredentials,
   getCouchConfig,
 };

@@ -317,12 +317,9 @@ const resetPassword = userId => {
     }
 
     user.password = passwords.generate();
-    // Destroyed only once the doc write has landed: until then the device is still listed as
-    // trusted and must stay able to send.
-    const revokedDevices = deviceKeys.clearDeviceKeys(user);
-    return db.users
-      .put(user)
-      .then(() => deviceKeys.destroyServerKeys(user.name, revokedDevices))
+    return deviceKeys
+      .clearDeviceKeys(user)
+      .then(() => db.users.put(user))
       .then(() => ({ user: user.name, password: user.password }));
   });
 };

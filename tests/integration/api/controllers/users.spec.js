@@ -2536,13 +2536,10 @@ describe('Users API', () => {
       return { kty, crv, x, y };
     };
 
-    // The vault stores `<iv hex>:<ciphertext hex>`. Its length is enough to tell an age identity
-    // (dozens of bytes) from the empty string a revocation writes, without the CouchDB secret.
-    const vaultCiphertextBytes = async (deviceId) => {
+    const hasVaultEntry = async (deviceId) => {
       const wanted = `credential:offline-data-bundle-server-key:${senderUser.username}:${deviceId}`;
-      const { rows } = await utils.request({ path: `/${DB_NAME}-vault/_all_docs`, qs: { include_docs: true } });
-      const row = rows.find(r => decodeURIComponent(r.id) === wanted);
-      return row.doc.password.split(':')[1].length / 2;
+      const { rows } = await utils.request({ path: `/${DB_NAME}-vault/_all_docs` });
+      return rows.some(r => decodeURIComponent(r.id) === wanted);
     };
 
     before(async () => {
@@ -2653,7 +2650,7 @@ describe('Users API', () => {
       });
       const before = await utils.usersDb.get(getUserId(senderUser.username));
       chai.expect(before.keys_by_device).to.have.property('device-revoke');
-      chai.expect(await vaultCiphertextBytes('device-revoke')).to.be.greaterThan(16);
+      chai.expect(await hasVaultEntry('device-revoke')).to.be.true;
 
       await utils.request({
         path: `/api/v1/users/${senderUser.username}`,
@@ -2663,8 +2660,7 @@ describe('Users API', () => {
 
       const changed = await utils.usersDb.get(getUserId(senderUser.username));
       chai.expect(changed.keys_by_device).to.be.undefined;
-      // The vault entry is overwritten with an empty string, which encrypts to a single block.
-      chai.expect(await vaultCiphertextBytes('device-revoke')).to.equal(16);
+      chai.expect(await hasVaultEntry('device-revoke')).to.be.false;
     });
   });
 });
