@@ -1,8 +1,5 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
-const chai = require('chai');
-const chaiExclude = require('chai-exclude').default;
-chai.use(chaiExclude);
 const moment = require('moment');
 const utils = require('../../src/lib/utils');
 const db = require('../../src/db');

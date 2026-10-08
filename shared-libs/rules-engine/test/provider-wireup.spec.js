@@ -1,5 +1,4 @@
 const chai = require('chai');
-const chaiExclude = require('chai-exclude').default;
 const {
   chtDocs,
   RestorableRulesStateStore,
@@ -20,7 +19,6 @@ const { DOC_TYPES } = require('@medic/constants');
 const pouchdbProvider = require('../src/pouchdb-provider');
 const rulesEmitter = require('../src/rules-emitter');
 const { expect } = chai;
-chai.use(chaiExclude);
 
 const NOW = moment([1970, 1, 1, 0, 0, 50]).valueOf();
 const DEFAULT_EXPIRE = 7 * 24 * 60 * 60 * 1000;

@@ -1,9 +1,6 @@
 const wdioBaseConfig = require('../../wdio.conf');
 const { resizeWindowForScreenshots } = require('@utils/screenshots');
 
-const chai = require('chai');
-chai.use(require('chai-exclude').default);
-
 const mobileCapability = {
   ...wdioBaseConfig.config.capabilities[0],
   'goog:chromeOptions': {

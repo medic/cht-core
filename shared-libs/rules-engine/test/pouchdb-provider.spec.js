@@ -1,5 +1,4 @@
 const chai = require('chai');
-const chaiExclude = require('chai-exclude').default;
 const moment = require('moment');
 const memdownMedic = require('@medic/memdown');
 const sinon = require('sinon');
@@ -8,7 +7,6 @@ const { PREFIXES, DOC_TYPES } = require('@medic/constants');
 const { chtDocs } = require('./mocks');
 const pouchdbProvider = require('../src/pouchdb-provider');
 const { expect } = chai;
-chai.use(chaiExclude);
 
 const mockUserSettingsDoc = { _id: PREFIXES.COUCH_USER + 'username' };
 const reportConnectedByPlace = {

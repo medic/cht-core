@@ -1,4 +1,4 @@
-const chai = require('chai').use(require('chai-as-promised').default).use(require('chai-exclude').default);
+const chai = require('chai').use(require('chai-as-promised').default);
 const expect = chai.expect;
 const sinon = require('sinon');
 const undici = require('undici');

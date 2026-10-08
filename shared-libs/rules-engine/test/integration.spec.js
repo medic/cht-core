@@ -1,6 +1,5 @@
 const chai = require('chai');
 const moment = require('moment');
-const chaiExclude = require('chai-exclude').default;
 const { MS_IN_DAY, engineSettings, defaultConfigSettingsDoc } = require('./mocks');
 const { DOC_TYPES } = require('@medic/constants');
 
@@ -12,7 +11,6 @@ const rulesEmitter = require('../src/rules-emitter');
 const { PREFIXES } = require('@medic/constants');
 
 const { expect } = chai;
-chai.use(chaiExclude);
 
 let db;
 let rulesEngine;

@@ -1,8 +1,5 @@
 import { TestBed, tick, fakeAsync, waitForAsync } from '@angular/core/testing';
 import sinon from 'sinon';
-import * as chai from 'chai';
-import chaiExclude from 'chai-exclude';
-chai.use(chaiExclude);
 import { expect, assert } from 'chai';
 import { NgZone } from '@angular/core';
 import { v7 as uuid } from 'uuid';

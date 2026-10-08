@@ -1,9 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import * as chai from 'chai';
-import chaiExclude from 'chai-exclude';
-chai.use(chaiExclude);
 
 import { FormatDataRecordService } from '@mm-services/format-data-record.service';
 import { SettingsService } from '@mm-services/settings.service';
