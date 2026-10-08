@@ -2,6 +2,7 @@ const _ = require('lodash'); // #8494 don't use eslint/core as it throws an exce
 const lineageFactory = require('@medic/lineage');
 const messageUtils = require('@medic/message-utils');
 const registrationUtils = require('@medic/registration-utils');
+const extensionLibs = require('@medic/extension-libs');
 const constants = require('@medic/constants');
 const DOC_TYPES = constants.DOC_TYPES;
 
@@ -15,7 +16,9 @@ angular.module('services').factory('MessageQueueUtils',
     'ngInject';
 
     return {
+      getExtensionLibs: () => extensionLibs.getAll(),
       lineage: lineageFactory($q, DB({ remote: true })),
+      loadExtensionLibs: () => extensionLibs.load(DB({ remote: true })),
       messages: messageUtils,
       registrations: registrationUtils
     };
@@ -48,7 +51,8 @@ angular.module('services').factory('MessageQueue',
 
     const findIdByKey = (contactsByReference, key) => {
       const row = contactsByReference.rows.find((row) => row.key[1] === key);
-      return row && row.id;
+      // browserify-ngannotate does not support optional chaining.
+      return row && row.id; // NOSONAR
     };
 
     const findPatientUuid = (contactsByReference, message) => {
@@ -186,7 +190,7 @@ angular.module('services').factory('MessageQueue',
         });
     };
 
-    const generateScheduledMessages = function(messages, settings) {
+    const generateScheduledMessages = function(messages, settings, extensionLibs) {
       const translate = function(key, locale) {
         return $translate.instant(key, null, 'no-interpolation', locale, null);
       };
@@ -201,18 +205,27 @@ angular.module('services').factory('MessageQueue',
           message: message.scheduled_sms.content
         };
 
-        message.sms = MessageQueueUtils.messages.generate(
-          settings,
+        message.sms = MessageQueueUtils.messages.generate({
+          config: settings,
           translate,
-          message.doc,
+          doc: message.doc,
           content,
-          message.scheduled_sms.recipient,
-          message.context
-        )[0];
+          recipient: message.scheduled_sms.recipient,
+          extraContext: message.context,
+          extensionLibs,
+        })[0];
       });
 
       return messages;
     };
+
+    const loadExtensionLibs = () => $q
+      .when()
+      .then(() => MessageQueueUtils.loadExtensionLibs())
+      .catch(err => {
+        $log.error('Error loading extension libs', err);
+        return MessageQueueUtils.getExtensionLibs();
+      });
 
     const getTaskDisplayName = function(task) {
       if (task.translation_key) {
@@ -316,9 +329,10 @@ angular.module('services').factory('MessageQueue',
           .all([
             Settings(),
             DB({ remote: true }).query('medic-admin/message_queue', params.list),
-            DB({ remote: true }).query('medic-admin/message_queue', params.count)
+            DB({ remote: true }).query('medic-admin/message_queue', params.count),
+            loadExtensionLibs(),
           ])
-          .then(([settings, messagesList, messagesCount]) => {
+          .then(([settings, messagesList, messagesCount, extensionLibs]) => {
             const messages = messagesList.rows.map((row) => {
               const extras = {
                 doc: row.doc,
@@ -333,7 +347,7 @@ angular.module('services').factory('MessageQueue',
 
             return getSubjectsAndRegistrations(messages, settings)
               .then(hydrateContacts)
-              .then((messages) => generateScheduledMessages(messages, settings))
+              .then((messages) => generateScheduledMessages(messages, settings, extensionLibs))
               .then(getRecipients)
               .then((messages) => {
                 return {

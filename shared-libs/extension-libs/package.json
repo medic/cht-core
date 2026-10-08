@@ -1,0 +1,14 @@
+{
+  "name": "@medic/extension-libs",
+  "version": "1.0.0",
+  "description": "Loads and exposes configured CHT extension libraries.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@medic/constants": "file:../constants",
+    "@medic/logger": "file:../logger"
+  }
+}
