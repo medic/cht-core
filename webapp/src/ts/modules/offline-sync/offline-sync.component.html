@@ -162,7 +162,7 @@
     @if (errorKey && state !== 'failed') {
       <mat-card class="offline-sync-warning">
         <mat-card-content>
-          <p translate>{{ errorKey }}</p>
+          <p>{{ errorKey | translate }}</p>
         </mat-card-content>
       </mat-card>
     }
