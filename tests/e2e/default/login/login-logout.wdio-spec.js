@@ -1,3 +1,5 @@
+/* global window */
+
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const userFactory = require('@factories/cht/users/users');
@@ -6,7 +8,8 @@ const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const { USER_ROLES: { COUCHDB_ADMIN } } = require('@medic/constants');
 const constants = require('@constants');
 const utils = require('@utils');
-const { DOC_IDS } = require('@medic/constants');
+const chtDbUtils = require('@utils/cht-db');
+const { DOC_IDS, PREFIXES } = require('@medic/constants');
 
 describe('Login page functionality tests', () => {
   const auth = {
@@ -268,6 +271,142 @@ describe('Login page functionality tests', () => {
       await loginPage.updatePasswordButton().click();
       await commonPage.waitForPageLoaded();
       await commonPage.tabsSelector.messagesTab().waitForDisplayed();
+    });
+  });
+
+  describe('Offline data bundle device keys', () => {
+    const PERMISSION = 'can_send_offline_data_bundle';
+    const NEW_PASSWORD = 'Pa33word1';
+    const places = placeFactory.generateHierarchy();
+    const districtHospital = places.get('district_hospital');
+    const [ grantedLater, loggingOut, changingPassword ] = ['dk-granted', 'dk-logout', 'dk-password']
+      .map(username => userFactory.build({
+        username,
+        place: districtHospital._id,
+        contact: { _id: `fixture:user:${username}`, name: username },
+        roles: ['chw'],
+      }));
+
+    const getDeviceKeys = async (username) => {
+      const userDoc = await utils.usersDb.get(`${PREFIXES.COUCH_USER}${username}`);
+      return userDoc.keys_by_device;
+    };
+
+    const waitForDeviceKeys = async (username, isExpected = keys => !!keys) => {
+      let keys;
+      await browser.waitUntil(async () => {
+        keys = await getDeviceKeys(username);
+        return isExpected(keys);
+      }, { timeout: 20000, timeoutMsg: 'Device keys were never registered' });
+      return keys;
+    };
+
+    // The record names stored on this device, read straight from the store the webapp keeps them in.
+    const getStoredKeyNames = () => browser.executeAsync(done => {
+      const open = window.indexedDB.open('medic-offline-device-keys', 1);
+      open.onupgradeneeded = () => open.result.createObjectStore('keys');
+      open.onerror = () => done(null);
+      open.onsuccess = () => {
+        const database = open.result;
+        const request = database.transaction('keys', 'readonly').objectStore('keys').getAllKeys();
+        request.onsuccess = () => {
+          database.close();
+          done(request.result);
+        };
+        request.onerror = () => {
+          database.close();
+          done(null);
+        };
+      };
+    });
+
+    // The device saves its record only after the server has answered, so wait rather than read once.
+    const waitForStoredKeyNames = async (count) => {
+      let names;
+      await browser.waitUntil(async () => {
+        names = await getStoredKeyNames();
+        return names?.length === count;
+      }, { timeout: 10000, timeoutMsg: `Expected ${count} stored key record(s)` });
+      return names;
+    };
+
+    const grantPermission = () => utils.updatePermissions(['chw'], [PERMISSION], [], { ignoreReload: true });
+
+    before(async () => {
+      await utils.saveDocs([...places.values()]);
+      await utils.createUsers([grantedLater, loggingOut, changingPassword]);
+    });
+
+    afterEach(async () => {
+      await utils.revertSettings(true);
+    });
+
+    after(async () => {
+      await utils.deleteUsers([grantedLater, loggingOut, changingPassword]);
+    });
+
+    it('should register once the permission is granted to a user already logged in', async () => {
+      await loginPage.login({ username: grantedLater.username, password: grantedLater.password });
+      await commonPage.tabsSelector.messagesTab().waitForDisplayed();
+      expect(await getDeviceKeys(grantedLater.username)).to.be.undefined;
+
+      await grantPermission();
+      await commonPage.sync();
+
+      const keysByDevice = await waitForDeviceKeys(grantedLater.username);
+      const deviceIds = Object.keys(keysByDevice);
+      expect(deviceIds).to.have.lengthOf(1);
+      const entry = keysByDevice[deviceIds[0]];
+      expect(entry.signing_public_key).to.include({ kty: 'EC', crv: 'P-256' });
+      // the device's signing key is the only thing stored here: the server's encryption public key
+      // goes back to the device in the response, and no key material of the server's is ever kept
+      // on a doc the user can read
+      expect(Object.keys(entry).sort((a, b) => a.localeCompare(b)))
+        .to.deep.equal(['signing_public_key', 'updated_date']);
+      expect(await waitForStoredKeyNames(1)).to.deep.equal([`${grantedLater.username}:${deviceIds[0]}`]);
+    });
+
+    it('should clear the stored keys on logout', async () => {
+      await grantPermission();
+      await loginPage.login({ username: loggingOut.username, password: loggingOut.password });
+      await commonPage.tabsSelector.messagesTab().waitForDisplayed();
+      await waitForDeviceKeys(loggingOut.username);
+      await waitForStoredKeyNames(1);
+
+      await commonPage.logout();
+
+      expect(await waitForStoredKeyNames(0)).to.deep.equal([]);
+    });
+
+    it('should register new keys after the user changes their own password', async () => {
+      await grantPermission();
+      await loginPage.login({ username: changingPassword.username, password: changingPassword.password });
+      await commonPage.tabsSelector.messagesTab().waitForDisplayed();
+      const before = await waitForDeviceKeys(changingPassword.username);
+      const [ deviceId ] = Object.keys(before);
+
+      await commonPage.openHamburgerMenu();
+      await commonPage.openUserSettings();
+      await $('.configuration .fa-key').click();
+      await modalPage.checkModalIsOpen();
+      await $('#currentPassword').setValue(changingPassword.password);
+      await $('#password').setValue(NEW_PASSWORD);
+      await $('#password-confirm').setValue(NEW_PASSWORD);
+      await modalPage.submit();
+
+      const after = await waitForDeviceKeys(
+        changingPassword.username,
+        keys => keys?.[deviceId] && keys[deviceId].signing_public_key.x !== before[deviceId].signing_public_key.x
+      );
+      expect(Object.keys(after)).to.deep.equal([deviceId]);
+
+      // Changing the password ends the session, so a replication request in flight at that moment
+      // gets a 401, which the webapp records as a feedback doc and the run would count as a failure.
+      const unexpected = (await chtDbUtils.getFeedbackDocs())
+        .map(doc => doc.info.message)
+        .filter(message => !message.includes('/api/v1/replication/get-ids: 401 '));
+      expect(unexpected).to.be.empty;
+      await chtDbUtils.clearFeedbackDocs();
     });
   });
 });

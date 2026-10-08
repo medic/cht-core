@@ -1,11 +1,10 @@
 const secureSettings = require('@medic/settings');
-
-const CREDENTIAL_KEY = 'offline-data-bundle-server-key';
+const { PREFIXES } = require('@medic/constants');
 
 // Vault key for the server's private key for one device. It must never live on the _users doc (a
 // user can read their own _users doc via the CouchDB proxy), so it is kept in the secureSettings
 // vault instead.
-const vaultKey = (username, deviceId) => `${CREDENTIAL_KEY}:${username}:${deviceId}`;
+const vaultKey = (username, deviceId) => `${PREFIXES.OFFLINE_DATA_BUNDLE_SERVER_KEY}${username}:${deviceId}`;
 
 module.exports = {
   // The server's age encryption identity for this device: the private half of the recipient the

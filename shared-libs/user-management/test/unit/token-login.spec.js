@@ -1,5 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
+const secureSettings = require('@medic/settings');
 const { DOC_TYPES, PREFIXES } = require('@medic/constants');
 
 const config = require('../../src/libs/config');
@@ -392,6 +393,31 @@ describe('TokenLogin service', () => {
         .catch(err => {
           chai.expect(err).to.deep.equal({ code: 400, message: 'invalid user' });
         });
+    });
+
+    // The password that reaches this user is new, so the devices the old one left behind stop
+    // being trusted here too.
+    it('should stop trusting the registered devices', async () => {
+      const user = {
+        name: 'sally',
+        type: 'user',
+        token_login: { active: true, token: 'aaaa', expiration_date: 0 },
+        keys_by_device: { 'device-a': { signing_public_key: {} } },
+      };
+      db.users.get.resolves(user);
+      let keysWhenWritten;
+      db.users.put.callsFake(doc => {
+        keysWhenWritten = doc.keys_by_device;
+        return Promise.resolve();
+      });
+      const deleteCredentials = sinon.stub(secureSettings, 'deleteCredentials').resolves();
+
+      await service.resetPassword('userID');
+
+      chai.expect(keysWhenWritten).to.equal(undefined);
+      chai.expect(deleteCredentials.args).to.deep.equal([
+        ['offline-data-bundle-server-key:sally:device-a'],
+      ]);
     });
 
     it('should update the users password', () => {

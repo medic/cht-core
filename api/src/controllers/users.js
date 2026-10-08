@@ -17,7 +17,7 @@ const validateDeviceKeyBody = async (body) => {
     return 'Missing required field: signing_key';
   }
   if (!(await signing.isValidPublicKey(signingKey))) {
-    return 'Invalid signing_key: expected an Ed25519 public key JWK';
+    return 'Invalid signing_key: expected an ECDSA P-256 public key JWK';
   }
   return null;
 };
@@ -489,7 +489,7 @@ module.exports = {
    *     summary: Register a device's public key
    *     operationId: v1UsersUsernameDeviceKeysPost
    *     description: >
-   *       Stores the device's Ed25519 signing public key against the user and returns the server's encryption
+   *       Stores the device's ECDSA P-256 signing public key against the user and returns the server's encryption
    *       public key generated for this device, which the device encrypts its data bundles to. Keys are
    *       per-device: re-registering the same `device_id` replaces the stored key. Requires the
    *       `can_send_offline_data_bundle` permission. Non-admin users can only register keys for themselves.
@@ -520,7 +520,7 @@ module.exports = {
    *               signing_key:
    *                 type: object
    *                 additionalProperties: true
-   *                 description: The device's Ed25519 public signing key as a JWK.
+   *                 description: The device's ECDSA P-256 public signing key as a JWK.
    *     responses:
    *       '200':
    *         description: Device key registered

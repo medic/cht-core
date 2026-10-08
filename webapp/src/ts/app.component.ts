@@ -34,6 +34,7 @@ import { CheckDateService } from '@mm-services/check-date.service';
 import { SessionExpiredComponent } from '@mm-modals/session-expired/session-expired.component';
 import { WealthQuintilesWatcherService } from '@mm-services/wealth-quintiles-watcher.service';
 import { DatabaseConnectionMonitorService } from '@mm-services/database-connection-monitor.service';
+import { DeviceKeyService } from '@mm-services/device-key.service';
 import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-closed.component';
 import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-matcher.provider';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
@@ -134,6 +135,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     private readonly languageService:LanguageService,
     private readonly setLanguageService:SetLanguageService,
     private readonly sessionService:SessionService,
+    private readonly deviceKeyService:DeviceKeyService,
     private readonly authService:AuthService,
     private readonly customResourceService:CustomResourceService,
     private readonly changesService:ChangesService,
@@ -314,7 +316,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.setupDb();
     this.countMessageService.init();
     this.feedbackService.init();
-    this.sessionService.init();
+    this.sessionService.init().then(() => this.deviceKeyService.init());
     this.warnOutdatedChrome();
 
     // initialisation tasks that can occur after the UI has been rendered

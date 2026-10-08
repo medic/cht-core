@@ -2,6 +2,7 @@ const { DOC_TYPES } = require('@medic/constants');
 const db = require('./libs/db');
 const config = require('./libs/config');
 const passwords = require('./libs/passwords');
+const deviceKeys = require('./libs/device-keys');
 const ssoLogin = require('./sso-login');
 const taskUtils = require('@medic/task-utils');
 const phoneNumber = require('@medic/phone-number');
@@ -316,7 +317,10 @@ const resetPassword = userId => {
     }
 
     user.password = passwords.generate();
-    return db.users.put(user).then(() => ({ user: user.name, password: user.password }));
+    return deviceKeys
+      .clearDeviceKeys(user)
+      .then(() => db.users.put(user))
+      .then(() => ({ user: user.name, password: user.password }));
   });
 };
 

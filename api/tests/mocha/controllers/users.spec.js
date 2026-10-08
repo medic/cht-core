@@ -1039,7 +1039,7 @@ describe('Users Controller', () => {
   });
 
   describe('deviceKey', () => {
-    const signingJwk = { kty: 'OKP', crv: 'Ed25519', x: 'device-pub' };
+    const signingJwk = { kty: 'EC', crv: 'P-256', x: 'device-pub-x', y: 'device-pub-y' };
     // The server's PUBLIC key is only returned to the device, never persisted.
     const serverPublicKeys = { server_encryption_public_key: 'age1serverrecipient' };
     // The PRIVATE server key goes to the secureSettings vault, keyed per user + device.
@@ -1078,7 +1078,7 @@ describe('Users Controller', () => {
       });
     });
 
-    it('should respond with 400 when signing_key is not a valid Ed25519 public key JWK', () => {
+    it('should respond with 400 when signing_key is not a valid ECDSA P-256 public key JWK', () => {
       signing.isValidPublicKey.resolves(false);
       req = {
         params: { username: 'chw', device_id: 'device-1' },
@@ -1087,7 +1087,7 @@ describe('Users Controller', () => {
       return controller.deviceKey(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(serverUtils.error.args[0][0]).to.deep.equal(
-          { code: 400, reason: 'Invalid signing_key: expected an Ed25519 public key JWK' }
+          { code: 400, reason: 'Invalid signing_key: expected an ECDSA P-256 public key JWK' }
         );
         chai.expect(users.setDeviceKey.notCalled).to.be.true;
       });

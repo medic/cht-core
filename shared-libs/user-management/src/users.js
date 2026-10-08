@@ -13,6 +13,7 @@ const config = require('./libs/config');
 const moment = require('moment');
 const bulkUploadLog = require('./bulk-upload-log');
 const passwords = require('./libs/passwords');
+const deviceKeys = require('./libs/device-keys');
 const { Person, Place, Qualifier, Contact, getDatasource } = require('@medic/cht-datasource');
 const { people, places } = require('@medic/contacts')(config, db, dataContext);
 const { USER_ROLES, PREFIXES } = require('@medic/constants');
@@ -511,7 +512,8 @@ const deleteUser = id => {
   // update fails and user is in inconsistent state. There is no way to do
   // atomic update on more than one database with CouchDB API.
 
-  const usersDbPromise = db.users.get(id).then(user => {
+  const usersDbPromise = db.users.get(id).then(async user => {
+    await deviceKeys.clearDeviceKeys(user);
     user._deleted = true;
     return db.users.put(user);
   });
@@ -604,6 +606,10 @@ const isDbAdmin = username => {
 const saveUserUpdates = async (user) => {
   if (user.password && await isDbAdmin(user.name)) {
     throw error400('Admin passwords must be changed manually in the database');
+  }
+  // At the write rather than where the updates are computed, since everything between can reject.
+  if (user.password) {
+    await deviceKeys.clearDeviceKeys(user);
   }
   const savedDoc = await db.users.put(user);
   return {

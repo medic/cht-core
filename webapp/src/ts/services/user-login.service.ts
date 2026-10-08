@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { lastValueFrom } from 'rxjs';
+import { DeviceKeyService } from '@mm-services/device-key.service';
 import { LocationService } from '@mm-services/location.service';
 
 @Injectable({
@@ -8,8 +10,9 @@ import { LocationService } from '@mm-services/location.service';
 export class UserLoginService {
 
   constructor(
-    private http: HttpClient,
-    private location: LocationService
+    private readonly http: HttpClient,
+    private readonly location: LocationService,
+    private readonly deviceKeyService: DeviceKeyService
   ) { }
 
   /**
@@ -36,6 +39,15 @@ export class UserLoginService {
 
     console.debug('UserLogin', url, username);
 
-    return this.http.post(url, data || {}, {headers}).toPromise() as Promise<Object>;
+    const login = lastValueFrom(this.http.post(url, data || {}, { headers }));
+    login.then(() => this.renewDeviceKey(), () => this.renewDeviceKey());
+    return login;
+  }
+
+  private renewDeviceKey() {
+    this.deviceKeyService
+      .clearDeviceKeys()
+      .then(() => this.deviceKeyService.registerIfPermitted())
+      .catch(err => console.error('UserLogin :: Error renewing the device key', err));
   }
 }

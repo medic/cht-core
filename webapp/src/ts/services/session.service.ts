@@ -2,6 +2,7 @@ import * as _ from 'lodash-es';
 import { Injectable, Inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
+import { lastValueFrom } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
 
 import { LocationService } from '@mm-services/location.service';
@@ -16,6 +17,7 @@ const ONLINE_ROLE = USER_ROLES.ONLINE;
 export class SessionService {
   userCtxCookieValue: any = null;
   httpOptions = { headers: new HttpHeaders({ Accept: 'application/json' }) };
+  private readonly sessionEndHandlers: (() => Promise<void>)[] = [];
 
   constructor(
     private cookieService: CookieService,
@@ -24,7 +26,14 @@ export class SessionService {
     private location: LocationService
   ) {}
 
-  navigateToLogin() {
+  /**
+   * Runs the given work before the user is sent back to the login page, and waits for it.
+   */
+  onSessionEnd(handler: () => Promise<void>) {
+    this.sessionEndHandlers.push(handler);
+  }
+
+  async navigateToLogin() {
     console.warn('User must reauthenticate');
     const params = new URLSearchParams();
     params.append('redirect', this.document.location.href);
@@ -36,20 +45,27 @@ export class SessionService {
 
     this.cookieService.delete(COOKIE_NAME, '/');
     this.userCtxCookieValue = undefined;
+    await this.endSession();
     this.document.location.href = `/${this.location.dbName}/login?${params.toString()}`;
   }
 
   logout() {
-    return this.http
-      .delete('/_session', this.httpOptions)
-      .toPromise()
+    return lastValueFrom(this.http.delete('/_session', this.httpOptions))
       .catch(() => {
         // Set cookie to force login before using app
         this.cookieService.set('login', 'force', undefined, '/');
       })
-      .then(() => {
-        this.navigateToLogin();
-      });
+      .then(() => this.navigateToLogin());
+  }
+
+  /**
+   * A handler that fails must never leave the user on a page they have already been logged out of,
+   * so each one is reported and then stepped over.
+   */
+  private async endSession() {
+    await Promise.all(this.sessionEndHandlers.map(
+      handler => handler().catch(err => console.error('SessionService :: Error ending the session', err))
+    ));
   }
 
   /**
@@ -82,35 +98,36 @@ export class SessionService {
 
   public check() {
     if (!this.cookieService.check(COOKIE_NAME)) {
-      this.navigateToLogin();
+      return this.navigateToLogin();
     }
   }
 
   init () {
     const userCtx = this.userCtx();
-    if (!userCtx || !userCtx.name) {
+    if (!userCtx?.name) {
       return this.logout();
     }
 
-    return this.http
-      .get<{ userCtx: { name: string; roles: string[] } }>('/_session', { responseType: 'json', ...this.httpOptions })
-      .toPromise()
-      .then(value => {
-        const name = value && value.userCtx && value.userCtx.name;
+    return lastValueFrom(this.http
+      .get<{ userCtx: { name: string; roles: string[] } }>('/_session', { responseType: 'json', ...this.httpOptions }))
+      .then(async value => {
+        const name = value?.userCtx?.name;
         if (name !== userCtx.name) {
-          // connected to the internet but server session is different
-          this.logout();
-          return;
+          // connected to the internet but server session is different. Awaited so a caller of
+          // init() can know the logout finished: it ends the session before navigating away.
+          await this.logout();
+          return undefined;
         }
         if (_.difference(userCtx.roles, value!.userCtx.roles).length ||
           _.difference(value!.userCtx.roles, userCtx.roles).length) {
           return this.refreshUserCtx().then(() => true);
         }
+        return undefined;
       })
       .catch(response => {
         if (response.status === 401) {
           // connected to the internet but no session on the server
-          this.navigateToLogin();
+          return this.navigateToLogin();
         }
       });
   }
