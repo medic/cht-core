@@ -65,7 +65,7 @@ describe('sms parser compact', () => {
     chai.expect(obj).to.deep.equal(expectedObj);
   });
 
-  it('compact textforms format with exclaimation separated form code', () => {
+  it('compact textforms format with exclamation separated form code', () => {
     const doc = {
       sent_timestamp: '1-13-12 15:35',
       from: '+15551212',

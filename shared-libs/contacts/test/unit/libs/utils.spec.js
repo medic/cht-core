@@ -47,7 +47,7 @@ describe('controller utils', () => {
       1467383343484, // ms since epoch
       new Date().valueOf(), // output from native javascript method
       '2016-07-01T14:58:26.336Z', // output from native javascript method
-      new Date().toISOString(), // utput from native javascript method
+      new Date().toISOString(), // output from native javascript method
     ].forEach(val => {
       it(`${JSON.stringify(val)}`, () => {
         chai.expect(utils.isDateStrValid(val)).to.equal(true);

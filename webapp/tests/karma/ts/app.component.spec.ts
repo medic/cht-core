@@ -600,7 +600,7 @@ describe('AppComponent', () => {
       expect(dbSyncService.subscribe.callCount).to.equal(1);
     });
 
-    it('should set dbSync replication status in subcription callback', async () => {
+    it('should set dbSync replication status in subscription callback', async () => {
       clock = sinon.useFakeTimers();
       await getComponent();
       component.replicationStatus = {};

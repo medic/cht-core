@@ -426,7 +426,7 @@ describe('db', () => {
       });
     });
 
-    it('should work when call is made without an active clinet request', async () => {
+    it('should work when call is made without an active client request', async () => {
       sinon.stub(PouchDB, 'fetch').resolves({
         json: sinon.stub().resolves({ result: true }),
         ok: true,

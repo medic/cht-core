@@ -285,7 +285,7 @@ If you do not have the CHT Android app installed on your mobile device, you can 
 | skip.loadReportList | Boolean | Default false. Skip test for loading the report list. | No |
 | skip.searchReport | Boolean | Default false. Skip test for searching a report. | No |
 | skip.createPatient | Boolean | Default false. Skip test for creating a patient. | No |
-| skip.submitPatientReport | Boolean | Default false. Skip test for submiting a report for a patient. | No |
+| skip.submitPatientReport | Boolean | Default false. Skip test for submitting a report for a patient. | No |
 | users | Object[] | User to login and use for testing | Yes |
 | users.type | String | Use: "offline" or "online" | Yes |
 | users.role | String | Use: "chw" | Yes |

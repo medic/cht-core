@@ -250,7 +250,7 @@ describe('Users API', () => {
           'Cookie': cookie
         },
         body: {
-          password: password // keeping it the same, but the security check will be equivilent,
+          password: password // keeping it the same, but the security check will be equivalent,
           // our code can't know it's the same!
         },
         auth: { username, password }
@@ -263,7 +263,7 @@ describe('Users API', () => {
         path: `/api/v1/users/${username}`,
         method: 'POST',
         body: {
-          password: password // keeping it the same, but the security check will be equivilent,
+          password: password // keeping it the same, but the security check will be equivalent,
           // our code can't know it's the same!
         },
         auth: { username, password }

@@ -69,7 +69,7 @@ const parseParams = params => {
     // We support JSON in a string, eg: '{"foo": "bar"}'
     return JSON.parse(params);
   }
-  // And comma delimted strings, eg: "foo,bar", "foo"
+  // And comma delimited strings, eg: "foo,bar", "foo"
   return params.split(',');
 };
 
