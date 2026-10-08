@@ -160,7 +160,7 @@ function getDateMS(d) {
 }
 
 function isValidDate(d) {
-  return d instanceof Date && !Number.isNaN(d);
+  return d instanceof Date && !Number.isNaN(d.getTime());
 }
 
 function addDays(date, days) {
@@ -278,7 +278,7 @@ function isActivePregnancy(contact, report) {
 function countANCFacilityVisits(contact, pregnancyReport) {
   let ancHFVisits = 0;
   const pregnancyFollowUps = getSubsequentPregnancyFollowUps(contact, pregnancyReport);
-  if (getField(pregnancyReport, 'anc_visits_hf.anc_visits_hf_past') && !Number.isNaN(getField(pregnancyReport, 'anc_visits_hf.anc_visits_hf_past.visited_hf_count'))) {
+  if (getField(pregnancyReport, 'anc_visits_hf.anc_visits_hf_past') && !Number.isNaN(Number(getField(pregnancyReport, 'anc_visits_hf.anc_visits_hf_past.visited_hf_count')))) {
     ancHFVisits += parseInt(getField(pregnancyReport, 'anc_visits_hf.anc_visits_hf_past.visited_hf_count'));
   }
   ancHFVisits += pregnancyFollowUps.reduce(function (sum, report) {
@@ -287,7 +287,7 @@ function countANCFacilityVisits(contact, pregnancyReport) {
       return 0;
     }
     sum += pastANCHFVisits.last_visit_attended === 'yes' && 1;
-    if (Number.isNaN(pastANCHFVisits.visited_hf_count)) {
+    if (Number.isNaN(Number(pastANCHFVisits.visited_hf_count))) {
       return sum;
     }
     return sum += pastANCHFVisits.report_other_visits === 'yes' && parseInt(pastANCHFVisits.visited_hf_count);
