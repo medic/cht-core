@@ -100,11 +100,7 @@
               <dd>{{ password }}</dd>
             </dl>
           }
-          @if (carrying) {
-            <p>{{ 'offline_sync.host.carrying' | translate:{ count: carrying } }}</p>
-          }
           <button mat-button color="primary" (click)="stopHosting()">{{ 'offline_sync.host.stop' | translate }}</button>
-          <button mat-stroked-button (click)="stopHosting()" translate>offline_sync.host.stop</button>
         </mat-card-content>
       </mat-card>
     }
