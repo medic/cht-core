@@ -59,6 +59,7 @@ module.exports = defineConfig([
     extends: compat.extends('@medic'),
     plugins: {
       node: nodePlugin,
+      '@stylistic': stylisticPlugin,
     },
     languageOptions: {
       ecmaVersion: 2020,
@@ -72,6 +73,10 @@ module.exports = defineConfig([
       'no-redeclare': ['error', { builtinGlobals: false }],
       // Indent switch cases one level inside the switch (@medic default is not to)
       indent: ['error', 2, { SwitchCase: 1 }],
+      // Core max-len is deprecated in favour of @stylistic/max-len. Remove this override once @medic/eslint-config
+      // has migrated to the @stylistic rules.
+      'max-len': 'off',
+      '@stylistic/max-len': ['error', { code: 120, ignoreUrls: true, tabWidth: 2 }],
       'func-style': [ 'error', 'expression' ],
       'no-alert': 'error',
       'node/no-exports-assign': 'error',
@@ -141,7 +146,7 @@ module.exports = defineConfig([
       }
     },
     rules: {
-      'max-len': 'off',
+      '@stylistic/max-len': 'off',
       'func-style': 'off',
     },
   },
@@ -296,7 +301,7 @@ module.exports = defineConfig([
   {
     files: ['nginx/tests/**/*.spec.js'],
     rules: {
-      'max-len': 'off',
+      '@stylistic/max-len': 'off',
     },
   },
   {

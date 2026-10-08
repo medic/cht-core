@@ -47,7 +47,7 @@ describe('/sms', function() {
                 const maxMillis = 5000;
                 if (end > start + maxMillis) {
                   const seconds = (end - start) / 1000;
-                  // eslint-disable-next-line max-len
+                  // eslint-disable-next-line @stylistic/max-len
                   expect.fail(`It took ${seconds}s to respond to the request. Endpoint should respond in ${maxMillis}ms.`);
                 }
                 expect(response).toEqual({ messages: [] });
