@@ -38,7 +38,7 @@ describe('OfflineSync component', () => {
   let bundleReceived: Subject<string>;
 
   const untilCounted = async () => {
-    while (!bundleStoreService.count.called) {
+    while (!bundleStoreService.counts.called) {
       await new Promise(resolve => setTimeout(resolve));
     }
   };
@@ -81,8 +81,7 @@ describe('OfflineSync component', () => {
     deviceKeyService = { getKeyMaterial: sinon.stub().resolves({ deviceId: 'device-1' }) };
     bundleStoreService = {
       collect: sinon.stub().resolves(),
-      count: sinon.stub().resolves(0),
-      undeliverable: sinon.stub().resolves(0),
+      counts: sinon.stub().resolves({ waiting: 0, undeliverable: 0 }),
     };
     transferService = { handOver: sinon.stub().resolves({ delivered: 2, skipped: 0 }) };
     offlineSyncService = {
@@ -304,7 +303,7 @@ describe('OfflineSync component', () => {
     });
 
     it('shows what it is already carrying when the screen opens', async () => {
-      bundleStoreService.count.resolves(6);
+      bundleStoreService.counts.resolves({ waiting: 6, undeliverable: 0 });
 
       await create();
       fixture.detectChanges();
@@ -314,7 +313,7 @@ describe('OfflineSync component', () => {
     });
 
     it('says when it is holding something the server would not take', async () => {
-      bundleStoreService.undeliverable.resolves(2);
+      bundleStoreService.counts.resolves({ waiting: 0, undeliverable: 2 });
 
       await create();
       fixture.detectChanges();
@@ -332,14 +331,14 @@ describe('OfflineSync component', () => {
     });
 
     it('collects a bundle a peer has just delivered', async () => {
-      bundleStoreService.count.onSecondCall().resolves(1);
+      bundleStoreService.counts.onSecondCall().resolves({ waiting: 1, undeliverable: 0 });
       await create();
 
       bundleReceived.next('bundle-1');
       await new Promise(resolve => setTimeout(resolve));
 
       expect(bundleStoreService.collect.callCount).to.equal(1);
-      expect(bundleStoreService.count.callCount).to.be.greaterThan(1);
+      expect(bundleStoreService.counts.callCount).to.be.greaterThan(1);
     });
 
     it('keeps the session when a delivered bundle cannot be collected', async () => {
@@ -367,7 +366,7 @@ describe('OfflineSync component', () => {
     });
 
     it('stays usable when the carried bundles cannot be counted', async () => {
-      bundleStoreService.count.rejects(new Error('no space'));
+      bundleStoreService.counts.rejects(new Error('no space'));
       await create();
 
       expect(component.loading).to.be.false;
@@ -378,7 +377,7 @@ describe('OfflineSync component', () => {
 
     it('is usable and listening while the carried bundles are still being counted', async () => {
       let finishCount;
-      bundleStoreService.count.returns(new Promise(resolve => finishCount = resolve));
+      bundleStoreService.counts.returns(new Promise(resolve => finishCount = resolve));
       const created = create();
       await untilCounted();
 
@@ -386,14 +385,14 @@ describe('OfflineSync component', () => {
       hostingResult.next({ ok: true, detail: '', session: HOSTING_SESSION });
       expect(component.state).to.equal('hosting');
 
-      finishCount(3);
+      finishCount({ waiting: 3, undeliverable: 0 });
       await created;
       expect(component.carrying).to.equal(3);
     });
 
     it('keeps the failure the user is looking at when a count fails after it', async () => {
       let failCount;
-      bundleStoreService.count.returns(new Promise((resolve, reject) => failCount = reject));
+      bundleStoreService.counts.returns(new Promise((resolve, reject) => failCount = reject));
       const created = create();
       await untilCounted();
 
@@ -406,8 +405,8 @@ describe('OfflineSync component', () => {
 
     it('ignores a count that fails after a newer one succeeded', async () => {
       let failFirstCount;
-      bundleStoreService.count.onFirstCall().returns(new Promise((resolve, reject) => failFirstCount = reject));
-      bundleStoreService.count.onSecondCall().resolves(1);
+      bundleStoreService.counts.onFirstCall().returns(new Promise((resolve, reject) => failFirstCount = reject));
+      bundleStoreService.counts.onSecondCall().resolves({ waiting: 1, undeliverable: 0 });
       const created = create();
       await untilCounted();
 
@@ -422,7 +421,7 @@ describe('OfflineSync component', () => {
 
     it('keeps a delivery failure when an older count fails after it', async () => {
       let failFirstCount;
-      bundleStoreService.count.onFirstCall().returns(new Promise((resolve, reject) => failFirstCount = reject));
+      bundleStoreService.counts.onFirstCall().returns(new Promise((resolve, reject) => failFirstCount = reject));
       bundleStoreService.collect.rejects(new Error('no space'));
       const created = create();
       await untilCounted();
@@ -436,8 +435,8 @@ describe('OfflineSync component', () => {
     });
 
     it('clears the read warning once a count succeeds', async () => {
-      bundleStoreService.count.onFirstCall().rejects(new Error('unreadable'));
-      bundleStoreService.count.onSecondCall().resolves(1);
+      bundleStoreService.counts.onFirstCall().rejects(new Error('unreadable'));
+      bundleStoreService.counts.onSecondCall().resolves({ waiting: 1, undeliverable: 0 });
       await create();
       expect(component.errorKey).to.equal('offline_sync.error.bundle_store_unreadable');
 
@@ -449,27 +448,27 @@ describe('OfflineSync component', () => {
     });
 
     it('recounts after a delivery that failed partway', async () => {
-      bundleStoreService.count.onSecondCall().resolves(1);
+      bundleStoreService.counts.onSecondCall().resolves({ waiting: 1, undeliverable: 0 });
       bundleStoreService.collect.rejects(new Error('second bundle failed'));
       await create();
 
       bundleReceived.next('bundle-1');
       await tick();
 
-      expect(bundleStoreService.count.callCount).to.equal(2);
+      expect(bundleStoreService.counts.callCount).to.equal(2);
       expect(component.carrying).to.equal(1);
     });
 
     it('shows the latest count when an older one answers last', async () => {
       let finishFirstCount;
-      bundleStoreService.count.onFirstCall().returns(new Promise(resolve => finishFirstCount = resolve));
-      bundleStoreService.count.onSecondCall().resolves(1);
+      bundleStoreService.counts.onFirstCall().returns(new Promise(resolve => finishFirstCount = resolve));
+      bundleStoreService.counts.onSecondCall().resolves({ waiting: 1, undeliverable: 0 });
       const created = create();
       await untilCounted();
 
       bundleReceived.next('bundle-1');
       await new Promise(resolve => setTimeout(resolve));
-      finishFirstCount(0);
+      finishFirstCount({ waiting: 0, undeliverable: 0 });
       await created;
 
       expect(component.carrying).to.equal(1);

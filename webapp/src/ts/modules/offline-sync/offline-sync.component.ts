@@ -140,12 +140,9 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   private async countCarried() {
     const run = ++this.countRuns;
     try {
-      const [carrying, undeliverable] = await Promise.all([
-        this.bundleStoreService.count(),
-        this.bundleStoreService.undeliverable(),
-      ]);
+      const { waiting, undeliverable } = await this.bundleStoreService.counts();
       if (run === this.countRuns) {
-        this.showCount(carrying, undeliverable);
+        this.showCount(waiting, undeliverable);
       }
     } catch (err: any) {
       console.error('OfflineSyncComponent :: Error counting the bundles this device carries', err);
