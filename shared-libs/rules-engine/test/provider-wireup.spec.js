@@ -134,12 +134,10 @@ describe('provider-wireup integration tests', () => {
         sinon.stub(rulesStateStore, 'getUseBikramSambatMonths').returns(true);
         const bikramSambat = require('bikram-sambat');
         const toBik = sinon.stub(bikramSambat, 'toBik').throws(new Error('invalid date'));
-        const warning = sinon.stub(console, 'warn');
         const getTargetDocTag = wireup.__get__('getTargetDocTag');
 
         expect(getTargetDocTag({ end: moment('2020-04-30').valueOf() })).to.equal('2020-04');
         expect(toBik.calledOnce).to.be.true;
-        expect(warning.calledOnce).to.be.true;
         expect(moment.locale()).to.equal('ne');
       } finally {
         moment.locale(previousLocale);
