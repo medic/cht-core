@@ -64,13 +64,17 @@ describe('OfflineSyncBundleUpload service', () => {
     sinon.restore();
   });
 
-  const answer = async (status?: number) => {
+  const requestFor = async () => {
     let matches = httpMock.match(URL);
     for (let attempt = 0; !matches.length && attempt < 20; attempt++) {
       await new Promise(resolve => setTimeout(resolve));
       matches = httpMock.match(URL);
     }
-    const [request] = matches;
+    return matches[0];
+  };
+
+  const answer = async (status?: number) => {
+    const request = await requestFor();
     if (status) {
       request.flush('nope', { status, statusText: 'rejected' });
     } else {
@@ -114,28 +118,41 @@ describe('OfflineSyncBundleUpload service', () => {
     const delivered = service.deliverPending();
     await answer();
     await answer();
-
     await delivered;
+
     expect(bundleStoreService.remove.args.map(([doc]) => doc._id)).to.deep.equal(['older', 'newer']);
   });
 
-  it('keeps a bundle the server could not take this time', async () => {
+  it('keeps a bundle the server could not take this time, without counting it against the bundle', async () => {
     bundleStoreService.pending.resolves([stored('bundle-1')]);
 
     const delivered = service.deliverPending();
     await answer(503);
-
     await delivered;
+
     expect(bundleStoreService.remove.notCalled).to.be.true;
+    expect(bundleStoreService.recordAttempt.notCalled).to.be.true;
   });
 
-  it('keeps a bundle refused with a 400, because that may not be about the bundle', async () => {
+  it('resumes an upload that was cut off, without counting it against the bundle', async () => {
+    bundleStoreService.pending.resolves([stored('bundle-1')]);
+
+    const delivered = service.deliverPending();
+    (await requestFor()).error(new ProgressEvent('error'));
+    await delivered;
+
+    expect(bundleStoreService.remove.notCalled).to.be.true;
+    expect(bundleStoreService.recordAttempt.notCalled).to.be.true;
+    expect(bundleStoreService.markUndeliverable.notCalled).to.be.true;
+  });
+
+  it('keeps a bundle refused with a 400 and counts the refusal', async () => {
     bundleStoreService.pending.resolves([stored('bundle-1')]);
 
     const delivered = service.deliverPending();
     await answer(400);
-
     await delivered;
+
     expect(bundleStoreService.remove.notCalled).to.be.true;
     expect(bundleStoreService.markUndeliverable.notCalled).to.be.true;
     expect(bundleStoreService.recordAttempt.args).to.deep.equal([['bundle-1']]);
@@ -183,8 +200,8 @@ describe('OfflineSyncBundleUpload service', () => {
 
     const delivered = service.deliverPending();
     await answer(503);
-
     await delivered;
+
     expect(bundleStoreService.remove.notCalled).to.be.true;
   });
 
@@ -196,8 +213,8 @@ describe('OfflineSyncBundleUpload service', () => {
     const delivered = service.deliverPending();
     const first = await answer(400);
     const second = await answer();
-
     await delivered;
+
     expect(first.request.headers.get('X-Medic-Bundle-Envelope')).to.equal(alice1.envelope);
     expect(second.request.headers.get('X-Medic-Bundle-Envelope')).to.equal(bob1.envelope);
     expect(bundleStoreService.remove.args.map(([doc]) => doc._id)).to.deep.equal(['bob-1']);
@@ -208,9 +225,10 @@ describe('OfflineSyncBundleUpload service', () => {
 
     const delivered = service.deliverPending();
     await answer(401);
-
     await delivered;
+
     expect(bundleStoreService.remove.notCalled).to.be.true;
+    expect(bundleStoreService.recordAttempt.notCalled).to.be.true;
   });
 
   it('stops the whole run when the server is the problem, whoever sent the next bundle', async () => {
@@ -218,9 +236,10 @@ describe('OfflineSyncBundleUpload service', () => {
 
     const delivered = service.deliverPending();
     await answer(503);
-
     await delivered;
-    expect(bundleStoreService.recordAttempt.args).to.deep.equal([['alice-1']]);
+
+    expect(bundleStoreService.remove.notCalled).to.be.true;
+    expect(bundleStoreService.recordAttempt.notCalled).to.be.true;
   });
 
   describe('on sync', () => {
