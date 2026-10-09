@@ -96,6 +96,16 @@ describe('OfflineSyncBundleStore service', () => {
     expect(offlineSyncService.deleteBundle.args).to.deep.equal([['bundle-1']]);
   });
 
+  it('takes a bundle that is already stored without failing', async () => {
+    offlineSyncService.receivedBundles.returns([received('bundle-1'), received('bundle-2')]);
+    bundlesDb.put.onFirstCall().rejects({ status: 409 });
+
+    await service.collect();
+
+    expect(bundlesDb.put.callCount).to.equal(2);
+    expect(offlineSyncService.deleteBundle.args).to.deep.equal([['bundle-1'], ['bundle-2']]);
+  });
+
   it('leaves the native copy alone when storing fails', async () => {
     offlineSyncService.receivedBundles.returns([received('bundle-1')]);
     bundlesDb.put.rejects(new Error('no space'));

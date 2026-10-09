@@ -40,18 +40,27 @@ export class OfflineSyncBundleStoreService {
   }
 
   private async take(bundle: ReceivedBundle) {
-    await this.db.put({
-      _id: bundle.id,
-      envelope: bundle.envelope,
-      signature: bundle.signature,
-      received_date: Date.now(),
-      _attachments: {
-        [PAYLOAD]: {
-          content_type: 'application/octet-stream',
-          data: this.readPayload(bundle),
+    try {
+      await this.db.put({
+        _id: bundle.id,
+        envelope: bundle.envelope,
+        signature: bundle.signature,
+        received_date: Date.now(),
+        _attachments: {
+          [PAYLOAD]: {
+            content_type: 'application/octet-stream',
+            data: this.readPayload(bundle),
+          },
         },
-      },
-    });
+      });
+    } catch (err: any) {
+      // Already stored. Taking the same bundle twice is normal: the native copy is only dropped
+      // after this write, so a stop between the two leaves it to be taken again. Failing here would
+      // stop every bundle behind this one from being taken.
+      if (err.status !== 409) {
+        throw err;
+      }
+    }
     this.offlineSyncService.deleteBundle(bundle.id);
   }
 
