@@ -46,8 +46,6 @@ describe('OfflineSyncBundleStore service', () => {
 
   afterEach(() => sinon.restore());
 
-  // These are another user's documents, encrypted to the server. Replicating them up as if they
-  // were this user's own is exactly what must never happen.
   it('keeps bundles in a local database of their own', async () => {
     offlineSyncService.receivedBundles.returns([received('bundle-1')]);
 
@@ -68,9 +66,6 @@ describe('OfflineSyncBundleStore service', () => {
     expect(doc._attachments.payload.data).to.equal('AAAA');
   });
 
-  // The pieces are joined as base64 text rather than decoded and re-encoded, which only works
-  // because each one covers a whole number of 3-byte groups. Encoding real bytes and decoding the
-  // join back is what catches a chunk size that breaks that, or a padded piece in the middle.
   it('pulls a large bundle back in pieces and joins them into the original bytes', async () => {
     const payload = new Uint8Array(2 * CHUNK_BYTES + 5).map((unused, index) => index % 251);
     offlineSyncService.receivedBundles.returns([received('bundle-1', payload.length)]);
@@ -86,7 +81,6 @@ describe('OfflineSyncBundleStore service', () => {
     expect(Array.from(stored, character => character.codePointAt(0))).to.deep.equal(Array.from(payload));
   });
 
-  // Dropping the native copy before the store has it would lose a bundle nobody else holds.
   it('drops the native copy only after the bundle is stored', async () => {
     offlineSyncService.receivedBundles.returns([received('bundle-1')]);
 

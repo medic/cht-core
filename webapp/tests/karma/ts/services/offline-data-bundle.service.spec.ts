@@ -58,7 +58,6 @@ describe('OfflineDataBundle service', () => {
     sinon.restore();
   });
 
-  /** One page of changes. Short pages are what tell the service it has reached the end. */
   const onePageOf = (docs, startSeq = 0) => ({
     last_seq: startSeq + docs.length,
     results: docs.map((doc, index) => ({ seq: startSeq + index + 1, id: doc._id, doc })),
@@ -99,10 +98,6 @@ describe('OfflineDataBundle service', () => {
     await expect(collect()).to.be.rejectedWith(Error, 'device_not_registered');
   });
 
-  // The whole wire contract in one test: what the server does with a bundle is decode the
-  // envelope, verify the signature over those exact bytes, and decrypt the body. If any of the
-  // three encodings drift, this fails.
-  // Anything the screen can be handed has to be a code, because it becomes a translation key.
   it('fails with a code, never a sentence', async () => {
     deviceKeyService.getKeyMaterial.resolves(null);
 
@@ -111,7 +106,6 @@ describe('OfflineDataBundle service', () => {
     expect(failure.message).to.match(/^[a-z0-9_]+$/);
   });
 
-  /** The api derives this from the body it receives, so the test derives it the same way. */
   const ageHeaderHash = async (ciphertext) => {
     const text = new TextDecoder('utf8', { fatal: false }).decode(ciphertext.subarray(0, 400));
     const marker = text.indexOf('\n---');
@@ -135,25 +129,19 @@ describe('OfflineDataBundle service', () => {
 
     const envelope = JSON.parse(new TextDecoder().decode(envelopeBytes));
     expect(envelope).to.include({ user: 'chw-user', device_id: DEVICE_ID, bundle_seq: 1 });
-    // what ties the envelope to this body, checked by api before it writes anything
     expect(envelope.payload_header_sha256).to.equal(await ageHeaderHash(bundle.ciphertext));
     expect(await openBundle(bundle)).to.deep.equal(docs);
   });
 
-  // The envelope travels in front of a relay that must not learn anything about the CHW's data.
   it('tells the relay nothing beyond who sent the bundle and in what order', async () => {
     medicDb.changes.resolves(onePageOf([{ _id: 'contact-1', _rev: '1-a' }]));
 
     const [bundle] = await collect();
 
-    // payload_header_sha256 included: it hashes the age header, which is an ephemeral public key
-    // and a file key wrapped to the server, so it says nothing about what the bundle contains.
     expect(Object.keys(openEnvelope(bundle)).sort((a, b) => a.localeCompare(b)))
       .to.deep.equal(['bundle_seq', 'device_id', 'payload_header_sha256', 'user']);
   });
 
-  // A relay orders bundles by this number and spots a gap with it, so two bundles from the same
-  // device must never share one.
   it('numbers bundles across handovers, not within one', async () => {
     medicDb.changes.resolves(onePageOf([{ _id: 'a' }]));
 
@@ -164,8 +152,6 @@ describe('OfflineDataBundle service', () => {
     expect(openEnvelope(second).bundle_seq).to.equal(2);
   });
 
-  // They come down from the server and are refused on the way back, so a bundle spent on one is a
-  // bundle wasted. The same filter replication uses decides this, so the case covers the class.
   it('leaves out what replication would never send up', async () => {
     medicDb.changes.resolves(onePageOf([
       { _id: '_design/medic-client' },
@@ -179,7 +165,6 @@ describe('OfflineDataBundle service', () => {
     expect((await openBundle(bundle)).map(doc => doc._id)).to.deep.equal(['report-1']);
   });
 
-  // A stub would make CouchDB reject the whole write with a 412, so the bytes have to travel.
   it('asks for the attachment bytes, not the stubs', async () => {
     medicDb.changes.resolves(onePageOf([{ _id: 'report-1' }]));
 
@@ -188,8 +173,6 @@ describe('OfflineDataBundle service', () => {
     expect(medicDb.changes.args[0][0].attachments).to.be.true;
   });
 
-  // An attachment can be 30mb, which is over the endpoint's limit once encoded. It cannot go this
-  // way at all, so the position moves past it and the caller is told rather than left guessing.
   it('leaves out a document too large to fit a bundle, and says so', async () => {
     const huge = { _id: 'huge', data: 'x'.repeat(9 * 1024 * 1024) };
     medicDb.changes.resolves(onePageOf([huge, { _id: 'report-1' }]));
@@ -247,9 +230,6 @@ describe('OfflineDataBundle service', () => {
     expect((await openBundle(bundles[1])).map(doc => doc._id)).to.deep.equal(['two']);
   });
 
-  // The caller advances its marker to lastSeq, so a bundle must never claim ground it does not
-  // cover: reporting the feed's end on the first of two bundles would skip the second on a
-  // transfer that stopped in between.
   it('reports the position each bundle actually ends at', async () => {
     const big = (id) => ({ _id: id, data: 'x'.repeat(5 * 1024 * 1024) });
     medicDb.changes.resolves(onePageOf([big('one'), big('two')]));
@@ -272,8 +252,6 @@ describe('OfflineDataBundle service', () => {
       expect(service.getPosition('export')).to.equal(9);
     });
 
-    // Starting from zero would re-send the whole database, nearly all of which the server sent to
-    // this device in the first place.
     it('falls back to the sync position for a device that has never exported', () => {
       dbSyncService.getLastReplicatedSeq.returns(17);
 

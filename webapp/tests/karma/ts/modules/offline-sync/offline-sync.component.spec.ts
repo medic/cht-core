@@ -15,10 +15,6 @@ import { OfflineSyncBundleStoreService } from '@mm-services/offline-sync-bundle-
 import { OfflineSyncResult, OfflineSyncService } from '@mm-services/offline-sync.service';
 import { OfflineSyncTransferService } from '@mm-services/offline-sync-transfer.service';
 
-/**
- * The real toolbar reaches the session, the database and PouchDB, none of which this component
- * touches. Standing in for it keeps the test about pairing.
- */
 @Component({ selector: 'mm-tool-bar', template: '', standalone: true })
 class StubToolBarComponent { }
 
@@ -41,8 +37,6 @@ describe('OfflineSync component', () => {
   let permissionsResolved: Subject<boolean>;
   let bundleReceived: Subject<string>;
 
-  // ngOnInit is awaited by create(), so a test that holds the count open starts create() without
-  // awaiting it and waits here for the count to have been asked for.
   const untilCounted = async () => {
     while (!bundleStoreService.count.called) {
       await new Promise(resolve => setTimeout(resolve));
@@ -119,7 +113,6 @@ describe('OfflineSync component', () => {
       expect(component.canJoin).to.be.false;
     });
 
-    /** A device can be able to send but not receive, so the two are asked separately. */
     it('offers only joining on a device that cannot host', async () => {
       await create({ canHost: sinon.stub().resolves(false) });
 
@@ -235,7 +228,6 @@ describe('OfflineSync component', () => {
       expect(component.hostLabel).to.equal('Supervisor phone');
     });
 
-    /** The security-critical one: the user must be told, not quietly left connected. */
     it('reports a host that could not be verified', async () => {
       await create();
 
@@ -296,7 +288,6 @@ describe('OfflineSync component', () => {
       expect(transferService.handOver.args).to.deep.equal([['export']]);
     });
 
-    // A handover that stops leaves data on the phone, so saying nothing would be a lie.
     it('turns a transfer failure into a translation key', async () => {
       await create();
       await pair();
@@ -327,8 +318,6 @@ describe('OfflineSync component', () => {
       expect(component.carrying).to.equal(1);
     });
 
-    // The peer keeps the bundle and it is collected again, so a session that is otherwise working
-    // must not be torn down over it.
     it('keeps the session when a delivered bundle cannot be collected', async () => {
       await create();
       bundleStoreService.collect.rejects(new Error('no space'));
@@ -338,8 +327,6 @@ describe('OfflineSync component', () => {
 
       expect(component.state).to.not.equal('failed');
       expect(component.carrying).to.equal(0);
-      // Asserted through the rendered page, not the field: a message the template never shows is
-      // the same as no message at all to the supervisor whose phone is full.
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelector('.offline-sync-warning').textContent)
         .to.contain('offline_sync.error.bundle_store_failed');
@@ -456,8 +443,6 @@ describe('OfflineSync component', () => {
   });
 
   describe('recovering from a failure', () => {
-    // Every failure message tells the user to try again, and the start and scan buttons only render
-    // while idle, so without this the only way out is to navigate away.
     it('offers a way back after a failure', async () => {
       await create();
       hostingResult.next({ ok: false, detail: 'server_start_failed' });
@@ -474,8 +459,6 @@ describe('OfflineSync component', () => {
       expect(component.errorKey).to.be.null;
     });
 
-    // Granting the permission is exactly what the failure asked for, so the screen should not still
-    // be showing it.
     it('clears the failure once the user grants the permission', async () => {
       await create();
       hostingResult.next({ ok: false, detail: 'permissions_required' });
@@ -520,8 +503,6 @@ describe('OfflineSync component', () => {
   });
 
   describe('being ready to send', () => {
-    // The key only arrives on a successful sync. Finding that out when she taps send means finding
-    // out in the field, where the only fix is back where she came from.
     it('warns before she leaves that the phone cannot send yet', async () => {
       deviceKeyService.getKeyMaterial.resolves(null);
 
@@ -549,7 +530,6 @@ describe('OfflineSync component', () => {
       expect(fixture.nativeElement.querySelector('.offline-sync-not-ready')).to.be.null;
     });
 
-    // A relay does not seal anything, so it has no key and must not be told it is not ready.
     it('does not warn a device that only relays', async () => {
       deviceKeyService.getKeyMaterial.resolves(null);
 

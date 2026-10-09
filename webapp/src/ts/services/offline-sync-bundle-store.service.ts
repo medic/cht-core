@@ -9,7 +9,7 @@ import { BRIDGE_CHUNK_BYTES, OfflineSyncService, ReceivedBundle } from '@mm-serv
  * The contents are encrypted to the server and this device has no key for them, so nothing here
  * opens a bundle, indexes it, or shows it: a bundle is a sealed parcel with an address on the
  * outside. They live in their own local database that is never replicated, because they are not
- * this user's documents and must not travel up as if they were.
+ * this user's documents and would otherwise travel up as if they were.
  */
 @Injectable({ providedIn: 'root' })
 export class OfflineSyncBundleStoreService {
