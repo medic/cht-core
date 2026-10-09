@@ -74,8 +74,6 @@ describe('OfflineSyncTransfer service', () => {
     ]);
   });
 
-  // The position is what a later transfer resumes from, so it may only ever cover bundles the
-  // host actually took.
   it('records each bundle as exported only once the host has taken it', async () => {
     bundleService.packBundles = packing([bundle(11), bundle(22)]);
 
@@ -108,7 +106,6 @@ describe('OfflineSyncTransfer service', () => {
     expect(offlineSyncService.sendBundle.notCalled).to.be.true;
   });
 
-  // Half a bundle is of no use to anyone, and the phone this runs on has little room to spare.
   it('drops a bundle it could not finish writing', async () => {
     bundleService.packBundles = packing([bundle(1)]);
     offlineSyncService.writeBundle.returns(false);
@@ -118,8 +115,6 @@ describe('OfflineSyncTransfer service', () => {
     expect(offlineSyncService.abortBundle.args).to.deep.equal([['transfer-1']]);
   });
 
-  // The native side holds the app alive for the length of the handover. Letting go between
-  // bundles would give the system a chance to stop it half way through.
   it('holds the session open across the whole handover, not each bundle', async () => {
     bundleService.packBundles = packing([bundle(1), bundle(2)]);
 
@@ -130,7 +125,6 @@ describe('OfflineSyncTransfer service', () => {
     expect(offlineSyncService.transferFinished.args).to.deep.equal([[true]]);
   });
 
-  /** A user who switched to another app has only the notification to tell them it broke. */
   it('says the handover failed rather than just going quiet', async () => {
     bundleService.packBundles = packing([bundle(1)]);
     offlineSyncService.sendBundle.callsFake(() => transfers.next({ ok: false, detail: 'host_unreachable' }));
@@ -148,7 +142,6 @@ describe('OfflineSyncTransfer service', () => {
     expect(offlineSyncService.writeBundle.callCount).to.equal(3);
   });
 
-  // They cannot travel this way at all, so the position moves past them and the user is told.
   it('reports documents too large to send, without sending anything for them', async () => {
     bundleService.packBundles = packing([
       { envelope: '', signature: '', ciphertext: new Uint8Array(), lastSeq: 9, skipped: 2 },
@@ -166,8 +159,6 @@ describe('OfflineSyncTransfer service', () => {
     expect(offlineSyncService.openBundle.notCalled).to.be.true;
   });
 
-  // Asking the native side to hold a session open and then letting go before it has begun is not
-  // something Android forgives: it kills the app.
   it('does not open a session it has nothing to put in', async () => {
     await service.handOver('export');
 
@@ -176,7 +167,6 @@ describe('OfflineSyncTransfer service', () => {
   });
 
   it('does not open a session when there is nothing to pack from', async () => {
-    // An async iterable that fails on the first pull, which is what a device with no keys does.
     bundleService.packBundles = sinon.stub().returns({
       [Symbol.asyncIterator]: () => ({
         next: () => Promise.reject(new Error('device_not_registered')),

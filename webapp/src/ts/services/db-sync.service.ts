@@ -34,8 +34,8 @@ const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 const BATCH_SIZE = 100;
 const MAX_SUCCESSIVE_SYNCS = 2;
 
-// Exported because it is the definition of what must never travel up to the server, which an
-// offline data bundle needs just as much as replication does.
+// Exported because it defines what does not travel up to the server, which an offline data bundle
+// needs just as much as replication does.
 export const readOnlyFilter = function(doc) {
   // Never replicate "purged" documents upwards
   const keys = Object.keys(doc);

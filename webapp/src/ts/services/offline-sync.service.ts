@@ -198,7 +198,7 @@ export class OfflineSyncService {
   }
 
   // A handover is bracketed rather than each bundle, because the native side holds the session
-  // open for as long as it is running and should not let go between bundles.
+  // open for as long as it is running, rather than letting go between bundles.
   transferStarted() {
     this.bridge?.offline_sync_transfer_started();
   }
@@ -218,7 +218,7 @@ export class OfflineSyncService {
   /**
    * One chunk of a received bundle, base64 encoded, starting at a decoded byte offset.
    *
-   * Native must encode without line breaks: the chunks are joined as text, and Android's default
+   * Native encodes without line breaks, because the chunks are joined as text and Android's default
    * base64 wraps at 76 characters, which would make the joined result unreadable. An empty string
    * means the chunk could not be read, and the caller stops rather than storing a hole: how much
    * there is to read comes from `bytes`, not from this returning nothing.

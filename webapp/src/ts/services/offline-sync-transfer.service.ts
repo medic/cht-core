@@ -23,7 +23,7 @@ export class OfflineSyncTransferService {
    * Packs and hands over everything the scope covers.
    *
    * @returns how many bundles the host took, and how many documents could not be sent this way
-   * @throws with a stable code the webapp can translate, never a message
+   * @throws with a stable code the webapp can translate
    */
   async handOver(scope: BundleScope): Promise<{ delivered: number; skipped: number }> {
     const session = new Handover(this.offlineSyncService);
@@ -79,10 +79,9 @@ export class OfflineSyncTransferService {
 /**
  * The native side's view of one handover.
  *
- * It holds the app alive for as long as a handover runs, so it must not be told to start and then
- * to stop before it has had a chance to begin: Android kills an app that does that. Nothing is
- * said until there is a first bundle, and nothing is said at the end unless something was said at
- * the start.
+ * It holds the app alive for as long as a handover runs. Android kills an app that starts it and
+ * stops it before it has begun, so nothing is said until there is a first bundle, and nothing is
+ * said at the end unless something was said at the start.
  */
 class Handover {
   private started = false;
