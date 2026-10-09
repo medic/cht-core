@@ -41,6 +41,15 @@ describe('OfflineSync component', () => {
   let permissionsResolved: Subject<boolean>;
   let bundleReceived: Subject<string>;
 
+  // ngOnInit is awaited by create(), so a test that holds the count open starts create() without
+  // awaiting it and waits here for the count to have been asked for.
+  const untilCounted = async () => {
+    while (!bundleStoreService.count.called) {
+      await new Promise(resolve => setTimeout(resolve));
+    }
+  };
+  const tick = () => new Promise(resolve => setTimeout(resolve));
+
   const create = async (overrides:any = {}) => {
     Object.assign(offlineSyncService, overrides);
     TestBed.configureTestingModule({
@@ -350,9 +359,7 @@ describe('OfflineSync component', () => {
       let finishCount;
       bundleStoreService.count.returns(new Promise(resolve => finishCount = resolve));
       const created = create();
-      while (!bundleStoreService.count.called) {
-        await new Promise(resolve => setTimeout(resolve));
-      }
+      await untilCounted();
 
       expect(component.loading).to.be.false;
       hostingResult.next({ ok: true, detail: '', session: HOSTING_SESSION });
@@ -367,9 +374,7 @@ describe('OfflineSync component', () => {
       let failCount;
       bundleStoreService.count.returns(new Promise((resolve, reject) => failCount = reject));
       const created = create();
-      while (!bundleStoreService.count.called) {
-        await new Promise(resolve => setTimeout(resolve));
-      }
+      await untilCounted();
 
       hostingResult.next({ ok: false, detail: 'hotspot_tethering_disallowed' });
       failCount(new Error('unreadable'));
@@ -378,14 +383,56 @@ describe('OfflineSync component', () => {
       expect(component.errorKey).to.equal('offline_sync.error.hotspot_tethering_disallowed');
     });
 
+    it('ignores a count that fails after a newer one succeeded', async () => {
+      let failFirstCount;
+      bundleStoreService.count.onFirstCall().returns(new Promise((resolve, reject) => failFirstCount = reject));
+      bundleStoreService.count.onSecondCall().resolves(1);
+      const created = create();
+      await untilCounted();
+
+      bundleReceived.next('bundle-1');
+      await tick();
+      failFirstCount(new Error('unreadable'));
+      await created;
+
+      expect(component.carrying).to.equal(1);
+      expect(component.errorKey).to.be.null;
+    });
+
+    it('keeps a delivery failure when an older count fails after it', async () => {
+      let failFirstCount;
+      bundleStoreService.count.onFirstCall().returns(new Promise((resolve, reject) => failFirstCount = reject));
+      bundleStoreService.collect.rejects(new Error('no space'));
+      const created = create();
+      await untilCounted();
+
+      bundleReceived.next('bundle-1');
+      await tick();
+      failFirstCount(new Error('unreadable'));
+      await created;
+
+      expect(component.errorKey).to.equal('offline_sync.error.bundle_store_failed');
+    });
+
+    it('clears the read warning once a count succeeds', async () => {
+      bundleStoreService.count.onFirstCall().rejects(new Error('unreadable'));
+      bundleStoreService.count.onSecondCall().resolves(1);
+      await create();
+      expect(component.errorKey).to.equal('offline_sync.error.bundle_store_unreadable');
+
+      bundleReceived.next('bundle-1');
+      await tick();
+
+      expect(component.errorKey).to.be.null;
+      expect(component.carrying).to.equal(1);
+    });
+
     it('shows the latest count when an older one answers last', async () => {
       let finishFirstCount;
       bundleStoreService.count.onFirstCall().returns(new Promise(resolve => finishFirstCount = resolve));
       bundleStoreService.count.onSecondCall().resolves(1);
       const created = create();
-      while (!bundleStoreService.count.called) {
-        await new Promise(resolve => setTimeout(resolve));
-      }
+      await untilCounted();
 
       bundleReceived.next('bundle-1');
       await new Promise(resolve => setTimeout(resolve));
