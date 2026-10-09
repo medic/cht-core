@@ -440,6 +440,15 @@ describe('OfflineSync component', () => {
       expect(fixture.nativeElement.querySelector('.offline-sync-not-ready')).to.not.be.null;
     });
 
+    it('stays usable when the device keys cannot be read', async () => {
+      deviceKeyService.getKeyMaterial.rejects(new Error('unreadable'));
+
+      await create();
+
+      expect(component.loading).to.be.false;
+      expect(component.ready).to.be.false;
+    });
+
     it('says nothing once the phone has its key', async () => {
       await create();
       fixture.detectChanges();

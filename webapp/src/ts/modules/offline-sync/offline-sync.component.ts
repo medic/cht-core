@@ -91,7 +91,7 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
     const [canHost, canJoin, keys] = await Promise.all([
       this.offlineSyncService.canHost(),
       this.offlineSyncService.canJoin(),
-      this.deviceKeyService.getKeyMaterial(),
+      this.readKeyMaterial(),
     ]);
     this.canHost = canHost;
     this.canJoin = canJoin;
@@ -118,6 +118,16 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
     // Last, once the screen is usable and listening: a store that cannot be read is worth a
     // message, but it must not leave the user on a spinner or cost them a result.
     await this.countCarried();
+  }
+
+  /** A key store that cannot be read is treated as having no keys: the page still opens. */
+  private async readKeyMaterial() {
+    try {
+      return await this.deviceKeyService.getKeyMaterial();
+    } catch (err: any) {
+      console.error('OfflineSyncComponent :: Error reading the device keys', err);
+      return null;
+    }
   }
 
   private async countCarried() {
