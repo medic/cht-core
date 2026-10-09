@@ -71,10 +71,10 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   /**
    * Whether this phone can actually seal anything yet.
    *
-   * Keys are handed out by the server on a successful sync, so a phone that has never been online
-   * since the permission was granted cannot send. Asked here rather than at the moment of sending,
-   * because by then the user is standing next to a colleague with no network, and the only fix is
-   * back where they came from.
+   * Keys are handed out by the server while this device is online, so a phone that has not been
+   * online since the permission was granted cannot send. Asked here rather than at the moment of
+   * sending, because by then the user is standing next to a colleague with no network, and the only
+   * fix is back where they came from.
    */
   ready = false;
   loading = true;
@@ -241,9 +241,9 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
    * Turns a failure into a translation key.
    *
    * Codes reach this from two places, the native side and the webapp's own transfer services, and
-   * each of them needs a key in every language. What that cannot cover is an ordinary runtime error
-   * arriving here as a sentence, so anything not shaped like a code is treated as unknown rather
-   * than rendered as `offline_sync.error.Something went wrong`.
+   * each of them needs a key in each of the five supported languages. What that cannot cover is an
+   * ordinary runtime error arriving here as a sentence, so anything not shaped like a code is
+   * treated as unknown rather than rendered as `offline_sync.error.Something went wrong`.
    */
   private fail(code: string, diagnostic?: string) {
     // Backing out of the scanner is the user's own choice, so the screen just goes back.
