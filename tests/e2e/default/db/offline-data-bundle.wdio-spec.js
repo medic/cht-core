@@ -14,6 +14,7 @@ describe('offline data bundle relay', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
 
+  // The factory pins username and contact._id, so two users built from it collide on both.
   const chw = userFactory.build({
     username: 'offlineuser-bundle-chw',
     place: healthCenter._id,
@@ -27,6 +28,7 @@ describe('offline data bundle relay', () => {
     contact: { _id: 'fixture:user:bundle-relay', name: 'BundleRelay' },
   });
   const deviceId = uuid();
+  // A document with no `_rev` fails the whole bundle with a 400: the server writes with `new_edits: false`.
   const patient = {
     ...personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } }),
     _rev: '1-00000000000000000000000000000001',
@@ -80,6 +82,8 @@ describe('offline data bundle relay', () => {
     });
   }, `medic-user-${supervisor.username}-bundles`, bundle);
 
+  // From the rows, not `info().doc_count`: PouchDB does not count a document written with an
+  // inline attachment, and every bundle has one.
   const carriedCount = () => browser.execute(async (dbName) => {
     const response = await new window.PouchDB(dbName).allDocs();
     return response.rows.length;
