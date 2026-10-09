@@ -88,7 +88,6 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.supported = this.offlineSyncService.isSupported();
-    this.carrying = await this.bundleStoreService.count();
     const [canHost, canJoin, keys] = await Promise.all([
       this.offlineSyncService.canHost(),
       this.offlineSyncService.canJoin(),
@@ -115,6 +114,19 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
       .subscribe(granted => granted && this.startOver()));
     this.subscriptions.add(this.offlineSyncService.bundleReceived()
       .subscribe(() => this.collectBundles()));
+
+    // Last, once the screen is usable and listening: a store that cannot be read is worth a
+    // message, but it must not leave the user on a spinner or cost them a result.
+    await this.countCarried();
+  }
+
+  private async countCarried() {
+    try {
+      this.carrying = await this.bundleStoreService.count();
+    } catch (err: any) {
+      console.error('OfflineSyncComponent :: Error counting the bundles this device carries', err);
+      this.errorKey = 'offline_sync.error.bundle_store_failed';
+    }
   }
 
   ngOnDestroy() {
