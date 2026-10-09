@@ -16,6 +16,7 @@ import { OfflineSyncTransferService } from '@mm-services/offline-sync-transfer.s
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 
 const CODE = /^[a-z0-9_]+$/;
+const STORE_UNREADABLE = 'offline_sync.error.bundle_store_unreadable';
 
 /** What the screen is doing right now. */
 type OfflineSyncState = 'idle' | 'starting' | 'hosting' | 'joining' | 'paired' | 'sending' | 'sent' | 'failed';
@@ -140,14 +141,26 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
     try {
       const carrying = await this.bundleStoreService.count();
       if (run === this.countRuns) {
-        this.carrying = carrying;
+        this.showCount(carrying);
       }
     } catch (err: any) {
       console.error('OfflineSyncComponent :: Error counting the bundles this device carries', err);
-      // A failed session already says what went wrong, and that is the message that matters.
-      if (this.state !== 'failed') {
-        this.errorKey = 'offline_sync.error.bundle_store_unreadable';
+      if (run === this.countRuns) {
+        this.showCountFailed();
       }
+    }
+  }
+
+  private showCount(carrying: number) {
+    this.carrying = carrying;
+    if (this.errorKey === STORE_UNREADABLE) {
+      this.errorKey = null;
+    }
+  }
+
+  private showCountFailed() {
+    if (!this.errorKey) {
+      this.errorKey = STORE_UNREADABLE;
     }
   }
 
