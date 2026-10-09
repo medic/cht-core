@@ -10,7 +10,7 @@ import { Subscription } from 'rxjs';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { DeviceKeyService } from '@mm-services/device-key.service';
 import { BundleScope } from '@mm-services/offline-data-bundle.service';
-import { OfflineSyncBundleStoreService } from '@mm-services/offline-sync-bundle-store.service';
+import { CarriedCounts, OfflineSyncBundleStoreService } from '@mm-services/offline-sync-bundle-store.service';
 import { HostingSession, OfflineSyncResult, OfflineSyncService } from '@mm-services/offline-sync.service';
 import { OfflineSyncTransferService } from '@mm-services/offline-sync-transfer.service';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
@@ -67,6 +67,8 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   carrying = 0;
   /** How many it has stopped offering to the server, which nobody can fix from this phone. */
   undeliverable = 0;
+  /** Whether any of them is waiting on a permission the server does not yet grant. */
+  forbidden = false;
 
   supported = false;
   canHost = false;
@@ -140,9 +142,9 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   private async countCarried() {
     const run = ++this.countRuns;
     try {
-      const { waiting, undeliverable } = await this.bundleStoreService.counts();
+      const counts = await this.bundleStoreService.counts();
       if (run === this.countRuns) {
-        this.showCount(waiting, undeliverable);
+        this.showCount(counts);
       }
     } catch (err: any) {
       console.error('OfflineSyncComponent :: Error counting the bundles this device carries', err);
@@ -152,9 +154,10 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
     }
   }
 
-  private showCount(carrying: number, undeliverable: number) {
-    this.carrying = carrying;
+  private showCount({ waiting, undeliverable, forbidden }: CarriedCounts) {
+    this.carrying = waiting;
     this.undeliverable = undeliverable;
+    this.forbidden = forbidden;
     if (this.errorKey === STORE_UNREADABLE) {
       this.errorKey = null;
     }

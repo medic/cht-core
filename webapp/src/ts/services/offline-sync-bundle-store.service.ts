@@ -3,6 +3,12 @@ import { Injectable } from '@angular/core';
 import { DbService } from '@mm-services/db.service';
 import { BRIDGE_CHUNK_BYTES, OfflineSyncService, ReceivedBundle } from '@mm-services/offline-sync.service';
 
+export interface CarriedCounts {
+  waiting: number;
+  undeliverable: number;
+  forbidden: boolean;
+}
+
 export interface StoredBundle {
   _id: string;
   _rev?: string;
@@ -13,6 +19,8 @@ export interface StoredBundle {
   attempts?: number;
   /** Set once it is no longer worth offering. The bytes are kept: nothing else holds them. */
   undeliverable?: boolean;
+  /** Set when the server refused it with a 403. It is still offered, and the screen says why. */
+  forbidden?: boolean;
 }
 
 /**
@@ -94,12 +102,23 @@ export class OfflineSyncBundleStoreService {
       .sort((left, right) => left.received_date - right.received_date);
   }
 
-  /** Counts a refusal that might not last, and answers how many there have now been. */
+  /**
+   * Counts a refusal that might not last, and answers how many there have now been.
+   *
+   * Any 403 before it is no longer the reason the bundle is waiting, so the screen stops saying so.
+   */
   async recordAttempt(id: string): Promise<number> {
     const doc = await this.db.get(id);
     const attempts = (doc.attempts || 0) + 1;
-    await this.db.put({ ...doc, attempts });
+    await this.db.put({ ...doc, attempts, forbidden: false });
     return attempts;
+  }
+
+  async markForbidden(id: string) {
+    const doc = await this.db.get(id);
+    if (!doc.forbidden) {
+      await this.db.put({ ...doc, forbidden: true });
+    }
   }
 
   /**
@@ -124,10 +143,11 @@ export class OfflineSyncBundleStoreService {
   }
 
   /** How many bundles are still waiting to reach the server, and how many it would not take. */
-  async counts(): Promise<{ waiting: number; undeliverable: number }> {
+  async counts(): Promise<CarriedCounts> {
     const response = await this.db.allDocs({ include_docs: true });
     const undeliverable = response.rows.filter(row => row.doc.undeliverable).length;
-    return { waiting: response.rows.length - undeliverable, undeliverable };
+    const forbidden = response.rows.some(row => !row.doc.undeliverable && row.doc.forbidden);
+    return { waiting: response.rows.length - undeliverable, undeliverable, forbidden };
   }
 
   /**

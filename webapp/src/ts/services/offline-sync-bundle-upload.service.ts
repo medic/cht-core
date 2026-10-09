@@ -175,6 +175,7 @@ export class OfflineSyncBundleUploadService {
       return 'stop';
     }
     if (status === FORBIDDEN) {
+      await this.bundleStoreService.markForbidden(bundle._id);
       return 'hold_sender';
     }
     if (status === NEVER_ACCEPTABLE) {
