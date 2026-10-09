@@ -232,6 +232,28 @@ describe('OfflineSyncBundleUpload service', () => {
     expect(bundleStoreService.remove.args.map(([doc]) => doc._id)).to.deep.equal(['bob-1']);
   });
 
+  it('holds only the sender of a bundle it cannot load, and delivers everyone else\'s', async () => {
+    const consoleError = sinon.stub(console, 'error');
+    bundleStoreService.pending.resolves([
+      from('alice-1', 'alice', 100),
+      from('bob-1', 'bob', 150),
+      from('alice-2', 'alice', 200),
+    ]);
+    bundleStoreService.getPayload.withArgs('alice-1').rejects(new Error('missing attachment'));
+
+    const delivered = service.deliverPending();
+    const request = await answer();
+    await new Promise(resolve => setTimeout(resolve, 50));
+    expect(httpMock.match(URL)).to.be.empty;
+    await delivered;
+
+    expect(request.request.headers.get('X-Medic-Bundle-Envelope')).to.equal(from('bob-1', 'bob', 150).envelope);
+    expect(bundleStoreService.remove.args.map(([doc]) => doc._id)).to.deep.equal(['bob-1']);
+    expect(bundleStoreService.recordAttempt.notCalled).to.be.true;
+    expect(bundleStoreService.markUndeliverable.notCalled).to.be.true;
+    expect(consoleError.calledOnce).to.be.true;
+  });
+
   it('stops the whole run when its own session is refused', async () => {
     bundleStoreService.pending.resolves([from('alice-1', 'alice', 100), from('bob-1', 'bob', 150)]);
 
