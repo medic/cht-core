@@ -6,13 +6,12 @@ const { PREFIXES } = require('@medic/constants');
 // vault instead.
 const vaultKey = (username, deviceId) => `${PREFIXES.OFFLINE_DATA_BUNDLE_SERVER_KEY}${username}:${deviceId}`;
 
-// How many of a device's previous identities to keep.
+// How many of a device's identities to keep.
 //
-// A device re-registers when it is reinstalled or replaced, and a bundle it sealed before that may
-// still be travelling on a relay's phone. Replacing the identity outright would make that bundle
-// permanently undecryptable, and the device that made it no longer has the data either, so it
-// would be lost. Keeping a few lets a late bundle still be opened. Three covers a device replaced
-// twice while something is in flight; beyond that the bundle has almost certainly been given up on.
+// Signing out clears a device's keys, so it registers a new identity at every sign-in, and a bundle
+// sealed under an older one may still be on a relay's phone. Replacing the identity outright would
+// leave that bundle undecryptable. The last three are kept, so a bundle sealed before the latest
+// three sign-ins can no longer be opened.
 const KEPT_IDENTITIES = 3;
 
 const SEPARATOR = '\n';
