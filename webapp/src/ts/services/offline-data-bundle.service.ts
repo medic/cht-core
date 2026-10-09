@@ -246,23 +246,40 @@ export class OfflineDataBundleService {
     let since = sinceSeq;
     let page;
     do {
-      page = await this.dbService.get().changes({
-        since,
-        include_docs: true,
-        // Bytes, not stubs. The changes feed hands back attachment metadata only, and CouchDB
-        // rejects the WHOLE write with a 412 when it is given a stub whose bytes it does not
-        // have, so one photo would take a bundle down rather than arrive without its image.
-        // Inlining them is what `sentinel/src/lib/archiving.js` and `replication.service.ts` do.
-        attachments: true,
-        limit: CHANGES_PAGE_SIZE,
-      });
-
-      // The same filter replication uses to decide what may travel up. Settings, forms,
-      // translations and design documents all come down from the server and would be refused on
-      // the way back, so packing one only spends a bundle on data that cannot land.
-      yield* page.results.filter(change => change.doc && readOnlyFilter(change.doc));
+      // Documents without attachments here: only the ones that pass the filter are read in full.
+      page = await this.dbService.get().changes({ since, include_docs: true, limit: CHANGES_PAGE_SIZE });
+      // The same filter replication uses to decide what may travel up, on the same document shape.
+      // Settings, forms, translations and design documents all come down from the server and would
+      // be refused on the way back, and a purged document stays on this device.
+      yield* await this.withHistory(page.results.filter(change => readOnlyFilter(change.doc)));
       since = page.last_seq;
     } while (page.results.length === CHANGES_PAGE_SIZE);
+  }
+
+  /**
+   * Reads each changed document with its revision history, as replication does. The server writes
+   * with `new_edits: false`, so a document sent without `_revisions` lands as a new branch beside
+   * the revision the server already holds, which is a conflict.
+   *
+   * A revision missing here was replaced after the page was read, and the replacement comes later
+   * in the feed.
+   */
+  private async withHistory(changes) {
+    if (!changes.length) {
+      return [];
+    }
+    const response = await this.dbService.get().bulkGet({
+      docs: changes.map(change => ({ id: change.id, rev: change.changes[0].rev })),
+      // Bytes, not stubs. CouchDB rejects the WHOLE write with a 412 when it is given a stub whose
+      // bytes it does not have, so one photo would take a bundle down rather than arrive without
+      // its image. Inlining them is what `replication.service.ts` does.
+      attachments: true,
+      revs: true,
+    });
+    const docs = new Map(response.results.map(result => [result.id, result.docs?.[0]?.ok]));
+    return changes
+      .map(change => ({ seq: change.seq, doc: docs.get(change.id) }))
+      .filter(change => change.doc);
   }
 
   private async seal(
