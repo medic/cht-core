@@ -79,7 +79,7 @@ describe('OfflineSync component', () => {
     feedbackService = { submit: sinon.stub().resolves() };
     bundleReceived = new Subject<string>();
     deviceKeyService = { getKeyMaterial: sinon.stub().resolves({ deviceId: 'device-1' }) };
-    bundleStoreService = { collect: sinon.stub().resolves(1), count: sinon.stub().resolves(0) };
+    bundleStoreService = { collect: sinon.stub().resolves(), count: sinon.stub().resolves(0) };
     transferService = { handOver: sinon.stub().resolves({ delivered: 2, skipped: 0 }) };
     offlineSyncService = {
       isSupported: sinon.stub().returns(true),

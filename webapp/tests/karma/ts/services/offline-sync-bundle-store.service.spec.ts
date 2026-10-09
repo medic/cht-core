@@ -57,7 +57,7 @@ describe('OfflineSyncBundleStore service', () => {
   it('stores a received bundle with the envelope it must be sent on with', async () => {
     offlineSyncService.receivedBundles.returns([received('bundle-1')]);
 
-    expect(await service.collect()).to.equal(1);
+    await service.collect();
     const [doc] = bundlesDb.put.args[0];
     expect(doc._id).to.equal('bundle-1');
     expect(doc.envelope).to.equal('envelope-bundle-1');
@@ -126,7 +126,8 @@ describe('OfflineSyncBundleStore service', () => {
     bundlesDb.put.onFirstCall().rejects(new Error('unwritable'));
 
     await expect(service.collect()).to.be.rejectedWith(Error, 'unwritable');
-    expect(await service.collect()).to.equal(1);
+    await service.collect();
+    expect(offlineSyncService.deleteBundle.args).to.deep.equal([['bundle-1']]);
   });
 
   it('leaves the native copy alone when storing fails', async () => {
