@@ -28,6 +28,7 @@ updates:
       - dependency-name: "node-fetch" # ESM Modules https://github.com/medic/cht-core/issues/9770
       - dependency-name: "uuid" # ES2022 issue https://github.com/medic/cht-core/issues/10114
       - dependency-name: "sanitize-html" # 2.17.6+ requires ESM-only htmlparser2 12, which breaks loading under nyc
+      - dependency-name: "@wdio/*" # https://github.com/medic/cht-core/issues/11492
     cooldown:
       default-days: 7
       semver-major-days: 14
