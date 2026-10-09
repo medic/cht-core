@@ -299,9 +299,8 @@ const getUserDoc = (username) => users
 // public key from the _users doc, and the server's encryption private keys for that device from the
 // secureSettings vault. Either being absent means the server never registered this device.
 //
-// Keys plural: a device that was reinstalled or replaced re-registers and gets a new one, while a
-// bundle it sealed beforehand may still be on its way. Keeping the previous few means that bundle
-// can still be opened, and the device that made it no longer holds the data.
+// Keys plural: a device registers a new key at every sign-in, while a bundle it sealed beforehand
+// may still be on a relay's phone. Keeping the previous few means that bundle can still be opened.
 const getKeys = async (envelope) => {
   const { user, device_id: deviceId } = envelope;
   const [deviceSigningKey, serverEncryptionKey] = await Promise.all([
