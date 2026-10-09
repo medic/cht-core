@@ -114,8 +114,7 @@
           @if (errorKey) {
             <p>{{ errorKey | translate }}</p>
           }
-          <!-- Every one of these messages tells the user to try again, so there has to be
-               something to press: the start and scan buttons only show while idle. -->
+          <!-- The start and scan buttons only show while idle, so this is the way back to them. -->
           <button mat-flat-button color="primary" (click)="startOver()">{{ 'offline_sync.failed.retry' | translate }}</button>
         </mat-card-content>
       </mat-card>

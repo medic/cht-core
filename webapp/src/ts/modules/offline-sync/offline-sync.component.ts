@@ -9,9 +9,7 @@ import { FeedbackService } from '@mm-services/feedback.service';
 import { OfflineSyncResult, OfflineSyncService } from '@mm-services/offline-sync.service';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 
-/**
- * What the screen is doing right now.
- */
+/** What the screen is doing right now. */
 type OfflineSyncState = 'idle' | 'starting' | 'hosting' | 'joining' | 'paired' | 'failed';
 
 @Component({
