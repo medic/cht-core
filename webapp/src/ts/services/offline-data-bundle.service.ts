@@ -21,9 +21,8 @@ const CHANGES_PAGE_SIZE = 100;
 // replication, so the two positions a bundle can be packed from are stored the same way.
 const LAST_EXPORTED_SEQ_KEY = 'medic-last-exported-seq';
 
-// Bundle numbering is per device and never restarts, because it is what lets a relay order
-// bundles and spot a gap between them. A counter that began again at 1 each handover would give
-// two different bundles the same number.
+// Bundle numbering is per device and never restarts, so two bundles from one device never share
+// a number. A counter that began again at 1 each handover would reuse them.
 const LAST_BUNDLE_SEQ_KEY = 'medic-last-bundle-seq';
 
 /**
@@ -278,8 +277,8 @@ export class OfflineDataBundleService {
     encrypter.addRecipient(keys.serverEncryptionPublicKey);
     const ciphertext = await encrypter.encrypt(group.lines.join(''));
 
-    // `bundle_seq` is the only field the relay reads: it orders bundles and spots a gap without
-    // opening them. Nothing here names what changed, or when, because the relay would see it.
+    // The envelope travels in the clear in front of the relay, so it names nothing about what
+    // changed, or when.
     const envelopeBytes = new TextEncoder().encode(JSON.stringify({
       user: username,
       device_id: keys.deviceId,
