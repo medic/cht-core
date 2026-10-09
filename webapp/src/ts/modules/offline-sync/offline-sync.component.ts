@@ -144,7 +144,10 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
       }
     } catch (err: any) {
       console.error('OfflineSyncComponent :: Error counting the bundles this device carries', err);
-      this.errorKey = 'offline_sync.error.bundle_store_failed';
+      // A failed session already says what went wrong, and that is the message that matters.
+      if (this.state !== 'failed') {
+        this.errorKey = 'offline_sync.error.bundle_store_unreadable';
+      }
     }
   }
 
