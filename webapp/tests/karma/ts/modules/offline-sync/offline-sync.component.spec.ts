@@ -308,10 +308,11 @@ describe('OfflineSync component', () => {
     });
 
     it('collects a bundle a peer has just delivered', async () => {
+      bundleStoreService.count.onSecondCall().resolves(1);
       await create();
 
       bundleReceived.next('bundle-1');
-      await fixture.whenStable();
+      await new Promise(resolve => setTimeout(resolve));
 
       expect(bundleStoreService.collect.callCount).to.equal(1);
       expect(component.carrying).to.equal(1);
@@ -360,6 +361,23 @@ describe('OfflineSync component', () => {
       finishCount(3);
       await created;
       expect(component.carrying).to.equal(3);
+    });
+
+    it('shows the latest count when an older one answers last', async () => {
+      let finishFirstCount;
+      bundleStoreService.count.onFirstCall().returns(new Promise(resolve => finishFirstCount = resolve));
+      bundleStoreService.count.onSecondCall().resolves(1);
+      const created = create();
+      while (!bundleStoreService.count.called) {
+        await new Promise(resolve => setTimeout(resolve));
+      }
+
+      bundleReceived.next('bundle-1');
+      await new Promise(resolve => setTimeout(resolve));
+      finishFirstCount(0);
+      await created;
+
+      expect(component.carrying).to.equal(1);
     });
   });
 
