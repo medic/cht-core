@@ -12,8 +12,7 @@ const PERMISSION = 'can_relay_offline_data_bundle';
 const ENDPOINT = '/api/v1/replication/data-bundle';
 
 // A body the server can never accept, however many times it is offered: it is over the limit and
-// will not shrink. Nothing else is treated as certain, because a 400 from this endpoint covers
-// both a spoiled bundle and an origin user an administrator has not finished setting up.
+// will not shrink. Any other refusal is counted, because it may be one an administrator can fix.
 const NEVER_ACCEPTABLE = 413;
 
 // How many times a bundle may be refused for a reason that might not last before this device stops
@@ -23,8 +22,9 @@ const MAX_ATTEMPTS = 10;
 
 /**
  * A 4xx is about the bundle or whoever sent it, so other senders are worth trying. A 401 is this
- * device's own session, and a 5xx or no answer at all is the server: every bundle would fare the
- * same, so trying more only spends their attempts.
+ * device's own session, and a 5xx or no answer at all is the server or the network: every bundle
+ * would fare the same, so the run stops and the next sync resumes it, without counting it against
+ * the bundle.
  */
 const isAboutTheBundle = (status: number) => status >= 400 && status < 500 && status !== 401;
 
@@ -162,6 +162,9 @@ export class OfflineSyncBundleUploadService {
   }
 
   private async refused(bundle: StoredBundle, status: number): Promise<Outcome> {
+    if (!isAboutTheBundle(status)) {
+      return 'stop';
+    }
     if (status === NEVER_ACCEPTABLE) {
       await this.giveUp(bundle, status);
       return 'next';
@@ -172,7 +175,7 @@ export class OfflineSyncBundleUploadService {
       await this.giveUp(bundle, status);
       return 'next';
     }
-    return isAboutTheBundle(status) ? 'hold_sender' : 'stop';
+    return 'hold_sender';
   }
 
   private async giveUp(bundle: StoredBundle, status: number) {
