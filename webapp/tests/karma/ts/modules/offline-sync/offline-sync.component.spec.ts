@@ -341,7 +341,7 @@ describe('OfflineSync component', () => {
       await create();
 
       expect(component.loading).to.be.false;
-      expect(component.errorKey).to.equal('offline_sync.error.bundle_store_failed');
+      expect(component.errorKey).to.equal('offline_sync.error.bundle_store_unreadable');
       hostingResult.next({ ok: true, detail: '', session: HOSTING_SESSION });
       expect(component.state).to.equal('hosting');
     });
@@ -361,6 +361,21 @@ describe('OfflineSync component', () => {
       finishCount(3);
       await created;
       expect(component.carrying).to.equal(3);
+    });
+
+    it('keeps the failure the user is looking at when a count fails after it', async () => {
+      let failCount;
+      bundleStoreService.count.returns(new Promise((resolve, reject) => failCount = reject));
+      const created = create();
+      while (!bundleStoreService.count.called) {
+        await new Promise(resolve => setTimeout(resolve));
+      }
+
+      hostingResult.next({ ok: false, detail: 'hotspot_tethering_disallowed' });
+      failCount(new Error('unreadable'));
+      await created;
+
+      expect(component.errorKey).to.equal('offline_sync.error.hotspot_tethering_disallowed');
     });
 
     it('shows the latest count when an older one answers last', async () => {
