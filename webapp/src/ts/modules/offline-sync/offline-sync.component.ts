@@ -231,11 +231,12 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
     try {
       await this.bundleStoreService.collect();
     } catch (err: any) {
-      // The bundle stays on the native side and is collected again, so the session is left alone.
-      // The user is still told, because a phone that cannot store what it is being handed will not
-      // fix itself.
+      // The bundle stays on the native side and is collected again, so the session is left alone,
+      // and the user is told which step failed.
       console.error('OfflineSyncComponent :: Error collecting a delivered bundle', err);
-      this.errorKey = 'offline_sync.error.bundle_store_failed';
+      this.errorKey = err?.message === 'bundle_read_failed'
+        ? 'offline_sync.error.bundle_read_failed'
+        : 'offline_sync.error.bundle_store_failed';
     }
     // Also after a failure: collect() stores bundles one at a time, so some may have landed.
     await this.countCarried();
