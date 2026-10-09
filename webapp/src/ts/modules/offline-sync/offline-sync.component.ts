@@ -39,6 +39,7 @@ type OfflineSyncState = 'idle' | 'starting' | 'hosting' | 'joining' | 'paired' |
 })
 export class OfflineSyncComponent implements OnInit, OnDestroy {
   private readonly subscriptions = new Subscription();
+  private countRuns = 0;
 
   state: OfflineSyncState = 'idle';
   /** Set only while hosting: the QR image a peer scans. */
@@ -130,9 +131,17 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Counts run concurrently, at startup and after each delivery, so only the latest one is applied:
+   * an older count landing late would otherwise show a total that no longer holds.
+   */
   private async countCarried() {
+    const run = ++this.countRuns;
     try {
-      this.carrying = await this.bundleStoreService.count();
+      const carrying = await this.bundleStoreService.count();
+      if (run === this.countRuns) {
+        this.carrying = carrying;
+      }
     } catch (err: any) {
       console.error('OfflineSyncComponent :: Error counting the bundles this device carries', err);
       this.errorKey = 'offline_sync.error.bundle_store_failed';
@@ -205,14 +214,16 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   /** Takes what a peer has just delivered into this device's store. */
   private async collectBundles() {
     try {
-      this.carrying += await this.bundleStoreService.collect();
+      await this.bundleStoreService.collect();
     } catch (err: any) {
       // The bundle stays on the native side and is collected again, so the session is left alone.
       // The user is still told, because a phone that cannot store what it is being handed will not
       // fix itself.
       console.error('OfflineSyncComponent :: Error collecting a delivered bundle', err);
       this.errorKey = 'offline_sync.error.bundle_store_failed';
+      return;
     }
+    await this.countCarried();
   }
 
   private onPairingResult(result: OfflineSyncResult) {
