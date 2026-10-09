@@ -13,6 +13,9 @@ import { BRIDGE_CHUNK_BYTES, OfflineSyncService, ReceivedBundle } from '@mm-serv
  */
 @Injectable({ providedIn: 'root' })
 export class OfflineSyncBundleStoreService {
+  // Collections run one after another, so two never work from the same list of native bundles.
+  private collecting: Promise<unknown> = Promise.resolve();
+
   constructor(
     private readonly dbService: DbService,
     private readonly offlineSyncService: OfflineSyncService,
@@ -30,7 +33,13 @@ export class OfflineSyncBundleStoreService {
    *
    * @returns how many bundles were taken
    */
-  async collect(): Promise<number> {
+  collect(): Promise<number> {
+    const run = this.collecting.then(() => this.collectNow());
+    this.collecting = run.catch(() => undefined);
+    return run;
+  }
+
+  private async collectNow(): Promise<number> {
     let collected = 0;
     for (const bundle of this.offlineSyncService.receivedBundles()) {
       await this.take(bundle);
