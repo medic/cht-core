@@ -164,6 +164,24 @@ describe('SidebarMenuComponent', () => {
     expect(modalService.show.args[0][0]).to.deep.equal(LogoutConfirmComponent);
   });
 
+  describe('offline sync entry', () => {
+    const entry = () => fixture.nativeElement.querySelector('a[routerLink="offline-sync"]');
+
+    it('is hidden when the user can neither host nor join', () => {
+      expect(entry()).to.be.null;
+    });
+
+    it('is shown when the user can join', async () => {
+      offlineSyncService.canJoin.resolves(true);
+
+      await (component as any).checkOfflineSyncVisibility();
+      fixture.detectChanges();
+
+      expect(entry()).to.not.be.null;
+      expect(entry().textContent).to.include('offline_sync.menu.title');
+    });
+  });
+
   describe('onTabClick()', () => {
     it('should show the feedback modal and close the sidebar when the bug tab is clicked', () => {
       const closeStub = sinon.stub(GlobalActions.prototype, 'closeSidebarMenu');
