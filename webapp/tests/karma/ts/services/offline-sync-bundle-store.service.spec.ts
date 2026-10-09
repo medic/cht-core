@@ -175,7 +175,7 @@ describe('OfflineSyncBundleStore service', () => {
         { doc: { _id: 'refused', received_date: 200, undeliverable: true } },
       ] });
 
-      expect(await service.counts()).to.deep.equal({ waiting: 1, undeliverable: 1 });
+      expect(await service.counts()).to.deep.equal({ waiting: 1, undeliverable: 1, forbidden: false });
       expect(bundlesDb.allDocs.callCount).to.equal(1);
     });
 
@@ -203,6 +203,36 @@ describe('OfflineSyncBundleStore service', () => {
       expect(bundlesDb.put.args[0][0].undeliverable).to.be.true;
       expect(bundlesDb.put.args[0][0].undeliverable_status).to.equal(400);
       expect(bundlesDb.remove.notCalled).to.be.true;
+    });
+
+    it('marks a bundle the server would not yet allow, once', async () => {
+      bundlesDb.get.onFirstCall().resolves({ _id: 'bundle-1', _rev: '1-a' });
+      bundlesDb.get.onSecondCall().resolves({ _id: 'bundle-1', _rev: '2-a', forbidden: true });
+
+      await service.markForbidden('bundle-1');
+      await service.markForbidden('bundle-1');
+
+      expect(bundlesDb.put.callCount).to.equal(1);
+      expect(bundlesDb.put.args[0][0].forbidden).to.be.true;
+    });
+
+    it('stops saying a bundle is not yet allowed once the server refuses it for another reason', async () => {
+      bundlesDb.get.resolves({ _id: 'bundle-1', _rev: '2-a', forbidden: true });
+
+      await service.recordAttempt('bundle-1');
+
+      expect(bundlesDb.put.args[0][0].forbidden).to.be.false;
+    });
+
+    it('says when a bundle still waiting is not yet allowed, but not one it has stopped offering', async () => {
+      bundlesDb.allDocs.resolves({ rows: [
+        { doc: { _id: 'waiting', received_date: 100 } },
+        { doc: { _id: 'refused', received_date: 200, undeliverable: true, forbidden: true } },
+      ] });
+      expect((await service.counts()).forbidden).to.be.false;
+
+      bundlesDb.allDocs.resolves({ rows: [{ doc: { _id: 'waiting', received_date: 100, forbidden: true } }] });
+      expect((await service.counts()).forbidden).to.be.true;
     });
   });
 });

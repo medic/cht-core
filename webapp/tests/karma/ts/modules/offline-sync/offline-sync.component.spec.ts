@@ -312,6 +312,16 @@ describe('OfflineSync component', () => {
       expect(fixture.nativeElement.querySelector('.offline-sync-carried')).to.not.be.null;
     });
 
+    it('says when something it is carrying is not yet allowed by the server', async () => {
+      bundleStoreService.counts.resolves({ waiting: 1, undeliverable: 0, forbidden: true });
+
+      await create();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.offline-sync-carried').textContent)
+        .to.contain('offline_sync.carried.not_permitted');
+    });
+
     it('says when it is holding something the server would not take', async () => {
       bundleStoreService.counts.resolves({ waiting: 0, undeliverable: 2 });
 
