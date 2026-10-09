@@ -84,9 +84,9 @@ export class OfflineSyncBundleUploadService {
     }
 
     // Anything a peer handed over while the user was elsewhere in the app is still sitting in
-    // native storage: the screen that receives them only exists while it is open. Collecting is
-    // deliberately not allowed to stop the delivery below it, or one bundle this phone cannot take
-    // off the native side would keep everything it is already holding from ever being sent.
+    // native storage: the screen that receives them only exists while it is open. A failure to
+    // collect does not stop the delivery below it, so one bundle this phone cannot take off the
+    // native side does not keep everything it already holds from being sent.
     try {
       await this.bundleStoreService.collect();
     } catch (err) {
@@ -96,7 +96,7 @@ export class OfflineSyncBundleUploadService {
     try {
       await this.deliverPending();
     } catch (err) {
-      // Never break syncing over this. The bundles are still held and the next sync tries again.
+      // Syncing carries on: the bundles are still held and the next sync tries again.
       console.error('OfflineSyncBundleUploadService :: Error delivering offline data bundles', err);
     }
   }

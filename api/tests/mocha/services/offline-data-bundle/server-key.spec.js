@@ -42,11 +42,6 @@ describe('offline-data-bundle server-key service', () => {
     expect(await service.getServerPrivateKey('chw', 'device-1')).to.deep.equal([]);
   });
 
-  /**
-   * A device that is reinstalled or replaced re-registers and gets a new identity, but a bundle it
-   * sealed beforehand may still be travelling on a relay's phone, and that device no longer holds
-   * the data. Dropping the old identity would lose it.
-   */
   it('keeps the previous identities, newest first', async () => {
     stored(OLDER, OLDEST);
 

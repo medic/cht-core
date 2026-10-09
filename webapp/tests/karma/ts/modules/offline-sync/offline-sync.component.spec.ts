@@ -303,7 +303,6 @@ describe('OfflineSync component', () => {
       expect(component.errorKey).to.equal('offline_sync.error.transfer_failed');
     });
 
-    // A supervisor has no other way to find out, and it is the reason to go and find network.
     it('shows what it is already carrying when the screen opens', async () => {
       bundleStoreService.count.resolves(6);
 
