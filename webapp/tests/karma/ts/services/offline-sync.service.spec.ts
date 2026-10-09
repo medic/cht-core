@@ -78,7 +78,6 @@ describe('OfflineSync service', () => {
       expect(await service.canHost()).to.be.false;
     });
 
-    /** An older phone can still send its own data, so the two answers are independent. */
     it('allows joining on a device that cannot host', async () => {
       withBridge(bridge({ offline_sync_host_available: sinon.stub().returns(false) }));
 
@@ -125,7 +124,6 @@ describe('OfflineSync service', () => {
       expect(android.offline_sync_leave_session.callCount).to.equal(1);
     });
 
-    /** In a browser these are no-ops rather than crashes, so the page still renders. */
     it('does nothing without a bridge', () => {
       expect(() => service.startHosting()).to.not.throw();
       expect(() => service.scanAndJoin()).to.not.throw();
@@ -145,7 +143,6 @@ describe('OfflineSync service', () => {
       service.hostingResolved(true, JSON.stringify(session));
     });
 
-    /** Nothing to put on screen, so this is a failure rather than an empty hosting card. */
     it('reports a session it cannot read as a failure', (done) => {
       service.hostingResult().subscribe(result => {
         expect(result.ok).to.be.false;

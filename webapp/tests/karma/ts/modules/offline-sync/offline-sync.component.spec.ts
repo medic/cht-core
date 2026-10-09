@@ -12,10 +12,6 @@ import { OfflineSyncComponent } from '@mm-modules/offline-sync/offline-sync.comp
 import { FeedbackService } from '@mm-services/feedback.service';
 import { OfflineSyncResult, OfflineSyncService } from '@mm-services/offline-sync.service';
 
-/**
- * The real toolbar reaches the session, the database and PouchDB, none of which this component
- * touches. Standing in for it keeps the test about pairing.
- */
 @Component({ selector: 'mm-tool-bar', template: '', standalone: true })
 class StubToolBarComponent { }
 
@@ -92,7 +88,6 @@ describe('OfflineSync component', () => {
       expect(component.canHost).to.be.false;
     });
 
-    /** A device can be able to send but not receive, so the two are asked separately. */
     it('offers only joining on a device that cannot host', async () => {
       await create({ canHost: sinon.stub().resolves(false) });
 
@@ -199,7 +194,6 @@ describe('OfflineSync component', () => {
       expect(component.hostLabel).to.equal('Supervisor phone');
     });
 
-    /** The security-critical one: the user must be told, not quietly left connected. */
     it('reports a host that could not be verified', async () => {
       await create();
 
@@ -234,8 +228,6 @@ describe('OfflineSync component', () => {
   });
 
   describe('recovering from a failure', () => {
-    // Every failure message tells the user to try again, and the start and scan buttons only render
-    // while idle, so without this the only way out is to navigate away.
     it('offers a way back after a failure', async () => {
       await create();
       hostingResult.next({ ok: false, detail: 'server_start_failed' });
@@ -253,8 +245,6 @@ describe('OfflineSync component', () => {
       expect(component.errorKey).to.be.null;
     });
 
-    // The native side asks for the permission and reports the answer; granting it is exactly what
-    // the failure asked for, so the screen should not still be showing the failure.
     it('clears the failure once the user grants the permission', async () => {
       await create();
       hostingResult.next({ ok: false, detail: 'permissions_required' });

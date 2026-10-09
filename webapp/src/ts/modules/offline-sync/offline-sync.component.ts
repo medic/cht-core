@@ -11,9 +11,6 @@ import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 
 /**
  * What the screen is doing right now.
- *
- * Only pairing: bringing the two devices onto one network and proving each is talking to the
- * other. Moving data between them comes later and will add its own states.
  */
 type OfflineSyncState = 'idle' | 'starting' | 'hosting' | 'joining' | 'paired' | 'failed';
 
@@ -42,7 +39,7 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   password: string | null = null;
   /** Set only once joined: what the host calls itself, so the user can confirm the right device. */
   hostLabel: string | null = null;
-  /** A translation key, never a message built natively. */
+  /** A translation key, not text from the native side. */
   errorKey: string | null = null;
 
   supported = false;

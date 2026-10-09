@@ -46,7 +46,6 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
   @Input() adminUrl;
   @Input() canLogOut;
 
-  /** Shown only for a user who can take part, on a device that can. */
   showPrivacyPolicy = false;
   // replicationStatus;
   currentTab;

@@ -19,12 +19,12 @@ export interface OfflineSyncResult {
   /**
    * On success, what the result means for that call: the pairing payload when hosting starts, or
    * the host's label when joining succeeds. On failure, a stable code with a translation key,
-   * never a message to show directly.
+   * rather than a message to show.
    */
   detail: string;
   /**
    * What actually went wrong, when the native side can say. For the failure record only: it is
-   * built on the device, so it cannot be translated and must never reach the screen.
+   * built on the device, so it cannot be translated and is never shown.
    */
   diagnostic?: string;
   /** Set only when a hosting session started. */
@@ -35,7 +35,7 @@ export interface OfflineSyncResult {
  * Drives a peer-to-peer pairing session through the native bridge.
  *
  * Two roles, granted separately, because a device can legitimately have one and not the other:
- * a supervisor relays other people's data to the server, a CHW sends their own. Whether the
+ * a relay carries other people's data to the server, a sender sends their own. Whether the
  * device can technically do either is a second question the bridge answers, since hosting needs a
  * newer Android than joining.
  */
@@ -83,7 +83,7 @@ export class OfflineSyncService {
       return `${hardware.manufacturer} ${hardware.model}, `
         + `Android ${software.androidVersion} (API ${software.osApiLevel})`;
     } catch {
-      // Diagnostics must never be the reason a failure goes unreported.
+      // A failure is still recorded when the device details cannot be read.
       return 'unknown device';
     }
   }
