@@ -15,9 +15,9 @@ import { HostingSession, OfflineSyncResult, OfflineSyncService } from '@mm-servi
 import { OfflineSyncTransferService } from '@mm-services/offline-sync-transfer.service';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 
-/** What the screen is doing right now. */
 const CODE = /^[a-z0-9_]+$/;
 
+/** What the screen is doing right now. */
 type OfflineSyncState = 'idle' | 'starting' | 'hosting' | 'joining' | 'paired' | 'sending' | 'sent' | 'failed';
 
 @Component({
