@@ -427,6 +427,18 @@ describe('OfflineSync component', () => {
       expect(component.carrying).to.equal(1);
     });
 
+    it('recounts after a delivery that failed partway', async () => {
+      bundleStoreService.count.onSecondCall().resolves(1);
+      bundleStoreService.collect.rejects(new Error('second bundle failed'));
+      await create();
+
+      bundleReceived.next('bundle-1');
+      await tick();
+
+      expect(bundleStoreService.count.callCount).to.equal(2);
+      expect(component.carrying).to.equal(1);
+    });
+
     it('shows the latest count when an older one answers last', async () => {
       let finishFirstCount;
       bundleStoreService.count.onFirstCall().returns(new Promise(resolve => finishFirstCount = resolve));
