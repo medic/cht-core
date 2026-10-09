@@ -5,8 +5,6 @@ constants.DB_NAME = 'medic';
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const chai = require('chai');
-chai.use(require('chai-exclude'));
 const semver = require('semver');
 
 const utils = require('@utils');

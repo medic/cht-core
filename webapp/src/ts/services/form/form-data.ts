@@ -45,8 +45,8 @@ export class EnketoFormData {
     );
   }
 
-  protected isElementNode(node: unknown): node is Element {
-    return node?.['nodeType'] === Node.ELEMENT_NODE;
+  protected isElementNode(node: Node): node is Element {
+    return node?.nodeType === Node.ELEMENT_NODE;
   }
 
   protected getChildElements(node: Node) {

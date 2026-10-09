@@ -261,21 +261,21 @@ describe('libs parameter-validators', () => {
 
   describe('isContactType', () => {
     it('should return true for a contact type qualifier', () => {
-      expect(isContactType({ contactType: 'person' } as ContactTypeQualifier)).to.be.true;
+      expect(isContactType({ contactType: 'person' })).to.be.true;
     });
 
     it('should return false for a freetext-only qualifier', () => {
-      expect(isContactType({ freetext: 'search' } as FreetextQualifier)).to.be.false;
+      expect(isContactType({ freetext: 'search' })).to.be.false;
     });
   });
 
   describe('isFreetextType', () => {
     it('should return true for a freetext qualifier', () => {
-      expect(isFreetextType({ freetext: 'search' } as FreetextQualifier)).to.be.true;
+      expect(isFreetextType({ freetext: 'search' })).to.be.true;
     });
 
     it('should return false for a contact type-only qualifier', () => {
-      expect(isFreetextType({ contactType: 'person' } as ContactTypeQualifier)).to.be.false;
+      expect(isFreetextType({ contactType: 'person' })).to.be.false;
     });
   });
 
@@ -286,11 +286,11 @@ describe('libs parameter-validators', () => {
     });
 
     it('should return false when qualifier has only contactType', () => {
-      expect(isContactTypeAndFreetextType({ contactType: 'person' } as ContactTypeQualifier)).to.be.false;
+      expect(isContactTypeAndFreetextType({ contactType: 'person' })).to.be.false;
     });
 
     it('should return false when qualifier has only freetext', () => {
-      expect(isContactTypeAndFreetextType({ freetext: 'search' } as FreetextQualifier)).to.be.false;
+      expect(isContactTypeAndFreetextType({ freetext: 'search' })).to.be.false;
     });
   });
 

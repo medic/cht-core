@@ -3,9 +3,6 @@ const wdioBaseConfig = require('../../wdio.conf');
 const path = require('path');
 const fs = require('fs');
 
-const chai = require('chai');
-chai.use(require('chai-exclude'));
-chai.use(require('chai-as-promised'));
 const ALLURE_OUTPUT = 'allure-results';
 const logPath = path.join('tests', 'logs');
 const browserLogPath = path.join(logPath, 'browser.console.log');

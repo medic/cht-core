@@ -144,6 +144,8 @@ const freetextRequest = (filters, view) => {
         params
       };
     }
+
+    return undefined;
   });
   return _.compact(requests);
 };

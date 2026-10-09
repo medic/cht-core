@@ -23,14 +23,11 @@ updates:
         patterns:
         - "karma*"
     ignore:
-      - dependency-name: "@types/chai" # ESM Modules https://github.com/medic/cht-core/issues/9770
-      - dependency-name: "@types/chai-as-promised" # ESM Modules https://github.com/medic/cht-core/issues/9770
-      - dependency-name: "chai" # ESM Modules https://github.com/medic/cht-core/issues/9770
-      - dependency-name: "chai-as-promised" # ESM Modules https://github.com/medic/cht-core/issues/9770
-      - dependency-name: "chai-exclude" # ESM Modules https://github.com/medic/cht-core/issues/9770
+      - dependency-name: "chai" # chai-like has a peer dependency on chai <= 5
+        update-types: ["version-update:semver-major"]
       - dependency-name: "node-fetch" # ESM Modules https://github.com/medic/cht-core/issues/9770
-      - dependency-name: "url-join" # ESM Modules https://github.com/medic/cht-core/issues/9770
       - dependency-name: "uuid" # ES2022 issue https://github.com/medic/cht-core/issues/10114
+      - dependency-name: "sanitize-html" # 2.17.6+ requires ESM-only htmlparser2 12, which breaks loading under nyc
     cooldown:
       default-days: 7
       semver-major-days: 14
@@ -48,7 +45,10 @@ updates:
       angular:
         patterns:
         - "angular*"
-        
+    ignore:
+      - dependency-name: "chai" # chai 5+ no longer ships the browser chai.js bundle loaded by karma
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

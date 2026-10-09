@@ -1,7 +1,6 @@
 const sinon = require('sinon');
 const chai = require('chai');
 const assert = chai.assert;
-const chaiExclude = require('chai-exclude');
 const db = require('../../src/db');
 const config = require('../../src/config');
 const infodoc = require('@medic/infodoc');
@@ -10,7 +9,6 @@ const dataContext = require('../../src/data-context');
 const { Contact } = require('@medic/cht-datasource');
 const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
 
-chai.use(chaiExclude);
 
 let transitions;
 let configGet;

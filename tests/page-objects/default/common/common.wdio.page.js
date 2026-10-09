@@ -567,8 +567,9 @@ const getAllButtonFaIconClasses = async () => {
 };
 
 const isMenuOptionEnabled = async (action) => {
-  const parent = await kebabMenuSelectors[action]().parentElement().parentElement();
-  return await parent.getAttribute('aria-disabled') === 'false';
+  const menuItem = await kebabMenuSelectors[action]()
+    .$('./ancestor-or-self::*[contains(@class, "mat-mdc-menu-item")]');
+  return await menuItem.getAttribute('aria-disabled') === 'false';
 };
 
 const isMenuOptionVisible = async (action) => {
