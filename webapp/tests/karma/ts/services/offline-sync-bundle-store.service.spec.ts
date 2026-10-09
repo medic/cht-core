@@ -169,13 +169,14 @@ describe('OfflineSyncBundleStore service', () => {
       expect(bundlesDb.remove.args).to.deep.equal([[bundle]]);
     });
 
-    it('counts what is still waiting from the documents themselves', async () => {
+    it('counts what is still waiting and what the server would not take, in one read', async () => {
       bundlesDb.allDocs.resolves({ rows: [
         { doc: { _id: 'waiting', received_date: 100 } },
         { doc: { _id: 'refused', received_date: 200, undeliverable: true } },
       ] });
 
-      expect(await service.count()).to.equal(1);
+      expect(await service.counts()).to.deep.equal({ waiting: 1, undeliverable: 1 });
+      expect(bundlesDb.allDocs.callCount).to.equal(1);
     });
 
     it('leaves out a bundle it has stopped offering', async () => {
@@ -185,7 +186,6 @@ describe('OfflineSyncBundleStore service', () => {
       ] });
 
       expect((await service.pending()).map(doc => doc._id)).to.deep.equal(['good']);
-      expect(await service.undeliverable()).to.equal(1);
     });
 
     it('counts how often the server has refused a bundle', async () => {
