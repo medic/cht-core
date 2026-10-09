@@ -146,6 +146,18 @@ describe('OfflineSyncBundleUpload service', () => {
     expect(bundleStoreService.markUndeliverable.notCalled).to.be.true;
   });
 
+  it('holds a bundle whose sender may not send, without counting it, so it goes once permitted', async () => {
+    bundleStoreService.pending.resolves([stored('bundle-1')]);
+
+    const delivered = service.deliverPending();
+    await answer(403);
+    await delivered;
+
+    expect(bundleStoreService.remove.notCalled).to.be.true;
+    expect(bundleStoreService.recordAttempt.notCalled).to.be.true;
+    expect(bundleStoreService.markUndeliverable.notCalled).to.be.true;
+  });
+
   it('keeps a bundle refused with a 400 and counts the refusal', async () => {
     bundleStoreService.pending.resolves([stored('bundle-1')]);
 
