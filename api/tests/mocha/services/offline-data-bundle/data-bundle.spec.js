@@ -365,8 +365,6 @@ describe('offline-data-bundle data-bundle service', () => {
       expect(db.medic.bulkDocs.called).to.be.false;
     });
 
-    // Every identity this device may have sealed to, so a bundle made before it last re-registered
-    // can still be opened. The device that made it no longer holds the data.
     it('decrypts with every server private key held for this device', async () => {
       const decryptStream = stubDecryptStream(ndjson([{ _id: 'a' }]));
       await service.process(encode(envelopeFor()), 'sig', bodyStream());
@@ -428,8 +426,6 @@ describe('offline-data-bundle data-bundle service', () => {
   });
 
   describe('user', () => {
-    // 403 and not 400: nothing is wrong with the bundle, it is the origin user's setup. A relay
-    // told 400 has reason to treat the bundle as spoiled, and it holds the only copy.
     it('rejects an online-only user before any payload is read', async () => {
       auth.isOnlineOnly.returns(true);
       const decryptStream = stubDecryptStream(ndjson([{ _id: 'a' }]));

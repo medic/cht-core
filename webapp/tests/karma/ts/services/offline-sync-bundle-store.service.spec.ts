@@ -144,7 +144,6 @@ describe('OfflineSyncBundleStore service', () => {
   });
 
   describe('delivering onward', () => {
-    // Bundles from one device are a sequence, and they have to reach the server in that order.
     it('lists what is waiting, oldest first', async () => {
       bundlesDb.allDocs.resolves({ rows: [
         { doc: { _id: 'newer', received_date: 200 } },
@@ -170,8 +169,6 @@ describe('OfflineSyncBundleStore service', () => {
       expect(bundlesDb.remove.args).to.deep.equal([[bundle]]);
     });
 
-    // PouchDB's cached doc_count does not count a document written with an inline attachment, and
-    // every bundle has one, so counting has to come from the rows.
     it('counts what is still waiting from the documents themselves', async () => {
       bundlesDb.allDocs.resolves({ rows: [
         { doc: { _id: 'waiting', received_date: 100 } },
@@ -198,8 +195,6 @@ describe('OfflineSyncBundleStore service', () => {
       expect(bundlesDb.put.args[0][0].attempts).to.equal(3);
     });
 
-    // The bytes stay: this device cannot read a bundle to judge what is in it, and it holds the
-    // only copy, so stopping is as far as it may go.
     it('keeps a bundle it has stopped offering', async () => {
       bundlesDb.get.resolves({ _id: 'bundle-1', _rev: '1-a' });
 

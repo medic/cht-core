@@ -337,8 +337,7 @@ describe('offline data-bundle handler', () => {
     });
 
     // the taxi's device IS registered, so signature and decryption both succeed and the permission
-    // check is the only thing left that can refuse this bundle. 403, not 400: nothing is wrong with
-    // the bundle, an administrator can grant the permission and the relay must keep it.
+    // check is the only thing left that can refuse this bundle
     const error = await utils.request(requestOptions).catch(err => err);
     expect(error.status).to.equal(403);
   });

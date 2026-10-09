@@ -27,7 +27,6 @@ describe('OfflineSyncBundleUpload service', () => {
     received_date: receivedDate,
   });
 
-  // A bundle with a real envelope, as a CHW device writes one: base64 of the utf8 json.
   const from = (id, user, receivedDate) => ({
     ...stored(id, receivedDate),
     envelope: btoa(JSON.stringify({ user, device_id: `${user}-phone`, payload_header_sha256: 'x' })),
@@ -65,16 +64,7 @@ describe('OfflineSyncBundleUpload service', () => {
     sinon.restore();
   });
 
-  /**
-   * Answers the one request the test expects, so the caller's promise settles.
-   *
-   * Waits for the request to be made first: the bundle's bytes are read before it is sent, so it
-   * takes more than one turn of the loop to reach the wire.
-   */
   const answer = async (status?: number) => {
-    // Polled rather than waiting a fixed number of turns: how many awaits it takes to reach the
-    // wire is an implementation detail, and a helper that encodes it would report a timing miss as
-    // a missing request.
     let matches = httpMock.match(URL);
     for (let attempt = 0; !matches.length && attempt < 20; attempt++) {
       await new Promise(resolve => setTimeout(resolve));
@@ -93,8 +83,6 @@ describe('OfflineSyncBundleUpload service', () => {
     expect(await service.deliverPending()).to.equal(0);
   });
 
-  // This device cannot read the bundle or check it: passing both parts on exactly as they arrived
-  // is the whole job, and the server is the only party that can make sense of either.
   it('passes the envelope and signature on untouched', async () => {
     bundleStoreService.pending.resolves([stored('bundle-1')]);
 
@@ -104,7 +92,6 @@ describe('OfflineSyncBundleUpload service', () => {
     expect(request.request.headers.get('X-Medic-Bundle-Envelope')).to.equal('envelope-bundle-1');
     expect(request.request.headers.get('X-Medic-Bundle-Signature')).to.equal('signature-bundle-1');
     expect(request.request.headers.get('Content-Type')).to.equal('application/octet-stream');
-    // The bytes themselves, not the document that describes them.
     expect(request.request.body).to.equal(payload);
     expect(await delivered).to.equal(1);
   });
@@ -130,7 +117,6 @@ describe('OfflineSyncBundleUpload service', () => {
     expect(bundleStoreService.remove.args.map(([doc]) => doc._id)).to.deep.equal(['older', 'newer']);
   });
 
-  // The server was unreachable or broke: the bundle is still good and is the only copy anyone has.
   it('keeps a bundle the server could not take this time', async () => {
     bundleStoreService.pending.resolves([stored('bundle-1')]);
 
@@ -141,11 +127,6 @@ describe('OfflineSyncBundleUpload service', () => {
     expect(bundleStoreService.remove.notCalled).to.be.true;
   });
 
-  /**
-   * A 400 from this endpoint is eight different things, and several of them are an administrator
-   * not having finished setting the CHW up. Discarding on the first one destroys health data that
-   * nothing else holds a copy of.
-   */
   it('keeps a bundle refused with a 400, because that may not be about the bundle', async () => {
     bundleStoreService.pending.resolves([stored('bundle-1')]);
 
@@ -158,7 +139,6 @@ describe('OfflineSyncBundleUpload service', () => {
     expect(bundleStoreService.recordAttempt.args).to.deep.equal([['bundle-1']]);
   });
 
-  // Enough tries for someone to fix a permission, then it stops holding up everything behind it.
   it('stops offering a bundle the server has refused too many times', async () => {
     bundleStoreService.pending.resolves([stored('bundle-1')]);
     bundleStoreService.recordAttempt.resolves(10);
@@ -171,7 +151,6 @@ describe('OfflineSyncBundleUpload service', () => {
     expect(bundleStoreService.remove.notCalled).to.be.true;
   });
 
-  // It is over the size limit and will not shrink, so there is nothing to wait for.
   it('stops offering a bundle that is too large straight away', async () => {
     bundleStoreService.pending.resolves([stored('bundle-1')]);
 
@@ -183,7 +162,6 @@ describe('OfflineSyncBundleUpload service', () => {
     expect(bundleStoreService.recordAttempt.notCalled).to.be.true;
   });
 
-  // Nothing this device does may destroy a bundle except the server confirming it has it.
   it('never deletes a bundle the server did not take', async () => {
     bundleStoreService.pending.resolves([stored('bundle-1')]);
     bundleStoreService.recordAttempt.resolves(10);
@@ -198,8 +176,6 @@ describe('OfflineSyncBundleUpload service', () => {
     }
   });
 
-  // Bundles from one device are a sequence, so a later one must not overtake an earlier one that
-  // is still waiting to go.
   it('stops at the first bundle it could not send', async () => {
     bundleStoreService.pending.resolves([stored('first', 100), stored('second', 200)]);
 
@@ -210,10 +186,6 @@ describe('OfflineSyncBundleUpload service', () => {
     expect(bundleStoreService.remove.notCalled).to.be.true;
   });
 
-  /**
-   * One CHW's refused bundle is about that CHW. Holding everyone else's behind it would let a single
-   * misconfigured user stop a relay delivering for the whole area.
-   */
   it('holds only the refused sender\'s later bundles, and delivers everyone else\'s', async () => {
     const alice1 = from('alice-1', 'alice', 100);
     const bob1 = from('bob-1', 'bob', 150);
@@ -229,7 +201,6 @@ describe('OfflineSyncBundleUpload service', () => {
     expect(bundleStoreService.remove.args.map(([doc]) => doc._id)).to.deep.equal(['bob-1']);
   });
 
-  // This device's own session has gone: every bundle would be refused the same way.
   it('stops the whole run when its own session is refused', async () => {
     bundleStoreService.pending.resolves([from('alice-1', 'alice', 100), from('bob-1', 'bob', 150)]);
 
@@ -240,7 +211,6 @@ describe('OfflineSyncBundleUpload service', () => {
     expect(bundleStoreService.remove.notCalled).to.be.true;
   });
 
-  // The server is down: trying the next sender would only spend that bundle's attempts too.
   it('stops the whole run when the server is the problem, whoever sent the next bundle', async () => {
     bundleStoreService.pending.resolves([from('alice-1', 'alice', 100), from('bob-1', 'bob', 150)]);
 
@@ -267,8 +237,6 @@ describe('OfflineSyncBundleUpload service', () => {
       expect(bundleStoreService.remove.args[0][0]._id).to.equal('bundle-1');
     });
 
-    // The screen that takes bundles off the native side only exists while it is open, so a
-    // handover the supervisor walked away from would otherwise sit there for good.
     it('takes anything waiting on the native side before delivering', async () => {
       await sync({ to: SyncStatus.Success });
 

@@ -36,8 +36,6 @@ describe('offline-data-bundle age service', () => {
   });
 
   describe('decryptStream', () => {
-    // A device that was reinstalled re-registers and gets a new identity, while a bundle it sealed
-    // beforehand may still be travelling. Every identity is tried so that bundle still opens.
     it('decrypts a stream sealed to an identity the server has since replaced', async () => {
       const retired = await service.generateIdentity();
       const current = await service.generateIdentity();
