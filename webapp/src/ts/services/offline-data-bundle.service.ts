@@ -59,14 +59,6 @@ export interface SealedBundle {
 const NOTHING_TO_SEND = { envelope: '', signature: '', ciphertext: new Uint8Array() };
 
 /**
- * Packs the documents this device has changed into sealed bundles for a relay to carry.
- *
- * Each bundle is encrypted to the server and signed by this device, so the relay carrying it can
- * neither read it nor pass it off as someone else's. Nothing here talks to a relay: producing the
- * bundles and moving them are separate jobs, because the same bundles are meant to travel by other
- * transports later.
- */
-/**
  * SHA-256 of the age header of a ciphertext, base64, which is what the api checks the body against.
  *
  * The header is the text prefix up to and including the newline that ends the `--- <mac>` line.
@@ -103,6 +95,14 @@ const headerEnd = (bytes: Uint8Array): number => {
   return -1;
 };
 
+/**
+ * Packs the documents this device has changed into sealed bundles for a relay to carry.
+ *
+ * Each bundle is encrypted to the server and signed by this device, so the relay carrying it can
+ * neither read it nor pass it off as someone else's. Nothing here talks to a relay: producing the
+ * bundles and moving them are separate jobs, because the same bundles are meant to travel by other
+ * transports later.
+ */
 @Injectable({ providedIn: 'root' })
 export class OfflineDataBundleService {
   constructor(
