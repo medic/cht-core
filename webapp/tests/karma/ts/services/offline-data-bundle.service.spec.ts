@@ -19,6 +19,7 @@ describe('OfflineDataBundle service', () => {
   let deviceKeyService;
   let sessionService;
   let medicDb;
+  let stored: Map<string, any>;
   let identity;
   let signingKeyPair;
 
@@ -28,8 +29,29 @@ describe('OfflineDataBundle service', () => {
       { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign', 'verify']
     );
 
-    medicDb = { changes: sinon.stub() };
-    dbService = { get: sinon.stub().returns(medicDb) };
+    stored = new Map();
+    medicDb = {
+      changes: sinon.stub(),
+      bulkGet: sinon.stub().callsFake(({ docs, revs }) => Promise.resolve({
+        results: docs.map(({ id }) => ({
+          id,
+          docs: stored.has(id) ? [{ ok: withRevisions(stored.get(id), revs) }] : [{ error: {} }],
+        })),
+      })),
+    };
+    dbService = {
+      get: sinon.stub().returns({
+        // As PouchDB does: a change carries its document only when asked for it.
+        changes: async (options) => {
+          const page = await medicDb.changes(options);
+          if (options.include_docs) {
+            return page;
+          }
+          return { ...page, results: page.results.map(({ doc: _doc, ...change }) => change) };
+        },
+        bulkGet: options => medicDb.bulkGet(options),
+      }),
+    };
     dbSyncService = { getLastReplicatedSeq: sinon.stub().returns(0) };
     sessionService = { userCtx: sinon.stub().returns({ name: 'chw-user' }) };
     deviceKeyService = {
@@ -58,10 +80,21 @@ describe('OfflineDataBundle service', () => {
     sinon.restore();
   });
 
-  const onePageOf = (docs, startSeq = 0) => ({
-    last_seq: startSeq + docs.length,
-    results: docs.map((doc, index) => ({ seq: startSeq + index + 1, id: doc._id, doc })),
-  });
+  // PouchDB adds `_revisions` to every document when asked for `revs`.
+  const withRevisions = (doc, revs) => revs ? { _revisions: { start: 1, ids: ['a'] }, ...doc } : doc;
+
+  const onePageOf = (docs, startSeq = 0) => {
+    docs.forEach(doc => stored.set(doc._id, doc));
+    return {
+      last_seq: startSeq + docs.length,
+      results: docs.map((doc, index) => ({
+        seq: startSeq + index + 1,
+        id: doc._id,
+        changes: [{ rev: doc._rev || '1-a' }],
+        doc,
+      })),
+    };
+  };
 
   const collect = async (sinceSeq: any = 0): Promise<SealedBundle[]> => {
     const bundles: SealedBundle[] = [];
@@ -115,7 +148,10 @@ describe('OfflineDataBundle service', () => {
   };
 
   it('seals a bundle the server can open, verify and read', async () => {
-    const docs = [{ _id: 'contact-1', _rev: '1-a' }, { _id: 'report-1', _rev: '1-b' }];
+    const docs = [
+      { _id: 'contact-1', _rev: '1-a', _revisions: { start: 1, ids: ['a'] } },
+      { _id: 'report-1', _rev: '1-b', _revisions: { start: 1, ids: ['b'] } },
+    ];
     medicDb.changes.resolves(onePageOf(docs));
 
     const [bundle] = await collect();
@@ -170,7 +206,46 @@ describe('OfflineDataBundle service', () => {
 
     await collect();
 
-    expect(medicDb.changes.args[0][0].attachments).to.be.true;
+    expect(medicDb.bulkGet.args[0][0].attachments).to.be.true;
+  });
+
+  it('sends each document with its revision history, so the server extends it', async () => {
+    const revisions = { start: 3, ids: ['c', 'b', 'a'] };
+    medicDb.changes.resolves(onePageOf([{ _id: 'report-1', _rev: '3-c', _revisions: revisions }]));
+
+    const [bundle] = await collect();
+
+    expect(medicDb.bulkGet.args[0][0]).to.deep.include({ revs: true, docs: [{ id: 'report-1', rev: '3-c' }] });
+    expect((await openBundle(bundle))[0]._revisions).to.deep.equal(revisions);
+  });
+
+  it('leaves out a document purged from this device', async () => {
+    medicDb.changes.resolves(onePageOf([
+      { _id: 'purged-1', _rev: '2-b', _deleted: true, purged: true },
+      { _id: 'report-1' },
+    ]));
+
+    const [bundle] = await collect();
+
+    expect((await openBundle(bundle)).map(doc => doc._id)).to.deep.equal(['report-1']);
+  });
+
+  it('reads in full only the documents that pass the filter', async () => {
+    medicDb.changes.resolves(onePageOf([{ _id: 'form:delivery', type: 'form' }, { _id: 'report-1' }]));
+
+    await collect();
+
+    expect(medicDb.changes.args[0][0]).to.include({ include_docs: true }).and.not.have.property('attachments');
+    expect(medicDb.bulkGet.args[0][0].docs.map(doc => doc.id)).to.deep.equal(['report-1']);
+  });
+
+  it('leaves out a revision replaced after the page was read', async () => {
+    medicDb.changes.resolves(onePageOf([{ _id: 'report-1' }, { _id: 'report-2' }]));
+    stored.delete('report-1');
+
+    const [bundle] = await collect();
+
+    expect((await openBundle(bundle)).map(doc => doc._id)).to.deep.equal(['report-2']);
   });
 
   it('leaves out a document too large to fit a bundle, and says so', async () => {
