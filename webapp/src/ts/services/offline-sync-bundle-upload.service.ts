@@ -12,12 +12,15 @@ const PERMISSION = 'can_relay_offline_data_bundle';
 const ENDPOINT = '/api/v1/replication/data-bundle';
 
 // A body the server can never accept, however many times it is offered: it is over the limit and
-// will not shrink. Any other refusal is counted, because it may be one an administrator can fix.
+// will not shrink.
 const NEVER_ACCEPTABLE = 413;
 
-// How many times a bundle may be refused for a reason that might not last before this device stops
-// offering it. Enough for an administrator to notice and fix a permission; few enough that one
-// bundle nobody can fix does not hold up everything behind it for good.
+// The sender is not allowed to send bundles. Nothing is wrong with the bundle, and an
+// administrator can grant the permission, so it is offered again without counting the refusal.
+const FORBIDDEN = 403;
+
+// How many times the server may refuse a bundle as a bad request before this device stops offering
+// it, so one bundle nobody can fix does not hold up its sender's later bundles for good.
 const MAX_ATTEMPTS = 10;
 
 /**
@@ -164,6 +167,9 @@ export class OfflineSyncBundleUploadService {
   private async refused(bundle: StoredBundle, status: number): Promise<Outcome> {
     if (!isAboutTheBundle(status)) {
       return 'stop';
+    }
+    if (status === FORBIDDEN) {
+      return 'hold_sender';
     }
     if (status === NEVER_ACCEPTABLE) {
       await this.giveUp(bundle, status);
