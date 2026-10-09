@@ -15,8 +15,9 @@ const ENDPOINT = '/api/v1/replication/data-bundle';
 // will not shrink.
 const NEVER_ACCEPTABLE = 413;
 
-// The sender is not allowed to send bundles. Nothing is wrong with the bundle, and an
-// administrator can grant the permission, so it is offered again without counting the refusal.
+// The server does not yet allow this bundle: its sender may not send. Nothing is wrong with the
+// bundle and an administrator can grant the permission, so it is offered again without counting
+// the refusal, and the screen says why.
 const FORBIDDEN = 403;
 
 // How many times the server may refuse a bundle as a bad request before this device stops offering
@@ -107,9 +108,10 @@ export class OfflineSyncBundleUploadService {
   /**
    * Sends everything this device is carrying.
    *
-   * Bundles from one device are a sequence, so once one of them is refused the rest of that
-   * device's wait for the next sync. Other devices' bundles carry on: they have nothing to do with
-   * it. A failure that is about the server or this device's own session stops the whole run.
+   * Bundles from one device are a sequence, so once one of them is held, the rest of that device's
+   * bundles wait for the next sync. One the server will never take is set aside instead, and the
+   * rest of that device's bundles go on. Other devices' bundles carry on: they have nothing to do
+   * with it. A failure that is about the server or this device's own session stops the whole run.
    */
   async deliverPending(): Promise<void> {
     if (this.delivering) {
@@ -151,7 +153,8 @@ export class OfflineSyncBundleUploadService {
    *
    * A bundle is deleted only when the server has it. A refusal never destroys it: this device
    * cannot read a bundle to judge what is in it, and it holds the only copy, so the most it will
-   * do is stop offering one the server has turned down too many times.
+   * do is stop offering one the server will never take: too large, or refused as a bad request too
+   * many times.
    */
   private async deliver(bundle: StoredBundle): Promise<Outcome> {
     try {
