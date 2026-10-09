@@ -334,6 +334,33 @@ describe('OfflineSync component', () => {
       expect(fixture.nativeElement.querySelector('.offline-sync-warning').textContent)
         .to.contain('offline_sync.error.bundle_store_failed');
     });
+
+    it('stays usable when the carried bundles cannot be counted', async () => {
+      bundleStoreService.count.rejects(new Error('no space'));
+      await create();
+
+      expect(component.loading).to.be.false;
+      expect(component.errorKey).to.equal('offline_sync.error.bundle_store_failed');
+      hostingResult.next({ ok: true, detail: '', session: HOSTING_SESSION });
+      expect(component.state).to.equal('hosting');
+    });
+
+    it('is usable and listening while the carried bundles are still being counted', async () => {
+      let finishCount;
+      bundleStoreService.count.returns(new Promise(resolve => finishCount = resolve));
+      const created = create();
+      while (!bundleStoreService.count.called) {
+        await new Promise(resolve => setTimeout(resolve));
+      }
+
+      expect(component.loading).to.be.false;
+      hostingResult.next({ ok: true, detail: '', session: HOSTING_SESSION });
+      expect(component.state).to.equal('hosting');
+
+      finishCount(3);
+      await created;
+      expect(component.carrying).to.equal(3);
+    });
   });
 
   describe('recovering from a failure', () => {
