@@ -217,6 +217,21 @@ describe('OfflineSyncBundleUpload service', () => {
     expect(bundleStoreService.remove.notCalled).to.be.true;
   });
 
+  it('holds the later bundles of a sender who may not send, and delivers everyone else\'s', async () => {
+    const alice1 = from('alice-1', 'alice', 100);
+    const bob1 = from('bob-1', 'bob', 150);
+    bundleStoreService.pending.resolves([alice1, bob1, from('alice-2', 'alice', 200)]);
+
+    const delivered = service.deliverPending();
+    const first = await answer(403);
+    const second = await answer();
+    await delivered;
+
+    expect(first.request.headers.get('X-Medic-Bundle-Envelope')).to.equal(alice1.envelope);
+    expect(second.request.headers.get('X-Medic-Bundle-Envelope')).to.equal(bob1.envelope);
+    expect(bundleStoreService.remove.args.map(([doc]) => doc._id)).to.deep.equal(['bob-1']);
+  });
+
   it('holds only the refused sender\'s later bundles, and delivers everyone else\'s', async () => {
     const alice1 = from('alice-1', 'alice', 100);
     const bob1 = from('bob-1', 'bob', 150);
