@@ -332,6 +332,16 @@ describe('OfflineSync component', () => {
         .to.contain('offline_sync.error.bundle_store_failed');
     });
 
+    it('says a delivered bundle could not be read, rather than that it could not be stored', async () => {
+      await create();
+      bundleStoreService.collect.rejects(new Error('bundle_read_failed'));
+
+      bundleReceived.next('bundle-1');
+      await tick();
+
+      expect(component.errorKey).to.equal('offline_sync.error.bundle_read_failed');
+    });
+
     it('stays usable when the carried bundles cannot be counted', async () => {
       bundleStoreService.count.rejects(new Error('no space'));
       await create();
