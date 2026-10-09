@@ -124,8 +124,8 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
 
   /**
    * The native side sends a stable code, so it maps straight to a translation key. Nothing here
-   * validates the code: what keeps a CHW from seeing a raw `offline_sync.error.<code>` is that every code
-   * cht-android can report has a key in messages-en.properties, checked by check-offline-sync-codes.sh.
+   * validates the code, so every code cht-android can report needs a key in each of the five
+   * supported languages, or the raw `offline_sync.error.<code>` is what the user sees.
    * The fallback only covers an empty detail.
    */
   private fail(code: string, diagnostic?: string) {
