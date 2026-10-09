@@ -169,7 +169,7 @@ describe('OfflineDataBundle service', () => {
     expect(await openBundle(bundle)).to.deep.equal(docs);
   });
 
-  it('tells the relay nothing beyond who sent the bundle and in what order', async () => {
+  it('puts only the sender, the bundle number and the header hash in the envelope', async () => {
     medicDb.changes.resolves(onePageOf([{ _id: 'contact-1', _rev: '1-a' }]));
 
     const [bundle] = await collect();
@@ -292,7 +292,7 @@ describe('OfflineDataBundle service', () => {
     expect(medicDb.changes.args[0][0].since).to.equal('42');
   });
 
-  it('splits into bundles a phone can carry, numbered so the relay can order them', async () => {
+  it('splits into bundles a phone can carry, numbered one after the other', async () => {
     const big = (id) => ({ _id: id, data: 'x'.repeat(5 * 1024 * 1024) });
     medicDb.changes.resolves(onePageOf([big('one'), big('two')]));
 
