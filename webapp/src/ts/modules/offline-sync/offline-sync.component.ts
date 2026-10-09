@@ -237,8 +237,8 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
       // fix itself.
       console.error('OfflineSyncComponent :: Error collecting a delivered bundle', err);
       this.errorKey = 'offline_sync.error.bundle_store_failed';
-      return;
     }
+    // Also after a failure: collect() stores bundles one at a time, so some may have landed.
     await this.countCarried();
   }
 
