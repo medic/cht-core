@@ -106,6 +106,29 @@ describe('OfflineSyncBundleStore service', () => {
     expect(offlineSyncService.deleteBundle.args).to.deep.equal([['bundle-1'], ['bundle-2']]);
   });
 
+  it('starts a collection only once the one before it has finished', async () => {
+    let finishFirstPut;
+    offlineSyncService.receivedBundles.returns([received('bundle-1')]);
+    bundlesDb.put.onFirstCall().returns(new Promise(resolve => finishFirstPut = resolve));
+
+    const first = service.collect();
+    const second = service.collect();
+    await new Promise(resolve => setTimeout(resolve));
+    expect(offlineSyncService.receivedBundles.callCount).to.equal(1);
+
+    finishFirstPut();
+    await Promise.all([first, second]);
+    expect(offlineSyncService.receivedBundles.callCount).to.equal(2);
+  });
+
+  it('still runs a collection after the one before it failed', async () => {
+    offlineSyncService.receivedBundles.returns([received('bundle-1')]);
+    bundlesDb.put.onFirstCall().rejects(new Error('unwritable'));
+
+    await expect(service.collect()).to.be.rejectedWith(Error, 'unwritable');
+    expect(await service.collect()).to.equal(1);
+  });
+
   it('leaves the native copy alone when storing fails', async () => {
     offlineSyncService.receivedBundles.returns([received('bundle-1')]);
     bundlesDb.put.rejects(new Error('no space'));
