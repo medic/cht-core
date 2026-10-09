@@ -25,7 +25,7 @@ describe('OfflineSyncBundleStore service', () => {
   beforeEach(() => {
     bundlesDb = {
       put: sinon.stub().resolves(),
-      info: sinon.stub().resolves({ doc_count: 0 }),
+      allDocs: sinon.stub().resolves({ rows: [] }),
     };
     dbService = { get: sinon.stub().returns(bundlesDb) };
     offlineSyncService = {
@@ -79,6 +79,12 @@ describe('OfflineSyncBundleStore service', () => {
       .to.deep.equal([0, CHUNK_BYTES, 2 * CHUNK_BYTES]);
     const stored = window.atob(bundlesDb.put.args[0][0]._attachments.payload.data);
     expect(Array.from(stored, character => character.codePointAt(0))).to.deep.equal(Array.from(payload));
+  });
+
+  it('counts the bundles from the stored documents', async () => {
+    bundlesDb.allDocs.resolves({ rows: [{ id: 'bundle-1' }, { id: 'bundle-2' }] });
+
+    expect(await service.count()).to.equal(2);
   });
 
   it('drops the native copy only after the bundle is stored', async () => {

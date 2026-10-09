@@ -55,10 +55,14 @@ export class OfflineSyncBundleStoreService {
     this.offlineSyncService.deleteBundle(bundle.id);
   }
 
-  /** How many bundles this device is carrying. */
+  /**
+   * How many bundles this device is carrying, counted from the documents rather than
+   * `info().doc_count`, which PouchDB does not increment for a document written with an inline
+   * attachment, and every bundle has one.
+   */
   async count(): Promise<number> {
-    const response = await this.db.info();
-    return response.doc_count;
+    const response = await this.db.allDocs();
+    return response.rows.length;
   }
 
   /**
