@@ -253,6 +253,40 @@ describe('offline data-bundle handler', () => {
     });
   });
 
+  describe('an edit to a doc the server already holds', () => {
+    const sendOriginalThen = async (id, edited) => {
+      const original = {
+        ...reportFor(id),
+        _rev: `1-${'1'.repeat(32)}`,
+        _revisions: { start: 1, ids: ['1'.repeat(32)] },
+      };
+      expect(await utils.request(await bundleRequest([original]))).to.deep.equal({ ok: true });
+      expect(await utils.request(await bundleRequest([edited(original)]))).to.deep.equal({ ok: true });
+      return utils.getDoc(id, '', '?conflicts=true');
+    };
+
+    it('extends the doc when the bundle carries its revision history', async () => {
+      const stored = await sendOriginalThen('bundle_offline_edit_history', original => ({
+        ...original,
+        _rev: `2-${'2'.repeat(32)}`,
+        _revisions: { start: 2, ids: ['2'.repeat(32), '1'.repeat(32)] },
+      }));
+
+      expect(stored._rev).to.equal(`2-${'2'.repeat(32)}`);
+      expect(stored._conflicts).to.be.undefined;
+    });
+
+    it('conflicts with the doc when the bundle carries no history', async () => {
+      const stored = await sendOriginalThen('bundle_offline_edit_no_history', original => {
+        const edited = { ...original, _rev: `2-${'2'.repeat(32)}` };
+        delete edited._revisions;
+        return edited;
+      });
+
+      expect(stored._conflicts).to.have.lengthOf(1);
+    });
+  });
+
   /**
    * The envelope says who sent a bundle. Without binding it to the body, a relay holding a captured
    * envelope and the server public key from a device could put its own docs under someone else's
