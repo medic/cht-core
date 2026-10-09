@@ -165,6 +165,9 @@
           @if (carrying) {
             <p>{{ 'offline_sync.carried.description' | translate:{ count: carrying } }}</p>
           }
+          @if (forbidden) {
+            <p translate>offline_sync.carried.not_permitted</p>
+          }
           @if (undeliverable) {
             <p>{{ 'offline_sync.carried.undeliverable' | translate:{ count: undeliverable } }}</p>
           }

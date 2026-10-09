@@ -42,6 +42,7 @@ describe('OfflineSyncBundleUpload service', () => {
       remove: sinon.stub().resolves(),
       recordAttempt: sinon.stub().resolves(1),
       markUndeliverable: sinon.stub().resolves(),
+      markForbidden: sinon.stub().resolves(),
     };
     dbSyncService = { subscribe: sinon.stub().callsFake(listener => syncListener = listener) };
 
@@ -156,6 +157,7 @@ describe('OfflineSyncBundleUpload service', () => {
     expect(bundleStoreService.remove.notCalled).to.be.true;
     expect(bundleStoreService.recordAttempt.notCalled).to.be.true;
     expect(bundleStoreService.markUndeliverable.notCalled).to.be.true;
+    expect(bundleStoreService.markForbidden.args).to.deep.equal([['bundle-1']]);
   });
 
   it('keeps a bundle refused with a 400 and counts the refusal', async () => {
