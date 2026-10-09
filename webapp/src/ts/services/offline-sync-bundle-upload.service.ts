@@ -107,35 +107,27 @@ export class OfflineSyncBundleUploadService {
    * Bundles from one device are a sequence, so once one of them is refused the rest of that
    * device's wait for the next sync. Other devices' bundles carry on: they have nothing to do with
    * it. A failure that is about the server or this device's own session stops the whole run.
-   *
-   * @returns how many the server took
    */
-  async deliverPending(): Promise<number> {
+  async deliverPending(): Promise<void> {
     if (this.delivering) {
-      return 0;
+      return;
     }
 
     this.delivering = true;
     try {
-      return await this.deliverEach();
+      await this.deliverEach();
     } finally {
       this.delivering = false;
     }
   }
 
-  private async deliverEach(): Promise<number> {
-    let delivered = 0;
+  private async deliverEach() {
     const held = new Set<string>();
     for (const bundle of await this.bundleStoreService.pending()) {
-      const outcome = await this.deliverUnlessHeld(bundle, held);
-      if (outcome === 'stop') {
-        return delivered;
-      }
-      if (outcome === 'next') {
-        delivered += 1;
+      if (await this.deliverUnlessHeld(bundle, held) === 'stop') {
+        return;
       }
     }
-    return delivered;
   }
 
   /** Skips a bundle whose sender already had one refused this run, so their order is kept. */

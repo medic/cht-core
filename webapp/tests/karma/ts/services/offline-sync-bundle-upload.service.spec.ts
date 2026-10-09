@@ -36,7 +36,7 @@ describe('OfflineSyncBundleUpload service', () => {
     authService = { has: sinon.stub().resolves(true) };
     payload = new Blob(['ciphertext']);
     bundleStoreService = {
-      collect: sinon.stub().resolves(0),
+      collect: sinon.stub().resolves(),
       pending: sinon.stub().resolves([]),
       getPayload: sinon.stub().resolves(payload),
       remove: sinon.stub().resolves(),
@@ -80,7 +80,9 @@ describe('OfflineSyncBundleUpload service', () => {
   };
 
   it('sends nothing when it is carrying nothing', async () => {
-    expect(await service.deliverPending()).to.equal(0);
+    await service.deliverPending();
+
+    expect(bundleStoreService.remove.notCalled).to.be.true;
   });
 
   it('passes the envelope and signature on untouched', async () => {
@@ -93,7 +95,7 @@ describe('OfflineSyncBundleUpload service', () => {
     expect(request.request.headers.get('X-Medic-Bundle-Signature')).to.equal('signature-bundle-1');
     expect(request.request.headers.get('Content-Type')).to.equal('application/octet-stream');
     expect(request.request.body).to.equal(payload);
-    expect(await delivered).to.equal(1);
+    await delivered;
   });
 
   it('drops a bundle once the server has it', async () => {
@@ -113,7 +115,7 @@ describe('OfflineSyncBundleUpload service', () => {
     await answer();
     await answer();
 
-    expect(await delivered).to.equal(2);
+    await delivered;
     expect(bundleStoreService.remove.args.map(([doc]) => doc._id)).to.deep.equal(['older', 'newer']);
   });
 
@@ -123,7 +125,7 @@ describe('OfflineSyncBundleUpload service', () => {
     const delivered = service.deliverPending();
     await answer(503);
 
-    expect(await delivered).to.equal(0);
+    await delivered;
     expect(bundleStoreService.remove.notCalled).to.be.true;
   });
 
@@ -133,7 +135,7 @@ describe('OfflineSyncBundleUpload service', () => {
     const delivered = service.deliverPending();
     await answer(400);
 
-    expect(await delivered).to.equal(0);
+    await delivered;
     expect(bundleStoreService.remove.notCalled).to.be.true;
     expect(bundleStoreService.markUndeliverable.notCalled).to.be.true;
     expect(bundleStoreService.recordAttempt.args).to.deep.equal([['bundle-1']]);
@@ -182,7 +184,7 @@ describe('OfflineSyncBundleUpload service', () => {
     const delivered = service.deliverPending();
     await answer(503);
 
-    expect(await delivered).to.equal(0);
+    await delivered;
     expect(bundleStoreService.remove.notCalled).to.be.true;
   });
 
@@ -195,7 +197,7 @@ describe('OfflineSyncBundleUpload service', () => {
     const first = await answer(400);
     const second = await answer();
 
-    expect(await delivered).to.equal(1);
+    await delivered;
     expect(first.request.headers.get('X-Medic-Bundle-Envelope')).to.equal(alice1.envelope);
     expect(second.request.headers.get('X-Medic-Bundle-Envelope')).to.equal(bob1.envelope);
     expect(bundleStoreService.remove.args.map(([doc]) => doc._id)).to.deep.equal(['bob-1']);
@@ -207,7 +209,7 @@ describe('OfflineSyncBundleUpload service', () => {
     const delivered = service.deliverPending();
     await answer(401);
 
-    expect(await delivered).to.equal(0);
+    await delivered;
     expect(bundleStoreService.remove.notCalled).to.be.true;
   });
 
@@ -217,7 +219,7 @@ describe('OfflineSyncBundleUpload service', () => {
     const delivered = service.deliverPending();
     await answer(503);
 
-    expect(await delivered).to.equal(0);
+    await delivered;
     expect(bundleStoreService.recordAttempt.args).to.deep.equal([['alice-1']]);
   });
 
