@@ -46,7 +46,7 @@
       </mat-card>
     }
 
-    <!-- Said before they leave, not when they are already standing in front of a colleague. -->
+    <!-- Shown on the screen they open before leaving, while there is still network to fix it. -->
     @if (!loading && canJoin && !ready) {
       <mat-card class="offline-sync-not-ready">
         <mat-card-header>
@@ -148,7 +148,7 @@
           } @else {
             <p translate>offline_sync.transfer.nothing</p>
           }
-          <!-- Said plainly: these stay on the phone and only a direct sync will move them. -->
+          <!-- These stay on the device until it syncs with the server directly. -->
           @if (skipped) {
             <p>{{ 'offline_sync.transfer.too_large' | translate:{ count: skipped } }}</p>
           }

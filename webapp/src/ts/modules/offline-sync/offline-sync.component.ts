@@ -50,7 +50,7 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   password: string | null = null;
   /** Set only once joined: what the host calls itself, so the user can confirm the right device. */
   hostLabel: string | null = null;
-  /** A translation key, never a message built natively. */
+  /** A translation key, not text from the native side. */
   errorKey: string | null = null;
 
   /**
@@ -61,7 +61,7 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   scope: BundleScope = 'sync';
   /** How many bundles the host took, shown once a handover finishes. */
   delivered = 0;
-  /** How many documents were too large to travel this way, so the user is not left guessing. */
+  /** How many documents were too large to travel this way, shown so the user knows. */
   skipped = 0;
   /** How many bundles this device is carrying for other people. */
   carrying = 0;
@@ -74,8 +74,7 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
    *
    * Keys are handed out by the server while this device is online, so a phone that has not been
    * online since the permission was granted cannot send. Asked here rather than at the moment of
-   * sending, because by then the user is standing next to a colleague with no network, and the only
-   * fix is back where they came from.
+   * sending, because by then the user may have no network to fix it.
    */
   ready = false;
   loading = true;
@@ -117,8 +116,8 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
     this.subscriptions.add(this.offlineSyncService.bundleReceived()
       .subscribe(() => this.collectBundles()));
 
-    // Last, once the screen is usable and listening: a store that cannot be read is worth a
-    // message, but it must not leave the user on a spinner or cost them a result.
+    // Counted last, once the screen is usable and listening, so a slow or failing store neither
+    // keeps the spinner up nor causes a result to be missed.
     await this.countCarried();
   }
 

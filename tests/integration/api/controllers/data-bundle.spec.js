@@ -232,11 +232,6 @@ describe('offline data-bundle handler', () => {
     });
   });
 
-  /**
-   * Our packer reads the changes feed, which yields each doc once at its latest revision, so a bundle
-   * should never carry two revisions of one doc. This pins what happens if one ever does: both land in
-   * the same write under new_edits:false, and the revision tree is merged rather than conflicted.
-   */
   [ 'oldest first', 'newest first' ].forEach(order => {
     it(`keeps the latest of several revisions of one doc in a single bundle, ${order}`, async () => {
       const id = `bundle_multi_rev_${order.split(' ')[0]}`;

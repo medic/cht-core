@@ -226,8 +226,8 @@ export class OfflineDataBundleService {
       }
       lines.push(line);
       bytes += line.length;
-      // Only once the line is in: a bundle must never claim a position it does not cover, or a
-      // transfer that stops here would skip whatever sits between the two.
+      // Only once the line is in, so a bundle never claims a position it does not cover: a transfer
+      // that stopped here would otherwise skip whatever sits between the two.
       lastSeq = change.seq;
     }
 
