@@ -94,12 +94,6 @@ export class OfflineSyncBundleStoreService {
       .sort((left, right) => left.received_date - right.received_date);
   }
 
-  /** How many bundles this device is holding that the server would not take. */
-  async undeliverable(): Promise<number> {
-    const response = await this.db.allDocs({ include_docs: true });
-    return response.rows.filter(row => row.doc.undeliverable).length;
-  }
-
   /** Counts a refusal that might not last, and answers how many there have now been. */
   async recordAttempt(id: string): Promise<number> {
     const doc = await this.db.get(id);
@@ -129,9 +123,11 @@ export class OfflineSyncBundleStoreService {
     return this.db.remove(bundle);
   }
 
-  /** How many bundles are still waiting to reach the server. */
-  async count(): Promise<number> {
-    return (await this.pending()).length;
+  /** How many bundles are still waiting to reach the server, and how many it would not take. */
+  async counts(): Promise<{ waiting: number; undeliverable: number }> {
+    const response = await this.db.allDocs({ include_docs: true });
+    const undeliverable = response.rows.filter(row => row.doc.undeliverable).length;
+    return { waiting: response.rows.length - undeliverable, undeliverable };
   }
 
   /**
