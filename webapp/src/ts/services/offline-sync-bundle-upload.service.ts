@@ -157,7 +157,13 @@ export class OfflineSyncBundleUploadService {
     try {
       await this.send(bundle);
     } catch (err) {
-      return this.refused(bundle, (err as HttpErrorResponse)?.status);
+      if (!(err instanceof HttpErrorResponse)) {
+        // It never reached the server, so the server has said nothing about it. Only its sender
+        // waits, so one bundle this device cannot load does not stop everyone else's.
+        console.error(`OfflineSyncBundleUploadService :: Could not send bundle ${bundle._id}`, err);
+        return 'hold_sender';
+      }
+      return this.refused(bundle, err.status);
     }
 
     await this.bundleStoreService.remove(bundle);
