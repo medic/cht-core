@@ -392,9 +392,12 @@ describe('OfflineSyncBundleUpload service', () => {
     });
 
     it('never lets a delivery failure break syncing', async () => {
+      const consoleError = sinon.stub(console, 'error');
       bundleStoreService.pending.rejects(new Error('database gone'));
 
       await sync({ to: SyncStatus.Success });
+
+      expect(consoleError.calledOnceWith(sinon.match('Error delivering offline data bundles'))).to.be.true;
     });
   });
 });
