@@ -103,21 +103,17 @@ export class OfflineSyncBundleStoreService {
   }
 
   /**
-   * Counts a refusal as a bad request, and answers how many there have now been.
+   * Records how many times the server has now refused a bundle as a bad request.
    *
    * Any 403 before it is no longer the reason the bundle is waiting, so the screen stops saying so.
    */
-  async recordAttempt(id: string): Promise<number> {
-    const doc = await this.db.get(id);
-    const attempts = (doc.attempts || 0) + 1;
-    await this.db.put({ ...doc, attempts, forbidden: false });
-    return attempts;
+  async recordAttempt(bundle: StoredBundle, attempts: number) {
+    await this.db.put({ ...bundle, attempts, forbidden: false });
   }
 
-  async markForbidden(id: string) {
-    const doc = await this.db.get(id);
-    if (!doc.forbidden) {
-      await this.db.put({ ...doc, forbidden: true });
+  async markForbidden(bundle: StoredBundle) {
+    if (!bundle.forbidden) {
+      await this.db.put({ ...bundle, forbidden: true });
     }
   }
 
@@ -127,9 +123,8 @@ export class OfflineSyncBundleStoreService {
    * The bytes stay on the phone because no one else has them: this device cannot read the bundle
    * to judge what is in it, so destroying it is not a call it is in any position to make.
    */
-  async markUndeliverable(id: string, reason: number) {
-    const doc = await this.db.get(id);
-    await this.db.put({ ...doc, undeliverable: true, undeliverable_status: reason });
+  async markUndeliverable(bundle: StoredBundle, reason: number) {
+    await this.db.put({ ...bundle, undeliverable: true, undeliverable_status: reason });
   }
 
   /** The sealed bytes of one stored bundle, ready to send on untouched. */
@@ -137,7 +132,7 @@ export class OfflineSyncBundleStoreService {
     return this.db.getAttachment(id, PAYLOAD);
   }
 
-  /** Drops a bundle the server has taken. The caller already holds the doc, so no second read. */
+  /** Drops a bundle the server has taken. */
   remove(bundle: StoredBundle) {
     return this.db.remove(bundle);
   }

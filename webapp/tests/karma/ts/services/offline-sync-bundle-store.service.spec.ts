@@ -188,38 +188,35 @@ describe('OfflineSyncBundleStore service', () => {
       expect((await service.pending()).map(doc => doc._id)).to.deep.equal(['good']);
     });
 
-    it('counts how often the server has refused a bundle', async () => {
-      bundlesDb.get.resolves({ _id: 'bundle-1', _rev: '1-a', attempts: 2 });
+    it('records how often the server has refused a bundle', async () => {
+      const bundle: any = { _id: 'bundle-1', _rev: '1-a' };
 
-      expect(await service.recordAttempt('bundle-1')).to.equal(3);
-      expect(bundlesDb.put.args[0][0].attempts).to.equal(3);
+      await service.recordAttempt(bundle, 3);
+
+      expect(bundlesDb.put.args[0][0]).to.include({ _id: 'bundle-1', _rev: '1-a', attempts: 3 });
+      expect(bundlesDb.get.notCalled).to.be.true;
     });
 
     it('keeps a bundle it has stopped offering', async () => {
-      bundlesDb.get.resolves({ _id: 'bundle-1', _rev: '1-a' });
+      const bundle: any = { _id: 'bundle-1', _rev: '1-a' };
 
-      await service.markUndeliverable('bundle-1', 400);
+      await service.markUndeliverable(bundle, 400);
 
-      expect(bundlesDb.put.args[0][0].undeliverable).to.be.true;
+      expect(bundlesDb.put.args[0][0]).to.include({ _id: 'bundle-1', _rev: '1-a', undeliverable: true });
       expect(bundlesDb.put.args[0][0].undeliverable_status).to.equal(400);
       expect(bundlesDb.remove.notCalled).to.be.true;
     });
 
     it('marks a bundle the server would not yet allow, once', async () => {
-      bundlesDb.get.onFirstCall().resolves({ _id: 'bundle-1', _rev: '1-a' });
-      bundlesDb.get.onSecondCall().resolves({ _id: 'bundle-1', _rev: '2-a', forbidden: true });
-
-      await service.markForbidden('bundle-1');
-      await service.markForbidden('bundle-1');
+      await service.markForbidden({ _id: 'bundle-1', _rev: '1-a' } as any);
+      await service.markForbidden({ _id: 'bundle-1', _rev: '2-a', forbidden: true } as any);
 
       expect(bundlesDb.put.callCount).to.equal(1);
-      expect(bundlesDb.put.args[0][0].forbidden).to.be.true;
+      expect(bundlesDb.put.args[0][0]).to.include({ _id: 'bundle-1', _rev: '1-a', forbidden: true });
     });
 
     it('stops saying a bundle is not yet allowed once the server refuses it for another reason', async () => {
-      bundlesDb.get.resolves({ _id: 'bundle-1', _rev: '2-a', forbidden: true });
-
-      await service.recordAttempt('bundle-1');
+      await service.recordAttempt({ _id: 'bundle-1', _rev: '2-a', forbidden: true } as any, 1);
 
       expect(bundlesDb.put.args[0][0].forbidden).to.be.false;
     });
