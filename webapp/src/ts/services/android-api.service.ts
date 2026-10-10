@@ -5,6 +5,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { SessionService } from '@mm-services/session.service';
 import { NavigationService } from '@mm-services/navigation.service';
+import { OfflineSyncService } from '@mm-services/offline-sync.service';
 
 /**
  * An API to provide integration with the medic-android app.
@@ -24,6 +25,7 @@ export class AndroidApiService {
     private sessionService:SessionService,
     private zone:NgZone,
     private navigationService:NavigationService,
+    private readonly offlineSyncService:OfflineSyncService,
   ) { }
 
   private runInZone(property:string, args:any[]=[]) {
@@ -214,6 +216,18 @@ export class AndroidApiService {
     this.androidAppLauncherService.resolveAndroidAppResponse(response);
   }
 
+  resolveOfflineSyncHostingResult(ok, detail, diagnostic?) {
+    this.offlineSyncService.hostingResolved(ok, detail, diagnostic);
+  }
+
+  resolveOfflineSyncPairing(ok, detail) {
+    this.offlineSyncService.pairingResolved(ok, detail);
+  }
+
+  offlineSyncPermissionsResolved(granted) {
+    this.offlineSyncService.permissionsResolvedBy(granted);
+  }
+
   v1 = {
     back: () => this.runInZone('back'),
     logout: () => this.runInZone('logout'),
@@ -222,5 +236,8 @@ export class AndroidApiService {
     smsStatusUpdate: (...args) => this.runInZone('smsStatusUpdate', args),
     locationPermissionRequestResolved: () => this.runInZone('locationPermissionRequestResolve'),
     resolveCHTExternalAppResponse: (...args) => this.runInZone('resolveCHTExternalAppResponse', args),
+    resolveOfflineSyncHostingResult: (...args) => this.runInZone('resolveOfflineSyncHostingResult', args),
+    resolveOfflineSyncPairing: (...args) => this.runInZone('resolveOfflineSyncPairing', args),
+    offlineSyncPermissionsResolved: (...args) => this.runInZone('offlineSyncPermissionsResolved', args),
   };
 }
