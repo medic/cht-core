@@ -200,10 +200,9 @@ describe('OfflineSyncBundleStore service', () => {
     it('keeps a bundle it has stopped offering', async () => {
       const bundle: any = { _id: 'bundle-1', _rev: '1-a' };
 
-      await service.markUndeliverable(bundle, 400);
+      await service.markUndeliverable(bundle);
 
       expect(bundlesDb.put.args[0][0]).to.include({ _id: 'bundle-1', _rev: '1-a', undeliverable: true });
-      expect(bundlesDb.put.args[0][0].undeliverable_status).to.equal(400);
       expect(bundlesDb.remove.notCalled).to.be.true;
     });
 
