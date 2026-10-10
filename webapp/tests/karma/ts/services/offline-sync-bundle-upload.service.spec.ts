@@ -184,7 +184,7 @@ describe('OfflineSyncBundleUpload service', () => {
 
     expect(bundleStoreService.recordAttempt.notCalled).to.be.true;
 
-    expect(bundleStoreService.markUndeliverable.calledOnceWith(sinon.match({ _id: 'bundle-1' }), 400)).to.be.true;
+    expect(bundleStoreService.markUndeliverable.calledOnceWithExactly(sinon.match({ _id: 'bundle-1' }))).to.be.true;
     expect(bundleStoreService.remove.notCalled).to.be.true;
   });
 
@@ -195,7 +195,7 @@ describe('OfflineSyncBundleUpload service', () => {
     await answer(413);
     await delivered;
 
-    expect(bundleStoreService.markUndeliverable.calledOnceWith(sinon.match({ _id: 'bundle-1' }), 413)).to.be.true;
+    expect(bundleStoreService.markUndeliverable.calledOnceWithExactly(sinon.match({ _id: 'bundle-1' }))).to.be.true;
     expect(bundleStoreService.recordAttempt.notCalled).to.be.true;
   });
 

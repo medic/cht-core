@@ -201,7 +201,7 @@ export class OfflineSyncBundleUploadService {
     // The id and the status only. This device cannot read the bundle, and the reason the server
     // gave is about someone else's data.
     console.warn(`OfflineSyncBundleUploadService :: No longer offering bundle ${bundle._id}, refused with ${status}`);
-    await this.bundleStoreService.markUndeliverable(bundle, status);
+    await this.bundleStoreService.markUndeliverable(bundle);
   }
 
   private async send(bundle: StoredBundle) {
