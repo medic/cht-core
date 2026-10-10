@@ -15,11 +15,11 @@ export interface StoredBundle {
   envelope: string;
   signature: string;
   received_date: number;
-  /** How many times the server has refused this bundle for a reason that might not last. */
+  /** How many times the server has refused this bundle as a bad request. */
   attempts?: number;
   /** Set once it is no longer worth offering. The bytes are kept: nothing else holds them. */
   undeliverable?: boolean;
-  /** Set when the server refused it with a 403. It is still offered, and the screen says why. */
+  /** Set when the server last refused it with a 403. It is still offered, and the screen says why. */
   forbidden?: boolean;
 }
 
@@ -103,7 +103,7 @@ export class OfflineSyncBundleStoreService {
   }
 
   /**
-   * Counts a refusal that might not last, and answers how many there have now been.
+   * Counts a refusal as a bad request, and answers how many there have now been.
    *
    * Any 403 before it is no longer the reason the bundle is waiting, so the screen stops saying so.
    */
