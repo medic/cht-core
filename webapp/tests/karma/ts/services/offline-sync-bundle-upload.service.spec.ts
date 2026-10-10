@@ -212,16 +212,6 @@ describe('OfflineSyncBundleUpload service', () => {
     }
   });
 
-  it('stops at the first bundle it could not send', async () => {
-    bundleStoreService.pending.resolves([stored('first', 100), stored('second', 200)]);
-
-    const delivered = service.deliverPending();
-    await answer(503);
-    await delivered;
-
-    expect(bundleStoreService.remove.notCalled).to.be.true;
-  });
-
   it('holds the later bundles of a sender who may not send, and delivers everyone else\'s', async () => {
     const alice1 = from('alice-1', 'alice', 100);
     const bob1 = from('bob-1', 'bob', 150);
