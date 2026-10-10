@@ -178,7 +178,7 @@ export class OfflineSyncBundleUploadService {
       return 'stop';
     }
     if (status === FORBIDDEN) {
-      await this.bundleStoreService.markForbidden(bundle._id);
+      await this.bundleStoreService.markForbidden(bundle);
       return 'hold_sender';
     }
     if (status === NEVER_ACCEPTABLE) {
@@ -186,11 +186,14 @@ export class OfflineSyncBundleUploadService {
       return 'next';
     }
 
-    const attempts = await this.bundleStoreService.recordAttempt(bundle._id);
+    // The doc in hand is the one this run read, so the bundle is written once here: a second write
+    // from the same doc would carry an old revision and be refused as a conflict.
+    const attempts = (bundle.attempts || 0) + 1;
     if (attempts >= MAX_ATTEMPTS) {
       await this.giveUp(bundle, status);
       return 'next';
     }
+    await this.bundleStoreService.recordAttempt(bundle, attempts);
     return 'hold_sender';
   }
 
@@ -198,7 +201,7 @@ export class OfflineSyncBundleUploadService {
     // The id and the status only. This device cannot read the bundle, and the reason the server
     // gave is about someone else's data.
     console.warn(`OfflineSyncBundleUploadService :: No longer offering bundle ${bundle._id}, refused with ${status}`);
-    await this.bundleStoreService.markUndeliverable(bundle._id, status);
+    await this.bundleStoreService.markUndeliverable(bundle, status);
   }
 
   private async send(bundle: StoredBundle) {
