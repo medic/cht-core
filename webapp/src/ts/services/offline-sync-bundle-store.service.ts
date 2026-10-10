@@ -123,8 +123,8 @@ export class OfflineSyncBundleStoreService {
    * The bytes stay on the phone because no one else has them: this device cannot read the bundle
    * to judge what is in it, so destroying it is not a call it is in any position to make.
    */
-  async markUndeliverable(bundle: StoredBundle, reason: number) {
-    await this.db.put({ ...bundle, undeliverable: true, undeliverable_status: reason });
+  async markUndeliverable(bundle: StoredBundle) {
+    await this.db.put({ ...bundle, undeliverable: true });
   }
 
   /** The sealed bytes of one stored bundle, ready to send on untouched. */
