@@ -1,5 +1,5 @@
 const rewire = require('rewire');
-const defaultConfigSettingsDoc = require('../../../config/default/app_settings.json');
+const defaultConfigSettingsDoc = require('./app_settings.json');
 const { CONTACT_TYPES, PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 const MS_IN_DAY = 24 * 60 * 60 * 1000;
