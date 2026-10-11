@@ -13,6 +13,7 @@ import { routes as privacyPolicyRoutes } from '@mm-modules/privacy-policy/privac
 import { routes as tasksRoutes } from '@mm-modules/tasks/tasks.routes';
 import { routes as trainingRoutes } from '@mm-modules/trainings/trainings.routes';
 import { routes as testingRoutes } from '@mm-modules/testing/testing.routes';
+import { routes as offlineSyncRoutes } from '@mm-modules/offline-sync/offline-sync.routes';
 import { routes as uiExtensionsRoutes } from '@mm-modules/ui-extensions/ui-extensions.routes';
 
 const routes: Routes = [
@@ -28,6 +29,7 @@ const routes: Routes = [
   ...trainingRoutes,
   ...uiExtensionsRoutes,
   ...testingRoutes,
+  ...offlineSyncRoutes,
   ...errorRoutes,
 ];
 

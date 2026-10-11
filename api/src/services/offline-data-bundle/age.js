@@ -17,9 +17,11 @@ module.exports = {
   // age authenticates every chunk, so a tampered or truncated stream errors while reading. The
   // header is parsed before this resolves, so a key that cannot decrypt fails before any payload
   // byte is handed back.
-  decryptStream: async (identity, ciphertext) => {
+  // `identities` is every key this device may have sealed to, newest first. age tries them all, so
+  // a bundle sealed before the device last re-registered can still be opened.
+  decryptStream: async (identities, ciphertext) => {
     const decrypter = new (await load()).Decrypter();
-    decrypter.addIdentity(identity);
+    identities.forEach(identity => decrypter.addIdentity(identity));
     return decrypter.decrypt(ciphertext);
   },
 };

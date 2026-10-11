@@ -55,6 +55,7 @@ import { TasksNotificationService } from '@mm-services/task-notifications.servic
 import { DOC_IDS, PREFIXES } from '@medic/constants';
 import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 import { DeviceKeyService } from '@mm-services/device-key.service';
+import { OfflineSyncBundleUploadService } from '@mm-services/offline-sync-bundle-upload.service';
 import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 import { HeaderTabsService } from '@mm-services/header-tabs.service';
 
@@ -93,6 +94,7 @@ describe('AppComponent', () => {
   let telemetryService;
   let interactionTrackingService;
   let deviceKeyService;
+  let offlineSyncBundleUploadService;
   let transitionsService;
   let chtDatasourceService;
   let analyticsModulesService;
@@ -200,6 +202,7 @@ describe('AppComponent', () => {
     telemetryService = { record: sinon.stub() };
     interactionTrackingService = { init: sinon.stub(), persistBuffer: sinon.stub() };
     deviceKeyService = { init: sinon.stub() };
+    offlineSyncBundleUploadService = { init: sinon.stub() };
     trainingCardsService = { initTrainingCards: sinon.stub() };
     userSettingsService = {
       get: sinon.stub().resolves({ facility_id: ['facility'], contact_id: 'contact' }),
@@ -269,6 +272,7 @@ describe('AppComponent', () => {
           { provide: TasksNotificationService, useValue: tasksNotificationService },
           { provide: InteractionTrackingService, useValue: interactionTrackingService },
           { provide: DeviceKeyService, useValue: deviceKeyService },
+          { provide: OfflineSyncBundleUploadService, useValue: offlineSyncBundleUploadService },
           { provide: UiExtensionsService, useValue: uiExtensionsService },
           { provide: HeaderTabsService, useValue: headerTabsService },
         ]

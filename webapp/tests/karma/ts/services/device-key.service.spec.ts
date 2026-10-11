@@ -337,6 +337,36 @@ describe('DeviceKey service', () => {
     expect(settled, 'clearDeviceKeys() must settle when only abort fires, not hang').to.be.true;
   });
 
+  describe('key material', () => {
+    const signingKey = async () => (await crypto.subtle.generateKey(
+      { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign', 'verify']
+    )).privateKey;
+
+    it('returns what this user registered on this device', async () => {
+      const privateKey = await signingKey();
+      await writeRecord(KEY, { signing_private_key: privateKey, server_encryption_public_key: 'age1server' });
+
+      const material = await service.getKeyMaterial();
+
+      expect(material?.deviceId).to.equal(DEVICE_ID);
+      expect(material?.serverEncryptionPublicKey).to.equal('age1server');
+      expect(material?.signingPrivateKey).to.be.instanceOf(CryptoKey);
+    });
+
+    it('returns nothing when only another user has a key on this device', async () => {
+      await writeRecord(`someone-else:${DEVICE_ID}`, {
+        signing_private_key: await signingKey(),
+        server_encryption_public_key: 'age1server',
+      });
+
+      expect(await service.getKeyMaterial()).to.be.null;
+    });
+
+    it('returns nothing before the device has registered', async () => {
+      expect(await service.getKeyMaterial()).to.be.null;
+    });
+  });
+
   describe('forgetting the key', () => {
     /**
      * The session service cannot depend on this one without a cycle, so this service hands it the
