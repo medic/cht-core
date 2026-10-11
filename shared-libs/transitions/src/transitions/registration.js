@@ -336,7 +336,7 @@ const addMessages = (config, doc) => {
 
       config.messages.forEach(msg => {
         if (messageRelevant(msg, doc)) {
-          messages.addMessage(doc, msg, msg.recipient, context);
+          messages.addMessage(doc, msg, msg.recipient, context, true);
         }
       });
     });
