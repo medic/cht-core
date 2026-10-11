@@ -10,23 +10,47 @@ import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 
 import { StorageInfo, StorageStatus } from '@mm-reducers/global';
 import { StorageInfoService } from '@mm-services/storage-info.service';
+import { OfflineSyncService } from '@mm-services/offline-sync.service';
 
 @Directive()
 export abstract class BaseMenuComponent implements OnInit, OnDestroy {
   protected subscriptions = new Subscription();
   protected replicationStatus;
   protected storageInfo?: StorageInfo;
+  /**
+   * Whether to offer the offline sync page.
+   *
+   * Lives here because there are two menus, the header dropdown and the sidebar, and which one a
+   * user sees depends on `can_view_old_navigation`. An entry in only one of them is invisible to
+   * half the deployments.
+   */
+  offlineSyncVisible = false;
 
   constructor(
     protected store: Store,
     protected dbSyncService: DBSyncService,
     protected modalService: ModalService,
-    protected storageInfoService: StorageInfoService
+    protected storageInfoService: StorageInfoService,
+    protected offlineSyncService: OfflineSyncService,
   ) {}
 
   ngOnInit(): void {
     this.subscribeToStore();
     this.storageInfoService.init();
+    this.checkOfflineSyncVisibility();
+  }
+
+  /**
+   * Hidden unless the user may take part AND the device can, since a permitted user on a browser or
+   * an older phone would only find a page telling them so.
+   */
+  private async checkOfflineSyncVisibility() {
+    try {
+      this.offlineSyncVisible = await this.offlineSyncService.canHost() || await this.offlineSyncService.canJoin();
+    } catch (err) {
+      console.debug('BaseMenuComponent :: could not check offline sync visibility', err);
+      this.offlineSyncVisible = false;
+    }
   }
 
   ngOnDestroy(): void {

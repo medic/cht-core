@@ -61,6 +61,13 @@
         </div>
       </div>
 
+      <div class="nav-section" *ngIf="offlineSyncVisible">
+        <a class="nav-item" routerLink="offline-sync" (click)="close()">
+          <mat-icon fontIcon="fa-exchange"></mat-icon>
+          <span>{{ 'offline_sync.menu.title' | translate }}</span>
+        </a>
+      </div>
+
       <div class="nav-section">
         <ng-container *ngFor="let tab of headerTabsForSidebar">
           <a class="nav-item"
