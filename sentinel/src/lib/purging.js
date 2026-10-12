@@ -13,21 +13,11 @@ const { roles } = require('@medic/user-management')(config, db, dataContext);
 const moment = require('moment');
 const { SENTINEL_METADATA } = require('@medic/constants');
 
-const MAX_CONTACT_BATCH_SIZE = nouveau.BATCH_LIMIT;
+const CONTACTS_BATCH_SIZE = 1000;
 const MAX_BATCH_SIZE = 20 * 1000;
-const MIN_BATCH_SIZE = 5 * 1000;
-const MAX_BATCH_SIZE_REACHED = 'max_size_reached';
+const RECORDS_PAGE_SIZE = 2000;
 
-let contactsBatchSize = MAX_CONTACT_BATCH_SIZE;
 let skippedContacts = [];
-
-const decreaseBatchSize = () => {
-  contactsBatchSize = Math.floor(contactsBatchSize / 2);
-};
-
-const increaseBatchSize = () => {
-  contactsBatchSize = Math.min(MAX_CONTACT_BATCH_SIZE, contactsBatchSize * 2);
-};
 
 const purgeDbs = {};
 let currentlyPurging = false;
@@ -193,15 +183,6 @@ const assignContactToGroups = (row, groups, subjectIds) => {
   subjectIds.push(...group.subjectIds);
 };
 
-const isRelevantRecordEmission = (hit, subjectIds) => {
-  // reports with `needs_signoff` will emit for every contact from their submitter lineage,
-  // but we only want to process them once, either associated to their subject, or to their submitter
-  // when they have no subject or have an invalid subject.
-  // if the report has a subject, but it's not the same as the emission key, we hit the emit
-  // for the submitter or submitter lineage via the `needs_signoff` path. Skip.
-  return !(hit.fields.needs_signoff && !subjectIds.includes(hit.fields.subject));
-};
-
 const getRecordGroupInfo = (row, subjectIds) => {
   if (row.doc.form) {
     const subjectId = registrationUtils.getSubjectId(row.doc);
@@ -213,7 +194,7 @@ const getRecordGroupInfo = (row, subjectIds) => {
   }
 
   // messages only emit once, either their sender or receiver
-  return { key: row.fields.key, message: row.doc };
+  return { key: row.subject, message: row.doc };
 };
 
 const hydrateRecords = async (recordRows) => {
@@ -224,52 +205,15 @@ const hydrateRecords = async (recordRows) => {
   return recordRows.filter(row => row.doc);
 };
 
-const getRecordsForContacts = async (groups, subjectIds) => {
-  const results = [];
-  const subjectsCopy = [...subjectIds];
-  do {
-    const batch = subjectsCopy.splice(0, nouveau.BATCH_LIMIT);
-    const batchResults = await getRecordsForContactsBatch(batch);
-    results.push(...batchResults);
-  } while (subjectsCopy.length && results.length < MAX_BATCH_SIZE);
-
-  logger.info(`Found ${results.length} records`);
-  if (results.length >= MAX_BATCH_SIZE) {
-    throw Object.assign(
-      new Error(`Purging skipped. Too many records for contacts: ${Object.keys(groups).join(', ')}`),
-      {
-        code: MAX_BATCH_SIZE_REACHED,
-        contactIds: Object.keys(groups),
-      }
-    );
-  }
-
-  if (!results.length) {
-    return;
-  }
-
-  if (results.length < MIN_BATCH_SIZE) {
-    increaseBatchSize();
-  }
-
-  const hydratedRecords = await hydrateRecords(results);
-  const recordsByKey = getRecordsByKey(hydratedRecords, subjectIds);
-  assignRecordsToGroups(recordsByKey, groups);
-};
-
-const getRecordsForContactsBatch = async (subjectIds) => {
-  const results = [];
-  if (!subjectIds.length) {
-    return results;
-  }
-
-  let bookmark = '';
-  let requestNext;
+const getRecordsForSubjects = async (subjectIds) => {
+  const records = [];
+  let bookmark;
+  let hits;
 
   do {
     const opts = {
-      q: `key:(${subjectIds.map(nouveau.escapeKeys).join(' OR ')}) AND type:data_record`,
-      limit: nouveau.RESULTS_LIMIT,
+      q: `subject:(${subjectIds.map(nouveau.escapeKeys).join(' OR ')}) AND type:data_record`,
+      limit: RECORDS_PAGE_SIZE,
     };
     if (bookmark) {
       opts.bookmark = bookmark;
@@ -279,12 +223,56 @@ const getRecordsForContactsBatch = async (subjectIds) => {
       body: opts
     });
 
-    bookmark = result.bookmark;
-    results.push(...result.hits.filter(hit => isRelevantRecordEmission(hit, subjectIds)));
-    requestNext = bookmark && result.hits.length >= nouveau.RESULTS_LIMIT && results.length < MAX_BATCH_SIZE;
-  } while (requestNext);
+    ({ bookmark, hits } = result);
+    records.push(...hits.map(hit => ({ id: hit.id, subject: hit.fields.subject })));
+  } while (bookmark && hits.length >= RECORDS_PAGE_SIZE);
 
-  return results;
+  return records;
+};
+
+const getRecordsByContact = async (contactRows) => {
+  const contactIdBySubject = {};
+  const subjectIds = [];
+  contactRows.forEach(row => {
+    registrationUtils.getSubjectIds(row.doc).forEach(subjectId => {
+      contactIdBySubject[subjectId] = row.id;
+      subjectIds.push(subjectId);
+    });
+  });
+
+  const recordsByContact = {};
+  for (let i = 0; i < subjectIds.length; i += nouveau.BATCH_LIMIT) {
+    const records = await getRecordsForSubjects(subjectIds.slice(i, i + nouveau.BATCH_LIMIT));
+    records.forEach(record => {
+      const contactId = contactIdBySubject[record.subject];
+      recordsByContact[contactId] = recordsByContact[contactId] || [];
+      recordsByContact[contactId].push(record);
+    });
+  }
+
+  return recordsByContact;
+};
+
+const purgeContactsGroups = async (roles, purgeFn, contactRows, records) => {
+  if (!contactRows.length) {
+    return;
+  }
+
+  const groups = {};
+  const subjectIds = [];
+  const rolesHashes = Object.keys(roles);
+
+  contactRows.forEach(row => assignContactToGroups(row, groups, subjectIds));
+  if (records.length) {
+    const hydratedRecords = await hydrateRecords(records);
+    const recordsByKey = getRecordsByKey(hydratedRecords, subjectIds);
+    assignRecordsToGroups(recordsByKey, groups);
+  }
+
+  const docIds = getIdsFromGroups(groups);
+  const alreadyPurged = await getAlreadyPurgedDocs(rolesHashes, docIds);
+  const toPurge = getDocsToPurge(purgeFn, groups, roles);
+  await updatePurgedDocs(rolesHashes, docIds, alreadyPurged, toPurge);
 };
 
 const getRecordsByKey = (rows, subjectIds) => {
@@ -372,23 +360,12 @@ const purgeContacts = async (roles, purgeFn) => {
   } while (nextBatch);
 };
 
-const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '') => {
-  let nextKeyDocId;
-  let nextKey;
-  let nextBatch = false;
-  const groups = {};
-  const subjectIds = [];
-  const rolesHashes = Object.keys(roles);
-  let docIds;
-
-  logger.info(
-    `Purging: Starting contacts batch: key "${startKey}", doc id "${startKeyDocId}", batch size ${contactsBatchSize}`
-  );
+const batchedContactsPurge = async (roles, purgeFn, startKey = '', startKeyDocId = '') => {
+  logger.info(`Purging: Starting contacts batch: key "${startKey}", doc id "${startKeyDocId}"`);
 
   // every request with `startKeyDocId` will include the startKeyDocId document as the 1st result.
-  // this document was already processed and it's skipped. when batch size goes down to 1 and we have a start doc id,
-  // it's required that we increase the limit to at least 2, in order to get one new contact to process.
-  const limit = startKeyDocId !== '' ? contactsBatchSize + 1 : contactsBatchSize;
+  // this document was already processed and it's skipped.
+  const limit = startKeyDocId !== '' ? CONTACTS_BATCH_SIZE + 1 : CONTACTS_BATCH_SIZE;
   const queryString = {
     reduce: false,
     limit: limit,
@@ -399,43 +376,36 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
 
   // using `db.queryMedic` library because PouchDB doesn't support `startkey_docid` in view queries
   // using `startkey_docid` because using `skip` is *very* slow
-  return db
-    .queryMedic('medic-client/contacts_by_type', queryString)
-    .then(result => {
-      result.rows.forEach(row => {
-        if (row.id === startKeyDocId) {
-          return;
-        }
-        nextBatch = true;
-        ({ id: nextKeyDocId, key: nextKey } = row);
-        assignContactToGroups(row, groups, subjectIds);
-      });
-    })
-    .then(() => getRecordsForContacts(groups, subjectIds))
-    .then(() => {
-      docIds = getIdsFromGroups(groups);
-      return getAlreadyPurgedDocs(rolesHashes, docIds);
-    })
-    .then(alreadyPurged => {
-      const toPurge = getDocsToPurge(purgeFn, groups, roles);
-      return updatePurgedDocs(rolesHashes, docIds, alreadyPurged, toPurge);
-    })
-    .then(() => ({ nextKey, nextKeyDocId, nextBatch }))
-    .catch(err => {
-      if (err && err.code === MAX_BATCH_SIZE_REACHED) {
-        if (contactsBatchSize > 1) {
-          decreaseBatchSize();
-          logger.warn(`Purging: Too many reports to purge. Decreasing contacts batch size to ${contactsBatchSize}`);
-          return { nextKey: startKey, nextKeyDocId: startKeyDocId, nextBatch };
-        }
+  const result = await db.queryMedic('medic-client/contacts_by_type', queryString);
+  const contactRows = result.rows.filter(row => row.id !== startKeyDocId);
+  if (!contactRows.length) {
+    return { nextBatch: false };
+  }
 
-        logger.warn(`Purging: Too many reports to purge. Skipping contacts ${err.contactIds.join(', ')}.`);
-        skippedContacts.push(...err.contactIds);
-        return { nextKey, nextKeyDocId, nextBatch };
-      }
+  const recordsByContact = await getRecordsByContact(contactRows);
 
-      throw err;
-    });
+  let batchRows = [];
+  let batchRecords = [];
+  for (const row of contactRows) {
+    const contactRecords = recordsByContact[row.id] || [];
+    if (contactRecords.length > MAX_BATCH_SIZE) {
+      logger.warn(`Purging: Too many reports to purge. Skipping contact ${row.id}.`);
+      skippedContacts.push(row.id);
+      continue;
+    }
+
+    if (batchRecords.length + contactRecords.length > MAX_BATCH_SIZE) {
+      await purgeContactsGroups(roles, purgeFn, batchRows, batchRecords);
+      batchRows = [];
+      batchRecords = [];
+    }
+    batchRows.push(row);
+    batchRecords.push(...contactRecords);
+  }
+  await purgeContactsGroups(roles, purgeFn, batchRows, batchRecords);
+
+  const lastRow = contactRows.at(-1);
+  return { nextKey: lastRow.key, nextKeyDocId: lastRow.id, nextBatch: true };
 };
 
 const purgeUnallocatedRecords = async (roles, purgeFn) => {
@@ -560,7 +530,8 @@ const writePurgeLog = (roles, start, error) => {
 // - creates a database for each role set with the name `<main db name>-purged-role-<hash>` where `hash` is an md5 of
 // the JSON.Stringify-ed list of roles
 // - iterates over all contacts by querying `medic-client/contacts_by_type` in batches
-// - for every batch of contacts, queries `docs_by_replication_key` with the resulting `subject_ids`
+// - for every batch of contacts, queries `docs_by_replication_key` with the resulting `subject_ids`, then hydrates
+// and purges the contacts in sub-batches of at most MAX_BATCH_SIZE records. Contacts that alone exceed it are skipped
 // - groups results by contact to generate a list of pairs containing :
 //    a) a contact document
 //    b) a list of reports which are about the contact (*not submitted by the contact*)
@@ -577,8 +548,8 @@ const writePurgeLog = (roles, start, error) => {
 // - we intentionally skip purging "orphaned" docs (docs that emit in `docs_by_replication_key` but that are not
 // retrieved when systematically querying the view with all existent subjects), as these docs would not end up being
 // replicated
-// - we intentionally skip reports that `needs_signoff` when they are retrieved because of the `needs_signoff`
-// submitter lineage emit. As a consequence, orphaned reports with `needs_signoff` will not be purged
+// - we query by subject, so reports that `needs_signoff` are not retrieved through their submitter lineage emits.
+// As a consequence, orphaned reports with `needs_signoff` will not be purged
 
 const purge = () => {
   if (currentlyPurging) {
@@ -591,7 +562,6 @@ const purge = () => {
     return Promise.resolve();
   }
 
-  contactsBatchSize = MAX_CONTACT_BATCH_SIZE;
   currentlyPurging = true;
   skippedContacts = [];
 
