@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
+  <h:head>
+    <h:title>Guidance Hints</h:title>
+    <model odk:xforms-version="1.0.0">
+      <itext>
+        <translation lang="en">
+          <text id="yes_no-0">
+            <value>Yes</value>
+          </text>
+          <text id="yes_no-1">
+            <value>No</value>
+          </text>
+          <text id="yes_no-2">
+            <value>Maybe</value>
+          </text>
+          <text id="/data/page/text:label">
+            <value>Question Label</value>
+          </text>
+          <text id="/data/page/text:hint">
+            <value>Question Hint</value>
+            <value form="guidance">Guidance hint</value>
+          </text>
+          <text id="/data/page/select_multiple:label">
+            <value>Select Question</value>
+          </text>
+          <text id="/data/page/select_multiple:hint">
+            <value form="guidance">This is a longer guidance hint
+
+### It has sub-headings
+
+It is _multiline_ and should be &lt;code&gt;formatted&lt;/code&gt;.</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <data id="guidance_hints" version="20260429171304" prefix="J1!guidance_hints!" delimiter="#">
+          <page>
+            <text/>
+            <select_multiple/>
+          </page>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <instance id="contact-summary"/>
+      <instance id="user-contact-summary"/>
+      <instance id="yes_no">
+        <root>
+          <item>
+            <itextId>yes_no-0</itextId>
+            <name>yes</name>
+          </item>
+          <item>
+            <itextId>yes_no-1</itextId>
+            <name>no</name>
+          </item>
+          <item>
+            <itextId>yes_no-2</itextId>
+            <name>maybe</name>
+          </item>
+        </root>
+      </instance>
+      <bind nodeset="/data/page/text" type="string"/>
+      <bind nodeset="/data/page/select_multiple" type="string"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/data/page">
+      <input ref="/data/page/text">
+        <label ref="jr:itext('/data/page/text:label')"/>
+        <hint ref="jr:itext('/data/page/text:hint')"/>
+      </input>
+      <select ref="/data/page/select_multiple">
+        <label ref="jr:itext('/data/page/select_multiple:label')"/>
+        <hint ref="jr:itext('/data/page/select_multiple:hint')"/>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
+      </select>
+    </group>
+  </h:body>
+</h:html>
