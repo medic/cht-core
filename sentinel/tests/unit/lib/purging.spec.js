@@ -1243,7 +1243,7 @@ describe('ServerSidePurge', () => {
           url: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
             q: 'key:_unassigned',
-            limit: 20000,
+            limit: 2000,
             include_docs: true
           },
         }]);
@@ -1280,7 +1280,7 @@ describe('ServerSidePurge', () => {
           url: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
             q: 'key:_unassigned',
-            limit: 20000,
+            limit: 2000,
             include_docs: true
           },
         }]);
@@ -1289,7 +1289,7 @@ describe('ServerSidePurge', () => {
           url: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
             q: 'key:_unassigned',
-            limit: 20000,
+            limit: 2000,
             include_docs: true,
             bookmark: 'bk-1'
           },
@@ -1299,7 +1299,7 @@ describe('ServerSidePurge', () => {
           url: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
             q: 'key:_unassigned',
-            limit: 20000,
+            limit: 2000,
             include_docs: true,
             bookmark: 'bk-2'
           },

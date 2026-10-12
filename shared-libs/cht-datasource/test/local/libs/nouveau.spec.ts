@@ -107,6 +107,26 @@ describe('nouveau', () => {
       )).to.be.true;
     });
 
+    it('should cap the limit at the nouveau results limit and return a cursor for the next page', async () => {
+      const qualifier = Qualifier.byFreetext('searchterm');
+      const hits = Array.from({ length: 2000 }, (_, idx) => ({ id: `doc${idx}` }));
+      dbFetch.resolves({ ok: true, json: sinon.stub().resolves({ hits, bookmark: 'new-bookmark' }) });
+      const body = {
+        bookmark: null,
+        limit: 2000,
+        q: 'searchterm*',
+        sort: 'sort_order'
+      };
+
+      const result = await queryByFreetext(db, 'contacts_by_freetext')(qualifier, null, 1000000);
+
+      expect(result).to.deep.equal({ data: hits.map(({ id }) => id), cursor: 'new-bookmark' });
+      expect(dbFetch.calledOnceWithExactly(
+        '_design/medic/_nouveau/contacts_by_freetext',
+        { ...expectedOpts, body: JSON.stringify(body) }
+      )).to.be.true;
+    });
+
     it('should return null cursor when bookmark is unchanged', async () => {
       const qualifier = Qualifier.byFreetext('searchterm');
       dbFetch.resolves(mockResponse);

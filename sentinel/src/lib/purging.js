@@ -15,7 +15,6 @@ const { SENTINEL_METADATA } = require('@medic/constants');
 
 const CONTACTS_BATCH_SIZE = 1000;
 const MAX_BATCH_SIZE = 20 * 1000;
-const RECORDS_PAGE_SIZE = 2000;
 
 let skippedContacts = [];
 
@@ -213,7 +212,7 @@ const getRecordsForSubjects = async (subjectIds) => {
   do {
     const opts = {
       q: `subject:(${subjectIds.map(nouveau.escapeKeys).join(' OR ')}) AND type:data_record`,
-      limit: RECORDS_PAGE_SIZE,
+      limit: nouveau.RESULTS_LIMIT,
     };
     if (bookmark) {
       opts.bookmark = bookmark;
@@ -225,7 +224,7 @@ const getRecordsForSubjects = async (subjectIds) => {
 
     ({ bookmark, hits } = result);
     records.push(...hits.map(hit => ({ id: hit.id, subject: hit.fields.subject })));
-  } while (bookmark && hits.length >= RECORDS_PAGE_SIZE);
+  } while (bookmark && hits.length >= nouveau.RESULTS_LIMIT);
 
   return records;
 };
@@ -415,7 +414,7 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
 
   const getBatch = async () => {
     const opts = {
-      limit: MAX_BATCH_SIZE,
+      limit: nouveau.RESULTS_LIMIT,
       include_docs: true,
       q: `key:_unassigned`,
     };

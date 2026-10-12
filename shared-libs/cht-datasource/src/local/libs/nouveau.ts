@@ -6,7 +6,7 @@ import {
   isContactTypeQualifier,
   isKeyedFreetextQualifier
 } from '../../qualifier';
-import { escapeKeys } from '@medic/nouveau';
+import { escapeKeys, RESULTS_LIMIT } from '@medic/nouveau';
 import { getDocById } from './doc';
 
 const MEDIC_NOUVEAU_PATH = '_design/medic/_nouveau';
@@ -56,12 +56,13 @@ export const queryByFreetext = (
   cursor: Nullable<string>,
   limit: number
 ): Promise<Page<string>> => {
+  const pageLimit = Math.min(limit, RESULTS_LIMIT);
   const opts = {
     headers: jsonContentTypeHeaders,
     method: 'POST',
     body: JSON.stringify({
       bookmark: cursor,
-      limit,
+      limit: pageLimit,
       q: getQueryByTypeFreetext(qualifier),
       sort: SORT_BY_VIEW[index],
     })
@@ -73,7 +74,7 @@ export const queryByFreetext = (
 
   const nouveauResp = await response.json();
   const data: string[] = nouveauResp?.hits?.map((hit: { id: string }) => hit.id) ?? [];
-  const nextCursor: string | null = data.length < limit || nouveauResp?.bookmark === cursor
+  const nextCursor: string | null = data.length < pageLimit || nouveauResp?.bookmark === cursor
     ? null :
     nouveauResp?.bookmark;
   return { data, cursor: nextCursor };
