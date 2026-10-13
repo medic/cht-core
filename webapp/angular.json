@@ -29,6 +29,7 @@
               "src/audio"
             ],
             "styles": [
+              "node_modules/leaflet/dist/leaflet.css",
               "src/css/inbox.less"
             ],
             "stylePreprocessorOptions": {

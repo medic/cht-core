@@ -4,6 +4,9 @@
     [showFilter]="true"
     [showFreetext]="true">
   </mm-search-bar>
+  <a class="btn open-map" [routerLink]="['/', 'tasks', 'map']" [title]="'tasks.map.title' | translate">
+    <i class="fa fa-map-marker"></i>
+  </a>
 </mm-tool-bar>
 
 <div class="inner">

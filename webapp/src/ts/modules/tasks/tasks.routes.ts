@@ -9,6 +9,7 @@ import {
   TasksGroupRouteGuardProvider
 } from '@mm-modules/tasks/tasks-route.guard.provider';
 import { TasksGroupComponent } from '@mm-modules/tasks/tasks-group.component';
+import { TasksMapComponent } from '@mm-modules/tasks/tasks-map.component';
 
 export const routes:Routes = [
   {
@@ -29,6 +30,12 @@ export const routes:Routes = [
         data: { name: 'tasks.group', permissions: ['can_view_tasks_group'], redirect: ['/tasks'] },
         canActivate: [ AppRouteGuardProvider ],
         canDeactivate: [ TasksGroupRouteGuardProvider, TrainingCardDeactivationGuardProvider ],
+      },
+      {
+        path: 'map',
+        component: TasksMapComponent,
+        data: { name: 'tasks.map' },
+        canDeactivate: [ TrainingCardDeactivationGuardProvider ],
       },
       {
         path: ':id',

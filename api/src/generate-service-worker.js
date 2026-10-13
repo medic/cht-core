@@ -4,12 +4,18 @@ const fs = require('fs');
 const crypto = require('crypto');
 
 const resources = require('./resources.js');
+const csp = require('./csp');
 const db = require('./db');
 const logger = require('@medic/logger');
 const loginController = require('./controllers/login');
 const { DOC_IDS } = require('@medic/constants');
 
 const SWMETA_DOC_ID = DOC_IDS.SERVICE_WORKER_META;
+
+// vector tile server used by the webapp maps, see webapp/src/ts/components/map/map-style.ts
+const MAP_TILES_URL_PATTERN = /^https:\/\/vector\.openstreetmap\.org\//;
+const MAP_TILES_MAX_ENTRIES = 2000; // tiles are typically a few KB to ~200KB in dense cities
+const MAP_TILES_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 
 const staticDirectoryPath = resources.staticPath;
 const webappDirectoryPath = resources.webappPath;
@@ -57,8 +63,13 @@ const getPasswordResetPageContents = async () => {
   return await loginController.renderPasswordReset();
 };
 
+const readTemplate = (file) => fs.promises.readFile(path.join(staticDirectoryPath, file), 'utf8');
+
 // Use the workbox library to generate a service-worker script
 const writeServiceWorkerFile = async () => {
+  // Precached pages are stored and replayed together with their response headers, so the CSP a client enforces is
+  // the one cached with the page. Mixing the CSP into each page's revision forces a refetch when the CSP changes.
+  const cspRevision = JSON.stringify(csp.getDirectives());
   const config = {
     cacheId: 'cht',
     clientsClaim: true,
@@ -89,15 +100,31 @@ const writeServiceWorkerFile = async () => {
       'login/images/*.svg',
     ],
     templatedURLs: {
-      '/': ['webapp/index.html'], // Webapp's entry point
-      '/medic/login': await getLoginPageContents(),
-      '/medic/password-reset': await getPasswordResetPageContents(),
-      '/medic/_design/medic/_rewrite/': ['webapp/appcache-upgrade.html']
+      // Webapp's entry point
+      '/': `${await readTemplate('webapp/index.html')}${cspRevision}`,
+      '/medic/login': `${await getLoginPageContents()}${cspRevision}`,
+      '/medic/password-reset': `${await getPasswordResetPageContents()}${cspRevision}`,
+      '/medic/_design/medic/_rewrite/': `${await readTemplate('webapp/appcache-upgrade.html')}${cspRevision}`,
     },
     ignoreURLParametersMatching: [/redirect/, /username/],
     modifyURLPrefix: {
       'webapp/': '/',
     },
+    runtimeCaching: [{
+      urlPattern: MAP_TILES_URL_PATTERN,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'cht-map-tiles',
+        // only cache CORS responses: opaque responses can't be inspected and browsers pad each one to several MB
+        // in their storage quota accounting, which would evict the offline data long before the cap below is hit
+        cacheableResponse: { statuses: [200] },
+        expiration: {
+          maxEntries: MAP_TILES_MAX_ENTRIES,
+          maxAgeSeconds: MAP_TILES_MAX_AGE_SECONDS,
+          purgeOnQuotaError: true,
+        },
+      },
+    }],
   };
   await workbox.generateSW(config);
 };
