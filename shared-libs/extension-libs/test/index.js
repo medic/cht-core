@@ -8,8 +8,8 @@ const extensionLibs = require('../src');
 const encode = source => Buffer.from(source).toString('base64');
 
 describe('extension-libs', () => {
-  afterEach(() => {
-    extensionLibs.set({});
+  afterEach(async () => {
+    await extensionLibs.load({ get: sinon.stub().rejects({ status: 404 }) });
     sinon.restore();
   });
 
@@ -32,39 +32,49 @@ describe('extension-libs', () => {
     expect(extensionLibs.getAll()).to.deep.equal(result);
   });
 
-  it('does not let an older request overwrite a newer load', async () => {
-    let resolveOlder;
-    let resolveNewer;
-    const olderResponse = new Promise(resolve => resolveOlder = resolve);
-    const newerResponse = new Promise(resolve => resolveNewer = resolve);
+  it('serializes loads so the latest requested version is applied last', async () => {
+    let resolveFirst;
+    let resolveSecond;
+    const firstResponse = new Promise(resolve => resolveFirst = resolve);
+    const secondResponse = new Promise(resolve => resolveSecond = resolve);
     const db = {
       get: sinon.stub()
-        .onFirstCall().returns(olderResponse)
-        .onSecondCall().returns(newerResponse),
+        .onFirstCall().returns(firstResponse)
+        .onSecondCall().returns(secondResponse),
     };
 
-    const olderLoad = extensionLibs.load(db);
-    const newerLoad = extensionLibs.load(db);
-    resolveNewer({
+    const firstLoad = extensionLibs.load(db);
+    const secondLoad = extensionLibs.load(db);
+    await Promise.resolve();
+    expect(db.get.calledOnce).to.be.true;
+
+    resolveFirst({
       _attachments: {
-        'helper.js': { data: encode('module.exports = () => "newer";') },
+        'helper.js': { data: encode('module.exports = () => "first";') },
       },
     });
-    await newerLoad;
-    resolveOlder({
+    await firstLoad;
+    await new Promise(resolve => setImmediate(resolve));
+    expect(db.get.calledTwice).to.be.true;
+
+    resolveSecond({
       _attachments: {
-        'helper.js': { data: encode('module.exports = () => "older";') },
+        'helper.js': { data: encode('module.exports = () => "second";') },
       },
     });
 
-    const result = await olderLoad;
+    const result = await secondLoad;
 
     expect(result).to.equal(extensionLibs.getAll());
-    expect(extensionLibs.get('helper.js')()).to.equal('newer');
+    expect(extensionLibs.get('helper.js')()).to.equal('second');
   });
 
   it('clears loaded libraries when the extension-libs document does not exist', async () => {
-    extensionLibs.set({ 'old.js': () => 'old' });
+    await extensionLibs.load({
+      get: sinon.stub().resolves({
+        _attachments: { 'old.js': { data: encode('module.exports = () => "old";') } },
+      }),
+    });
     const db = { get: sinon.stub().rejects({ status: 404 }) };
 
     await extensionLibs.load(db);
@@ -91,7 +101,11 @@ describe('extension-libs', () => {
   });
 
   it('loads an empty registry when no document is returned', async () => {
-    extensionLibs.set({ 'old.js': () => 'old' });
+    await extensionLibs.load({
+      get: sinon.stub().resolves({
+        _attachments: { 'old.js': { data: encode('module.exports = () => "old";') } },
+      }),
+    });
     const db = { get: sinon.stub().resolves() };
 
     await extensionLibs.load(db);
@@ -100,19 +114,17 @@ describe('extension-libs', () => {
   });
 
   it('rethrows database errors', async () => {
+    const original = { 'old.js': () => 'old' };
+    await extensionLibs.load({
+      get: sinon.stub().resolves({
+        _attachments: { 'old.js': { data: encode('module.exports = () => "old";') } },
+      }),
+    });
     const error = new Error('database unavailable');
     const db = { get: sinon.stub().rejects(error) };
 
     await expect(extensionLibs.load(db)).to.be.rejectedWith(error);
-  });
-
-  it('copies libraries when setting the registry', () => {
-    const libs = { 'helper.js': () => 'value' };
-
-    const result = extensionLibs.set(libs);
-    delete libs['helper.js'];
-
-    expect(result).to.equal(extensionLibs.getAll());
-    expect(extensionLibs.get('helper.js')()).to.equal('value');
+    expect(extensionLibs.getAll()).to.have.keys(Object.keys(original));
+    expect(extensionLibs.get('old.js')()).to.equal('old');
   });
 });

@@ -171,7 +171,7 @@ module.exports = {
                 placeRegistrations: placeRegistrations,
                 place: place,
               },
-              extensionLibs: config.getExtensionLibs?.(),
+              extensionLibs: config.getExtensionLibs(),
             });
           }
           const state = messages.isOutgoingAllowed(doc.from) ? allowedState : 'denied';

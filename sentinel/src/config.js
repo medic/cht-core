@@ -18,7 +18,6 @@ const DEFAULT_CONFIG = {
 
 let config = DEFAULT_CONFIG;
 let transitionsLib;
-let loadedExtensionLibs = {};
 
 const loadTranslations = () => {
   const options = {
@@ -39,14 +38,9 @@ const loadTranslations = () => {
     });
 };
 
-const loadExtensionLibs = () => extensionLibs
-  .load(db.medic)
-  .then(libs => {
-    loadedExtensionLibs = libs;
+const loadExtensionLibs = () => extensionLibs.load(db.medic)
+  .then(() => {
     logger.info('Extension-libs loaded');
-  })
-  .catch(err => {
-    logger.error('Error loading extension libs - starting up anyway: %o', err);
   });
 
 const initFeed = () => {
@@ -61,7 +55,9 @@ const initFeed = () => {
         loadTranslations().then(() => initTransitionLib());
       } else if (change.id === DOC_IDS.EXTENSION_LIBS) {
         logger.info('Detected extension-libs change - reloading');
-        loadExtensionLibs();
+        loadExtensionLibs().catch(err => {
+          logger.error('Error reloading extension libs - keeping the previous version: %o', err);
+        });
       }
     })
     .on('error', err => {
@@ -99,14 +95,13 @@ const initTransitionLib = () => {
 module.exports = {
   get: key => (key ? config[key] : config),
   getAll: () => config,
-  getExtensionLibs: () => loadedExtensionLibs,
+  getExtensionLibs: () => extensionLibs.getAll(),
   getTranslations: () => {
     return translations;
   },
   init: () => {
     initFeed();
-    return loadTranslations()
-      .then(loadExtensionLibs)
+    return Promise.all([ loadTranslations(), loadExtensionLibs() ])
       .then(initConfig);
   },
   initTransitionLib: initTransitionLib,

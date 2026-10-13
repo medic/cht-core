@@ -5,8 +5,9 @@ import * as extensionLibs from '@medic/extension-libs';
 import { loadExtensionLibs } from '@mm-providers/extension-libs.provider';
 
 describe('Extension libs provider', () => {
-  afterEach(() => {
-    extensionLibs.set({});
+  afterEach(async () => {
+    const error = Object.assign(new Error('not found'), { status: 404 });
+    await extensionLibs.load({ get: () => Promise.reject(error) } as any);
     sinon.restore();
   });
 
@@ -20,7 +21,7 @@ describe('Extension libs provider', () => {
     };
     const dbService = { get: sinon.stub().returns(medicDb) };
 
-    await loadExtensionLibs(dbService as any)();
+    await loadExtensionLibs(dbService as any);
 
     expect(dbService.get.calledOnceWithExactly()).to.be.true;
     expect(medicDb.get.calledOnceWithExactly('extension-libs', { attachments: true })).to.be.true;
@@ -32,7 +33,7 @@ describe('Extension libs provider', () => {
     const dbService = { get: sinon.stub().returns({ get: sinon.stub().rejects(error) }) };
     const logError = sinon.stub(console, 'error');
 
-    await loadExtensionLibs(dbService as any)();
+    await loadExtensionLibs(dbService as any);
 
     expect(logError.calledOnceWithExactly('Error loading extension libs - starting up anyway', error)).to.be.true;
   });

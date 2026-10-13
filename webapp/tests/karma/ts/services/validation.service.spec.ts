@@ -21,9 +21,10 @@ describe('Validation Service', () => {
   let translateLocaleService;
   let languageService;
   let chtDatasourceService;
+  let getAllExtensionLibs;
 
   beforeEach(() => {
-    extensionLibs.set({});
+    getAllExtensionLibs = sinon.stub(extensionLibs, 'getAll').returns({});
     dbService = { get: sinon.stub() };
     settingsService = { get: sinon.stub() };
     translateLocaleService = { instant: sinon.stub() };
@@ -45,7 +46,6 @@ describe('Validation Service', () => {
   });
 
   afterEach(() => {
-    extensionLibs.set({});
     sinon.restore();
   });
 
@@ -167,9 +167,10 @@ describe('Validation Service', () => {
 
     it('should translate error messages with provided context', async () => {
       settingsService.get.resolves({ the: 'settings' });
-      const loadedExtensionLibs = extensionLibs.set({
+      const loadedExtensionLibs = {
         'uppercase.js': value => value.toUpperCase(),
-      });
+      };
+      getAllExtensionLibs.returns(loadedExtensionLibs);
       const template = sinon.spy(messages, 'template');
       const context = {
         patient: { name: 'the patient', patient_id: 'aaa' },

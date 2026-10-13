@@ -2,7 +2,7 @@ const { DOC_IDS } = require('@medic/constants');
 const logger = require('@medic/logger');
 
 let extensionLibs = {};
-let loadGeneration = 0;
+let pendingLoad = Promise.resolve();
 
 const decodeBase64 = data => {
   const bytes = Uint8Array.from(atob(data), character => character.codePointAt(0));
@@ -24,16 +24,13 @@ const set = libs => {
   return extensionLibs;
 };
 
-const setIfCurrent = (libs, generation) => generation === loadGeneration ? set(libs) : extensionLibs;
-
-const load = async db => {
-  const generation = ++loadGeneration;
+const loadFromDb = async db => {
   let doc;
   try {
     doc = await db.get(DOC_IDS.EXTENSION_LIBS, { attachments: true });
   } catch (err) {
     if (err.status === 404) {
-      return setIfCurrent({}, generation);
+      return set({});
     }
     throw err;
   }
@@ -46,12 +43,17 @@ const load = async db => {
       logger.error(`Error loading extension lib "${name}": %o`, err);
     }
   });
-  return setIfCurrent(loaded, generation);
+  return set(loaded);
+};
+
+const load = db => {
+  const result = pendingLoad.then(() => loadFromDb(db));
+  pendingLoad = result.catch(() => {});
+  return result;
 };
 
 module.exports = {
   get: id => extensionLibs[id],
   getAll: () => extensionLibs,
   load,
-  set,
 };

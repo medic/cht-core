@@ -3,7 +3,7 @@
 The `extension-libs` CouchDB document contains trusted JavaScript attachments supplied by an application.
 CHT Core loads each attachment as a CommonJS module and exposes its `module.exports` value to supported runtime APIs.
 
-Function exports can be used as Mustache section helpers in translations and outgoing message templates. The helper name
+Function exports can be used as Mustache section helpers in outgoing message templates. The helper name
 is the attachment filename without a trailing `.js`:
 
 ```js

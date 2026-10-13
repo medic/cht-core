@@ -71,7 +71,7 @@ const updateScheduledTasks = (doc, context, dueDates, clearFailing=false) => {
           content,
           recipient: task.recipient,
           extraContext: context,
-          extensionLibs: config.getExtensionLibs?.(),
+          extensionLibs: config.getExtensionLibs(),
         });
 
         // generated messages could have errors, such messages should not be saved

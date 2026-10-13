@@ -2,7 +2,7 @@ import * as extensionLibs from '@medic/extension-libs';
 
 import { DbService } from '@mm-services/db.service';
 
-export const loadExtensionLibs = (dbService: DbService) => async () => {
+export const loadExtensionLibs = async (dbService: DbService) => {
   try {
     await extensionLibs.load(dbService.get());
   } catch (err) {

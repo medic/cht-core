@@ -12,6 +12,18 @@ import { DbService } from '@mm-services/db.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { CustomResourceService } from '@mm-services/custom-resource.service';
 
+const loadExtensionLibs = (libs: Record<string, Function>) => extensionLibs.load({
+  get: () => Promise.resolve({
+    _attachments: Object.fromEntries(Object.entries(libs).map(([name, lib]) => [name, {
+      data: btoa(`module.exports = ${lib.toString()}`),
+    }]))
+  })
+} as any);
+const clearExtensionLibs = () => {
+  const error = Object.assign(new Error('not found'), { status: 404 });
+  return extensionLibs.load({ get: () => Promise.reject(error) } as any);
+};
+
 describe('CHTScriptApiService service', () => {
   let service: CHTDatasourceService;
   let sessionService;
@@ -22,8 +34,8 @@ describe('CHTScriptApiService service', () => {
   let translateService;
   let customResourceService;
 
-  beforeEach(() => {
-    extensionLibs.set({});
+  beforeEach(async () => {
+    await clearExtensionLibs();
     sessionService = { userCtx: sinon.stub(), isOnlineOnly: sinon.stub() };
     settingsService = { get: sinon.stub() };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
@@ -46,8 +58,8 @@ describe('CHTScriptApiService service', () => {
     service = TestBed.inject(CHTDatasourceService);
   });
 
-  afterEach(() => {
-    extensionLibs.set({});
+  afterEach(async () => {
+    await clearExtensionLibs();
     sinon.restore();
   });
 
@@ -116,7 +128,7 @@ describe('CHTScriptApiService service', () => {
 
     it('should expose eagerly loaded extension libs', async () => {
       settingsService.get.resolves();
-      extensionLibs.set({
+      await loadExtensionLibs({
         'bar.js': (a) => a + a,
         'foo.js': () => 'foo',
       });
@@ -437,7 +449,7 @@ describe('CHTScriptApiService service', () => {
     it('should reload extension libs when their document changes', async () => {
       settingsService.get.resolves();
       sessionService.isOnlineOnly.returns(true);
-      extensionLibs.set({
+      await loadExtensionLibs({
         'uppercase.js': value => `old:${value}`,
       });
       await service.isInitialized();

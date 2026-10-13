@@ -24,9 +24,10 @@ describe('FormatDataRecord service', () => {
   let translateLocaleService;
 
   let service;
+  let getAllExtensionLibs;
 
   beforeEach(() => {
-    extensionLibs.set({});
+    getAllExtensionLibs = sinon.stub(extensionLibs, 'getAll').returns({});
     Settings = sinon.stub();
     Language = sinon.stub();
     db = { query: sinon.stub() };
@@ -45,7 +46,6 @@ describe('FormatDataRecord service', () => {
   });
 
   afterEach(() => {
-    extensionLibs.set({});
     sinon.restore();
   });
 
@@ -588,9 +588,10 @@ describe('FormatDataRecord service', () => {
 
   describe('generating messages', () => {
     it('should generate messages with patient', () => {
-      const loadedExtensionLibs = extensionLibs.set({
+      const loadedExtensionLibs = {
         'uppercase.js': value => value.toUpperCase(),
-      });
+      };
+      getAllExtensionLibs.returns(loadedExtensionLibs);
       const generate = sinon.spy(messages, 'generate');
       const report = {
         _id: 'report',

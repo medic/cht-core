@@ -77,15 +77,10 @@ const loadSettings = () => {
     .then(settings => config.set(settings));
 };
 
-const loadExtensionLibs = () => extensionLibs
-  .load(db.medic)
-  .then(libs => {
-    config.setExtensionLibs(libs);
-    logger.info('Extension-libs loaded');
-  })
-  .catch(err => {
-    logger.error('Error loading extension libs - starting up anyway: %o', err);
-  });
+const loadExtensionLibs = () => extensionLibs.load(db.medic).then(libs => {
+  config.setExtensionLibs(libs);
+  logger.info('Extension-libs loaded');
+});
 
 
 const handleDdocChange = () => {
@@ -123,7 +118,9 @@ const handleTranslationsChange = () => {
 
 const handleExtensionLibsChange = () => {
   logger.info('Detected extension-libs change - reloading');
-  return loadExtensionLibs();
+  return loadExtensionLibs().catch(err => {
+    logger.error('Error reloading extension libs - keeping the previous version: %o', err);
+  });
 };
 
 const handleFormChange = (change) => {
@@ -219,7 +216,6 @@ module.exports = {
   listen,
   updateServiceWorker,
   loadTranslations,
-  loadExtensionLibs,
   watch,
   addUserRolesToDb,
 };

@@ -2,6 +2,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const fs = require('fs');
 const { DOC_IDS } = require('@medic/constants');
+const logger = require('@medic/logger');
 
 const viewMapUtils = require('@medic/view-map-utils');
 const db = require('../../../src/db');
@@ -94,6 +95,20 @@ describe('Configuration', () => {
 
         chai.expect(config.setTranslationCache.callCount).to.equal(0);
       });
+    });
+
+    it('fails startup when extension libs cannot be loaded', async () => {
+      const error = new Error('extension libs unavailable');
+      db.medic.get.withArgs('_design/medic').resolves({ _id: '_design/medic' });
+      translations.getTranslationDocs.resolves([]);
+      extensionLibs.load.rejects(error);
+
+      try {
+        await bootstrap.load();
+        chai.expect.fail('startup should fail when extension libs cannot be loaded');
+      } catch (err) {
+        chai.expect(err).to.equal(error);
+      }
     });
 
     it('should crash if translations are malformed', () => {
@@ -204,10 +219,15 @@ describe('Configuration', () => {
       });
 
       it('continues when extension-libs cannot be loaded', () => {
-        extensionLibs.load.rejects(new Error('failed to load'));
+        const error = new Error('failed to load');
+        sinon.stub(logger, 'error');
+        extensionLibs.load.rejects(error);
 
         return dbWatcher.medic.args[0][0]({ id: DOC_IDS.EXTENSION_LIBS }).then(() => {
           chai.expect(config.setExtensionLibs.notCalled).to.equal(true);
+          chai.expect(logger.error.calledOnce).to.equal(true);
+          chai.expect(logger.error.firstCall.args[0]).to.include('keeping the previous version');
+          chai.expect(logger.error.firstCall.args[1]).to.equal(error);
         });
       });
     });

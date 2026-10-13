@@ -64,7 +64,7 @@ module.exports = {
         content,
         recipient,
         extraContext: context,
-        extensionLibs: config.getExtensionLibs?.(),
+        extensionLibs: config.getExtensionLibs(),
       });
       const task = { messages: generated };
 
@@ -169,7 +169,7 @@ module.exports = {
         doc,
         content: error,
         extraContext: context,
-        extensionLibs: config.getExtensionLibs?.(),
+        extensionLibs: config.getExtensionLibs(),
       });
       utils.addError(doc, error);
     } catch (e) {

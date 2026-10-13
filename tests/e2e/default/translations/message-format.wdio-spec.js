@@ -3,7 +3,6 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactElements = require('@page-objects/default/contacts/contacts.wdio.page');
-const { createExtensionLibDoc } = require('@utils/extension-libs');
 
 describe('MessageFormat', () => {
   const district_hospital = placeFactory.generateHierarchy(['district_hospital']).get('district_hospital');
@@ -45,29 +44,5 @@ describe('MessageFormat', () => {
 
     const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
     expect(tabsButtonLabelsNames).to.include.members(['Reports {{thing}}', 'Tasks {thing', 'Messages {thing}']);
-  });
-
-  it('should render translations with extension-libs', async () => {
-    const expectedLabel = 'Extension label: noitagivan stropeR';
-    await utils.saveDoc(createExtensionLibDoc({
-      'reverse-label.js':
-        'module.exports = value => `Extension label: ${Array.from(value).reverse().join(\'\')}`;',
-    }));
-    await commonPage.reloadSession();
-    await loginPage.cookieLogin();
-    await utils.addTranslations('en', {
-      Reports: '{{#reverse-label}}Reports navigation{{/reverse-label}}',
-    });
-
-    await browser.waitUntil(async () => {
-      const labels = await commonPage.getAllButtonLabelsNames();
-      return labels.includes(expectedLabel);
-    }, {
-      timeout: 5000,
-      timeoutMsg: 'Timed out waiting for extension-lib translation to render',
-    });
-
-    const labels = await commonPage.getAllButtonLabelsNames();
-    expect(labels.filter(label => label.startsWith('Extension label:'))).to.deep.equal([expectedLabel]);
   });
 });
