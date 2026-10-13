@@ -126,7 +126,7 @@
     "@wdio/mocha-framework": "^9.31.2",
     "@wdio/spec-reporter": "^9.31.2",
     "allure-commandline": "^2.32.0",
-    "appium-uiautomator2-driver": "^6.6.0",
+    "appium-uiautomator2-driver": "^8.4.0",
     "browserify": "^17.0.1",
     "browserify-ngannotate": "^2.0.0",
     "chai": "^4.3.8",
