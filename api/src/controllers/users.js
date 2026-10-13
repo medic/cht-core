@@ -112,6 +112,7 @@ const getUserList = async (req) => {
   const filters = {
     facilityId: req.query?.facility_id,
     contactId: req.query?.contact_id,
+    oidcUsername: req.query?.oidc_username,
   };
   return await users.getList(filters);
 };

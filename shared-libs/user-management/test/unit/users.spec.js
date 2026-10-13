@@ -342,6 +342,53 @@ describe('Users service', () => {
         chai.expect(milan.roles).to.deep.equal(['district-admin']);
       });
 
+      it('with oidc_username', async () => {
+        const filters = { oidcUsername: 'cha@registry.com' };
+        const usersResponse = {
+          rows: [{
+            doc: {
+              _id: PREFIXES.COUCH_USER + 'cha',
+              name: 'cha',
+              facility_id: 'a',
+              oidc_username: 'cha@registry.com',
+              roles: ['chp'],
+            }
+          }],
+        };
+        db.users.query.withArgs('users/users_by_field', {
+          include_docs: true,
+          key: ['oidc_username', filters.oidcUsername],
+        }).resolves(usersResponse);
+
+        const userSettingsResponse = {
+          rows: [{
+            doc: {
+              _id: PREFIXES.COUCH_USER + 'cha',
+              name: 'cha',
+              fullname: 'CHA User',
+              email: 'cha@registry.com',
+              phone: '123456789',
+              facility_id: 'a',
+            },
+          }],
+        };
+        db.medic.allDocs.withArgs({
+          keys: [PREFIXES.COUCH_USER + 'cha'],
+          include_docs: true
+        }).resolves(userSettingsResponse);
+
+        const data = await service.getList(filters);
+        chai.expect(data.length).to.equal(1);
+        const cha = data[0];
+        chai.expect(cha.id).to.equal(PREFIXES.COUCH_USER + 'cha');
+        chai.expect(cha.username).to.equal('cha');
+        chai.expect(cha.fullname).to.equal('CHA User');
+        chai.expect(cha.oidc_username).to.equal('cha@registry.com');
+        chai.expect(cha.place).to.deep.equal([facilityA]);
+        chai.expect(cha.roles).to.deep.equal(['chp']);
+        chai.expect(db.users.query.args[0][1].key).to.deep.equal(['oidc_username', 'cha@registry.com']);
+      });
+
       it('with both facility_id and contact_id', async () => {
         const filters = { facilityId: 'b', contactId: 'milan-contact' };
         const usersResponse = {
