@@ -342,7 +342,7 @@ describe('Contacts by phone API', () => {
       });
     });
 
-    it('should output correct responce with multiple matches', () => {
+    it('should output correct response with multiple matches', () => {
       onlineRequestOptions.body = { phone: '+40722777777' };
       return utils.request(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal({

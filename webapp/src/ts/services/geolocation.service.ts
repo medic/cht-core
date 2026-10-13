@@ -2,6 +2,9 @@ import { Injectable } from '@angular/core';
 
 import { TelemetryService } from '@mm-services/telemetry.service';
 
+// Standard GeolocationPositionError.PERMISSION_DENIED code (W3C Geolocation API spec).
+const GEOLOCATION_PERMISSION_DENIED = 1;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -18,8 +21,11 @@ export class GeolocationService {
   private watcher;
   private timeout;
 
+  currentHandle;
+  currentPromise;
+
   constructor(
-    private telemetryService:TelemetryService,
+    private readonly telemetryService:TelemetryService,
   ) {}
 
   private getAndroidPermission () {
@@ -63,18 +69,22 @@ export class GeolocationService {
 
   private success(position) {
     console.debug('Geolocation success', position);
-    this.geo = position;
-    if (this.deferred) {
-      this.finalise();
+    if (!this.deferred) {
+      this.stopWatching();
+      return;
     }
+    this.geo = position;
+    this.finalise();
   }
 
   private failure(err) {
     console.debug('Geolocation error', err);
-    this.geoError = err;
-    if (this.deferred) {
-      this.finalise();
+    if (!this.deferred) {
+      this.stopWatching();
+      return;
     }
+    this.geoError = err;
+    this.finalise();
   }
 
   private startWatching() {
@@ -102,6 +112,18 @@ export class GeolocationService {
     clearTimeout(this.timeout);
   }
 
+  private cancel() {
+    console.debug('Cancelling geolocation handle');
+    if (this.deferred && !this.geo && !this.geoError) {
+      // finalise() clears the watcher/timeout itself as part of settling the pending promise
+      this.geoError = { code: -4, message: 'Geolocation cancelled' };
+      this.finalise();
+    } else {
+      this.stopWatching();
+    }
+    this.deferred = null;
+  }
+
   private defer() {
     this.deferred = {};
     this.deferred.promise = new Promise((resolve) => {
@@ -115,6 +137,7 @@ export class GeolocationService {
     this.geoError = null;
     this.watcher = null;
     this.defer();
+    this.currentPromise = this.deferred.promise;
 
     if (this.getAndroidPermission()) {
       this.startWatching();
@@ -122,24 +145,40 @@ export class GeolocationService {
 
     const complete = () => {
       console.debug('Geolocation requested');
-      this.defer();
-
+      const resolveOriginalPromise = this.deferred?.resolve;
       if (!this.geo && !this.geoError) {
         this.geoError = { code: -1, message: 'Geolocation not yet acquired' };
       }
+      this.defer();
       this.finalise();
-
+      if (resolveOriginalPromise) {
+        this.deferred.promise.then(resolveOriginalPromise);
+      }
       const promise = this.deferred.promise;
       this.deferred = null;
       return promise;
     };
 
-    complete.cancel = this.stopWatching.bind(this);
+    complete.cancel = this.cancel.bind(this);
+    this.currentHandle = complete;
 
     return complete;
   }
 
+  retry() {
+    this.init();
+  }
+
   permissionRequestResolved () {
     this.startWatching();
+    document.dispatchEvent(new CustomEvent('geolocationPermissionGranted'));
+  }
+
+  isAvailable(): boolean {
+    return !!window.navigator.geolocation;
+  }
+
+  isPermissionDenied(): boolean {
+    return !this.getAndroidPermission() || this.geoError?.code === GEOLOCATION_PERMISSION_DENIED;
   }
 }

@@ -1,6 +1,7 @@
 require('chai').should();
 
 const sinon = require('sinon');
+const { PassThrough, Readable } = require('stream');
 const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
 const db = require('../../../src/db');
@@ -222,6 +223,45 @@ describe('Export Data controller', () => {
           res.end.callCount.should.equal(1);
           res.end.args[0][0].should.equal('--ERROR--\nError exporting data: db not found\n');
         });
+      });
+    });
+
+    it('stops the export when the response closes', () => {
+      const req = { params: { type: 'messages' } };
+      const res = new PassThrough();
+      res.set = set;
+      res.flushHeaders = sinon.stub();
+      const exportStream = new Readable({ read: () => {} });
+      auth.check.resolves();
+      auth.getUserCtx.returns(Promise.resolve({}));
+      auth.isOnlineOnly.returns(true);
+      sinon.stub(service, 'exportStream').returns(exportStream);
+
+      return controller.get(req, res)
+        .then(() => {
+          const closed = new Promise(resolve => res.on('close', resolve));
+          res.destroy(); // the user cancels the download
+          return closed;
+        })
+        .then(() => {
+          exportStream.destroyed.should.equal(true);
+        });
+    });
+
+    it('responds with JSON for JSON exports', () => {
+      const req = { params: { type: 'user-devices' } };
+      const res = { set: set, json: sinon.stub() };
+      const devices = [ { user: 'a', deviceId: 'd1' } ];
+      auth.check.resolves();
+      auth.getUserCtx.returns(Promise.resolve({}));
+      auth.isOnlineOnly.returns(true);
+      sinon.stub(service, 'exportObject').resolves(devices);
+      sinon.stub(service, 'exportStream');
+
+      return controller.get(req, res).then(() => {
+        service.exportObject.args.should.deep.equal([ [ 'user-devices', {}, { humanReadable: false } ] ]);
+        res.json.args.should.deep.equal([ [ devices ] ]);
+        service.exportStream.callCount.should.equal(0);
       });
     });
   });

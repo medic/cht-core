@@ -41,6 +41,7 @@
     "@ngx-translate/core": "^16.0.4",
     "@webcomponents/webcomponentsjs": "^2.8.0",
     "bikram-sambat-bootstrap": "^1.8.1",
+    "bikram-sambat-calendar": "^1.8.1",
     "bootstrap": "^3.4.1",
     "bootstrap-daterangepicker": "^2.1.30",
     "core-js": "^3.50.0",
@@ -63,7 +64,7 @@
     "select2": "4.0.13",
     "signature_pad": "2.3.x",
     "tslib": "^2.8.1",
-    "zone.js": "~0.16.2"
+    "zone.js": "~0.16.3"
   },
   "overrides": {
     "minimist": ">=1.2.6",

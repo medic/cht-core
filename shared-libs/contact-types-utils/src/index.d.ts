@@ -11,6 +11,7 @@ export interface ContactType {
   readonly edit_form?: string,
   readonly count_visits?: boolean,
   readonly person?: boolean,
+  readonly profile_image_field?: string,
   [key: string]: unknown;
 }
 

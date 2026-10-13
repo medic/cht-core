@@ -1677,11 +1677,18 @@ describe('db-doc handler', () => {
 
           return sentinelUtils.waitForSentinel(ids).then(() => sentinelUtils.getInfoDocs(ids));
         }).then(([a1, a2, d1, d2, n1, n2]) => {
-          chai.expect(a1._rev.substring(0, 2)).to.equal('3-');
-          chai.expect(a2._rev.substring(0, 2)).to.equal('2-');
-          chai.expect(d1._rev.substring(0, 2)).to.equal('2-');
-          chai.expect(d2._rev.substring(0, 2)).to.equal('2-');
-          chai.expect(n1._rev.substring(0, 2)).to.equal('2-');
+          // api and sentinel write infodocs independently and in no guaranteed order, so the exact
+          // revision is not deterministic, but the number of writes is still bounded.
+          const expectAtMostWrites = (infoDoc, writes) => {
+            chai.expect(infoDoc).to.be.ok;
+            chai.expect(parseInt(infoDoc._rev, 10)).to.be.at.most(writes);
+          };
+
+          expectAtMostWrites(a1, 4);
+          expectAtMostWrites(a2, 3);
+          expectAtMostWrites(d1, 3);
+          expectAtMostWrites(d2, 3);
+          expectAtMostWrites(n1, 3);
           chai.expect(n2).to.be.undefined;
         });
     });

@@ -44,6 +44,7 @@ describe('couch-request', () => {
     sinon.stub(require('os'), 'arch').returns('test-arch');
 
     sinon.stub(undici, 'Agent');
+    sinon.stub(undici, 'ProxyAgent');
 
     couchRequest = rewire('../src/couch-request');
   });
@@ -565,6 +566,41 @@ describe('couch-request', () => {
         dispatcher: {},
       }
     ]);
+  });
+
+  it('should use ProxyAgent when proxy is a string', async () => {
+    await couchRequest.get({
+      url: 'http://test.com:5984/b',
+      proxy: 'http://proxy.local:3128',
+    });
+
+    expect(undici.ProxyAgent.args).to.deep.equal([['http://proxy.local:3128']]);
+    expect(undici.Agent.callCount).to.equal(0);
+    expect(global.fetch.args[0][1]).to.deep.equal({
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+      },
+      servername: 'test.com',
+      uri: 'http://test.com:5984/b',
+      dispatcher: {},
+    });
+  });
+
+  it('should pass proxy options through to ProxyAgent', async () => {
+    const proxy = {
+      uri: 'http://proxy.local:3128',
+      token: 'proxy-token'
+    };
+
+    await couchRequest.get({
+      url: 'http://test.com:5984/b',
+      proxy,
+    });
+
+    expect(undici.ProxyAgent.args).to.deep.equal([[proxy]]);
+    expect(undici.Agent.callCount).to.equal(0);
   });
 
   it('should add servername if not set', async () => {

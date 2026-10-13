@@ -1194,7 +1194,7 @@ describe('SMS workflows', () => {
       ]);
     });
 
-    it('should send to sender if recipent is empty and default_to_sender is set to false', async () => {
+    it('should send to sender if recipient is empty and default_to_sender is set to false', async () => {
       const settings = {
         sms: {
           default_to_sender: false
