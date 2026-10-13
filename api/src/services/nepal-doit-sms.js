@@ -52,18 +52,24 @@ const getStatus = response => {
   return null;
 };
 
+const isPlainObject = body => body && typeof body === 'object' && !Array.isArray(body);
+
+const parseJsonObject = text => {
+  try {
+    const parsed = JSON.parse(text);
+    return isPlainObject(parsed) ? parsed : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 const getErrorBody = err => {
-  const body = err && err.body;
-  if (body && typeof body === 'object' && !Array.isArray(body)) {
+  const body = err?.body;
+  if (isPlainObject(body)) {
     return body;
   }
   if (typeof body === 'string') {
-    try {
-      const parsed = JSON.parse(body);
-      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : undefined;
-    } catch {
-      return undefined;
-    }
+    return parseJsonObject(body);
   }
 };
 
@@ -71,18 +77,21 @@ const isRetryableError = body => {
   return !!body && typeof body.errors === 'string' && RETRYABLE_ERROR.test(body.errors);
 };
 
+const selectErrorText = body => {
+  if (typeof body.errors === 'string') {
+    return body.errors;
+  } else if (body.errors && typeof body.errors === 'object') {
+    return JSON.stringify(body.errors);
+  } else if (typeof body.message === 'string') {
+    return body.message;
+  }
+};
+
 const getGatewayError = body => {
   if (!body) {
     return;
   }
-  let error;
-  if (typeof body.errors === 'string') {
-    error = body.errors;
-  } else if (body.errors && typeof body.errors === 'object') {
-    error = JSON.stringify(body.errors);
-  } else if (typeof body.message === 'string') {
-    error = body.message;
-  }
+  const error = selectErrorText(body);
   return error === undefined ? undefined : bound(error);
 };
 
@@ -136,6 +145,30 @@ const classifyResponse = (message, body) => {
   };
 };
 
+const handleRequestError = (message, err) => {
+  // Handle HTTP errors (401, 422, 500, etc.)
+  logger.error(`SMS API error for message ${message.id}: ${err.message}`);
+
+  const errorStatus = getStatus(err);
+  const body = getErrorBody(err);
+  if (errorStatus && err.statusCode === 422 && isRetryableError(body)) {
+    logger.warn(`Account-level SMS gateway error for message ${message.id}, will retry: ${getGatewayError(body)}`);
+    return;
+  }
+  if (!errorStatus) {
+    // Unknown error - retry later
+    logger.error(`Unknown error sending SMS for message ${message.id}: %o`, err);
+    return;
+  }
+
+  // Known error status - generate appropriate state change
+  let error = getGatewayError(body);
+  if (error === undefined && err.statusCode === 422) {
+    error = describeBody(err.body);
+  }
+  return generateStateChange(message, err, error);
+};
+
 const sendMessage = async (credentials, message) => {
   const url = getUrl();
   if (!url) {
@@ -164,27 +197,7 @@ const sendMessage = async (credentials, message) => {
 
     return classifyResponse(message, result);
   } catch (err) {
-    // Handle HTTP errors (401, 422, 500, etc.)
-    logger.error(`SMS API error for message ${message.id}: ${err.message}`);
-
-    const errorStatus = getStatus(err);
-    const body = getErrorBody(err);
-    if (errorStatus && err.statusCode === 422 && isRetryableError(body)) {
-      logger.warn(`Account-level SMS gateway error for message ${message.id}, will retry: ${getGatewayError(body)}`);
-      return;
-    }
-    if (errorStatus) {
-      // Known error status - generate appropriate state change
-      let error = getGatewayError(body);
-      if (error === undefined && err.statusCode === 422) {
-        error = describeBody(err.body);
-      }
-      return generateStateChange(message, err, error);
-    }
-
-    // Unknown error - retry later
-    logger.error(`Unknown error sending SMS for message ${message.id}: %o`, err);
-    // implicit return undefined for retry
+    return handleRequestError(message, err);
   }
 };
 
