@@ -193,15 +193,6 @@ const assignContactToGroups = (row, groups, subjectIds) => {
   subjectIds.push(...group.subjectIds);
 };
 
-const isRelevantRecordEmission = (hit, subjectIds) => {
-  // reports with `needs_signoff` will emit for every contact from their submitter lineage,
-  // but we only want to process them once, either associated to their subject, or to their submitter
-  // when they have no subject or have an invalid subject.
-  // if the report has a subject, but it's not the same as the emission key, we hit the emit
-  // for the submitter or submitter lineage via the `needs_signoff` path. Skip.
-  return !(hit.fields.needs_signoff && !subjectIds.includes(hit.fields.subject));
-};
-
 const getRecordGroupInfo = (row, subjectIds) => {
   if (row.doc.form) {
     const subjectId = registrationUtils.getSubjectId(row.doc);
@@ -268,7 +259,7 @@ const getRecordsForContactsBatch = async (subjectIds) => {
 
   do {
     const opts = {
-      q: `key:(${subjectIds.map(nouveau.escapeKeys).join(' OR ')}) AND type:data_record`,
+      q: `subject:(${subjectIds.map(nouveau.escapeKeys).join(' OR ')}) AND type:data_record`,
       limit: nouveau.RESULTS_LIMIT,
     };
     if (bookmark) {
@@ -280,7 +271,7 @@ const getRecordsForContactsBatch = async (subjectIds) => {
     });
 
     bookmark = result.bookmark;
-    results.push(...result.hits.filter(hit => isRelevantRecordEmission(hit, subjectIds)));
+    results.push(...result.hits);
     requestNext = bookmark && result.hits.length >= nouveau.RESULTS_LIMIT && results.length < MAX_BATCH_SIZE;
   } while (requestNext);
 
@@ -577,8 +568,8 @@ const writePurgeLog = (roles, start, error) => {
 // - we intentionally skip purging "orphaned" docs (docs that emit in `docs_by_replication_key` but that are not
 // retrieved when systematically querying the view with all existent subjects), as these docs would not end up being
 // replicated
-// - we intentionally skip reports that `needs_signoff` when they are retrieved because of the `needs_signoff`
-// submitter lineage emit. As a consequence, orphaned reports with `needs_signoff` will not be purged
+// - we query by subject, so reports that `needs_signoff` are not retrieved through their submitter lineage emits.
+// As a consequence, orphaned reports with `needs_signoff` will not be purged
 
 const purge = () => {
   if (currentlyPurging) {

@@ -626,7 +626,7 @@ describe('ServerSidePurge', () => {
       });
     });
 
-    it('should keep requesting docs_by_replication_key and select only relevant records to purge', () => {
+    it('should keep requesting docs_by_replication_key while pages are full', () => {
       sinon.stub(db, 'queryMedic');
       const contacts = Array.from({ length: 1500 }).map((_, idx) => ({
         id: idx,
@@ -637,15 +637,12 @@ describe('ServerSidePurge', () => {
         return Promise.resolve({ rows: contacts.slice(startkey_docid, limit + startkey_docid) });
       });
 
-      // 1 in 50 records is relevant
-      const fifty = 50;
       const reports = Array.from({ length: 4300 }).map((_, idx) => ({
         id: `id${idx}`,
         fields: {
           key: `key${idx}`,
-          subject: 'irrelevant',
+          subject: `key${idx}`,
           type: DOC_TYPES.DATA_RECORD,
-          needs_signoff: idx % fifty !== 0
         },
       }));
 
@@ -696,15 +693,11 @@ describe('ServerSidePurge', () => {
 
         chai.expect(db.medic.allDocs.callCount).to.equal(2);
 
-        const getRelevantRecordsIds = (length) => Array
-          .from({ length: length / fifty })
-          .map((_, idx) => `id${idx * fifty}`);
-
         chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
-          keys: getRelevantRecordsIds(reports.length), include_docs: true,
+          keys: reports.map(report => report.id), include_docs: true,
         }]);
         chai.expect(db.medic.allDocs.args[1]).to.deep.equal([{
-          keys: getRelevantRecordsIds(200), include_docs: true,
+          keys: reports.slice(0, 200).map(report => report.id), include_docs: true,
         }]);
         chai.expect(service.__get__('contactsBatchSize')).to.equal(1000);
       });
@@ -877,7 +870,7 @@ describe('ServerSidePurge', () => {
         chai.expect(request.post.args[0]).to.deep.equal([{
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
-            q: 'key:(first OR f1 OR s1 OR f2 OR f4 OR s4) AND type:data_record',
+            q: 'subject:(first OR f1 OR s1 OR f2 OR f4 OR s4) AND type:data_record',
             limit: 2000
           },
         } ]);
@@ -1033,7 +1026,7 @@ describe('ServerSidePurge', () => {
         chai.expect(request.post.args[0]).to.deep.equal([{
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
-            q: 'key:(first OR f1 OR s1 OR f2 OR s2) AND type:data_record',
+            q: 'subject:(first OR f1 OR s1 OR f2 OR s2) AND type:data_record',
             limit: 2000
           },
         }]);
@@ -1089,7 +1082,7 @@ describe('ServerSidePurge', () => {
       });
     });
 
-    it('should correctly ignore reports with needs_signoff when they emit submitter lineage', () => {
+    it('should query reports with needs_signoff by subject rather than submitter lineage', () => {
       sinon.stub(db, 'queryMedic');
       db.queryMedic.onCall(0).resolves({ rows: [
         { id: 'first', key: 'district_hospital', doc: { _id: 'first', type: CONTACT_TYPES.DISTRICT_HOSPITAL } },
@@ -1114,20 +1107,8 @@ describe('ServerSidePurge', () => {
         },
         { id: 'f1-m1', fields: { key: 'f1',  type: DOC_TYPES.DATA_RECORD, subject: 'f1', submitter: 'f1' } },
         {
-          id: 'f2-r1',
-          fields: { key: 'f2', type: DOC_TYPES.DATA_RECORD, subject: 'random', needs_signoff: true, submitter: 'f2' }
-        },
-        {
-          id: 'f2-r2',
-          fields: { key: 'f2', type: DOC_TYPES.DATA_RECORD, subject: 'random', needs_signoff: true, submitter: 'other' }
-        },
-        {
           id: 'f2-r3',
           fields: { key: 'f2',  type: DOC_TYPES.DATA_RECORD, needs_signoff: true, submitter: 'f2', subject: 'f2' }
-        },
-        {
-          id: 'f2-r4',
-          fields: { key: 'f2',  type: DOC_TYPES.DATA_RECORD, needs_signoff: true, submitter: 'f2', subject: 'f6' }
         },
       ] });
       sinon.stub(db.medic, 'allDocs').onCall(0).resolves({ rows: [
@@ -1144,7 +1125,7 @@ describe('ServerSidePurge', () => {
         chai.expect(request.post.args[0]).to.deep.equal([{
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
-            q: 'key:(first OR f1 OR s1 OR f2) AND type:data_record',
+            q: 'subject:(first OR f1 OR s1 OR f2) AND type:data_record',
             limit: 2000
           },
         }]);
