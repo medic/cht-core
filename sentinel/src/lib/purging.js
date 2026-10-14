@@ -445,7 +445,7 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
 
   const getBatch = async () => {
     const opts = {
-      limit: MAX_BATCH_SIZE,
+      limit: nouveau.RESULTS_LIMIT,
       include_docs: true,
       q: `key:_unassigned`,
     };

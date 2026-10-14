@@ -637,26 +637,26 @@ describe('ServerSidePurge', () => {
         return Promise.resolve({ rows: contacts.slice(startkey_docid, limit + startkey_docid) });
       });
 
-      // 1 in 5000 records is relevant
-      const fiveK = 5000;
-      const reports = Array.from({ length: 430000 }).map((_, idx) => ({
+      // 1 in 50 records is relevant
+      const fifty = 50;
+      const reports = Array.from({ length: 4300 }).map((_, idx) => ({
         id: `id${idx}`,
         fields: {
           key: `key${idx}`,
           subject: 'irrelevant',
           type: DOC_TYPES.DATA_RECORD,
-          needs_signoff: idx % fiveK !== 0
+          needs_signoff: idx % fifty !== 0
         },
       }));
 
       sinon.stub(request, 'post');
-      request.post.onCall(0).resolves({ hits: reports.slice(0, 200000), bookmark: '1' });
-      request.post.onCall(1).resolves({ hits: reports.slice(200000, 220000) });
+      request.post.onCall(0).resolves({ hits: reports.slice(0, 2000), bookmark: '1' });
+      request.post.onCall(1).resolves({ hits: reports.slice(2000, 2200) });
 
-      request.post.onCall(2).resolves({ hits: reports.slice(220000, 420000), bookmark: '2' });
-      request.post.onCall(3).resolves({ hits: reports.slice(420000, 430000) });
+      request.post.onCall(2).resolves({ hits: reports.slice(2200, 4200), bookmark: '2' });
+      request.post.onCall(3).resolves({ hits: reports.slice(4200, 4300) });
 
-      request.post.onCall(4).resolves({ hits: reports.slice(0, 20000) });
+      request.post.onCall(4).resolves({ hits: reports.slice(0, 200) });
 
       sinon.stub(db.medic, 'allDocs')
         .callsFake(({ keys }) => Promise.resolve({ rows: keys.map((key) => ({ doc: { _id: key } }))}));
@@ -669,42 +669,42 @@ describe('ServerSidePurge', () => {
         chai.expect(request.post.callCount).to.equal(5);
 
         chai.expect(request.post.args[0]).excludingEvery('q').to.deep.equal([{
-          body: { limit: 200000 },
+          body: { limit: 2000 },
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`
         }]);
         chai.expect(request.post.args[1]).excludingEvery('q').to.deep.equal([{
           body: {
-            limit: 200000,
+            limit: 2000,
             bookmark: '1',
           },
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`
         }]);
 
         chai.expect(request.post.args[2]).excludingEvery('q').to.deep.equal([{
-          body: { limit: 200000, },
+          body: { limit: 2000, },
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`
         }]);
         chai.expect(request.post.args[3]).excludingEvery('q').to.deep.equal([{
-          body: { limit: 200000, bookmark: '2' },
+          body: { limit: 2000, bookmark: '2' },
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`
         }]);
 
         chai.expect(request.post.args[4]).excludingEvery('q').to.deep.equal([{
-          body: { limit: 200000, },
+          body: { limit: 2000, },
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`
         }]);
 
         chai.expect(db.medic.allDocs.callCount).to.equal(2);
 
         const getRelevantRecordsIds = (length) => Array
-          .from({ length: length / fiveK })
-          .map((_, idx) => `id${idx * fiveK}`);
+          .from({ length: length / fifty })
+          .map((_, idx) => `id${idx * fifty}`);
 
         chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
           keys: getRelevantRecordsIds(reports.length), include_docs: true,
         }]);
         chai.expect(db.medic.allDocs.args[1]).to.deep.equal([{
-          keys: getRelevantRecordsIds(20000), include_docs: true,
+          keys: getRelevantRecordsIds(200), include_docs: true,
         }]);
         chai.expect(service.__get__('contactsBatchSize')).to.equal(1000);
       });
@@ -878,7 +878,7 @@ describe('ServerSidePurge', () => {
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
             q: 'key:(first OR f1 OR s1 OR f2 OR f4 OR s4) AND type:data_record',
-            limit: 200000
+            limit: 2000
           },
         } ]);
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
@@ -1034,7 +1034,7 @@ describe('ServerSidePurge', () => {
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
             q: 'key:(first OR f1 OR s1 OR f2 OR s2) AND type:data_record',
-            limit: 200000
+            limit: 2000
           },
         }]);
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
@@ -1145,7 +1145,7 @@ describe('ServerSidePurge', () => {
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
             q: 'key:(first OR f1 OR s1 OR f2) AND type:data_record',
-            limit: 200000
+            limit: 2000
           },
         }]);
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
@@ -1520,7 +1520,7 @@ describe('ServerSidePurge', () => {
           url: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
             q: 'key:_unassigned',
-            limit: 20000,
+            limit: 2000,
             include_docs: true
           },
         }]);
@@ -1557,7 +1557,7 @@ describe('ServerSidePurge', () => {
           url: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
             q: 'key:_unassigned',
-            limit: 20000,
+            limit: 2000,
             include_docs: true
           },
         }]);
@@ -1566,7 +1566,7 @@ describe('ServerSidePurge', () => {
           url: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
             q: 'key:_unassigned',
-            limit: 20000,
+            limit: 2000,
             include_docs: true,
             bookmark: 'bk-1'
           },
@@ -1576,7 +1576,7 @@ describe('ServerSidePurge', () => {
           url: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
             q: 'key:_unassigned',
-            limit: 20000,
+            limit: 2000,
             include_docs: true,
             bookmark: 'bk-2'
           },

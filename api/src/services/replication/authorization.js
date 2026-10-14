@@ -636,27 +636,34 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
 
   while (allKeys.length) {
     const chunk = allKeys.splice(0, nouveau.BATCH_LIMIT);
-    const response = await request.post({
-      uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
-      body: {
+    let bookmark;
+    let pageHits;
+
+    do {
+      const body = {
         q: `key:(${chunk.map(nouveau.escapeKeys).join(' OR ')})`,
         limit: nouveau.RESULTS_LIMIT,
+      };
+      if (bookmark) {
+        body.bookmark = bookmark;
       }
-    });
-
-    if (!response.hits || !response.hits.length) {
-      continue;
-    }
-
-    for (const hit of response.hits) {
-      hits.push({
-        id: hit.id,
-        fields: {
-          ...hit.fields,
-          key: Array.isArray(hit.fields.key) ? hit.fields.key : [hit.fields.key],
-        },
+      const response = await request.post({
+        uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
+        body,
       });
-    }
+
+      bookmark = response.bookmark;
+      pageHits = response.hits || [];
+      for (const hit of pageHits) {
+        hits.push({
+          id: hit.id,
+          fields: {
+            ...hit.fields,
+            key: Array.isArray(hit.fields.key) ? hit.fields.key : [hit.fields.key],
+          },
+        });
+      }
+    } while (bookmark && pageHits.length >= nouveau.RESULTS_LIMIT);
   }
 
   return hits;
