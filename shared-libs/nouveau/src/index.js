@@ -33,5 +33,5 @@ const escapeKeys = (key) => {
 module.exports = {
   escapeKeys,
   BATCH_LIMIT: 1000,
-  RESULTS_LIMIT: 2000,
+  RESULTS_LIMIT: 20 * 1000,
 };

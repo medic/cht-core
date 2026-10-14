@@ -249,33 +249,19 @@ const getRecordsForContacts = async (groups, subjectIds) => {
 };
 
 const getRecordsForContactsBatch = async (subjectIds) => {
-  const results = [];
   if (!subjectIds.length) {
-    return results;
+    return [];
   }
 
-  let bookmark = '';
-  let requestNext;
-
-  do {
-    const opts = {
+  const result = await request.post({
+    uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
+    body: {
       q: `subject:(${subjectIds.map(nouveau.escapeKeys).join(' OR ')}) AND type:data_record`,
-      limit: nouveau.RESULTS_LIMIT,
-    };
-    if (bookmark) {
-      opts.bookmark = bookmark;
-    }
-    const result = await request.post({
-      uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
-      body: opts
-    });
+      limit: MAX_BATCH_SIZE,
+    },
+  });
 
-    bookmark = result.bookmark;
-    results.push(...result.hits);
-    requestNext = bookmark && result.hits.length >= nouveau.RESULTS_LIMIT && results.length < MAX_BATCH_SIZE;
-  } while (requestNext);
-
-  return results;
+  return result.hits;
 };
 
 const getRecordsByKey = (rows, subjectIds) => {
@@ -436,7 +422,7 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
 
   const getBatch = async () => {
     const opts = {
-      limit: nouveau.RESULTS_LIMIT,
+      limit: MAX_BATCH_SIZE,
       include_docs: true,
       q: `key:_unassigned`,
     };

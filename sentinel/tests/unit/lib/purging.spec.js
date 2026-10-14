@@ -626,7 +626,7 @@ describe('ServerSidePurge', () => {
       });
     });
 
-    it('should keep requesting docs_by_replication_key while pages are full', () => {
+    it('should request docs_by_replication_key once per chunk of subject ids when pages are not full', () => {
       sinon.stub(db, 'queryMedic');
       const contacts = Array.from({ length: 1500 }).map((_, idx) => ({
         id: idx,
@@ -637,7 +637,7 @@ describe('ServerSidePurge', () => {
         return Promise.resolve({ rows: contacts.slice(startkey_docid, limit + startkey_docid) });
       });
 
-      const reports = Array.from({ length: 4300 }).map((_, idx) => ({
+      const reports = Array.from({ length: 10600 }).map((_, idx) => ({
         id: `id${idx}`,
         fields: {
           key: `key${idx}`,
@@ -647,13 +647,10 @@ describe('ServerSidePurge', () => {
       }));
 
       sinon.stub(request, 'post');
-      request.post.onCall(0).resolves({ hits: reports.slice(0, 2000), bookmark: '1' });
-      request.post.onCall(1).resolves({ hits: reports.slice(2000, 2200) });
+      request.post.onCall(0).resolves({ hits: reports.slice(0, 10000), bookmark: '1' });
+      request.post.onCall(1).resolves({ hits: reports.slice(10000, 10600), bookmark: '2' });
 
-      request.post.onCall(2).resolves({ hits: reports.slice(2200, 4200), bookmark: '2' });
-      request.post.onCall(3).resolves({ hits: reports.slice(4200, 4300) });
-
-      request.post.onCall(4).resolves({ hits: reports.slice(0, 200) });
+      request.post.onCall(2).resolves({ hits: reports.slice(0, 200), bookmark: '3' });
 
       sinon.stub(db.medic, 'allDocs')
         .callsFake(({ keys }) => Promise.resolve({ rows: keys.map((key) => ({ doc: { _id: key } }))}));
@@ -663,33 +660,13 @@ describe('ServerSidePurge', () => {
 
       return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(db.queryMedic.callCount).to.equal(3);
-        chai.expect(request.post.callCount).to.equal(5);
-
-        chai.expect(request.post.args[0]).excludingEvery('q').to.deep.equal([{
-          body: { limit: 2000 },
-          uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`
-        }]);
-        chai.expect(request.post.args[1]).excludingEvery('q').to.deep.equal([{
-          body: {
-            limit: 2000,
-            bookmark: '1',
-          },
-          uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`
-        }]);
-
-        chai.expect(request.post.args[2]).excludingEvery('q').to.deep.equal([{
-          body: { limit: 2000, },
-          uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`
-        }]);
-        chai.expect(request.post.args[3]).excludingEvery('q').to.deep.equal([{
-          body: { limit: 2000, bookmark: '2' },
-          uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`
-        }]);
-
-        chai.expect(request.post.args[4]).excludingEvery('q').to.deep.equal([{
-          body: { limit: 2000, },
-          uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`
-        }]);
+        chai.expect(request.post.callCount).to.equal(3);
+        request.post.args.forEach(args => {
+          chai.expect(args).excludingEvery('q').to.deep.equal([{
+            body: { limit: 20000 },
+            uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`
+          }]);
+        });
 
         chai.expect(db.medic.allDocs.callCount).to.equal(2);
 
@@ -871,7 +848,7 @@ describe('ServerSidePurge', () => {
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
             q: 'subject:(first OR f1 OR s1 OR f2 OR f4 OR s4) AND type:data_record',
-            limit: 2000
+            limit: 20000
           },
         } ]);
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
@@ -1027,7 +1004,7 @@ describe('ServerSidePurge', () => {
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
             q: 'subject:(first OR f1 OR s1 OR f2 OR s2) AND type:data_record',
-            limit: 2000
+            limit: 20000
           },
         }]);
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
@@ -1126,7 +1103,7 @@ describe('ServerSidePurge', () => {
           uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
             q: 'subject:(first OR f1 OR s1 OR f2) AND type:data_record',
-            limit: 2000
+            limit: 20000
           },
         }]);
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
@@ -1501,7 +1478,7 @@ describe('ServerSidePurge', () => {
           url: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
             q: 'key:_unassigned',
-            limit: 2000,
+            limit: 20000,
             include_docs: true
           },
         }]);
@@ -1538,7 +1515,7 @@ describe('ServerSidePurge', () => {
           url: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
             q: 'key:_unassigned',
-            limit: 2000,
+            limit: 20000,
             include_docs: true
           },
         }]);
@@ -1547,7 +1524,7 @@ describe('ServerSidePurge', () => {
           url: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
             q: 'key:_unassigned',
-            limit: 2000,
+            limit: 20000,
             include_docs: true,
             bookmark: 'bk-1'
           },
@@ -1557,7 +1534,7 @@ describe('ServerSidePurge', () => {
           url: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
           body: {
             q: 'key:_unassigned',
-            limit: 2000,
+            limit: 20000,
             include_docs: true,
             bookmark: 'bk-2'
           },

@@ -6,7 +6,7 @@ const { PREFIXES } = require('@medic/constants');
 describe('nouveau utils', () => {
   it('should return limits', () => {
     expect(lib.BATCH_LIMIT).to.equal(1000);
-    expect(lib.RESULTS_LIMIT).to.equal(2000);
+    expect(lib.RESULTS_LIMIT).to.equal(20000);
   });
 
   describe('escaping special characters', () => {
