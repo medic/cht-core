@@ -14,7 +14,7 @@ const moment = require('moment');
 const { SENTINEL_METADATA } = require('@medic/constants');
 
 const MAX_CONTACT_BATCH_SIZE = nouveau.BATCH_LIMIT;
-const MAX_BATCH_SIZE = 20 * 1000;
+const MAX_BATCH_SIZE = nouveau.RESULTS_LIMIT; // 20k
 const MIN_BATCH_SIZE = 5 * 1000;
 const MAX_BATCH_SIZE_REACHED = 'max_size_reached';
 

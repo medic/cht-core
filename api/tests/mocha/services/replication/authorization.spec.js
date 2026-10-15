@@ -591,7 +591,8 @@ describe('Authorization service', () => {
           request.post.args[0].should.deep.equal([  {
             body: {
               limit: 20000,
-              q: 'key:(1 OR 2 OR 3)'
+              q: 'key:(1 OR 2 OR 3)',
+              bookmark: undefined,
             },
             uri: 'http://localhost:5988/_design/medic/_nouveau/docs_by_replication_key'
           }]);
@@ -613,7 +614,7 @@ describe('Authorization service', () => {
         .then(result => {
           request.post.callCount.should.equal(3);
           request.post.args.map(([{ body }]) => body).should.deep.equal([
-            { limit: 20000, q: 'key:(1 OR 2 OR 3)' },
+            { limit: 20000, q: 'key:(1 OR 2 OR 3)', bookmark: undefined },
             { limit: 20000, q: 'key:(1 OR 2 OR 3)', bookmark: 'b1' },
             { limit: 20000, q: 'key:(1 OR 2 OR 3)', bookmark: 'b2' },
           ]);
