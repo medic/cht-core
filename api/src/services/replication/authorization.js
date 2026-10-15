@@ -641,9 +641,11 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
       limit: nouveau.RESULTS_LIMIT,
     };
     let bookmark;
+    let previousBookmark;
     let pageHits;
 
     do {
+      previousBookmark = bookmark;
       const response = await request.post({
         uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
         body: { ...body, bookmark },
@@ -660,7 +662,7 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
           },
         });
       }
-    } while (bookmark && pageHits.length >= nouveau.RESULTS_LIMIT);
+    } while (bookmark && bookmark !== previousBookmark && pageHits.length >= nouveau.RESULTS_LIMIT);
   }
 
   return hits;
