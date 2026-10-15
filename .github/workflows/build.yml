@@ -82,7 +82,7 @@ jobs:
       run: npm run ci-compile
     - name: Setup QEMU
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: docker/setup-qemu-action@ce360397ddf832beb865e1373c09c0e9f86d70d  # v4.0.0
+      uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a  # v4.0.0
     - name: Setup Buildx
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
       uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd  # v4.0.0
@@ -473,7 +473,7 @@ jobs:
     - name: Login to Public Amazon ECR
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
       id: login-ecr-public
-      uses: aws-actions/amazon-ecr-login@fa648b43de3d4d023bcb3f89ed6949c419  # v2.1.5
+      uses: aws-actions/amazon-ecr-login@fa648b43de3d4d023bcb3f89ed6940096949c419  # v2.1.5
       with:
         registry-type: public
         mask-password: 'true'
