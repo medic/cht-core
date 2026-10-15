@@ -1,8 +1,5 @@
 const wdioBaseConfig = require('../../wdio.conf');
 
-const chai = require('chai');
-chai.use(require('chai-exclude'));
-
 // Override specific properties from wdio base config
 exports.config = Object.assign(wdioBaseConfig.config, {
   suites: {

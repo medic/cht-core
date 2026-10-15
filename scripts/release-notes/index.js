@@ -1,7 +1,7 @@
 const minimist = require('minimist');
 const { Octokit } = require('@octokit/core');
-const { paginateGraphql } = require('@octokit/plugin-paginate-graphql');
-const ExtendedOctokit = Octokit.plugin(paginateGraphql);
+const { paginateGraphQL } = require('@octokit/plugin-paginate-graphql');
+const ExtendedOctokit = Octokit.plugin(paginateGraphQL);
 const fs = require('node:fs');
 
 const TOKEN = process.env.GITHUB_TOKEN;
