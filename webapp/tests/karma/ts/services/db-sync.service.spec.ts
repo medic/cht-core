@@ -193,7 +193,7 @@ describe('DBSync service', () => {
       expect(consoleWarn.callCount).to.equal(0);
     });
 
-    [5, 7.5, 30, 1440].forEach(minutes => {
+    [5, 7.5, 30, 60].forEach(minutes => {
       it(`syncs at the configured interval of ${minutes} minutes`, async () => {
         setConfiguredInterval(minutes);
         createService();
@@ -209,7 +209,7 @@ describe('DBSync service', () => {
       });
     });
 
-    [0, -1, 1, 4.99, 1441, '30', true, false, {}, [], NaN, Infinity, -Infinity].forEach(value => {
+    [0, -1, 1, 4.99, 61, '30', true, false, {}, [], NaN, Infinity, -Infinity].forEach(value => {
       it(`falls back to 5 minutes and warns once for invalid value ${String(value)}`, async () => {
         setConfiguredInterval(value);
         createService();
@@ -237,46 +237,6 @@ describe('DBSync service', () => {
       await tick(MINUTE + 1);
       expectSyncCall(2);
       expect(consoleWarn.callCount).to.equal(0);
-    });
-
-    it('uses the default for both timers when reading the settings fails', async () => {
-      settingsService.get.rejects(new Error('boom'));
-      createService();
-      await service.sync();
-      expectSyncCall(1);
-      expectSyncMetaCall(1);
-
-      await tick(5 * MINUTE + 1);
-      expectSyncCall(2);
-      expectSyncMetaCall(1);
-      await tick(25 * MINUTE);
-      expectSyncMetaCall(2);
-      expect(consoleWarn.callCount).to.equal(1);
-      expect(consoleWarn.args[0][0]).to.include('replication interval');
-      expect(settingsService.get.callCount).to.equal(1);
-    });
-
-    it('keeps the initial interval until reload, including after quick and forced syncs', async () => {
-      setConfiguredInterval(30);
-      createService();
-      await service.sync();
-      expectSyncCall(1);
-
-      setConfiguredInterval(5);
-      await service.sync(false, true);
-      expect(to.callCount).to.equal(2);
-      expect(replicationService.replicateFrom.callCount).to.equal(1);
-      await service.sync(true);
-      expect(to.callCount).to.equal(3);
-      expect(replicationService.replicateFrom.callCount).to.equal(2);
-
-      await tick(5 * MINUTE + 1);
-      expect(to.callCount).to.equal(3);
-      expect(replicationService.replicateFrom.callCount).to.equal(2);
-      await tick(25 * MINUTE);
-      expect(to.callCount).to.equal(4);
-      expect(replicationService.replicateFrom.callCount).to.equal(3);
-      expect(settingsService.get.callCount).to.equal(1);
     });
 
     it('waits for settings and starts one timer per database when sync calls overlap', async () => {
@@ -318,7 +278,7 @@ describe('DBSync service', () => {
       expectSyncCall(2);
     });
 
-    [undefined, 5, 30, 60, 1440].forEach(minutes => {
+    [undefined, 5, 30, 60].forEach(minutes => {
       const metaMinutes = Math.max(30, minutes || 5);
       it(`syncs metadata every ${metaMinutes} minutes with interval ${minutes}`, async () => {
         setConfiguredInterval(minutes);

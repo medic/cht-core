@@ -33,7 +33,7 @@ const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';
 const DEFAULT_SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const SYNC_INTERVAL_SETTING = 'replication_interval_minutes';
 const MIN_SYNC_INTERVAL_MINUTES = DEFAULT_SYNC_INTERVAL / (60 * 1000);
-const MAX_SYNC_INTERVAL_MINUTES = 24 * 60;
+const MAX_SYNC_INTERVAL_MINUTES = 60;
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 const BATCH_SIZE = 100;
 const MAX_SUCCESSIVE_SYNCS = 2;
@@ -386,14 +386,7 @@ export class DBSyncService {
       return DEFAULT_SYNC_INTERVAL;
     }
 
-    let settings;
-    try {
-      settings = await this.settingsService.get();
-    } catch (err) {
-      console.warn('Error reading settings, using the default replication interval', err);
-      return DEFAULT_SYNC_INTERVAL;
-    }
-
+    const settings = await this.settingsService.get();
     const minutes = settings[SYNC_INTERVAL_SETTING];
     if (minutes === undefined || minutes === null) {
       return DEFAULT_SYNC_INTERVAL;
