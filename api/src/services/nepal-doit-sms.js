@@ -6,7 +6,7 @@ const config = require('../config');
 const BATCH_CONCURRENCY = 5;
 const STATUS_MAP = {
   // HTTP error status codes (from error object in catch block)
-  401: { success: false, state: 'failed', detail: 'InvalidCredentials' },
+  401: { retry: true },
   422: { success: false, state: 'failed', detail: 'UnprocessableContent' },
   500: { success: false, state: 'failed', detail: 'InternalServerError', retry: true },
 };
@@ -77,6 +77,10 @@ const isRetryableError = body => {
   return !!body && typeof body.errors === 'string' && RETRYABLE_ERROR.test(body.errors);
 };
 
+const isAccountLevelError = (err, body) => {
+  return err.statusCode === 401 || (err.statusCode === 422 && isRetryableError(body));
+};
+
 const selectErrorText = body => {
   if (typeof body.errors === 'string') {
     return body.errors;
@@ -121,20 +125,27 @@ const generateStateChange = (message, res, gatewayError) => {
   };
 };
 
-const classifyResponse = (message, body) => {
-  logger.debug('SMS API Response: %o', body);
-
-  if (body && typeof body === 'object' && !Array.isArray(body) &&
-      body.status === 1 && Array.isArray(body.invalid_number)) {
-    if (body.invalid_number.length === 0) {
-      return { messageId: message.id, state: 'sent', details: 'Processed' };
-    }
+const classifyAcceptedResponse = (message, body) => {
+  if (Array.isArray(body.invalid_number) && body.invalid_number.length > 0) {
     logger.error(`Invalid numbers in SMS API response for message ${message.id}: %o`, body.invalid_number);
     return {
       messageId: message.id,
       state: 'failed',
       details: { reason: 'InvalidNumber', error: bound(JSON.stringify(body.invalid_number)) }
     };
+  }
+
+  if (!Array.isArray(body.invalid_number)) {
+    logger.warn(`SMS API response for message ${message.id}: invalid_number was missing or not an array`);
+  }
+  return { messageId: message.id, state: 'sent', details: 'Processed' };
+};
+
+const classifyResponse = (message, body) => {
+  logger.debug('SMS API Response: %o', body);
+
+  if (isPlainObject(body) && body.status === 1) {
+    return classifyAcceptedResponse(message, body);
   }
 
   logger.error(`Invalid SMS API response for message ${message.id}: %o`, body);
@@ -151,7 +162,7 @@ const handleRequestError = (message, err) => {
 
   const errorStatus = getStatus(err);
   const body = getErrorBody(err);
-  if (errorStatus && err.statusCode === 422 && isRetryableError(body)) {
+  if (errorStatus && isAccountLevelError(err, body)) {
     logger.warn(`Account-level SMS gateway error for message ${message.id}, will retry: ${getGatewayError(body)}`);
     return;
   }

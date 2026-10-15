@@ -154,24 +154,20 @@ describe('nepal doit sms service', () => {
       });
     });
 
-    it('handles 401 unauthorized errors', () => {
+    it('retries 401 unauthorized errors, since a rotated or expired key is account-level', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('invalid-api-key');
       sinon.stub(config, 'get').returns({
         nepal_doit_sms: { url: 'https://api.example.com/sms' }
       });
       sinon.stub(request, 'post').rejects(INVALID_CREDENTIALS_ERROR);
+      sinon.stub(logger, 'warn');
       const given = [ { id: 'a', to: '+9779876543210', content: 'hello' } ];
       return service.send(given).then(actual => {
-        chai.expect(actual).to.deep.equal([{
-          messageId: 'a',
-          state: 'failed',
-          details: {
-            code: 401,
-            reason: 'InvalidCredentials',
-            error: 'Invalid credentials'
-          }
-        }]);
+        chai.expect(actual).to.deep.equal([]);
         chai.expect(request.post.callCount).to.equal(1);
+        chai.expect(logger.warn.callCount).to.equal(1);
+        chai.expect(logger.warn.args[0].join(' ')).to.include('message a');
+        chai.expect(logger.warn.args[0].join(' ')).to.include('Invalid credentials');
       });
     });
 
@@ -475,14 +471,10 @@ describe('nepal doit sms service', () => {
         gatewayError(500, { errors: 'Balance not enough' }),
         gatewayError(401, { errors: 'Balance not enough' })
       ).then(actual => {
-        chai.expect(actual).to.deep.equal([
-          // 500 has no entry: retried by the existing rule
-          {
-            messageId: 'msg1',
-            state: 'failed',
-            details: { code: 401, reason: 'InvalidCredentials', error: 'Balance not enough' }
-          }
-        ]);
+        // neither has an entry: 500 is retried by the existing rule, 401 by the account-level rule
+        chai.expect(actual).to.deep.equal([]);
+        chai.expect(logger.warn.callCount).to.equal(1);
+        chai.expect(logger.warn.args[0].join(' ')).to.include('msg1');
       });
     });
 
@@ -520,7 +512,7 @@ describe('nepal doit sms service', () => {
         });
       });
 
-      it('fails a status 1 response without a proper invalid_number array', () => {
+      it('accepts a status 1 response without an invalid_number array, with a warning', () => {
         const bodies = [
           { message: 'Success! SMS queued !', status: 1 },
           { status: 1, invalid_number: null },
@@ -528,10 +520,32 @@ describe('nepal doit sms service', () => {
           { status: 1, invalid_number: {} },
         ];
         return send(...bodies).then(actual => {
-          chai.expect(actual.map(change => change.state)).to.deep.equal([ 'failed', 'failed', 'failed', 'failed' ]);
+          chai.expect(actual).to.deep.equal(bodies.map((body, i) => ({
+            messageId: `msg${i}`,
+            state: 'sent',
+            details: 'Processed',
+          })));
+          chai.expect(logger.warn.callCount).to.equal(4);
+          chai.expect(logger.warn.args.map(args => args.join(' ')).every((line, i) => line.includes(`msg${i}`)))
+            .to.equal(true);
+          chai.expect(logger.warn.args.every(args => args.join(' ').includes('invalid_number'))).to.equal(true);
+        });
+      });
+
+      it('still fails a string status 1 without an invalid_number array, without a warning', () => {
+        const bodies = [ { status: '1' }, { status: '1', invalid_number: null } ];
+        return send(...bodies).then(actual => {
           chai.expect(actual.map(change => change.details)).to.deep.equal(
             bodies.map(body => invalidResponse(JSON.stringify(body)))
           );
+          chai.expect(logger.warn.callCount).to.equal(0);
+        });
+      });
+
+      it('does not warn about a success with an empty invalid_number array', () => {
+        return send(SUCCESS_RESPONSE).then(actual => {
+          chai.expect(actual).to.deep.equal([ { messageId: 'msg0', state: 'sent', details: 'Processed' } ]);
+          chai.expect(logger.warn.callCount).to.equal(0);
         });
       });
 
@@ -603,13 +617,16 @@ describe('nepal doit sms service', () => {
         });
       });
 
-      it('does not add a body excerpt to a 401 without error text', () => {
-        return send(gatewayError(401, {}), gatewayError(401), gatewayError(401, '<html>401</html>')).then(actual => {
-          chai.expect(actual.map(change => change.details)).to.deep.equal([
-            { code: 401, reason: 'InvalidCredentials' },
-            { code: 401, reason: 'InvalidCredentials' },
-            { code: 401, reason: 'InvalidCredentials' },
-          ]);
+      it('retries a 401 whatever its body', () => {
+        return send(
+          gatewayError(401, {}),
+          gatewayError(401),
+          gatewayError(401, '<html>401</html>'),
+          gatewayError(401, { message: 'Unauthenticated.' })
+        ).then(actual => {
+          chai.expect(actual).to.deep.equal([]);
+          chai.expect(logger.warn.callCount).to.equal(4);
+          chai.expect(logger.warn.args[3].join(' ')).to.include('Unauthenticated.');
         });
       });
 
