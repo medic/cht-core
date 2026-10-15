@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
   <h:head>
     <h:title>New Person</h:title>
     <model odk:xforms-version="1.0.0">
@@ -61,12 +61,6 @@
           </text>
           <text id="/data/init/parent_id:hint">
             <value><output value=" /data/init/type_label "/></value>
-          </text>
-          <text id="/data/person/parent:label">
-            <value>Parent ID</value>
-          </text>
-          <text id="/data/person/type:label">
-            <value>Person type</value>
           </text>
           <text id="/data/person/first_name:label">
             <value>First name</value>
@@ -197,12 +191,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <text id="/data/init/parent_id:hint">
             <value><output value=" /data/init/type_label "/></value>
           </text>
-          <text id="/data/person/parent:label">
-            <value>मूल ID</value>
-          </text>
-          <text id="/data/person/type:label">
-            <value>व्यक्ति के प्रकार</value>
-          </text>
           <text id="/data/person/sex:label">
             <value>लिंग</value>
           </text>
@@ -237,9 +225,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
             <value>-</value>
           </text>
           <text id="/data/person/last_name:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
@@ -334,12 +319,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <text id="/data/init/parent_id:hint">
             <value><output value=" /data/init/type_label "/></value>
           </text>
-          <text id="/data/person/parent:label">
-            <value>Asli ID</value>
-          </text>
-          <text id="/data/person/type:label">
-            <value>Tipe Orang</value>
-          </text>
           <text id="/data/person/sex:label">
             <value>Jenis kelamin</value>
           </text>
@@ -368,9 +347,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
             <value>-</value>
           </text>
           <text id="/data/person/last_name:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
@@ -471,12 +447,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <text id="/data/init/parent_id:hint">
             <value><output value=" /data/init/type_label "/></value>
           </text>
-          <text id="/data/person/parent:label">
-            <value>ID ya mzazi</value>
-          </text>
-          <text id="/data/person/type:label">
-            <value>Jina</value>
-          </text>
           <text id="/data/person/sex:label">
             <value>Jinsia</value>
           </text>
@@ -505,9 +475,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
             <value>-</value>
           </text>
           <text id="/data/person/last_name:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
@@ -632,19 +599,10 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <text id="/data/person/notes:label">
             <value>टिप्पणी</value>
           </text>
-          <text id="/data/person/parent:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/type:label">
-            <value>-</value>
-          </text>
           <text id="/data/person/first_name:label">
             <value>-</value>
           </text>
           <text id="/data/person/last_name:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
@@ -745,12 +703,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
           <text id="/data/init/parent_id:hint">
             <value><output value=" /data/init/type_label "/></value>
           </text>
-          <text id="/data/person/parent:label">
-            <value>identifiant du parent</value>
-          </text>
-          <text id="/data/person/type:label">
-            <value>Type</value>
-          </text>
           <text id="/data/person/sex:label">
             <value>Sexe</value>
           </text>
@@ -785,9 +737,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
             <value>-</value>
           </text>
           <text id="/data/person/last_name:label">
-            <value>-</value>
-          </text>
-          <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg">
@@ -826,7 +775,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value>
         </translation>
       </itext>
       <instance>
-        <data id="contact:person:create" version="2025-05-01 23-00" prefix="J1!contact:person:create!" delimiter="#">
+        <data id="contact:person:create" version="2026-09-24  14-14" prefix="J1!contact:person:create!" delimiter="#">
           <inputs>
             <meta>
               <location>

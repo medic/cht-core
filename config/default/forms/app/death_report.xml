@@ -1,48 +1,18 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
   <h:head>
     <h:title>Death report</h:title>
     <model odk:xforms-version="1.0.0">
       <itext>
         <translation lang="en">
-          <text id="/data/inputs/source:label">
-            <value>Source</value>
-          </text>
-          <text id="/data/inputs/source_id:label">
-            <value>Source ID</value>
-          </text>
           <text id="/data/inputs/contact:label">
             <value>Contact</value>
           </text>
           <text id="/data/inputs/contact/_id:label">
             <value>What is the patient's name?</value>
           </text>
-          <text id="/data/inputs/contact/name:label">
-            <value>Name</value>
-          </text>
-          <text id="/data/inputs/contact/short_name:label">
-            <value>Short Name</value>
-          </text>
-          <text id="/data/inputs/contact/patient_id:label">
-            <value>Patient ID</value>
-          </text>
-          <text id="/data/inputs/contact/date_of_birth:label">
-            <value>Date of Birth</value>
-          </text>
-          <text id="/data/inputs/contact/sex:label">
-            <value>Sex</value>
-          </text>
-          <text id="/data/inputs/contact/parent/_id:label">
-            <value>Household ID</value>
-          </text>
           <text id="/data/inputs/contact/parent/parent/contact:label">
             <value>Contact</value>
-          </text>
-          <text id="/data/inputs/contact/parent/parent/contact/name:label">
-            <value>CHW name</value>
-          </text>
-          <text id="/data/inputs/contact/parent/parent/contact/phone:label">
-            <value>CHW phone</value>
           </text>
           <text id="/data/death_details:label">
             <value>Death details</value>
@@ -88,7 +58,7 @@ Date of Death: <output value=" /data/death_details/date_of_death "/>&lt;/div&gt;
         </translation>
       </itext>
       <instance>
-        <data id="death_report" version="2025-05-01 22:11:44.570000" prefix="J1!death_report!" delimiter="#">
+        <data id="death_report" version="20260925152653" prefix="J1!death_report!" delimiter="#">
           <inputs>
             <meta>
               <location>
