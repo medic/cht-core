@@ -497,7 +497,7 @@ describe('Enketo service', () => {
       });
       expect(report._id).to.not.be.empty;
       expect(report.reported_date).to.be.a('number');
-      expect(dispatchEventStub).to.have.been.calledOnceWithExactly(events.BeforeSave());
+      expect(dispatchEventStub).to.have.been.calledOnceWithExactly(sinon.match({ type: events.BeforeSave().type }));
     });
 
     it('removes the legacy content field and attachment', async () => {
@@ -1441,7 +1441,7 @@ describe('Enketo service', () => {
       }]);
       expect(preparedDocs[0]._id).to.not.be.empty;
       expect(preparedDocs[0].reported_date).to.be.a('number');
-      expect(dispatchEventStub).to.have.been.calledOnceWithExactly(events.BeforeSave());
+      expect(dispatchEventStub).to.have.been.calledOnceWithExactly(sinon.match({ type: events.BeforeSave().type }));
     });
 
     it('throws when the group named after the contact type is missing', async () => {

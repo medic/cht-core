@@ -547,9 +547,9 @@ describe('generate-xform service', () => {
       expect('data' in updatedDoc._attachments['image.jpg']).to.be.false;
 
       // Check xml attachment remains as stub and unchanged
-      expect(updatedDoc._attachments['xml']).to.deep.equal(originalDoc._attachments['xml']);
-      expect(updatedDoc._attachments['xml'].stub).to.be.true;
-      expect('data' in updatedDoc._attachments['xml']).to.be.false;
+      expect(updatedDoc._attachments.xml).to.deep.equal(originalDoc._attachments.xml);
+      expect(updatedDoc._attachments.xml.stub).to.be.true;
+      expect('data' in updatedDoc._attachments.xml).to.be.false;
     });
 
   });
