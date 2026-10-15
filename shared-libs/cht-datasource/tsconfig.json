@@ -8,6 +8,7 @@
     "outDir": "dist",
     "sourceMap": true,
     "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo",
+    "types": ["node", "mocha", "chai", "chai-as-promised", "sinon", "sinon-chai"],
   },
   "files": [
     "src/auth.js"
