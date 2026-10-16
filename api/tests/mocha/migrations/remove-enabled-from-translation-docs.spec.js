@@ -14,10 +14,9 @@ describe('remove-enabled-from-translation-docs migration', () => {
 
   it('should have basic properties', () => {
     chai.expect(migration.name).to.equal('remove-enabled-from-translation-docs');
-    // Compare date in a timezone-agnostic way
-    const expectedCreationDate = new Date(2025, 8, 1).toDateString();
+    // `created` is parsed from a date-only string, so it is midnight UTC; compare in UTC to be timezone-agnostic
     chai.expect(migration.created).to.exist;
-    chai.expect(migration.created.toDateString()).to.equal(expectedCreationDate);
+    chai.expect(migration.created.toISOString().slice(0, 10)).to.equal('2025-09-01');
     chai.expect(migration.run).to.be.a('function');
   });
 

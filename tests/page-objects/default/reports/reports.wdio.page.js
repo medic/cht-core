@@ -365,18 +365,18 @@ const setSidebarFilterBikDate = async (fieldPromise, prevClicks, cellIndex) => {
       const text = (await cell.getText()).trim();
       await cell.click();
       return text;
-    } else {
-      throw new Error('No enabled cells found in the Nepali date picker');
     }
+    throw new Error('No enabled cells found in the Nepali date picker');
+
   } else {
     if (cells.length > cellIndex) {
       const cell = cells[cellIndex];
       const text = (await cell.getText()).trim();
       await cell.click();
       return text;
-    } else {
-      throw new Error(`Requested cell index ${cellIndex} is not available. Only ${cells.length} cells are enabled.`);
     }
+    throw new Error(`Requested cell index ${cellIndex} is not available. Only ${cells.length} cells are enabled.`);
+
   }
 };
 

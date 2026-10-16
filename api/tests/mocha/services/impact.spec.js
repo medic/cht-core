@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const chai = require('chai').use(require('chai-as-promised'));
+const chai = require('chai');
 const db = require('../../../src/db');
 const service = require('../../../src/services/impact');
 describe('impact service', () => {

@@ -590,7 +590,7 @@ describe('messageUtils', () => {
         .should.equal('baz');
     });
     it('should return the provided recipient if it is a valid phone number', () => {
-      utils._getRecipient({ from: 'martha' }, '+26339262897').should.equal('+26339262897'); // zimbabwe
+      utils._getRecipient({ from: 'martha' }, '+263712345678').should.equal('+263712345678'); // zimbabwe
       utils._getRecipient({ from: 'martha' }, '+33470075051').should.equal('+33470075051'); // france
       utils._getRecipient({ from: 'martha' }, '+254202244150').should.equal('+254202244150'); // kenya
       utils._getRecipient({ from: 'martha' }, '+9771-4492163').should.equal('+9771-4492163'); // nepal

@@ -30,6 +30,7 @@ jobs:
         uses: alibaba/open-code-review@bccbc15f785269400735d5255540c231e6c02b6d # v1.12.9 - keep in sync with the ocr_version below
         env:
           OCR_ENABLE_TELEMETRY: "1"
+          OCR_NO_UPDATE: "1"
           OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
           OTEL_EXPORTER_OTLP_ENDPOINT: ${{ env.LANGFUSE_OTEL_BASE }}
           OTEL_EXPORTER_OTLP_HEADERS: Authorization=Basic ${{ secrets.LANGFUSE_OTEL_BASIC_AUTH }},x-langfuse-ingestion-version=4
@@ -64,9 +65,10 @@ jobs:
           persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+          allow-unsafe-pr-checkout: true
       - name: Review PR for completeness
         id: review
-        uses: anthropics/claude-code-action@6b082c41935b4c8a3b8b0ef85ba4ba4d9eeb8975 # v1.0.189
+        uses: anthropics/claude-code-action@97c53473391bff1901034d4b454b5bac7ab7a029 # v1.0.239 - installs Claude Code 2.1.287
         env:
           CLAUDE_CODE_ENABLE_TELEMETRY: "1"
           CLAUDE_CODE_ENHANCED_TELEMETRY_BETA: "1"
@@ -92,10 +94,28 @@ jobs:
 
             Return the skill's report verbatim as `report_markdown`. If the skill concludes the PR's intent could not 
             be established, return that as the report; an inconclusive report is still the result.
+          settings: |
+            {
+              "permissions": {
+                "blockReadsOutsideWorkingDirectories": true,
+                "deny": ["Read(.git/**)"]
+              },
+              "hooks": {
+                "PreToolUse": [{
+                  "matcher": "Bash|Monitor",
+                  "hooks": [{
+                    "type": "command",
+                    "command": "bash",
+                    "args": ["-c", "c=$(jq -r .tool_input.command); re='^/home/runner/[.]claude/plugins/cache/medic-cht-ai-tools/cht-pr-review/[0-9]+([.][0-9]+)*/scripts/pr-(context|diff)[.]sh( [0-9]+)?$'; [[ $c =~ $re ]] || { echo 'Blocked: only the cht-pr-review scripts may run in Bash. Use Read, Grep and Glob to explore the code.' >&2; exit 2; }"]
+                  }]
+                }]
+              }
+            }
           claude_args: |
             --model ${{ env.CLAUDE_LLM_MODEL }}
-            --allowedTools "Skill,Bash(/home/runner/.claude/plugins/cache/medic-cht-ai-tools/cht-pr-review/*/scripts/pr-context.sh*),Bash(/home/runner/.claude/plugins/cache/medic-cht-ai-tools/cht-pr-review/*/scripts/pr-diff.sh*),mcp__plugin_cht-docs-mcp_cht-docs__ask_question,mcp__plugin_cht-docs-mcp_cht-docs__search_docs"
-            --disallowedTools "Edit,Write,NotebookEdit"
+            --setting-sources user
+            --allowedTools "Skill,Grep,Glob,Bash(/home/runner/.claude/plugins/cache/medic-cht-ai-tools/cht-pr-review/*/scripts/pr-context.sh*),Bash(/home/runner/.claude/plugins/cache/medic-cht-ai-tools/cht-pr-review/*/scripts/pr-diff.sh*),mcp__plugin_cht-docs-mcp_cht-docs__ask_question,mcp__plugin_cht-docs-mcp_cht-docs__search_docs"
+            --disallowedTools "Edit,Write,NotebookEdit,Monitor,PowerShell,WebFetch,WebSearch"
             --json-schema '{"type":"object","required":["report_markdown"],"additionalProperties":false,"properties":{"report_markdown":{"type":"string","description":"The complete review report as GitHub-flavored markdown."}}}'
       - name: Upload Claude execution log
         if: ${{ !cancelled() && steps.review.outputs.execution_file }}

@@ -42,12 +42,27 @@ class SearchResultReader extends Readable {
     this.filters = filters;
     this.options = searchOptions;
     this.mapper = MAPPERS[type];
+    this.exportedIds = this.mapper.hasDuplicateDocIds ? new Set() : null;
 
     // There is no reason for a user to pass a skip, but we're going to allow
     // users to pass a limit. This could be useful as an escape hatch / tweak in
     // production.
     this.options.skip = 0;
     this.options.limit = this.options.limit || BATCH;
+  }
+
+  removeExported(ids) {
+    if (!this.exportedIds) {
+      return ids;
+    }
+
+    return ids.filter(id => {
+      if (this.exportedIds.has(id)) {
+        return false;
+      }
+      this.exportedIds.add(id);
+      return true;
+    });
   }
 
   _read() {
@@ -60,7 +75,7 @@ class SearchResultReader extends Readable {
     }
 
     return this.mapper.getDocIds(this.options, this.filters)
-      .then(ids => {
+      .then(async ids => {
 
         if (!ids.length) {
           return this.push(null);
@@ -68,13 +83,16 @@ class SearchResultReader extends Readable {
 
         this.options.skip += this.options.limit;
 
-        return this.mapper.getDocs(ids)
-          .then(docs => {
-            const lines = docs.map(doc => {
-              return this.getRows(doc).map(csvLineToString).join('');
-            });
-            this.push(lines.join(''));
-          });
+        const newIds = this.removeExported(ids);
+        if (!newIds.length) {
+          return this.destroyed ? undefined : this._read();
+        }
+
+        const docs = await this.mapper.getDocs(newIds);
+        const lines = docs.map(doc => {
+          return this.getRows(doc).map(csvLineToString).join('');
+        });
+        this.push(lines.join(''));
       })
       .catch(err => {
         process.nextTick(() => this.emit('error', err));
