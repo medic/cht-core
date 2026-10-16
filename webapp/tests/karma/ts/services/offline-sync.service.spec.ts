@@ -100,6 +100,14 @@ describe('OfflineSync service', () => {
       expect(authService.has.calledWith('can_relay_offline_data_bundle')).to.be.false;
     });
 
+    it('refuses rather than throws when the permission check fails', async () => {
+      withBridge(bridge());
+      authService.has.rejects({ status: 503 });
+
+      expect(await service.canHost()).to.be.false;
+      expect(await service.canJoin()).to.be.false;
+    });
+
     it('lets a user take part as either host or peer', async () => {
       withBridge(bridge());
       authService.has.withArgs('can_relay_offline_data_bundle').resolves(false);

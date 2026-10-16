@@ -93,7 +93,7 @@ export class OfflineSyncService {
     if (!this.bridge?.offline_sync_host_available()) {
       return false;
     }
-    return this.authService.has('can_relay_offline_data_bundle');
+    return this.hasPermission('can_relay_offline_data_bundle');
   }
 
   /** Whether this user may send their data to a relay, and this device can join a session. */
@@ -102,13 +102,23 @@ export class OfflineSyncService {
     if (!this.bridge?.offline_sync_join_available() || this.sessionService.isOnlineOnly()) {
       return false;
     }
-    return this.authService.has('can_send_offline_data_bundle');
+    return this.hasPermission('can_send_offline_data_bundle');
   }
 
   /** Whether this user and device can take part at all, as host or as peer. */
   async canTakePart(): Promise<boolean> {
     const [canHost, canJoin] = await Promise.all([this.canHost(), this.canJoin()]);
     return canHost || canJoin;
+  }
+
+  // AuthService.has rethrows a 503 (api unavailable, e.g. during startup).
+  private async hasPermission(permission: string): Promise<boolean> {
+    try {
+      return await this.authService.has(permission);
+    } catch (err) {
+      console.error(`OfflineSyncService :: Could not check ${permission}`, err);
+      return false;
+    }
   }
 
   /** Results arrive asynchronously: bringing a hotspot up takes seconds. */
