@@ -16,7 +16,7 @@ describe('OfflineSync service', () => {
     offline_sync_join_available: sinon.stub().returns(true),
     offline_sync_start_hosting: sinon.stub(),
     offline_sync_stop_hosting: sinon.stub(),
-    offline_sync_is_hosting: sinon.stub().returns(false),
+    offline_sync_hosting_session: sinon.stub().returns(''),
     offline_sync_scan_and_join: sinon.stub(),
     offline_sync_leave_session: sinon.stub(),
     ...overrides,
@@ -146,7 +146,26 @@ describe('OfflineSync service', () => {
     it('does nothing without a bridge', () => {
       expect(() => service.startHosting()).to.not.throw();
       expect(() => service.scanAndJoin()).to.not.throw();
-      expect(service.isHosting()).to.be.false;
+      expect(service.hostingSession()).to.be.null;
+    });
+
+    it('reads back the session being hosted', () => {
+      const session = { qr: 'data:image/png;base64,abc', ssid: 'AndroidShare_1234', password: 'a-pwd' };
+      withBridge(bridge({ offline_sync_hosting_session: sinon.stub().returns(JSON.stringify(session)) }));
+
+      expect(service.hostingSession()).to.deep.equal(session);
+    });
+
+    it('reads no session when nothing is hosted', () => {
+      withBridge(bridge());
+
+      expect(service.hostingSession()).to.be.null;
+    });
+
+    it('reads no session when the native side sends one it cannot read', () => {
+      withBridge(bridge({ offline_sync_hosting_session: sinon.stub().returns('not json') }));
+
+      expect(service.hostingSession()).to.be.null;
     });
   });
 

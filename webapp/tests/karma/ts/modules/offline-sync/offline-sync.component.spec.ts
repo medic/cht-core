@@ -64,6 +64,7 @@ describe('OfflineSync component', () => {
       deviceDescription: sinon.stub().returns('Pixel 7, Android 14 (API 34)'),
       canHost: sinon.stub().resolves(true),
       canJoin: sinon.stub().resolves(true),
+      hostingSession: sinon.stub().returns(null),
       hostingResult: () => hostingResult.asObservable(),
       pairingResult: () => pairingResult.asObservable(),
       permissionsResolved: () => permissionsResolved.asObservable(),
@@ -166,6 +167,15 @@ describe('OfflineSync component', () => {
       hostingResult.next({ ok: false, detail: '' });
 
       expect(component.errorKey).to.equal('offline_sync.error.unknown');
+    });
+
+    it('shows the session still running when the user comes back to the page', async () => {
+      await create({ hostingSession: sinon.stub().returns(HOSTING_SESSION) });
+
+      expect(component.state).to.equal('hosting');
+      expect(component.qrImage).to.equal(HOSTING_SESSION.qr);
+      expect(component.ssid).to.equal(HOSTING_SESSION.ssid);
+      expect(component.password).to.equal(HOSTING_SESSION.password);
     });
 
     it('clears the code when hosting stops', async () => {

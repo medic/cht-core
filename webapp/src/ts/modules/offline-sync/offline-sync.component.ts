@@ -6,7 +6,7 @@ import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
 import { FeedbackService } from '@mm-services/feedback.service';
-import { OfflineSyncResult, OfflineSyncService } from '@mm-services/offline-sync.service';
+import { HostingSession, OfflineSyncResult, OfflineSyncService } from '@mm-services/offline-sync.service';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 
 /** What the screen is doing right now. */
@@ -58,6 +58,12 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
     ]);
     this.loading = false;
 
+    // Hosting carries on while the user is elsewhere in the app, so coming back shows the same code.
+    const session = this.offlineSyncService.hostingSession();
+    if (session) {
+      this.showHosting(session);
+    }
+
     this.subscriptions.add(this.offlineSyncService.hostingResult()
       .subscribe(result => this.onHostingResult(result)));
     this.subscriptions.add(this.offlineSyncService.pairingResult()
@@ -103,9 +109,13 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
     if (!result.ok) {
       return this.fail(result.detail, result.diagnostic);
     }
-    this.qrImage = result.session?.qr ?? null;
-    this.ssid = result.session?.ssid ?? null;
-    this.password = result.session?.password ?? null;
+    this.showHosting(result.session);
+  }
+
+  private showHosting(session?: HostingSession) {
+    this.qrImage = session?.qr ?? null;
+    this.ssid = session?.ssid ?? null;
+    this.password = session?.password ?? null;
     this.state = 'hosting';
   }
 
