@@ -260,7 +260,7 @@ describe('FHIR service', () => {
   describe('search', () => {
     it('pages Patients through the person datasource', async () => {
       personPage.resolves({ data: [personDoc()], cursor: '50' });
-      const result = await service.search(facade(), 'Patient', {}, null, 50);
+      const result = await service.search(facade(), 'Patient', { params: {}, cursor: null, limit: 50 });
       expect(personPage.args).to.deep.equal([[Qualifier.byContactType('person'), null, 50]]);
       expect(result.resources.map(resource => resource.id)).to.deep.equal([PATIENT_UUID]);
       expect(result.cursor).to.equal('50');
@@ -269,7 +269,7 @@ describe('FHIR service', () => {
     it('fetches report ids then documents, because getPage takes ids only', async () => {
       reportUuidsPage.resolves({ data: [REPORT_UUID], cursor: null });
       reportPage.resolves({ data: [reportDoc()], cursor: null });
-      const result = await service.search(facade(), 'Encounter', {}, null, 50);
+      const result = await service.search(facade(), 'Encounter', { params: {}, cursor: null, limit: 50 });
       expect(reportUuidsPage.args).to.deep.equal([[Qualifier.byForms(['pregnancy']), null, 50]]);
       expect(reportPage.args).to.deep.equal([[Qualifier.byIds([REPORT_UUID]), null, 1]]);
       expect(result.resources).to.have.length(1);
@@ -288,7 +288,7 @@ describe('FHIR service', () => {
 
     it('stops without a document fetch when no ids came back', async () => {
       reportUuidsPage.resolves({ data: [], cursor: null });
-      const result = await service.search(facade(), 'Encounter', {}, null, 50);
+      const result = await service.search(facade(), 'Encounter', { params: {}, cursor: null, limit: 50 });
       expect(reportPage.callCount).to.equal(0);
       expect(result).to.deep.equal({ resources: [], cursor: null });
     });
@@ -296,7 +296,7 @@ describe('FHIR service', () => {
     it('searches names through freetext then fetches the contacts', async () => {
       contactUuidsPage.resolves({ data: [PATIENT_UUID], cursor: 'bookmark-2' });
       contactPage.resolves({ data: [personDoc()], cursor: null });
-      const result = await service.search(facade(), 'Patient', { name: ' mary ' }, null, 50);
+      const result = await service.search(facade(), 'Patient', { params: { name: ' mary ' }, cursor: null, limit: 50 });
       expect(contactUuidsPage.args).to.deep.equal([[
         Qualifier.and(Qualifier.byFreetext('mary'), Qualifier.byContactType('person')),
         null,
@@ -307,14 +307,18 @@ describe('FHIR service', () => {
     });
 
     it('rejects a freetext search the index cannot serve', async () => {
-      const result = await service.search(facade(), 'Patient', { name: 'ma' }, null, 50);
+      const result = await service.search(facade(), 'Patient', { params: { name: 'ma' }, cursor: null, limit: 50 });
       expect(result).to.deep.equal({ error: 'The name search parameter needs at least 3 characters.' });
       expect(contactUuidsPage.callCount).to.equal(0);
     });
 
     it('reads one report when an encounter parameter is given', async () => {
       reportGet.resolves(reportDoc());
-      const result = await service.search(facade(), 'Observation', { encounter: `Encounter/${REPORT_UUID}` }, null, 50);
+      const result = await service.search(
+        facade(),
+        'Observation',
+        { params: { encounter: `Encounter/${REPORT_UUID}` }, cursor: null, limit: 50 },
+      );
       expect(reportGet.args).to.deep.equal([[Qualifier.byUuid(REPORT_UUID)]]);
       expect(reportUuidsPage.callCount).to.equal(0);
       expect(result.resources.map(resource => resource.id)).to.deep.equal([`${REPORT_UUID}.29463-7`]);
@@ -326,7 +330,7 @@ describe('FHIR service', () => {
       reportUuidsPage.resolves({ data: [REPORT_UUID], cursor: null });
       reportPage.resolves({ data: [reportDoc()], cursor: null });
 
-      const result = await service.search(facade(), 'Encounter', {}, null, 50);
+      const result = await service.search(facade(), 'Encounter', { params: {}, cursor: null, limit: 50 });
       expect(reportUuidsPage.args).to.deep.equal([[Qualifier.byForms(['pregnancy', 'delivery']), null, 50]]);
       expect(result.resources.map(resource => resource.id)).to.deep.equal([REPORT_UUID]);
     });
@@ -335,7 +339,7 @@ describe('FHIR service', () => {
       withSecondEncounterForm();
       reportUuidsPage.resolves({ data: [REPORT_UUID], cursor: null });
       reportPage.resolves({ data: [reportDoc()], cursor: null });
-      const result = await service.search(facade(), 'Observation', {}, null, 50);
+      const result = await service.search(facade(), 'Observation', { params: {}, cursor: null, limit: 50 });
       expect(reportUuidsPage.args).to.deep.equal([[Qualifier.byForms(['pregnancy', 'delivery']), null, 50]]);
       expect(result.resources.map(resource => resource.id)).to.deep.equal([`${REPORT_UUID}.29463-7`]);
     });
@@ -346,7 +350,7 @@ describe('FHIR service', () => {
         data: [reportDoc(), { ...reportDoc(), _id: 'other', form: 'death_report' }],
         cursor: null,
       });
-      const result = await service.search(facade(), 'Encounter', {}, null, 50);
+      const result = await service.search(facade(), 'Encounter', { params: {}, cursor: null, limit: 50 });
       expect(result.resources.map(resource => resource.id)).to.deep.equal([REPORT_UUID]);
     });
   });

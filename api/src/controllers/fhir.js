@@ -132,6 +132,46 @@ const requireResourceType = (res, resourceType) => {
   return config;
 };
 
+/* -------------------------------- searching ------------------------------- */
+
+// A repeated parameter arrives as an array; FHIR treats that as AND, which no
+// plan implements, so take the last rather than guess.
+const lastValue = (value) => String(Array.isArray(value) ? value.at(-1) : value);
+
+/** The search parameters and page size, or the `error` to answer 400 with. */
+const parseSearchRequest = (query, resourceType) => {
+  const supported = RESOURCE_TYPES[resourceType].searchParams.map(spec => spec.name);
+  const names = Object.keys(query).filter(name => !RESULT_PARAMS.has(name));
+  const unsupported = names.find(name => !supported.includes(name));
+  if (unsupported) {
+    return {
+      error: `${resourceType} does not support the search parameter ${unsupported}. `
+        + `Supported: ${supported.join(', ')}.`,
+    };
+  }
+  const limit = fhir.parseLimit(query._count);
+  if (limit === null) {
+    return { error: '_count must be a positive integer.' };
+  }
+  return { params: Object.fromEntries(names.map(name => [name, lastValue(query[name])])), limit };
+};
+
+/** `_id` is a read dressed as a one-entry searchset. */
+const idSearchBundle = (req, resource) => searchsetBundle(
+  resource ? [resource] : [],
+  serviceBase(req),
+  [{ relation: 'self', url: selfUrl(req) }],
+  resource ? 1 : 0,
+);
+
+const searchLinks = (req, cursor) => {
+  const links = [{ relation: 'self', url: selfUrl(req) }];
+  if (cursor) {
+    links.push({ relation: 'next', url: nextUrl(req, cursor) });
+  }
+  return links;
+};
+
 const assertPermission = (req) => auth.assertPermissions(req, { isOnline: true, hasAll: [PERMISSION] });
 
 /* -------------------------------- handlers -------------------------------- */
@@ -248,51 +288,21 @@ module.exports = {
       if (!config) {
         return;
       }
-
-      const supported = RESOURCE_TYPES[resourceType].searchParams.map(spec => spec.name);
-      const params = {};
-      for (const [name, value] of Object.entries(req.query)) {
-        if (RESULT_PARAMS.has(name)) {
-          continue;
-        }
-        if (!supported.includes(name)) {
-          return sendOutcome(
-            res,
-            400,
-            `${resourceType} does not support the search parameter ${name}. Supported: ${supported.join(', ')}.`,
-          );
-        }
-        // A repeated parameter arrives as an array; FHIR treats that as AND,
-        // which no plan implements, so take the last rather than guess.
-        params[name] = Array.isArray(value) ? String(value[value.length - 1]) : String(value);
+      const { params, limit, error } = parseSearchRequest(req.query, resourceType);
+      if (error) {
+        return sendOutcome(res, 400, error);
       }
 
-      const limit = fhir.parseLimit(req.query._count);
-      if (limit === null) {
-        return sendOutcome(res, 400, '_count must be a positive integer.');
-      }
-
-      // `_id` is a read dressed as a one-entry searchset.
       if (params._id !== undefined) {
-        const resource = await fhir.read(config, resourceType, params._id);
-        return sendResource(res, searchsetBundle(
-          resource ? [resource] : [],
-          serviceBase(req),
-          [{ relation: 'self', url: selfUrl(req) }],
-          resource ? 1 : 0,
-        ));
+        return sendResource(res, idSearchBundle(req, await fhir.read(config, resourceType, params._id)));
       }
 
       const cursor = req.query._cursor ? String(req.query._cursor) : null;
-      const result = await fhir.search(config, resourceType, params, cursor, limit);
+      const result = await fhir.search(config, resourceType, { params, cursor, limit });
       if (result.error) {
         return sendOutcome(res, 400, result.error);
       }
-      const links = [{ relation: 'self', url: selfUrl(req) }];
-      if (result.cursor) {
-        links.push({ relation: 'next', url: nextUrl(req, result.cursor) });
-      }
-      return sendResource(res, searchsetBundle(result.resources, serviceBase(req), links));
+      return sendResource(res, searchsetBundle(result.resources, serviceBase(req), searchLinks(req, result.cursor)));
     }),
 
     /**

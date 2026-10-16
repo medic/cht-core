@@ -10,12 +10,14 @@
  * Pure, and clock-free: `now` is always passed in.
  */
 import { FACADE_RESOURCE_TYPES, RESOURCE_TYPES, bindingServesType } from './catalog';
-import type { FacadeConfig } from './config';
+import { type FacadeConfig, trimTrailingSlashes } from './config';
 
 export const FHIR_VERSION = '4.0.1';
 export const FHIR_JSON_CONTENT_TYPE = 'application/fhir+json';
 
+// NOSONAR_BEGIN - a FHIR canonical, never fetched
 const RESTFUL_SECURITY_SERVICE = 'http://terminology.hl7.org/CodeSystem/restful-security-service';
+// NOSONAR_END
 
 /**
  * `code` values are from the FHIR issue-type value set. The mapping used by
@@ -50,7 +52,7 @@ export const searchsetBundle = (
   ...(total === undefined ? {} : { total }),
   link: links.map(link => ({ ...link })),
   entry: resources.map(resource => ({
-    fullUrl: `${serviceBase}/${resource.resourceType}/${resource.id}`,
+    fullUrl: `${serviceBase}/${resource.resourceType as string}/${resource.id as string}`,
     resource,
     search: { mode: 'match' },
   })),
@@ -72,7 +74,7 @@ export const buildCapabilityStatement = (options: CapabilityStatementOptions): R
   return {
     resourceType: 'CapabilityStatement',
     id: 'cht-facade',
-    url: `${config.canonicalBase.replace(/\/+$/, '')}/CapabilityStatement/cht-facade`,
+    url: `${trimTrailingSlashes(config.canonicalBase)}/CapabilityStatement/cht-facade`,
     name: 'ChtFacadeCapabilityStatement',
     title: 'CHT FHIR Facade',
     status: 'active',

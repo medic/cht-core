@@ -106,9 +106,9 @@ describe('cht-fhir mapper', () => {
     });
 
     it('rejects a date the calendar does not have', () => {
-      expect(coerceDate('1991-13-01')).to.equal(null);
-      expect(coerceDate('1991-02-31')).to.equal(null);
-      expect(coerceDateTime('1991-02-31')).to.equal(null);
+      expect(coerceDate('1991-13-01')).to.be.null;
+      expect(coerceDate('1991-02-31')).to.be.null;
+      expect(coerceDateTime('1991-02-31')).to.be.null;
     });
 
     it('passes a date-only value through as a dateTime rather than inventing midnight', () => {
@@ -116,9 +116,9 @@ describe('cht-fhir mapper', () => {
     });
 
     it('returns null for a value that is not a date', () => {
-      expect(coerceDate('not a date')).to.equal(null);
-      expect(coerceDateTime('not a date')).to.equal(null);
-      expect(coerceDate(undefined)).to.equal(null);
+      expect(coerceDate('not a date')).to.be.null;
+      expect(coerceDateTime('not a date')).to.be.null;
+      expect(coerceDate(undefined)).to.be.null;
     });
 
     it('reads the booleans XForms actually writes', () => {
@@ -127,15 +127,15 @@ describe('cht-fhir mapper', () => {
       expect(coerceBoolean('1')).to.equal(true);
       expect(coerceBoolean('0')).to.equal(false);
       expect(coerceBoolean(true)).to.equal(true);
-      expect(coerceBoolean('maybe')).to.equal(null);
+      expect(coerceBoolean('maybe')).to.be.null;
     });
 
     it('parses the strings XForms uses for numbers', () => {
       expect(coerceNumber('62.5')).to.equal(62.5);
       expect(coerceNumber(21)).to.equal(21);
-      expect(coerceNumber('')).to.equal(null);
-      expect(coerceNumber('abc')).to.equal(null);
-      expect(coerceNumber(Infinity)).to.equal(null);
+      expect(coerceNumber('')).to.be.null;
+      expect(coerceNumber('abc')).to.be.null;
+      expect(coerceNumber(Infinity)).to.be.null;
     });
   });
 
@@ -150,14 +150,14 @@ describe('cht-fhir mapper', () => {
     it('reads a field path relative to doc.fields', () => {
       expect(resolveSource({ kind: 'field', path: 'vitals.weight_kg' }, doc)).to.equal('62.5');
       // Not relative to the document: `form` is a top-level key, not a field.
-      expect(resolveSource({ kind: 'field', path: 'form' }, doc)).to.equal(undefined);
+      expect(resolveSource({ kind: 'field', path: 'form' }, doc)).to.be.undefined;
     });
 
     it('returns undefined rather than throwing when a path runs off the document', () => {
-      expect(resolveSource({ kind: 'doc', path: 'doc.nope.deeper' }, doc)).to.equal(undefined);
-      expect(resolveSource({ kind: 'field', path: 'a.b.c' }, doc)).to.equal(undefined);
-      expect(resolveSource({ kind: 'doc', path: 'doc.form.length.nope' }, doc)).to.equal(undefined);
-      expect(resolveSource({ kind: 'field', path: 'x' }, { _id: 'no-fields' })).to.equal(undefined);
+      expect(resolveSource({ kind: 'doc', path: 'doc.nope.deeper' }, doc)).to.be.undefined;
+      expect(resolveSource({ kind: 'field', path: 'a.b.c' }, doc)).to.be.undefined;
+      expect(resolveSource({ kind: 'doc', path: 'doc.form.length.nope' }, doc)).to.be.undefined;
+      expect(resolveSource({ kind: 'field', path: 'x' }, { _id: 'no-fields' })).to.be.undefined;
     });
 
     describe('repeat groups', () => {

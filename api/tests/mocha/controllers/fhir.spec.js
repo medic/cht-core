@@ -289,9 +289,7 @@ describe('FHIR Controller', () => {
       req.query = { _count: '5', _format: 'json', _pretty: 'true', _cursor: 'abc' };
       search.resolves({ resources: [], cursor: null });
       await controller.v1.search(req, res);
-      expect(search.args[0][2]).to.deep.equal({});
-      expect(search.args[0][3]).to.equal('abc');
-      expect(search.args[0][4]).to.equal(5);
+      expect(search.args[0][2]).to.deep.equal({ params: {}, cursor: 'abc', limit: 5 });
     });
 
     it('rejects a _count that is not a positive integer', async () => {
@@ -305,7 +303,7 @@ describe('FHIR Controller', () => {
       req.query = { name: ['mary', 'grace'] };
       search.resolves({ resources: [], cursor: null });
       await controller.v1.search(req, res);
-      expect(search.args[0][2]).to.deep.equal({ name: 'grace' });
+      expect(search.args[0][2].params).to.deep.equal({ name: 'grace' });
     });
 
     it('surfaces a planning refusal as a 400', async () => {

@@ -12,7 +12,7 @@ import type { ChtSourceKind } from './config';
 export const FACADE_RESOURCE_TYPES = ['Patient', 'Encounter', 'Observation'] as const;
 export type FacadeResourceType = typeof FACADE_RESOURCE_TYPES[number];
 
-const CS_ACT_CODE = 'http://terminology.hl7.org/CodeSystem/v3-ActCode';
+const CS_ACT_CODE = 'http://terminology.hl7.org/CodeSystem/v3-ActCode'; // NOSONAR - a FHIR canonical, never fetched
 
 /* --------------------------------- values --------------------------------- */
 
@@ -77,7 +77,10 @@ const objectAt = (draft: ResourceDraft, key: string): Record<string, unknown> =>
   return fresh;
 };
 
-const referenceTo = (value: ElementValue) => ({ reference: String(value) });
+/** The text of a value. Only a `concept` element is given a coding, and a coding's text is its code. */
+const textOf = (value: ElementValue): string => typeof value === 'string' ? value : value.code;
+
+const referenceTo = (value: ElementValue) => ({ reference: textOf(value) });
 
 const ACT_CODE_DISPLAYS: Readonly<Record<string, string>> = {
   AMB: 'ambulatory', EMER: 'emergency', FLD: 'field', HH: 'home health',
@@ -249,7 +252,7 @@ const ENCOUNTER: ResourceTypeSpec = {
       accepts: ['const'],
       coerce: 'string',
       apply: (draft, value) => {
-        const code = String(value);
+        const code = textOf(value);
         const display = ACT_CODE_DISPLAYS[code];
         draft.class = display ? { system: CS_ACT_CODE, code, display } : { system: CS_ACT_CODE, code };
       },

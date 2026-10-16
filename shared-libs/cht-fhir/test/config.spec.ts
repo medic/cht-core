@@ -61,14 +61,14 @@ describe('cht-fhir config', () => {
 
     it('refuses to serve without a canonicalBase, because it will not invent one', () => {
       const { config, diagnostics } = loadConfig(mapping({ canonicalBase: '  ' }));
-      expect(config).to.equal(null);
+      expect(config).to.be.null;
       expect(ruleIds(diagnostics)).to.deep.equal(['canonical-base-missing']);
     });
 
     it('reports a missing facade block, whatever shape the settings are', () => {
       for (const raw of [{ schemaVersion: 1 }, 'nonsense', null, { facade: { resources: [] } }]) {
         const { config, diagnostics } = loadConfig(raw);
-        expect(config, JSON.stringify(raw)).to.equal(null);
+        expect(config, JSON.stringify(raw)).to.be.null;
         expect(ruleIds(diagnostics), JSON.stringify(raw)).to.deep.equal(['facade-missing']);
       }
     });
@@ -324,7 +324,7 @@ describe('cht-fhir config', () => {
       const { config, diagnostics } = loadConfig({
         facade: { canonicalBase: CANONICAL_BASE, resources: { 'Patient/contact_type/p': { status: 'disabled' } } },
       });
-      expect(config).to.equal(null);
+      expect(config).to.be.null;
       expect(ruleIds(diagnostics)).to.include('no-servable-bindings');
     });
   });
@@ -337,9 +337,9 @@ describe('cht-fhir config', () => {
     });
 
     it('rejects an id with no code or no uuid', () => {
-      expect(parseObservationId('no-dot')).to.equal(null);
-      expect(parseObservationId('.leading')).to.equal(null);
-      expect(parseObservationId('trailing.')).to.equal(null);
+      expect(parseObservationId('no-dot')).to.be.null;
+      expect(parseObservationId('.leading')).to.be.null;
+      expect(parseObservationId('trailing.')).to.be.null;
     });
   });
 
@@ -365,13 +365,13 @@ describe('cht-fhir config', () => {
     it('reads a minted ad-hoc code, and not a question mapping for the same key', () => {
       expect(resolveObservationCode('minted', projection('ad-hoc'), codes))
         .to.deep.equal(codes.adHocCodeSystem.codes.minted);
-      expect(resolveObservationCode('mapped', projection('ad-hoc'), codes)).to.equal(null);
+      expect(resolveObservationCode('mapped', projection('ad-hoc'), codes)).to.be.null;
     });
 
     it('does not invent an unminted ad-hoc code', () => {
-      expect(resolveObservationCode('absent', projection('ad-hoc'), codes)).to.equal(null);
+      expect(resolveObservationCode('absent', projection('ad-hoc'), codes)).to.be.null;
       expect(resolveObservationCode('minted', projection('ad-hoc'), { ...codes, adHocCodeSystem: null }))
-        .to.equal(null);
+        .to.be.null;
     });
   });
 });
@@ -471,7 +471,7 @@ describe('cht-fhir config, malformed input', () => {
     raw.facade.resources[PATIENT_KEY].identifiers[0].type = { code: 'MR' };
     const { config, diagnostics } = loadConfig(raw);
     expect(errorsOf(diagnostics)).to.deep.equal([]);
-    expect(config?.bindings.find(b => b.key === PATIENT_KEY)?.identifiers[0].type).to.equal(undefined);
+    expect(config?.bindings.find(b => b.key === PATIENT_KEY)?.identifiers[0].type).to.be.undefined;
   });
 
   it('drops an identifier use outside R4\'s required value set rather than failing', () => {
@@ -479,7 +479,7 @@ describe('cht-fhir config, malformed input', () => {
     raw.facade.resources[PATIENT_KEY].identifiers[0].use = 'primary';
     const { config, diagnostics } = loadConfig(raw);
     expect(errorsOf(diagnostics)).to.deep.equal([]);
-    expect(config?.bindings.find(b => b.key === PATIENT_KEY)?.identifiers[0].use).to.equal(undefined);
+    expect(config?.bindings.find(b => b.key === PATIENT_KEY)?.identifiers[0].use).to.be.undefined;
   });
 
   it('reports malformed observations', () => {
@@ -506,7 +506,7 @@ describe('cht-fhir config, malformed input', () => {
       ?.observations['app:pregnancy/weight_kg'];
     expect(observation?.valueMode).to.equal('auto');
     // An incomplete unit is dropped rather than half-applied.
-    expect(observation?.unit).to.equal(undefined);
+    expect(observation?.unit).to.be.undefined;
   });
 
   it('drops unusable question mappings and ad-hoc codes', () => {

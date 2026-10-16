@@ -19,6 +19,7 @@ import {
   type FacadeConfig,
   type IdentifierBinding,
   type ObservationProjection,
+  type ObservationValueMode,
   type ResourceBinding,
   type SourceFilter,
   FHIR_ID_PATTERN,
@@ -27,8 +28,16 @@ import {
   resolveObservationCode,
   resolveSource,
   sourceMatchKey,
+  trimTrailingSlashes,
 } from './config';
-import { type CodingValue, type ElementSpec, type ElementValue, RESOURCE_TYPES, findElementSpec } from './catalog';
+import {
+  type CodingValue,
+  type Coercion,
+  type ElementSpec,
+  type ElementValue,
+  RESOURCE_TYPES,
+  findElementSpec,
+} from './catalog';
 
 /**
  * Every Observation the facade projects is an answer to a question on a CHT
@@ -36,7 +45,7 @@ import { type CodingValue, type ElementSpec, type ElementValue, RESOURCE_TYPES, 
  */
 const surveyCategory = () => [{
   coding: [{
-    system: 'http://terminology.hl7.org/CodeSystem/observation-category',
+    system: 'http://terminology.hl7.org/CodeSystem/observation-category', // NOSONAR - a FHIR canonical, never fetched
     code: 'survey',
     display: 'Survey',
   }],
@@ -50,6 +59,26 @@ const pad = (value: string): string => value.padStart(2, '0');
 /** `1991-11-6`, `1991-11-06` — CHT does not zero-pad, and FHIR requires it. */
 const DATE_ONLY = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
 
+const dateOnlyMatch = (value: unknown): RegExpExecArray | null => {
+  return typeof value === 'string' ? DATE_ONLY.exec(value.trim()) : null;
+};
+
+/**
+ * The regex admits 1991-13-45, and Node rolls 1991-02-31 forward to March,
+ * so compare the round-trip rather than trusting the parse to fail.
+ */
+const padDateOnly = ([, year, month, day]: RegExpExecArray): string | null => {
+  const iso = `${year}-${pad(month)}-${pad(day)}`;
+  const probe = new Date(`${iso}T00:00:00.000Z`);
+  return Number.isNaN(probe.getTime()) || !probe.toISOString().startsWith(iso) ? null : iso;
+};
+
+/** Epoch milliseconds and full timestamps are absolute, so UTC is correct for them. */
+const toInstant = (value: unknown): Date | null => {
+  const date = value instanceof Date ? value : new Date(value as string | number);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
 /**
  * A date-only string is padded arithmetically, NOT by round-tripping through
  * `Date`. `new Date('1991-11-6')` is parsed as local midnight, so
@@ -58,26 +87,11 @@ const DATE_ONLY = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
  * two cases separately is the only way both come out right in every zone.
  */
 export const coerceDate = (value: unknown): string | null => {
-  if (typeof value === 'string') {
-    const dateOnly = DATE_ONLY.exec(value.trim());
-    if (dateOnly) {
-      const [, year, month, day] = dateOnly;
-      const iso = `${year}-${pad(month)}-${pad(day)}`;
-      // The regex admits 1991-13-45, and Node rolls 1991-02-31 forward to
-      // March, so compare the round-trip rather than trusting the parse to fail.
-      const probe = new Date(`${iso}T00:00:00.000Z`);
-      if (Number.isNaN(probe.getTime()) || !probe.toISOString().startsWith(iso)) {
-        return null;
-      }
-      return iso;
-    }
+  const dateOnly = dateOnlyMatch(value);
+  if (dateOnly) {
+    return padDateOnly(dateOnly);
   }
-  // Epoch milliseconds and full timestamps are absolute, so UTC is correct.
-  const date = value instanceof Date ? value : new Date(value as string | number);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-  return date.toISOString().slice(0, 10);
+  return toInstant(value)?.toISOString().slice(0, 10) ?? null;
 };
 
 /**
@@ -85,15 +99,31 @@ export const coerceDate = (value: unknown): string | null => {
  * precision rather than being given a spurious midnight-UTC time.
  */
 export const coerceDateTime = (value: unknown): string | null => {
-  if (typeof value === 'string' && DATE_ONLY.test(value.trim())) {
+  if (dateOnlyMatch(value)) {
     return coerceDate(value);
   }
-  const date = value instanceof Date ? value : new Date(value as string | number);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-  return date.toISOString();
+  return toInstant(value)?.toISOString() ?? null;
 };
+
+/**
+ * The text of a scalar, or null for anything else. An object has no honest
+ * text form: `String({})` is `"[object Object]"`, which every coercion would
+ * accept and the facade would then serve.
+ */
+const scalarText = (value: unknown): string | null => {
+  switch (typeof value) {
+    case 'string':
+      return value;
+    case 'number':
+    case 'boolean':
+    case 'bigint':
+      return String(value);
+    default:
+      return null;
+  }
+};
+
+const trimmedText = (value: unknown): string | null => scalarText(value)?.trim() || null;
 
 const TRUE_VALUES = new Set(['yes', 'true', '1']);
 const FALSE_VALUES = new Set(['no', 'false', '0']);
@@ -102,7 +132,7 @@ export const coerceBoolean = (value: unknown): boolean | null => {
   if (typeof value === 'boolean') {
     return value;
   }
-  const text = String(value).trim().toLowerCase();
+  const text = scalarText(value)?.trim().toLowerCase() ?? '';
   if (TRUE_VALUES.has(text)) {
     return true;
   }
@@ -113,8 +143,8 @@ export const coerceNumber = (value: unknown): number | null => {
   if (typeof value === 'number') {
     return Number.isFinite(value) ? value : null;
   }
-  const text = String(value).trim();
-  if (text === '') {
+  const text = trimmedText(value);
+  if (text === null) {
     return null;
   }
   const parsed = Number(text);
@@ -129,48 +159,42 @@ const isCodingValue = (value: unknown): value is CodingValue => {
     && typeof (value as CodingValue).code === 'string';
 };
 
-const coerceForElement = (spec: ElementSpec, raw: unknown, warn: Warn): ElementValue | null => {
-  switch (spec.coerce) {
-    case 'date': {
-      const date = coerceDate(raw);
-      if (!date) {
-        warn(`${spec.id}: ${JSON.stringify(raw)} is not a date.`);
-      }
-      return date;
-    }
-    case 'dateTime': {
-      const dateTime = coerceDateTime(raw);
-      if (!dateTime) {
-        warn(`${spec.id}: ${JSON.stringify(raw)} is not a date/time.`);
-      }
-      return dateTime;
-    }
-    case 'code': {
-      // FHIR codes are case-sensitive and these value sets are lowercase, so
-      // trim and lowercase before checking rather than rejecting 'Female'.
-      const code = String(raw).trim().toLowerCase();
-      if (spec.codes && !spec.codes.includes(code)) {
-        warn(
-          `${spec.id}: ${JSON.stringify(raw)} is not in the required value set `
-          + `(${spec.codes.join(' | ')}); the element is omitted.`,
-        );
-        return null;
-      }
-      return code;
-    }
-    case 'concept':
-      // A `coding` source arrives already shaped; anything else is text.
-      if (isCodingValue(raw)) {
-        return raw;
-      }
-      return String(raw).trim() || null;
-    case 'reference': {
-      const id = String(raw).trim();
-      return id ? `${spec.referenceType}/${id}` : null;
-    }
-    default:
-      return String(raw).trim() || null;
+type Coercer = (spec: ElementSpec, raw: unknown, warn: Warn) => ElementValue | null;
+
+/** A coercion that warns, naming what it expected, when it rejects a value. */
+const warnOnReject = (coerce: (raw: unknown) => string | null, expected: string): Coercer => (spec, raw, warn) => {
+  const value = coerce(raw);
+  if (value === null) {
+    warn(`${spec.id}: ${JSON.stringify(raw)} is not ${expected}.`);
   }
+  return value;
+};
+
+const coerceCode: Coercer = (spec, raw, warn) => {
+  // FHIR codes are case-sensitive and these value sets are lowercase, so
+  // trim and lowercase before checking rather than rejecting 'Female'.
+  const code = scalarText(raw)?.trim().toLowerCase() ?? '';
+  if (!spec.codes || spec.codes.includes(code)) {
+    return code;
+  }
+  warn(
+    `${spec.id}: ${JSON.stringify(raw)} is not in the required value set `
+    + `(${spec.codes.join(' | ')}); the element is omitted.`,
+  );
+  return null;
+};
+
+const COERCERS: Readonly<Record<Coercion, Coercer>> = {
+  date: warnOnReject(coerceDate, 'a date'),
+  dateTime: warnOnReject(coerceDateTime, 'a date/time'),
+  code: coerceCode,
+  // A `coding` source arrives already shaped; anything else is text.
+  concept: (spec, raw) => isCodingValue(raw) ? raw : trimmedText(raw),
+  reference: (spec, raw) => {
+    const id = trimmedText(raw);
+    return id && `${spec.referenceType}/${id}`;
+  },
+  string: (spec, raw) => trimmedText(raw),
 };
 
 /* ------------------------------ source filter ----------------------------- */
@@ -180,17 +204,18 @@ export const matchesSourceFilter = (filter: SourceFilter | null, doc: Record<str
     return true;
   }
   const raw = resolveSource(filter.source, doc);
+  const text = scalarText(raw);
   switch (filter.op) {
     case 'exists':
       return !isBlank(raw);
     case 'not-exists':
       return isBlank(raw);
     case 'eq':
-      return String(raw) === String(filter.value);
+      return text === filter.value;
     case 'ne':
-      return String(raw) !== String(filter.value);
+      return text !== filter.value;
     case 'in':
-      return Array.isArray(filter.value) && filter.value.includes(String(raw));
+      return text !== null && Array.isArray(filter.value) && filter.value.includes(text);
   }
 };
 
@@ -247,13 +272,13 @@ const buildIdentifier = (
   canonicalBase: string,
   warn: Warn,
 ): Record<string, unknown> | null => {
-  const raw = readValue(identifier.source, doc, warn, `identifier ${identifier.system}`);
-  if (isBlank(raw)) {
+  const value = scalarText(readValue(identifier.source, doc, warn, `identifier ${identifier.system}`));
+  if (!value) {
     return null;
   }
   const built: Record<string, unknown> = {
-    system: identifier.system.split('{base}').join(canonicalBase.replace(/\/+$/, '')),
-    value: String(raw),
+    system: identifier.system.split('{base}').join(trimTrailingSlashes(canonicalBase)),
+    value,
   };
   if (identifier.use) {
     built.use = identifier.use;
@@ -304,7 +329,7 @@ const elementValue = (
     }
     return null;
   }
-  return coerceForElement(spec, raw, warn);
+  return COERCERS[spec.coerce](spec, raw, warn);
 };
 
 export const mapDocument = (
@@ -316,7 +341,7 @@ export const mapDocument = (
 
   const draft: Record<string, unknown> = {
     resourceType: binding.resourceType,
-    id: String(doc._id),
+    id: doc._id as string,
     meta: buildMeta(doc),
   };
 
@@ -340,7 +365,9 @@ export const mapDocument = (
 
 /* --------------------------- observation projection ----------------------- */
 
-const inferValueMode = (raw: unknown, projection: ObservationProjection): ObservationProjection['valueMode'] => {
+type ValueMode = Exclude<ObservationValueMode, 'auto'>;
+
+const inferValueMode = (raw: unknown, projection: ObservationProjection): ValueMode => {
   if (projection.unit) {
     return 'valueQuantity';
   }
@@ -356,53 +383,41 @@ const inferValueMode = (raw: unknown, projection: ObservationProjection): Observ
   return 'valueString';
 };
 
-const applyObservationValue = (
-  draft: Record<string, unknown>,
-  projection: ObservationProjection,
-  raw: unknown,
-  questionKey: string,
-  warn: Warn,
-): boolean => {
-  const mode = projection.valueMode === 'auto' ? inferValueMode(raw, projection) : projection.valueMode;
-  switch (mode) {
-    case 'valueBoolean': {
-      const value = coerceBoolean(raw);
-      if (value === null) {
-        warn(`observation ${questionKey}: ${JSON.stringify(raw)} is not a boolean.`);
-        return false;
-      }
-      draft.valueBoolean = value;
-      return true;
-    }
-    case 'valueDateTime': {
-      const value = coerceDateTime(raw);
-      if (value === null) {
-        warn(`observation ${questionKey}: ${JSON.stringify(raw)} is not a date/time.`);
-        return false;
-      }
-      draft.valueDateTime = value;
-      return true;
-    }
-    case 'valueQuantity': {
-      const value = coerceNumber(raw);
-      if (value === null) {
-        warn(`observation ${questionKey}: ${JSON.stringify(raw)} is not a number.`);
-        return false;
-      }
-      const { unit } = projection;
-      draft.valueQuantity = unit
-        ? { value, unit: unit.display ?? unit.code, system: unit.system, code: unit.code }
-        : { value };
-      return true;
-    }
-    case 'valueCodeableConcept':
-      // No answer codes yet, so the answer is carried as text.
-      draft.valueCodeableConcept = { text: String(raw).trim() };
-      return true;
-    default:
-      draft.valueString = String(raw);
-      return true;
+/** The `value[x]` field for one answer, or null when the answer does not fit the mode. */
+type ValueBuilder = (raw: unknown, projection: ObservationProjection, warn: Warn) => Record<string, unknown> | null;
+
+/** Wraps a coerced answer as its `value[x]` field, warning when the answer does not coerce. */
+const coercedValue = <T>(
+  coerce: (raw: unknown) => T | null,
+  expected: string,
+  wrap: (value: T, projection: ObservationProjection) => Record<string, unknown>,
+): ValueBuilder => (raw, projection, warn) => {
+  const value = coerce(raw);
+  if (value === null) {
+    warn(`${JSON.stringify(raw)} is not ${expected}.`);
+    return null;
   }
+  return wrap(value, projection);
+};
+
+const quantity = (value: number, { unit }: ObservationProjection) => ({
+  valueQuantity: unit
+    ? { value, unit: unit.display ?? unit.code, system: unit.system, code: unit.code }
+    : { value },
+});
+
+const VALUE_BUILDERS: Readonly<Record<ValueMode, ValueBuilder>> = {
+  valueBoolean: coercedValue(coerceBoolean, 'a boolean', valueBoolean => ({ valueBoolean })),
+  valueDateTime: coercedValue(coerceDateTime, 'a date/time', valueDateTime => ({ valueDateTime })),
+  valueQuantity: coercedValue(coerceNumber, 'a number', quantity),
+  // No answer codes yet, so the answer is carried as text.
+  valueCodeableConcept: coercedValue(trimmedText, 'text', text => ({ valueCodeableConcept: { text } })),
+  valueString: coercedValue(scalarText, 'text', valueString => ({ valueString })),
+};
+
+const observationValue = (projection: ObservationProjection, raw: unknown, warn: Warn) => {
+  const mode = projection.valueMode === 'auto' ? inferValueMode(raw, projection) : projection.valueMode;
+  return VALUE_BUILDERS[mode](raw, projection, warn);
 };
 
 /** The Encounter's visit date, which the Observations inherit. */
@@ -410,6 +425,59 @@ const effectiveDateTimeFor = (binding: ResourceBinding, doc: Record<string, unkn
   const periodStart = binding.elements['Encounter.period.start'];
   const raw = periodStart ? resolveSource(periodStart, doc) : doc.reported_date;
   return coerceDateTime(isBlank(raw) ? doc.reported_date : raw);
+};
+
+const ENCOUNTER_SUBJECT = findElementSpec('Encounter', 'Encounter.subject')!;
+
+/** What every Observation projected from one report shares: its Encounter, subject and time. */
+const reportLinks = (binding: ResourceBinding, doc: Record<string, unknown>, warn: Warn): Record<string, unknown> => {
+  const subject = elementValue(binding, ENCOUNTER_SUBJECT, doc, warn);
+  const effective = effectiveDateTimeFor(binding, doc);
+  return {
+    encounter: { reference: `Encounter/${doc._id as string}` },
+    ...(subject ? { subject: { reference: subject } } : {}),
+    ...(effective ? { effectiveDateTime: effective } : {}),
+  };
+};
+
+interface ReportContext {
+  readonly doc: Record<string, unknown>;
+  readonly config: FacadeConfig;
+  readonly warn: Warn;
+  readonly links: Record<string, unknown>;
+}
+
+const projectObservation = (
+  report: ReportContext,
+  questionKey: string,
+  projection: ObservationProjection,
+): Record<string, unknown> | null => {
+  const { doc, warn } = report;
+  const code = resolveObservationCode(questionKey, projection, report.config);
+  if (!code) {
+    return null;
+  }
+  const where = `observation ${questionKey}`;
+  const raw = readValue(projection.source, doc, warn, where);
+  if (isBlank(raw)) {
+    return null;
+  }
+  const id = observationId(doc._id as string, code.code);
+  if (!FHIR_ID_PATTERN.test(id)) {
+    warn(`${where}: synthesised id ${id} is not a valid FHIR id.`);
+    return null;
+  }
+  const value = observationValue(projection, raw, message => warn(`${where}: ${message}`));
+  return value && {
+    resourceType: 'Observation',
+    id,
+    meta: buildMeta(doc),
+    status: 'final',
+    category: surveyCategory(),
+    code: code.display ? { coding: [{ ...code }], text: code.display } : { coding: [{ ...code }] },
+    ...report.links,
+    ...value,
+  };
 };
 
 /**
@@ -426,44 +494,8 @@ export const projectObservations = (
   ctx: MapContext,
 ): Record<string, unknown>[] => {
   const warn = ctx.warn ?? noopWarn;
-  const reportUuid = String(doc._id);
-  const subjectSpec = findElementSpec('Encounter', 'Encounter.subject')!;
-  const subject = elementValue(binding, subjectSpec, doc, warn);
-  const effective = effectiveDateTimeFor(binding, doc);
-
-  const observations: Record<string, unknown>[] = [];
-  for (const [questionKey, projection] of Object.entries(binding.observations)) {
-    const code = resolveObservationCode(questionKey, projection, ctx.config);
-    if (!code) {
-      continue;
-    }
-    const raw = readValue(projection.source, doc, warn, `observation ${questionKey}`);
-    if (isBlank(raw)) {
-      continue;
-    }
-    const id = observationId(reportUuid, code.code);
-    if (!FHIR_ID_PATTERN.test(id)) {
-      warn(`observation ${questionKey}: synthesised id ${id} is not a valid FHIR id.`);
-      continue;
-    }
-    const draft: Record<string, unknown> = {
-      resourceType: 'Observation',
-      id,
-      meta: buildMeta(doc),
-      status: 'final',
-      category: surveyCategory(),
-      code: code.display ? { coding: [{ ...code }], text: code.display } : { coding: [{ ...code }] },
-      encounter: { reference: `Encounter/${reportUuid}` },
-    };
-    if (subject) {
-      draft.subject = { reference: subject };
-    }
-    if (effective) {
-      draft.effectiveDateTime = effective;
-    }
-    if (applyObservationValue(draft, projection, raw, questionKey, warn)) {
-      observations.push(draft);
-    }
-  }
-  return observations;
+  const report = { doc, config: ctx.config, warn, links: reportLinks(binding, doc, warn) };
+  return Object.entries(binding.observations)
+    .map(([questionKey, projection]) => projectObservation(report, questionKey, projection))
+    .filter((observation): observation is Record<string, unknown> => observation !== null);
 };

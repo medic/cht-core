@@ -64,6 +64,18 @@ export const planRead = (resourceType: FacadeResourceType, uuid: string): QueryP
   return { kind: 'read', op: resourceType === 'Patient' ? 'person' : 'report', uuid };
 };
 
+const planPatientSearch = (contactType: string, request: PlanRequest): PlanResult => {
+  const { params, cursor, limit } = request;
+  if (params.name === undefined) {
+    return { ok: true, plan: { kind: 'person-by-type', contactType, cursor, limit } };
+  }
+  const freetext = params.name.trim();
+  if (freetext.length < MIN_FREETEXT_LENGTH) {
+    return { ok: false, message: `The name search parameter needs at least ${MIN_FREETEXT_LENGTH} characters.` };
+  }
+  return { ok: true, plan: { kind: 'contact-by-type-freetext', contactType, freetext, cursor, limit } };
+};
+
 /**
  * Plan a search. `_id` is handled by the caller as a read, because a
  * one-entry searchset needs the same fetch as a read.
@@ -78,15 +90,7 @@ export const planSearch = (
 
   if (resourceType === 'Patient') {
     // `loadConfig` serves at most one Patient binding.
-    const contactType = bindings[0].sourceId;
-    if (params.name === undefined) {
-      return { ok: true, plan: { kind: 'person-by-type', contactType, cursor, limit } };
-    }
-    const freetext = params.name.trim();
-    if (freetext.length < MIN_FREETEXT_LENGTH) {
-      return { ok: false, message: `The name search parameter needs at least ${MIN_FREETEXT_LENGTH} characters.` };
-    }
-    return { ok: true, plan: { kind: 'contact-by-type-freetext', contactType, freetext, cursor, limit } };
+    return planPatientSearch(bindings[0].sourceId, request);
   }
 
   if (params.encounter !== undefined) {

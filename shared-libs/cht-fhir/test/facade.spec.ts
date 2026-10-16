@@ -59,9 +59,9 @@ describe('cht-fhir catalog', () => {
 
   it('finds a spec by id and reports an unknown one', () => {
     expect(findElementSpec('Patient', 'Patient.gender')?.id).to.equal('Patient.gender');
-    expect(findElementSpec('Patient', 'Patient.nope')).to.equal(undefined);
+    expect(findElementSpec('Patient', 'Patient.nope')).to.be.undefined;
     // Observation is projected, so nothing on it is bindable.
-    expect(findElementSpec('Observation', 'Observation.code')).to.equal(undefined);
+    expect(findElementSpec('Observation', 'Observation.code')).to.be.undefined;
   });
 
   it('gives every element a unique id', () => {

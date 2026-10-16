@@ -23,8 +23,8 @@ import {
 // The builder percent-encodes `%` and `/` within each segment; `:` is left
 // alone because a form id legally contains one.
 const decodeSegment = (segment: string): string => segment
-  .replace(/%2F/gi, '/')
-  .replace(/%25/g, '%');
+  .replaceAll(/%2F/gi, '/')
+  .replaceAll(/%25/g, '%');
 
 const FACADE_SOURCE_KINDS = ['contact_type', 'form'] as const;
 type FacadeSourceKind = typeof FACADE_SOURCE_KINDS[number];
@@ -181,6 +181,20 @@ export const resolveSource = (source: ChtSource, doc: Record<string, unknown>): 
   }
 };
 
+const isAbsent = (value: unknown): value is null | undefined => value === null || value === undefined;
+
+/**
+ * `canonicalBase` with any trailing slashes removed. A loop rather than
+ * `/\/+$/`, which backtracks quadratically on a long run of slashes.
+ */
+export const trimTrailingSlashes = (value: string): string => {
+  let end = value.length;
+  while (end > 0 && value[end - 1] === '/') {
+    end--;
+  }
+  return value.slice(0, end);
+};
+
 /** Blank values are omitted from the output rather than emitted empty. */
 export const isBlank = (value: unknown): boolean => {
   return value === null || value === undefined || value === '' || (Array.isArray(value) && !value.length);
@@ -285,50 +299,100 @@ const parseCoding = (raw: unknown): Coding | null => {
   return display ? { system, code, display } : { system, code };
 };
 
+interface SourceParser {
+  readonly parse: (raw: Record<string, unknown>) => ChtSource | null;
+  /** Why `parse` refused the source. */
+  readonly problem: string;
+}
+
+const pathSource = (kind: 'doc' | 'field'): SourceParser => ({
+  parse: (raw) => {
+    const path = asString(raw.path);
+    return path ? { kind, path } : null;
+  },
+  problem: `a ${kind} source needs a non-empty path.`,
+});
+
+const SOURCE_PARSERS: ReadonlyMap<unknown, SourceParser> = new Map<ChtSourceKind, SourceParser>([
+  ['doc', pathSource('doc')],
+  ['field', pathSource('field')],
+  ['const', {
+    parse: (raw) => typeof raw.value === 'string' ? { kind: 'const', value: raw.value } : null,
+    problem: 'a const source needs a string value.',
+  }],
+  ['coding', {
+    parse: (raw) => {
+      const coding = parseCoding(raw);
+      return coding ? { kind: 'coding', ...coding } : null;
+    },
+    problem: 'a coding source needs system and code.',
+  }],
+]);
+
 const parseChtSource = (raw: unknown, diag: Diagnostics, bindingKey: string, where: string): ChtSource | null => {
   if (!isRecord(raw)) {
     diag.add('error', 'source-malformed', `${where}: source must be an object.`, bindingKey);
     return null;
   }
-  switch (raw.kind) {
-    case 'doc':
-    case 'field': {
-      const path = asString(raw.path);
-      if (!path) {
-        diag.add('error', 'source-malformed', `${where}: a ${raw.kind} source needs a non-empty path.`, bindingKey);
-        return null;
-      }
-      return { kind: raw.kind, path };
-    }
-    case 'const':
-      if (typeof raw.value !== 'string') {
-        diag.add('error', 'source-malformed', `${where}: a const source needs a string value.`, bindingKey);
-        return null;
-      }
-      return { kind: 'const', value: raw.value };
-    case 'coding': {
-      const coding = parseCoding(raw);
-      if (!coding) {
-        diag.add('error', 'source-malformed', `${where}: a coding source needs system and code.`, bindingKey);
-        return null;
-      }
-      return { kind: 'coding', ...coding };
-    }
-    default:
-      diag.add(
-        'error',
-        'source-kind-unknown',
-        `${where}: unsupported source kind ${JSON.stringify(raw.kind)}.`,
-        bindingKey,
-      );
-      return null;
+  const parser = SOURCE_PARSERS.get(raw.kind);
+  if (!parser) {
+    diag.add(
+      'error',
+      'source-kind-unknown',
+      `${where}: unsupported source kind ${JSON.stringify(raw.kind)}.`,
+      bindingKey,
+    );
+    return null;
   }
+  const source = parser.parse(raw);
+  if (!source) {
+    diag.add('error', 'source-malformed', `${where}: ${parser.problem}`, bindingKey);
+  }
+  return source;
 };
 
-const FILTER_OPS: readonly FilterOp[] = ['eq', 'ne', 'in', 'exists', 'not-exists'];
+/** Element sources sit under `source`; a malformed entry has none, which `parseChtSource` reports. */
+const sourceOf = (entry: unknown): unknown => isRecord(entry) ? entry.source : undefined;
+
+const isString = (value: unknown): value is string => typeof value === 'string';
+
+interface FilterValueRule {
+  readonly valid: (value: unknown) => boolean;
+  readonly needs: string;
+}
+
+/** What each op needs in `value`. The existence ops take none. */
+const FILTER_VALUE_RULES: ReadonlyMap<unknown, FilterValueRule | null> = new Map<FilterOp, FilterValueRule | null>([
+  ['eq', { valid: isString, needs: 'a string value' }],
+  ['ne', { valid: isString, needs: 'a string value' }],
+  ['in', { valid: (value) => Array.isArray(value) && value.every(isString), needs: 'an array of strings' }],
+  ['exists', null],
+  ['not-exists', null],
+]);
+
+const parseFilterCondition = (
+  raw: Record<string, unknown>,
+  diag: Diagnostics,
+  bindingKey: string,
+): Pick<SourceFilter, 'op' | 'value'> | null => {
+  if (!FILTER_VALUE_RULES.has(raw.op)) {
+    diag.add('error', 'source-filter-op-unknown', `sourceFilter: unknown op ${JSON.stringify(raw.op)}.`, bindingKey);
+    return null;
+  }
+  const op = raw.op as FilterOp;
+  const rule = FILTER_VALUE_RULES.get(op);
+  if (!rule) {
+    return { op };
+  }
+  if (!rule.valid(raw.value)) {
+    diag.add('error', 'source-filter-value-invalid', `sourceFilter: op "${op}" needs ${rule.needs}.`, bindingKey);
+    return null;
+  }
+  return { op, value: raw.value as string | readonly string[] };
+};
 
 const parseSourceFilter = (raw: unknown, diag: Diagnostics, bindingKey: string): SourceFilter | null => {
-  if (raw === null || raw === undefined) {
+  if (isAbsent(raw)) {
     return null;
   }
   if (!isRecord(raw)) {
@@ -339,33 +403,14 @@ const parseSourceFilter = (raw: unknown, diag: Diagnostics, bindingKey: string):
   if (!source) {
     return null;
   }
-  const op = raw.op as FilterOp;
-  if (!FILTER_OPS.includes(op)) {
-    diag.add('error', 'source-filter-op-unknown', `sourceFilter: unknown op ${JSON.stringify(raw.op)}.`, bindingKey);
-    return null;
-  }
-  if (op === 'exists' || op === 'not-exists') {
-    return { source, op };
-  }
-  const valid = op === 'in'
-    ? Array.isArray(raw.value) && raw.value.every(v => typeof v === 'string')
-    : typeof raw.value === 'string';
-  if (!valid) {
-    diag.add(
-      'error',
-      'source-filter-value-invalid',
-      `sourceFilter: op "${op}" needs ${op === 'in' ? 'an array of strings' : 'a string value'}.`,
-      bindingKey,
-    );
-    return null;
-  }
-  return { source, op, value: raw.value as string | readonly string[] };
+  const condition = parseFilterCondition(raw, diag, bindingKey);
+  return condition && { source, ...condition };
 };
 
-const IDENTIFIER_USES: readonly string[] = ['usual', 'official', 'temp', 'secondary', 'old'];
+const IDENTIFIER_USES: ReadonlySet<unknown> = new Set(['usual', 'official', 'temp', 'secondary', 'old']);
 
 const parseIdentifiers = (raw: unknown, diag: Diagnostics, bindingKey: string): readonly IdentifierBinding[] => {
-  if (raw === undefined || raw === null) {
+  if (isAbsent(raw)) {
     return [];
   }
   if (!Array.isArray(raw)) {
@@ -385,23 +430,67 @@ const parseIdentifiers = (raw: unknown, diag: Diagnostics, bindingKey: string): 
       return;
     }
     // R4 binds `Identifier.use` required, so any other value would make the resource invalid.
-    const use = IDENTIFIER_USES.includes(entry.use as string) ? entry.use as string : undefined;
+    const use = IDENTIFIER_USES.has(entry.use) ? entry.use as string : undefined;
     const type = parseCoding(entry.type) ?? undefined;
     out.push({ system, use, type, source });
   });
   return out;
 };
 
-const VALUE_MODES: readonly ObservationValueMode[] = [
+const VALUE_MODES: ReadonlySet<unknown> = new Set<ObservationValueMode>([
   'auto', 'valueCodeableConcept', 'valueQuantity', 'valueString', 'valueBoolean', 'valueDateTime',
-];
+]);
+
+const parseValueMode = (raw: unknown): ObservationValueMode => {
+  return VALUE_MODES.has(raw) ? raw as ObservationValueMode : 'auto';
+};
+
+const CODE_SOURCES: ReadonlySet<unknown> = new Set<ObservationProjection['codeSource']>(['question-mapping', 'ad-hoc']);
+
+// The builder keeps excluded and orphaned questions in the file; neither is served.
+const isServed = (entry: Record<string, unknown>): boolean => entry.include === true && entry.status !== 'orphaned';
+
+const parseObservation = (
+  questionKey: string,
+  entry: unknown,
+  diag: Diagnostics,
+  bindingKey: string,
+): ObservationProjection | null => {
+  const where = `observation ${questionKey}`;
+  if (!isRecord(entry)) {
+    diag.add('error', 'observation-malformed', `${where} must be an object.`, bindingKey);
+    return null;
+  }
+  if (!isServed(entry)) {
+    return null;
+  }
+  if (!CODE_SOURCES.has(entry.codeSource)) {
+    diag.add(
+      'error',
+      'observation-code-source-unknown',
+      `${where}: codeSource must be "question-mapping" or "ad-hoc".`,
+      bindingKey,
+    );
+    return null;
+  }
+  const source = parseChtSource(entry.source, diag, bindingKey, where);
+  if (!source) {
+    return null;
+  }
+  return {
+    codeSource: entry.codeSource as ObservationProjection['codeSource'],
+    valueMode: parseValueMode(entry.valueMode),
+    unit: parseCoding(entry.unit) ?? undefined,
+    source,
+  };
+};
 
 const parseObservations = (
   raw: unknown,
   diag: Diagnostics,
   bindingKey: string,
 ): Readonly<Record<string, ObservationProjection>> => {
-  if (raw === undefined || raw === null) {
+  if (isAbsent(raw)) {
     return {};
   }
   if (!isRecord(raw)) {
@@ -410,33 +499,10 @@ const parseObservations = (
   }
   const out: Record<string, ObservationProjection> = {};
   for (const [questionKey, entry] of Object.entries(raw)) {
-    const where = `observation ${questionKey}`;
-    if (!isRecord(entry)) {
-      diag.add('error', 'observation-malformed', `${where} must be an object.`, bindingKey);
-      continue;
+    const projection = parseObservation(questionKey, entry, diag, bindingKey);
+    if (projection) {
+      out[questionKey] = projection;
     }
-    // The builder keeps excluded and orphaned questions in the file; neither is served.
-    if (entry.include !== true || entry.status === 'orphaned') {
-      continue;
-    }
-    if (entry.codeSource !== 'question-mapping' && entry.codeSource !== 'ad-hoc') {
-      diag.add(
-        'error',
-        'observation-code-source-unknown',
-        `${where}: codeSource must be "question-mapping" or "ad-hoc".`,
-        bindingKey,
-      );
-      continue;
-    }
-    const source = parseChtSource(entry.source, diag, bindingKey, where);
-    if (!source) {
-      continue;
-    }
-    const valueMode = VALUE_MODES.includes(entry.valueMode as ObservationValueMode)
-      ? entry.valueMode as ObservationValueMode
-      : 'auto';
-    const unit = parseCoding(entry.unit) ?? undefined;
-    out[questionKey] = { codeSource: entry.codeSource, valueMode, unit, source };
   }
   return out;
 };
@@ -447,7 +513,7 @@ const parseElements = (raw: unknown, diag: Diagnostics, bindingKey: string): Rec
     return elements;
   }
   for (const [elementId, entry] of Object.entries(raw)) {
-    const source = parseChtSource(isRecord(entry) ? entry.source : undefined, diag, bindingKey, elementId);
+    const source = parseChtSource(sourceOf(entry), diag, bindingKey, elementId);
     if (source) {
       elements[elementId] = source;
     }
@@ -491,47 +557,62 @@ const parseQuestionMappings = (raw: unknown): Record<string, Coding> => {
   return out;
 };
 
+const parseAdHocCodes = (raw: Record<string, unknown>, canonical: string): Record<string, Coding> => {
+  const codes: Record<string, Coding> = {};
+  for (const [questionKey, entry] of Object.entries(raw)) {
+    const coding = isRecord(entry) ? parseCoding({ ...entry, system: canonical }) : null;
+    if (coding) {
+      codes[questionKey] = coding;
+    }
+  }
+  return codes;
+};
+
 const parseAdHocCodeSystem = (raw: unknown): AdHocCodeSystem | null => {
   const canonical = isRecord(raw) && asString(raw.canonical);
   if (!canonical || !isRecord(raw.codes)) {
     return null;
   }
-  const codes: Record<string, Coding> = {};
-  for (const [questionKey, entry] of Object.entries(raw.codes)) {
-    const coding = parseCoding({ ...(isRecord(entry) ? entry : {}), system: canonical });
-    if (coding) {
-      codes[questionKey] = coding;
-    }
-  }
-  return { canonical, codes };
+  return { canonical, codes: parseAdHocCodes(raw.codes, canonical) };
 };
 
 /* ------------------------------- validation ------------------------------- */
 
-/** Checks that need the element catalog. */
-const validateAgainstCatalog = (binding: ResourceBinding, diag: Diagnostics): void => {
+/** False, with a diagnostic, when the key names the wrong kind of CHT source for its resource type. */
+const checkSourceKind = (binding: ResourceBinding, diag: Diagnostics): boolean => {
   const expectedKind = RESOURCE_TYPES[binding.resourceType].sourceKind;
-  if (binding.sourceKind !== expectedKind) {
-    diag.add(
-      'error',
-      'binding-source-kind-mismatch',
-      expectedKind
-        ? `${binding.resourceType} is bound to a ${expectedKind}, but this key names a ${binding.sourceKind}.`
-        : `${binding.resourceType} is projected from an Encounter's observations and cannot be bound directly.`,
-      binding.key,
-    );
-    return;
+  if (binding.sourceKind === expectedKind) {
+    return true;
   }
-  if (Object.keys(binding.observations).length && binding.resourceType !== 'Encounter') {
-    diag.add(
-      'error',
-      'observations-host-invalid',
-      'Only an Encounter may project observations: a projected Observation\'s encounter names '
-      + `Encounter/<reportUuid>, which is not true of a ${binding.resourceType}.`,
-      binding.key,
-    );
-    return;
+  diag.add(
+    'error',
+    'binding-source-kind-mismatch',
+    expectedKind
+      ? `${binding.resourceType} is bound to a ${expectedKind}, but this key names a ${binding.sourceKind}.`
+      : `${binding.resourceType} is projected from an Encounter's observations and cannot be bound directly.`,
+    binding.key,
+  );
+  return false;
+};
+
+const hasObservations = (binding: ResourceBinding): boolean => Object.keys(binding.observations).length > 0;
+
+/** False, with a diagnostic, when a binding that is not an Encounter projects observations. */
+const checkObservationHost = (binding: ResourceBinding, diag: Diagnostics): boolean => {
+  if (!hasObservations(binding) || binding.resourceType === 'Encounter') {
+    return true;
   }
+  diag.add(
+    'error',
+    'observations-host-invalid',
+    'Only an Encounter may project observations: a projected Observation\'s encounter names '
+    + `Encounter/<reportUuid>, which is not true of a ${binding.resourceType}.`,
+    binding.key,
+  );
+  return false;
+};
+
+const validateBoundElements = (binding: ResourceBinding, diag: Diagnostics): void => {
   for (const [elementId, source] of Object.entries(binding.elements)) {
     const spec = findElementSpec(binding.resourceType, elementId);
     if (!spec) {
@@ -545,6 +626,9 @@ const validateAgainstCatalog = (binding: ResourceBinding, diag: Diagnostics): vo
       );
     }
   }
+};
+
+const validateRequiredElements = (binding: ResourceBinding, diag: Diagnostics): void => {
   for (const spec of RESOURCE_TYPES[binding.resourceType].elements) {
     if (spec.min === 1 && !binding.elements[spec.id]) {
       diag.add(
@@ -555,7 +639,16 @@ const validateAgainstCatalog = (binding: ResourceBinding, diag: Diagnostics): vo
       );
     }
   }
-  if (Object.keys(binding.observations).length && !binding.elements['Encounter.subject']) {
+};
+
+/** Checks that need the element catalog. */
+const validateAgainstCatalog = (binding: ResourceBinding, diag: Diagnostics): void => {
+  if (!checkSourceKind(binding, diag) || !checkObservationHost(binding, diag)) {
+    return;
+  }
+  validateBoundElements(binding, diag);
+  validateRequiredElements(binding, diag);
+  if (hasObservations(binding) && !binding.elements['Encounter.subject']) {
     diag.add(
       'warn',
       'observation-subject-missing',
@@ -563,6 +656,49 @@ const validateAgainstCatalog = (binding: ResourceBinding, diag: Diagnostics): vo
       binding.key,
     );
   }
+};
+
+/** A diagnostic's severity, rule id and message, for the caller to scope to a binding. */
+type Issue = readonly [FacadeDiagnostic['severity'], string, string];
+
+const unresolvedCodeIssue = (where: string, projection: ObservationProjection): Issue => {
+  return projection.codeSource === 'ad-hoc'
+    ? [
+      'error',
+      'observation-adhoc-code-unminted',
+      `${where}: no ad-hoc code has been minted. Mint codes in the configuration tool; the facade will not invent one.`,
+    ]
+    : ['warn', 'observation-code-unmapped', `${where}: no code is mapped for this question.`];
+};
+
+/** What is wrong with a resolved code, or null once it has been recorded in `seen` as taken. */
+const claimCode = (where: string, code: string, questionKey: string, seen: Map<string, string>): Issue | null => {
+  if (!FHIR_ID_PATTERN.test(code)) {
+    return [
+      'error',
+      'observation-code-not-id-safe',
+      `${where}: code ${JSON.stringify(code)} cannot appear in a FHIR id.`,
+    ];
+  }
+  if (code.length > OBSERVATION_CODE_MAX_LENGTH) {
+    return [
+      'error',
+      'observation-code-too-long',
+      `${where}: code ${JSON.stringify(code)} is ${code.length} characters. `
+      + `An Observation id is <reportUuid>.<code>, and a CHT uuid takes up to ${CHT_DOC_ID_MAX_LENGTH} of the `
+      + `${FHIR_ID_MAX_LENGTH} a FHIR id allows, so a code may be at most ${OBSERVATION_CODE_MAX_LENGTH}.`,
+    ];
+  }
+  const clash = seen.get(code);
+  if (clash !== undefined) {
+    return [
+      'error',
+      'observation-code-duplicate',
+      `${where}: code ${code} is already used by ${clash} in this resource.`,
+    ];
+  }
+  seen.set(code, questionKey);
+  return null;
 };
 
 /**
@@ -579,51 +715,12 @@ const validateObservationCodes = (
   for (const [questionKey, projection] of Object.entries(binding.observations)) {
     const where = `observation ${questionKey}`;
     const resolved = resolveObservationCode(questionKey, projection, codes);
-    if (!resolved) {
-      if (projection.codeSource === 'ad-hoc') {
-        diag.add(
-          'error',
-          'observation-adhoc-code-unminted',
-          `${where}: no ad-hoc code has been minted. Mint codes in the configuration tool; `
-          + 'the facade will not invent one.',
-          binding.key,
-        );
-      } else {
-        diag.add('warn', 'observation-code-unmapped', `${where}: no code is mapped for this question.`, binding.key);
-      }
-      continue;
+    const issue = resolved
+      ? claimCode(where, resolved.code, questionKey, seen)
+      : unresolvedCodeIssue(where, projection);
+    if (issue) {
+      diag.add(...issue, binding.key);
     }
-    if (!FHIR_ID_PATTERN.test(resolved.code)) {
-      diag.add(
-        'error',
-        'observation-code-not-id-safe',
-        `${where}: code ${JSON.stringify(resolved.code)} cannot appear in a FHIR id.`,
-        binding.key,
-      );
-      continue;
-    }
-    if (resolved.code.length > OBSERVATION_CODE_MAX_LENGTH) {
-      diag.add(
-        'error',
-        'observation-code-too-long',
-        `${where}: code ${JSON.stringify(resolved.code)} is ${resolved.code.length} characters. `
-        + `An Observation id is <reportUuid>.<code>, and a CHT uuid takes up to ${CHT_DOC_ID_MAX_LENGTH} of the `
-        + `${FHIR_ID_MAX_LENGTH} a FHIR id allows, so a code may be at most ${OBSERVATION_CODE_MAX_LENGTH}.`,
-        binding.key,
-      );
-      continue;
-    }
-    const clash = seen.get(resolved.code);
-    if (clash !== undefined) {
-      diag.add(
-        'error',
-        'observation-code-duplicate',
-        `${where}: code ${resolved.code} is already used by ${clash} in this resource.`,
-        binding.key,
-      );
-      continue;
-    }
-    seen.set(resolved.code, questionKey);
   }
 };
 

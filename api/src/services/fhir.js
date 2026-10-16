@@ -49,13 +49,18 @@ let cached = { raw: undefined, result: { config: null, diagnostics: [] } };
 
 const LOG = { error: 'error', warn: 'warn', info: 'debug' };
 
+const formatDiagnostic = ({ ruleId, message, bindingKey }) => {
+  const scope = bindingKey ? ` (${bindingKey})` : '';
+  return `FHIR facade config: ${ruleId}: ${message}${scope}`;
+};
+
 /** The loaded mapping and its diagnostics, which are logged once per settings change. */
 const getFacade = () => {
   const raw = config.get('fhir');
   if (raw !== cached.raw) {
     const result = loadConfig(raw);
-    for (const { severity, ruleId, message, bindingKey } of result.diagnostics) {
-      logger[LOG[severity]](`FHIR facade config: ${ruleId}: ${message}${bindingKey ? ` (${bindingKey})` : ''}`);
+    for (const diagnostic of result.diagnostics) {
+      logger[LOG[diagnostic.severity]](formatDiagnostic(diagnostic));
     }
     cached = { raw, result };
   }
@@ -99,6 +104,13 @@ const runPlan = async (plan) => {
 
 /* -------------------------------- rendering ------------------------------- */
 
+const renderDoc = (facade, resourceType, binding, doc) => {
+  const mapCtx = { config: facade, warn: (message) => logger.warn(`FHIR facade: ${doc._id}: ${message}`) };
+  return resourceType === 'Observation'
+    ? projectObservations(binding, doc, mapCtx)
+    : [mapDocument(binding, doc, mapCtx)];
+};
+
 /**
  * Turn fetched documents into resources.
  *
@@ -108,20 +120,10 @@ const runPlan = async (plan) => {
  */
 const renderAll = (facade, resourceType, docs) => {
   const bindings = facade.bindings.filter(binding => bindingServesType(binding, resourceType));
-  const resources = [];
-  for (const doc of docs) {
+  return docs.flatMap(doc => {
     const binding = bindings.find(candidate => bindingMatchesDoc(candidate, doc));
-    if (!binding) {
-      continue;
-    }
-    const mapCtx = { config: facade, warn: (message) => logger.warn(`FHIR facade: ${doc._id}: ${message}`) };
-    if (resourceType === 'Observation') {
-      resources.push(...projectObservations(binding, doc, mapCtx));
-    } else {
-      resources.push(mapDocument(binding, doc, mapCtx));
-    }
-  }
-  return resources;
+    return binding ? renderDoc(facade, resourceType, binding, doc) : [];
+  });
 };
 
 /* ------------------------------ reads & searches -------------------------- */
@@ -151,9 +153,12 @@ const parseLimit = (value) => {
   return Math.min(parsed, MAX_PAGE_SIZE);
 };
 
-/** One page of a search: `{ resources, cursor }`, or `{ error }` when the request cannot be planned. */
-const search = async (facade, resourceType, params, cursor, limit) => {
-  const planned = planSearch(facade, resourceType, { params, cursor, limit });
+/**
+ * One page of a search for `{ params, cursor, limit }`: `{ resources, cursor }`,
+ * or `{ error }` when the request cannot be planned.
+ */
+const search = async (facade, resourceType, request) => {
+  const planned = planSearch(facade, resourceType, request);
   if (!planned.ok) {
     return { error: planned.message };
   }
