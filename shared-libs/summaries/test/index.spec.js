@@ -46,6 +46,11 @@ describe('summary lib', () => {
       expect(summariseReport(doc).from).to.equal('+321');
     });
 
+    it('uses sent_by when from is empty', () => {
+      const doc = { _id: 'r1', _rev: '1', type: 'data_record', form: 'R', from: '', sent_by: '+321' };
+      expect(summariseReport(doc).from).to.equal('+321');
+    });
+
     it('marks invalid when errors present', () => {
       const doc = {
         _id: 'r1',
@@ -64,6 +69,11 @@ describe('summary lib', () => {
 
     it('includes case_id from fields', () => {
       const doc = { _id: 'r1', _rev: '1', type: 'data_record', form: 'R', fields: { case_id: '67890' } };
+      expect(summariseReport(doc).case_id).to.equal('67890');
+    });
+
+    it('includes case_id from fields when the doc case_id is empty', () => {
+      const doc = { _id: 'r1', _rev: '1', type: 'data_record', form: 'R', case_id: '', fields: { case_id: '67890' } };
       expect(summariseReport(doc).case_id).to.equal('67890');
     });
 
@@ -98,6 +108,18 @@ describe('summary lib', () => {
 
       it('returns reference type for fields.patient_uuid', () => {
         expect(summariseReport({ fields: { patient_uuid: 'uuid-123' } }).subject)
+          .to.deep.equal({ value: 'uuid-123', type: 'reference' });
+      });
+
+      it('returns reference type for fields.patient_uuid when fields.patient_id is empty', () => {
+        // forms copy the contact's shortcode into patient_id, which is empty until Sentinel generates it
+        const doc = { fields: { patient_id: '', patient_uuid: 'uuid-123', patient_name: 'jeff' } };
+        expect(summariseReport(doc).subject)
+          .to.deep.equal({ name: 'jeff', value: 'uuid-123', type: 'reference' });
+      });
+
+      it('skips an empty patient_id on the doc and in fields', () => {
+        expect(summariseReport({ patient_id: '', fields: { patient_id: '', patient_uuid: 'uuid-123' } }).subject)
           .to.deep.equal({ value: 'uuid-123', type: 'reference' });
       });
 
@@ -191,6 +213,11 @@ describe('summary lib', () => {
 
     it('uses phone as name when name is missing', () => {
       const doc = { _id: 'c1', _rev: '1', type: 'person', phone: '0123456789' };
+      expect(summariseContact(doc).name).to.equal('0123456789');
+    });
+
+    it('uses phone as name when name is empty', () => {
+      const doc = { _id: 'c1', _rev: '1', type: 'person', name: '', phone: '0123456789' };
       expect(summariseContact(doc).name).to.equal('0123456789');
     });
 
