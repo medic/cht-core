@@ -51,7 +51,8 @@ describe('OfflineSync component', () => {
 
     fixture = TestBed.createComponent(OfflineSyncComponent);
     component = fixture.componentInstance;
-    await component.ngOnInit();
+    fixture.detectChanges();
+    await fixture.whenStable();
   };
 
   beforeEach(() => {
@@ -87,6 +88,7 @@ describe('OfflineSync component', () => {
 
       expect(component.supported).to.be.false;
       expect(component.canHost).to.be.false;
+      expect(component.canJoin).to.be.false;
     });
 
     it('offers only joining on a device that cannot host', async () => {
