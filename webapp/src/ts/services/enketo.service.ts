@@ -117,7 +117,7 @@ export class EnketoService {
           // so the on-screen keyboard closes.
           $input.trigger('blur');
         } else {
-          // Delay focussing on the next field, so that keybaord close and
+          // Delay focussing on the next field, so that keyboard close and
           // open events both register.  This should mean that the on-screen
           // keyboard is maintained between fields.
           setTimeout(() => {

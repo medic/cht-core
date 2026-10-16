@@ -1,5 +1,4 @@
 const chai = require('chai');
-chai.use(require('chai-as-promised'));
 const sinon = require('sinon');
 const rewire = require('rewire');
 const { USER_ROLES: { COUCHDB_ADMIN, ONLINE, ADMIN }, PREFIXES } = require('@medic/constants');

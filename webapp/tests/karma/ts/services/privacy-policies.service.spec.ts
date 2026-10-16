@@ -354,7 +354,7 @@ describe('PrivacyPoliciesService', () => {
 
       return service
         .accept({ language: 'en', digest: 'my_digest' })
-        .then(() => assert.fail('Should hve thrown'))
+        .then(() => assert.fail('Should have thrown'))
         .catch(err => {
           expect(userSettingsService.put.callCount).to.equal(1);
           expect(err).to.deep.equal({ my: 'err' });

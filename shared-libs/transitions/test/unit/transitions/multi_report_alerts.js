@@ -505,7 +505,7 @@ describe('multi report alerts', () => {
     });
   });
 
-  it('adds multiple messages when mutiple recipients', () => {
+  it('adds multiple messages when multiple recipients', () => {
     alertConfig.recipients = ['+254111222333', 'new_report.contact.phone'];
     config.get.returns([alertConfig]);
 

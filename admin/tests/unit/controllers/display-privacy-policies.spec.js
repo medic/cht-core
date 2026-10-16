@@ -83,7 +83,7 @@ describe('Display Privacy Policies controller', function() {
       });
     });
 
-    it('should handle missmatched attachments', () => {
+    it('should handle mismatched attachments', () => {
       languages.resolves([
         { code: 'en', name: 'English' },
         { code: 'es', name: 'Espanol' },

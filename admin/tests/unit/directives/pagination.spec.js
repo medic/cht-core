@@ -43,7 +43,7 @@ describe('pagination directive', () => {
     chai.expect(element.find('ul').children().last().hasClass('ng-hide')).to.equal(true);
   });
 
-  it('should render first 11 pages when page is in first braket and pages > 11', () => {
+  it('should render first 11 pages when page is in first bracket and pages > 11', () => {
     scope.pagination = {
       pages: 22,
       perPage: 25,
