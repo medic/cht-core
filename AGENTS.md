@@ -52,6 +52,27 @@ For full setup instructions, query the CHT Docs MCP or see https://docs.communit
 
 ---
 
+## FHIR Facade
+
+The FHIR facade serves CHT documents as FHIR R4 resources, read-only. It is driven entirely by
+`app_settings.fhir`, and serves three resource types: Patient, Encounter and the Observations an
+Encounter projects.
+
+Every query the facade runs is a **cht-datasource** call; it queries no view directly.
+
+**Before changing a FHIR configuration or the mapping library, read
+[`shared-libs/cht-fhir/README.md`](shared-libs/cht-fhir/README.md)** — the full configuration
+reference: binding keys, the constrained element catalog, observations and codes, query planning,
+generated conformance resources, and every diagnostic rule id.
+
+- `shared-libs/cht-fhir/` — the pure mapping library (config in, FHIR resource or query *plan* out)
+- `api/src/{services,controllers}/fhir.js` — executes plans, speaks HTTP at `/api/v1/fhir/**`
+- `fhir-mapping.json` (repo root) — a worked example; its contents are `app_settings.fhir` verbatim
+
+Diagnose a deployment with `GET /api/v1/fhir/$diagnostics`.
+
+---
+
 ## Code Style & Conventions
 
 - TypeScript for `webapp/` and newer shared-libs; JavaScript (CommonJS) for `api/`, `sentinel/`, `admin/`
