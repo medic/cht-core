@@ -59,7 +59,7 @@ export class OfflineSyncService {
    * but not these methods, so it counts as absent too: every call below would otherwise throw.
    */
   private get bridge() {
-    const bridge = (globalThis as any)?.medicmobile_android ?? null;
+    const bridge = globalThis?.medicmobile_android ?? null;
     return typeof bridge?.offline_sync_host_available === 'function' ? bridge : null;
   }
 

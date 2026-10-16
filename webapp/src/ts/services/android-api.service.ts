@@ -216,15 +216,15 @@ export class AndroidApiService {
     this.androidAppLauncherService.resolveAndroidAppResponse(response);
   }
 
-  resolveOfflineSyncHostingResult(ok, detail, diagnostic?) {
+  resolveOfflineSyncHostingResult(ok: boolean, detail: string, diagnostic?: string) {
     this.offlineSyncService.hostingResolved(ok, detail, diagnostic);
   }
 
-  resolveOfflineSyncPairing(ok, detail) {
+  resolveOfflineSyncPairing(ok: boolean, detail: string) {
     this.offlineSyncService.pairingResolved(ok, detail);
   }
 
-  offlineSyncPermissionsResolved(granted) {
+  offlineSyncPermissionsResolved(granted: boolean) {
     this.offlineSyncService.permissionsResolvedBy(granted);
   }
 
