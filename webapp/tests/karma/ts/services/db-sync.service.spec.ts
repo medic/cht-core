@@ -16,6 +16,7 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { MigrationsService } from '@mm-services/migrations.service';
 import { ReplicationService } from '@mm-services/replication.service';
+import { SettingsService } from '@mm-services/settings.service';
 
 describe('DBSync service', () => {
   let service:DBSyncService;
@@ -40,6 +41,7 @@ describe('DBSync service', () => {
   let translateService;
   let migrationService;
   let replicationService;
+  let settingsService;
   let store;
 
   let localMedicDb;
@@ -123,6 +125,7 @@ describe('DBSync service', () => {
     checkDateService = { check: sinon.stub().resolves() };
     migrationService = { runMigrations: sinon.stub().resolves() };
     replicationService = { replicateFrom: sinon.stub() };
+    settingsService = { get: sinon.stub().resolves({}) };
 
     TestBed.configureTestingModule({
       providers: [
@@ -138,10 +141,10 @@ describe('DBSync service', () => {
         { provide: CheckDateService, useValue: checkDateService },
         { provide: MigrationsService, useValue: migrationService },
         { provide: ReplicationService, useValue: replicationService },
+        { provide: SettingsService, useValue: settingsService },
       ]
     });
 
-    service = TestBed.inject(DBSyncService);
   });
 
   afterEach(() => {
@@ -149,7 +152,163 @@ describe('DBSync service', () => {
     clock.restore();
   });
 
+  describe('replication interval setting', () => {
+    const MINUTE = 60 * 1000;
+    let consoleWarn;
+
+    const tick = async (ms) => {
+      clock.tick(ms);
+      await nextTick();
+    };
+
+    const createService = () => {
+      service = TestBed.inject(DBSyncService);
+    };
+
+    const setConfiguredInterval = (value) => settingsService.get.resolves({ replication_interval_minutes: value });
+
+    beforeEach(() => {
+      getItem.withArgs('medic-last-replicated-seq').returns(99);
+      isOnlineOnly.returns(false);
+      hasAuth.resolves(true);
+      consoleWarn = sinon.stub(console, 'warn');
+    });
+
+    it('loads the setting when constructed, before the first sync', () => {
+      createService();
+      expect(settingsService.get.callCount).to.equal(1);
+      expectSyncCall(0);
+      expectSyncMetaCall(0);
+    });
+
+    it('syncs every 5 minutes when the setting is not configured', async () => {
+      createService();
+      await service.sync();
+      expectSyncCall(1);
+
+      await tick(4 * MINUTE);
+      expectSyncCall(1);
+      await tick(MINUTE + 1);
+      expectSyncCall(2);
+      expect(consoleWarn.callCount).to.equal(0);
+    });
+
+    [5, 7.5, 30, 60].forEach(minutes => {
+      it(`syncs at the configured interval of ${minutes} minutes`, async () => {
+        setConfiguredInterval(minutes);
+        createService();
+        await service.sync();
+        expectSyncCall(1);
+
+        await tick(minutes * MINUTE - 1);
+        expectSyncCall(1);
+        await tick(2);
+        expectSyncCall(2);
+        expect(settingsService.get.callCount).to.equal(1);
+        expect(consoleWarn.callCount).to.equal(0);
+      });
+    });
+
+    [0, -1, 1, 4.99, 61, '30', true, false, {}, [], NaN, Infinity, -Infinity].forEach(value => {
+      it(`falls back to 5 minutes and warns once for invalid value ${String(value)}`, async () => {
+        setConfiguredInterval(value);
+        createService();
+        await service.sync();
+        expectSyncCall(1);
+
+        await tick(4 * MINUTE);
+        expectSyncCall(1);
+        await tick(MINUTE + 1);
+        expectSyncCall(2);
+        expect(consoleWarn.callCount).to.equal(1);
+        expect(consoleWarn.args[0][0]).to.include('replication_interval_minutes');
+        expect(settingsService.get.callCount).to.equal(1);
+      });
+    });
+
+    it('falls back to 5 minutes without warning when the value is null', async () => {
+      setConfiguredInterval(null);
+      createService();
+      await service.sync();
+      expectSyncCall(1);
+
+      await tick(4 * MINUTE);
+      expectSyncCall(1);
+      await tick(MINUTE + 1);
+      expectSyncCall(2);
+      expect(consoleWarn.callCount).to.equal(0);
+    });
+
+    it('waits for settings and starts one timer per database when sync calls overlap', async () => {
+      let resolveSettings;
+      settingsService.get.returns(new Promise(resolve => resolveSettings = resolve));
+      createService();
+      const syncing = Promise.all([service.sync(), service.sync()]);
+      await tick(60 * MINUTE);
+      expectSyncCall(0);
+      expectSyncMetaCall(0);
+
+      resolveSettings({ replication_interval_minutes: 60 });
+      await syncing;
+      expectSyncCall(1);
+      expectSyncMetaCall(1);
+      await tick(30 * MINUTE);
+      expectSyncCall(1);
+      expectSyncMetaCall(1);
+      await tick(30 * MINUTE + 1);
+      expectSyncCall(2);
+      expectSyncMetaCall(2);
+    });
+
+    it('waits for the configured interval when connectivity returns before the first sync', async () => {
+      let resolveSettings;
+      settingsService.get.returns(new Promise(resolve => resolveSettings = resolve));
+      createService();
+      service.setOnlineStatus(false);
+      const syncing = service.setOnlineStatus(true);
+      await nextTick();
+      expectSyncCall(0);
+
+      resolveSettings({ replication_interval_minutes: 30 });
+      await syncing;
+      expectSyncCall(1);
+      await tick(5 * MINUTE + 1);
+      expectSyncCall(1);
+      await tick(25 * MINUTE);
+      expectSyncCall(2);
+    });
+
+    [undefined, 5, 30, 60].forEach(minutes => {
+      const metaMinutes = Math.max(30, minutes || 5);
+      it(`syncs metadata every ${metaMinutes} minutes with interval ${minutes}`, async () => {
+        setConfiguredInterval(minutes);
+        createService();
+        await service.sync();
+        expectSyncMetaCall(1);
+
+        await tick(metaMinutes * MINUTE - 1);
+        expectSyncMetaCall(1);
+        await tick(2);
+        expectSyncMetaCall(2);
+      });
+    });
+
+    it('does not read the setting or replicate for online-only users', async () => {
+      isOnlineOnly.returns(true);
+      createService();
+      await service.sync();
+      await tick(30 * MINUTE);
+      expect(settingsService.get.callCount).to.equal(0);
+      expectSyncCall(0);
+      expectSyncMetaCall(0);
+    });
+  });
+
   describe('sync', () => {
+    beforeEach(() => {
+      service = TestBed.inject(DBSyncService);
+    });
+
     it('does nothing for admins', () => {
       isOnlineOnly.returns(true);
       return service.sync().then(() => {
@@ -957,6 +1116,10 @@ describe('DBSync service', () => {
   });
 
   describe('on denied', () => {
+    beforeEach(() => {
+      service = TestBed.inject(DBSyncService);
+    });
+
     it('should have "denied" handles for every direction', () => {
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
@@ -984,6 +1147,10 @@ describe('DBSync service', () => {
   });
 
   describe('on change', () => {
+    beforeEach(() => {
+      service = TestBed.inject(DBSyncService);
+    });
+
     describe('replicate meta', () => {
       beforeEach(() => {
         hasAuth.resolves(true);
@@ -1148,6 +1315,10 @@ describe('DBSync service', () => {
   });
 
   describe('replicateTo filter', () => {
+    beforeEach(() => {
+      service = TestBed.inject(DBSyncService);
+    });
+
 
     let filterFunction;
 
