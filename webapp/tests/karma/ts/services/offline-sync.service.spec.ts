@@ -62,6 +62,13 @@ describe('OfflineSync service', () => {
       expect(await service.canHost()).to.be.false;
     });
 
+    it('is unsupported when the app lacks the newest of these methods', () => {
+      withBridge(bridge({ offline_sync_hosting_session: undefined }));
+
+      expect(service.isSupported()).to.be.false;
+      expect(service.hostingSession()).to.be.null;
+    });
+
     it('allows hosting for a user who may relay, on a device that can host', async () => {
       withBridge(bridge());
 
