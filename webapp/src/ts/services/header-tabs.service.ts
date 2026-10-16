@@ -75,12 +75,12 @@ export class HeaderTabsService {
     { ...this.ANALYTICS_TAB, permissions: ['can_view_analytics', 'can_view_analytics_tab'] }
   ];
 
-  private readonly OFFLINE_SYNC_TAB = 'offline-sync';
+  private readonly OFFLINE_SYNC_TAB_NAME = 'offline-sync';
 
   private readonly SIDEBAR_TABS: SidebarTab[] = [
     {
       // Shown by isAuthorized: it needs the android app as well as one of two permissions.
-      name: this.OFFLINE_SYNC_TAB,
+      name: this.OFFLINE_SYNC_TAB_NAME,
       route: 'offline-sync',
       defaultIcon: 'fa-exchange',
       translation: 'offline_sync.menu.title',
@@ -128,7 +128,7 @@ export class HeaderTabsService {
   private sidebarTabs?: SidebarTab[];
 
   private isAuthorized({ name, permissions }: SidebarTab): boolean | Promise<boolean> {
-    if (name === this.OFFLINE_SYNC_TAB) {
+    if (name === this.OFFLINE_SYNC_TAB_NAME) {
       return this.offlineSyncService.canTakePart();
     }
     return !permissions.length || this.authService.has(permissions);
