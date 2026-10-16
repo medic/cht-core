@@ -10,6 +10,7 @@ describe('OfflineSync service', () => {
   let service: OfflineSyncService;
   let authService;
   let sessionService;
+  let sessionEndHandler;
 
   const bridge = (overrides:any = {}) => ({
     offline_sync_host_available: sinon.stub().returns(true),
@@ -27,8 +28,12 @@ describe('OfflineSync service', () => {
   };
 
   beforeEach(() => {
+    sessionEndHandler = undefined;
     authService = { has: sinon.stub().resolves(true) };
-    sessionService = { isOnlineOnly: sinon.stub().returns(false) };
+    sessionService = {
+      isOnlineOnly: sinon.stub().returns(false),
+      onSessionEnd: sinon.stub().callsFake(handler => sessionEndHandler = handler),
+    };
     TestBed.configureTestingModule({
       providers: [
         { provide: AuthService, useValue: authService },
@@ -166,6 +171,18 @@ describe('OfflineSync service', () => {
       withBridge(bridge({ offline_sync_hosting_session: sinon.stub().returns('not json') }));
 
       expect(service.hostingSession()).to.be.null;
+    });
+  });
+
+  describe('when the session ends', () => {
+    it('stops hosting and leaves a joined session', async () => {
+      const android = bridge();
+      withBridge(android);
+
+      await sessionEndHandler();
+
+      expect(android.offline_sync_stop_hosting.callCount).to.equal(1);
+      expect(android.offline_sync_leave_session.callCount).to.equal(1);
     });
   });
 

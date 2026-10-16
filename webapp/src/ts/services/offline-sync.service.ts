@@ -48,7 +48,13 @@ export class OfflineSyncService {
   constructor(
     private readonly authService: AuthService,
     private readonly sessionService: SessionService,
-  ) { }
+  ) {
+    // Signing out ends whatever session this device is hosting or has joined.
+    this.sessionService.onSessionEnd(async () => {
+      this.stopHosting();
+      this.leaveSession();
+    });
+  }
 
   /**
    * The native bridge cht-android exposes to the WebView.
