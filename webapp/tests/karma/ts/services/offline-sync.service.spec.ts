@@ -166,12 +166,6 @@ describe('OfflineSync service', () => {
 
       expect(service.hostingSession()).to.be.null;
     });
-
-    it('reads no session when the native side sends one it cannot read', () => {
-      withBridge(bridge({ offline_sync_hosting_session: sinon.stub().returns('not json') }));
-
-      expect(service.hostingSession()).to.be.null;
-    });
   });
 
   describe('when the session ends', () => {

@@ -151,12 +151,7 @@ export class OfflineSyncService {
 
   /** The session this device is hosting, or null. It outlives this page, so the page reads it back. */
   hostingSession(): HostingSession | null {
-    try {
-      return JSON.parse(this.bridge?.offline_sync_hosting_session() || 'null');
-    } catch (err) {
-      console.error('OfflineSyncService :: Could not read the hosting session', err);
-      return null;
-    }
+    return JSON.parse(this.bridge?.offline_sync_hosting_session() || 'null');
   }
 
   scanAndJoin() {
