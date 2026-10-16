@@ -228,6 +228,35 @@ export const fetchAndFilterIds = (
   );
 };
 
+/**
+ * {@link fetchAndFilter} for docs that a view can emit more than once. A `keys` query returns one row per
+ * matching key, each carrying the whole doc, so a doc emitted under several of the requested keys comes
+ * back several times. On top of the given filter, a doc whose `_id` has already been accepted in this
+ * page is rejected, the way {@link fetchAndFilterIds} collapses repeated ids.
+ * @internal
+ */
+export const fetchAndFilterUniqueDocs = (
+  getFunction: (limit: number, skip: number) => Promise<Nullable<Doc>[]>,
+  filterFunction: (doc: Nullable<Doc>) => boolean,
+  limit: number,
+): ReturnType<typeof fetchAndFilter<Doc>> => {
+  const idSet = new Set<string>();
+  const filterFn = (doc: Nullable<Doc>): boolean => {
+    if (!doc || !filterFunction(doc)) {
+      return false;
+    }
+    const { size } = idSet;
+    idSet.add(doc._id);
+    return idSet.size !== size;
+  };
+
+  return fetchAndFilter(
+    getFunction,
+    filterFn,
+    limit
+  );
+};
+
 /** @internal */
 export const createDoc = (db: PouchDB.Database) => async (data: DataObject): Promise<Doc> => {
   const { id, rev, ok } = await db.post(data);

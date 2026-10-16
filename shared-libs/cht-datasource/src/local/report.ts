@@ -3,18 +3,23 @@ import {
   createDoc,
   fetchAndFilter,
   fetchAndFilterIds,
+  fetchAndFilterUniqueDocs,
   getDocById, getDocIdsByIdRange, getDocsByIds,
   queryDocIdsByKey,
   queryDocIdsByKeys,
   queryDocIdsByRange,
+  queryDocsByKeys,
   updateDoc
 } from './libs/doc';
 import {
   FormsQualifier,
   FreetextQualifier,
   IdsQualifier,
+  isFormsQualifier,
   isFreetextQualifier,
+  isIdsQualifier,
   isKeyedFreetextQualifier,
+  SubjectsQualifier,
   UuidQualifier
 } from '../qualifier';
 import { assertHasRequiredField, hasStringFieldWithValue, Nullable, Page } from '../libs/core';
@@ -80,6 +85,10 @@ const assertUpdatedForm = async <T extends Report.v1.Report | Report.v1.ReportWi
   }
 };
 
+// The view emits the raw subject value as the key, unlike reports_by_form's `[form]`. Deduped in order
+// for the same reasons as the form keys in getUuidsPage.
+const subjectViewKeys = (qualifier: SubjectsQualifier): string[] => [...new Set(qualifier.subjects)];
+
 /** @internal */
 export namespace v1 {
   const isReport = (doc: Nullable<Doc>): doc is Report.v1.Report => {
@@ -133,14 +142,15 @@ export namespace v1 {
     const queryNouveauFreetext = queryByFreetext(medicDb, 'reports_by_freetext');
     const getOfflineFreetextQueryPageFn = getOfflineFreetextQueryFn(medicDb);
     const promisedUseNouveau = useNouveauIndexes(medicDb);
-    // The form branch below returns without awaiting promisedUseNouveau, so a binding that only ever
-    // serves form queries would leave a rejection unobserved. The freetext branch still awaits (and
-    // so still surfaces) the real error.
+    // The form and subject branches below return without awaiting promisedUseNouveau, so a binding
+    // that never serves a freetext query would leave a rejection unobserved. The freetext branch
+    // still awaits (and so still surfaces) the real error.
     promisedUseNouveau.catch(() => { /* no-op */ });
     const queryViewByForms = queryDocIdsByKeys(medicDb, 'medic-client/reports_by_form');
+    const queryViewBySubjects = queryDocIdsByKeys(medicDb, 'medic-client/reports_by_subject');
 
     return async (
-      qualifier: FreetextQualifier | FormsQualifier,
+      qualifier: FreetextQualifier | FormsQualifier | SubjectsQualifier,
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<string>> => {
@@ -158,14 +168,21 @@ export namespace v1 {
         return fetchAndFilterIds(getPageFn, limit)(limit, skip);
       }
 
-      // The view emits [doc.form], so each form code is a complete key on its own. Duplicates are
-      // dropped here rather than trusted from the qualifier, since a hand-built FormsQualifier can
-      // reach this point without going through byForms(). Order is preserved, which is what keeps
-      // `skip` meaningful from one page to the next: the view returns rows grouped by key in the
-      // order supplied.
       const skip = validateCursor(cursor);
-      const keys = [...new Set(qualifier.forms)].map(form => [form]);
-      const getPageFn = (limit: number, skip: number) => queryViewByForms(keys, limit, skip);
+      if (isFormsQualifier(qualifier)) {
+        // The view emits [doc.form], so each form code is a complete key on its own. Duplicates are
+        // dropped here rather than trusted from the qualifier, since a hand-built qualifier can reach
+        // this branch without going through byForms(). Order is preserved, which is what keeps `skip`
+        // meaningful from one page to the next: the view returns rows grouped by key in the order
+        // supplied.
+        const keys = [...new Set(qualifier.forms)].map(form => [form]);
+        const getPageFn = (limit: number, skip: number) => queryViewByForms(keys, limit, skip);
+        return fetchAndFilterIds(getPageFn, limit)(limit, skip);
+      }
+
+      // A report is emitted once per subject field it sets; fetchAndFilterIds collapses the repeats.
+      const keys = subjectViewKeys(qualifier);
+      const getPageFn = (limit: number, skip: number) => queryViewBySubjects(keys, limit, skip);
       return fetchAndFilterIds(getPageFn, limit)(limit, skip);
     };
   };
@@ -173,19 +190,27 @@ export namespace v1 {
   /** @internal */
   export const getPage = ({ medicDb }: LocalDataContext) => {
     const getMedicDocsByIds = getDocsByIds(medicDb);
+    const queryDocsBySubjects = queryDocsByKeys(medicDb, 'medic-client/reports_by_subject');
 
     return async (
-      qualifier: IdsQualifier,
+      qualifier: IdsQualifier | SubjectsQualifier,
       cursor: Nullable<string>,
       limit: number,
     ): Promise<Page<Report.v1.Report>> => {
       const skip = validateCursor(cursor);
-      const getPageFn = (
-        limit: number,
-        skip: number
-      ) => getMedicDocsByIds(qualifier.ids.slice(skip, skip + limit));
+      // Ids take precedence.
+      if (isIdsQualifier(qualifier)) {
+        const getPageFn = (
+          limit: number,
+          skip: number
+        ) => getMedicDocsByIds(qualifier.ids.slice(skip, skip + limit));
 
-      return await fetchAndFilter(getPageFn, isReport, limit)(limit, skip) as Page<Report.v1.Report>;
+        return await fetchAndFilter(getPageFn, isReport, limit)(limit, skip) as Page<Report.v1.Report>;
+      }
+
+      const keys = subjectViewKeys(qualifier);
+      const getPageFn = (limit: number, skip: number) => queryDocsBySubjects(keys, limit, skip);
+      return await fetchAndFilterUniqueDocs(getPageFn, isReport, limit)(limit, skip) as Page<Report.v1.Report>;
     };
   };
 
