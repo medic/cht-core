@@ -105,6 +105,12 @@ export class OfflineSyncService {
     return this.authService.has('can_send_offline_data_bundle');
   }
 
+  /** Whether this user and device can take part at all, as host or as peer. */
+  async canTakePart(): Promise<boolean> {
+    const [canHost, canJoin] = await Promise.all([this.canHost(), this.canJoin()]);
+    return canHost || canJoin;
+  }
+
   /** Results arrive asynchronously: bringing a hotspot up takes seconds. */
   hostingResult(): Observable<OfflineSyncResult> {
     return this.hostingSubject.asObservable();

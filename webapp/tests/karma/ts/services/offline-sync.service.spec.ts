@@ -99,6 +99,17 @@ describe('OfflineSync service', () => {
 
       expect(authService.has.calledWith('can_relay_offline_data_bundle')).to.be.false;
     });
+
+    it('lets a user take part as either host or peer', async () => {
+      withBridge(bridge());
+      authService.has.withArgs('can_relay_offline_data_bundle').resolves(false);
+
+      expect(await service.canTakePart()).to.be.true;
+
+      authService.has.withArgs('can_send_offline_data_bundle').resolves(false);
+
+      expect(await service.canTakePart()).to.be.false;
+    });
   });
 
   describe('session control', () => {
