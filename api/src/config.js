@@ -3,6 +3,7 @@ const _ = require('lodash');
 let translationCache = {};
 let settings = {};
 let transitionsLib;
+let extensionLibs = {};
 
 _.templateSettings.interpolate = /\{\{(.+?)\}\}/g;
 
@@ -52,9 +53,11 @@ module.exports = {
   set: (newSettings) => settings = newSettings,
   setTranslationCache: (newTranslations) => translationCache = newTranslations,
   setTransitionsLib: (newTransitionsLib) => transitionsLib = newTransitionsLib,
+  setExtensionLibs: (newExtensionLibs) => extensionLibs = newExtensionLibs,
 
   get: key => (key ? settings[key] : settings),
   getAll: () => settings,
+  getExtensionLibs: () => extensionLibs,
   getTranslations: keys => {
     if (!keys) {
       return translationCache;

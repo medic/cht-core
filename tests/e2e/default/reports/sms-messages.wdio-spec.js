@@ -6,6 +6,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const reportFactory = require('@factories/cht/reports/generic-report');
 const { CONTACT_TYPES } = require('@medic/constants');
+const { createExtensionLibDoc } = require('@utils/extension-libs');
 
 describe('Reports tab messages', () => {
   const places = placeFactory.generateHierarchy();
@@ -40,7 +41,22 @@ describe('Reports tab messages', () => {
               timestamp: '2024-02-26T10:42:41.080Z'
             }],
             state: 'scheduled'
-          },]
+          }, {
+            due: '2024-05-10T04:30:00.000Z',
+            group: 9,
+            type: 'Extension-lib reminder',
+            translation_key: 'instance.upgrade.version',
+            message: [{
+              locale: 'en',
+              content: '{{#reverse-message}}Reminder for {{patient_name}}{{/reverse-message}}',
+            }],
+            recipient: 'clinic',
+            state_history: [{
+              state: 'scheduled',
+              timestamp: '2024-02-26T10:42:41.080Z'
+            }],
+            state: 'scheduled'
+          }]
         },
         {
           patient: { _id: patient._id, patient_id: '' },
@@ -51,9 +67,19 @@ describe('Reports tab messages', () => {
   ];
 
   before(async () => {
-    await utils.saveDocs([ ...places.values(), contact, patient, ...reports ]);
+    await utils.saveDocs([
+      ...places.values(),
+      contact,
+      patient,
+      ...reports,
+      createExtensionLibDoc({
+        'reverse-message.js': 'module.exports = value => `webapp[${Array.from(value).reverse().join(\'\')}]`;',
+      }),
+    ]);
     await loginPage.cookieLogin();
   });
+
+  after(() => utils.revertDb([/^form:/], true));
 
   it('should generate SMS report correctly when lacking patient_id', async () => {
     await commonElements.goToReports();
@@ -68,4 +94,14 @@ describe('Reports tab messages', () => {
       'Their ID is the_patient_id. They have been enrolled into the child health schedule.');
   });
 
+  it('should generate scheduled-message content with extension-libs in the Webapp', async () => {
+    await commonElements.goToReports();
+    const firstReport = await reportsPage.leftPanelSelectors.firstReport();
+
+    await reportsPage.openSelectedReport(firstReport);
+    await commonElements.waitForPageLoaded();
+
+    const scheduledTask = await reportsPage.getTaskDetails(2, 1);
+    expect(scheduledTask.message).to.equal('webapp[tneitap_eht rof rednimeR]');
+  });
 });

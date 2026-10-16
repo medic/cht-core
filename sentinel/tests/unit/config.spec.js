@@ -1,9 +1,11 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const db = require('../../src/db');
+const logger = require('@medic/logger');
 const translationUtils = require('@medic/translation-utils');
 const transitions = require('../../src/transitions');
 const { DOC_IDS } = require('@medic/constants');
+const extensionLibs = require('@medic/extension-libs');
 
 const rewire = require('rewire');
 const expect = chai.expect;
@@ -22,6 +24,7 @@ describe('config', () => {
 
     sinon.stub(translationUtils, 'loadTranslations').returnsArg(0);
     sinon.stub(transitions, 'loadTransitions').resolves();
+    sinon.stub(extensionLibs, 'load').resolves({});
   });
 
   afterEach(() => {
@@ -35,7 +38,7 @@ describe('config', () => {
     expect(config.get('schedule_morning_hours')).to.equal(0);
   });
 
-  it('init() loads translations then config and starts feed', async () => {
+  it('init() loads translations and extension libs before config and starts feed', async () => {
     const config = rewire('../../../sentinel/src/config');
     config.__set__('initTransitionLib', sinon.stub());
 
@@ -54,6 +57,8 @@ describe('config', () => {
       }
     ]);
     expect(db.medic.get.calledOnceWith(DOC_IDS.SETTINGS)).to.be.true;
+    expect(extensionLibs.load.calledOnceWithExactly(db.medic)).to.be.true;
+    expect(config.getExtensionLibs()).to.deep.equal(extensionLibs.getAll());
   });
 
   it('initConfig applies defaults and logs schedule', async () => {
@@ -94,6 +99,49 @@ describe('config', () => {
     // allow microtasks to flush
     await new Promise(res => setImmediate(res));
     expect(db.medic.allDocs.calledOnce).to.be.true;
+  });
+
+  it('initFeed reloads extension-libs when they change', async () => {
+    const config = rewire('../../../sentinel/src/config');
+    await config.init();
+    extensionLibs.load.resetHistory();
+    const changes = db.medic.changes.returnValues[0];
+
+    changes.on_change({ id: DOC_IDS.EXTENSION_LIBS });
+    await new Promise(res => setImmediate(res));
+
+    expect(extensionLibs.load.calledOnceWithExactly(db.medic)).to.be.true;
+  });
+
+  it('initFeed logs extension-libs reload errors and keeps running', async () => {
+    const config = rewire('../../../sentinel/src/config');
+    const error = new Error('extension libs unavailable');
+    const logError = sinon.stub(logger, 'error');
+    const exit = sinon.stub(process, 'exit');
+    await config.init();
+    extensionLibs.load.rejects(error);
+    const changes = db.medic.changes.returnValues[0];
+
+    changes.on_change({ id: DOC_IDS.EXTENSION_LIBS });
+    await new Promise(res => setImmediate(res));
+
+    expect(logError.calledOnce).to.be.true;
+    expect(logError.firstCall.args[0]).to.include('keeping the previous version');
+    expect(logError.firstCall.args[1]).to.equal(error);
+    expect(exit.notCalled).to.be.true;
+  });
+
+  it('fails startup when extension libs cannot be loaded', async () => {
+    const config = rewire('../../../sentinel/src/config');
+    const error = new Error('extension libs unavailable');
+    extensionLibs.load.rejects(error);
+
+    try {
+      await config.init();
+      throw new Error('startup should fail when extension libs cannot be loaded');
+    } catch (err) {
+      expect(err).to.equal(error);
+    }
   });
 
   it('initFeed error logs and exits process', async () => {
