@@ -177,18 +177,30 @@ export const fetchAndFilter = <T>(
   ): Promise<Page<T>> => {
     const docs = await getFunction(currentLimit, currentSkip);
     const noMoreResults = docs.length < currentLimit;
-    const newDocs = docs.filter((doc): doc is T => filterFunction(doc));
-    const overFetchCount = currentDocs.length + newDocs.length - limit || 0;
-    const totalDocs = [ ...currentDocs, ...newDocs ].slice(0, limit);
+    const newDocs: T[] = [];
+    let rowsConsumed = 0;
+
+    for (const doc of docs) {
+      rowsConsumed += 1;
+      if (filterFunction(doc)) {
+        newDocs.push(doc as T);
+      }
+
+      if (currentDocs.length + newDocs.length === limit) {
+        break;
+      }
+    }
+
+    const totalDocs = [ ...currentDocs, ...newDocs ];
+
+    if (totalDocs.length === limit) {
+      const nextSkip = currentSkip + rowsConsumed;
+
+      return { data: totalDocs, cursor: nextSkip.toString() };
+    }
 
     if (noMoreResults) {
       return { data: totalDocs, cursor: null };
-    }
-
-    if (totalDocs.length === limit) {
-      const nextSkip = currentSkip + currentLimit - overFetchCount;
-
-      return { data: totalDocs, cursor: nextSkip.toString() };
     }
 
     // Re-fetch twice as many docs as we need to limit number of recursions
