@@ -4,6 +4,7 @@
  */
 
 const moment = require('moment');
+const { toLocalIsoDate } = require('@medic/calendar-interval');
 
 /**
  * Problems:
@@ -21,9 +22,6 @@ const TIMELY_WINDOW = {
   start: 60, // days
   end: 180 // days
 };
-
-// This must be a comparable string format to avoid a bunch of parsing. For example, "2000-01-01" < "2010-11-31"
-const formatString = 'YYYY-MM-DD';
 
 const States = {
   /**
@@ -69,9 +67,9 @@ const getDisplayWindow = (taskEmission) => {
   }
 
   return {
-    dueDate: dueDate.format(formatString),
-    startDate: dueDate.clone().subtract(taskEmission.readyStart || 0, 'days').format(formatString),
-    endDate: dueDate.clone().add(taskEmission.readyEnd || 0, 'days').format(formatString),
+    dueDate: toLocalIsoDate(dueDate),
+    startDate: toLocalIsoDate(dueDate.clone().subtract(taskEmission.readyStart || 0, 'days')),
+    endDate: toLocalIsoDate(dueDate.clone().add(taskEmission.readyEnd || 0, 'days')),
   };
 };
 
@@ -111,7 +109,7 @@ module.exports = {
       return false;
     }
 
-    const timestampAsDate = moment(timestamp).format(formatString);
+    const timestampAsDate = toLocalIsoDate(timestamp);
     if (startDate > timestampAsDate) {
       return States.Draft;
     }
