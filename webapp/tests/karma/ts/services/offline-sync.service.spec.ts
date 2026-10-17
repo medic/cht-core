@@ -157,7 +157,9 @@ describe('OfflineSync service', () => {
 
     it('does nothing without a bridge', () => {
       expect(() => service.startHosting()).to.not.throw();
+      expect(() => service.stopHosting()).to.not.throw();
       expect(() => service.scanAndJoin()).to.not.throw();
+      expect(() => service.leaveSession()).to.not.throw();
       expect(service.hostingSession()).to.be.null;
     });
 
