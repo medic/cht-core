@@ -249,6 +249,54 @@ describe('task-states', () => {
     });
   });
 
+  describe('non-latin locales', () => {
+    before(() => {
+      require('moment/locale/ar');
+      require('moment/locale/ne');
+    });
+    afterEach(() => moment.locale('en'));
+
+    ['ne', 'ar'].forEach(locale => {
+      it(`getDisplayWindow formats dates with latin digits when the locale is ${locale}`, () => {
+        moment.locale([locale, 'en']);
+        const emission = mockEmission(0, { date: moment('2021-03-17T12:00:00').valueOf(), readyStart: 1, readyEnd: 2 });
+
+        expect(TaskStates.getDisplayWindow(emission)).to.deep.eq({
+          dueDate: '2021-03-17',
+          startDate: '2021-03-16',
+          endDate: '2021-03-19',
+        });
+      });
+
+      it(`calculateState compares latin dates when the locale is ${locale}`, () => {
+        moment.locale([locale, 'en']);
+        const emission = { dueDate: '2021-03-17', startDate: '2021-03-16', endDate: '2021-03-19' };
+        const now = moment('2021-03-17T12:00:00').valueOf();
+        expect(TaskStates.calculateState(emission, now)).to.eq('Ready');
+      });
+    });
+
+    it('getDisplayWindow converts devanagari digits in previously saved windows', () => {
+      const emission = { dueDate: '२०२१-०३-१७', startDate: '२०२१-०३-१६', endDate: '२०२१-०३-१९' };
+      expect(TaskStates.getDisplayWindow(emission)).to.deep.eq({
+        dueDate: '2021-03-17',
+        startDate: '2021-03-16',
+        endDate: '2021-03-19',
+      });
+      const now = moment('2021-03-17T12:00:00').valueOf();
+      expect(TaskStates.calculateState(emission, now)).to.eq('Ready');
+    });
+
+    it('getDisplayWindow converts arabic-indic digits in previously saved windows', () => {
+      const emission = { dueDate: '٢٠٢١-٠٣-١٧', startDate: '٢٠٢١-٠٣-١٦', endDate: '۲۰۲۱-۰۳-۱۹' };
+      expect(TaskStates.getDisplayWindow(emission)).to.deep.eq({
+        dueDate: '2021-03-17',
+        startDate: '2021-03-16',
+        endDate: '2021-03-19',
+      });
+    });
+  });
+
   it('formatString is comparable', () => {
     const formatString = TaskStates.__get__('formatString');
     expect(formatString).to.not.be.undefined;

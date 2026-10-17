@@ -23,7 +23,22 @@ const TIMELY_WINDOW = {
 };
 
 // This must be a comparable string format to avoid a bunch of parsing. For example, "2000-01-01" < "2010-11-31"
+// Always format in the 'en' locale so the digits are Latin regardless of the user's language (eg. not Devanagari)
 const formatString = 'YYYY-MM-DD';
+const formatDate = date => moment(date).locale('en').format(formatString);
+
+// Task docs saved before dates were formatted in 'en' can contain Arabic-Indic or Devanagari digits
+const LOCALIZED_DIGIT_ZEROS = [0x0660, 0x06F0, 0x0966];
+const toLatinDigits = date => {
+  if (typeof date !== 'string') {
+    return date;
+  }
+  return date.replace(/[٠-٩۰-۹०-९]/g, digit => {
+    const code = digit.charCodeAt(0);
+    const zero = LOCALIZED_DIGIT_ZEROS.find(start => code >= start && code <= start + 9);
+    return String(code - zero);
+  });
+};
 
 const States = {
   /**
@@ -57,9 +72,9 @@ const getDisplayWindow = (taskEmission) => {
   const hasExistingDisplayWindow = taskEmission.startDate || taskEmission.endDate;
   if (hasExistingDisplayWindow) {
     return {
-      dueDate: taskEmission.dueDate,
-      startDate: taskEmission.startDate,
-      endDate: taskEmission.endDate,
+      dueDate: toLatinDigits(taskEmission.dueDate),
+      startDate: toLatinDigits(taskEmission.startDate),
+      endDate: toLatinDigits(taskEmission.endDate),
     };
   }
 
@@ -69,9 +84,9 @@ const getDisplayWindow = (taskEmission) => {
   }
 
   return {
-    dueDate: dueDate.format(formatString),
-    startDate: dueDate.clone().subtract(taskEmission.readyStart || 0, 'days').format(formatString),
-    endDate: dueDate.clone().add(taskEmission.readyEnd || 0, 'days').format(formatString),
+    dueDate: formatDate(dueDate),
+    startDate: formatDate(dueDate.clone().subtract(taskEmission.readyStart || 0, 'days')),
+    endDate: formatDate(dueDate.clone().add(taskEmission.readyEnd || 0, 'days')),
   };
 };
 
@@ -111,7 +126,7 @@ module.exports = {
       return false;
     }
 
-    const timestampAsDate = moment(timestamp).format(formatString);
+    const timestampAsDate = formatDate(timestamp);
     if (startDate > timestampAsDate) {
       return States.Draft;
     }
