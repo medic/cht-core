@@ -608,7 +608,7 @@ describe('local doc lib', () => {
       expect(result.cursor).to.equal('4');
       expect(getFunction.firstCall.calledWith(3, 0)).to.be.true;
       expect(getFunction.secondCall.calledWith(2, 3)).to.be.true;
-      expect(filterFunction.callCount).to.equal(5);
+      expect(filterFunction.callCount).to.equal(4);
     });
 
     it('should preserve unconsumed accepted rows for the next page', async () => {

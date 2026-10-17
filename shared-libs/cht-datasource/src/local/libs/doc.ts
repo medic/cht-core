@@ -170,13 +170,7 @@ export const fetchAndFilter = <T>(
   filterFunction: (doc: Nullable<T>, id?: string) => boolean,
   limit: number,
 ): typeof recursionInner => {
-  const recursionInner = async (
-    currentLimit: number,
-    currentSkip: number,
-    currentDocs: T[] = [],
-  ): Promise<Page<T>> => {
-    const docs = await getFunction(currentLimit, currentSkip);
-    const noMoreResults = docs.length < currentLimit;
+  const collectUntilPageIsFull = (docs: Nullable<T>[], currentDocs: T[]) => {
     const newDocs: T[] = [];
     let rowsConsumed = 0;
 
@@ -190,6 +184,18 @@ export const fetchAndFilter = <T>(
         break;
       }
     }
+
+    return { newDocs, rowsConsumed };
+  };
+
+  const recursionInner = async (
+    currentLimit: number,
+    currentSkip: number,
+    currentDocs: T[] = [],
+  ): Promise<Page<T>> => {
+    const docs = await getFunction(currentLimit, currentSkip);
+    const noMoreResults = docs.length < currentLimit;
+    const { newDocs, rowsConsumed } = collectUntilPageIsFull(docs, currentDocs);
 
     const totalDocs = [ ...currentDocs, ...newDocs ];
 
