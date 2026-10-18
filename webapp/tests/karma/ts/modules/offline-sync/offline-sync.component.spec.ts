@@ -268,6 +268,26 @@ describe('OfflineSync component', () => {
       expect(component.state).to.equal('idle');
     });
 
+    it('goes back to the start when the user cancels the scan, and records nothing', async () => {
+      await create();
+      component.scanAndJoin();
+
+      pairingResult.next({ ok: false, detail: 'scan_cancelled' });
+
+      expect(component.state).to.equal('idle');
+      expect(component.errorKey).to.be.null;
+      expect(feedbackService.submit.callCount).to.equal(0);
+    });
+
+    it('explains the permission prompt without recording it as a failure', async () => {
+      await create();
+
+      hostingResult.next({ ok: false, detail: 'permissions_required' });
+
+      expect(component.errorKey).to.equal('offline_sync.error.permissions_required');
+      expect(feedbackService.submit.callCount).to.equal(0);
+    });
+
     it('leaves the failure showing when the user refuses', async () => {
       await create();
       hostingResult.next({ ok: false, detail: 'permissions_required' });

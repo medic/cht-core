@@ -129,13 +129,22 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
 
   /**
    * The native side sends a stable code, so it maps straight to a translation key. Nothing here
-   * validates the code, so every code cht-android can report needs a key in each of the five
-   * supported languages, or the raw `offline_sync.error.<code>` is what the user sees.
+   * validates the code, so every code cht-android can report, apart from `scan_cancelled`, which
+   * only resets the screen, needs a key in each of the five supported languages, or the raw
+   * `offline_sync.error.<code>` is what the user sees.
    * The fallback only covers an empty detail.
    */
   private fail(code: string, diagnostic?: string) {
+    // Backing out of the scanner is the user's own choice, so the screen just goes back.
+    if (code === 'scan_cancelled') {
+      return this.reset();
+    }
     this.errorKey = `offline_sync.error.${code || 'unknown'}`;
     this.state = 'failed';
+    // The app is waiting on the user's answer to the permission prompt, which is not a fault.
+    if (code === 'permissions_required') {
+      return;
+    }
     // Hosting is entirely on-device, so nothing about a failure reaches the server on its own.
     // Without this, the only record of why a session failed is a sentence on a screen in the
     // field, and support has nothing to look at.
