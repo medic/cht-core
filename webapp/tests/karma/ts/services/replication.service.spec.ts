@@ -24,12 +24,15 @@ describe('ContactTypes service', () => {
     };
     localDb = {
       allDocs: sinon.stub(),
-      bulkDocs: sinon.stub(),
+      bulkDocs: sinon.stub().callsFake(docs => Promise.resolve(docs.map(doc => ({ id: doc._id, ok: true })))),
     };
     remoteDb = {
       bulkGet: sinon.stub(),
     };
-    rulesEngineService = { monitorExternalChanges: sinon.stub() };
+    rulesEngineService = {
+      monitorExternalChanges: sinon.stub(),
+      monitorPurgedDocs: sinon.stub().resolves(),
+    };
 
     dbService = sinon.stub();
     dbService.withArgs().returns(localDb);
@@ -51,6 +54,26 @@ describe('ContactTypes service', () => {
   });
 
   describe('replicate from', () => {
+    it('should notify the rules engine with report context after purging', async () => {
+      const report = {
+        _id: 'report', _rev: '1-report', type: 'data_record', form: 'follow_up',
+        fields: { patient_id: 'patient' },
+      };
+      localDb.allDocs.withArgs().resolves({ rows: [{ id: report._id, value: { rev: report._rev } }] });
+      localDb.allDocs.withArgs({ keys: ['report'], include_docs: true }).resolves({ rows: [{ doc: report }] });
+      localDb.bulkDocs.resolves([{ id: report._id, ok: true, rev: '2-report' }]);
+      http.get.returns(of({ doc_ids_revs: [] }));
+      http.post.returns(of({ doc_ids: ['report'] }));
+
+      await service.replicateFrom();
+
+      expect(rulesEngineService.monitorPurgedDocs.args).to.deep.equal([[ [report] ]]);
+      expect(rulesEngineService.monitorPurgedDocs.calledAfter(localDb.bulkDocs)).to.equal(true);
+      expect(localDb.bulkDocs.args).to.deep.equal([[[
+        { _id: 'report', _rev: '1-report', _deleted: true, purged: true },
+      ]]]);
+    });
+
     it('should do nothing when no updates are required', async () => {
       localDb.allDocs.resolves({
         rows: [
@@ -237,7 +260,7 @@ describe('ContactTypes service', () => {
       const resp = await service.replicateFrom();
 
       expect(resp).to.deep.equal( { read_docs: 2 });
-      expect(localDb.allDocs.args).to.deep.equal([[]]);
+      expect(localDb.allDocs.args).to.deep.equal([[], [{ keys: ['2', '6'], include_docs: true }]]);
       expect(http.get.args).to.deep.equal([[
         '/api/v1/replication/get-ids',
         { responseType: 'json' },
@@ -286,6 +309,10 @@ describe('ContactTypes service', () => {
 
       const resp = await service.replicateFrom();
       expect(resp).to.deep.equal({ read_docs: 285 });
+      expect(localDb.allDocs.args.slice(1)).to.deep.equal([0, 100, 200].map(start => [{
+        keys: Array.from({ length: Math.min(100, 285 - start) }).map((_, idx) => `d${start + idx}`),
+        include_docs: true,
+      }]));
 
       expect(http.post.args).to.deep.equal([
         [
@@ -323,7 +350,60 @@ describe('ContactTypes service', () => {
       ]);
     });
 
+    it('should not fetch documents or notify the rules engine when the server returns no deletes', async () => {
+      localDb.allDocs.resolves({ rows: [{ id: 'local', value: { rev: '1-local' } }] });
+      http.get.returns(of({ doc_ids_revs: [] }));
+      http.post.returns(of({ doc_ids: [] }));
+
+      expect(await service.replicateFrom()).to.deep.equal({ read_docs: 0 });
+      expect(localDb.allDocs.args).to.deep.equal([[]]);
+      expect(localDb.bulkDocs.called).to.equal(false);
+      expect(rulesEngineService.monitorPurgedDocs.called).to.equal(false);
+    });
+
+    it('should only notify about successful purges and reject partial failures', async () => {
+      const removed = { _id: 'removed', type: 'data_record', form: 'follow_up', patient_id: 'patient' };
+      const conflict = { _id: 'conflict', type: 'person' };
+      localDb.allDocs.withArgs().resolves({ rows: [removed, conflict].map(doc => ({
+        id: doc._id, value: { rev: '1-original' },
+      })) });
+      localDb.allDocs.withArgs({ keys: ['removed', 'conflict'], include_docs: true }).resolves({
+        rows: [{ doc: removed }, { doc: conflict }],
+      });
+      http.get.returns(of({ doc_ids_revs: [] }));
+      http.post.returns(of({ doc_ids: ['removed', 'conflict'] }));
+      localDb.bulkDocs.resolves([{ id: 'removed', ok: true }, { id: 'conflict', error: true, status: 409 }]);
+
+      await expect(service.replicateFrom()).to.be.rejectedWith('Not all documents purged successfully');
+
+      expect(rulesEngineService.monitorPurgedDocs.args).to.deep.equal([[[removed]]]);
+    });
+
+    it('should ignore missing local document bodies when notifying the rules engine', async () => {
+      localDb.allDocs.withArgs().resolves({ rows: [{ id: 'missing', value: { rev: '1-old' } }] });
+      localDb.allDocs.withArgs({ keys: ['missing'], include_docs: true }).resolves({
+        rows: [{ key: 'missing', error: 'not_found' }],
+      });
+      http.get.returns(of({ doc_ids_revs: [] }));
+      http.post.returns(of({ doc_ids: ['missing'] }));
+
+      expect(await service.replicateFrom()).to.deep.equal({ read_docs: 1 });
+      expect(rulesEngineService.monitorPurgedDocs.args).to.deep.equal([[[]]]);
+    });
+
     describe('errors', () => {
+      it('should not purge when fetching the document context fails', async () => {
+        localDb.allDocs.withArgs().resolves({ rows: [{ id: 'report', value: { rev: '1-report' } }] });
+        localDb.allDocs.withArgs({ keys: ['report'], include_docs: true }).rejects(new Error('read failed'));
+        http.get.returns(of({ doc_ids_revs: [] }));
+        http.post.returns(of({ doc_ids: ['report'] }));
+
+        await expect(service.replicateFrom()).to.be.rejectedWith('read failed');
+
+        expect(localDb.bulkDocs.called).to.equal(false);
+        expect(rulesEngineService.monitorPurgedDocs.called).to.equal(false);
+      });
+
       it('should throw remote docs errors', async () => {
         http.get.returns(throwError(() => new Error('omg')));
         try {
@@ -475,6 +555,7 @@ describe('ContactTypes service', () => {
           expect.fail('Should have thrown');
         } catch (err) {
           expect(err.message).to.equal('bulkdocserror2');
+          expect(rulesEngineService.monitorPurgedDocs.called).to.equal(false);
         }
       });
     });

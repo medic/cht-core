@@ -519,6 +519,68 @@ describe('RulesEngineService', () => {
     }));
   });
 
+  describe('monitorPurgedDocs', () => {
+    it('should refresh the subjects of reports and contacts and then notify listeners', async () => {
+      service = TestBed.inject(RulesEngineService);
+      const callback = sinon.stub();
+      const subscription = service.contactsMarkedAsDirty(callback);
+      const docs = [
+        { _id: 'report1', type: DOC_TYPES.DATA_RECORD, form: 'follow_up', fields: { patient_id: 'patient' } },
+        { _id: 'report2', type: DOC_TYPES.DATA_RECORD, form: 'follow_up', patient_uuid: 'patient' },
+        { _id: 'report3', type: DOC_TYPES.DATA_RECORD, form: 'follow_up', fields: { place_uuid: 'household' } },
+        { _id: 'contact', type: 'person' },
+        { _id: 'custom-contact', type: 'contact', contact_type: 'patient' },
+        { _id: 'task', type: 'task', requester: 'unrelated' },
+        { _id: 'target', type: 'target' },
+        { _id: 'no-subject', type: DOC_TYPES.DATA_RECORD, form: 'follow_up' },
+        { _id: 'no-form', type: DOC_TYPES.DATA_RECORD, patient_id: 'ignored' },
+      ];
+
+      await service.monitorPurgedDocs(docs);
+
+      const subjects = ['patient', 'household', 'contact', 'custom-contact'];
+      expect(rulesEngineCoreStubs.updateEmissionsFor.args).to.deep.equal([[subjects]]);
+      expect(callback.args).to.deep.equal([[subjects]]);
+      expect(callback.calledAfter(rulesEngineCoreStubs.updateEmissionsFor)).to.equal(true);
+      subscription.unsubscribe();
+    });
+
+    it('should do nothing for empty or irrelevant documents', async () => {
+      service = TestBed.inject(RulesEngineService);
+      const callback = sinon.stub();
+      const subscription = service.contactsMarkedAsDirty(callback);
+
+      await service.monitorPurgedDocs();
+      await service.monitorPurgedDocs([{ _id: 'task', type: 'task', requester: 'patient' }]);
+
+      expect(rulesEngineCoreStubs.updateEmissionsFor.called).to.equal(false);
+      expect(callback.called).to.equal(false);
+      subscription.unsubscribe();
+    });
+
+    it('should do nothing when the rules engine is disabled', async () => {
+      sessionService.isOnlineOnly.returns(true);
+      service = TestBed.inject(RulesEngineService);
+
+      await service.monitorPurgedDocs([{ _id: 'patient', type: 'person' }]);
+
+      expect(rulesEngineCoreStubs.updateEmissionsFor.called).to.equal(false);
+    });
+
+    it('should propagate refresh failures without notifying listeners of success', async () => {
+      service = TestBed.inject(RulesEngineService);
+      const callback = sinon.stub();
+      const subscription = service.contactsMarkedAsDirty(callback);
+      rulesEngineCoreStubs.updateEmissionsFor.rejects(new Error('refresh failed'));
+
+      await expect(service.monitorPurgedDocs([{ _id: 'patient', type: 'person' }]))
+        .to.be.rejectedWith('refresh failed');
+
+      expect(callback.called).to.equal(false);
+      subscription.unsubscribe();
+    });
+  });
+
   describe('monitorExternalChanges', () => {
     it('should null check and do nothing when no docs', async () => {
       service = TestBed.inject(RulesEngineService);
