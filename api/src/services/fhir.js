@@ -47,11 +47,9 @@ const bound = (operation) => {
 // on every reload, so a changed key is a changed reference.
 let cached = { raw: undefined, result: { config: null, diagnostics: [] } };
 
-const LOG = { error: 'error', warn: 'warn', info: 'debug' };
-
-const formatDiagnostic = ({ ruleId, message, bindingKey }) => {
-  const scope = bindingKey ? ` (${bindingKey})` : '';
-  return `FHIR facade config: ${ruleId}: ${message}${scope}`;
+const formatDiagnostic = ({ ruleId, message, scope }) => {
+  const where = scope ? ` (${scope})` : '';
+  return `FHIR facade config: ${ruleId}: ${message}${where}`;
 };
 
 /** The loaded mapping and its diagnostics, which are logged once per settings change. */
@@ -60,7 +58,7 @@ const getFacade = () => {
   if (raw !== cached.raw) {
     const result = loadConfig(raw);
     for (const diagnostic of result.diagnostics) {
-      logger[LOG[diagnostic.severity]](formatDiagnostic(diagnostic));
+      logger[diagnostic.severity](formatDiagnostic(diagnostic));
     }
     cached = { raw, result };
   }

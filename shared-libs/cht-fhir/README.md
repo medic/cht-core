@@ -21,8 +21,7 @@ planning). If you change any of them, update the matching section here.
 
 The configuration is `app_settings.fhir`. [`fhir-mapping.example.json`](fhir-mapping.example.json)
 is a worked example; its entire contents go into `app_settings.fhir` as they
-are. The format is the one `cht-ui-builder` writes, and keys this library does
-not use are ignored.
+are. Keys this library does not use are ignored.
 
 api calls `loadConfig()` and caches the result until the settings object
 changes. `loadConfig` never throws; a mistake becomes a **diagnostic**, which
@@ -30,7 +29,7 @@ api logs whenever the settings change. The blast radius is scoped:
 
 | Where the error is | What is lost |
 | --- | --- |
-| `facade.resources` or `facade.canonicalBase` missing | The whole facade. Endpoints answer `503`. |
+| `canonicalBase` missing, or no binding survives | The whole facade. Endpoints answer `503`. |
 | Anything wrong with a binding itself | That binding only. Every other binding keeps serving. |
 
 With no `fhir` key at all, the facade endpoints answer `404`.
@@ -52,12 +51,9 @@ Errors are OperationOutcomes.
 
 ```jsonc
 {
-  "facade": {
-    "canonicalBase": "https://example.org/api/v1/fhir",  // required
-    "resources": { "<bindingKey>": { /* binding */ } }    // required
-  },
-  "questionMappings": { "<questionKey>": { "system": "…", "code": "…", "display": "…" } },
-  "adHocCodeSystem": { "canonical": "…", "codes": { "<questionKey>": { "code": "…", "display": "…" } } }
+  "canonicalBase": "https://example.org/api/v1/fhir",       // required
+  "patient": { "contactType": "person", /* binding */ },     // optional, at most one
+  "encounters": { "<formCode>": { /* binding */ } }          // optional, any number
 }
 ```
 
@@ -65,27 +61,26 @@ Errors are OperationOutcomes.
 `{base}` in an identifier `system` resolves to it. It is part of permanent
 public identifiers, so the facade will not invent one.
 
-## Binding keys
+## Bindings
 
-Each key of `facade.resources` is `<ResourceType>/<sourceKind>/<sourceId>`:
-
-| Resource type | Key | Notes |
+| Resource type | Where | Notes |
 | --- | --- | --- |
-| Patient | `Patient/contact_type/person` | A **person** contact type, read through `Person.v1`. **Only one** Patient binding is served (`patient-binding-duplicate`). |
-| Encounter | `Encounter/form/app:pregnancy` | Any number. Everything up to the first `:` is stripped to match a report's `form`. |
+| Patient | `patient` | `contactType` names a **person** contact type, read through `Person.v1`. One only: datasource cursors from two contact-type pages cannot be merged into one search. |
+| Encounter | `encounters.<formCode>` | Keyed by the report's `form`, e.g. `pregnancy`. All bound forms share one report query. |
 | Observation | — | Never bound; projected from an Encounter binding's `observations`. |
 
 A binding is:
 
 ```jsonc
 {
-  "status": "active",      // "disabled" or "orphaned" is not served
   "sourceFilter": null,    // narrow the document set
-  "elements": {},          // elementId -> { source }
-  "identifiers": [],       // Patient business identifiers
-  "observations": {}       // questionKey -> projection (Encounter only)
+  "elements": {},          // elementId -> source
+  "identifiers": [],       // business identifiers
+  "observations": []       // projections (Encounter only)
 }
 ```
+
+To stop serving a binding, remove it.
 
 ## Sources and filters
 
@@ -113,7 +108,7 @@ CHWs on `doc.role`, say:
 
 ## Elements
 
-`elements` maps an element id to `{ "source": … }`. An element id is a
+`elements` maps an element id to a source. An element id is a
 pseudo-path: `Patient.telecom.phone` means "the ContactPoint on
 `Patient.telecom` whose system is `phone`". The catalog is closed: an unknown
 element (`element-unknown`) or a source kind the element does not accept
@@ -169,26 +164,23 @@ creation date rather than its last edit).
 ## Observations
 
 Observations are projected out of an **Encounter** binding: one form field
-becomes one Observation. `observations` is keyed by a question key, which is
-also the key into `questionMappings` or the ad-hoc codes:
+becomes one Observation. `observations` is an array:
 
 ```json
-"observations": {
-  "app:pregnancy/weeks_since_lmp": {
-    "include": true,
-    "codeSource": "ad-hoc",
+"observations": [
+  {
+    "code": { "system": "https://example.org/fhir/CodeSystem/cht-fields", "code": "weeks-since-lmp", "display": "Weeks since LMP" },
     "valueMode": "valueQuantity",
     "unit": { "system": "http://unitsofmeasure.org", "code": "wk", "display": "wk" },
     "source": { "kind": "field", "path": "weeks_since_lmp" }
   }
-}
+]
 ```
 
 | Field | Notes |
 | --- | --- |
-| `include` | Anything but `true` is skipped, as is `"status": "orphaned"`. |
-| `codeSource` | **Required.** `question-mapping` (a standard code from `questionMappings`) or `ad-hoc` (a locally minted one from `adHocCodeSystem`). |
-| `source` | **Required.** Report answers nest by form group, so the question key does not say where the answer is. |
+| `code` | **Required.** `{ system, code, display }` — a standard code (LOINC, say) or one from a deployment-owned code system. |
+| `source` | **Required.** Where the answer is; report answers nest by form group. |
 | `valueMode` | `auto` (default), `valueQuantity`, `valueString`, `valueBoolean`, `valueDateTime`, `valueCodeableConcept` (carried as `{ text }`). |
 | `unit` | `{ system, code, display }`; forces `valueQuantity` under `auto`. |
 
@@ -202,12 +194,7 @@ Each Observation gets `id` `<reportUuid>.<code>`, `status` `final`, category
 subject-less Observations), and `effectiveDateTime` from
 `Encounter.period.start`, falling back to `reported_date`.
 
-Ad-hoc codes must be **minted by the configuration tool**; the facade will not
-derive one from a field name, because a published code must not change when a
-field is renamed. An unminted ad-hoc code is an error; an unmapped standard code
-is a warning, and that Observation is not served. A question mapping with
-`"status": "skipped"` counts as unmapped.
-
+The code is part of the Observation's id, so it must not change once published.
 Codes must match `[A-Za-z0-9\-.]` (`observation-code-not-id-safe`), be at most
 27 characters (`observation-code-too-long`, since a CHT uuid takes up to 36 of
 the 64 a FHIR id allows) and be distinct within a binding
@@ -238,29 +225,22 @@ Observations.
 
 ## Diagnostics reference
 
-Severity `error` drops what it names; `warn` and `info` are informational.
+Severity `error` drops what it names; `warn` is informational.
 
 | Rule id | Severity | Meaning |
 | --- | --- | --- |
-| `facade-missing` | error | `facade.resources` is missing. Disables the facade. |
-| `canonical-base-missing` | error | `facade.canonicalBase` is missing. Disables the facade. |
+| `canonical-base-missing` | error | `canonicalBase` is missing. Disables the facade. |
 | `no-servable-bindings` | error | Every binding was dropped. Disables the facade. |
-| `binding-key-invalid` | error | The key is not `Type/kind/id`. |
-| `binding-malformed` | error | The binding is not an object. |
-| `binding-source-kind-mismatch` | error | The key's source kind is not the one the resource type binds to, or it is an `Observation` binding. |
-| `patient-binding-duplicate` | error | A second Patient binding. |
-| `source-malformed`, `source-kind-unknown` | error | A source is missing its path or value, or names an unsupported kind (including `expr`). |
+| `encounters-malformed` | error | `encounters` is not an object. |
+| `binding-malformed` | error | A binding is not an object, or `patient` has no `contactType`. |
+| `source-malformed`, `source-kind-unknown` | error | A source is missing its path or value, or names an unsupported kind. |
 | `source-filter-malformed`, `source-filter-op-unknown`, `source-filter-value-invalid` | error | `sourceFilter` problems. |
 | `identifiers-malformed`, `identifier-malformed` | error | Identifier problems. |
 | `element-unknown`, `element-source-kind-rejected` | error | See [Elements](#elements). |
 | `required-element-unbound` | error | `Encounter.status` or `Encounter.class` is not bound. |
-| `observations-host-invalid` | error | `observations` on something other than an Encounter. |
-| `observations-malformed`, `observation-malformed`, `observation-code-source-unknown` | error | Observation problems. |
-| `observation-adhoc-code-unminted` | error | An ad-hoc code was never minted. |
+| `observations-malformed`, `observation-malformed`, `observation-code-malformed` | error | Observation problems. |
 | `observation-code-not-id-safe`, `observation-code-too-long`, `observation-code-duplicate` | error | See [Observations](#observations). |
-| `observation-code-unmapped` | warn | No code for the question; its Observation is not served. |
 | `observation-subject-missing` | warn | Observations on a binding with no `Encounter.subject`. |
-| `binding-inactive` | info | `status` is `disabled` or `orphaned`. |
 
 ## Development
 

@@ -9,7 +9,7 @@
  * `api/src/services/fhir.js` holds the implementations, keyed by `op`.
  */
 import { type FacadeResourceType, bindingServesType } from './catalog';
-import { type FacadeConfig, sourceMatchKey } from './config';
+import { type FacadeConfig } from './config';
 
 export type QueryPlan =
   | { readonly kind: 'read'; readonly op: 'person' | 'report'; readonly uuid: string }
@@ -97,5 +97,6 @@ export const planSearch = (
     return { ok: true, plan: planRead('Encounter', referenceValue(params.encounter)) };
   }
   // One query over every bound form; `bindingMatchesDoc` sorts the results back out.
-  return { ok: true, plan: { kind: 'report-by-forms', forms: bindings.map(sourceMatchKey), cursor, limit } };
+  const forms = bindings.map(binding => binding.sourceId);
+  return { ok: true, plan: { kind: 'report-by-forms', forms, cursor, limit } };
 };

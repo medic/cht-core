@@ -86,45 +86,38 @@ describe('FHIR facade API', () => {
   }));
 
   const mapping = {
-    facade: {
-      canonicalBase: CANONICAL_BASE,
-      resources: {
-        'Patient/contact_type/person': {
-          sourceFilter: { source: { kind: 'doc', path: 'doc.role' }, op: 'eq', value: 'patient' },
-          elements: {
-            'Patient.name.text': { source: { kind: 'doc', path: 'doc.name' } },
-            'Patient.gender': { source: { kind: 'doc', path: 'doc.sex' } },
-            'Patient.birthDate': { source: { kind: 'doc', path: 'doc.date_of_birth' } },
-            'Patient.telecom.phone': { source: { kind: 'doc', path: 'doc.phone' } },
-          },
-          identifiers: [{
-            system: '{base}/identifier/patient-id',
-            use: 'official',
-            source: { kind: 'doc', path: 'doc.patient_id' },
-          }],
-        },
-        'Encounter/form/app:pregnancy': {
-          elements: {
-            'Encounter.status': { source: { kind: 'const', value: 'finished' } },
-            'Encounter.class': { source: { kind: 'const', value: 'HH' } },
-            'Encounter.period.start': { source: { kind: 'doc', path: 'doc.reported_date' } },
-            'Encounter.subject': { source: { kind: 'doc', path: 'doc.fields.patient_uuid' } },
-            'Encounter.participant.individual': { source: { kind: 'doc', path: 'doc.contact._id' } },
-          },
-          observations: {
-            'app:pregnancy/weight_kg': {
-              include: true,
-              codeSource: 'question-mapping',
-              valueMode: 'valueQuantity',
-              unit: { system: 'http://unitsofmeasure.org', code: 'kg', display: 'kg' },
-              source: { kind: 'field', path: 'vitals.weight_kg' },
-            },
-          },
-        },
+    canonicalBase: CANONICAL_BASE,
+    patient: {
+      contactType: 'person',
+      sourceFilter: { source: { kind: 'doc', path: 'doc.role' }, op: 'eq', value: 'patient' },
+      elements: {
+        'Patient.name.text': { kind: 'doc', path: 'doc.name' },
+        'Patient.gender': { kind: 'doc', path: 'doc.sex' },
+        'Patient.birthDate': { kind: 'doc', path: 'doc.date_of_birth' },
+        'Patient.telecom.phone': { kind: 'doc', path: 'doc.phone' },
       },
+      identifiers: [{
+        system: '{base}/identifier/patient-id',
+        use: 'official',
+        source: { kind: 'doc', path: 'doc.patient_id' },
+      }],
     },
-    questionMappings: {
-      'app:pregnancy/weight_kg': { system: 'http://loinc.org', code: '29463-7', display: 'Body weight' },
+    encounters: {
+      pregnancy: {
+        elements: {
+          'Encounter.status': { kind: 'const', value: 'finished' },
+          'Encounter.class': { kind: 'const', value: 'HH' },
+          'Encounter.period.start': { kind: 'doc', path: 'doc.reported_date' },
+          'Encounter.subject': { kind: 'doc', path: 'doc.fields.patient_uuid' },
+          'Encounter.participant.individual': { kind: 'doc', path: 'doc.contact._id' },
+        },
+        observations: [{
+          code: { system: 'http://loinc.org', code: '29463-7', display: 'Body weight' },
+          valueMode: 'valueQuantity',
+          unit: { system: 'http://unitsofmeasure.org', code: 'kg', display: 'kg' },
+          source: { kind: 'field', path: 'vitals.weight_kg' },
+        }],
+      },
     },
   };
 
@@ -381,7 +374,7 @@ describe('FHIR facade API', () => {
   // Last, because these replace the mapping every test above reads.
   describe('without a usable mapping', () => {
     it('answers 503 for a mapping that will not load, pointing at the API logs', async () => {
-      await utils.updateSettings({ fhir: { facade: { resources: {} } } }, { ignoreReload: true });
+      await utils.updateSettings({ fhir: { canonicalBase: CANONICAL_BASE } }, { ignoreReload: true });
       for (const path of ['/metadata', `/Patient/${patient._id}`]) {
         const diagnostics = expectOutcome(await fhirRequest(path), 503, 'transient');
         expect(diagnostics).to.equal('The FHIR mapping for this server is not usable. See the API logs for why.');

@@ -5,58 +5,35 @@ const { Contact, Person, Qualifier, Report } = require('@medic/cht-datasource');
 const dataContext = require('../../../src/services/data-context');
 const config = require('../../../src/config');
 const CANONICAL_BASE = 'http://example.org/cht/fhir';
-const PATIENT_KEY = 'Patient/contact_type/person';
-const ENCOUNTER_KEY = 'Encounter/form/app:pregnancy';
 const PATIENT_UUID = '11111111-2222-3333-4444-555555555555';
 const REPORT_UUID = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
 
 const mapping = () => ({
-  questionMappings: {
-    'app:pregnancy/weight_kg': {
-      code: '29463-7',
-      display: 'Body weight',
-      system: 'http://loinc.org',
-      status: 'confirmed',
+  canonicalBase: CANONICAL_BASE,
+  patient: {
+    contactType: 'person',
+    sourceFilter: null,
+    elements: {
+      'Patient.name.text': { kind: 'doc', path: 'doc.name' },
+      'Patient.gender': { kind: 'doc', path: 'doc.sex' },
     },
+    identifiers: [],
   },
-  adHocCodeSystem: {
-    canonical: `${CANONICAL_BASE}/CodeSystem/cht-fields`,
-    codes: { 'app:pregnancy/u_lmp_date': { code: 'u-lmp-date', display: 'LMP date' } },
-  },
-  facade: {
-    canonicalBase: CANONICAL_BASE,
-    resources: {
-      [PATIENT_KEY]: {
-        resourceType: 'Patient',
-        source: { kind: 'contact_type', id: 'person' },
-        sourceFilter: null,
-        elements: {
-          'Patient.name.text': { source: { kind: 'doc', path: 'doc.name' } },
-          'Patient.gender': { source: { kind: 'doc', path: 'doc.sex' } },
-        },
-        identifiers: [],
-        observations: {},
+  encounters: {
+    pregnancy: {
+      sourceFilter: null,
+      elements: {
+        'Encounter.status': { kind: 'const', value: 'finished' },
+        'Encounter.class': { kind: 'const', value: 'HH' },
+        'Encounter.period.start': { kind: 'doc', path: 'doc.reported_date' },
+        'Encounter.subject': { kind: 'doc', path: 'doc.fields.patient_uuid' },
       },
-      [ENCOUNTER_KEY]: {
-        resourceType: 'Encounter',
-        source: { kind: 'form', id: 'app:pregnancy' },
-        sourceFilter: null,
-        elements: {
-          'Encounter.status': { source: { kind: 'const', value: 'finished' } },
-          'Encounter.class': { source: { kind: 'const', value: 'HH' } },
-          'Encounter.period.start': { source: { kind: 'doc', path: 'doc.reported_date' } },
-          'Encounter.subject': { source: { kind: 'doc', path: 'doc.fields.patient_uuid' } },
-        },
-        identifiers: [],
-        observations: {
-          'app:pregnancy/weight_kg': {
-            codeSource: 'question-mapping',
-            include: true,
-            valueMode: 'valueQuantity',
-            source: { kind: 'field', path: 'vitals.weight_kg' },
-          },
-        },
-      },
+      identifiers: [],
+      observations: [{
+        code: { system: 'http://loinc.org', code: '29463-7', display: 'Body weight' },
+        valueMode: 'valueQuantity',
+        source: { kind: 'field', path: 'vitals.weight_kg' },
+      }],
     },
   },
 });
@@ -121,10 +98,7 @@ describe('FHIR service', () => {
 
   /** A second form served as an Encounter, so a plan spans more than one. */
   const withSecondEncounterForm = () => {
-    settings.fhir.facade.resources['Encounter/form/app:delivery'] = {
-      ...mapping().facade.resources[ENCOUNTER_KEY],
-      source: { kind: 'form', id: 'app:delivery' },
-    };
+    settings.fhir.encounters.delivery = mapping().encounters.pregnancy;
   };
 
   const facade = () => {
@@ -135,7 +109,7 @@ describe('FHIR service', () => {
 
   describe('getFacade', () => {
     it('loads the configured mapping', () => {
-      expect(facade().bindings.map(binding => binding.key)).to.have.members([PATIENT_KEY, ENCOUNTER_KEY]);
+      expect(facade().bindings.map(binding => binding.scope)).to.have.members(['patient', 'encounters.pregnancy']);
     });
 
     it('re-parses only when the settings object changes', () => {
@@ -146,25 +120,26 @@ describe('FHIR service', () => {
     });
 
     it('reports a mapping that cannot serve', () => {
-      settings = { fhir: { facade: { canonicalBase: null, resources: {} } } };
+      settings = { fhir: { canonicalBase: null } };
       const { config: loaded, diagnostics } = service.getFacade();
       expect(loaded).to.equal(null);
       expect(diagnostics.map(diagnostic => diagnostic.ruleId)).to.include('canonical-base-missing');
     });
 
     it('logs the diagnostics once per settings change, at their severity', () => {
-      settings = { fhir: { facade: { canonicalBase: null, resources: {} } } };
+      settings = { fhir: { canonicalBase: null } };
       service.getFacade();
       service.getFacade();
       expect(logger.error.args).to.have.length(1);
       expect(logger.error.args[0][0]).to.match(/^FHIR facade config: canonical-base-missing: /);
 
       settings = { fhir: mapping() };
-      settings.fhir.facade.resources[PATIENT_KEY].status = 'disabled';
+      delete settings.fhir.encounters.pregnancy.elements['Encounter.subject'];
       service.getFacade();
       expect(logger.error.callCount).to.equal(1);
-      expect(logger.debug.args).to.deep.equal([[
-        `FHIR facade config: binding-inactive: Binding is disabled and will not be served. (${PATIENT_KEY})`,
+      expect(logger.warn.args).to.deep.equal([[
+        'FHIR facade config: observation-subject-missing: Observations are configured but Encounter.subject '
+        + 'is not bound, so they will be served without a subject. (encounters.pregnancy)',
       ]]);
     });
 
@@ -221,7 +196,7 @@ describe('FHIR service', () => {
     });
 
     it('applies a source filter on read', async () => {
-      settings.fhir.facade.resources[PATIENT_KEY].sourceFilter = {
+      settings.fhir.patient.sourceFilter = {
         source: { kind: 'doc', path: 'doc.role' },
         op: 'eq',
         value: 'patient',

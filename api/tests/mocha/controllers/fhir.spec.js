@@ -13,24 +13,22 @@ const facadeConfig = (overrides = {}) => ({
   canonicalBase: CANONICAL_BASE,
   bindings: [
     {
-      key: 'Patient/contact_type/person',
+      scope: 'patient',
       resourceType: 'Patient',
-      sourceKind: 'contact_type',
       sourceId: 'person',
       sourceFilter: null,
       elements: {},
       identifiers: [],
-      observations: {},
+      observations: [],
     },
     {
-      key: 'Encounter/form/app:pregnancy',
+      scope: 'encounters.pregnancy',
       resourceType: 'Encounter',
-      sourceKind: 'form',
-      sourceId: 'app:pregnancy',
+      sourceId: 'pregnancy',
       sourceFilter: null,
       elements: {},
       identifiers: [],
-      observations: { 'app:pregnancy/u_lmp_date': {} },
+      observations: [{}],
     },
   ],
   ...overrides,
@@ -130,7 +128,7 @@ describe('FHIR Controller', () => {
     it('answers 503 pointing at the API logs when the mapping will not load', async () => {
       getFacade.returns({
         config: null,
-        diagnostics: [{ severity: 'error', ruleId: 'canonical-base-missing', message: 'set a base', bindingKey: null }],
+        diagnostics: [{ severity: 'error', ruleId: 'canonical-base-missing', message: 'set a base', scope: null }],
       });
       await controller.v1.search(req, res);
       expect(status()).to.equal(503);
@@ -176,7 +174,7 @@ describe('FHIR Controller', () => {
     it('answers 404 for a resource type the mapping does not configure', async () => {
       // Observation is a type the facade serves, but only where a binding
       // projects one; this mapping's Encounter projects none.
-      const bindings = facadeConfig().bindings.map(binding => ({ ...binding, observations: {} }));
+      const bindings = facadeConfig().bindings.map(binding => ({ ...binding, observations: [] }));
       getFacade.returns({ config: facadeConfig({ bindings }), diagnostics: [] });
       req.params = { resourceType: 'Observation', id: 'x' };
       await controller.v1.read(req, res);
@@ -315,7 +313,7 @@ describe('FHIR Controller', () => {
     });
 
     it('answers 404 for an unconfigured resource type', async () => {
-      const bindings = facadeConfig().bindings.map(binding => ({ ...binding, observations: {} }));
+      const bindings = facadeConfig().bindings.map(binding => ({ ...binding, observations: [] }));
       getFacade.returns({ config: facadeConfig({ bindings }), diagnostics: [] });
       req.params = { resourceType: 'Observation' };
       await controller.v1.search(req, res);

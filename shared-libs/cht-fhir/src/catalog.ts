@@ -91,7 +91,7 @@ const ACT_CODE_DISPLAYS: Readonly<Record<string, string>> = {
 /* ------------------------------- element rows ----------------------------- */
 
 export interface ElementSpec {
-  /** Binding key, e.g. `Patient.telecom.phone`. Not always a FHIR path. */
+  /** Element id, e.g. `Patient.telecom.phone`. Not always a FHIR path. */
   readonly id: string;
   /** 1 when R4 requires the element, so a binding that leaves it unbound is refused. */
   readonly min: 0 | 1;
@@ -113,17 +113,11 @@ export interface SearchParamSpec {
 }
 
 export interface ResourceTypeSpec {
-  /**
-   * The CHT source a binding on this type must name, or null when the type is
-   * projected rather than bound.
-   */
-  readonly sourceKind: 'contact_type' | 'form' | null;
   readonly elements: readonly ElementSpec[];
   readonly searchParams: readonly SearchParamSpec[];
 }
 
 const PATIENT: ResourceTypeSpec = {
-  sourceKind: 'contact_type',
   searchParams: [
     { name: '_id', type: 'token', documentation: 'The CHT document uuid.' },
     { name: 'name', type: 'string', documentation: 'Free-text name search. Needs at least 3 characters.' },
@@ -225,7 +219,6 @@ const PATIENT: ResourceTypeSpec = {
  * mean scanning.
  */
 const ENCOUNTER: ResourceTypeSpec = {
-  sourceKind: 'form',
   searchParams: [
     { name: '_id', type: 'token', documentation: 'The CHT report uuid.' },
   ],
@@ -332,7 +325,6 @@ const ENCOUNTER: ResourceTypeSpec = {
  * user never binds one directly, so there are no element rows.
  */
 const OBSERVATION: ResourceTypeSpec = {
-  sourceKind: null,
   searchParams: [
     { name: '_id', type: 'token', documentation: 'Synthesised as <reportUuid>.<code>.' },
     { name: 'encounter', type: 'reference', documentation: 'Encounter/<report uuid>.' },
@@ -356,8 +348,8 @@ export const findElementSpec = (
  * and a binding that projects observations also serves Observation.
  */
 export const bindingServesType = (
-  binding: { readonly resourceType: FacadeResourceType; readonly observations: Readonly<Record<string, unknown>> },
+  binding: { readonly resourceType: FacadeResourceType; readonly observations: readonly unknown[] },
   resourceType: FacadeResourceType,
 ): boolean => resourceType === 'Observation'
-  ? Object.keys(binding.observations).length > 0
+  ? binding.observations.length > 0
   : binding.resourceType === resourceType;

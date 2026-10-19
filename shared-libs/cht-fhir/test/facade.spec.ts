@@ -1,7 +1,6 @@
 import { expect } from 'chai';
 import {
   type FacadeConfig,
-  type ResourceBinding,
   DEFAULT_PAGE_SIZE,
   RESOURCE_TYPES,
   buildCapabilityStatement,
@@ -11,15 +10,12 @@ import {
   planRead,
   planSearch,
   searchsetBundle,
-  sourceMatchKey,
 } from '../src/index';
 import {
   CANONICAL_BASE,
-  ENCOUNTER_KEY,
-  PATIENT_KEY,
+  FORM,
   encounterBinding,
   mapping,
-  mappingWith,
 } from './fixtures';
 
 const SERVICE_BASE = 'https://cht.example.org/api/v1/fhir';
@@ -31,14 +27,6 @@ const load = (raw: unknown = mapping()) => {
     throw new Error('fixture failed to load');
   }
   return config;
-};
-
-const bindingOf = (config: FacadeConfig, key: string): ResourceBinding => {
-  const binding = config.bindings.find(candidate => candidate.key === key);
-  if (!binding) {
-    throw new Error(`no binding ${key}`);
-  }
-  return binding;
 };
 
 /** The resource types a CapabilityStatement built from this config declares. */
@@ -155,9 +143,10 @@ describe('cht-fhir query planning', () => {
       expect(planSearch(config, 'Patient', request({ name: '  ma  ' }))).to.deep.equal(refusal);
     });
 
-    it('spans every bound form, by its bare code, in one report query', () => {
-      const delivery = 'Encounter/form/app:delivery';
-      const twoForms = load(mappingWith({ resources: { [delivery]: encounterBinding() } }));
+    it('spans every bound form in one report query', () => {
+      const raw = mapping();
+      raw.encounters.delivery = encounterBinding();
+      const twoForms = load(raw);
       expect(planSearch(twoForms, 'Encounter', request({}))).to.deep.equal({
         ok: true,
         plan: { kind: 'report-by-forms', forms: ['pregnancy', 'delivery'], cursor: null, limit: DEFAULT_PAGE_SIZE },
@@ -165,9 +154,8 @@ describe('cht-fhir query planning', () => {
     });
 
     it('searches Observations only over the forms that project any', () => {
-      const raw = mappingWith({
-        resources: { 'Encounter/form/app:delivery': { ...encounterBinding(), observations: {} } },
-      });
+      const raw = mapping();
+      raw.encounters.delivery = { ...encounterBinding(), observations: [] };
       const planned = planSearch(load(raw), 'Observation', request({}));
       expect(planned.ok && planned.plan).to.deep.include({ kind: 'report-by-forms', forms: ['pregnancy'] });
     });
@@ -191,22 +179,19 @@ describe('cht-fhir conformance', () => {
   });
 
   it('omits Observation when no binding projects any', () => {
-    const raw = mapping() as Record<string, any>;
-    raw.facade.resources[ENCOUNTER_KEY].observations = {};
+    const raw = mapping();
+    raw.encounters[FORM].observations = [];
     expect(declaredTypes(load(raw))).to.deep.equal(['Patient', 'Encounter']);
   });
 
   it('omits a resource type nothing binds', () => {
-    const encounterOnly = load(mapping({ resources: { [ENCOUNTER_KEY]: encounterBinding() } }));
+    const encounterOnly = load(mapping({ patient: undefined }));
     expect(declaredTypes(encounterOnly)).to.deep.equal(['Encounter', 'Observation']);
   });
 
   it('orders the resource types from the people outwards, whatever order they were bound in', () => {
-    const reversed = mapping() as Record<string, any>;
-    reversed.facade.resources = {
-      [ENCOUNTER_KEY]: reversed.facade.resources[ENCOUNTER_KEY],
-      [PATIENT_KEY]: reversed.facade.resources[PATIENT_KEY],
-    };
+    const { canonicalBase, encounters, patient } = mapping();
+    const reversed = { canonicalBase, encounters, patient };
     expect(declaredTypes(load(reversed))).to.deep.equal(['Patient', 'Encounter', 'Observation']);
   });
 
@@ -282,20 +267,5 @@ describe('cht-fhir conformance', () => {
         issue: [{ severity: 'error', code: 'not-found', diagnostics: 'Patient/x not found' }],
       });
     });
-  });
-});
-
-describe('cht-fhir sourceMatchKey', () => {
-  const config = load();
-
-  it('strips the namespace prefix a form binding key carries', () => {
-    // A report's `form` is the bare code, not the tool's `app:pregnancy`.
-    expect(sourceMatchKey(bindingOf(config, ENCOUNTER_KEY))).to.equal('pregnancy');
-    const bare = load(mapping({ resources: { 'Encounter/form/delivery': encounterBinding() } }));
-    expect(sourceMatchKey(bare.bindings[0])).to.equal('delivery');
-  });
-
-  it('uses a contact type id verbatim', () => {
-    expect(sourceMatchKey(bindingOf(config, PATIENT_KEY))).to.equal('person');
   });
 });

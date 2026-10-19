@@ -25,9 +25,7 @@ import {
   FHIR_ID_PATTERN,
   isBlank,
   observationId,
-  resolveObservationCode,
   resolveSource,
-  sourceMatchKey,
   trimTrailingSlashes,
 } from './config';
 import {
@@ -232,8 +230,8 @@ export const bindingMatchesDoc = (binding: ResourceBinding, doc: Record<string, 
   if (!matchesSourceFilter(binding.sourceFilter, doc)) {
     return false;
   }
-  if (binding.sourceKind === 'form') {
-    return sourceMatchKey(binding) === doc.form;
+  if (binding.resourceType === 'Encounter') {
+    return binding.sourceId === doc.form;
   }
   const typeId = doc.type === 'contact' ? doc.contact_type : doc.type;
   return typeId === binding.sourceId;
@@ -442,22 +440,17 @@ const reportLinks = (binding: ResourceBinding, doc: Record<string, unknown>, war
 
 interface ReportContext {
   readonly doc: Record<string, unknown>;
-  readonly config: FacadeConfig;
   readonly warn: Warn;
   readonly links: Record<string, unknown>;
 }
 
 const projectObservation = (
   report: ReportContext,
-  questionKey: string,
   projection: ObservationProjection,
 ): Record<string, unknown> | null => {
   const { doc, warn } = report;
-  const code = resolveObservationCode(questionKey, projection, report.config);
-  if (!code) {
-    return null;
-  }
-  const where = `observation ${questionKey}`;
+  const { code } = projection;
+  const where = `observation ${code.code}`;
   const raw = readValue(projection.source, doc, warn, where);
   if (isBlank(raw)) {
     return null;
@@ -484,9 +477,7 @@ const projectObservation = (
  * Project a report's configured fields into Observations.
  *
  * One document becomes many resources, so each needs a synthetic id —
- * `<reportUuid>.<code>`. That is also why an unminted ad-hoc code is fatal
- * rather than something to paper over: without a stable code there is no
- * stable id.
+ * `<reportUuid>.<code>`.
  */
 export const projectObservations = (
   binding: ResourceBinding,
@@ -494,8 +485,8 @@ export const projectObservations = (
   ctx: MapContext,
 ): Record<string, unknown>[] => {
   const warn = ctx.warn ?? noopWarn;
-  const report = { doc, config: ctx.config, warn, links: reportLinks(binding, doc, warn) };
-  return Object.entries(binding.observations)
-    .map(([questionKey, projection]) => projectObservation(report, questionKey, projection))
+  const report = { doc, warn, links: reportLinks(binding, doc, warn) };
+  return binding.observations
+    .map(projection => projectObservation(report, projection))
     .filter((observation): observation is Record<string, unknown> => observation !== null);
 };

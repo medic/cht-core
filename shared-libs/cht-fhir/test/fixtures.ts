@@ -1,7 +1,7 @@
 /**
  * Fixtures modelled on a real deployment's FHIR mapping: a Patient
  * bound to the `person` contact type and an Encounter bound to the
- * `app:pregnancy` form, projecting two Observations.
+ * `pregnancy` form, projecting two Observations.
  *
  * That pair is the whole facade — Patient, Encounter and the Observations an
  * Encounter hosts are the three resource types served — so `mapping()` is a
@@ -10,20 +10,22 @@
 
 export const CANONICAL_BASE = 'http://example.org/cht/fhir';
 
-export const PATIENT_KEY = 'Patient/contact_type/person';
-export const ENCOUNTER_KEY = 'Encounter/form/app:pregnancy';
+export const FORM = 'pregnancy';
+export const PATIENT_SCOPE = 'patient';
+export const ENCOUNTER_SCOPE = `encounters.${FORM}`;
+
+export const LMP_CODE = { system: `${CANONICAL_BASE}/CodeSystem/cht-fields`, code: 'u-lmp-date', display: 'LMP date' };
+export const WEIGHT_CODE = { system: 'http://loinc.org', code: '29463-7', display: 'Body weight' };
 
 export const patientBinding = () => ({
-  resourceType: 'Patient',
-  source: { kind: 'contact_type', id: 'person' },
-  status: 'active',
+  contactType: 'person',
   sourceFilter: null,
   elements: {
-    'Patient.name.text': { source: { kind: 'doc', path: 'doc.name' } },
-    'Patient.gender': { source: { kind: 'doc', path: 'doc.sex' } },
-    'Patient.birthDate': { source: { kind: 'doc', path: 'doc.date_of_birth' } },
-    'Patient.telecom.phone': { source: { kind: 'doc', path: 'doc.phone' } },
-    'Patient.deceasedDateTime': { source: { kind: 'doc', path: 'doc.date_of_death' } },
+    'Patient.name.text': { kind: 'doc', path: 'doc.name' },
+    'Patient.gender': { kind: 'doc', path: 'doc.sex' },
+    'Patient.birthDate': { kind: 'doc', path: 'doc.date_of_birth' },
+    'Patient.telecom.phone': { kind: 'doc', path: 'doc.phone' },
+    'Patient.deceasedDateTime': { kind: 'doc', path: 'doc.date_of_death' },
   },
   identifiers: [{
     source: { kind: 'doc', path: 'doc.patient_id' },
@@ -35,87 +37,41 @@ export const patientBinding = () => ({
     },
     use: 'official',
   }],
-  observations: {},
 });
 
 export const encounterBinding = () => ({
-  resourceType: 'Encounter',
-  source: { kind: 'form', id: 'app:pregnancy' },
-  status: 'active',
   sourceFilter: null,
   elements: {
-    'Encounter.status': { source: { kind: 'const', value: 'finished' } },
-    'Encounter.class': { source: { kind: 'const', value: 'HH' } },
-    'Encounter.type': { source: { kind: 'const', value: 'Home Visit' } },
-    'Encounter.period.start': { source: { kind: 'doc', path: 'doc.reported_date' } },
-    'Encounter.participant.individual': { source: { kind: 'doc', path: 'doc.contact._id' } },
+    'Encounter.status': { kind: 'const', value: 'finished' },
+    'Encounter.class': { kind: 'const', value: 'HH' },
+    'Encounter.type': { kind: 'const', value: 'Home Visit' },
+    'Encounter.period.start': { kind: 'doc', path: 'doc.reported_date' },
+    'Encounter.participant.individual': { kind: 'doc', path: 'doc.contact._id' },
     // Also the subject of every Observation this Encounter projects.
-    'Encounter.subject': { source: { kind: 'doc', path: 'doc.fields.inputs.contact._id' } },
+    'Encounter.subject': { kind: 'doc', path: 'doc.fields.inputs.contact._id' },
   },
   identifiers: [],
-  observations: {
-    'app:pregnancy/u_lmp_date': {
-      codeSource: 'ad-hoc',
-      include: true,
-      status: 'active',
+  observations: [
+    {
+      code: { ...LMP_CODE },
       valueMode: 'valueDateTime',
       source: { kind: 'field', path: 'gestational_age.u_lmp_date' },
     },
-    'app:pregnancy/weight_kg': {
-      codeSource: 'question-mapping',
-      include: true,
-      status: 'active',
+    {
+      code: { ...WEIGHT_CODE },
       valueMode: 'valueQuantity',
       unit: { system: 'http://unitsofmeasure.org', code: 'kg', display: 'kg' },
       source: { kind: 'field', path: 'vitals.weight_kg' },
     },
-  },
+  ],
 });
 
-export const mapping = (overrides: Record<string, unknown> = {}) => ({
-  schemaVersion: 2,
-  orphans: [],
-  questionMappings: {
-    'app:pregnancy/weight_kg': {
-      code: '29463-7',
-      display: 'Body weight',
-      system: 'http://loinc.org',
-      status: 'confirmed',
-      dictionaryVersion: 'LOINC-2.82',
-      source: 'starter-pack',
-    },
-  },
-  adHocCodeSystem: {
-    canonical: `${CANONICAL_BASE}/CodeSystem/cht-fields`,
-    frozen: false,
-    codes: {
-      'app:pregnancy/u_lmp_date': { code: 'u-lmp-date', display: 'LMP date' },
-    },
-  },
-  facade: {
-    canonicalBase: CANONICAL_BASE,
-    resources: {
-      [PATIENT_KEY]: patientBinding(),
-      [ENCOUNTER_KEY]: encounterBinding(),
-    },
-    ...overrides,
-  },
+export const mapping = (overrides: Record<string, unknown> = {}): Record<string, any> => ({
+  canonicalBase: CANONICAL_BASE,
+  patient: patientBinding(),
+  encounters: { [FORM]: encounterBinding() },
+  ...overrides,
 });
-
-/** `resources` merges rather than replaces, unlike `mapping`'s. */
-export const mappingWith = (
-  overrides: { resources?: Record<string, unknown> } & Record<string, unknown> = {},
-) => {
-  const { resources, ...rest } = overrides;
-  return mapping({
-    resources: {
-      [PATIENT_KEY]: patientBinding(),
-      [ENCOUNTER_KEY]: encounterBinding(),
-      ...(resources ?? {}),
-    },
-    ...rest,
-  });
-};
 
 /** A CHT person contact, shaped like tests/factories/cht/contacts/person.js. */
 export const personDoc = () => ({

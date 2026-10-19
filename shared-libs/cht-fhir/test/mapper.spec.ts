@@ -15,9 +15,10 @@ import {
 } from '../src/index';
 import {
   CANONICAL_BASE,
-  ENCOUNTER_KEY,
-  PATIENT_KEY,
-  encounterBinding,
+  ENCOUNTER_SCOPE,
+  FORM,
+  PATIENT_SCOPE,
+  WEIGHT_CODE,
   mapping,
   patientBinding,
   personDoc,
@@ -45,19 +46,19 @@ const load = (raw: unknown = mapping()) => {
   return config;
 };
 
-const bindingOf = (config: FacadeConfig, key: string): ResourceBinding => {
-  const binding = config.bindings.find(candidate => candidate.key === key);
+const bindingOf = (config: FacadeConfig, scope: string): ResourceBinding => {
+  const binding = config.bindings.find(candidate => candidate.scope === scope);
   if (!binding) {
-    throw new Error(`no binding ${key}`);
+    throw new Error(`no binding ${scope}`);
   }
   return binding;
 };
 
-/** Map `doc` through the binding at `key`, collecting warnings. */
-const mapWith = (raw: unknown, key: string, doc: Record<string, unknown>) => {
+/** Map `doc` through the binding at `scope`, collecting warnings. */
+const mapWith = (raw: unknown, scope: string, doc: Record<string, unknown>) => {
   const config = load(raw);
   const warnings: string[] = [];
-  const resource = mapDocument(bindingOf(config, key), doc, { config, warn: message => warnings.push(message) });
+  const resource = mapDocument(bindingOf(config, scope), doc, { config, warn: message => warnings.push(message) });
   return { resource, warnings: warnings.join(' ') };
 };
 
@@ -66,7 +67,7 @@ const projectWith = (raw: unknown, doc: Record<string, unknown>) => {
   const config = load(raw);
   const warnings: string[] = [];
   const observations = projectObservations(
-    bindingOf(config, ENCOUNTER_KEY),
+    bindingOf(config, ENCOUNTER_SCOPE),
     doc,
     { config, warn: message => warnings.push(message) },
   );
@@ -211,16 +212,14 @@ describe('cht-fhir mapper', () => {
   });
 
   describe('bindingMatchesDoc', () => {
-    it('claims a report by its bare form code, not the config key', () => {
-      const binding = bindingOf(load(), ENCOUNTER_KEY);
-      // The binding's sourceId is `app:pregnancy`; the report says `pregnancy`.
-      expect(binding.sourceId).to.equal('app:pregnancy');
+    it('claims a report by its form code', () => {
+      const binding = bindingOf(load(), ENCOUNTER_SCOPE);
       expect(bindingMatchesDoc(binding, reportDoc())).to.equal(true);
       expect(bindingMatchesDoc(binding, { ...reportDoc(), form: 'delivery' })).to.equal(false);
     });
 
     it('claims a contact by contact_type, falling back to type', () => {
-      const binding = bindingOf(load(), PATIENT_KEY);
+      const binding = bindingOf(load(), PATIENT_SCOPE);
       expect(bindingMatchesDoc(binding, personDoc())).to.equal(true);
       expect(bindingMatchesDoc(binding, { type: 'contact', contact_type: 'person' })).to.equal(true);
       expect(bindingMatchesDoc(binding, { type: 'contact', contact_type: 'chw' })).to.equal(false);
@@ -230,15 +229,12 @@ describe('cht-fhir mapper', () => {
       // A deployment with a single `person` contact type separates its
       // patients from its health workers on `doc.role`.
       const config = load(mapping({
-        resources: {
-          [PATIENT_KEY]: {
-            ...patientBinding(),
-            sourceFilter: { source: { kind: 'doc', path: 'doc.role' }, op: 'ne', value: 'chw' },
-          },
-          [ENCOUNTER_KEY]: encounterBinding(),
+        patient: {
+          ...patientBinding(),
+          sourceFilter: { source: { kind: 'doc', path: 'doc.role' }, op: 'ne', value: 'chw' },
         },
       }));
-      const patient = bindingOf(config, PATIENT_KEY);
+      const patient = bindingOf(config, PATIENT_SCOPE);
       expect(bindingMatchesDoc(patient, personDoc())).to.equal(true);
       expect(bindingMatchesDoc(patient, { ...personDoc(), role: 'chw' })).to.equal(false);
     });
@@ -247,7 +243,7 @@ describe('cht-fhir mapper', () => {
   describe('mapDocument', () => {
     it('maps a person contact to a Patient', () => {
       const config = load();
-      const resource = mapDocument(bindingOf(config, PATIENT_KEY), personDoc(), { config });
+      const resource = mapDocument(bindingOf(config, PATIENT_SCOPE), personDoc(), { config });
       expect(resource).to.deep.equal({
         resourceType: 'Patient',
         id: PATIENT_ID,
@@ -275,7 +271,7 @@ describe('cht-fhir mapper', () => {
 
     it('maps a report to an Encounter, expanding the pseudo-paths', () => {
       const config = load();
-      const resource = mapDocument(bindingOf(config, ENCOUNTER_KEY), reportDoc(), { config });
+      const resource = mapDocument(bindingOf(config, ENCOUNTER_SCOPE), reportDoc(), { config });
       expect(resource).to.deep.equal({
         resourceType: 'Encounter',
         id: REPORT_ID,
@@ -293,24 +289,24 @@ describe('cht-fhir mapper', () => {
 
     it('omits an element whose source resolves to nothing', () => {
       const config = load();
-      const resource = mapDocument(bindingOf(config, PATIENT_KEY), personDoc(), { config });
+      const resource = mapDocument(bindingOf(config, PATIENT_SCOPE), personDoc(), { config });
       // date_of_death is unset on a living patient.
       expect(resource).to.not.have.property('deceasedDateTime');
     });
 
     it('omits a string, concept or reference that is only whitespace', () => {
-      const { resource } = mapWith(mapping(), PATIENT_KEY, { ...personDoc(), name: '   ', phone: ' ' });
+      const { resource } = mapWith(mapping(), PATIENT_SCOPE, { ...personDoc(), name: '   ', phone: ' ' });
       expect(resource).to.not.have.property('name');
       expect(resource).to.not.have.property('telecom');
       const raw = mapping() as Record<string, any>;
-      raw.facade.resources[ENCOUNTER_KEY].elements['Encounter.type'] = { source: { kind: 'const', value: ' ' } };
-      const encounter = mapWith(raw, ENCOUNTER_KEY, { ...reportDoc(), contact: { _id: '  ' } }).resource;
+      raw.encounters[FORM].elements['Encounter.type'] = { kind: 'const', value: ' ' };
+      const encounter = mapWith(raw, ENCOUNTER_SCOPE, { ...reportDoc(), contact: { _id: '  ' } }).resource;
       expect(encounter).to.not.have.property('participant');
       expect(encounter).to.not.have.property('type');
     });
 
     it('drops a code outside a required value set, and says why', () => {
-      const { resource, warnings } = mapWith(mapping(), PATIENT_KEY, { ...personDoc(), sex: 'intersex' });
+      const { resource, warnings } = mapWith(mapping(), PATIENT_SCOPE, { ...personDoc(), sex: 'intersex' });
       expect(resource).to.not.have.property('gender');
       expect(warnings).to.contain('Patient.gender');
       expect(warnings).to.contain('required value set');
@@ -318,23 +314,21 @@ describe('cht-fhir mapper', () => {
 
     it('warns when a required element resolves to nothing', () => {
       const raw = mapping() as Record<string, any>;
-      raw.facade.resources[ENCOUNTER_KEY].elements['Encounter.status'] = {
-        source: { kind: 'const', value: '' },
-      };
-      const { resource, warnings } = mapWith(raw, ENCOUNTER_KEY, reportDoc());
+      raw.encounters[FORM].elements['Encounter.status'] = { kind: 'const', value: '' };
+      const { resource, warnings } = mapWith(raw, ENCOUNTER_SCOPE, reportDoc());
       expect(resource).to.not.have.property('status');
       expect(warnings).to.contain('Encounter.status is required');
     });
 
     it('omits an optional element that resolves to nothing without a warning', () => {
-      const { warnings } = mapWith(mapping(), PATIENT_KEY, personDoc());
+      const { warnings } = mapWith(mapping(), PATIENT_SCOPE, personDoc());
       expect(warnings).to.equal('');
     });
 
     it('emits an unlisted Encounter class code, because the binding is extensible', () => {
       const raw = mapping() as Record<string, any>;
-      raw.facade.resources[ENCOUNTER_KEY].elements['Encounter.class'] = { source: { kind: 'const', value: 'XYZ' } };
-      const { resource } = mapWith(raw, ENCOUNTER_KEY, reportDoc());
+      raw.encounters[FORM].elements['Encounter.class'] = { kind: 'const', value: 'XYZ' };
+      const { resource } = mapWith(raw, ENCOUNTER_SCOPE, reportDoc());
       expect(resource.class).to.deep.equal({
         system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
         code: 'XYZ',
@@ -343,72 +337,62 @@ describe('cht-fhir mapper', () => {
 
     it('merges the name pseudo-paths into one HumanName', () => {
       const raw = mapping() as Record<string, any>;
-      raw.facade.resources[PATIENT_KEY].elements['Patient.name.family'] = {
-        source: { kind: 'doc', path: 'doc.family_name' },
-      };
-      raw.facade.resources[PATIENT_KEY].elements['Patient.name.given'] = {
-        source: { kind: 'doc', path: 'doc.given_name' },
-      };
+      raw.patient.elements['Patient.name.family'] = { kind: 'doc', path: 'doc.family_name' };
+      raw.patient.elements['Patient.name.given'] = { kind: 'doc', path: 'doc.given_name' };
       const doc = { ...personDoc(), family_name: 'Smith', given_name: 'Mary' };
-      const { resource } = mapWith(raw, PATIENT_KEY, doc);
+      const { resource } = mapWith(raw, PATIENT_SCOPE, doc);
       expect(resource.name).to.deep.equal([{ text: 'Mary Smith', family: 'Smith', given: ['Mary'] }]);
     });
 
     it('writes the output in catalog order, whatever order the config binds in', () => {
       // `given` before `family` in the config must not change the HumanName.
       const raw = mapping() as Record<string, any>;
-      raw.facade.resources[PATIENT_KEY].elements = {
-        'Patient.name.given': { source: { kind: 'doc', path: 'doc.given_name' } },
-        'Patient.name.family': { source: { kind: 'doc', path: 'doc.family_name' } },
+      raw.patient.elements = {
+        'Patient.name.given': { kind: 'doc', path: 'doc.given_name' },
+        'Patient.name.family': { kind: 'doc', path: 'doc.family_name' },
       };
-      const { resource } = mapWith(raw, PATIENT_KEY, { ...personDoc(), family_name: 'Smith', given_name: 'Mary' });
+      const { resource } = mapWith(raw, PATIENT_SCOPE, { ...personDoc(), family_name: 'Smith', given_name: 'Mary' });
       expect(Object.keys((resource.name as Record<string, unknown>[])[0])).to.deep.equal(['family', 'given']);
     });
 
     it('merges both ends of a period', () => {
       const raw = mapping() as Record<string, any>;
-      raw.facade.resources[ENCOUNTER_KEY].elements['Encounter.period.end'] = {
-        source: { kind: 'field', path: 'visit_end' },
-      };
+      raw.encounters[FORM].elements['Encounter.period.end'] = { kind: 'field', path: 'visit_end' };
       const doc = reportDoc() as Record<string, any>;
       doc.fields.visit_end = '2026-01-16';
-      const { resource } = mapWith(raw, ENCOUNTER_KEY, doc);
+      const { resource } = mapWith(raw, ENCOUNTER_SCOPE, doc);
       expect(resource.period).to.deep.equal({ start: REPORTED, end: '2026-01-16' });
     });
 
     it('maps a free-text reason and a patient address', () => {
       const raw = mapping() as Record<string, any>;
-      raw.facade.resources[ENCOUNTER_KEY].elements['Encounter.reasonCode'] = {
-        source: { kind: 'field', path: 'reason' },
-      };
-      raw.facade.resources[PATIENT_KEY].elements['Patient.address.text'] = {
-        source: { kind: 'doc', path: 'doc.address' },
-      };
+      raw.encounters[FORM].elements['Encounter.reasonCode'] = { kind: 'field', path: 'reason' };
+      raw.patient.elements['Patient.address.text'] = { kind: 'doc', path: 'doc.address' };
       const doc = reportDoc() as Record<string, any>;
       doc.fields.reason = ' Routine ';
-      expect(mapWith(raw, ENCOUNTER_KEY, doc).resource.reasonCode).to.deep.equal([{ text: 'Routine' }]);
-      expect(mapWith(raw, PATIENT_KEY, { ...personDoc(), address: 'Ward 3' }).resource.address)
+      expect(mapWith(raw, ENCOUNTER_SCOPE, doc).resource.reasonCode).to.deep.equal([{ text: 'Routine' }]);
+      expect(mapWith(raw, PATIENT_SCOPE, { ...personDoc(), address: 'Ward 3' }).resource.address)
         .to.deep.equal([{ text: 'Ward 3' }]);
     });
 
     it('omits meta fields the document cannot supply', () => {
-      const { resource } = mapWith(mapping(), PATIENT_KEY, { _id: 'x' });
+      const { resource } = mapWith(mapping(), PATIENT_SCOPE, { _id: 'x' });
       expect(resource.meta).to.deep.equal({});
     });
 
     it('omits an identifier whose source resolves to nothing', () => {
       const doc = personDoc() as Record<string, unknown>;
       delete doc.patient_id;
-      const { resource, warnings } = mapWith(mapping(), PATIENT_KEY, doc);
+      const { resource, warnings } = mapWith(mapping(), PATIENT_SCOPE, doc);
       expect(resource).to.not.have.property('identifier');
       expect(warnings).to.equal('');
     });
 
     it('omits an identifier use and type when the config gives none', () => {
       const raw = mapping() as Record<string, any>;
-      delete raw.facade.resources[PATIENT_KEY].identifiers[0].use;
-      delete raw.facade.resources[PATIENT_KEY].identifiers[0].type;
-      const { resource } = mapWith(raw, PATIENT_KEY, personDoc());
+      delete raw.patient.identifiers[0].use;
+      delete raw.patient.identifiers[0].type;
+      const { resource } = mapWith(raw, PATIENT_SCOPE, personDoc());
       expect(resource.identifier).to.deep.equal([{
         system: `${CANONICAL_BASE}/identifier/patient-id`,
         value: '10072',
@@ -417,13 +401,13 @@ describe('cht-fhir mapper', () => {
 
     it('resolves {base} in an identifier system without doubling a slash', () => {
       const raw = mapping({ canonicalBase: `${CANONICAL_BASE}/` }) as Record<string, any>;
-      const { resource } = mapWith(raw, PATIENT_KEY, personDoc());
+      const { resource } = mapWith(raw, PATIENT_SCOPE, personDoc());
       expect((resource.identifier as Record<string, unknown>[])[0].system)
         .to.equal(`${CANONICAL_BASE}/identifier/patient-id`);
     });
 
     it('stringifies a numeric identifier value', () => {
-      const { resource } = mapWith(mapping(), PATIENT_KEY, { ...personDoc(), patient_id: 10072 });
+      const { resource } = mapWith(mapping(), PATIENT_SCOPE, { ...personDoc(), patient_id: 10072 });
       expect((resource.identifier as Record<string, unknown>[])[0].value).to.equal('10072');
     });
 
@@ -432,15 +416,13 @@ describe('cht-fhir mapper', () => {
       // national IG that binds the element `required` rejects and no receiver
       // can resolve to a concept. A `coding` source says what it means.
       const raw = mapping() as Record<string, any>;
-      raw.facade.resources[ENCOUNTER_KEY].elements['Encounter.type'] = {
-        source: {
-          kind: 'coding',
-          system: 'http://snomed.info/sct',
-          code: '390906007',
-          display: 'Follow-up encounter',
-        },
+      raw.encounters[FORM].elements['Encounter.type'] = {
+        kind: 'coding',
+        system: 'http://snomed.info/sct',
+        code: '390906007',
+        display: 'Follow-up encounter',
       };
-      const { resource } = mapWith(raw, ENCOUNTER_KEY, reportDoc());
+      const { resource } = mapWith(raw, ENCOUNTER_SCOPE, reportDoc());
       expect(resource.type).to.deep.equal([{
         coding: [{ system: 'http://snomed.info/sct', code: '390906007', display: 'Follow-up encounter' }],
         text: 'Follow-up encounter',
@@ -449,10 +431,8 @@ describe('cht-fhir mapper', () => {
 
     it('carries a coding with no display as the code alone', () => {
       const raw = mapping() as Record<string, any>;
-      raw.facade.resources[ENCOUNTER_KEY].elements['Encounter.type'] = {
-        source: { kind: 'coding', system: 'http://snomed.info/sct', code: '390906007' },
-      };
-      const { resource } = mapWith(raw, ENCOUNTER_KEY, reportDoc());
+      raw.encounters[FORM].elements['Encounter.type'] = { kind: 'coding', system: 'http://snomed.info/sct', code: '390906007' };
+      const { resource } = mapWith(raw, ENCOUNTER_SCOPE, reportDoc());
       expect(resource.type).to.deep.equal([{
         coding: [{ system: 'http://snomed.info/sct', code: '390906007' }],
       }]);
@@ -460,46 +440,40 @@ describe('cht-fhir mapper', () => {
 
     it('takes the subject from a form field as well as from the document', () => {
       const raw = mapping() as Record<string, any>;
-      raw.facade.resources[ENCOUNTER_KEY].elements['Encounter.subject'] = {
-        source: { kind: 'field', path: 'patient_uuid' },
-      };
-      const { resource } = mapWith(raw, ENCOUNTER_KEY, reportDoc());
+      raw.encounters[FORM].elements['Encounter.subject'] = { kind: 'field', path: 'patient_uuid' };
+      const { resource } = mapWith(raw, ENCOUNTER_SCOPE, reportDoc());
       expect(resource.subject).to.deep.equal({ reference: `Patient/${PATIENT_ID}` });
     });
 
     it('maps a visit location, whose Location this facade does not serve', () => {
       const raw = mapping() as Record<string, any>;
-      raw.facade.resources[ENCOUNTER_KEY].elements['Encounter.location.location'] = {
-        source: { kind: 'doc', path: 'doc.contact.parent._id' },
-      };
-      const { resource } = mapWith(raw, ENCOUNTER_KEY, reportDoc());
+      raw.encounters[FORM].elements['Encounter.location.location'] = { kind: 'doc', path: 'doc.contact.parent._id' };
+      const { resource } = mapWith(raw, ENCOUNTER_SCOPE, reportDoc());
       expect(resource.location).to.deep.equal([{ location: { reference: 'Location/clinic1' } }]);
     });
 
     it('maps a parent place as the managing Organization', () => {
       const raw = mapping() as Record<string, any>;
-      raw.facade.resources[PATIENT_KEY].elements['Patient.managingOrganization'] = {
-        source: { kind: 'doc', path: 'doc.parent._id' },
-      };
-      const { resource } = mapWith(raw, PATIENT_KEY, personDoc());
+      raw.patient.elements['Patient.managingOrganization'] = { kind: 'doc', path: 'doc.parent._id' };
+      const { resource } = mapWith(raw, PATIENT_SCOPE, personDoc());
       expect(resource.managingOrganization).to.deep.equal({ reference: 'Organization/clinic1' });
     });
 
     it('omits the subject when its path resolves to nothing', () => {
       const doc = reportDoc() as Record<string, any>;
       delete doc.fields.inputs;
-      const { resource } = mapWith(mapping(), ENCOUNTER_KEY, doc);
+      const { resource } = mapWith(mapping(), ENCOUNTER_SCOPE, doc);
       expect(resource).to.not.have.property('subject');
     });
 
     it('maps a date of death', () => {
-      const { resource } = mapWith(mapping(), PATIENT_KEY, { ...personDoc(), date_of_death: '2026-02-03' });
+      const { resource } = mapWith(mapping(), PATIENT_SCOPE, { ...personDoc(), date_of_death: '2026-02-03' });
       expect(resource.deceasedDateTime).to.equal('2026-02-03');
     });
 
     it('warns about an unparseable date and omits the element', () => {
       const doc = { ...personDoc(), date_of_birth: 'last Tuesday', date_of_death: 'later' };
-      const { resource, warnings } = mapWith(mapping(), PATIENT_KEY, doc);
+      const { resource, warnings } = mapWith(mapping(), PATIENT_SCOPE, doc);
       expect(resource).to.not.have.property('birthDate');
       expect(resource).to.not.have.property('deceasedDateTime');
       expect(warnings).to.contain('Patient.birthDate');
@@ -510,15 +484,15 @@ describe('cht-fhir mapper', () => {
     it('maps without a warn callback, because warnings are optional', () => {
       const config = load();
       const doc = { ...personDoc(), sex: 'intersex', date_of_birth: 'nonsense' };
-      expect(() => mapDocument(bindingOf(config, PATIENT_KEY), doc, { config })).to.not.throw();
+      expect(() => mapDocument(bindingOf(config, PATIENT_SCOPE), doc, { config })).to.not.throw();
       const report = reportDoc() as Record<string, any>;
       report.fields.vitals.weight_kg = 'heavy';
-      expect(() => projectObservations(bindingOf(config, ENCOUNTER_KEY), report, { config })).to.not.throw();
+      expect(() => projectObservations(bindingOf(config, ENCOUNTER_SCOPE), report, { config })).to.not.throw();
     });
   });
 
   describe('projectObservations', () => {
-    it('projects one Observation per included, code-resolved field', () => {
+    it('projects one Observation per configured field', () => {
       const { observations } = projectWith(mapping(), reportDoc());
       const shared = {
         resourceType: 'Observation',
@@ -558,9 +532,7 @@ describe('cht-fhir mapper', () => {
       // effectiveDateTime is clinical time and follows Encounter.period.start;
       // meta.lastUpdated is when the document was written, as on every resource.
       const raw = mapping() as Record<string, any>;
-      raw.facade.resources[ENCOUNTER_KEY].elements['Encounter.period.start'] = {
-        source: { kind: 'field', path: 'visit_date' },
-      };
+      raw.encounters[FORM].elements['Encounter.period.start'] = { kind: 'field', path: 'visit_date' };
       const doc = reportDoc() as Record<string, any>;
       doc.fields.visit_date = '2023-11-10';
       const [observation] = projectWith(raw, doc).observations;
@@ -570,7 +542,7 @@ describe('cht-fhir mapper', () => {
 
     it('carries a code with no display as the code alone', () => {
       const raw = mapping() as Record<string, any>;
-      delete raw.adHocCodeSystem.codes['app:pregnancy/u_lmp_date'].display;
+      delete raw.encounters[FORM].observations[0].code.display;
       const [observation] = projectWith(raw, reportDoc()).observations;
       expect(observation.code).to.deep.equal({
         coding: [{ system: `${CANONICAL_BASE}/CodeSystem/cht-fields`, code: 'u-lmp-date' }],
@@ -584,25 +556,16 @@ describe('cht-fhir mapper', () => {
       expect(observations.map(observation => observation.id)).to.deep.equal([`${REPORT_ID}.u-lmp-date`]);
     });
 
-    it('skips a question with no resolvable code', () => {
-      const raw = mapping() as Record<string, any>;
-      raw.questionMappings = {};
-      const { observations } = projectWith(raw, reportDoc());
-      expect(observations.map(observation => observation.id)).to.deep.equal([`${REPORT_ID}.u-lmp-date`]);
-    });
-
     it('falls back to reported_date when the visit date resolves to nothing', () => {
       const raw = mapping() as Record<string, any>;
-      raw.facade.resources[ENCOUNTER_KEY].elements['Encounter.period.start'] = {
-        source: { kind: 'field', path: 'absent' },
-      };
+      raw.encounters[FORM].elements['Encounter.period.start'] = { kind: 'field', path: 'absent' };
       const { observations } = projectWith(raw, reportDoc());
       expect(observations[0].effectiveDateTime).to.equal(REPORTED);
     });
 
     it('falls back to reported_date when no visit date is bound', () => {
       const raw = mapping() as Record<string, any>;
-      delete raw.facade.resources[ENCOUNTER_KEY].elements['Encounter.period.start'];
+      delete raw.encounters[FORM].elements['Encounter.period.start'];
       const { observations } = projectWith(raw, reportDoc());
       expect(observations[0].effectiveDateTime).to.equal(REPORTED);
     });
@@ -623,14 +586,11 @@ describe('cht-fhir mapper', () => {
       };
       for (const [mode, { raw: value, expected }] of Object.entries(modes)) {
         const raw = mapping() as Record<string, any>;
-        raw.facade.resources[ENCOUNTER_KEY].observations = {
-          'app:pregnancy/weight_kg': {
-            codeSource: 'question-mapping',
-            include: true,
-            valueMode: mode,
-            source: { kind: 'field', path: 'answer' },
-          },
-        };
+        raw.encounters[FORM].observations = [{
+          code: WEIGHT_CODE,
+          valueMode: mode,
+          source: { kind: 'field', path: 'answer' },
+        }];
         const doc = reportDoc() as Record<string, any>;
         doc.fields.answer = value;
         const [observation] = projectWith(raw, doc).observations;
@@ -647,14 +607,11 @@ describe('cht-fhir mapper', () => {
       ];
       for (const [value, expectedKey] of cases) {
         const raw = mapping() as Record<string, any>;
-        raw.facade.resources[ENCOUNTER_KEY].observations = {
-          'app:pregnancy/weight_kg': {
-            codeSource: 'question-mapping',
-            include: true,
-            valueMode: 'auto',
-            source: { kind: 'field', path: 'answer' },
-          },
-        };
+        raw.encounters[FORM].observations = [{
+          code: WEIGHT_CODE,
+          valueMode: 'auto',
+          source: { kind: 'field', path: 'answer' },
+        }];
         const doc = reportDoc() as Record<string, any>;
         doc.fields.answer = value;
         const [observation] = projectWith(raw, doc).observations;
@@ -664,7 +621,7 @@ describe('cht-fhir mapper', () => {
 
     it('prefers a Quantity when a unit is configured, even on auto', () => {
       const raw = mapping() as Record<string, any>;
-      const projection = raw.facade.resources[ENCOUNTER_KEY].observations['app:pregnancy/weight_kg'];
+      const projection = raw.encounters[FORM].observations[1];
       projection.valueMode = 'auto';
       projection.unit.display = 'kilogram';
       const [, weight] = projectWith(raw, reportDoc()).observations;
@@ -678,7 +635,7 @@ describe('cht-fhir mapper', () => {
 
     it('labels a Quantity with the unit code when the unit has no display', () => {
       const raw = mapping() as Record<string, any>;
-      delete raw.facade.resources[ENCOUNTER_KEY].observations['app:pregnancy/weight_kg'].unit.display;
+      delete raw.encounters[FORM].observations[1].unit.display;
       const [, weight] = projectWith(raw, reportDoc()).observations;
       expect(weight.valueQuantity).to.deep.equal({
         value: 62.5,
@@ -700,14 +657,11 @@ describe('cht-fhir mapper', () => {
 
     it('skips an observation whose boolean value will not coerce', () => {
       const raw = mapping() as Record<string, any>;
-      raw.facade.resources[ENCOUNTER_KEY].observations = {
-        'app:pregnancy/weight_kg': {
-          codeSource: 'question-mapping',
-          include: true,
-          valueMode: 'valueBoolean',
-          source: { kind: 'field', path: 'vitals.weight_kg' },
-        },
-      };
+      raw.encounters[FORM].observations = [{
+        code: WEIGHT_CODE,
+        valueMode: 'valueBoolean',
+        source: { kind: 'field', path: 'vitals.weight_kg' },
+      }];
       const { observations, warnings } = projectWith(raw, reportDoc());
       expect(observations).to.deep.equal([]);
       expect(warnings).to.contain('is not a boolean');
@@ -722,7 +676,7 @@ describe('cht-fhir mapper', () => {
 
     it('projects without a subject when the Encounter binds none', () => {
       const raw = mapping() as Record<string, any>;
-      delete raw.facade.resources[ENCOUNTER_KEY].elements['Encounter.subject'];
+      delete raw.encounters[FORM].elements['Encounter.subject'];
       const { observations } = projectWith(raw, reportDoc());
       expect(observations).to.have.length(2);
       expect(observations[0]).to.not.have.property('subject');
@@ -739,7 +693,7 @@ describe('cht-fhir repeat groups', () => {
 
   const withReason = (path: string) => {
     const raw = mapping() as Record<string, any>;
-    raw.facade.resources[ENCOUNTER_KEY].elements['Encounter.reasonCode'] = { source: { kind: 'field', path } };
+    raw.encounters[FORM].elements['Encounter.reasonCode'] = { kind: 'field', path };
     return raw;
   };
 
@@ -748,7 +702,7 @@ describe('cht-fhir repeat groups', () => {
     // so without this the facade serves it, and a consumer has no way to know
     // it is not data.
     const { resource, warnings } = mapWith(
-      withReason('members'), ENCOUNTER_KEY, household([{ name: 'Ada' }, { name: 'Grace' }]),
+      withReason('members'), ENCOUNTER_SCOPE, household([{ name: 'Ada' }, { name: 'Grace' }]),
     );
     expect(resource).to.not.have.property('reasonCode');
     expect(warnings).to.contain('Encounter.reasonCode');
@@ -757,7 +711,7 @@ describe('cht-fhir repeat groups', () => {
 
   it('reads one entry of a repeat by index', () => {
     const { resource, warnings } = mapWith(
-      withReason('members.0.name'), ENCOUNTER_KEY, household([{ name: 'Ada' }, { name: 'Grace' }]),
+      withReason('members.0.name'), ENCOUNTER_SCOPE, household([{ name: 'Ada' }, { name: 'Grace' }]),
     );
     expect(resource.reasonCode).to.deep.equal([{ text: 'Ada' }]);
     expect(warnings).to.equal('');
@@ -765,7 +719,7 @@ describe('cht-fhir repeat groups', () => {
 
   it('says nothing about a repeat with nothing in it', () => {
     // An empty repeat is an absent value, not an unanswered question.
-    const { resource, warnings } = mapWith(withReason('members'), ENCOUNTER_KEY, household([]));
+    const { resource, warnings } = mapWith(withReason('members'), ENCOUNTER_SCOPE, household([]));
     expect(resource).to.not.have.property('reasonCode');
     expect(warnings).to.equal('');
   });
@@ -774,12 +728,12 @@ describe('cht-fhir repeat groups', () => {
     // Every slot that reads a value, not just `elements` — each one would
     // otherwise stringify the list on its own path.
     const raw = mapping() as Record<string, any>;
-    raw.facade.resources[PATIENT_KEY].identifiers = [{
+    raw.patient.identifiers = [{
       source: { kind: 'doc', path: 'doc.ids' },
       system: '{base}/identifier/external-id',
       use: 'usual',
     }];
-    const patient = mapWith(raw, PATIENT_KEY, { ...personDoc(), ids: ['a', 'b'] });
+    const patient = mapWith(raw, PATIENT_SCOPE, { ...personDoc(), ids: ['a', 'b'] });
     expect(patient.resource).to.not.have.property('identifier');
     expect(patient.warnings).to.contain('identifier {base}/identifier/external-id');
     expect(patient.warnings).to.contain('a list of 2 values');
@@ -788,7 +742,7 @@ describe('cht-fhir repeat groups', () => {
       ...reportDoc(),
       fields: { ...reportDoc().fields, inputs: { contact: { _id: ['p1', 'p2'] } } },
     };
-    const encounter = mapWith(raw, ENCOUNTER_KEY, listedSubject);
+    const encounter = mapWith(raw, ENCOUNTER_SCOPE, listedSubject);
     expect(encounter.resource).to.not.have.property('subject');
     expect(encounter.warnings).to.contain('Encounter.subject');
     // The Observations share the Encounter's subject, so they drop it too.
@@ -797,6 +751,6 @@ describe('cht-fhir repeat groups', () => {
     const listedAnswer = { ...reportDoc(), fields: { ...reportDoc().fields, vitals: { weight_kg: [{ v: 1 }] } } };
     const { observations, warnings } = projectWith(raw, listedAnswer);
     expect(observations.map(observation => observation.id)).to.deep.equal([`${REPORT_ID}.u-lmp-date`]);
-    expect(warnings).to.contain('observation app:pregnancy/weight_kg');
+    expect(warnings).to.contain(`observation ${WEIGHT_CODE.code}`);
   });
 });
