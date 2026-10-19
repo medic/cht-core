@@ -261,6 +261,30 @@ describe('Lineage', function() {
       });
     });
 
+    it('returns docs without lineage without fetching them again', function() {
+      const doc = { _id: 'a', type: DOC_TYPES.TRANSLATIONS };
+      get.resolves(doc);
+
+      return lineage.fetchHydratedDoc('a').then(result => {
+        chai.expect(result).to.deep.equal(doc);
+        chai.expect(get.callCount).to.equal(1);
+        chai.expect(allDocs.callCount).to.equal(0);
+        chai.expect(query.callCount).to.equal(0);
+      });
+    });
+
+    it('rejects with a 404 when the doc is missing', function() {
+      const err = new Error('missing');
+      err.status = 404;
+      get.rejects(err);
+
+      return lineage.fetchHydratedDoc('a')
+        .then(() => chai.expect.fail('should have thrown'))
+        .catch(e => {
+          chai.expect(e.statusCode).to.equal(404);
+        });
+    });
+
     it('throws when lineage is empty and throwWhenMissingLineage is true', function() {
       get.resolves({ _id: 'a', type: DOC_TYPES.TRANSLATIONS });
 

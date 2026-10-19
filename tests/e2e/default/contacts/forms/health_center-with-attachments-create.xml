@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
+  <h:head>
+    <h:title>New Health Center</h:title>
+    <model odk:xforms-version="1.0.0">
+      <itext>
+        <translation lang="en">
+          <text id="/data/parent:label">
+            <value>Parent District Hospital</value>
+          </text>
+          <text id="/data/parent/name:label">
+            <value>Parent Name</value>
+          </text>
+          <text id="/data/parent/badge:label">
+            <value>Parent Badge</value>
+          </text>
+          <text id="/data/parent/photo:label">
+            <value>Parent Photo</value>
+          </text>
+          <text id="/data/contact:label">
+            <value>Primary Contact for Heath Center</value>
+          </text>
+          <text id="/data/contact/name:label">
+            <value>Contact Name</value>
+          </text>
+          <text id="/data/contact/badge:label">
+            <value>Contact Badge</value>
+          </text>
+          <text id="/data/contact/photo:label">
+            <value>Contact Photo</value>
+          </text>
+          <text id="/data/health_center_with_attachments:label">
+            <value>Heath Center</value>
+          </text>
+          <text id="/data/health_center_with_attachments/name:label">
+            <value>Health Center Name</value>
+          </text>
+          <text id="/data/health_center_with_attachments/badge:label">
+            <value>Health Center Badge</value>
+          </text>
+          <text id="/data/health_center_with_attachments/photo:label">
+            <value>Health Center Photo</value>
+          </text>
+          <text id="/data/repeat:label">
+            <value>Add Clinics</value>
+          </text>
+          <text id="/data/repeat/child:label">
+            <value>Clinic</value>
+          </text>
+          <text id="/data/repeat/child/name:label">
+            <value>Child Name</value>
+          </text>
+          <text id="/data/repeat/child/badge:label">
+            <value>Child Badge</value>
+          </text>
+          <text id="/data/repeat/child/photo:label">
+            <value>Child Photo</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <data id="contact:health_center-with-attachments:create" version="2026-08-05  11-44" prefix="J1!contact:health_center-with-attachments:create!" delimiter="#">
+          <parent>
+            <type/>
+            <name/>
+            <badge type="binary"/>
+            <photo/>
+          </parent>
+          <contact>
+            <parent>PARENT</parent>
+            <type/>
+            <name/>
+            <badge type="binary"/>
+            <photo/>
+          </contact>
+          <health_center_with_attachments>
+            <parent/>
+            <type/>
+            <contact/>
+            <name/>
+            <badge type="binary"/>
+            <photo/>
+          </health_center_with_attachments>
+          <repeat>
+            <child jr:template="">
+              <type/>
+              <name/>
+              <badge type="binary"/>
+              <photo/>
+            </child>
+          </repeat>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind nodeset="/data/parent/type" type="string" calculate="&quot;district_hospital&quot;"/>
+      <bind nodeset="/data/parent/name" type="string" required="true()"/>
+      <bind nodeset="/data/parent/badge" type="string"/>
+      <bind nodeset="/data/parent/photo" type="binary"/>
+      <bind nodeset="/data/contact/parent" type="string"/>
+      <bind nodeset="/data/contact/type" type="string" calculate="&quot;person&quot;"/>
+      <bind nodeset="/data/contact/name" type="string" required="true()"/>
+      <bind nodeset="/data/contact/badge" type="string"/>
+      <bind nodeset="/data/contact/photo" type="binary"/>
+      <bind nodeset="/data/health_center_with_attachments/parent" type="string" calculate="&quot;NEW&quot;"/>
+      <bind nodeset="/data/health_center_with_attachments/type" type="string"/>
+      <bind nodeset="/data/health_center_with_attachments/contact" type="string" calculate="&quot;NEW&quot;"/>
+      <bind nodeset="/data/health_center_with_attachments/name" type="string" required="true()"/>
+      <bind nodeset="/data/health_center_with_attachments/badge" type="string"/>
+      <bind nodeset="/data/health_center_with_attachments/photo" type="binary"/>
+      <bind nodeset="/data/repeat/child/type" type="string" calculate="&quot;clinic&quot;"/>
+      <bind nodeset="/data/repeat/child/name" type="string" required="true()"/>
+      <bind nodeset="/data/repeat/child/badge" type="string"/>
+      <bind nodeset="/data/repeat/child/photo" type="binary"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
+    </model>
+  </h:head>
+  <h:body>
+    <group ref="/data/parent">
+      <label ref="jr:itext('/data/parent:label')"/>
+      <input ref="/data/parent/name">
+        <label ref="jr:itext('/data/parent/name:label')"/>
+      </input>
+      <input ref="/data/parent/badge">
+        <label ref="jr:itext('/data/parent/badge:label')"/>
+      </input>
+      <upload ref="/data/parent/photo" mediatype="image/*">
+        <label ref="jr:itext('/data/parent/photo:label')"/>
+      </upload>
+    </group>
+    <group ref="/data/contact">
+      <label ref="jr:itext('/data/contact:label')"/>
+      <input ref="/data/contact/name">
+        <label ref="jr:itext('/data/contact/name:label')"/>
+      </input>
+      <input ref="/data/contact/badge">
+        <label ref="jr:itext('/data/contact/badge:label')"/>
+      </input>
+      <upload ref="/data/contact/photo" mediatype="image/*">
+        <label ref="jr:itext('/data/contact/photo:label')"/>
+      </upload>
+    </group>
+    <group ref="/data/health_center_with_attachments">
+      <label ref="jr:itext('/data/health_center_with_attachments:label')"/>
+      <input ref="/data/health_center_with_attachments/name">
+        <label ref="jr:itext('/data/health_center_with_attachments/name:label')"/>
+      </input>
+      <input ref="/data/health_center_with_attachments/badge">
+        <label ref="jr:itext('/data/health_center_with_attachments/badge:label')"/>
+      </input>
+      <upload ref="/data/health_center_with_attachments/photo" mediatype="image/*">
+        <label ref="jr:itext('/data/health_center_with_attachments/photo:label')"/>
+      </upload>
+    </group>
+    <group ref="/data/repeat">
+      <label ref="jr:itext('/data/repeat:label')"/>
+      <group ref="/data/repeat/child">
+        <label ref="jr:itext('/data/repeat/child:label')"/>
+        <repeat nodeset="/data/repeat/child">
+          <input ref="/data/repeat/child/name">
+            <label ref="jr:itext('/data/repeat/child/name:label')"/>
+          </input>
+          <input ref="/data/repeat/child/badge">
+            <label ref="jr:itext('/data/repeat/child/badge:label')"/>
+          </input>
+          <upload ref="/data/repeat/child/photo" mediatype="image/*">
+            <label ref="jr:itext('/data/repeat/child/photo:label')"/>
+          </upload>
+        </repeat>
+      </group>
+    </group>
+  </h:body>
+</h:html>

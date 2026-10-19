@@ -195,7 +195,7 @@ describe('Validation Service', () => {
       expect(validation.validate.callCount).to.equal(0);
     });
 
-    it('should skip validation whn config is missing validation rules', async () => {
+    it('should skip validation when config is missing validation rules', async () => {
       settingsService.get.resolves({ the: 'settings' });
 
       const doc = { _id: 'report', type: DOC_TYPES.DATA_RECORD };

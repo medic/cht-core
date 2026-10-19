@@ -35,7 +35,8 @@ module.exports = async (filters, options = {}) => {
     throw err(`dataSet "${dataSet}" has no dataElements`);
   }
 
-  const targetDocsInMonth = await fetch.targetDocsInMonth(from);
+  const useBikramSambatMonths = settings.uhc?.visit_count?.use_bikram_sambat_months;
+  const targetDocsInMonth = await fetch.targetDocsInMonth(from, useBikramSambatMonths);
   const contactsWithOrgUnits = await fetch.contactsWithOrgUnits(orgUnit);
   const targetOwnerIds = _.uniq(targetDocsInMonth.map(target => target.owner));
   const targetOwners = await fetch.docsWithId(targetOwnerIds);
@@ -77,8 +78,15 @@ const fetch = {
     return _.uniqBy(fetched.rows.map(row => row.doc), '_id');
   },
 
-  targetDocsInMonth: async timestamp => {
-    const interval = moment(timestamp).format('YYYY-MM');
+  targetDocsInMonth: async (timestamp, useBikramSambatMonths) => {
+    let interval;
+    if (useBikramSambatMonths) {
+      const { toBik } = require('bikram-sambat');
+      const bsDate = toBik(moment(timestamp).format('YYYY-MM-DD'));
+      interval = `${bsDate.year}-${String(bsDate.month).padStart(2, '0')}`;
+    } else {
+      interval = moment(timestamp).format('YYYY-MM');
+    }
     const result = await db.medic.allDocs({
       startkey: `target~${interval}~`,
       endkey: `target~${interval}~\ufff0`,

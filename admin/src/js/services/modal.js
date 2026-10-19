@@ -56,10 +56,10 @@ angular.module('inboxServices').factory('Modal',
 
     return function(options) {
       if (!options.templateUrl) {
-        return $q.reject('No templateUrl speficied.');
+        return $q.reject('No templateUrl specified.');
       }
       if (!options.controller) {
-        return $q.reject('No controller speficied.');
+        return $q.reject('No controller specified.');
       }
       options.scope = getScope(options.model);
 

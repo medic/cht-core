@@ -49,6 +49,7 @@ describe('ongoing replication', function() {
 
   afterEach(async () => {
     await browser.throttle('online');
+    await commonPage.sync();
   });
 
   it('should download new documents ', async () => {
@@ -138,7 +139,7 @@ describe('ongoing replication', function() {
     await utils.addTranslations('rnd', {});
     await waitForServiceWorker.promise;
 
-    await commonPage.sync({ expectReload: true, reload: true, serviceWorkerUpdate: true });
+    await commonPage.sync({ reload: true, serviceWorkerUpdate: true });
     const rnd = await chtDbUtils.getDoc('messages-rnd');
     expect(rnd).to.include({
       type: DOC_TYPES.TRANSLATIONS,
@@ -150,21 +151,19 @@ describe('ongoing replication', function() {
     await utils.saveDoc(rnd);
     await waitForServiceWorker.promise;
 
-    await commonPage.sync({ expectReload: true, reload: true, serviceWorkerUpdate: true });
+    await commonPage.sync({ reload: true, serviceWorkerUpdate: true });
     const updatedRnd = await chtDbUtils.getDoc('messages-rnd');
     expect(updatedRnd.updated).to.equal(rnd.updated);
   });
 
   it('should download settings updates', async () => {
-    await commonPage.sync();
-    await utils.updateSettings({ test: true }, { ignoreReload: 'api' });
+    await utils.updateSettings({ test: true }, { ignoreReload: true });
     await commonPage.sync({ expectReload: true, reload: true });
     const settings = await chtDbUtils.getDoc(DOC_IDS.SETTINGS);
     expect(settings.settings.test).to.equal(true);
   });
 
   it('should handle deletes', async () => {
-    await commonPage.sync();
     const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     const docIdsToDelete = [
       'form:dummy',
@@ -175,7 +174,7 @@ describe('ongoing replication', function() {
     await utils.deleteDocs(docIdsToDelete);
     await waitForServiceWorker.promise;
 
-    await commonPage.sync({ expectReload: true, reload: true, serviceWorkerUpdate: true });
+    await commonPage.sync({ reload: true, serviceWorkerUpdate: true });
     const localDocsPostSync = await chtDbUtils.getDocs();
     const localDocIds = dataFactory.ids(localDocsPostSync);
 

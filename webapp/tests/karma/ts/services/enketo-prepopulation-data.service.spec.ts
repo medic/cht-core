@@ -232,7 +232,7 @@ describe('EnketoPrepopulationData service', () => {
         },
       };
 
-      service['bindJsonToXml'](element, data);
+      service.bindJsonToXml(element, data);
 
       assert.equal(element.find('name').text(), 'Davesville');
       assert.equal(element.find('external_id').text(), 'THING');
@@ -266,7 +266,7 @@ describe('EnketoPrepopulationData service', () => {
         },
       };
 
-      service['bindJsonToXml'](element, data);
+      service.bindJsonToXml(element, data);
 
       assert.equal(element.find('name').text(), 'Davesville');
       assert.equal(element.find('contact').text(), 'abc-123');
@@ -304,7 +304,7 @@ describe('EnketoPrepopulationData service', () => {
         },
       };
 
-      service['bindJsonToXml'](element, data);
+      service.bindJsonToXml(element, data);
 
       assert.equal(element.find('district_hospital > name').text(), 'Davesville');
       assert.equal(element.find('district_hospital > external_id').text(), 'THING');
@@ -343,7 +343,7 @@ describe('EnketoPrepopulationData service', () => {
         },
       };
 
-      service['bindJsonToXml'](element, data);
+      service.bindJsonToXml(element, data);
 
       assert.equal(
         element.find('contact > name').text(),
@@ -372,7 +372,7 @@ describe('EnketoPrepopulationData service', () => {
         },
       };
 
-      service['bindJsonToXml'](element, data);
+      service.bindJsonToXml(element, data);
 
       assert.equal(element.find('smang').text(), DEEP_TEST_VALUE);
     });
@@ -434,7 +434,7 @@ describe('EnketoPrepopulationData service', () => {
           ]
         }
       };
-      service['bindJsonToXml'](element, data, (name) => {
+      service.bindJsonToXml(element, data, (name) => {
         return '>%, >inputs>%'.replace(/%/g, name);
       });
 
@@ -494,6 +494,35 @@ describe('EnketoPrepopulationData service', () => {
       );
     });
 
+    it('does not throw on _attachments keys that are invalid jQuery selectors', () => {
+      // Inline-binary attachments are named `user-file/<form id>/<field xpath>`, and form ids contain ':'.
+      // Both characters make the key an invalid CSS selector, so it must never reach jQuery as one.
+      const model =
+        `<data id="contact:person:edit" version="1">
+          <person>
+            <name/>
+            <badge type="binary"/>
+          </person>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>`;
+      const element = $($.parseXML(model)).children().first();
+      const data = {
+        person: {
+          name: 'Davesville',
+          badge: '',
+          _attachments: {
+            'user-file/contact:person:edit/badge': { content_type: 'image/png', stub: true },
+            'user-file-photo (1).png': { content_type: 'image/png', stub: true },
+          },
+        },
+      };
+
+      expect(() => service.bindJsonToXml(element, data)).to.not.throw();
+      assert.equal(element.find('name').text(), 'Davesville');
+    });
+
     it('should remove template-like attributes', () => {
       const model =
         `<data xmlns:jr="http://openrosa.org/javarosa">
@@ -516,7 +545,7 @@ describe('EnketoPrepopulationData service', () => {
         },
       };
 
-      service['bindJsonToXml'](element, data);
+      service.bindJsonToXml(element, data);
 
       assert.equal(element.find('district_hospital')[0].hasAttribute('jr:template'), false);
       assert.equal(element.find('district_hospital')[0].hasAttribute('template'), false);

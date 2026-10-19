@@ -77,7 +77,7 @@ describe('scheduler', () => {
       assert.equal(backgroundCleanup.execute.callCount, 1);
       assertOngoingTasks(ALL_SCHEDULED_TASKS);
 
-      // calling init again does't restart every task when promises weren't resolved
+      // calling init again doesn't restart every task when promises weren't resolved
       clock.tick(oneInterval);
       assert.equal(transitionsLib.dueTasks.execute.callCount, 1);
       assert.equal(reminders.execute.callCount, 1);

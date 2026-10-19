@@ -1,12 +1,16 @@
 import { InvalidArgumentError } from './error';
 import {
   ContactTypeQualifier,
+  FormsQualifier,
   FreetextQualifier,
   IdsQualifier,
   isContactTypeQualifier,
+  isFormsQualifier,
   isFreetextQualifier,
   isIdsQualifier,
+  isPhonesQualifier,
   isUuidQualifier,
+  PhonesQualifier,
   UuidQualifier,
 } from '../qualifier';
 import {
@@ -15,6 +19,7 @@ import {
   assertHasOptionalField,
   assertHasRequiredField,
   DataObject, isDateTimeString,
+  isRecord,
   Nullable
 } from './core';
 import * as Input from '../input';
@@ -122,26 +127,46 @@ export const assertFreetextQualifier: (qualifier: unknown) => asserts qualifier 
   }
 };
 
+type ContactTypeFreetextPhonesQualifier = ContactTypeQualifier | FreetextQualifier | PhonesQualifier;
+type ContactTypeIdsPhonesQualifier = ContactTypeQualifier | IdsQualifier | PhonesQualifier;
+
 /** @internal */
-export const assertContactTypeFreetextQualifier: (
+export const assertFreetextOrFormsQualifier: (
   qualifier: unknown
-) => asserts qualifier is ContactTypeQualifier | FreetextQualifier = (
+) => asserts qualifier is FreetextQualifier | FormsQualifier = (
   qualifier: unknown
 ) => {
-  if (!(isContactTypeQualifier(qualifier) || isFreetextQualifier(qualifier))) {
+  if (isFreetextQualifier(qualifier) || isFormsQualifier(qualifier)) {
+    return;
+  }
+  // Only form-shaped input gets the new message. Everything else keeps the original freetext error
+  // verbatim, so callers (and the 400 bodies the API surfaces from them) are unchanged.
+  if (isRecord(qualifier) && 'forms' in qualifier) {
+    throw new InvalidArgumentError(`Invalid forms [${JSON.stringify(qualifier)}].`);
+  }
+  throw new InvalidArgumentError(`Invalid freetext [${JSON.stringify(qualifier)}].`);
+};
+
+/** @internal */
+export const assertContactTypeFreetextPhonesQualifier: (
+  qualifier: unknown
+) => asserts qualifier is ContactTypeFreetextPhonesQualifier = (
+  qualifier: unknown
+) => {
+  if (!(isContactTypeQualifier(qualifier) || isFreetextQualifier(qualifier) || isPhonesQualifier(qualifier))) {
     throw new InvalidArgumentError(
-      `Invalid qualifier [${JSON.stringify(qualifier)}]. Must be a contact type and/or freetext qualifier.`
+      `Invalid qualifier [${JSON.stringify(qualifier)}]. Must be a contact type, freetext, and/or phones qualifier.`
     );
   }
 };
 
 /** @internal */
-export const assertContactTypeIdsQualifier: (
+export const assertContactTypeIdsPhonesQualifier: (
   qualifier: unknown
-) => asserts qualifier is ContactTypeQualifier | IdsQualifier = (qualifier: unknown) => {
-  if (!(isContactTypeQualifier(qualifier) || isIdsQualifier(qualifier))) {
+) => asserts qualifier is ContactTypeIdsPhonesQualifier = (qualifier: unknown) => {
+  if (!(isContactTypeQualifier(qualifier) || isIdsQualifier(qualifier) || isPhonesQualifier(qualifier))) {
     throw new InvalidArgumentError(
-      `Invalid qualifier [${JSON.stringify(qualifier)}]. Must be a contact type or ids qualifier.`
+      `Invalid qualifier [${JSON.stringify(qualifier)}]. Must be a contact type, ids, or phones qualifier.`
     );
   }
 };
@@ -163,12 +188,16 @@ export const assertIdsQualifier: (
 };
 
 /** @ignore */
-export const isContactType = (value: ContactTypeQualifier | FreetextQualifier): value is ContactTypeQualifier => {
+export const isContactType = (
+  value: ContactTypeQualifier | FreetextQualifier | PhonesQualifier
+): value is ContactTypeQualifier => {
   return 'contactType' in value;
 };
 
 /** @ignore */
-export const isFreetextType = (value: ContactTypeQualifier | FreetextQualifier): value is FreetextQualifier => {
+export const isFreetextType = (
+  value: ContactTypeQualifier | FreetextQualifier | PhonesQualifier
+): value is FreetextQualifier => {
   return 'freetext' in value;
 };
 

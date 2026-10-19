@@ -241,7 +241,7 @@ describe('Contact Controller', () => {
             limit,
           }
         };
-        const err = { status: 400, message: 'Either query param freetext or type is required' };
+        const err = { status: 400, message: 'Either query param freetext, type or phone is required' };
         contactGetUuidsPage.throws(err);
 
         await controller.v1.getUuids(req, res);
@@ -255,6 +255,107 @@ describe('Contact Controller', () => {
         expect(contactGetUuidsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+      });
+
+      it('builds a phones qualifier from a comma-separated list', async () => {
+        req = { query: { phone: '+254712345678,+254798765432', cursor, limit } };
+        contactGetUuidsPage.resolves(contacts);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(qualifierByContactType.notCalled).to.be.true;
+        expect(qualifierByFreetext.notCalled).to.be.true;
+        expect(contactGetUuidsPage.calledOnceWithExactly(
+          Qualifier.byPhones(['+254712345678', '+254798765432']), cursor, limit
+        )).to.be.true;
+        expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('builds a phones qualifier from a repeated query param', async () => {
+        req = { query: { phone: ['+254712345678', '+254798765432'], cursor, limit } };
+        contactGetUuidsPage.resolves(contacts);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(contactGetUuidsPage.calledOnceWithExactly(
+          Qualifier.byPhones(['+254712345678', '+254798765432']), cursor, limit
+        )).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('accepts a single phone number', async () => {
+        req = { query: { phone: '+254712345678', cursor, limit } };
+        contactGetUuidsPage.resolves(contacts);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(contactGetUuidsPage.calledOnceWithExactly(
+          Qualifier.byPhones(['+254712345678']), cursor, limit
+        )).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('ignores empty entries in the list', async () => {
+        req = { query: { phone: '+254712345678,,+254798765432,', cursor, limit } };
+        contactGetUuidsPage.resolves(contacts);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(contactGetUuidsPage.calledOnceWithExactly(
+          Qualifier.byPhones(['+254712345678', '+254798765432']), cursor, limit
+        )).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('errors without querying when every entry in the list is empty', async () => {
+        req = { query: { phone: ',,', cursor, limit } };
+
+        await controller.v1.getUuids(req, res);
+
+        expect(contactGetUuidsPage.notCalled).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
+        expect(serverUtilsError.args[0][0].message).to.equal('Invalid phones [[]].');
+      });
+
+      it('errors without querying when the phone param is object-shaped', async () => {
+        // `?phone[a]=b` parses to an object, which has nothing to split.
+        req = { query: { phone: { a: 'b' }, cursor, limit } };
+
+        await controller.v1.getUuids(req, res);
+
+        expect(contactGetUuidsPage.notCalled).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
+        expect(serverUtilsError.args[0][0].message).to.equal('Invalid phones [{"a":"b"}].');
+      });
+
+      it('errors without querying when a phone number is padded', async () => {
+        req = { query: { phone: '  +254712345678  ', cursor, limit } };
+
+        await controller.v1.getUuids(req, res);
+
+        expect(contactGetUuidsPage.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
+        expect(serverUtilsError.args[0][0].message)
+          .to.equal('Invalid phones [["  +254712345678  "]].');
+      });
+
+      it('uses the phone param on its own, ignoring type and freetext', async () => {
+        req = { query: { phone: '+254712345678', type: contactType, freetext, cursor, limit } };
+        contactGetUuidsPage.resolves(contacts);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(qualifierByContactType.notCalled).to.be.true;
+        expect(qualifierByFreetext.notCalled).to.be.true;
+        expect(contactGetUuidsPage.calledOnceWithExactly(
+          Qualifier.byPhones(['+254712345678']), cursor, limit
+        )).to.be.true;
       });
     });
 
@@ -309,7 +410,33 @@ describe('Contact Controller', () => {
         expect(contactGetPage.calledOnceWithExactly(idsQualifier, cursor, limit)).to.be.true;
       });
 
-      it('returns a 400 error when neither ids nor type is provided', async () => {
+      it('returns a page of contacts for the given comma-separated phone numbers', async () => {
+        req = { query: { phone: '+254712345678,+254798765432', cursor, limit } };
+        contactGetPage.resolves(contacts);
+
+        await controller.v1.getAll(req, res);
+
+        expect(contactGetPage.calledOnceWithExactly(
+          Qualifier.byPhones(['+254712345678', '+254798765432']), cursor, limit
+        )).to.be.true;
+        expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('prefers phone over type when both are provided', async () => {
+        const qualifierByContactType = sinon.stub(Qualifier, 'byContactType');
+        req = { query: { phone: '+254712345678', type: 'person', cursor, limit } };
+        contactGetPage.resolves(contacts);
+
+        await controller.v1.getAll(req, res);
+
+        expect(qualifierByContactType.notCalled).to.be.true;
+        expect(contactGetPage.calledOnceWithExactly(
+          Qualifier.byPhones(['+254712345678']), cursor, limit
+        )).to.be.true;
+      });
+
+      it('returns a 400 error when neither ids, type nor phone is provided', async () => {
         req = { query: { cursor, limit } };
 
         await controller.v1.getAll(req, res);
@@ -317,7 +444,7 @@ describe('Contact Controller', () => {
         expect(contactGetPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(
-          { status: 400, message: 'Either query param ids or type is required' },
+          { status: 400, message: 'Either query param ids, type or phone is required' },
           req,
           res
         )).to.be.true;

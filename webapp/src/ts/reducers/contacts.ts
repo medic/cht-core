@@ -133,6 +133,22 @@ const updateSelectedContactsTasks = (state, tasks) => {
   return { ...state, selected: { ...state.selected, tasks: mappedTasks, children }};
 };
 
+const updateSelectedContactsVisitStats = (state, visitStats) => {
+  if (!state.selected?.children) {
+    return state;
+  }
+  const children = state.selected.children.map(group => {
+    if (!group.contacts?.some(child => visitStats[child.id])) {
+      return group;
+    }
+    const contacts = group.contacts.map(child => {
+      return visitStats[child.id] ? { ...child, ...visitStats[child.id] } : child;
+    });
+    return { ...group, contacts };
+  });
+  return { ...state, selected: { ...state.selected, children } };
+};
+
 const receiveSelectedContactTargetDoc = (state, targetDoc) => {
   return {
     ...state,
@@ -159,6 +175,9 @@ const _contactsReducer = createReducer(
     return updateSelectedContactSummary(state, summary);
   }),
   on(Actions.updateSelectedContactsTasks, (state, { payload: { tasks }}) => updateSelectedContactsTasks(state, tasks)),
+  on(Actions.updateSelectedContactsVisitStats, (state, { payload: { visitStats }}) => {
+    return updateSelectedContactsVisitStats(state, visitStats);
+  }),
   on(Actions.receiveSelectedContactTargetDoc, (state, { payload: { targetDoc }}) => {
     return receiveSelectedContactTargetDoc(state, targetDoc);
   }),

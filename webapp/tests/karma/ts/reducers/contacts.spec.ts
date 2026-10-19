@@ -678,6 +678,50 @@ describe('Contacts Reducer', () => {
     });
   });
 
+  describe('updateSelectedContactsVisitStats', () => {
+    it('should merge visit details into the matching children by contact id', () => {
+      state.selected = {
+        _id: 'selected_contact',
+        children: [
+          {
+            _id: 'child-1',
+            contacts: [ { id: 'contact-1', taskCount: 2 }, { id: 'contact-2' } ]
+          },
+          {
+            _id: 'child-2',
+            contacts: [ { id: 'contact-3' } ]
+          }
+        ]
+      };
+      const visitStats = {
+        'contact-1': { lastVisitedDate: 100, overdue: true, summary: 'a-summary', visits: { count: '1' } },
+      };
+
+      const newState = contactsReducer(state, Actions.updateSelectedContactsVisitStats(visitStats));
+
+      const selected: any = newState.selected;
+      expect(selected.children[0].contacts[0]).to.deep.equal({
+        id: 'contact-1',
+        taskCount: 2,
+        lastVisitedDate: 100,
+        overdue: true,
+        summary: 'a-summary',
+        visits: { count: '1' },
+      });
+      // groups and contacts without details keep their identity
+      expect(selected.children[0].contacts[1]).to.equal(state.selected.children[0].contacts[1]);
+      expect(selected.children[1]).to.equal(state.selected.children[1]);
+    });
+
+    it('should change nothing when there are no children to update', () => {
+      state.selected = { _id: 'selected_contact' };
+
+      const newState = contactsReducer(state, Actions.updateSelectedContactsVisitStats({ 'contact-1': {} }));
+
+      expect(newState).to.equal(state);
+    });
+  });
+
   describe('receiveSelectedContactTargetDoc', () => {
     it('should set the targetDoc of selected contact in the state', () => {
       state.selected = { _id: 'selected_contact' };

@@ -33,7 +33,7 @@ describe('libphonenumber', () => {
       assert.equal(actual, number);
     });
 
-    it('does nothing when already normalized, conflicting contry code in settings', () => {
+    it('does nothing when already normalized, conflicting country code in settings', () => {
       // Settings has NZ country code, number is US/Canada number.
       const number = US_INTERNATIONAL_VALID;
       const actual = phonenumber.normalize(settings, number);

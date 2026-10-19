@@ -256,29 +256,31 @@ module.exports = function(Promise, DB) {
       });
   };
 
-  const fetchLineageById = function(id) {
+  const fetchDocWithLineage = function(id) {
     return DB.get(id)
       .then(function(doc) {
         const ids = lineageIds(doc);
         if (!ids.length) {
-          return [];
+          return { doc, lineage: [] };
         }
 
         const parentIds = ids.slice(1);
         if (!parentIds.length) {
-          return [doc];
+          return { doc, lineage: [doc] };
         }
 
         return fetchDocs(parentIds)
-          .then(ancestors => [ doc, ...orderDocsByIds(parentIds, ancestors) ]);
+          .then(ancestors => ({ doc, lineage: [ doc, ...orderDocsByIds(parentIds, ancestors) ] }));
       })
       .catch(function(err) {
         if (err.status === 404) {
-          return [];
+          return { doc: null, lineage: [], missing: err };
         }
         throw err;
       });
   };
+
+  const fetchLineageById = id => fetchDocWithLineage(id).then(({ lineage }) => lineage);
 
   const fetchLineageByIds = function(ids) {
     return fetchDocs(ids).then(function(docs) {
@@ -294,16 +296,6 @@ module.exports = function(Promise, DB) {
     });
   };
 
-  const fetchDoc = function(id) {
-    return DB.get(id)
-      .catch(function(err) {
-        if (err.status === 404) {
-          err.statusCode = 404;
-        }
-        throw err;
-      });
-  };
-
   const fetchHydratedDoc = function(id, options = {}, callback = undefined) {
     let lineage;
     let patientLineage;
@@ -317,19 +309,22 @@ module.exports = function(Promise, DB) {
       throwWhenMissingLineage: false,
     });
 
-    return fetchLineageById(id)
+    return fetchDocWithLineage(id)
       .then(function(result) {
-        lineage = result;
+        lineage = result.lineage;
 
         if (lineage.length === 0) {
           if (options.throwWhenMissingLineage) {
             const err = new Error(`Document not found: ${id}`);
             err.code = 404;
             throw err;
-          } else {
-            // Not a doc that has lineage, just do a normal fetch.
-            return fetchDoc(id);
           }
+          if (result.missing) {
+            result.missing.statusCode = 404;
+            throw result.missing;
+          }
+          // Not a doc that has lineage, so nothing to hydrate. Reuse the doc we already have.
+          return result.doc;
         }
 
         return fetchSubjectLineage(lineage[0])

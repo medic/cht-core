@@ -78,8 +78,9 @@
                 </span>
                 <span [attr.test-id]="'value'" *ngIf="!field.target">{{field.value}}</span>
               </p>
-              <report-image *ngIf="field.imagePath" [report]="selection.formatted?._id" [path]="field.imagePath">
-              </report-image>
+              <mm-attachment-image *ngIf="field.imagePath"
+                                   [attachment]="{ docId: selection.formatted?._id, name: field.imagePath }">
+              </mm-attachment-image>
             </li>
           </ng-container>
 

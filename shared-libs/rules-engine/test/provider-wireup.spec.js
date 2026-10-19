@@ -1,5 +1,4 @@
 const chai = require('chai');
-const chaiExclude = require('chai-exclude');
 const {
   chtDocs,
   RestorableRulesStateStore,
@@ -20,7 +19,6 @@ const { DOC_TYPES } = require('@medic/constants');
 const pouchdbProvider = require('../src/pouchdb-provider');
 const rulesEmitter = require('../src/rules-emitter');
 const { expect } = chai;
-chai.use(chaiExclude);
 
 const NOW = moment([1970, 1, 1, 0, 0, 50]).valueOf();
 const DEFAULT_EXPIRE = 7 * 24 * 60 * 60 * 1000;
@@ -110,6 +108,43 @@ describe('provider-wireup integration tests', () => {
     clock.restore();
   });
 
+  describe('getTargetDocTag', () => {
+    it('uses an ASCII Gregorian tag when the Nepali locale is active and BS months are disabled', () => {
+      const previousLocale = moment.locale();
+      moment.locale('ne');
+
+      try {
+        sinon.stub(rulesStateStore, 'getUseBikramSambatMonths').returns(false);
+        const getTargetDocTag = wireup.__get__('getTargetDocTag');
+
+        expect(getTargetDocTag({ end: moment('2020-04-30').valueOf() })).to.equal('2020-04');
+        expect(moment.locale()).to.equal('ne');
+      } finally {
+        moment.locale(previousLocale);
+      }
+    });
+
+    it('uses an ASCII Gregorian fallback tag when BS conversion fails under the Nepali locale', () => {
+      const previousLocale = moment.locale();
+      moment.locale('ne');
+
+      try {
+        sinon.stub(rulesStateStore, 'getUseBikramSambatMonths').returns(true);
+        const bikramSambat = require('bikram-sambat');
+        const toBik = sinon.stub(bikramSambat, 'toBik').throws(new Error('invalid date'));
+        const warning = sinon.stub(console, 'warn');
+        const getTargetDocTag = wireup.__get__('getTargetDocTag');
+
+        expect(getTargetDocTag({ end: moment('2020-04-30').valueOf() })).to.equal('2020-04');
+        expect(toBik.calledOnce).to.be.true;
+        expect(warning.calledOnce).to.be.true;
+        expect(moment.locale()).to.equal('ne');
+      } finally {
+        moment.locale(previousLocale);
+      }
+    });
+  });
+
   describe('stateChangeCallback', () => {
     it('wireup of contactTaskState to pouch', async () => {
       sinon.spy(provider, 'stateChangeCallback');
@@ -122,6 +157,7 @@ describe('provider-wireup integration tests', () => {
           calculatedAt: NOW,
           contactState: {},
           monthStartDate: 1,
+          useBikramSambatMonths: false,
         },
       }]);
 
@@ -141,6 +177,7 @@ describe('provider-wireup integration tests', () => {
             },
             calculatedAt: NOW,
             monthStartDate: 1,
+            useBikramSambatMonths: false,
           },
         }]);
       expect(db.put.args[0][0].rulesStateStore.rulesConfigHash)
@@ -941,6 +978,42 @@ describe('provider-wireup integration tests', () => {
         expect(provider.commitTargetDoc.callCount).to.equal(2);
         expect(provider.commitTargetDoc.args[1][1]).to.equal('2020-04');
         expect(provider.commitTargetDoc.args[1][0]).to.deep.equal([{ id: 'uhc', value: { pass: 2, total: 2 }}]);
+      });
+
+      it('should write Bikram Sambat tags when BS months and Nepali locale are active', async () => {
+        const previousLocale = moment.locale();
+        moment.locale('ne');
+
+        try {
+          const settings = {
+            rules: defaultConfigSettingsDoc.tasks.rules,
+            enableTargets: true,
+            targets: [{
+              id: 'uhc',
+            }],
+            monthStartDate: 1,
+            rulesAreDeclarative: true,
+            useBikramSambatMonths: true,
+          };
+
+          clock.setSystemTime(moment('2020-04-23').valueOf());
+          await wireup.initialize(provider, settings, {});
+          expect(provider.commitTargetDoc.callCount).to.equal(0);
+
+          const emissions = [
+            mockTargetEmission('uhc', 'doc1', moment('2020-04-23').valueOf(), true), // passes within interval
+          ];
+          const refreshRulesEmissions = sinon.stub().resolves({ targetEmissions: emissions });
+          const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
+
+          await withMockRefresher(() => wireup.fetchTasksFor(provider));
+          expect(provider.commitTargetDoc.callCount).to.equal(1);
+          expect(provider.commitTargetDoc.args[0][1]).to.equal('2077-01');
+          expect(provider.commitTargetDoc.args[0][0]).to.deep.equal([{ id: 'uhc', value: { pass: 1, total: 1 }}]);
+          expect(moment.locale()).to.equal('ne');
+        } finally {
+          moment.locale(previousLocale);
+        }
       });
     });
   });

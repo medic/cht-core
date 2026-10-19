@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+  <h:head>
+    <h:title>Bikram Sambat Widget Test</h:title>
+    <model odk:xforms-version="1.0.0">
+      <itext>
+        <translation lang="en">
+          <text id="/data/visit_date_empty:label">
+            <value>Visit Date Empty</value>
+          </text>
+          <text id="/data/visit_date_populated:label">
+            <value>Visit Date Populated</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <data id="bikram_sambat_widget" version="2024-04-02 00:00:00" prefix="J1!bs!" delimiter="#">
+          <visit_date_empty/>
+          <visit_date_populated>2024-06-29</visit_date_populated>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind nodeset="/data/visit_date_empty" type="date"/>
+      <bind nodeset="/data/visit_date_populated" type="date"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/data/visit_date_empty" appearance="bikram-sambat">
+      <label ref="jr:itext('/data/visit_date_empty:label')"/>
+    </input>
+    <input ref="/data/visit_date_populated" appearance="bikram-sambat">
+      <label ref="jr:itext('/data/visit_date_populated:label')"/>
+    </input>
+  </h:body>
+</h:html>
