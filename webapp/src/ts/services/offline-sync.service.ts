@@ -86,7 +86,7 @@ export class OfflineSyncService {
    */
   private get bridge() {
     const bridge = globalThis?.medicmobile_android ?? null;
-    return typeof bridge?.offline_sync_hosting_session === 'function' ? bridge : null;
+    return typeof bridge?.offline_sync_received_bundles === 'function' ? bridge : null;
   }
 
   /** True only when running inside cht-android with the offline sync methods present. */
