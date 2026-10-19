@@ -18,6 +18,7 @@ describe('OfflineSync service', () => {
     offline_sync_start_hosting: sinon.stub(),
     offline_sync_stop_hosting: sinon.stub(),
     offline_sync_hosting_session: sinon.stub().returns(''),
+    offline_sync_received_bundles: sinon.stub().returns('[]'),
     offline_sync_scan_and_join: sinon.stub(),
     offline_sync_leave_session: sinon.stub(),
     ...overrides,
@@ -63,7 +64,7 @@ describe('OfflineSync service', () => {
     });
 
     it('is unsupported when the app lacks the newest of these methods', () => {
-      withBridge(bridge({ offline_sync_hosting_session: undefined }));
+      withBridge(bridge({ offline_sync_received_bundles: undefined }));
 
       expect(service.isSupported()).to.be.false;
       expect(service.hostingSession()).to.be.null;
