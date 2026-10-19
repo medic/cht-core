@@ -50,9 +50,10 @@ export class OfflineSyncService {
     private readonly sessionService: SessionService,
   ) {
     // Signing out ends whatever session this device is hosting or has joined.
-    this.sessionService.onSessionEnd(async () => {
+    this.sessionService.onSessionEnd(() => {
       this.stopHosting();
       this.leaveSession();
+      return Promise.resolve();
     });
   }
 
