@@ -15,9 +15,8 @@ import { type FacadeConfig, trimTrailingSlashes } from './config';
 export const FHIR_VERSION = '4.0.1';
 export const FHIR_JSON_CONTENT_TYPE = 'application/fhir+json';
 
-// NOSONAR_BEGIN - a FHIR canonical, never fetched
-const RESTFUL_SECURITY_SERVICE = 'http://terminology.hl7.org/CodeSystem/restful-security-service';
-// NOSONAR_END
+const RESTFUL_SECURITY_SERVICE =
+  'http://terminology.hl7.org/CodeSystem/restful-security-service'; // NOSONAR - a FHIR canonical, never fetched
 
 /**
  * `code` values are from the FHIR issue-type value set. The mapping used by

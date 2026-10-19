@@ -293,7 +293,7 @@ module.exports = {
         return sendOutcome(res, 400, error);
       }
 
-      if (params._id !== undefined) {
+      if (Object.hasOwn(params, '_id')) {
         return sendResource(res, idSearchBundle(req, await fhir.read(config, resourceType, params._id)));
       }
 

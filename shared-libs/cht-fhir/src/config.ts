@@ -24,7 +24,7 @@ import {
 // alone because a form id legally contains one.
 const decodeSegment = (segment: string): string => segment
   .replaceAll(/%2F/gi, '/')
-  .replaceAll(/%25/g, '%');
+  .replaceAll('%25', '%');
 
 const FACADE_SOURCE_KINDS = ['contact_type', 'form'] as const;
 type FacadeSourceKind = typeof FACADE_SOURCE_KINDS[number];
