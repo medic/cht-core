@@ -24,13 +24,9 @@ is a worked example; its entire contents go into `app_settings.fhir` as they
 are. Keys this library does not use are ignored.
 
 api calls `loadConfig()` and caches the result until the settings object
-changes. `loadConfig` never throws; a mistake becomes a **diagnostic**, which
-api logs whenever the settings change. The blast radius is scoped:
-
-| Where the error is | What is lost |
-| --- | --- |
-| `canonicalBase` missing, or no binding survives | The whole facade. Endpoints answer `503`. |
-| Anything wrong with a binding itself | That binding only. Every other binding keeps serving. |
+changes. Any problem in the configuration disables the whole facade: the
+endpoints answer `503`, and api logs the first problem found, prefixed by where
+it is (`encounters.pregnancy.elements.Encounter.status: …`).
 
 With no `fhir` key at all, the facade endpoints answer `404`.
 
@@ -111,8 +107,7 @@ CHWs on `doc.role`, say:
 `elements` maps an element id to a source. An element id is a
 pseudo-path: `Patient.telecom.phone` means "the ContactPoint on
 `Patient.telecom` whose system is `phone`". The catalog is closed: an unknown
-element (`element-unknown`) or a source kind the element does not accept
-(`element-source-kind-rejected`) drops the binding.
+element or a source kind the element does not accept is a configuration error.
 
 ### Patient
 
@@ -190,15 +185,12 @@ becomes one Observation. `observations` is an array:
 
 Each Observation gets `id` `<reportUuid>.<code>`, `status` `final`, category
 `survey`, `encounter` `Encounter/<reportUuid>`, `subject` from
-`Encounter.subject` (without it you get `observation-subject-missing` and
-subject-less Observations), and `effectiveDateTime` from
+`Encounter.subject` (without it, Observations have no subject), and `effectiveDateTime` from
 `Encounter.period.start`, falling back to `reported_date`.
 
 The code is part of the Observation's id, so it must not change once published.
-Codes must match `[A-Za-z0-9\-.]` (`observation-code-not-id-safe`), be at most
-27 characters (`observation-code-too-long`, since a CHT uuid takes up to 36 of
-the 64 a FHIR id allows) and be distinct within a binding
-(`observation-code-duplicate`).
+Codes must match `[A-Za-z0-9\-.]`, be at most 27 characters (a CHT uuid takes
+up to 36 of the 64 a FHIR id allows) and be distinct within a binding.
 
 ## How documents are found
 
@@ -222,25 +214,6 @@ Any other parameter is a `400`. Paging is `_count` (default 50, max 500) plus an
 opaque `_cursor`: follow `Bundle.link[relation=next]` verbatim. For
 Observation, `_count` counts reports, and each report projects to several
 Observations.
-
-## Diagnostics reference
-
-Severity `error` drops what it names; `warn` is informational.
-
-| Rule id | Severity | Meaning |
-| --- | --- | --- |
-| `canonical-base-missing` | error | `canonicalBase` is missing. Disables the facade. |
-| `no-servable-bindings` | error | Every binding was dropped. Disables the facade. |
-| `encounters-malformed` | error | `encounters` is not an object. |
-| `binding-malformed` | error | A binding is not an object, or `patient` has no `contactType`. |
-| `source-malformed`, `source-kind-unknown` | error | A source is missing its path or value, or names an unsupported kind. |
-| `source-filter-malformed`, `source-filter-op-unknown`, `source-filter-value-invalid` | error | `sourceFilter` problems. |
-| `identifiers-malformed`, `identifier-malformed` | error | Identifier problems. |
-| `element-unknown`, `element-source-kind-rejected` | error | See [Elements](#elements). |
-| `required-element-unbound` | error | `Encounter.status` or `Encounter.class` is not bound. |
-| `observations-malformed`, `observation-malformed`, `observation-code-malformed` | error | Observation problems. |
-| `observation-code-not-id-safe`, `observation-code-too-long`, `observation-code-duplicate` | error | See [Observations](#observations). |
-| `observation-subject-missing` | warn | Observations on a binding with no `Encounter.subject`. |
 
 ## Development
 

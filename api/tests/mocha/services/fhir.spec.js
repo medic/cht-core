@@ -102,7 +102,7 @@ describe('FHIR service', () => {
   };
 
   const facade = () => {
-    const { config: loaded } = service.getFacade();
+    const loaded = service.getFacade();
     expect(loaded, 'fixture failed to load').to.not.equal(null);
     return loaded;
   };
@@ -119,28 +119,12 @@ describe('FHIR service', () => {
       expect(service.getFacade()).to.not.equal(first);
     });
 
-    it('reports a mapping that cannot serve', () => {
+    it('serves nothing, and logs why once per settings change, when the mapping will not load', () => {
       settings = { fhir: { canonicalBase: null } };
-      const { config: loaded, diagnostics } = service.getFacade();
-      expect(loaded).to.equal(null);
-      expect(diagnostics.map(diagnostic => diagnostic.ruleId)).to.include('canonical-base-missing');
-    });
-
-    it('logs the diagnostics once per settings change, at their severity', () => {
-      settings = { fhir: { canonicalBase: null } };
-      service.getFacade();
+      expect(service.getFacade()).to.equal(null);
       service.getFacade();
       expect(logger.error.args).to.have.length(1);
-      expect(logger.error.args[0][0]).to.match(/^FHIR facade config: canonical-base-missing: /);
-
-      settings = { fhir: mapping() };
-      delete settings.fhir.encounters.pregnancy.elements['Encounter.subject'];
-      service.getFacade();
-      expect(logger.error.callCount).to.equal(1);
-      expect(logger.warn.args).to.deep.equal([[
-        'FHIR facade config: observation-subject-missing: Observations are configured but Encounter.subject '
-        + 'is not bound, so they will be served without a subject. (encounters.pregnancy)',
-      ]]);
+      expect(logger.error.args[0][0]).to.match(/^FHIR facade config: canonicalBase is required/);
     });
 
     it('distinguishes an absent mapping from a broken one', () => {
@@ -148,7 +132,7 @@ describe('FHIR service', () => {
       expect(service.isConfigured()).to.equal(false);
       settings = { fhir: 'nonsense' };
       expect(service.isConfigured()).to.equal(true);
-      expect(service.getFacade().config).to.equal(null);
+      expect(service.getFacade()).to.equal(null);
     });
   });
 

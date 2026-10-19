@@ -38,13 +38,7 @@ const SURVEY = [{
   text: 'Survey',
 }];
 
-const load = (raw: unknown = mapping()) => {
-  const { config } = loadConfig(raw);
-  if (!config) {
-    throw new Error('fixture failed to load');
-  }
-  return config;
-};
+const load = (raw: unknown = mapping()) => loadConfig(raw);
 
 const bindingOf = (config: FacadeConfig, scope: string): ResourceBinding => {
   const binding = config.bindings.find(candidate => candidate.scope === scope);

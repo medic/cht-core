@@ -45,24 +45,23 @@ const bound = (operation) => {
 
 // Keyed on the settings object's identity: `config.set` replaces it wholesale
 // on every reload, so a changed key is a changed reference.
-let cached = { raw: undefined, result: { config: null, diagnostics: [] } };
+let cached = { raw: undefined, facade: null };
 
-const formatDiagnostic = ({ ruleId, message, scope }) => {
-  const where = scope ? ` (${scope})` : '';
-  return `FHIR facade config: ${ruleId}: ${message}${where}`;
-};
-
-/** The loaded mapping and its diagnostics, which are logged once per settings change. */
+/**
+ * The loaded mapping, or null when it will not load. Why it will not is
+ * logged once per settings change.
+ */
 const getFacade = () => {
   const raw = config.get('fhir');
   if (raw !== cached.raw) {
-    const result = loadConfig(raw);
-    for (const diagnostic of result.diagnostics) {
-      logger[diagnostic.severity](formatDiagnostic(diagnostic));
+    cached = { raw, facade: null };
+    try {
+      cached.facade = loadConfig(raw);
+    } catch (err) {
+      logger.error(`FHIR facade config: ${err.message}`);
     }
-    cached = { raw, result };
   }
-  return cached.result;
+  return cached.facade;
 };
 
 /** True when no mapping is configured at all, as opposed to a broken one. */

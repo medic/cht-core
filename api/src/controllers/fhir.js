@@ -111,7 +111,7 @@ const requireFacade = (res) => {
     sendOutcome(res, 404, 'This server has no FHIR mapping configured, so the FHIR facade is not enabled.');
     return null;
   }
-  const { config } = fhir.getFacade();
+  const config = fhir.getFacade();
   if (!config) {
     sendOutcome(res, 503, 'The FHIR mapping for this server is not usable. See the API logs for why.');
     return null;

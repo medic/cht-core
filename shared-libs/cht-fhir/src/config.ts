@@ -1,15 +1,8 @@
 /**
  * The `settings.fhir` configuration: types, parsing and validation.
  *
- * Two rules govern this module:
- *
- * 1. **Never throw on a bad config.** api loads app_settings through
- *    `config-watcher`, which `process.exit(1)`s when a load fails. A
- *    mistyped mapping must degrade to diagnostics, not take the server down.
- * 2. **Errors are scoped.** A broken binding is excluded on its own; only a
- *    top-level error (a missing `canonicalBase`, say) disables everything.
- *
- * Unknown keys are tolerated and ignored.
+ * `loadConfig` throws a `FacadeConfigError` naming the first problem it finds,
+ * and a config with any problem serves nothing. Unknown keys are ignored.
  */
 import { type FacadeResourceType, RESOURCE_TYPES, findElementSpec } from './catalog';
 
@@ -77,7 +70,7 @@ export interface SourceFilter {
 export type BoundResourceType = Exclude<FacadeResourceType, 'Observation'>;
 
 export interface ResourceBinding {
-  /** Where the binding sits in the config, `patient` or `encounters.<form>`. Scopes its diagnostics. */
+  /** Where the binding sits in the config, `patient` or `encounters.<form>`. Prefixes its errors. */
   readonly scope: string;
   readonly resourceType: BoundResourceType;
   /** The contact type id for a Patient, the form code for an Encounter. */
@@ -93,21 +86,6 @@ export interface FacadeConfig {
   readonly canonicalBase: string;
   /** At most one Patient, then the Encounters. */
   readonly bindings: readonly ResourceBinding[];
-}
-
-export interface FacadeDiagnostic {
-  readonly severity: 'error' | 'warn';
-  /** Stable machine id, e.g. `element-unknown`. */
-  readonly ruleId: string;
-  readonly message: string;
-  /** The binding's `scope`, or null for a top-level diagnostic. */
-  readonly scope: string | null;
-}
-
-export interface LoadResult {
-  /** Null when the facade cannot serve. `diagnostics` says why. */
-  readonly config: FacadeConfig | null;
-  readonly diagnostics: readonly FacadeDiagnostic[];
 }
 
 /* ------------------------------ reading a source -------------------------- */
@@ -198,21 +176,17 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
 
 const asString = (value: unknown): string | null => typeof value === 'string' && value.trim() !== '' ? value : null;
 
-class Diagnostics {
-  private readonly entries: FacadeDiagnostic[] = [];
-
-  add(severity: FacadeDiagnostic['severity'], ruleId: string, message: string, scope: string | null = null) {
-    this.entries.push({ severity, ruleId, message, scope });
-  }
-
-  all(): readonly FacadeDiagnostic[] {
-    return this.entries;
-  }
-
-  hasErrorFor(scope: string): boolean {
-    return this.entries.some(e => e.severity === 'error' && e.scope === scope);
+/** A config that cannot serve. The message names where the problem is. */
+export class FacadeConfigError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'FacadeConfigError';
   }
 }
+
+const fail = (message: string): never => {
+  throw new FacadeConfigError(message);
+};
 
 /* --------------------------------- parsing -------------------------------- */
 
@@ -259,26 +233,12 @@ const SOURCE_PARSERS: ReadonlyMap<unknown, SourceParser> = new Map<ChtSourceKind
   }],
 ]);
 
-const parseChtSource = (raw: unknown, diag: Diagnostics, scope: string, where: string): ChtSource | null => {
+const parseChtSource = (raw: unknown, where: string): ChtSource => {
   if (!isRecord(raw)) {
-    diag.add('error', 'source-malformed', `${where}: source must be an object.`, scope);
-    return null;
+    return fail(`${where}: source must be an object.`);
   }
-  const parser = SOURCE_PARSERS.get(raw.kind);
-  if (!parser) {
-    diag.add(
-      'error',
-      'source-kind-unknown',
-      `${where}: unsupported source kind ${JSON.stringify(raw.kind)}.`,
-      scope,
-    );
-    return null;
-  }
-  const source = parser.parse(raw);
-  if (!source) {
-    diag.add('error', 'source-malformed', `${where}: ${parser.problem}`, scope);
-  }
-  return source;
+  const parser = SOURCE_PARSERS.get(raw.kind) ?? fail(`${where}: unsupported source kind ${JSON.stringify(raw.kind)}.`);
+  return parser.parse(raw) ?? fail(`${where}: ${parser.problem}`);
 };
 
 const isString = (value: unknown): value is string => typeof value === 'string';
@@ -297,71 +257,51 @@ const FILTER_VALUE_RULES: ReadonlyMap<unknown, FilterValueRule | null> = new Map
   ['not-exists', null],
 ]);
 
-const parseFilterCondition = (
-  raw: Record<string, unknown>,
-  diag: Diagnostics,
-  scope: string,
-): Pick<SourceFilter, 'op' | 'value'> | null => {
-  if (!FILTER_VALUE_RULES.has(raw.op)) {
-    diag.add('error', 'source-filter-op-unknown', `sourceFilter: unknown op ${JSON.stringify(raw.op)}.`, scope);
-    return null;
-  }
-  const op = raw.op as FilterOp;
-  const rule = FILTER_VALUE_RULES.get(op);
-  if (!rule) {
-    return { op };
-  }
-  if (!rule.valid(raw.value)) {
-    diag.add('error', 'source-filter-value-invalid', `sourceFilter: op "${op}" needs ${rule.needs}.`, scope);
-    return null;
-  }
-  return { op, value: raw.value as string | readonly string[] };
-};
-
-const parseSourceFilter = (raw: unknown, diag: Diagnostics, scope: string): SourceFilter | null => {
+const parseSourceFilter = (raw: unknown, where: string): SourceFilter | null => {
   if (isAbsent(raw)) {
     return null;
   }
   if (!isRecord(raw)) {
-    diag.add('error', 'source-filter-malformed', 'sourceFilter must be an object or null.', scope);
-    return null;
+    return fail(`${where}: sourceFilter must be an object or null.`);
   }
-  const source = parseChtSource(raw.source, diag, scope, 'sourceFilter');
-  if (!source) {
-    return null;
+  const source = parseChtSource(raw.source, `${where}.sourceFilter`);
+  if (!FILTER_VALUE_RULES.has(raw.op)) {
+    return fail(`${where}: sourceFilter has unknown op ${JSON.stringify(raw.op)}.`);
   }
-  const condition = parseFilterCondition(raw, diag, scope);
-  return condition && { source, ...condition };
+  const op = raw.op as FilterOp;
+  const rule = FILTER_VALUE_RULES.get(op);
+  if (!rule) {
+    return { source, op };
+  }
+  if (!rule.valid(raw.value)) {
+    return fail(`${where}: sourceFilter op "${op}" needs ${rule.needs}.`);
+  }
+  return { source, op, value: raw.value as string | readonly string[] };
 };
 
 const IDENTIFIER_USES: ReadonlySet<unknown> = new Set(['usual', 'official', 'temp', 'secondary', 'old']);
 
-const parseIdentifiers = (raw: unknown, diag: Diagnostics, scope: string): readonly IdentifierBinding[] => {
+const parseIdentifier = (entry: unknown, where: string): IdentifierBinding => {
+  if (!isRecord(entry)) {
+    return fail(`${where}: must be an object.`);
+  }
+  return {
+    system: asString(entry.system) ?? fail(`${where}: needs a system.`),
+    // R4 binds `Identifier.use` required, so any other value would make the resource invalid.
+    use: IDENTIFIER_USES.has(entry.use) ? entry.use as string : undefined,
+    type: parseCoding(entry.type) ?? undefined,
+    source: parseChtSource(entry.source, where),
+  };
+};
+
+const parseIdentifiers = (raw: unknown, where: string): readonly IdentifierBinding[] => {
   if (isAbsent(raw)) {
     return [];
   }
   if (!Array.isArray(raw)) {
-    diag.add('error', 'identifiers-malformed', 'identifiers must be an array.', scope);
-    return [];
+    return fail(`${where}: identifiers must be an array.`);
   }
-  const out: IdentifierBinding[] = [];
-  raw.forEach((entry, idx) => {
-    const where = `identifiers[${idx}]`;
-    const system = isRecord(entry) && asString(entry.system);
-    if (!system) {
-      diag.add('error', 'identifier-malformed', `${where}: must be an object with a system.`, scope);
-      return;
-    }
-    const source = parseChtSource(entry.source, diag, scope, where);
-    if (!source) {
-      return;
-    }
-    // R4 binds `Identifier.use` required, so any other value would make the resource invalid.
-    const use = IDENTIFIER_USES.has(entry.use) ? entry.use as string : undefined;
-    const type = parseCoding(entry.type) ?? undefined;
-    out.push({ system, use, type, source });
-  });
-  return out;
+  return raw.map((entry, idx) => parseIdentifier(entry, `${where}.identifiers[${idx}]`));
 };
 
 const VALUE_MODES: ReadonlySet<unknown> = new Set<ObservationValueMode>([
@@ -372,56 +312,32 @@ const parseValueMode = (raw: unknown): ObservationValueMode => {
   return VALUE_MODES.has(raw) ? raw as ObservationValueMode : 'auto';
 };
 
-const parseObservation = (
-  entry: unknown,
-  diag: Diagnostics,
-  scope: string,
-  where: string,
-): ObservationProjection | null => {
+const parseObservation = (entry: unknown, where: string): ObservationProjection => {
   if (!isRecord(entry)) {
-    diag.add('error', 'observation-malformed', `${where} must be an object.`, scope);
-    return null;
-  }
-  const code = parseCoding(entry.code);
-  if (!code) {
-    diag.add('error', 'observation-code-malformed', `${where}: code needs system and code.`, scope);
-    return null;
-  }
-  const source = parseChtSource(entry.source, diag, scope, where);
-  if (!source) {
-    return null;
+    return fail(`${where}: must be an object.`);
   }
   return {
-    code,
+    code: parseCoding(entry.code) ?? fail(`${where}: code needs system and code.`),
     valueMode: parseValueMode(entry.valueMode),
     unit: parseCoding(entry.unit) ?? undefined,
-    source,
+    source: parseChtSource(entry.source, where),
   };
 };
 
-const parseObservations = (raw: unknown, diag: Diagnostics, scope: string): readonly ObservationProjection[] => {
+const parseObservations = (raw: unknown, where: string): readonly ObservationProjection[] => {
   if (isAbsent(raw)) {
     return [];
   }
   if (!Array.isArray(raw)) {
-    diag.add('error', 'observations-malformed', 'observations must be an array.', scope);
-    return [];
+    return fail(`${where}: observations must be an array.`);
   }
-  return raw
-    .map((entry, idx) => parseObservation(entry, diag, scope, `observations[${idx}]`))
-    .filter((projection): projection is ObservationProjection => projection !== null);
+  return raw.map((entry, idx) => parseObservation(entry, `${where}.observations[${idx}]`));
 };
 
-const parseElements = (raw: unknown, diag: Diagnostics, scope: string): Record<string, ChtSource> => {
+const parseElements = (raw: unknown, where: string): Record<string, ChtSource> => {
   const elements: Record<string, ChtSource> = {};
-  if (!isRecord(raw)) {
-    return elements;
-  }
-  for (const [elementId, entry] of Object.entries(raw)) {
-    const source = parseChtSource(entry, diag, scope, elementId);
-    if (source) {
-      elements[elementId] = source;
-    }
+  for (const [elementId, entry] of Object.entries(isRecord(raw) ? raw : {})) {
+    elements[elementId] = parseChtSource(entry, `${where}.elements.${elementId}`);
   }
   return elements;
 };
@@ -431,114 +347,54 @@ const parseBinding = (
   scope: string,
   sourceId: string,
   raw: Record<string, unknown>,
-  diag: Diagnostics,
 ): ResourceBinding => ({
   scope,
   resourceType,
   sourceId,
-  sourceFilter: parseSourceFilter(raw.sourceFilter, diag, scope),
-  elements: parseElements(raw.elements, diag, scope),
-  identifiers: parseIdentifiers(raw.identifiers, diag, scope),
-  observations: resourceType === 'Encounter' ? parseObservations(raw.observations, diag, scope) : [],
+  sourceFilter: parseSourceFilter(raw.sourceFilter, scope),
+  elements: parseElements(raw.elements, scope),
+  identifiers: parseIdentifiers(raw.identifiers, scope),
+  observations: resourceType === 'Encounter' ? parseObservations(raw.observations, scope) : [],
 });
 
-const parsePatient = (raw: unknown, diag: Diagnostics): ResourceBinding | null => {
+const parsePatient = (raw: unknown): ResourceBinding | null => {
   if (isAbsent(raw)) {
     return null;
   }
-  const contactType = isRecord(raw) && asString(raw.contactType);
-  if (!contactType) {
-    diag.add('error', 'binding-malformed', 'patient must be an object with a contactType.', 'patient');
-    return null;
-  }
-  return parseBinding('Patient', 'patient', contactType, raw as Record<string, unknown>, diag);
+  const contactType = (isRecord(raw) && asString(raw.contactType)) || fail('patient: needs a contactType.');
+  return parseBinding('Patient', 'patient', contactType, raw as Record<string, unknown>);
 };
 
 /** Keyed by form code, as it appears in a report's `form`. */
-const parseEncounters = (raw: unknown, diag: Diagnostics): ResourceBinding[] => {
+const parseEncounters = (raw: unknown): ResourceBinding[] => {
   if (isAbsent(raw)) {
     return [];
   }
   if (!isRecord(raw)) {
-    diag.add('error', 'encounters-malformed', 'encounters must be an object keyed by form code.');
-    return [];
+    return fail('encounters must be an object keyed by form code.');
   }
-  const bindings: ResourceBinding[] = [];
-  for (const [form, entry] of Object.entries(raw)) {
+  return Object.entries(raw).map(([form, entry]) => {
     const scope = `encounters.${form}`;
-    if (isRecord(entry)) {
-      bindings.push(parseBinding('Encounter', scope, form, entry, diag));
-    } else {
-      diag.add('error', 'binding-malformed', 'An encounter binding must be an object.', scope);
-    }
-  }
-  return bindings;
+    return isRecord(entry) ? parseBinding('Encounter', scope, form, entry) : fail(`${scope}: must be an object.`);
+  });
 };
 
 /* ------------------------------- validation ------------------------------- */
 
-const validateBoundElements = (binding: ResourceBinding, diag: Diagnostics): void => {
+const validateElements = (binding: ResourceBinding): void => {
   for (const [elementId, source] of Object.entries(binding.elements)) {
-    const spec = findElementSpec(binding.resourceType, elementId);
-    if (!spec) {
-      diag.add('error', 'element-unknown', `${elementId} is not an element of ${binding.resourceType}.`, binding.scope);
-    } else if (!spec.accepts.includes(source.kind)) {
-      diag.add(
-        'error',
-        'element-source-kind-rejected',
-        `${elementId} does not accept a ${source.kind} source (accepts ${spec.accepts.join(', ')}).`,
-        binding.scope,
-      );
+    const spec = findElementSpec(binding.resourceType, elementId)
+      ?? fail(`${binding.scope}: ${elementId} is not an element of ${binding.resourceType}.`);
+    if (!spec.accepts.includes(source.kind)) {
+      fail(`${binding.scope}: ${elementId} does not accept a ${source.kind} source `
+        + `(accepts ${spec.accepts.join(', ')}).`);
     }
   }
-};
-
-const validateRequiredElements = (binding: ResourceBinding, diag: Diagnostics): void => {
   for (const spec of RESOURCE_TYPES[binding.resourceType].elements) {
     if (spec.min === 1 && !binding.elements[spec.id]) {
-      diag.add(
-        'error',
-        'required-element-unbound',
-        `${spec.id} is required by ${binding.resourceType} but is not bound.`,
-        binding.scope,
-      );
+      fail(`${binding.scope}: ${spec.id} is required by ${binding.resourceType} but is not bound.`);
     }
   }
-};
-
-/** Checks that need the element catalog. */
-const validateAgainstCatalog = (binding: ResourceBinding, diag: Diagnostics): void => {
-  validateBoundElements(binding, diag);
-  validateRequiredElements(binding, diag);
-  if (binding.observations.length && !binding.elements['Encounter.subject']) {
-    diag.add(
-      'warn',
-      'observation-subject-missing',
-      'Observations are configured but Encounter.subject is not bound, so they will be served without a subject.',
-      binding.scope,
-    );
-  }
-};
-
-/** A rule id and message for what is wrong with an observation's code, or null once `seen` records it as taken. */
-const claimCode = (where: string, code: string, seen: Map<string, string>): readonly [string, string] | null => {
-  if (!FHIR_ID_PATTERN.test(code)) {
-    return ['observation-code-not-id-safe', `${where}: code ${JSON.stringify(code)} cannot appear in a FHIR id.`];
-  }
-  if (code.length > OBSERVATION_CODE_MAX_LENGTH) {
-    return [
-      'observation-code-too-long',
-      `${where}: code ${JSON.stringify(code)} is ${code.length} characters. `
-      + `An Observation id is <reportUuid>.<code>, and a CHT uuid takes up to ${CHT_DOC_ID_MAX_LENGTH} of the `
-      + `${FHIR_ID_MAX_LENGTH} a FHIR id allows, so a code may be at most ${OBSERVATION_CODE_MAX_LENGTH}.`,
-    ];
-  }
-  const clash = seen.get(code);
-  if (clash !== undefined) {
-    return ['observation-code-duplicate', `${where}: code ${code} is already used by ${clash}.`];
-  }
-  seen.set(code, where);
-  return null;
 };
 
 /**
@@ -546,49 +402,42 @@ const claimCode = (where: string, code: string, seen: Map<string, string>): read
  * within a binding — two fields sharing one code would collide on
  * `<reportUuid>.<code>`.
  */
-const validateObservationCodes = (binding: ResourceBinding, diag: Diagnostics): void => {
-  const seen = new Map<string, string>();
-  binding.observations.forEach((projection, idx) => {
-    const issue = claimCode(`observations[${idx}]`, projection.code.code, seen);
-    if (issue) {
-      diag.add('error', ...issue, binding.scope);
+const validateObservationCodes = (binding: ResourceBinding): void => {
+  const seen = new Set<string>();
+  binding.observations.forEach(({ code: { code } }, idx) => {
+    const where = `${binding.scope}.observations[${idx}]`;
+    if (!FHIR_ID_PATTERN.test(code)) {
+      fail(`${where}: code ${JSON.stringify(code)} cannot appear in a FHIR id.`);
     }
+    if (code.length > OBSERVATION_CODE_MAX_LENGTH) {
+      fail(`${where}: code ${JSON.stringify(code)} is ${code.length} characters. `
+        + `An Observation id is <reportUuid>.<code>, and a CHT uuid takes up to ${CHT_DOC_ID_MAX_LENGTH} of the `
+        + `${FHIR_ID_MAX_LENGTH} a FHIR id allows, so a code may be at most ${OBSERVATION_CODE_MAX_LENGTH}.`);
+    }
+    if (seen.has(code)) {
+      fail(`${where}: code ${code} is already used in this binding.`);
+    }
+    seen.add(code);
   });
 };
 
-/**
- * Parse and validate `settings.fhir`. Returns `{ config: null }` when the
- * facade cannot serve at all; individual broken bindings are dropped with a
- * diagnostic and the rest still serve.
- */
-export const loadConfig = (raw: unknown): LoadResult => {
-  const diag = new Diagnostics();
-
-  const canonicalBase = isRecord(raw) && asString(raw.canonicalBase);
-  if (!canonicalBase) {
-    diag.add(
-      'error',
-      'canonical-base-missing',
-      'canonicalBase is required. Generated identifier systems are permanent public identifiers, '
-      + 'so the facade will not invent one.',
-    );
-    return { config: null, diagnostics: diag.all() };
-  }
-
-  const patient = parsePatient((raw as Record<string, unknown>).patient, diag);
-  const parsed = [
+/** Parse and validate `settings.fhir`. Throws a `FacadeConfigError` naming the first problem. */
+export const loadConfig = (raw: unknown): FacadeConfig => {
+  const canonicalBase = (isRecord(raw) && asString(raw.canonicalBase)) || fail(
+    'canonicalBase is required. Generated identifier systems are permanent public identifiers, '
+    + 'so the facade will not invent one.',
+  );
+  const patient = parsePatient((raw as Record<string, unknown>).patient);
+  const bindings = [
     ...(patient ? [patient] : []),
-    ...parseEncounters((raw as Record<string, unknown>).encounters, diag),
+    ...parseEncounters((raw as Record<string, unknown>).encounters),
   ];
-  for (const binding of parsed) {
-    validateAgainstCatalog(binding, diag);
-    validateObservationCodes(binding, diag);
-  }
-
-  const bindings = parsed.filter(binding => !diag.hasErrorFor(binding.scope));
   if (!bindings.length) {
-    diag.add('error', 'no-servable-bindings', 'No resource binding is servable.');
-    return { config: null, diagnostics: diag.all() };
+    fail('Nothing is bound: configure a patient or at least one encounter.');
   }
-  return { config: { canonicalBase, bindings }, diagnostics: diag.all() };
+  for (const binding of bindings) {
+    validateElements(binding);
+    validateObservationCodes(binding);
+  }
+  return { canonicalBase, bindings };
 };

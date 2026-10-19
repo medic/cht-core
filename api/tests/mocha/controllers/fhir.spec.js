@@ -50,7 +50,7 @@ describe('FHIR Controller', () => {
 
   beforeEach(() => {
     assertPermissions = sinon.stub(auth, 'assertPermissions').resolves();
-    getFacade = sinon.stub(fhirService, 'getFacade').returns({ config: facadeConfig(), diagnostics: [] });
+    getFacade = sinon.stub(fhirService, 'getFacade').returns(facadeConfig());
     isConfigured = sinon.stub(fhirService, 'isConfigured').returns(true);
     read = sinon.stub(fhirService, 'read');
     search = sinon.stub(fhirService, 'search');
@@ -126,10 +126,7 @@ describe('FHIR Controller', () => {
     });
 
     it('answers 503 pointing at the API logs when the mapping will not load', async () => {
-      getFacade.returns({
-        config: null,
-        diagnostics: [{ severity: 'error', ruleId: 'canonical-base-missing', message: 'set a base', scope: null }],
-      });
+      getFacade.returns(null);
       await controller.v1.search(req, res);
       expect(status()).to.equal(503);
       expect(body().issue).to.deep.equal([{
@@ -175,7 +172,7 @@ describe('FHIR Controller', () => {
       // Observation is a type the facade serves, but only where a binding
       // projects one; this mapping's Encounter projects none.
       const bindings = facadeConfig().bindings.map(binding => ({ ...binding, observations: [] }));
-      getFacade.returns({ config: facadeConfig({ bindings }), diagnostics: [] });
+      getFacade.returns(facadeConfig({ bindings }));
       req.params = { resourceType: 'Observation', id: 'x' };
       await controller.v1.read(req, res);
       expect(status()).to.equal(404);
@@ -314,7 +311,7 @@ describe('FHIR Controller', () => {
 
     it('answers 404 for an unconfigured resource type', async () => {
       const bindings = facadeConfig().bindings.map(binding => ({ ...binding, observations: [] }));
-      getFacade.returns({ config: facadeConfig({ bindings }), diagnostics: [] });
+      getFacade.returns(facadeConfig({ bindings }));
       req.params = { resourceType: 'Observation' };
       await controller.v1.search(req, res);
       expect(status()).to.equal(404);

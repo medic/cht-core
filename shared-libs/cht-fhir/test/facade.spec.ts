@@ -21,13 +21,7 @@ import {
 const SERVICE_BASE = 'https://cht.example.org/api/v1/fhir';
 const NOW = '2026-09-07T00:00:00.000Z';
 
-const load = (raw: unknown = mapping()) => {
-  const { config } = loadConfig(raw);
-  if (!config) {
-    throw new Error('fixture failed to load');
-  }
-  return config;
-};
+const load = (raw: unknown = mapping()) => loadConfig(raw);
 
 /** The resource types a CapabilityStatement built from this config declares. */
 const declaredTypes = (config: FacadeConfig) => {

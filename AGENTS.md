@@ -62,14 +62,13 @@ Every query the facade runs is a **cht-datasource** call; it queries no view dir
 
 **Before changing a FHIR configuration or the mapping library, read
 [`shared-libs/cht-fhir/README.md`](shared-libs/cht-fhir/README.md)** — the full configuration
-reference: bindings, the constrained element catalog, observations and codes, query planning,
-generated conformance resources, and every diagnostic rule id.
+reference: bindings, the constrained element catalog, observations and codes, and query planning.
 
 - `shared-libs/cht-fhir/` — the pure mapping library (config in, FHIR resource or query *plan* out)
 - `api/src/{services,controllers}/fhir.js` — executes plans, speaks HTTP at `/api/v1/fhir/**`
 - `shared-libs/cht-fhir/fhir-mapping.example.json` — a worked example; its contents are `app_settings.fhir` verbatim
 
-Config diagnostics are logged by api whenever the settings change.
+A configuration that will not load disables the facade (503); api logs why whenever the settings change.
 
 ---
 
