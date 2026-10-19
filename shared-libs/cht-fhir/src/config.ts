@@ -381,7 +381,7 @@ const parseEncounters = (raw: unknown): ResourceBinding[] => {
 
 /* ------------------------------- validation ------------------------------- */
 
-const validateElements = (binding: ResourceBinding): void => {
+const validateBoundElements = (binding: ResourceBinding): void => {
   for (const [elementId, source] of Object.entries(binding.elements)) {
     const spec = findElementSpec(binding.resourceType, elementId)
       ?? fail(`${binding.scope}: ${elementId} is not an element of ${binding.resourceType}.`);
@@ -390,6 +390,9 @@ const validateElements = (binding: ResourceBinding): void => {
         + `(accepts ${spec.accepts.join(', ')}).`);
     }
   }
+};
+
+const validateRequiredElements = (binding: ResourceBinding): void => {
   for (const spec of RESOURCE_TYPES[binding.resourceType].elements) {
     if (spec.min === 1 && !binding.elements[spec.id]) {
       fail(`${binding.scope}: ${spec.id} is required by ${binding.resourceType} but is not bound.`);
@@ -436,7 +439,8 @@ export const loadConfig = (raw: unknown): FacadeConfig => {
     fail('Nothing is bound: configure a patient or at least one encounter.');
   }
   for (const binding of bindings) {
-    validateElements(binding);
+    validateBoundElements(binding);
+    validateRequiredElements(binding);
     validateObservationCodes(binding);
   }
   return { canonicalBase, bindings };
