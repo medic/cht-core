@@ -1,5 +1,5 @@
 const uuid = require('uuid').v7;
-const { ed25519 } = require('@noble/curves/ed25519.js');
+const { createHash, webcrypto } = require('node:crypto');
 
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
@@ -36,36 +36,43 @@ describe('offline data bundle relay', () => {
 
   const toBase64 = bytes => Buffer.from(bytes).toString('base64');
 
+  // The age header: the text up to and including the line that starts with "---".
+  const headerHashOf = (ciphertext) => {
+    const bytes = Buffer.from(ciphertext);
+    const end = bytes.indexOf('\n', bytes.indexOf('\n---') + 1) + 1;
+    return createHash('sha256').update(bytes.subarray(0, end)).digest('base64');
+  };
+
   const sealBundle = async (docs) => {
-    const signingPrivateKey = ed25519.utils.randomSecretKey();
+    const keyPair = await webcrypto.subtle.generateKey(
+      { name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']
+    );
     const { server_encryption_public_key: recipient } = await utils.request({
       path: `/api/v1/users/${chw.username}/devices/${deviceId}/keys`,
       method: 'POST',
-      body: {
-        signing_key: {
-          kty: 'OKP',
-          crv: 'Ed25519',
-          x: toBase64(ed25519.getPublicKey(signingPrivateKey))
-            .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, ''),
-        },
-      },
+      body: { signing_key: await webcrypto.subtle.exportKey('jwk', keyPair.publicKey) },
       auth: { username: chw.username, password: chw.password },
     });
 
     const { Encrypter } = await import('age-encryption');
     const encrypter = new Encrypter();
     encrypter.addRecipient(recipient);
+    const ciphertext = await encrypter.encrypt(docs.map(doc => JSON.stringify(doc)).join('\n'));
 
     const envelopeBytes = Buffer.from(JSON.stringify({
       user: chw.username,
       device_id: deviceId,
       bundle_seq: 1,
+      payload_header_sha256: headerHashOf(ciphertext),
     }), 'utf8');
+    const signature = await webcrypto.subtle.sign(
+      { name: 'ECDSA', hash: 'SHA-256' }, keyPair.privateKey, envelopeBytes
+    );
 
     return {
       envelope: envelopeBytes.toString('base64'),
-      signature: toBase64(ed25519.sign(envelopeBytes, signingPrivateKey)),
-      ciphertext: toBase64(await encrypter.encrypt(docs.map(doc => JSON.stringify(doc)).join('\n'))),
+      signature: toBase64(signature),
+      ciphertext: toBase64(ciphertext),
     };
   };
 
@@ -120,7 +127,7 @@ describe('offline data bundle relay', () => {
 
   it('keeps a bundle the server will not take, rather than destroying the only copy', async () => {
     const bundle = { id: uuid(), ...await sealBundle([patient]) };
-    bundle.signature = toBase64(ed25519.sign(Buffer.from('not this envelope'), ed25519.utils.randomSecretKey()));
+    bundle.signature = toBase64(webcrypto.getRandomValues(new Uint8Array(64)));
     await carry(bundle);
 
     await commonElements.sync();
