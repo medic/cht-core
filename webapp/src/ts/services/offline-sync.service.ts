@@ -50,11 +50,12 @@ export class OfflineSyncService {
     private readonly sessionService: SessionService,
   ) {
     // Signing out ends whatever session this device is hosting or has joined.
-    this.sessionService.onSessionEnd(() => {
+    // Inside the promise, so a bridge call that throws is reported as a rejection and the sign-out
+    // carries on, rather than escaping before the session service can catch it.
+    this.sessionService.onSessionEnd(() => Promise.resolve().then(() => {
       this.stopHosting();
       this.leaveSession();
-      return Promise.resolve();
-    });
+    }));
   }
 
   /**

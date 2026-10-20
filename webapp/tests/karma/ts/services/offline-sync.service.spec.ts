@@ -187,6 +187,14 @@ describe('OfflineSync service', () => {
       expect(android.offline_sync_stop_hosting.callCount).to.equal(1);
       expect(android.offline_sync_leave_session.callCount).to.equal(1);
     });
+
+    it('reports a bridge call that throws as a rejection', async () => {
+      withBridge(bridge({ offline_sync_stop_hosting: sinon.stub().throws(new Error('bridge threw')) }));
+
+      const error = await sessionEndHandler().catch(err => err);
+
+      expect(error.message).to.equal('bridge threw');
+    });
   });
 
   describe('results from the native side', () => {
