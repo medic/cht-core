@@ -191,9 +191,7 @@ describe('OfflineSync service', () => {
     it('reports a bridge call that throws as a rejection', async () => {
       withBridge(bridge({ offline_sync_stop_hosting: sinon.stub().throws(new Error('bridge threw')) }));
 
-      const error = await sessionEndHandler().catch(err => err);
-
-      expect(error.message).to.equal('bridge threw');
+      await expect(sessionEndHandler()).to.be.rejectedWith(Error, 'bridge threw');
     });
   });
 
