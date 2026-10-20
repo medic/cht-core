@@ -5,6 +5,7 @@ const DISALLOWED_CHARS = /[^a-z0-9_$()+/-]/g;
 const USER_DB_SUFFIX = 'user';
 const META_DB_SUFFIX = 'meta';
 const USERS_DB_SUFFIX = 'users';
+const BUNDLES_DB_SUFFIX = 'bundles';
 
 import { Injectable, NgZone } from '@angular/core';
 import { EventEmitter } from 'events';
@@ -157,8 +158,11 @@ export class DbService {
     return db;
   }
 
-  get({ remote=this.isOnlineOnly, meta=false, usersMeta=false }={}) {
-    const name = this.getDbName(remote, meta, usersMeta);
+  // `bundles` is a local-only database holding sealed data bundles this device is carrying for
+  // someone else. It is never replicated: the contents belong to another user and are encrypted to
+  // the server, so this device can neither read them nor sync them anywhere but the bundle endpoint.
+  get({ remote=this.isOnlineOnly, meta=false, usersMeta=false, bundles=false }={}) {
+    const name = this.getDbName(remote, meta, usersMeta) + (bundles ? `-${BUNDLES_DB_SUFFIX}` : '');
     if (!this.cache[name]) {
       const db = window.PouchDB(name, this.getParams(remote, meta, usersMeta));
       this.cache[name] = this.wrapMethods(db);
