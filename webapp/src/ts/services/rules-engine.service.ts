@@ -727,10 +727,10 @@ export class RulesEngineService implements OnDestroy {
       return;
     }
 
-    const subjectIds = _uniq(docs
+    const subjectIds = [...new Set(docs
       .filter(doc => this.contactTypesService.includes(doc) || this.isReport(doc))
       .map(doc => this.isReport(doc) ? RegistrationUtils.getSubjectId(doc) : doc._id)
-      .filter(Boolean));
+      .filter(Boolean))];
     if (!subjectIds.length) {
       return;
     }
