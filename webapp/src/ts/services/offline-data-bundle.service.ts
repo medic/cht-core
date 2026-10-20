@@ -127,8 +127,8 @@ export class OfflineDataBundleService {
     // Whichever reached further. A device that has never exported, or that lost its local
     // storage, then packs from the sync position rather than from zero, which would re-send the
     // whole database, nearly all of which the server sent to this device in the first place.
-    const exported = Number(window.localStorage.getItem(LAST_EXPORTED_SEQ_KEY));
-    return exported > replicated ? exported : replicated;
+    const exported = Number(window.localStorage.getItem(LAST_EXPORTED_SEQ_KEY)) || 0;
+    return Math.max(exported, replicated);
   }
 
   /**

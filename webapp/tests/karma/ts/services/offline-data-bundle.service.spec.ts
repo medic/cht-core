@@ -333,6 +333,13 @@ describe('OfflineDataBundle service', () => {
       expect(service.getPosition('export')).to.equal(17);
     });
 
+    it('falls back to the sync position when the stored export position is not a number', () => {
+      dbSyncService.getLastReplicatedSeq.returns(17);
+      window.localStorage.setItem('medic-last-exported-seq', 'not a number');
+
+      expect(service.getPosition('export')).to.equal(17);
+    });
+
     it('never moves the export position backwards', () => {
       service.recordExported(9);
       service.recordExported(4);
