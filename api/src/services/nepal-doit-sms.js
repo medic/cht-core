@@ -148,7 +148,6 @@ const handleRequestError = (message, err) => {
   if (err.statusCode !== 500) {
     // Unknown error - retry later
     logger.error(`Unknown error sending SMS for message ${message.id}: %o`, err);
-    return;
   }
 };
 
