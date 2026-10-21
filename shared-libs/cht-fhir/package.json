@@ -1,0 +1,17 @@
+{
+  "name": "@medic/cht-fhir",
+  "version": "1.0.0",
+  "description": "Maps CHT documents to FHIR R4 resources from a declarative configuration",
+  "main": "dist/index.js",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "postinstall": "rm -rf dist && npm run build",
+    "build": "tsc -p tsconfig.build.json",
+    "build-watch": "tsc --watch -p tsconfig.build.json",
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha \"test/**/*\""
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}
