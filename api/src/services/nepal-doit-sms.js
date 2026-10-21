@@ -4,15 +4,11 @@ const logger = require('@medic/logger');
 const config = require('../config');
 
 const BATCH_CONCURRENCY = 5;
-const STATUS_MAP = {
-  // success - based on API response status field
-  1: { success: true, state: 'sent', detail: 'Processed' },
-
-  // HTTP error status codes (from error object in catch block)
-  401: { success: false, state: 'failed', detail: 'InvalidCredentials' },
-  422: { success: false, state: 'failed', detail: 'UnprocessableContent' },
-  500: { success: false, state: 'failed', detail: 'InternalServerError', retry: true },
-};
+const MAX_ERROR_LENGTH = 255;
+// Account-level errors that clear on their own, e.g. Balance not enough; only string errors are classified.
+const RETRYABLE_ERROR = /balance/i;
+// The cut can split a surrogate pair, and CouchDB rejects the whole batch write for a lone surrogate.
+const bound = text => text.slice(0, MAX_ERROR_LENGTH).toWellFormed();
 
 const getUrl = () => {
   const settings = config.get('sms');
@@ -38,48 +34,121 @@ const getCredentials = () => {
     });
 };
 
-const getStatus = response => {
-  // For API success response, check the status field
-  if (response && response.status !== undefined) {
-    return STATUS_MAP[response.status];
+const isPlainObject = body => body && typeof body === 'object' && !Array.isArray(body);
+
+const parseJsonObject = text => {
+  try {
+    const parsed = JSON.parse(text);
+    return isPlainObject(parsed) ? parsed : undefined;
+  } catch {
+    return undefined;
   }
-  // For HTTP error status codes (in catch block)
-  if (response && response.statusCode !== undefined) {
-    return STATUS_MAP[response.statusCode];
-  }
-  return null;
 };
 
-const generateStateChange = (message, res) => {
-  if (!res) {
+const getErrorBody = err => {
+  const body = err?.body;
+  if (isPlainObject(body)) {
+    return body;
+  }
+  if (typeof body === 'string') {
+    return parseJsonObject(body);
+  }
+};
+
+const isRetryableError = body => {
+  return !!body && typeof body.errors === 'string' && RETRYABLE_ERROR.test(body.errors);
+};
+
+const isAccountLevelError = (err, body) => {
+  return err.statusCode === 401 || (err.statusCode === 422 && isRetryableError(body));
+};
+
+const selectErrorText = body => {
+  if (typeof body.errors === 'string') {
+    return body.errors;
+  } else if (body.errors && typeof body.errors === 'object') {
+    return JSON.stringify(body.errors);
+  } else if (typeof body.message === 'string') {
+    return body.message;
+  }
+};
+
+const getGatewayError = body => {
+  if (!body) {
     return;
   }
-  const status = getStatus(res);
-  if (!status || status.retry) {
-    return;
+  const error = selectErrorText(body);
+  return error === undefined ? undefined : bound(error);
+};
+
+const describeBody = body => {
+  if (body === undefined || body === null || body === '') {
+    return 'No response body';
   }
+  return bound(typeof body === 'string' ? body : JSON.stringify(body));
+};
+
+const generateStateChange = (message, res, gatewayError) => {
   return {
     messageId: message.id,
-    state: status.state,
-    details: status.detail
+    state: 'failed',
+    details: { code: res.statusCode, reason: 'UnprocessableContent', error: gatewayError }
   };
 };
 
-const validateSuccessResponse = (result) => {
-  if (!result) {
-    logger.error(`No response received: %o`, result);
-    return false;
+const classifyAcceptedResponse = (message, body) => {
+  if (Array.isArray(body.invalid_number) && body.invalid_number.length > 0) {
+    logger.error(`Invalid numbers in SMS API response for message ${message.id}: %o`, body.invalid_number);
+    return {
+      messageId: message.id,
+      state: 'failed',
+      details: { code: 200, reason: 'InvalidNumber', error: bound(JSON.stringify(body.invalid_number)) }
+    };
   }
 
-  logger.debug(`SMS API Response: %o`, result);
+  if (!Array.isArray(body.invalid_number)) {
+    logger.warn(`SMS API response for message ${message.id}: invalid_number was missing or not an array`);
+  }
+  return { messageId: message.id, state: 'sent', details: 'Processed' };
+};
 
-  const validResponse = getStatus(result);
-  if (!validResponse) {
-    logger.error(`SMS API returned status ${result.status}: %o`, result);
-    return false;
+const classifyResponse = (message, body) => {
+  logger.debug('SMS API Response: %o', body);
+
+  if (!isPlainObject(body)) {
+    logger.error(`Invalid SMS API response for message ${message.id}: %s`, describeBody(body));
+    return;
   }
 
-  return true;
+  if (body.status === 1 || body.status === '1') {
+    return classifyAcceptedResponse(message, body);
+  }
+
+  logger.error(`Invalid SMS API response for message ${message.id}: %o`, body);
+  return {
+    messageId: message.id,
+    state: 'failed',
+    details: { code: 200, reason: 'InvalidResponse', error: describeBody(body) }
+  };
+};
+
+const handleRequestError = (message, err) => {
+  // Handle HTTP errors (401, 422, 500, etc.)
+  const body = getErrorBody(err);
+  const error = getGatewayError(body) ?? describeBody(err.body);
+  if (isAccountLevelError(err, body)) {
+    logger.warn(`Account-level SMS gateway error for message ${message.id}, will retry: ${error}`);
+    return;
+  }
+
+  logger.error(`SMS API error for message ${message.id}: ${err.message}`);
+  if (err.statusCode === 422) {
+    return generateStateChange(message, err, error);
+  }
+  if (err.statusCode !== 500) {
+    // Unknown error - retry later
+    logger.error(`Unknown error sending SMS for message ${message.id}: %o`, err);
+  }
 };
 
 const sendMessage = async (credentials, message) => {
@@ -108,24 +177,9 @@ const sendMessage = async (credentials, message) => {
       }
     });
 
-    if (!validateSuccessResponse(result)) {
-      return; // retry later
-    }
-
-    return generateStateChange(message, result);
+    return classifyResponse(message, result);
   } catch (err) {
-    // Handle HTTP errors (401, 422, 500, etc.)
-    logger.error(`SMS API error: ${err.message}`);
-
-    const errorStatus = getStatus(err);
-    if (errorStatus) {
-      // Known error status - generate appropriate state change
-      return generateStateChange(message, err);
-    }
-
-    // Unknown error - retry later
-    logger.error(`Unknown error sending SMS: %o`, err);
-    // implicit return undefined for retry
+    return handleRequestError(message, err);
   }
 };
 
