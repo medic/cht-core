@@ -4,12 +4,6 @@ const logger = require('@medic/logger');
 const config = require('../config');
 
 const BATCH_CONCURRENCY = 5;
-const STATUS_MAP = {
-  // HTTP error status codes (from error object in catch block)
-  401: { retry: true },
-  422: { success: false, state: 'failed', detail: 'UnprocessableContent' },
-  500: { success: false, state: 'failed', detail: 'InternalServerError', retry: true },
-};
 const MAX_ERROR_LENGTH = 255;
 // Account-level errors that clear on their own, e.g. Balance not enough; only string errors are classified.
 const RETRYABLE_ERROR = /balance/i;
@@ -38,18 +32,6 @@ const getCredentials = () => {
       }
       return { apiKey };
     });
-};
-
-const getStatus = response => {
-  // HTTP errors may expose either status or statusCode.
-  if (response && response.status !== undefined) {
-    return STATUS_MAP[response.status];
-  }
-  // For HTTP error status codes (in catch block)
-  if (response && response.statusCode !== undefined) {
-    return STATUS_MAP[response.statusCode];
-  }
-  return null;
 };
 
 const isPlainObject = body => body && typeof body === 'object' && !Array.isArray(body);
@@ -107,21 +89,10 @@ const describeBody = body => {
 };
 
 const generateStateChange = (message, res, gatewayError) => {
-  if (!res) {
-    return;
-  }
-  const status = getStatus(res);
-  if (!status || status.retry) {
-    return;
-  }
-  const details = { code: res.statusCode, reason: status.detail };
-  if (gatewayError !== undefined) {
-    details.error = gatewayError;
-  }
   return {
     messageId: message.id,
-    state: status.state,
-    details
+    state: 'failed',
+    details: { code: res.statusCode, reason: 'UnprocessableContent', error: gatewayError }
   };
 };
 
@@ -131,7 +102,7 @@ const classifyAcceptedResponse = (message, body) => {
     return {
       messageId: message.id,
       state: 'failed',
-      details: { reason: 'InvalidNumber', error: bound(JSON.stringify(body.invalid_number)) }
+      details: { code: 200, reason: 'InvalidNumber', error: bound(JSON.stringify(body.invalid_number)) }
     };
   }
 
@@ -144,7 +115,12 @@ const classifyAcceptedResponse = (message, body) => {
 const classifyResponse = (message, body) => {
   logger.debug('SMS API Response: %o', body);
 
-  if (isPlainObject(body) && body.status === 1) {
+  if (!isPlainObject(body)) {
+    logger.error(`Invalid SMS API response for message ${message.id}: %s`, describeBody(body));
+    return;
+  }
+
+  if (body.status === 1 || body.status === '1') {
     return classifyAcceptedResponse(message, body);
   }
 
@@ -152,32 +128,28 @@ const classifyResponse = (message, body) => {
   return {
     messageId: message.id,
     state: 'failed',
-    details: { reason: 'InvalidResponse', error: describeBody(body) }
+    details: { code: 200, reason: 'InvalidResponse', error: describeBody(body) }
   };
 };
 
 const handleRequestError = (message, err) => {
   // Handle HTTP errors (401, 422, 500, etc.)
-  logger.error(`SMS API error for message ${message.id}: ${err.message}`);
-
-  const errorStatus = getStatus(err);
   const body = getErrorBody(err);
-  if (errorStatus && isAccountLevelError(err, body)) {
-    logger.warn(`Account-level SMS gateway error for message ${message.id}, will retry: ${getGatewayError(body)}`);
+  const error = getGatewayError(body) ?? describeBody(err.body);
+  if (isAccountLevelError(err, body)) {
+    logger.warn(`Account-level SMS gateway error for message ${message.id}, will retry: ${error}`);
     return;
   }
-  if (!errorStatus) {
+
+  logger.error(`SMS API error for message ${message.id}: ${err.message}`);
+  if (err.statusCode === 422) {
+    return generateStateChange(message, err, error);
+  }
+  if (err.statusCode !== 500) {
     // Unknown error - retry later
     logger.error(`Unknown error sending SMS for message ${message.id}: %o`, err);
     return;
   }
-
-  // Known error status - generate appropriate state change
-  let error = getGatewayError(body);
-  if (error === undefined && err.statusCode === 422) {
-    error = describeBody(err.body);
-  }
-  return generateStateChange(message, err, error);
 };
 
 const sendMessage = async (credentials, message) => {

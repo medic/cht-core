@@ -161,10 +161,12 @@ describe('nepal doit sms service', () => {
       });
       sinon.stub(request, 'post').rejects(INVALID_CREDENTIALS_ERROR);
       sinon.stub(logger, 'warn');
+      sinon.stub(logger, 'error');
       const given = [ { id: 'a', to: '+9779876543210', content: 'hello' } ];
       return service.send(given).then(actual => {
         chai.expect(actual).to.deep.equal([]);
         chai.expect(request.post.callCount).to.equal(1);
+        chai.expect(logger.error.callCount).to.equal(0);
         chai.expect(logger.warn.callCount).to.equal(1);
         chai.expect(logger.warn.args[0].join(' ')).to.include('message a');
         chai.expect(logger.warn.args[0].join(' ')).to.include('Invalid credentials');
@@ -177,10 +179,14 @@ describe('nepal doit sms service', () => {
         nepal_doit_sms: { url: 'https://api.example.com/sms' }
       });
       sinon.stub(request, 'post').rejects(new Error('Network timeout'));
+      sinon.stub(logger, 'error');
       const given = [ { id: 'a', to: '+9779876543210', content: 'hello' } ];
       return service.send(given).then(actual => {
         chai.expect(request.post.callCount).to.equal(1);
         chai.expect(actual.length).to.equal(0);
+        const logged = logger.error.args.map(args => args.join(' '));
+        chai.expect(logged.some(line => line.includes('message a') && line.includes('Network timeout')))
+          .to.equal(true);
       });
     });
 
@@ -203,6 +209,7 @@ describe('nepal doit sms service', () => {
           messageId: 'a',
           state: 'failed',
           details: {
+            code: 200,
             reason: 'InvalidResponse',
             error: '{"message":"Unknown status","status":999,"ntc":0,"ncell":0,"invalid_number":[]}'
           }
@@ -210,7 +217,7 @@ describe('nepal doit sms service', () => {
       });
     });
 
-    it('fails an empty response', () => {
+    it('retries an empty response', () => {
       sinon.stub(secureSettings, 'getCredentials').resolves('test-api-key');
       sinon.stub(config, 'get').returns({
         nepal_doit_sms: { url: 'https://api.example.com/sms' }
@@ -219,11 +226,7 @@ describe('nepal doit sms service', () => {
       const given = [ { id: 'a', to: '+9779876543210', content: 'hello' } ];
       return service.send(given).then(actual => {
         chai.expect(request.post.callCount).to.equal(1);
-        chai.expect(actual).to.deep.equal([{
-          messageId: 'a',
-          state: 'failed',
-          details: { reason: 'InvalidResponse', error: 'No response body' }
-        }]);
+        chai.expect(actual).to.deep.equal([]);
       });
     });
 
@@ -296,6 +299,7 @@ describe('nepal doit sms service', () => {
         chai.expect(logger.warn.callCount).to.equal(1);
         chai.expect(logger.warn.args[0][0]).to.include('msg0');
         chai.expect(logger.warn.args[0][0]).to.include('Balance not enough');
+        chai.expect(logger.error.callCount).to.equal(0);
       });
     });
 
@@ -475,6 +479,9 @@ describe('nepal doit sms service', () => {
         chai.expect(actual).to.deep.equal([]);
         chai.expect(logger.warn.callCount).to.equal(1);
         chai.expect(logger.warn.args[0].join(' ')).to.include('msg1');
+        // the 500 is a plain error; only the 401 is the expected, account-level kind
+        chai.expect(logger.error.args.map(args => args.join(' ')).some(line => line.includes('msg0'))).to.equal(true);
+        chai.expect(logger.error.args.map(args => args.join(' ')).some(line => line.includes('msg1'))).to.equal(false);
       });
     });
 
@@ -485,7 +492,7 @@ describe('nepal doit sms service', () => {
       const LIVE_INVALID_NUMBER = {
         message: 'Success! SMS queued !', status: 1, ntc: 0, ncell: 0, invalid_number: [ '9841234567' ]
       };
-      const invalidResponse = error => ({ reason: 'InvalidResponse', error });
+      const invalidResponse = error => ({ code: 200, reason: 'InvalidResponse', error });
       const loggedWith = (stub, text) => stub.args.some(args => args.some(arg => String(arg).includes(text)));
 
       it('fails a number the gateway lists as invalid, logging the message id', () => {
@@ -493,7 +500,7 @@ describe('nepal doit sms service', () => {
           chai.expect(actual).to.deep.equal([{
             messageId: 'msg0',
             state: 'failed',
-            details: { reason: 'InvalidNumber', error: '["9841234567"]' }
+            details: { code: 200, reason: 'InvalidNumber', error: '["9841234567"]' }
           }]);
           chai.expect(loggedWith(logger.error, 'msg0')).to.equal(true);
           chai.expect(logger.warn.callCount).to.equal(0);
@@ -507,7 +514,7 @@ describe('nepal doit sms service', () => {
           chai.expect(actual).to.deep.equal([{
             messageId: 'msg0',
             state: 'failed',
-            details: { reason: 'InvalidNumber', error: '["9841234567","9800000000"]' }
+            details: { code: 200, reason: 'InvalidNumber', error: '["9841234567","9800000000"]' }
           }]);
         });
       });
@@ -532,13 +539,27 @@ describe('nepal doit sms service', () => {
         });
       });
 
-      it('still fails a string status 1 without an invalid_number array, without a warning', () => {
-        const bodies = [ { status: '1' }, { status: '1', invalid_number: null } ];
+      it('accepts a string status 1 under the same rules as the number', () => {
+        const bodies = [
+          { status: '1', invalid_number: [] },
+          { status: '1' },
+          { status: '1', invalid_number: null },
+          { status: '1', invalid_number: [ '9841234567' ] },
+        ];
         return send(...bodies).then(actual => {
-          chai.expect(actual.map(change => change.details)).to.deep.equal(
-            bodies.map(body => invalidResponse(JSON.stringify(body)))
-          );
-          chai.expect(logger.warn.callCount).to.equal(0);
+          chai.expect(actual).to.deep.equal([
+            { messageId: 'msg0', state: 'sent', details: 'Processed' },
+            { messageId: 'msg1', state: 'sent', details: 'Processed' },
+            { messageId: 'msg2', state: 'sent', details: 'Processed' },
+            {
+              messageId: 'msg3',
+              state: 'failed',
+              details: { code: 200, reason: 'InvalidNumber', error: '["9841234567"]' }
+            },
+          ]);
+          chai.expect(logger.warn.callCount).to.equal(2);
+          chai.expect(logger.warn.args[0].join(' ')).to.include('msg1');
+          chai.expect(logger.warn.args[1].join(' ')).to.include('msg2');
         });
       });
 
@@ -551,8 +572,10 @@ describe('nepal doit sms service', () => {
 
       it('fails any other status in a successful response, without mapping it to an HTTP status', () => {
         const bodies = [
-          { status: '1', invalid_number: [] },
           { message: 'SMS(s) sent successfully' },
+          { status: 7, invalid_number: [] },
+          { status: true, invalid_number: [] },
+          { status: ' 1 ', invalid_number: [] },
           { status: 401, invalid_number: [] },
           { status: 422, invalid_number: [] },
           { status: 500, invalid_number: [] },
@@ -567,12 +590,40 @@ describe('nepal doit sms service', () => {
         });
       });
 
-      it('fails a successful response that is text or empty', () => {
-        return send('<html>ok</html>', '').then(actual => {
-          chai.expect(actual).to.deep.equal([
-            { messageId: 'msg0', state: 'failed', details: invalidResponse('<html>ok</html>') },
-            { messageId: 'msg1', state: 'failed', details: invalidResponse('No response body') },
-          ]);
+      it('retries a successful response that is text or empty, logging the id and the body', () => {
+        const bodies = [
+          [ '<html>ok</html>', '<html>ok</html>' ],
+          [ '', 'No response body' ],
+          [ null, 'No response body' ],
+          [ false, 'false' ],
+          [ true, 'true' ],
+          [ 0, '0' ],
+          [ 123, '123' ],
+          [ [], '[]' ],
+          [ '{"status":1,"invalid_number":[]}', '{"status":1,"invalid_number":[]}' ],
+        ];
+        return send(...bodies.map(([ body ]) => body)).then(actual => {
+          chai.expect(actual).to.deep.equal([]);
+          chai.expect(logger.error.callCount).to.equal(bodies.length);
+          logger.error.args.map(args => args.join(' ')).forEach((line, i) => {
+            chai.expect(line).to.include(`msg${i}`);
+            chai.expect(line).to.include(bodies[i][1]);
+          });
+          chai.expect(logger.warn.callCount).to.equal(0);
+        });
+      });
+
+      it('logs a bounded, well-formed excerpt of a retried text body', () => {
+        return send('x'.repeat(254) + '\u{1F600}' + 'tail', 'y'.repeat(300)).then(actual => {
+          chai.expect(actual).to.deep.equal([]);
+          const logged = logger.error.args.map(args => args.join(' '));
+          chai.expect(logged.length).to.equal(2);
+          chai.expect(logged[0]).to.include('x'.repeat(254) + '\ufffd');
+          chai.expect(logged[0]).to.not.include('tail');
+          chai.expect(logged[0]).to.not.include('\u{1F600}');
+          chai.expect(logged[0].isWellFormed()).to.equal(true);
+          chai.expect(logged[1]).to.include('y'.repeat(255));
+          chai.expect(logged[1]).to.not.include('y'.repeat(256));
         });
       });
 
@@ -586,19 +637,19 @@ describe('nepal doit sms service', () => {
           chai.expect(actual[0].details).to.deep.equal(invalidResponse(cut));
           chai.expect(actual[0].details.error.isWellFormed()).to.equal(true);
           chai.expect(actual[1].details).to.deep.equal({
+            code: 200,
             reason: 'InvalidNumber',
             error: JSON.stringify(numbers).slice(0, 255),
           });
         });
       });
 
-      it('keeps text excerpts bounded and well-formed, from a successful or a 422 response', () => {
+      it('keeps 422 text excerpts bounded and well-formed', () => {
         const text = 'x'.repeat(254) + '\u{1F600}';
-        return send(text, gatewayError(422, text), 'bad \ud83d text').then(actual => {
+        return send(gatewayError(422, text), gatewayError(422, 'bad \ud83d text')).then(actual => {
           chai.expect(actual.map(change => change.details)).to.deep.equal([
-            invalidResponse('x'.repeat(254) + '\ufffd'),
             { code: 422, reason: 'UnprocessableContent', error: 'x'.repeat(254) + '\ufffd' },
-            invalidResponse('bad \ufffd text'),
+            { code: 422, reason: 'UnprocessableContent', error: 'bad \ufffd text' },
           ]);
           actual.forEach(change => chai.expect(change.details.error.isWellFormed()).to.equal(true));
         });
@@ -606,7 +657,6 @@ describe('nepal doit sms service', () => {
 
       it('only lists invalid numbers when the status is exactly 1', () => {
         const bodies = [
-          { status: '1', invalid_number: [ '9841234567' ] },
           { invalid_number: [ '9841234567' ] },
           { status: 7, invalid_number: [ '9841234567' ] },
         ];
@@ -625,7 +675,12 @@ describe('nepal doit sms service', () => {
           gatewayError(401, { message: 'Unauthenticated.' })
         ).then(actual => {
           chai.expect(actual).to.deep.equal([]);
+          chai.expect(logger.error.callCount).to.equal(0);
           chai.expect(logger.warn.callCount).to.equal(4);
+          chai.expect(logger.warn.args[0].join(' ')).to.include('{}');
+          chai.expect(logger.warn.args[1].join(' ')).to.include('No response body');
+          chai.expect(logger.warn.args[2].join(' ')).to.include('<html>401</html>');
+          chai.expect(logger.warn.args.some(args => args.join(' ').includes('undefined'))).to.equal(false);
           chai.expect(logger.warn.args[3].join(' ')).to.include('Unauthenticated.');
         });
       });
@@ -636,21 +691,10 @@ describe('nepal doit sms service', () => {
           gatewayError(422, { note: 'x'.repeat(245) + '\u{1F600}' })
         ).then(actual => {
           chai.expect(actual.map(change => change.details)).to.deep.equal([
-            { reason: 'InvalidNumber', error: '["' + 'x'.repeat(252) + '\ufffd' },
+            { code: 200, reason: 'InvalidNumber', error: '["' + 'x'.repeat(252) + '\ufffd' },
             { code: 422, reason: 'UnprocessableContent', error: '{"note":"' + 'x'.repeat(245) + '\ufffd' },
           ]);
           actual.forEach(change => chai.expect(change.details.error.isWellFormed()).to.equal(true));
-        });
-      });
-
-      it('records odd successful bodies as they are, without parsing them', () => {
-        return send('{"status":1,"invalid_number":[]}', false, 0).then(actual => {
-          chai.expect(actual.map(change => change.state)).to.deep.equal([ 'failed', 'failed', 'failed' ]);
-          chai.expect(actual.map(change => change.details)).to.deep.equal([
-            invalidResponse('{"status":1,"invalid_number":[]}'),
-            invalidResponse('false'),
-            invalidResponse('0'),
-          ]);
         });
       });
 
@@ -664,12 +708,17 @@ describe('nepal doit sms service', () => {
         ];
         return service.send(given).then(actual => {
           chai.expect(actual).to.deep.equal([ { messageId: 'msg0', state: 'sent', details: 'Processed' } ]);
+          chai.expect(loggedWith(logger.error, 'msg1')).to.equal(true);
+          chai.expect(loggedWith(logger.error, 'Unexpected end of JSON input')).to.equal(true);
         });
       });
 
-      it('still retries a 504 gateway page', () => {
+      it('still retries a 504 gateway page, logging it as an error', () => {
         return send(gatewayError(504, '<html>504 Gateway Time-out</html>')).then(actual => {
           chai.expect(actual).to.deep.equal([]);
+          chai.expect(loggedWith(logger.error, 'msg0')).to.equal(true);
+          chai.expect(loggedWith(logger.error, '504')).to.equal(true);
+          chai.expect(logger.warn.callCount).to.equal(0);
         });
       });
 
