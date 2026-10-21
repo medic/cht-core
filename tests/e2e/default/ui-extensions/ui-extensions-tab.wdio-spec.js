@@ -97,9 +97,9 @@ describe('UI Extensions tab', () => {
       const HEADER_TAB_ID = 'ui-extension-header-tab-tab';
 
       it('renders the extension as a tab in the header', async () => {
-        const [,tabLabel] = await commonPage.getAllButtonLabelsNames();
+        const [, tabLabel] = await commonPage.getAllButtonLabelsNames();
         expect(tabLabel).to.equal('Minimal');
-        const [,tabIcon] = await commonPage.getAllButtonFaIconClasses();
+        const [, tabIcon] = await commonPage.getAllButtonFaIconClasses();
         expect(tabIcon).to.equal('fa-question-circle');
 
         const headerTab = await $(`#${HEADER_TAB_ID}`);

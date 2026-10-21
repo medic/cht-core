@@ -3,8 +3,8 @@ const path = require('node:path');
 const fs = require('node:fs');
 
 const chai = require('chai');
-chai.use(require('chai-exclude'));
-chai.use(require('chai-as-promised'));
+chai.use(require('chai-exclude').default);
+chai.use(require('chai-as-promised').default);
 const constants = require('@constants');
 const utils = require('@utils');
 const fileDownloadUtils = require('@utils/file-download');
