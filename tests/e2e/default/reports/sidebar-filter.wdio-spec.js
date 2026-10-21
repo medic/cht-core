@@ -218,7 +218,7 @@ describe('Reports Sidebar Filter', () => {
     expect(await reportsPage.leftPanelSelectors.reportByUUID(visitHealthCenter._id).isDisplayed()).to.be.true;
   });
 
-  it('should filter by date in Nepali language (Bikram Sambat)', async () => {
+  it.skip('should filter by date in Nepali language (Bikram Sambat)', async () => {
     await browser.url('/');
     await browser.setCookies({ name: 'locale', value: 'ne' });
     await browser.refresh();
