@@ -43,9 +43,10 @@ interface TaskDoc {
   _id: string;
   emission?: any;
   owner: string;
-  stateHistory: Array<{ state: string, timestamp: number }>;
+  stateHistory: StateHistory;
 }
 
+export type StateHistory = Array<{ state: string, timestamp: number }>;
 interface RulesSettings {
   rules?: string;
   taskSchedules?: any[];
