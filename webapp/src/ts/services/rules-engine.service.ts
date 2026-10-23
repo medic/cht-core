@@ -722,6 +722,23 @@ export class RulesEngineService implements OnDestroy {
     return replicationResult?.docs && this.updateEmissionExternalChanges(replicationResult.docs);
   }
 
+  async monitorPurgedDocs(docs:any[] = []) {
+    if (!await this.initialized) {
+      return;
+    }
+
+    const subjectIds = [...new Set(docs
+      .filter(doc => this.contactTypesService.includes(doc) || this.isReport(doc))
+      .map(doc => this.isReport(doc) ? RegistrationUtils.getSubjectId(doc) : doc._id)
+      .filter(Boolean))];
+    if (!subjectIds.length) {
+      return;
+    }
+
+    await this.rulesEngineCore.updateEmissionsFor(subjectIds);
+    this.observable.next(subjectIds);
+  }
+
   contactsMarkedAsDirty(callback) {
     return this.observable.subscribe(callback);
   }
