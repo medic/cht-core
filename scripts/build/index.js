@@ -247,7 +247,7 @@ const buildSinglePlatformServiceImage = async (service, tag) => {
 
 const buildMultiPlatformServiceImage = async (service, tag) => {
   console.log(`\n\nBuilding and pushing multiplatform docker image for ${service} ${tag}\n\n`);
-  await exec('docker', ['buildx', 'build', '--provenance=false', '--platform=' + BUILD_PLATFORMS.join(','),
+  await exec('docker', ['buildx', 'build', '--pull', '--provenance=false', '--platform=' + BUILD_PLATFORMS.join(','),
     '-f', `./${service}/Dockerfile`, '--tag', tag, '--push', '.']);
 };
 
@@ -291,7 +291,7 @@ const buildMultiPlatformImages = async () => {
   for (const service of versions.INFRASTRUCTURE) {
     console.log(`\n\nBuilding and pushing multiplatform docker image for ${service}\n\n`);
     const tag = versions.getImageTag(service);
-    await exec('docker', ['buildx', 'build', '--provenance=false', '--platform=' + BUILD_PLATFORMS.join(','),
+    await exec('docker', ['buildx', 'build', '--pull', '--provenance=false', '--platform=' + BUILD_PLATFORMS.join(','),
       '-f', `./Dockerfile`, '--tag', tag, '--push', '.'], { cwd: service });
   }
 };
