@@ -25,6 +25,7 @@ describe('Contacts More Menu Component', () => {
     const mockedSelectors = [
       { selector: Selectors.getContactsList, value: [] },
       { selector: Selectors.getSelectedContactDoc, value: undefined },
+      { selector: Selectors.getSelectedContactChildren, value: undefined },
       { selector: Selectors.getLoadingContent, value: false },
       { selector: Selectors.getSnapshotData, value: undefined },
     ];
@@ -75,6 +76,89 @@ describe('Contacts More Menu Component', () => {
     expect(deleteDocConfirmStub.calledOnce).to.be.true;
     expect(deleteDocConfirmStub.args[0][0]).to.deep.equal({ _id: 'contact-1' });
   }));
+
+  describe('hasNestedContacts', () => {
+    beforeEach(() => {
+      store.overrideSelector(Selectors.getSelectedContactDoc, { _id: 'place-1' });
+      store.refreshState();
+    });
+
+    it('should not count an external primary contact as a child', () => {
+      store.overrideSelector(Selectors.getSelectedContactChildren, [{
+        contacts: [{
+          doc: { _id: 'person-1', parent: { _id: 'place-2' } },
+          isPrimaryContact: true,
+        }],
+      }]);
+      store.refreshState();
+
+      expect(component.hasNestedContacts).to.be.false;
+    });
+
+    it('should not count a primary contact without a parent as a child', () => {
+      store.overrideSelector(Selectors.getSelectedContactChildren, [{
+        contacts: [{ doc: { _id: 'person-1' }, isPrimaryContact: true }],
+      }]);
+      store.refreshState();
+
+      expect(component.hasNestedContacts).to.be.false;
+    });
+
+    it('should count a primary contact that belongs to the selected place as a child', () => {
+      store.overrideSelector(Selectors.getSelectedContactChildren, [{
+        contacts: [{
+          doc: { _id: 'person-1', parent: { _id: 'place-1' } },
+          isPrimaryContact: true,
+        }],
+      }]);
+      store.refreshState();
+
+      expect(component.hasNestedContacts).to.be.true;
+    });
+
+    it('should count child places alongside an external primary contact', () => {
+      store.overrideSelector(Selectors.getSelectedContactChildren, [
+        { contacts: [{ doc: { _id: 'person-1', parent: { _id: 'place-2' } }, isPrimaryContact: true }] },
+        { contacts: [{ doc: { _id: 'child-place', parent: { _id: 'place-1' } } }] },
+      ]);
+      store.refreshState();
+
+      expect(component.hasNestedContacts).to.be.true;
+    });
+
+    it('should not count empty groups as children', () => {
+      store.overrideSelector(Selectors.getSelectedContactChildren, [{}, { contacts: [] }]);
+      store.refreshState();
+
+      expect(component.hasNestedContacts).to.be.false;
+    });
+
+    it('should update when the selected place changes without changing the displayed contacts', () => {
+      store.overrideSelector(Selectors.getSelectedContactChildren, [{
+        contacts: [{ doc: { _id: 'person-1', parent: { _id: 'place-1' } } }],
+      }]);
+      store.refreshState();
+      expect(component.hasNestedContacts).to.be.true;
+
+      store.overrideSelector(Selectors.getSelectedContactDoc, { _id: 'place-2' });
+      store.refreshState();
+
+      expect(component.hasNestedContacts).to.be.false;
+    });
+
+    it('should reset when the displayed contacts are cleared', () => {
+      store.overrideSelector(Selectors.getSelectedContactChildren, [{
+        contacts: [{ doc: { _id: 'person-1', parent: { _id: 'place-1' } } }],
+      }]);
+      store.refreshState();
+      expect(component.hasNestedContacts).to.be.true;
+
+      store.overrideSelector(Selectors.getSelectedContactChildren, undefined);
+      store.refreshState();
+
+      expect(component.hasNestedContacts).to.be.false;
+    });
+  });
 
   describe('displayEditOption', () => {
     it('should display edit option when user has all conditions okay', fakeAsync(() => {

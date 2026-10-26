@@ -63,28 +63,26 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
     const storeSubscription = combineLatest(
       this.store.select(Selectors.getContactsList),
       this.store.select(Selectors.getSelectedContactDoc),
+      this.store.select(Selectors.getSelectedContactChildren),
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getSnapshotData),
     ).subscribe(([
       contactsList,
       selectedContactDoc,
+      selectedContactChildren,
       loadingContent,
       snapshotData
     ]) => {
       this.contactsList = contactsList;
       this.selectedContactDoc = selectedContactDoc;
+      this.hasNestedContacts = selectedContactChildren?.some(group => group.contacts?.some(contact => {
+        return contact.doc.parent?._id === selectedContactDoc?._id;
+      })) ?? false;
       this.loadingContent = loadingContent;
       this.snapshotData = snapshotData;
       this.checkUserFacility();
     });
     this.subscription.add(storeSubscription);
-
-    const contactChildren = this.store
-      .select(Selectors.getSelectedContactChildren)
-      .subscribe(selectedContactChildren => {
-        this.hasNestedContacts = selectedContactChildren?.some(group => group.contacts?.length);
-      });
-    this.subscription.add(contactChildren);
   }
 
   private async checkPermissions() {
