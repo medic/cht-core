@@ -608,7 +608,23 @@ describe('local doc lib', () => {
       expect(result.cursor).to.equal('4');
       expect(getFunction.firstCall.calledWith(3, 0)).to.be.true;
       expect(getFunction.secondCall.calledWith(2, 3)).to.be.true;
-      expect(filterFunction.callCount).to.equal(5);
+      expect(filterFunction.callCount).to.equal(4);
+    });
+
+    it('should preserve unconsumed accepted rows for the next page', async () => {
+      const docs1 = [{ _id: '1' }, { _id: '2' }];
+      const docs2 = [{ _id: '3' }, { _id: '4' }, { _id: '5' }, { _id: '6' }];
+      getFunction.onFirstCall().resolves(docs1);
+      getFunction.onSecondCall().resolves(docs2);
+      filterFunction.callsFake((doc: Doc.Doc) => ![ '1', '2', '6' ].includes(doc._id));
+
+      const fetchAndFilterFunc = fetchAndFilter(getFunction, filterFunction, 2);
+      const result = await fetchAndFilterFunc(2, 0);
+
+      expect(result.data).to.deep.equal([{ _id: '3' }, { _id: '4' }]);
+      expect(result.cursor).to.equal('4');
+      expect(getFunction.firstCall.calledWith(2, 0)).to.be.true;
+      expect(getFunction.secondCall.calledWith(4, 2)).to.be.true;
     });
 
     it('should return null cursor when no more results', async () => {
