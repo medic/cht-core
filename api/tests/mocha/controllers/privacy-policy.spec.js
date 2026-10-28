@@ -7,6 +7,7 @@ const privacyPolicyController = require('../../../src/controllers/privacy-policy
 const privacyPolicyService = require('../../../src/services/privacy-policy');
 const cookieService = require('../../../src/services/cookie');
 const templateService = require('../../../src/services/template');
+const db = require('../../../src/db');
 
 describe('Privacy Policy Controller', () => {
   
@@ -73,6 +74,81 @@ describe('Privacy Policy Controller', () => {
           chai.expect(config.translate.args[1][1]).to.equal('fr');
           chai.expect(config.translate.args[2][1]).to.equal('fr');
         });
+    });
+
+    it('uses query language without a locale cookie', async () => {
+      req.query.lang = 'en';
+      privacyPolicyService.get.resolves('my-template');
+      templateService.getTemplate.returns(_.template('<html>{{policy}}</html>'));
+
+      await privacyPolicyController.get(req, res);
+
+      chai.expect(privacyPolicyService.get).to.have.been.calledOnceWithExactly('en');
+      chai.expect(config.translate).to.have.been.calledWithExactly('Back', 'en');
+      chai.expect(config.translate).to.have.been.calledWithExactly('login', 'en');
+      chai.expect(config.translate).to.have.been.calledWithExactly('privacy.policy', 'en');
+    });
+
+    it('uses query language instead of cookie locale', async () => {
+      req.query.lang = 'en';
+      cookieService.get.returns('fr');
+      privacyPolicyService.get.resolves('my-template');
+      templateService.getTemplate.returns(_.template('<html>{{policy}}</html>'));
+
+      await privacyPolicyController.get(req, res);
+
+      chai.expect(privacyPolicyService.get).to.have.been.calledOnceWithExactly('en');
+      chai.expect(config.translate).to.have.been.calledWithExactly('Back', 'en');
+      chai.expect(config.translate).to.have.been.calledWithExactly('login', 'en');
+      chai.expect(config.translate).to.have.been.calledWithExactly('privacy.policy', 'en');
+    });
+
+    it('renders the queried policy and controls instead of the cookie or default language', async () => {
+      privacyPolicyService.get.restore();
+      templateService.getTemplate.restore();
+      req.query.lang = 'en';
+      cookieService.get.returns('fr');
+      sinon.stub(config, 'get').withArgs('locale').returns('ne');
+      config.translate.callsFake((key, locale) => `${locale} ${key}`);
+      sinon.stub(db.medic, 'get').resolves({
+        privacy_policies: { en: 'english.html', fr: 'french.html', ne: 'nepali.html' },
+        _attachments: {
+          'english.html': { data: Buffer.from('<p>English policy</p>').toString('base64') },
+          'french.html': { data: Buffer.from('<p>French policy</p>').toString('base64') },
+          'nepali.html': { data: Buffer.from('<p>Nepali policy</p>').toString('base64') }
+        }
+      });
+
+      await privacyPolicyController.get(req, res);
+
+      chai.expect(serverUtils.error).not.to.have.been.called;
+      chai.expect(res.send).to.have.been.calledOnce;
+      const html = res.send.firstCall.args[0];
+      chai.expect(html).to.include('<p>English policy</p>');
+      chai.expect(html).not.to.include('French policy');
+      chai.expect(html).not.to.include('Nepali policy');
+      chai.expect(html).to.include('<h1>en privacy.policy</h1>');
+      chai.expect(html).to.include('>en login</a>');
+    });
+
+    [
+      { description: 'empty', lang: '' },
+      { description: 'repeated', lang: ['en', 'ne'] },
+      { description: 'object', lang: { locale: 'en' } }
+    ].forEach(({ description, lang }) => {
+      it(`uses cookie locale for ${description} query language`, async () => {
+        req.query.lang = lang;
+        cookieService.get.returns('fr');
+        privacyPolicyService.get.resolves('my-template');
+        templateService.getTemplate.returns(_.template('<html>{{policy}}</html>'));
+
+        await privacyPolicyController.get(req, res);
+
+        chai.expect(privacyPolicyService.get).to.have.been.calledOnceWithExactly('fr');
+        chai.expect(config.translate).to.have.been.calledWithExactly('Back', 'fr');
+        chai.expect(config.translate).to.have.been.calledWithExactly('login', 'fr');
+        chai.expect(config.translate).to.have.been.calledWithExactly('privacy.policy', 'fr');
+      });
     });
 
     it('uses configured default language if no cookie found', () => {
