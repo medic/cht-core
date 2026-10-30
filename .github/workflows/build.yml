@@ -21,14 +21,14 @@ env:
   TAG: ${{ (github.ref_type == 'tag' && github.ref_name) || '' }}
   BRANCH: ${{ github.head_ref || github.ref_name }}
   BUILD_NUMBER: ${{ github.run_id }}
-  NODE_VERSION: '22.15'
+  NODE_VERSION: '22.23.4'
   AFRICAS_TALKING_SANDBOX_API_KEY: ${{ secrets.AFRICAS_TALKING_SANDBOX_API_KEY }}
 
 jobs:
 
   build:
     name: Compile the app
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:
       contents: read
@@ -130,7 +130,7 @@ jobs:
 
   test-cht-form:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
@@ -153,7 +153,7 @@ jobs:
   tests-k3d:
     needs: build
     name: ${{ matrix.cmd }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:
       contents: read
@@ -246,7 +246,7 @@ jobs:
   translations:
     needs: build
     name: Lint translations
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     strategy:
@@ -265,7 +265,7 @@ jobs:
   build-generated-docs:
     needs: build
     name: Build generated docs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
       contents: read
@@ -298,7 +298,7 @@ jobs:
   tests:
     needs: build
     name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '107' && '-minimum-browser' || '' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:
       contents: read
@@ -433,7 +433,7 @@ jobs:
   publish:
     needs: [tests, config-tests, test-cht-form, build-generated-docs]
     name: Publish branch build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:
       contents: read
@@ -505,7 +505,7 @@ jobs:
   upgrade:
     needs: [publish]
     name: Upgrade from ${{ matrix.version }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:
       contents: read
