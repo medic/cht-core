@@ -205,19 +205,40 @@ describe('medic-xpath-extensions', function () {
 
   describe('#to-bikram-sambat()', () => {
     [
-      [{ t: 'str', v: '2015-9-2' }, '१६ भदौ २०७२', '१५ भदौ २०७२'],
-      [{ t: 'str', v: '1999-12-12' }, '२६ मंसिर २०५६', '२५ मंसिर २०५६'],
-      [{ t: 'date', v: new Date('2015-10-01T00:00:00.000') }, '१४ असोज २०७२', '१३ असोज २०७२'],
-      [{ t: 'num', v: 11111 }, '२१ जेठ २०५७', '२० जेठ २०५७'],
-      [{ t: 'arr', v: [{ textContent: '2014-09-22' }] }, '६ असोज २०७१', '५ असोज २०७१'],
-    ].forEach(([date, expected, offsetExpected]) => {
+      [{ t: 'str', v: '2015-9-2' }, '१६ भदौ २०७२'],
+      [{ t: 'str', v: '1999-12-12' }, '२६ मंसिर २०५६'],
+      [{ t: 'date', v: new Date('2015-10-01T00:00:00.000') }, '१४ असोज २०७२'],
+      [{ t: 'num', v: 11111 }, '२१ जेठ २०५७'],
+      [{ t: 'arr', v: [{ textContent: '2014-09-22' }] }, '६ असोज २०७१'],
+    ].forEach(([date, expected]) => {
       it(`should format the ${date.t} [${JSON.stringify(date.v)}] according to the Bikram Sambat calendar`, () => {
-        // The resolved Bikram Sambat date for input that does not have a time+TZ value will be different in
-        // environments where the timezone offset is 12 hours or greater (e.g. `Pacific/Auckland`)
-        const offsetHrs = new Date().getTimezoneOffset() / 60;
-        const tzDateOffset = offsetHrs <= -12;
-        assert.equal(func['to-bikram-sambat'](date).v, tzDateOffset ? offsetExpected : expected);
+        assert.equal(func['to-bikram-sambat'](date).v, expected);
       });
+    });
+
+    ['00:00', '00:30', '12:00', '18:30', '23:59'].forEach(time => {
+      it(`should convert the local calendar day at ${time}`, () => {
+        const [hours, minutes] = time.split(':').map(Number);
+        const date = new Date(2015, 11, 15, hours, minutes);
+        const dateTimeString = moment(date).format();
+        assert.equal(func['to-bikram-sambat']({ t: 'date', v: date }).v, '२९ मंसिर २०७२');
+        assert.equal(func['to-bikram-sambat']({ t: 'str', v: dateTimeString }).v, '२९ मंसिर २०७२');
+      });
+    });
+
+    it('should convert with ASCII digits when the active locale renders other digits', () => {
+      const previousLocale = moment.locale();
+      if (!moment.locales().includes('test-devanagari')) {
+        moment.defineLocale('test-devanagari', {
+          postformat: (str) => str.replace(/[0-9]/g, (digit) => '०१२३४५६७८९'[Number(digit)]),
+        });
+      }
+      moment.locale('test-devanagari');
+      try {
+        assert.equal(func['to-bikram-sambat']({ t: 'str', v: '2015-12-15' }).v, '२९ मंसिर २०७२');
+      } finally {
+        moment.locale(previousLocale);
+      }
     });
 
     [
