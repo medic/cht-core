@@ -116,6 +116,12 @@ export const isContactTypeQualifier = (contactType: unknown): contactType is Con
   return isRecord(contactType) && hasField(contactType, { name: 'contactType', type: 'string' });
 };
 
+const isNonEmptyArrayOfUnpaddedStrings = (value: unknown): value is [string, ...string[]] => {
+  return Array.isArray(value)
+    && value.length > 0
+    && value.every(entry => isString(entry) && entry.length > 0 && entry === entry.trim());
+};
+
 /**
  * A qualifier that identifies contacts by their phone numbers.
  */
@@ -150,9 +156,88 @@ export const byPhones = (phones: [string, ...string[]]): PhonesQualifier => {
 export const isPhonesQualifier = (qualifier: unknown): qualifier is PhonesQualifier => {
   return isRecord(qualifier)
     && hasField(qualifier, { name: 'phones', type: 'object' })
-    && Array.isArray(qualifier.phones)
-    && qualifier.phones.length > 0
-    && qualifier.phones.every(phone => isString(phone) && phone.length > 0 && phone === phone.trim());
+    && isNonEmptyArrayOfUnpaddedStrings(qualifier.phones);
+};
+
+/**
+ * A qualifier that identifies contacts by their shortcodes (the `patient_id` of a person or the `place_id` of a
+ * place).
+ */
+export type ShortcodesQualifier = Readonly<{ shortcodes: [string, ...string[]] }>;
+
+/**
+ * Builds a qualifier for finding contacts with any of the given shortcodes. Duplicates are removed. Results are
+ * grouped in the order of the given shortcodes, so page through them by passing the shortcodes in the same order
+ * with each cursor.
+ * @param shortcodes the shortcodes of the contacts, each matched verbatim against the contact's `patient_id` and
+ * `place_id` fields
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the shortcodes are not a non-empty array of non-blank strings with no leading
+ * or trailing whitespace
+ */
+export const byShortcodes = (shortcodes: [string, ...string[]]): ShortcodesQualifier => {
+  const qualifier = { shortcodes };
+  if (!isShortcodesQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid shortcodes [${JSON.stringify(shortcodes)}].`);
+  }
+
+  // Deduping a non-empty array keeps it non-empty, which TS cannot infer on its own.
+  return { shortcodes: [...new Set(shortcodes)] as [string, ...string[]] };
+};
+
+/**
+ * Returns `true` if the given qualifier is a {@link ShortcodesQualifier} otherwise `false`. Shortcodes are
+ * matched verbatim, so an empty array of shortcodes is considered invalid, as is a shortcode that is blank or
+ * padded with whitespace.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link ShortcodesQualifier}, otherwise `false`.
+ */
+export const isShortcodesQualifier = (qualifier: unknown): qualifier is ShortcodesQualifier => {
+  return isRecord(qualifier)
+    && hasField(qualifier, { name: 'shortcodes', type: 'object' })
+    && isNonEmptyArrayOfUnpaddedStrings(qualifier.shortcodes);
+};
+
+/**
+ * A qualifier that identifies contacts by their external references (the contact's `rc_code`).
+ */
+export type ExternalRefsQualifier = Readonly<{ externalRefs: [string, ...string[]] }>;
+
+/**
+ * Builds a qualifier for finding contacts with any of the given external references. Each reference is
+ * upper-cased, since a contact's `rc_code` is matched case-insensitively. Duplicates are removed. Results are
+ * grouped in the order of the given references, so page through them by passing the references in the same order
+ * with each cursor.
+ * @param externalRefs the external references of the contacts
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the references are not a non-empty array of non-blank strings with no leading
+ * or trailing whitespace
+ */
+export const byExternalRefs = (externalRefs: [string, ...string[]]): ExternalRefsQualifier => {
+  const upperCased = Array.isArray(externalRefs)
+    ? externalRefs.map(ref => isString(ref) ? ref.toUpperCase() : ref)
+    : externalRefs;
+  const qualifier = { externalRefs: upperCased };
+  if (!isExternalRefsQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid external refs [${JSON.stringify(externalRefs)}].`);
+  }
+
+  // Deduping a non-empty array keeps it non-empty, which TS cannot infer on its own.
+  return { externalRefs: [...new Set(qualifier.externalRefs)] as [string, ...string[]] };
+};
+
+/**
+ * Returns `true` if the given qualifier is a {@link ExternalRefsQualifier} otherwise `false`. An empty array of
+ * references is considered invalid, as is a reference that is blank, padded with whitespace, or not already
+ * upper-case (use {@link byExternalRefs} to build a qualifier from references of any case).
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link ExternalRefsQualifier}, otherwise `false`.
+ */
+export const isExternalRefsQualifier = (qualifier: unknown): qualifier is ExternalRefsQualifier => {
+  return isRecord(qualifier)
+    && hasField(qualifier, { name: 'externalRefs', type: 'object' })
+    && isNonEmptyArrayOfUnpaddedStrings(qualifier.externalRefs)
+    && qualifier.externalRefs.every(ref => ref === ref.toUpperCase());
 };
 
 /**

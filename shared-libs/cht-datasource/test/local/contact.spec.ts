@@ -264,6 +264,7 @@ describe('local contact', () => {
       const expectedResult = { cursor: 'bookmark', data: ['1', '2', '3'] };
       let queryViewByType: SinonStub;
       let queryDocsByPhones: SinonStub;
+      let queryDocsByReference: SinonStub;
       let queryViewFreetextByKey: SinonStub;
       let queryViewFreetextByRange: SinonStub;
       let queryViewTypeFreetextByKey: SinonStub;
@@ -281,16 +282,20 @@ describe('local contact', () => {
 
         queryViewByType = sinon.stub();
         queryDocsByPhones = sinon.stub();
+        queryDocsByReference = sinon.stub();
         queryViewFreetextByKey = sinon.stub();
         queryViewTypeFreetextByKey = sinon.stub();
         const queryDocIdsByKeyStub = sinon.stub(LocalDoc, 'queryDocIdsByKey');
         queryDocIdsByKeyStub
           .withArgs(localContext.medicDb, 'medic-client/contacts_by_type')
           .returns(queryViewByType);
-        sinon
-          .stub(LocalDoc, 'queryDocsByKeys')
+        const queryDocsByKeysStub = sinon.stub(LocalDoc, 'queryDocsByKeys');
+        queryDocsByKeysStub
           .withArgs(localContext.medicDb, 'medic-client/contacts_by_phone')
           .returns(queryDocsByPhones);
+        queryDocsByKeysStub
+          .withArgs(localContext.medicDb, 'medic-client/contacts_by_reference')
+          .returns(queryDocsByReference);
         queryDocIdsByKeyStub
           .withArgs(localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext')
           .returns(queryViewFreetextByKey);
@@ -502,6 +507,70 @@ describe('local contact', () => {
           expect(queryDocsByPhones.notCalled).to.be.true;
           expect(fetchAndFilterOuter.notCalled).to.be.true;
           expect(fetchAndFilterInner.notCalled).to.be.true;
+        });
+      });
+
+      describe('reference qualifiers', () => {
+        // Like the phones arm, the reference arm queries the docs so it can drop rows that are not contacts.
+        const docsPage = { cursor: 'bookmark', data: [{ _id: '1' }, { _id: '2' }, { _id: '3' }] };
+
+        beforeEach(() => {
+          useNouveauIndexes.resolves(false);
+          fetchAndFilterInner.resolves(docsPage);
+        });
+
+        ([
+          [Qualifier.byShortcodes(['12345', 'abc']), [['shortcode', '12345'], ['shortcode', 'abc']]],
+          [Qualifier.byExternalRefs(['rc1', 'RC2']), [['external', 'RC1'], ['external', 'RC2']]],
+          // Hand-built qualifiers bypass the builder's dedupe.
+          [{ shortcodes: ['1', '1', '2'] }, [['shortcode', '1'], ['shortcode', '2']]],
+          [{ externalRefs: ['RC1', 'RC1'] }, [['external', 'RC1']]],
+        ] as [Qualifier.ShortcodesQualifier, [string, string][]][]).forEach(([qualifier, keys]) => {
+          it(`returns page of UUIDs for ${JSON.stringify(qualifier)}`, async () => {
+            const cursor = '1';
+
+            const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
+
+            expect(res).to.deep.equal(expectedResult);
+            expect(getContactTypeIds.notCalled).to.be.true;
+            expect(queryViewByType.notCalled).to.be.true;
+            expect(queryDocsByPhones.notCalled).to.be.true;
+            expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
+            expect(fetchAndFilterOuter.calledOnce).to.be.true;
+            expect(fetchAndFilterOuter.args[0][2]).to.equal(limit);
+            expect(fetchAndFilterInner.calledOnceWithExactly(limit, 1)).to.be.true;
+            const pageFn = fetchAndFilterOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+            pageFn(limit, 1);
+
+            expect(queryDocsByReference.calledOnceWithExactly(keys, limit, 1)).to.be.true;
+          });
+        });
+
+        it('drops rows that are not contacts, and a contact emitted more than once', async () => {
+          const nationalOffice = { _id: 'national', _rev: '1', type: 'national_office' };
+          const contact = { _id: 'person', _rev: '1', type: 'person' };
+          isContact.withArgs(settings, nationalOffice).returns(false);
+          isContact.withArgs(settings, contact).returns(true);
+
+          await Contact.v1.getUuidsPage(localContext)(Qualifier.byShortcodes(['1', '2']), null, limit);
+
+          const filterFn = fetchAndFilterOuter.firstCall.args[1] as (doc: unknown) => boolean;
+          expect(filterFn(nationalOffice)).to.be.false;
+          expect(filterFn(contact)).to.be.true;
+          expect(filterFn({ ...contact })).to.be.false;
+        });
+
+        it('throws for invalid cursor', async () => {
+          const cursor = 'not a number';
+
+          await expect(Contact.v1.getUuidsPage(localContext)(Qualifier.byShortcodes(['12345']), cursor, limit))
+            .to.be.rejectedWith(
+              InvalidArgumentError,
+              `The cursor must be a string or null for first page: [${JSON.stringify(cursor)}]`
+            );
+
+          expect(queryDocsByReference.notCalled).to.be.true;
+          expect(fetchAndFilterOuter.notCalled).to.be.true;
         });
       });
 
@@ -864,6 +933,47 @@ describe('local contact', () => {
         const getPageFn = fetchAndFilterOuter.firstCall.args[0];
         await getPageFn(limit, 0);
         expect(queryDocsByKeysInner.calledOnceWithExactly(['+1234', '+5678'], limit, 0)).to.be.true;
+      });
+
+      ([
+        [Qualifier.byShortcodes(['12345', 'abc']), [['shortcode', '12345'], ['shortcode', 'abc']]],
+        [Qualifier.byExternalRefs(['rc1', 'RC2']), [['external', 'RC1'], ['external', 'RC2']]],
+        [{ shortcodes: ['1', '1', '2'] }, [['shortcode', '1'], ['shortcode', '2']]],
+      ] as [Qualifier.ShortcodesQualifier, [string, string][]][]).forEach(([qualifier, keys]) => {
+        it(`returns a page of contacts for ${JSON.stringify(qualifier)}`, async () => {
+          const expectedResult = { cursor: '2', data: [{ type: 'person' }] };
+          fetchAndFilterInner.resolves(expectedResult);
+
+          const res = await Contact.v1.getPage(localContext)(qualifier, cursor, limit);
+
+          expect(res).to.deep.equal(expectedResult);
+          expect(getContactTypeIds.notCalled).to.be.true;
+          expect(queryDocsByKeysOuter.calledWithExactly(
+            localContext.medicDb, 'medic-client/contacts_by_reference'
+          )).to.be.true;
+          expect(fetchAndFilterInner.calledOnceWithExactly(limit, 0)).to.be.true;
+
+          const getPageFn = fetchAndFilterOuter.firstCall.args[0];
+          await getPageFn(limit, 0);
+          expect(queryDocsByKeysInner.calledOnceWithExactly(keys, limit, 0)).to.be.true;
+          expect(queryDocsByKeyInner.notCalled).to.be.true;
+          expect(getDocsByIdsInner.notCalled).to.be.true;
+        });
+      });
+
+      it('drops rows that are not contacts, and a contact emitted more than once', async () => {
+        const unconfigured = { _id: 'unconfigured', _rev: '1', type: 'contact', contact_type: 'not-in-settings' };
+        const contact = { _id: 'person', _rev: '1', type: 'person' };
+        isContact.withArgs(settings, unconfigured).returns(false);
+        isContact.withArgs(settings, contact).returns(true);
+        fetchAndFilterInner.resolves({ cursor: null, data: [] });
+
+        await Contact.v1.getPage(localContext)(Qualifier.byShortcodes(['1', '2']), cursor, limit);
+
+        const filterFn = fetchAndFilterOuter.firstCall.args[1] as (doc: unknown) => boolean;
+        expect(filterFn(unconfigured)).to.be.false;
+        expect(filterFn(contact)).to.be.true;
+        expect(filterFn({ ...contact })).to.be.false;
       });
 
       it('throws an error if the contact type is invalid', async () => {

@@ -7,14 +7,18 @@ import {
 import {
   and,
   byContactType,
+  byExternalRefs,
   byFreetext,
   byIds,
   byPhones,
+  byShortcodes,
   byUuid,
   ContactTypeQualifier,
+  ExternalRefsQualifier,
   FreetextQualifier,
   IdsQualifier,
   PhonesQualifier,
+  ShortcodesQualifier,
   UuidQualifier
 } from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
@@ -178,7 +182,7 @@ export namespace v1 {
     /**
      * Returns an array of contact identifiers for the provided page specifications.
      * @param qualifier the limiter defining which identifiers to return (a contact type and/or freetext, or a
-     * set of phone numbers)
+     * set of phone numbers, shortcodes, or external references)
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of identifiers to return. Default is 10000.
@@ -188,7 +192,11 @@ export namespace v1 {
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
     const curriedFn = async (
-      qualifier: ContactTypeQualifier | FreetextQualifier | PhonesQualifier,
+      qualifier: ContactTypeQualifier
+        | FreetextQualifier
+        | PhonesQualifier
+        | ShortcodesQualifier
+        | ExternalRefsQualifier,
       cursor: Nullable<string> = null,
       limit: number | `${number}` = DEFAULT_IDS_PAGE_LIMIT
     ): Promise<Page<string>> => {
@@ -214,12 +222,16 @@ export namespace v1 {
     /**
      * Returns a generator for fetching all contact identifiers that match the given qualifier
      * @param qualifier the limiter defining which identifiers to return (a contact type and/or freetext, or a
-     * set of phone numbers)
+     * set of phone numbers, shortcodes, or external references)
      * @returns a generator for fetching all contact identifiers that match the given qualifier
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      */
     const curriedGen = (
-      qualifier: ContactTypeQualifier | FreetextQualifier | PhonesQualifier
+      qualifier: ContactTypeQualifier
+        | FreetextQualifier
+        | PhonesQualifier
+        | ShortcodesQualifier
+        | ExternalRefsQualifier
     ): AsyncGenerator<string, null> => {
       assertContactTypeFreetextPhonesQualifier(qualifier);
 
@@ -241,8 +253,8 @@ export namespace v1 {
 
     /**
      * Returns an array of contacts for the provided page specifications.
-     * @param qualifier the limiter defining which contacts to return (a contact type, a set of UUIDs, or a set
-     * of phone numbers)
+     * @param qualifier the limiter defining which contacts to return (a contact type, or a set of UUIDs, phone
+     * numbers, shortcodes, or external references)
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of contacts to return. Default is 100.
@@ -252,7 +264,11 @@ export namespace v1 {
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
     const curriedFn = async (
-      qualifier: ContactTypeQualifier | IdsQualifier | PhonesQualifier,
+      qualifier: ContactTypeQualifier
+        | IdsQualifier
+        | PhonesQualifier
+        | ShortcodesQualifier
+        | ExternalRefsQualifier,
       cursor: Nullable<string> = null,
       limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
     ): Promise<Page<v1.Contact>> => {
@@ -277,13 +293,17 @@ export namespace v1 {
 
     /**
      * Returns a generator for fetching all contacts that match the given qualifier.
-     * @param qualifier the limiter defining which contacts to return (a contact type, a set of UUIDs, or a set
-     * of phone numbers)
+     * @param qualifier the limiter defining which contacts to return (a contact type, or a set of UUIDs, phone
+     * numbers, shortcodes, or external references)
      * @returns a generator for fetching all contacts that match the given qualifier
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      */
     const curriedGen = (
-      qualifier: ContactTypeQualifier | IdsQualifier | PhonesQualifier
+      qualifier: ContactTypeQualifier
+        | IdsQualifier
+        | PhonesQualifier
+        | ShortcodesQualifier
+        | ExternalRefsQualifier
     ): AsyncGenerator<v1.Contact, null> => {
       assertContactTypeIdsPhonesQualifier(qualifier);
 
@@ -480,6 +500,118 @@ export namespace v1 {
     getByPhones: (phones: [string, ...string[]]) => AsyncGenerator<v1.Contact, null>;
 
     /**
+     * Returns a page of identifiers for the contacts with any of the given shortcodes.
+     * @param shortcodes the shortcodes of the contacts to fetch, each matched verbatim against the contact's
+     * `patient_id` and `place_id` fields
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of identifiers to return. Default is 10000.
+     * @returns a page of contact identifiers for the provided shortcodes
+     * @throws InvalidArgumentError if the shortcodes are not a non-empty array of non-blank strings with no
+     * leading or trailing whitespace
+     * @throws InvalidArgumentError if the provided limit is `<= 0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    getUuidsPageByShortcodes: (
+      shortcodes: [string, ...string[]],
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<string>>;
+
+    /**
+     * Returns a generator for fetching all the identifiers of contacts with any of the given shortcodes.
+     * @param shortcodes the shortcodes of the contacts to fetch
+     * @returns a generator for fetching all matching contact identifiers
+     * @throws InvalidArgumentError if the shortcodes are not a non-empty array of non-blank strings with no
+     * leading or trailing whitespace
+     */
+    getUuidsByShortcodes: (shortcodes: [string, ...string[]]) => AsyncGenerator<string, null>;
+
+    /**
+     * Returns a page of contacts with any of the given shortcodes.
+     * @param shortcodes the shortcodes of the contacts to fetch, each matched verbatim against the contact's
+     * `patient_id` and `place_id` fields
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of contacts to return. Default is 100.
+     * @returns a page of contacts for the provided shortcodes
+     * @throws InvalidArgumentError if the shortcodes are not a non-empty array of non-blank strings with no
+     * leading or trailing whitespace
+     * @throws InvalidArgumentError if the provided limit is `<= 0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    getPageByShortcodes: (
+      shortcodes: [string, ...string[]],
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<v1.Contact>>;
+
+    /**
+     * Returns a generator for fetching all contacts with any of the given shortcodes.
+     * @param shortcodes the shortcodes of the contacts to fetch
+     * @returns a generator for fetching all matching contacts
+     * @throws InvalidArgumentError if the shortcodes are not a non-empty array of non-blank strings with no
+     * leading or trailing whitespace
+     */
+    getByShortcodes: (shortcodes: [string, ...string[]]) => AsyncGenerator<v1.Contact, null>;
+
+    /**
+     * Returns a page of identifiers for the contacts with any of the given external references.
+     * @param externalRefs the external references of the contacts to fetch, matched case-insensitively against
+     * the contact's `rc_code` field
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of identifiers to return. Default is 10000.
+     * @returns a page of contact identifiers for the provided external references
+     * @throws InvalidArgumentError if the external references are not a non-empty array of non-blank strings with no
+     * leading or trailing whitespace
+     * @throws InvalidArgumentError if the provided limit is `<= 0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    getUuidsPageByExternalRefs: (
+      externalRefs: [string, ...string[]],
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<string>>;
+
+    /**
+     * Returns a generator for fetching all the identifiers of contacts with any of the given external references.
+     * @param externalRefs the external references of the contacts to fetch
+     * @returns a generator for fetching all matching contact identifiers
+     * @throws InvalidArgumentError if the external references are not a non-empty array of non-blank strings with no
+     * leading or trailing whitespace
+     */
+    getUuidsByExternalRefs: (externalRefs: [string, ...string[]]) => AsyncGenerator<string, null>;
+
+    /**
+     * Returns a page of contacts with any of the given external references.
+     * @param externalRefs the external references of the contacts to fetch, matched case-insensitively against
+     * the contact's `rc_code` field
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of contacts to return. Default is 100.
+     * @returns a page of contacts for the provided external references
+     * @throws InvalidArgumentError if the external references are not a non-empty array of non-blank strings with no
+     * leading or trailing whitespace
+     * @throws InvalidArgumentError if the provided limit is `<= 0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    getPageByExternalRefs: (
+      externalRefs: [string, ...string[]],
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<v1.Contact>>;
+
+    /**
+     * Returns a generator for fetching all contacts with any of the given external references.
+     * @param externalRefs the external references of the contacts to fetch
+     * @returns a generator for fetching all matching contacts
+     * @throws InvalidArgumentError if the external references are not a non-empty array of non-blank strings with no
+     * leading or trailing whitespace
+     */
+    getByExternalRefs: (externalRefs: [string, ...string[]]) => AsyncGenerator<v1.Contact, null>;
+
+    /**
      * Returns a page of contacts for the given type.
      * @param type the type of contacts to return
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
@@ -574,6 +706,30 @@ export namespace v1 {
         limit = DEFAULT_DOCS_PAGE_LIMIT
       ) => ctx.bind(v1.getPage)(byPhones(phones), cursor, limit),
       getByPhones: (phones) => ctx.bind(v1.getAll)(byPhones(phones)),
+      getUuidsPageByShortcodes: (
+        shortcodes,
+        cursor = null,
+        limit = DEFAULT_IDS_PAGE_LIMIT
+      ) => ctx.bind(v1.getUuidsPage)(byShortcodes(shortcodes), cursor, limit),
+      getUuidsByShortcodes: (shortcodes) => ctx.bind(v1.getUuids)(byShortcodes(shortcodes)),
+      getPageByShortcodes: (
+        shortcodes,
+        cursor = null,
+        limit = DEFAULT_DOCS_PAGE_LIMIT
+      ) => ctx.bind(v1.getPage)(byShortcodes(shortcodes), cursor, limit),
+      getByShortcodes: (shortcodes) => ctx.bind(v1.getAll)(byShortcodes(shortcodes)),
+      getUuidsPageByExternalRefs: (
+        externalRefs,
+        cursor = null,
+        limit = DEFAULT_IDS_PAGE_LIMIT
+      ) => ctx.bind(v1.getUuidsPage)(byExternalRefs(externalRefs), cursor, limit),
+      getUuidsByExternalRefs: (externalRefs) => ctx.bind(v1.getUuids)(byExternalRefs(externalRefs)),
+      getPageByExternalRefs: (
+        externalRefs,
+        cursor = null,
+        limit = DEFAULT_DOCS_PAGE_LIMIT
+      ) => ctx.bind(v1.getPage)(byExternalRefs(externalRefs), cursor, limit),
+      getByExternalRefs: (externalRefs) => ctx.bind(v1.getAll)(byExternalRefs(externalRefs)),
       getPageByType: (
         type,
         cursor = null,

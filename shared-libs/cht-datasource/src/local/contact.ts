@@ -11,6 +11,7 @@ import {
 } from './libs/doc';
 import {
   ContactTypeQualifier,
+  ExternalRefsQualifier,
   FreetextQualifier,
   IdsQualifier,
   isContactTypeQualifier,
@@ -18,7 +19,9 @@ import {
   isIdsQualifier,
   isKeyedFreetextQualifier,
   isPhonesQualifier,
+  isShortcodesQualifier,
   PhonesQualifier,
+  ShortcodesQualifier,
   UuidQualifier
 } from '../qualifier';
 import * as Contact from '../contact';
@@ -32,6 +35,7 @@ import { END_OF_ALPHABET_MARKER } from '../libs/constants';
 import { fetchHydratedDoc } from './libs/lineage';
 import { queryByFreetext, useNouveauIndexes } from './libs/nouveau';
 import { summariseContact } from '@medic/summaries';
+import { ContactKeysQualifier, isContactKeysQualifier } from '../libs/parameter-validators';
 
 const assertValidContactType = (settings: DataObject, qualifier: ContactTypeQualifier) => {
   const contactTypesIds = contactTypeUtils.getContactTypeIds(settings);
@@ -78,18 +82,42 @@ const getOfflineFreetextQueryFn = (medicDb: PouchDB.Database<Doc>) => {
 // dropped in a stable order, since rows come back grouped in the order the keys are supplied.
 const phoneViewKeys = (qualifier: PhonesQualifier): string[] => [...new Set(qualifier.phones)];
 
+// The view emits `['shortcode', place_id]`, `['shortcode', patient_id]` and `['external', RC_CODE]`. The qualifier
+// is trusted to already hold the view's form of each value, so the keys are built as-is.
+const referenceViewKeys = (qualifier: ShortcodesQualifier | ExternalRefsQualifier): [string, string][] => {
+  if (isShortcodesQualifier(qualifier)) {
+    return [...new Set(qualifier.shortcodes)].map(shortcode => ['shortcode', shortcode]);
+  }
+  return [...new Set(qualifier.externalRefs)].map(ref => ['external', ref]);
+};
+
+// The keyed views emit docs that are not contacts (any doc with a `phone`, `national_office` docs, contacts of an
+// unconfigured type), so their rows are always filtered through `isContact`.
+const getContactKeysDocsPageFn = (medicDb: PouchDB.Database<Doc>) => {
+  const queryDocsByPhones = queryDocsByKeys(medicDb, 'medic-client/contacts_by_phone');
+  const queryDocsByReference = queryDocsByKeys(medicDb, 'medic-client/contacts_by_reference');
+
+  return (qualifier: ContactKeysQualifier) => {
+    if (isPhonesQualifier(qualifier)) {
+      const keys = phoneViewKeys(qualifier);
+      return (limit: number, skip: number) => queryDocsByPhones(keys, limit, skip);
+    }
+    const keys = referenceViewKeys(qualifier);
+    return (limit: number, skip: number) => queryDocsByReference(keys, limit, skip);
+  };
+};
+
 const getContactDocsPageFn = (
-  qualifier: ContactTypeQualifier | IdsQualifier | PhonesQualifier,
+  qualifier: ContactTypeQualifier | IdsQualifier | ContactKeysQualifier,
   getMedicDocsByIds: ReturnType<typeof getDocsByIds>,
   queryDocsByType: ReturnType<typeof queryDocsByKey>,
-  queryDocsByPhones: ReturnType<typeof queryDocsByKeys>,
+  getKeysPageFn: ReturnType<typeof getContactKeysDocsPageFn>,
 ): ((limit: number, skip: number) => Promise<Nullable<Doc>[]>) => {
   if (isIdsQualifier(qualifier)) {
     return (limit: number, skip: number) => getMedicDocsByIds(qualifier.ids.slice(skip, skip + limit));
   }
-  if (isPhonesQualifier(qualifier)) {
-    const keys = phoneViewKeys(qualifier);
-    return (limit: number, skip: number) => queryDocsByPhones(keys, limit, skip);
+  if (isContactKeysQualifier(qualifier)) {
+    return getKeysPageFn(qualifier);
   }
   return (limit: number, skip: number) => queryDocsByType([qualifier.contactType], limit, skip);
 };
@@ -118,6 +146,19 @@ export namespace v1 {
       }
 
       return doc;
+    };
+  };
+
+  // A contact with both its `patient_id` and `place_id` in the supplied shortcodes is emitted twice by the
+  // reference view, so ids are deduped within the page, as `fetchAndFilterIds` does.
+  const getUniqueContactFilter = (settings: SettingsService) => {
+    const idSet = new Set<string>();
+    return (doc: Nullable<Doc>): boolean => {
+      if (!isContact(settings, doc) || idSet.has(doc._id)) {
+        return false;
+      }
+      idSet.add(doc._id);
+      return true;
     };
   };
 
@@ -150,25 +191,23 @@ export namespace v1 {
   export const getUuidsPage = ({ medicDb, settings }: LocalDataContext) => {
     const queryNouveauFreetext = queryByFreetext(medicDb, 'contacts_by_freetext');
     const queryViewByType = queryDocIdsByKey(medicDb, 'medic-client/contacts_by_type');
-    const queryDocsByPhones = queryDocsByKeys(medicDb, 'medic-client/contacts_by_phone');
+    const getKeysPageFn = getContactKeysDocsPageFn(medicDb);
     const getOfflineFreetextQueryPageFn = getOfflineFreetextQueryFn(medicDb);
     const promisedUseNouveau = useNouveauIndexes(medicDb);
 
     return async (
-      qualifier: ContactTypeQualifier | FreetextQualifier | PhonesQualifier,
+      qualifier: ContactTypeQualifier | FreetextQualifier | ContactKeysQualifier,
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<string>> => {
-      if (isPhonesQualifier(qualifier)) {
-        // The phone view emits any doc with a `phone`, so the rows are filtered through `isContact` to
+      if (isContactKeysQualifier(qualifier)) {
+        // The keyed views emit docs that are not contacts, so the rows are filtered through `isContact` to
         // return the same contacts as the doc-returning path. That needs the docs, unlike the type view,
         // whose key is itself a configured contact type.
         const skip = validateCursor(cursor);
-        const keys = phoneViewKeys(qualifier);
-        const getPageFn = (limit: number, skip: number) => queryDocsByPhones(keys, limit, skip);
         const page = await fetchAndFilter(
-          getPageFn,
-          (doc: Nullable<Doc>) => isContact(settings, doc),
+          getKeysPageFn(qualifier),
+          getUniqueContactFilter(settings),
           limit
         )(limit, skip);
         return { data: page.data.map(doc => doc._id), cursor: page.cursor };
@@ -202,10 +241,10 @@ export namespace v1 {
   export const getPage = ({ medicDb, settings }: LocalDataContext) => {
     const getMedicDocsByIds = getDocsByIds(medicDb);
     const queryDocsByType = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
-    const queryDocsByPhones = queryDocsByKeys(medicDb, 'medic-client/contacts_by_phone');
+    const getKeysPageFn = getContactKeysDocsPageFn(medicDb);
 
     return async (
-      qualifier: ContactTypeQualifier | IdsQualifier | PhonesQualifier,
+      qualifier: ContactTypeQualifier | IdsQualifier | ContactKeysQualifier,
       cursor: Nullable<string>,
       limit: number,
     ): Promise<Page<Contact.v1.Contact>> => {
@@ -214,11 +253,11 @@ export namespace v1 {
       }
 
       const skip = validateCursor(cursor);
-      const getPageFn = getContactDocsPageFn(qualifier, getMedicDocsByIds, queryDocsByType, queryDocsByPhones);
+      const getPageFn = getContactDocsPageFn(qualifier, getMedicDocsByIds, queryDocsByType, getKeysPageFn);
 
       return await fetchAndFilter(
         getPageFn,
-        (doc: Nullable<Doc>) => isContact(settings, doc),
+        getUniqueContactFilter(settings),
         limit
       )(limit, skip) as Page<Contact.v1.Contact>;
     };
