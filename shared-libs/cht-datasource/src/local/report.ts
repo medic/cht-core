@@ -15,7 +15,8 @@ import {
   IdsQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
-  UuidQualifier
+  UuidQualifier,
+  VerificationQualifier
 } from '../qualifier';
 import { assertHasRequiredField, hasStringFieldWithValue, Nullable, Page } from '../libs/core';
 import * as Report from '../report';
@@ -138,9 +139,10 @@ export namespace v1 {
     // so still surfaces) the real error.
     promisedUseNouveau.catch(() => { /* no-op */ });
     const queryViewByForms = queryDocIdsByKeys(medicDb, 'medic-client/reports_by_form');
+    const queryViewByVerification = queryDocIdsByKeys(medicDb, 'medic-client/reports_by_verification');
 
     return async (
-      qualifier: FreetextQualifier | FormsQualifier,
+      qualifier: FreetextQualifier | FormsQualifier | VerificationQualifier,
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<string>> => {
@@ -158,14 +160,21 @@ export namespace v1 {
         return fetchAndFilterIds(getPageFn, limit)(limit, skip);
       }
 
-      // The view emits [doc.form], so each form code is a complete key on its own. Duplicates are
-      // dropped here rather than trusted from the qualifier, since a hand-built FormsQualifier can
-      // reach this point without going through byForms(). Order is preserved, which is what keeps
-      // `skip` meaningful from one page to the next: the view returns rows grouped by key in the
-      // order supplied.
+      if ('forms' in qualifier) {
+        // The view emits [doc.form], so each form code is a complete key on its own. Duplicates are
+        // dropped here rather than trusted from the qualifier, since a hand-built FormsQualifier can
+        // reach this point without going through byForms(). Order is preserved, which is what keeps
+        // `skip` meaningful from one page to the next: the view returns rows grouped by key in the
+        // order supplied.
+        const skip = validateCursor(cursor);
+        const keys = [...new Set(qualifier.forms)].map(form => [form]);
+        const getPageFn = (limit: number, skip: number) => queryViewByForms(keys, limit, skip);
+        return fetchAndFilterIds(getPageFn, limit)(limit, skip);
+      }
+
       const skip = validateCursor(cursor);
-      const keys = [...new Set(qualifier.forms)].map(form => [form]);
-      const getPageFn = (limit: number, skip: number) => queryViewByForms(keys, limit, skip);
+      const key = [qualifier.verification];
+      const getPageFn = (limit: number, skip: number) => queryViewByVerification([key], limit, skip);
       return fetchAndFilterIds(getPageFn, limit)(limit, skip);
     };
   };

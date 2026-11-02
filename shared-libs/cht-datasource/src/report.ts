@@ -9,16 +9,18 @@ import {
   byFreetext,
   byIds,
   byUuid,
+  byVerification,
   FormsQualifier,
   FreetextQualifier,
   IdsQualifier,
+  VerificationQualifier,
   UuidQualifier
 } from './qualifier';
 import * as Remote from './remote';
 import { DEFAULT_DOCS_PAGE_LIMIT, DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
 import {
   assertCursor,
-  assertFreetextOrFormsQualifier,
+  assertFreetextOrFormsOrVerificationQualifier,
   assertIdsQualifier,
   assertLimit,
   assertUuidQualifier
@@ -157,9 +159,10 @@ export namespace v1 {
 
     /**
      * Returns an array of report identifiers for the provided page specifications.
-     * @param qualifier the limiter defining which identifiers to return. Either a {@link FreetextQualifier} for a
-     * freetext search, or a {@link FormsQualifier} to return the reports recorded with any of the given forms. If
-     * both are provided, the freetext search takes precedence.
+     * @param qualifier the limiter defining which identifiers to return. Use a {@link FreetextQualifier} for a
+     * freetext search, a {@link FormsQualifier} to match reports by form, or a {@link VerificationQualifier} to match
+     * reports by verification status. If multiple qualifier types are provided, freetext takes precedence over forms,
+     * which takes precedence over verification.
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of identifiers to return. Default is 10000.
@@ -169,11 +172,11 @@ export namespace v1 {
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
     const curriedFn = async (
-      qualifier: FreetextQualifier | FormsQualifier,
+      qualifier: FreetextQualifier | FormsQualifier | VerificationQualifier,
       cursor: Nullable<string> = null,
       limit: number | `${number}` = DEFAULT_IDS_PAGE_LIMIT
     ): Promise<Page<string>> => {
-      assertFreetextOrFormsQualifier(qualifier);
+      assertFreetextOrFormsOrVerificationQualifier(qualifier);
       assertCursor(cursor);
       assertLimit(limit);
 
@@ -194,16 +197,17 @@ export namespace v1 {
 
     /**
      * Returns a generator for fetching all report identifiers that match the given qualifier
-     * @param qualifier the limiter defining which identifiers to return. Either a {@link FreetextQualifier} for a
-     * freetext search, or a {@link FormsQualifier} to return the reports recorded with any of the given forms. If
-     * both are provided, the freetext search takes precedence.
+     * @param qualifier the limiter defining which identifiers to return. Use a {@link FreetextQualifier} for a
+     * freetext search, a {@link FormsQualifier} to match reports by form, or a {@link VerificationQualifier} to match
+     * reports by verification status. If multiple qualifier types are provided, freetext takes precedence over forms,
+     * which takes precedence over verification.
      * @returns a generator for fetching all report identifiers that match the given qualifier
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      */
     const curriedGen = (
-      qualifier: FreetextQualifier | FormsQualifier
+      qualifier: FreetextQualifier | FormsQualifier | VerificationQualifier
     ): AsyncGenerator<string, null> => {
-      assertFreetextOrFormsQualifier(qualifier);
+      assertFreetextOrFormsOrVerificationQualifier(qualifier);
 
       return getPagedGenerator(getPage, qualifier);
     };
@@ -448,6 +452,31 @@ export namespace v1 {
     getUuidsByForms: (forms: [string, ...string[]]) => AsyncGenerator<string, null>;
 
     /**
+     * Returns a page of report identifiers matching their verification status. `null` matches reports that are
+     * unverified.
+     * @param verification the verification status to match
+     * @param cursor the token identifying which page to retrieve
+     * @param limit the maximum number of identifiers to return
+     * @returns a page of report identifiers
+     * @throws InvalidArgumentError if the verification value is not a boolean or `null`
+     * @throws InvalidArgumentError if the provided `limit` value is `<=0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    getUuidsPageByVerification: (
+      verification: boolean | null,
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<string>>;
+
+    /**
+     * Returns a generator for fetching all report identifiers matching their verification status. `null` matches
+     * reports that are unverified.
+     * @param verification the verification status to match
+     * @returns a generator for fetching all matching report identifiers
+     */
+    getUuidsByVerification: (verification: boolean | null) => AsyncGenerator<string, null>;
+
+    /**
      * Returns a page of reports for the given ids.
      * @param ids the ids of the reports to return
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
@@ -524,6 +553,12 @@ export namespace v1 {
         limit = DEFAULT_IDS_PAGE_LIMIT
       ) => ctx.bind(v1.getUuidsPage)(byForms(forms), cursor, limit),
       getUuidsByForms: (forms) => ctx.bind(v1.getUuids)(byForms(forms)),
+      getUuidsPageByVerification: (
+        verification,
+        cursor = null,
+        limit = DEFAULT_IDS_PAGE_LIMIT
+      ) => ctx.bind(v1.getUuidsPage)(byVerification(verification), cursor, limit),
+      getUuidsByVerification: (verification) => ctx.bind(v1.getUuids)(byVerification(verification)),
       getPageByIds: (
         ids,
         cursor = null,

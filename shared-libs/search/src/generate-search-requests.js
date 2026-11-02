@@ -75,7 +75,14 @@ const validityRequest = (filters) => {
 };
 
 const verificationRequest = (filters) => {
-  return getRequestWithMappedKeys('medic-client/reports_by_verification', filters.verified, getKeysArray);
+  if (!filters.verified || filters.verified.length === 0) {
+    return;
+  }
+
+  return {
+    freetext: true,
+    verifications: filters.verified.map(verified => verified === undefined ? null : verified)
+  };
 };
 
 const placeRequest = (filters) => {

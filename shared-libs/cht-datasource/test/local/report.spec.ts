@@ -215,6 +215,7 @@ describe('local report', () => {
       let queryViewFreetextByKey: SinonStub;
       let queryViewFreetextByRange: SinonStub;
       let queryViewByForms: SinonStub;
+      let queryViewByVerification: SinonStub;
       let fetchAndFilterIdsInner: SinonStub;
       let fetchAndFilterIdsOuter: SinonStub;
       let queryNouveauFreetext: SinonStub;
@@ -223,14 +224,18 @@ describe('local report', () => {
       beforeEach(() => {
         queryViewFreetextByKey = sinon.stub();
         queryViewByForms = sinon.stub();
+        queryViewByVerification = sinon.stub();
         const queryDocIdsByKey = sinon.stub(LocalDoc, 'queryDocIdsByKey');
         queryDocIdsByKey
           .withArgs(localContext.medicDb, 'medic-offline-freetext/reports_by_freetext')
           .returns(queryViewFreetextByKey);
-        sinon
-          .stub(LocalDoc, 'queryDocIdsByKeys')
+        const queryDocIdsByKeys = sinon.stub(LocalDoc, 'queryDocIdsByKeys');
+        queryDocIdsByKeys
           .withArgs(localContext.medicDb, 'medic-client/reports_by_form')
           .returns(queryViewByForms);
+        queryDocIdsByKeys
+          .withArgs(localContext.medicDb, 'medic-client/reports_by_verification')
+          .returns(queryViewByVerification);
 
         queryViewFreetextByRange = sinon.stub();
         sinon
@@ -469,7 +474,7 @@ describe('local report', () => {
         });
 
         it('prefers the freetext branch when a qualifier satisfies both', async () => {
-          const qualifier = { freetext: 'searchterm', forms: ['pregnancy'] };
+          const qualifier = { freetext: 'searchterm', forms: ['pregnancy'], verification: true };
           queryNouveauFreetext.resolves(expectedResult);
 
           const res = await Report.v1.getUuidsPage(localContext)(qualifier, null, limit);
@@ -477,6 +482,44 @@ describe('local report', () => {
           expect(res).to.deep.equal(expectedResult);
           expect(queryNouveauFreetext.calledOnce).to.be.true;
           expect(queryViewByForms.notCalled).to.be.true;
+        });
+      });
+
+      describe('when qualifying by verification', () => {
+        beforeEach(() => {
+          fetchAndFilterIdsInner.resolves(expectedResult);
+          useNouveauIndexes.resolves(true);
+        });
+
+        ([
+          [true, null, 0],
+          [false, '1', 1],
+          [null, '2', 2]
+        ] as [boolean | null, string | null, number][]).forEach(([verification, cursor, skip]) => {
+          it(`queries reports_by_verification for ${verification} from cursor ${JSON.stringify(cursor)}`, async () => {
+            const qualifier = Qualifier.byVerification(verification);
+
+            const res = await Report.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
+
+            expect(res).to.deep.equal(expectedResult);
+            expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
+            expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
+
+            const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+            pageFn(limit, skip);
+            expect(queryViewByVerification.calledOnceWithExactly([[verification]], limit, skip)).to.be.true;
+            expect(queryNouveauFreetext.notCalled).to.be.true;
+            expect(queryViewByForms.notCalled).to.be.true;
+          });
+        });
+
+        it('rejects invalid cursors before querying the view', async () => {
+          await expect(Report.v1.getUuidsPage(localContext)(
+            Qualifier.byVerification(true), 'invalid', limit
+          )).to.be.rejectedWith(InvalidArgumentError);
+
+          expect(queryViewByVerification.notCalled).to.be.true;
+          expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
         });
       });
     });
@@ -595,6 +638,40 @@ describe('local report', () => {
         expect(page.cursor).to.be.null;
       });
 
+    });
+
+    describe('getUuidsPage by verification (pagination)', () => {
+      const verifiedUuids = Array.from({ length: 5 }, (_, i) => `verified-${i.toString()}`);
+
+      beforeEach(() => {
+        sinon.stub(Nouveau, 'useNouveauIndexes').resolves(false);
+        sinon
+          .stub(LocalDoc, 'queryDocIdsByKeys')
+          .withArgs(localContext.medicDb, 'medic-client/reports_by_verification')
+          .returns((keys: unknown[], limit: number, skip: number) => {
+            const rows = (keys as [boolean | null][]).flatMap(([verification]) => (
+              verification === true ? verifiedUuids : []
+            ));
+            return Promise.resolve(rows.slice(skip, skip + limit));
+          });
+      });
+
+      it('walks all matching reports across cursor pages', async () => {
+        const getUuidsPage = Report.v1.getUuidsPage(localContext);
+        const qualifier = Qualifier.byVerification(true);
+
+        const page1 = await getUuidsPage(qualifier, null, 2);
+        expect(page1.data).to.deep.equal(verifiedUuids.slice(0, 2));
+        expect(page1.cursor).to.equal('2');
+
+        const page2 = await getUuidsPage(qualifier, page1.cursor, 2);
+        expect(page2.data).to.deep.equal(verifiedUuids.slice(2, 4));
+        expect(page2.cursor).to.equal('4');
+
+        const page3 = await getUuidsPage(qualifier, page2.cursor, 2);
+        expect(page3.data).to.deep.equal(verifiedUuids.slice(4));
+        expect(page3.cursor).to.be.null;
+      });
     });
 
     describe('getPage', () => {
