@@ -17,12 +17,12 @@ export class ReportsAddDeactivationGuardProvider implements CanDeactivate<Report
   }
 
   canDeactivate(
-    component:ReportsAddComponent,
+    component:ReportsAddComponent | null,
     currentRoute:ActivatedRouteSnapshot,
     currentState:RouterStateSnapshot,
     nextState:RouterStateSnapshot,
   ) {
-    if (!component.enketoEdited || !component.cancelCallback) {
+    if (!component || !component.enketoEdited || !component.cancelCallback) {
       return true;
     }
 
