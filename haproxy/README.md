@@ -21,6 +21,14 @@ for the haproxy declaration in any of your cht-core docker-compose templates.
 
 After testing, please push your image to DockerHub.
 
+### Timeout configuration
+
+The defaults in [default_frontend.cfg](./default_frontend.cfg) are included in the HAProxy image used by CHT deployments; they are not test-only settings or overridden by a separate production profile.
+
+HAProxy treats timeout values without a unit suffix as milliseconds. In particular, `timeout connect 1500000` is a maximum of 25 minutes to establish a TCP connection to a CouchDB backend. It is not a delay applied to normal connections, and it does not limit how long an established connection can take to return a response.
+
+The repository does not document a specific reason for this unusually long connection timeout; it is an inherited default, not a CouchDB requirement. To change it, update `default_frontend.cfg` and rebuild the HAProxy image. There is no runtime environment variable for this setting.
+
 
 ### Required Variables
 
