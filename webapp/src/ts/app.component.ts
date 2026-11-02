@@ -397,7 +397,11 @@ export class AppComponent implements OnInit, AfterViewInit {
           if (granted) {
             console.info('Persistent storage granted: storage will not be cleared except by explicit user action');
           } else {
-            console.info('Persistent storage denied: storage may be cleared by the UA under storage pressure.');
+            console.info(
+              'Persistent storage was not granted. The browser may clear local data when storage is low; ' +
+              'this is normal browser behavior and does not prevent the app from working. ' +
+              'Learn more: https://web.dev/articles/persistent-storage'
+            );
           }
         });
     }
