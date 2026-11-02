@@ -16,8 +16,9 @@ export class SenderComponent {
   @Input() hideLineage;
 
   getName() {
+    const contact = this.message.contact;
     return this.message.doc?.name
-      || this.message.contact?.name
+      || (typeof contact === 'string' ? contact : contact?.name)
       || (!this.message.form && this.message.name)
       || this.message.from
       || this.message.sent_by
