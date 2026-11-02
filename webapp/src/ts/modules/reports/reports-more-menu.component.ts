@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { Data, NavigationStart, Router, RouterLink } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -43,6 +43,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 })
 export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   @Output() exportReports: EventEmitter<any> = new EventEmitter();
+  @Input() isExporting = false;
   @ViewChild('verifyReportWrapper') verifyReportWrapper;
 
   private reportsActions: ReportsActions;

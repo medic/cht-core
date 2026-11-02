@@ -14,7 +14,7 @@
     (selectItems)="selectAllReports()"
     (deselectItems)="deselectAllReports()">
   </mm-multiselect-bar>
-  <mm-reports-more-menu (exportReports)="exportReports()"></mm-reports-more-menu>
+  <mm-reports-more-menu [isExporting]="isExporting" (exportReports)="exportReports()"></mm-reports-more-menu>
 </mm-tool-bar>
 
 <div class="inner">
