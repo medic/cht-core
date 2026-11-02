@@ -1,23 +1,18 @@
 const db = require('../db');
 const logger = require('@medic/logger');
+const dataContext = require('./data-context');
+const { Report } = require('@medic/cht-datasource');
+
+const countReportsByForm = dataContext.bind(Report.v1.countByForm);
 
 const getReportsCountByForm = async () => {
   try {
-    // Aggregate (grouped count) query. Deliberately left on db.query by the cht-datasource
-    // view->qualifier migration: Qualifier.byForms only covers the page query. Migrating this
-    // needs a narrower count operation (e.g. Report.v1.countByForm) - see the aggregate API
-    // follow-up ticket, medic/cht-core#11328.
-    const result = await db.medic.query('medic-client/reports_by_form', {
-      reduce: true,
-      group: true,
-    });
+    const countsByForm = await countReportsByForm();
     const reports = {
       count: 0,
       by_form: [],
     };
-    for (const row of result.rows) {
-      const [form] = row.key;
-      const count = row.value || 0;
+    for (const [form, count] of Object.entries(countsByForm)) {
       reports.by_form.push({
         form,
         count,

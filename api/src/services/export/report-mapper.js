@@ -3,8 +3,11 @@ const objectPath = require('object-path');
 const db = require('../../db');
 const dateFormat = require('./date-format');
 const dataContext = require('../data-context');
+const { Report } = require('@medic/cht-datasource');
 const search = require('@medic/search')(db.medic, dataContext);
 const lineage = require('@medic/lineage')(Promise, db.medic);
+const countReportsByForm = dataContext.bind(Report.v1.countByForm);
+const getReportSamplesByForms = dataContext.bind(Report.v1.getSamplesByForms);
 
 // Flattens a given object into an object where the keys are dot-notation
 // paths to the flattened values:
@@ -55,12 +58,7 @@ module.exports = {
         return Promise.resolve(forms);
       }
 
-      // Aggregate (grouped) query used to enumerate the distinct forms in use. Deliberately left
-      // on db.query by the cht-datasource view->qualifier migration: Qualifier.byForms only covers
-      // the page query - see the aggregate API follow-up ticket, medic/cht-core#11328.
-      return db.medic
-        .query('medic-client/reports_by_form', { group: true })
-        .then(results => results.rows.map(r => r.key[0]));
+      return countReportsByForm().then(counts => Object.keys(counts));
     };
 
     // Take an array of the fields property of reports and generate a unique
@@ -71,22 +69,6 @@ module.exports = {
 
     return getForms()
       .then(forms => {
-        // Single-result sample used only to discover a form's field names. Deliberately left on
-        // db.query by the cht-datasource view->qualifier migration: Qualifier.byForms returns a page
-        // of UUIDs, so it cannot express `limit: 1, include_docs: true` in one round trip - see the
-        // aggregate API follow-up ticket, medic/cht-core#11328.
-        const getFieldsPromises = form => db.medic
-          .query('medic-client/reports_by_form', {
-            key: [form],
-            limit: 1,
-            include_docs: true,
-            reduce: false
-          })
-          .then(results => {
-            return results.rows[0] &&
-                   results.rows[0].doc &&
-                   results.rows[0].doc.fields;
-          });
         const getRecordColumns = (fieldColumns, record) => {
           return [
             [
@@ -102,9 +84,11 @@ module.exports = {
             ].concat(fieldColumns.map(c => objectPath.get(record.fields, c)))
           ];
         };
-        return Promise
-          .all(forms.map(form => getFieldsPromises(form)))
-          .then(allFields => {
+        const samplesPromise = forms.length ? getReportSamplesByForms(forms) : Promise.resolve([]);
+        return samplesPromise
+          .then(samples => {
+            const fieldsByForm = new Map(samples.map(report => [report.form, report.fields]));
+            const allFields = forms.map(form => fieldsByForm.get(form));
             // Filter on identity as you can select forms that have no reports
             const fieldColumns = uniqueColumns(allFields.filter(field => field));
 

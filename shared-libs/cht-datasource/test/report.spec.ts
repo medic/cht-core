@@ -437,6 +437,48 @@ describe('report', () => {
       });
     });
 
+    describe('countByForm', () => {
+      it('returns counts from the adapted data context', async () => {
+        const counts = { pregnancy: 5 };
+        const getCounts = sinon.stub().resolves(counts);
+        adapt.returns(getCounts);
+
+        const result = await Report.v1.countByForm(dataContext)();
+
+        expect(result).to.equal(counts);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(
+          dataContext,
+          Local.Report.v1.countByForm,
+          Remote.Report.v1.countByForm
+        )).to.be.true;
+        expect(getCounts.calledOnceWithExactly()).to.be.true;
+      });
+    });
+
+    describe('getSamplesByForms', () => {
+      it('builds a forms qualifier and returns the sample reports', async () => {
+        const forms: [string, ...string[]] = ['pregnancy', 'delivery'];
+        const qualifier = { forms };
+        const samples = [{ form: 'pregnancy' }] as Report.v1.Report[];
+        const getSamples = sinon.stub().resolves(samples);
+        adapt.returns(getSamples);
+        const byForms = sinon.stub(Qualifier, 'byForms').returns(qualifier);
+
+        const result = await Report.v1.getSamplesByForms(dataContext)(forms);
+
+        expect(result).to.equal(samples);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(
+          dataContext,
+          Local.Report.v1.getSamplesByForms,
+          Remote.Report.v1.getSamplesByForms
+        )).to.be.true;
+        expect(byForms.calledOnceWithExactly(forms)).to.be.true;
+        expect(getSamples.calledOnceWithExactly(qualifier)).to.be.true;
+      });
+    });
+
     describe('getUuids', () => {
       const freetextQualifier = { freetext: 'freetext' } as const;
       const reportIds = ['report1', 'report2', 'report3'];
@@ -714,6 +756,8 @@ describe('report', () => {
 
       it('contains expected keys', () => {
         expect(report).to.have.all.keys([
+          'countByForm',
+          'getSamplesByForms',
           'getSummaries',
           'getSummariesPage',
           'getUuidsByFreetext',
@@ -727,6 +771,31 @@ describe('report', () => {
           'getPageByIds',
           'getByIds',
         ]);
+      });
+
+      it('countByForm', async () => {
+        const expectedCounts = { pregnancy: 5 };
+        const reportCountByForm = sinon.stub().resolves(expectedCounts);
+        dataContextBind.returns(reportCountByForm);
+
+        const returnedCounts = await report.countByForm();
+
+        expect(returnedCounts).to.equal(expectedCounts);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.countByForm)).to.be.true;
+        expect(reportCountByForm.calledOnceWithExactly()).to.be.true;
+      });
+
+      it('getSamplesByForms', async () => {
+        const expectedSamples = [{ form: 'pregnancy' }] as Report.v1.Report[];
+        const reportGetSamplesByForms = sinon.stub().resolves(expectedSamples);
+        dataContextBind.returns(reportGetSamplesByForms);
+        const forms: [string, ...string[]] = ['pregnancy'];
+
+        const returnedSamples = await report.getSamplesByForms(forms);
+
+        expect(returnedSamples).to.equal(expectedSamples);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getSamplesByForms)).to.be.true;
+        expect(reportGetSamplesByForms.calledOnceWithExactly(forms)).to.be.true;
       });
 
       it('getSummaries', () => {
