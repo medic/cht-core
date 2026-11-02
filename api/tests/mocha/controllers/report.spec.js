@@ -11,6 +11,8 @@ describe('Report Controller Tests', () => {
   const reportGet = sandbox.stub();
   const reportGetWithLineage = sandbox.stub();
   const reportGetIdsPage = sandbox.stub();
+  const reportCountByForm = sandbox.stub();
+  const reportSamplesByForms = sandbox.stub();
   const reportGetPage = sandbox.stub();
   const reportGetSummaries = sandbox.stub();
   const createReport = sandbox.stub();
@@ -27,6 +29,8 @@ describe('Report Controller Tests', () => {
     bind.withArgs(Report.v1.get).returns(reportGet);
     bind.withArgs(Report.v1.getWithLineage).returns(reportGetWithLineage);
     bind.withArgs(Report.v1.getUuidsPage).returns(reportGetIdsPage);
+    bind.withArgs(Report.v1.countByForm).returns(reportCountByForm);
+    bind.withArgs(Report.v1.getSamplesByForms).returns(reportSamplesByForms);
     bind.withArgs(Report.v1.getPage).returns(reportGetPage);
     bind.withArgs(Report.v1.getSummaries).returns(reportGetSummaries);
     bind.withArgs(Report.v1.create).returns(createReport);
@@ -322,6 +326,42 @@ describe('Report Controller Tests', () => {
         expect(reportGetPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.called).to.be.true;
+      });
+    });
+
+    describe('countByForm', () => {
+      it('returns report counts grouped by form', async () => {
+        req = { };
+        const counts = { pregnancy: 5, delivery: 2 };
+        reportCountByForm.resolves(counts);
+
+        await controller.v1.countByForm(req, res);
+
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_reports'] }
+        )).to.be.true;
+        expect(reportCountByForm.calledOnceWithExactly()).to.be.true;
+        expect(res.json.calledOnceWithExactly(counts)).to.be.true;
+      });
+    });
+
+    describe('getSamplesByForms', () => {
+      it('returns one sample report per requested form', async () => {
+        req = { body: { forms: ['pregnancy', 'delivery'] } };
+        const samples = [{ form: 'pregnancy' }, { form: 'delivery' }];
+        reportSamplesByForms.resolves(samples);
+
+        await controller.v1.getSamplesByForms(req, res);
+
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_reports'] }
+        )).to.be.true;
+        expect(reportSamplesByForms.calledOnceWithExactly(
+          Qualifier.byForms(['pregnancy', 'delivery'])
+        )).to.be.true;
+        expect(res.json.calledOnceWithExactly(samples)).to.be.true;
       });
     });
 

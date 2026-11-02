@@ -6,6 +6,8 @@ const auth = require('../auth');
 const getReport = ctx.bind(Report.v1.get);
 const getReportWithLineage = ctx.bind(Report.v1.getWithLineage);
 const getReportIds = ctx.bind(Report.v1.getUuidsPage);
+const getReportCountsByForm = ctx.bind(Report.v1.countByForm);
+const getReportSamplesByForms = ctx.bind(Report.v1.getSamplesByForms);
 const getReportDocs = ctx.bind(Report.v1.getPage);
 const getReportSummaries = ctx.bind(Report.v1.getSummaries);
 const create = ctx.bind(Report.v1.create);
@@ -22,7 +24,13 @@ const buildIdsQualifier = (ids) => {
 // Accepts `?form=a,b` and `?form=a&form=b` alike, matching how `ids` is handled above rather than
 // picking one convention for this parameter alone.
 const buildFormsQualifier = (form) => {
-  const formsArray = (Array.isArray(form) ? form : form.split(',')).filter(Boolean);
+  let forms = [];
+  if (Array.isArray(form)) {
+    forms = form;
+  } else if (typeof form === 'string') {
+    forms = form.split(',');
+  }
+  const formsArray = forms.filter(Boolean);
   if (!formsArray.length) {
     // Same message shape as byForms() throws below for other invalid input, so the two paths that
     // can reject a `form` value give a caller one consistent body to parse rather than two.
@@ -155,6 +163,84 @@ module.exports = {
         : Qualifier.byFreetext(req.query.freetext);
       const docs = await getReportIds(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
+    }),
+
+    /**
+     * @openapi
+     * /api/v1/report/count-by-form:
+     *   get:
+     *     summary: Get report counts by form
+     *     operationId: v1ReportCountByFormGet
+     *     description: Returns the number of reports recorded for each form.
+     *     tags: [Report]
+     *     x-since: 5.4.0
+     *     x-permissions:
+     *       hasAll: [can_view_reports]
+     *     responses:
+     *       '200':
+     *         description: A map of form codes to report counts
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               additionalProperties:
+     *                 type: integer
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     */
+    countByForm: serverUtils.doOrError(async (req, res) => {
+      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
+      const reports = await getReportCountsByForm();
+      return res.json(reports);
+    }),
+
+    /**
+     * @openapi
+     * /api/v1/report/samples-by-form:
+     *   post:
+     *     summary: Get a sample report for each form
+     *     operationId: v1ReportSamplesByFormPost
+     *     description: Returns one report document for each requested form that has at least one report.
+     *     tags: [Report]
+     *     x-since: 5.4.0
+     *     x-permissions:
+     *       hasAll: [can_view_reports]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               forms:
+     *                 type: array
+     *                 minItems: 1
+     *                 items:
+     *                   type: string
+     *             required: [forms]
+     *     responses:
+     *       '200':
+     *         description: One sample report for each matching form
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 $ref: '#/components/schemas/v1.Report'
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     */
+    getSamplesByForms: serverUtils.doOrError(async (req, res) => {
+      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
+      const qualifier = buildFormsQualifier(req.body?.forms);
+      const samples = await getReportSamplesByForms(qualifier);
+      return res.json(samples);
     }),
 
     /**
