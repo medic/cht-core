@@ -236,6 +236,7 @@ describe('Authorization service', () => {
             contactDepth: 2,
             reportDepth: -1,
             subjectsDepth: {},
+            contactsCount: 2,
           });
         });
     });
@@ -426,6 +427,22 @@ describe('Authorization service', () => {
         });
     });
 
+    it('counts each contact once when it is returned for multiple keys', async () => {
+      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
+        rows: [
+          { id: 'a', key: ['a', 0], value: { shortcode: 'sa' } },
+          { id: 'b', key: ['a', 1], value: { shortcode: 'sb' } },
+          { id: 'b', key: ['b', 0], value: { shortcode: 'sb' } },
+        ]
+      });
+      service.__get__('getDepth').returns({ contactDepth: 1, reportDepth: -1 });
+      auth.hasAllPermissions.returns(false);
+
+      const result = await service.getAuthorizationContext({ facility_id: ['a', 'b'], name: 'peter' });
+
+      result.contactsCount.should.equal(2);
+    });
+
     it('should add primary contacts when enabled', async () => {
       db.medic.query.withArgs('medic/contacts_by_depth').onCall(0).resolves({
         rows: [
@@ -451,7 +468,7 @@ describe('Authorization service', () => {
       result.contactsByDepthKeys.should.deep.equal([
         ['aaa', 0], ['aaa', 1],
       ]);
-      result.should.deep.include({ contactDepth: 1 });
+      result.should.deep.include({ contactDepth: 1, contactsCount: 4 });
       db.medic.query.callCount.should.equal(2);
       db.medic.query.args[0].should.deep.equal(['medic/contacts_by_depth', { keys: [[ 'aaa', 0], [ 'aaa', 1]] }]);
       db.medic.query.args[1].should.deep.equal(['medic/contacts_by_depth', { keys: [['contact2'], ['contact']] }]);

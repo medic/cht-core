@@ -310,6 +310,45 @@ describe('replication', () => {
         });
     });
 
+    describe('replication limits', () => {
+      const expectLimitError = async (username, limitName) => {
+        try {
+          await requestDocs(username);
+          expect.fail('Should have thrown');
+        } catch (error) {
+          expect(error.status).to.equal(400);
+          expect(JSON.stringify(error.body)).to.include(`exceeds the replication ${limitName} limit`);
+        }
+      };
+
+      it('should reject users with too many contacts', async () => {
+        await utils.updateSettings({ replication_limits: { contacts: 1 } }, { ignoreReload: true });
+        await expectLimitError('bob', 'contacts');
+      });
+
+      it('should reject users with too many docs', async () => {
+        await utils.saveDocs(createSomeContacts(5, 'fixture:bobville'));
+        await utils.updateSettings({ replication_limits: { docs: 5 } }, { ignoreReload: true });
+        await expectLimitError('bob', 'docs');
+      });
+
+      it('should reject users with too many unpurged docs', async () => {
+        await utils.updateSettings({ replication_limits: { unpurged_docs: 1 } }, { ignoreReload: true });
+        await expectLimitError('bob', 'unpurged_docs');
+      });
+
+      it('should replicate when the limits are disabled', async () => {
+        const allowedDocs = createSomeContacts(5, 'fixture:bobville');
+        await utils.saveDocs(allowedDocs);
+        await utils.updateSettings(
+          { replication_limits: { contacts: false, docs: false, unpurged_docs: false } },
+          { ignoreReload: true }
+        );
+        const response = await requestDocs('bob');
+        assertDocIds(response, ...bobsIds, ...getIds(allowedDocs));
+      });
+    });
+
     describe('replication depth', () => {
       const docs = [
         {
