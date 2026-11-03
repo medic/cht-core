@@ -414,8 +414,13 @@ const addPrimaryContactsSubjects = async (authCtx, contacts) => {
     });
   }
 
+  const missingPrimaryContacts = unknownPrimaryContacts.filter(id => !contacts[id]);
+  if (missingPrimaryContacts.length) {
+    logger.warn(`Primary contacts not found, skipping: ${missingPrimaryContacts.join(', ')}`);
+  }
+
   if (usesReportDepth(authCtx)) {
-    primaryContactIds.forEach(primaryContactId => {
+    primaryContactIds.filter(id => contacts[id]).forEach(primaryContactId => {
       const parents = Object.entries(contacts)
         .filter(([, { primaryContact }]) => primaryContact === primaryContactId)
         .map(([id]) => id);
