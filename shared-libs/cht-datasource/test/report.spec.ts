@@ -545,7 +545,7 @@ describe('report', () => {
       it('throws an error if the qualifier is invalid', async () => {
         isIdsQualifier.returns(false);
 
-        await expect(Report.v1.getPage(dataContext)(invalidQualifier as never, cursor, limit))
+        await expect(Report.v1.getPage(dataContext)(invalidQualifier, cursor, limit))
           .to.be.rejectedWith(`Invalid identifiers [${JSON.stringify(invalidQualifier)}].`);
 
         expect(isIdsQualifier.calledOnceWithExactly(invalidQualifier)).to.be.true;
@@ -612,7 +612,7 @@ describe('report', () => {
       it('throws an error for an invalid qualifier', () => {
         isIdsQualifier.returns(false);
 
-        expect(() => Report.v1.getAll(dataContext)({ ids: [] } as never))
+        expect(() => Report.v1.getAll(dataContext)({ ids: [] }))
           .to.throw(`Invalid identifiers [${JSON.stringify({ ids: [] })}].`);
         expect(reportGetPage.notCalled).to.be.true;
       });

@@ -6,7 +6,7 @@ const harness = new TestRunner();
 
 describe('Tests for active pregnancy condition card', () => {
   before(() => harness.start());
-  after(async () => { return await harness.stop(); });
+  after(() => harness.stop());
   beforeEach(async () => {
     await harness.clear();
     return await harness.setNow('2000-01-01');
@@ -29,17 +29,16 @@ describe('Tests for active pregnancy condition card', () => {
     expect(activePregnancyCard).to.have.property('label', 'contact.profile.pregnancy.active');
     const fields = activePregnancyCard.fields;
     expect(fields).to.have.property('length', 7);
-    expect(fields[0]).to.deep.equal(
-      {
-        'label': 'Weeks Pregnant',
-        'value': {
-          'number': 21, //21 weeks and 6 days
-          'approximate': false
-        },
-        'translate': false,
-        'filter': 'weeksPregnant',
-        'width': 6
-      });
+    expect(fields[0]).to.deep.equal({
+      'label': 'Weeks Pregnant',
+      'value': {
+        'number': 21, //21 weeks and 6 days
+        'approximate': false
+      },
+      'translate': false,
+      'filter': 'weeksPregnant',
+      'width': 6
+    });
     expect(fields[1]).to.deep.equal({
       'label': 'contact.profile.edd',
       'value': moment('2000-05-07').valueOf(), //LMP date + 280 days

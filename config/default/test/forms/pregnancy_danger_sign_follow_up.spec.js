@@ -12,11 +12,10 @@ describe('Pregnancy danger sign follow-up form', () => {
 
   after(() => harness.stop());
 
-  beforeEach(
-    async() => {
-      await harness.clear();
-      await harness.setNow(new Date(TODAY));
-    });
+  beforeEach(async() => {
+    await harness.clear();
+    await harness.setNow(new Date(TODAY));
+  });
 
   afterEach(() => expect(harness.consoleErrors).to.be.empty);
 

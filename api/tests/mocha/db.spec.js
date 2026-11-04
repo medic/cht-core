@@ -1,5 +1,4 @@
 const sinon = require('sinon');
-require('chai').use(require('chai-as-promised'));
 const PouchDB = require('pouchdb-core');
 const { expect } = require('chai');
 const rewire = require('rewire');
@@ -426,7 +425,7 @@ describe('db', () => {
       });
     });
 
-    it('should work when call is made without an active clinet request', async () => {
+    it('should work when call is made without an active client request', async () => {
       sinon.stub(PouchDB, 'fetch').resolves({
         json: sinon.stub().resolves({ result: true }),
         ok: true,

@@ -122,7 +122,7 @@ describe('TaskTypeFilterComponent', () => {
   });
 
   it('should unsubscribe on destroy', () => {
-    const unsubscribeSpy = sinon.spy(component['subscriptions'], 'unsubscribe');
+    const unsubscribeSpy = sinon.spy((component as any).subscriptions, 'unsubscribe');
 
     component.ngOnDestroy();
 

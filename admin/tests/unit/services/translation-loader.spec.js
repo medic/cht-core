@@ -100,7 +100,7 @@ describe('TranslationLoader service', function() {
     });
   });
 
-  it('returns "en" wrapped in hypens for test locale', function() {
+  it('returns "en" wrapped in hyphens for test locale', function() {
     const options = { key: 'test' };
     const doc = {
       prawn: 'prawn',

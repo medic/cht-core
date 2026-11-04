@@ -67,67 +67,19 @@ module.exports = defineConfig([
         ...globalsPlugin.node,
       },
     },
+    // Base rules come from @medic/eslint-config. Only add rules it does not define, or deliberate overrides.
     rules: {
-      '@stylistic/eol-last': 'error',
-      'eol-last': 'off',
-      '@stylistic/indent': ['error', 2],
-      'indent': 'off',
-      '@stylistic/max-len': ['error', { code: 120, ignoreUrls: true, tabWidth: 2}],
-      'max-len': 'off',
+      // @medic declares test globals (expect, sinon, chai, ...) that our tests also require explicitly
       'no-redeclare': ['error', { builtinGlobals: false }],
-      '@stylistic/quotes': ['error', 'single', { allowTemplateLiterals: 'always' }],
-      '@stylistic/semi': ['error', 'always'],
-      '@stylistic/array-bracket-newline': [ 'error', 'consistent' ],
-      '@stylistic/arrow-spacing': [
-        'error', {
-          before: true,
-          after: true,
-        }
-      ],
-      '@stylistic/brace-style': [ 'error', '1tbs' ],
-      '@stylistic/comma-spacing': [
-        'error', {
-          before: false,
-          after: true,
-        }
-      ],
-      '@stylistic/comma-style': [ 'error', 'last' ],
-      '@stylistic/dot-location': [ 'error', 'property' ],
-      'func-call-spacing': [ 'error', 'never' ],
+      // Indent switch cases one level inside the switch (@medic default is not to)
+      indent: ['error', 2, { SwitchCase: 1 }],
+      // Core max-len is deprecated in favour of @stylistic/max-len. Remove this override once @medic/eslint-config
+      // has migrated to the @stylistic rules.
+      'max-len': 'off',
+      '@stylistic/max-len': ['error', { code: 120, ignoreUrls: true, tabWidth: 2 }],
       'func-style': [ 'error', 'expression' ],
-      '@stylistic/function-call-argument-newline': [ 'error', 'consistent' ],
-      '@stylistic/function-paren-newline': [ 'error', 'consistent' ],
-      'implicit-arrow-linebreak': [ 'error', 'beside' ],
-      '@stylistic/key-spacing': [
-        'error', {
-          beforeColon: false,
-          afterColon: true,
-        }
-      ],
-      '@stylistic/keyword-spacing': [
-        'error', {
-          before: true,
-          after: true,
-        }
-      ],
-      '@stylistic/linebreak-style': [ 'error', 'unix' ],
-      '@stylistic/lines-between-class-members': [
-        'error', 'always', {
-          exceptAfterSingleLine: true,
-        }
-      ],
-      '@stylistic/new-parens': 'error',
       'no-alert': 'error',
       'node/no-exports-assign': 'error',
-      'rest-spread-spacing': [ 'error', 'never' ],
-      '@stylistic/semi-spacing': [
-        'error', {
-          before: false,
-          after: true,
-        }
-      ],
-      'semi-style': [ 'error', 'last' ],
-      'unicode-bom': [ 'error', 'never' ],
     },
   },
   {
@@ -135,7 +87,16 @@ module.exports = defineConfig([
     languageOptions: {
       sourceType: 'module',
       parser: tsParser,
-    }
+    },
+    plugins: {
+      '@stylistic': stylisticPlugin,
+    },
+    rules: {
+      // The core indent rule does not understand TypeScript syntax, so use the
+      // TypeScript-aware equivalent with the same settings.
+      indent: 'off',
+      '@stylistic/indent': ['error', 2, { SwitchCase: 1 }],
+    },
   },
   {
     files: ['**/*.d.ts'],
@@ -164,7 +125,6 @@ module.exports = defineConfig([
     languageOptions: {
       globals: {
         ...globalsPlugin.node,
-        ...globalsPlugin.mocha,
         ...globalsPlugin.chai,
         ...globalsPlugin.jasmine,
       }
@@ -173,7 +133,6 @@ module.exports = defineConfig([
       'async/missing-await-in-async-fn': 'error',
       'no-only-tests/no-only-tests': 'error',
       'promise/catch-or-return': 'error',
-      'no-global-assign': 'off',
       'no-console': 'off',
     },
   },
@@ -187,13 +146,8 @@ module.exports = defineConfig([
       }
     },
     rules: {
-      '@stylistic/brace-style': 'off',
       '@stylistic/max-len': 'off',
-      '@stylistic/array-bracket-newline': 'off',
       'func-style': 'off',
-      '@stylistic/function-call-argument-newline': 'off',
-      '@stylistic/function-paren-newline': 'off',
-      '@stylistic/key-spacing': 'off',
     },
   },
   {
@@ -336,15 +290,11 @@ module.exports = defineConfig([
 
     rules: {
       semi: 'off',
-      '@stylistic/semi': 'off',
-      '@stylistic/indent': 'off',
-      '@stylistic/keyword-spacing': 'off',
-      '@stylistic/eol-last': 'off',
+      indent: 'off',
+      'keyword-spacing': 'off',
       'eol-last': 'off',
       'no-var': 'off',
       'function-paren-newline': 'off',
-      'keyword-spacing': 'off',
-      'func-names': 'off',
       'func-style': 'off'
     },
   },
@@ -494,11 +444,6 @@ module.exports = defineConfig([
     languageOptions: {
       parser: templateParser,
     },
-
-    rules: {
-      indent: 'off',
-      'max-len': 'off',
-    },
   },
   {
     files: ['webapp/src/js/bootstrapper/offline-ddocs/**/*.js'],
@@ -614,6 +559,9 @@ module.exports = defineConfig([
       ['jsdoc/check-tag-names']: ['error', {
         definedTags: ['typeParam', 'packageDocumentation'],
       }],
+
+      // TypeDoc drops `{Type}` annotations from `@throws`, so keep the error type as plain text instead
+      ['jsdoc/require-throws-type']: 'off',
     },
   },
   {

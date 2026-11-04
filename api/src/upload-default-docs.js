@@ -46,7 +46,7 @@ const uploadDefaultDocuments = async function () {
     const uploadResult = await uploadDocumentsInFolder(pathToConfig);
     const unsuccessfulUploads = uploadResult.filter(result => !result.ok);
     for (const unsuccessful of unsuccessfulUploads) {
-      error(`Failured to upload initial config document ${unsuccessful.id}: ${unsuccessful.message}`);
+      error(`Failed to upload initial config document ${unsuccessful.id}: ${unsuccessful.message}`);
     }
 
     if (unsuccessfulUploads.length) {

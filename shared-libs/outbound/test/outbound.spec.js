@@ -804,7 +804,7 @@ describe('outbound shared library', () => {
       logSendError('config', 'record-1', error);
       assert.equal(
         logger.error.args[0][0],
-        'Failed to push record-1 to config, server responsed with 500'
+        'Failed to push record-1 to config, server responded with 500'
       );
     });
 
@@ -823,7 +823,7 @@ describe('outbound shared library', () => {
       logSendError('config', 'record-1', error);
       assert.equal(
         logger.error.args[0][0],
-        'Failed to push record-1 to config, server responsed with 500'
+        'Failed to push record-1 to config, server responded with 500'
       );
     });
 
@@ -839,7 +839,7 @@ describe('outbound shared library', () => {
       logSendError('config', 'record-1', error);
       assert.equal(
         logger.error.args[0][0],
-        'Failed to push record-1 to config, server responsed with 500'
+        'Failed to push record-1 to config, server responded with 500'
       );
     });
 

@@ -590,13 +590,35 @@ describe('Authorization service', () => {
           request.post.callCount.should.equal(1);
           request.post.args[0].should.deep.equal([  {
             body: {
-              limit: 200000,
-              q: 'key:(1 OR 2 OR 3)'
+              limit: 20000,
+              q: 'key:(1 OR 2 OR 3)',
+              bookmark: undefined,
             },
             uri: 'http://localhost:5988/_design/medic/_nouveau/docs_by_replication_key'
           }]);
 
           result.length.should.equal(0);
+        });
+    });
+
+    it('should page through results using bookmarks', () => {
+      const page = (start, length) => Array
+        .from({ length })
+        .map((_, idx) => ({ id: `r${start + idx}`, fields: { key: '1', subject: '1' } }));
+      request.post.onCall(0).resolves({ hits: page(0, 20000), bookmark: 'b1' });
+      request.post.onCall(1).resolves({ hits: page(20000, 20000), bookmark: 'b2' });
+      request.post.onCall(2).resolves({ hits: page(40000, 10), bookmark: 'b3' });
+
+      return service
+        .getDocsByReplicationKey({ subjectIds, userCtx: { name: 'user' }})
+        .then(result => {
+          request.post.callCount.should.equal(3);
+          request.post.args.map(([{ body }]) => body).should.deep.equal([
+            { limit: 20000, q: 'key:(1 OR 2 OR 3)', bookmark: undefined },
+            { limit: 20000, q: 'key:(1 OR 2 OR 3)', bookmark: 'b1' },
+            { limit: 20000, q: 'key:(1 OR 2 OR 3)', bookmark: 'b2' },
+          ]);
+          result.length.should.equal(40010);
         });
     });
 

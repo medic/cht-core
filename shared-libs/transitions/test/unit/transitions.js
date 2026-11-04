@@ -1,7 +1,5 @@
 const sinon = require('sinon');
-const { assert, expect, ...chai } = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-chai.use(chaiAsPromised);
+const { assert, expect } = require('chai');
 const transitions = require('../../src/transitions');
 const config = require('../../src/config');
 const _ = require('lodash');

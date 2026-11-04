@@ -636,27 +636,33 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
 
   while (allKeys.length) {
     const chunk = allKeys.splice(0, nouveau.BATCH_LIMIT);
-    const response = await request.post({
-      uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
-      body: {
-        q: `key:(${chunk.map(nouveau.escapeKeys).join(' OR ')})`,
-        limit: nouveau.RESULTS_LIMIT,
-      }
-    });
+    const body = {
+      q: `key:(${chunk.map(nouveau.escapeKeys).join(' OR ')})`,
+      limit: nouveau.RESULTS_LIMIT,
+    };
+    let bookmark;
+    let previousBookmark;
+    let pageHits;
 
-    if (!response.hits || !response.hits.length) {
-      continue;
-    }
-
-    for (const hit of response.hits) {
-      hits.push({
-        id: hit.id,
-        fields: {
-          ...hit.fields,
-          key: Array.isArray(hit.fields.key) ? hit.fields.key : [hit.fields.key],
-        },
+    do {
+      previousBookmark = bookmark;
+      const response = await request.post({
+        uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
+        body: { ...body, bookmark },
       });
-    }
+
+      bookmark = response.bookmark;
+      pageHits = response.hits || [];
+      for (const hit of pageHits) {
+        hits.push({
+          id: hit.id,
+          fields: {
+            ...hit.fields,
+            key: Array.isArray(hit.fields.key) ? hit.fields.key : [hit.fields.key],
+          },
+        });
+      }
+    } while (bookmark && bookmark !== previousBookmark && pageHits.length >= nouveau.RESULTS_LIMIT);
   }
 
   return hits;

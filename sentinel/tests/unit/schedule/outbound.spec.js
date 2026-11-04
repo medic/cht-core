@@ -403,7 +403,7 @@ describe('outbound schedule', () => {
         });
     });
 
-    it('should remove queue entries that refer to non-existant config items', () => {
+    it('should remove queue entries that refer to non-existent config items', () => {
       const config = undefined;
 
       const task = {

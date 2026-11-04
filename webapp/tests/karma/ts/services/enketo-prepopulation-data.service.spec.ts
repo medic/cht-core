@@ -232,7 +232,7 @@ describe('EnketoPrepopulationData service', () => {
         },
       };
 
-      service['bindJsonToXml'](element, data);
+      service.bindJsonToXml(element, data);
 
       assert.equal(element.find('name').text(), 'Davesville');
       assert.equal(element.find('external_id').text(), 'THING');
@@ -266,7 +266,7 @@ describe('EnketoPrepopulationData service', () => {
         },
       };
 
-      service['bindJsonToXml'](element, data);
+      service.bindJsonToXml(element, data);
 
       assert.equal(element.find('name').text(), 'Davesville');
       assert.equal(element.find('contact').text(), 'abc-123');
@@ -304,7 +304,7 @@ describe('EnketoPrepopulationData service', () => {
         },
       };
 
-      service['bindJsonToXml'](element, data);
+      service.bindJsonToXml(element, data);
 
       assert.equal(element.find('district_hospital > name').text(), 'Davesville');
       assert.equal(element.find('district_hospital > external_id').text(), 'THING');
@@ -343,7 +343,7 @@ describe('EnketoPrepopulationData service', () => {
         },
       };
 
-      service['bindJsonToXml'](element, data);
+      service.bindJsonToXml(element, data);
 
       assert.equal(
         element.find('contact > name').text(),
@@ -372,7 +372,7 @@ describe('EnketoPrepopulationData service', () => {
         },
       };
 
-      service['bindJsonToXml'](element, data);
+      service.bindJsonToXml(element, data);
 
       assert.equal(element.find('smang').text(), DEEP_TEST_VALUE);
     });
@@ -434,7 +434,7 @@ describe('EnketoPrepopulationData service', () => {
           ]
         }
       };
-      service['bindJsonToXml'](element, data, (name) => {
+      service.bindJsonToXml(element, data, (name) => {
         return '>%, >inputs>%'.replace(/%/g, name);
       });
 
@@ -519,7 +519,7 @@ describe('EnketoPrepopulationData service', () => {
         },
       };
 
-      expect(() => service['bindJsonToXml'](element, data)).to.not.throw();
+      expect(() => service.bindJsonToXml(element, data)).to.not.throw();
       assert.equal(element.find('name').text(), 'Davesville');
     });
 
@@ -545,7 +545,7 @@ describe('EnketoPrepopulationData service', () => {
         },
       };
 
-      service['bindJsonToXml'](element, data);
+      service.bindJsonToXml(element, data);
 
       assert.equal(element.find('district_hospital')[0].hasAttribute('jr:template'), false);
       assert.equal(element.find('district_hospital')[0].hasAttribute('template'), false);

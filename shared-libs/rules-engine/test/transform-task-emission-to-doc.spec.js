@@ -41,7 +41,7 @@ describe('transform-task-emission-to-doc', () => {
     );
     expect(secondDoc.taskDoc).to.nested.include({
       _id: `task~username~abc~${Date.now()}`,
-      rev: '1', // attributes not in shema are preserved
+      rev: '1', // attributes not in schema are preserved
       requester: 'gen',
       state: 'Completed',
       'emission._id': 'abc',
