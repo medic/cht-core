@@ -1,5 +1,5 @@
 const moment = require('moment');
-const { toBik_dev } = require('bikram-sambat');
+const { toBik, toBik_dev, toDev } = require('bikram-sambat');
 
 const utils = require('@utils');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
@@ -16,33 +16,20 @@ const fromDevanagari = (str) => {
   return str.replace(/[०-९]/g, (d) => devanagariDigits.indexOf(d).toString());
 };
 
-const toDevanagari = (str) => {
-  const devanagariDigits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
-  return str.replace(/[0-9]/g, (d) => devanagariDigits[Number.parseInt(d, 10)]);
-};
-
-const nepaliMonths = ['बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ', 'असोज', 'कात्तिक', 'मंसिर', 'पुस', 'माघ', 'फागुन', 'चैत'];
-
 const getExpectedNepaliLabel = (momentDate) => {
-  const bsStr = toBik_dev(momentDate.format('YYYY-MM-DD'));
-  const [, month, day] = bsStr.split('-');
-  const dayNum = Number.parseInt(fromDevanagari(day), 10);
-  const monthNum = Number.parseInt(fromDevanagari(month), 10);
-  const dayDev = toDevanagari(dayNum.toString());
-  const monthName = nepaliMonths[monthNum - 1];
-  return `${dayDev} ${monthName}`;
+  const { year, month, day } = toBik(momentDate.format('YYYY-MM-DD'));
+  const dev = toDev(year, month, day);
+  return `${dev.day} ${dev.month}`;
 };
 
 const getExpectedFromLabel = () => {
-  const todayBik = toBik_dev(moment().format('YYYY-MM-DD'));
-  const [, month] = todayBik.split('-').map(num => Number.parseInt(fromDevanagari(num), 10));
+  const { year, month } = toBik(moment().format('YYYY-MM-DD'));
   let targetMonth = month - 2;
   if (targetMonth <= 0) {
     targetMonth += 12;
   }
-  const dayDev = toDevanagari('1');
-  const monthName = nepaliMonths[targetMonth - 1];
-  return `${dayDev} ${monthName}`;
+  const dev = toDev(year, targetMonth, 1);
+  return `${dev.day} ${dev.month}`;
 };
 
 describe('Reports Sidebar Filter', () => {
