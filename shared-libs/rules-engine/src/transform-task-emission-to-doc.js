@@ -6,6 +6,7 @@
  */
 
 const TaskStates = require('./task-states');
+const { DOC_TYPES } = require('@medic/constants');
 
 /**
  * @param {Object} taskEmission A task emission from the rules engine
@@ -83,7 +84,7 @@ const minifyEmission = (taskDoc, emission) => {
 
 const newTaskDoc = (emission, userSettingsId, calculatedAt) => ({
   _id: `task~${userSettingsId}~${emission._id}~${calculatedAt}`,
-  type: 'task',
+  type: DOC_TYPES.TASK,
   authoredOn: calculatedAt,
   stateHistory: [],
 });
