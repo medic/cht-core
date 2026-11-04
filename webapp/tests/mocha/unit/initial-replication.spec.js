@@ -170,6 +170,54 @@ describe('Initial replication', () => {
       initialReplication = rewire('../../../src/js/bootstrapper/initial-replication');
     });
 
+    it('should download forms individually, separately from other docs, and then their media', async () => {
+      sinon.stub(utils, 'fetchJSON').resolves({
+        doc_ids_revs: [{ id: 'one', rev: '1-a' }, { id: 'form:a', rev: '2-b' }, { id: 'form:b', rev: '3-c' }],
+      });
+      localDb.allDocs.resolves({ rows: [{ id: 'form:b', value: { rev: '3-c' } }] });
+      remoteDb.bulkGet.resolves({ results: [{ id: 'one', docs: [{ ok: { _id: 'one', _rev: '1-a' } }] }] });
+      localDb.bulkDocs.resolves();
+      localDb.get.onCall(0).rejects({ status: 404 }).resolves({ _id: FLAG_ID, start_time: 0 });
+      localDb.put.resolves();
+      localDb.replicate.to.resolves();
+      localDb.info.resolves({ update_seq: 2 });
+      const formMedia = {
+        isFormId: id => id.startsWith('form:'),
+        replicateFormDoc: sinon.stub().resolves(),
+        syncMedia: sinon.stub().resolves(),
+      };
+      const revert = initialReplication.__set__('formMedia', formMedia);
+
+      await initialReplication.replicate(remoteDb, localDb);
+      revert();
+
+      expect(formMedia.replicateFormDoc.args).to.deep.equal([[remoteDb, localDb, { id: 'form:a', rev: '2-b' }]]);
+      expect(remoteDb.bulkGet.args[0][0].docs).to.deep.equal([{ id: 'one', rev: '1-a' }]);
+      expect(formMedia.syncMedia.callCount).to.equal(1);
+      expect(formMedia.syncMedia.args[0][0]).to.equal(localDb);
+      expect(formMedia.syncMedia.calledAfter(localDb.replicate.to)).to.equal(true);
+    });
+
+    it('should complete initial replication when form media fails to download', async () => {
+      sinon.stub(utils, 'fetchJSON').resolves({ doc_ids_revs: [] });
+      sinon.stub(console, 'error');
+      localDb.allDocs.resolves({ rows: [] });
+      localDb.get.onCall(0).rejects({ status: 404 }).resolves({ _id: FLAG_ID, start_time: 0 });
+      localDb.put.resolves();
+      localDb.replicate.to.resolves();
+      localDb.info.resolves({ update_seq: 0 });
+      const revert = initialReplication.__set__('formMedia', {
+        isFormId: () => false,
+        syncMedia: sinon.stub().rejects(new Error('offline')),
+      });
+
+      await initialReplication.replicate(remoteDb, localDb);
+      revert();
+
+      expect(localDb.put.lastCall.args[0].complete).to.equal(true);
+      expect(console.error.callCount).to.equal(1);
+    });
+
     it('should perform initial replication', async () => {
       sinon.stub(utils, 'fetchJSON').resolves({
         doc_ids_revs: [

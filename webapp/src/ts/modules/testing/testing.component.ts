@@ -11,6 +11,8 @@ import { NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 
+import * as formMedia from '../../../js/bootstrapper/form-media';
+
 @Component({
   templateUrl: './testing.component.html',
   imports: [
@@ -65,7 +67,8 @@ export class TestingComponent implements OnInit {
     return Promise
       .all([
         this.dbService.get({ remote: false }).destroy(),
-        this.dbService.get({ remote: false, meta: true }).destroy()
+        this.dbService.get({ remote: false, meta: true }).destroy(),
+        formMedia.clear(),
       ])
       .catch(err => console.error('Error wiping databases', err));
   }

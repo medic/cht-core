@@ -181,6 +181,31 @@ describe('Enketo service', () => {
       expect(createObjectURL.args[0][0]).to.equal('myobjblob');
     });
 
+    it('loads form media from the cache without using the local db', async () => {
+      const match = sinon.stub().resolves({ blob: sinon.stub().resolves('cachedblob') });
+      sinon.stub(window.caches, 'open').resolves({ match } as any);
+      createObjectURL.returns('myobjurl');
+      enketoInit.returns([]);
+      EnketoPrepopulationData.returns('<xml></xml>');
+      const wrapper = $('<div><div class="container"></div><form></form></div>');
+      const formConfig = buildFormConfig({
+        doc: {
+          ...mockEnketoDoc('myform'),
+          form_media: { myimg: { content_type: 'image/png', digest: 'md5-a', length: 5 } },
+        },
+        html: $('<div><img data-media-src="myimg"></div>'),
+        model: VISIT_MODEL,
+      });
+
+      await service.renderForm({ selector: wrapper, formConfig }, { language: 'en' });
+      await new Promise(resolve => setTimeout(resolve));
+
+      expect(match.callCount).to.equal(1);
+      expect(dbGetAttachment.callCount).to.equal(0);
+      expect(createObjectURL.args).to.deep.equal([['cachedblob']]);
+      expect(wrapper.find('img').first().attr('src')).to.equal('myobjurl');
+    });
+
     it('leaves img wrapped and hides loader if failed to load', fakeAsync(() => {
       const consoleErrorMock = sinon.stub(console, 'error');
       dbGetAttachment.rejects('not found');
