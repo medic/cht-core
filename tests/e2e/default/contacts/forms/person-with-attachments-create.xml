@@ -8,11 +8,14 @@
           <text id="/data/person_with_attachments/name:label">
             <value>Full name</value>
           </text>
-          <text id="/data/person_with_attachments/photo:label">
-            <value>Photo</value>
+          <text id="/data/person_with_attachments/profile_image:label">
+            <value>Profile Image</value>
           </text>
           <text id="/data/person_with_attachments/document:label">
             <value>Document</value>
+          </text>
+          <text id="/data/person_with_attachments/badge:label">
+            <value>Badge</value>
           </text>
         </translation>
       </itext>
@@ -22,8 +25,9 @@
             <parent>PARENT</parent>
             <type>person</type>
             <name/>
-            <photo/>
+            <profile_image/>
             <document/>
+            <badge type="binary">iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8z8BQz0AEYBxVSF+FABJADveWkH6oAAAAAElFTkSuQmCC</badge>
           </person_with_attachments>
           <meta tag="hidden">
             <instanceID/>
@@ -33,8 +37,9 @@
       <bind nodeset="/data/person_with_attachments/parent" type="string"/>
       <bind nodeset="/data/person_with_attachments/type" type="string"/>
       <bind nodeset="/data/person_with_attachments/name" type="string" required="true()"/>
-      <bind nodeset="/data/person_with_attachments/photo" type="binary"/>
+      <bind nodeset="/data/person_with_attachments/profile_image" type="binary"/>
       <bind nodeset="/data/person_with_attachments/document" type="binary"/>
+      <bind nodeset="/data/person_with_attachments/badge" readonly="true()" type="string" />
       <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
@@ -43,12 +48,15 @@
       <input ref="/data/person_with_attachments/name">
         <label ref="jr:itext('/data/person_with_attachments/name:label')"/>
       </input>
-      <upload ref="/data/person_with_attachments/photo" mediatype="image/*">
-        <label ref="jr:itext('/data/person_with_attachments/photo:label')"/>
+      <upload ref="/data/person_with_attachments/profile_image" mediatype="image/*">
+        <label ref="jr:itext('/data/person_with_attachments/profile_image:label')"/>
       </upload>
       <upload ref="/data/person_with_attachments/document" mediatype="application/*">
         <label ref="jr:itext('/data/person_with_attachments/document:label')"/>
       </upload>
+      <input ref="/data/person_with_attachments/badge" appearance="display-base64-image">
+        <label ref="jr:itext('/data/person_with_attachments/badge:label')"/>
+      </input>
     </group>
   </h:body>
 </h:html>

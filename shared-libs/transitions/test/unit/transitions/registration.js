@@ -64,7 +64,7 @@ describe('registration', () => {
       transition.booleanExpressionFails({}, '').should.equal(false);
     });
 
-    it('is true if the expresison fails', () => {
+    it('is true if the expression fails', () => {
       transition.booleanExpressionFails({ foo: 'bar' }, `doc.foo !== 'bar'`).should.equal(true);
     });
 

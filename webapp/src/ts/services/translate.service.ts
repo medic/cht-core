@@ -14,6 +14,10 @@ export class TranslateService {
   ) {
   }
 
+  get currentLang() {
+    return this.ngxTranslateService.currentLang;
+  }
+
   fieldIsRequired(fieldKey) {
     return this
       .get(fieldKey)

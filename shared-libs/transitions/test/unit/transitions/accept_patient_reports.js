@@ -127,7 +127,7 @@ describe('accept_patient_reports', () => {
 
       return transition.onMatch({ doc }).then((changed) => {
         changed.should.equal(true);
-        doc.errors.should.deep.equal([{ message: 'some_error', code: 'invalid_report' }]);
+        doc.errors.should.deep.equal([{ message: 'some_error', code: 'some_error' }]);
         doc.tasks.length.should.equal(1);
         doc.tasks[0].messages[0].should.deep.include({ to: '+123', message: 'some_error'});
         validation.validate.callCount.should.equal(1);

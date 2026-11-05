@@ -96,9 +96,12 @@ const getRecordRegistrations = (registrations, record) => {
     return [];
   }
 
-  return registrations
-    .filter(row => row.key === record.patient.patient_id)
-    .map(row => row.doc);
+  return _.uniqBy(
+    registrations
+      .filter(row => row.key === record.patient.patient_id)
+      .map(row => row.doc),
+    '_id'
+  );
 };
 
 const hydrate = records => {
@@ -119,7 +122,7 @@ const hydrate = records => {
   }
 
   return db.medic
-    .query('medic-client/registered_patients', { keys: patientIds, include_docs: true })
+    .query('medic-client/reports_by_subject', { keys: patientIds, include_docs: true })
     .then(result => {
       const registrations = result.rows.filter(row => {
         return registrationUtils.isValidRegistration(row.doc, config.get());
@@ -134,6 +137,8 @@ const hydrate = records => {
 };
 
 module.exports = {
+  // medic/messages_by_state emits a row per message and another for pending/forwarded, repeating ids across batches.
+  hasDuplicateDocIds: true,
   getDocs: ids => {
     return lineage.fetchHydratedDocs(ids).then(hydrate);
   },
@@ -163,7 +168,7 @@ module.exports = {
       ],
       getRows: record => {
         const tasks = normalizeTasks(record);
-        return _.flatten(tasks.map(task => {
+        return tasks.flatMap(task => {
           const history = buildHistory(task);
 
           if (!task.messages) {
@@ -207,7 +212,7 @@ module.exports = {
             message.to,
             message.message
           ]);
-        }), true);
+        });
       },
       hydrate: hydrate
     });

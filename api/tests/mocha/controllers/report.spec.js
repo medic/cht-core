@@ -183,6 +183,100 @@ describe('Report Controller Tests', () => {
       });
     });
 
+    describe('getUuids by form', () => {
+      const limit = 100;
+      const cursor = null;
+      const uuids = { data: ['uuid1', 'uuid2'], cursor: null };
+
+      it('builds a form qualifier from a comma-separated list', async () => {
+        req = { query: { form: 'pregnancy,delivery', cursor, limit } };
+        reportGetIdsPage.resolves(uuids);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_reports'] }
+        )).to.be.true;
+        expect(reportGetIdsPage.calledOnceWithExactly(
+          Qualifier.byForms(['pregnancy', 'delivery']), cursor, limit
+        )).to.be.true;
+        expect(res.json.calledOnceWithExactly(uuids)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('builds a form qualifier from a repeated query param', async () => {
+        req = { query: { form: ['pregnancy', 'delivery'], cursor, limit } };
+        reportGetIdsPage.resolves(uuids);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(reportGetIdsPage.calledOnceWithExactly(
+          Qualifier.byForms(['pregnancy', 'delivery']), cursor, limit
+        )).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('accepts a single form code', async () => {
+        req = { query: { form: 'pregnancy', cursor, limit } };
+        reportGetIdsPage.resolves(uuids);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(reportGetIdsPage.calledOnceWithExactly(
+          Qualifier.byForms(['pregnancy']), cursor, limit
+        )).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('ignores empty entries in the list', async () => {
+        req = { query: { form: 'pregnancy,,delivery,', cursor, limit } };
+        reportGetIdsPage.resolves(uuids);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(reportGetIdsPage.calledOnceWithExactly(
+          Qualifier.byForms(['pregnancy', 'delivery']), cursor, limit
+        )).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('errors without querying when form is present but empty', async () => {
+        req = { query: { form: '', cursor, limit } };
+
+        await controller.v1.getUuids(req, res);
+
+        expect(reportGetIdsPage.notCalled).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
+        expect(serverUtilsError.args[0][0].message).to.equal('Invalid forms [[]].');
+      });
+
+      it('uses freetext and ignores form when both are given', async () => {
+        req = { query: { freetext: 'report', form: 'pregnancy', cursor, limit } };
+        reportGetIdsPage.resolves(uuids);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(reportGetIdsPage.calledOnceWithExactly(
+          Qualifier.byFreetext('report'), cursor, limit
+        )).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('still reports a missing freetext when neither is given', async () => {
+        req = { query: { cursor, limit } };
+
+        await controller.v1.getUuids(req, res);
+
+        expect(reportGetIdsPage.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
+        expect(serverUtilsError.args[0][0].message).to.equal('Invalid freetext [undefined].');
+      });
+    });
+
     describe('getAll', () => {
       const limit = 100;
       const cursor = null;

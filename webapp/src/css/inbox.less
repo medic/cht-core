@@ -12,6 +12,7 @@
 @import 'material';
 @import 'content-list';
 
+@import 'bikramsambat';
 @import 'enketo/medic';
 @import 'messages';
 @import 'common';
@@ -588,8 +589,18 @@ mm-analytics-filters {
   cursor: pointer;
 }
 
-.report-image {
+mm-attachment-image img {
   max-width: 100%;
+}
+
+mm-contact-profile-image,
+mm-contact-profile-image mm-attachment-image {
+  display: contents;
+}
+
+mm-contact-profile-image img {
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .contacts {

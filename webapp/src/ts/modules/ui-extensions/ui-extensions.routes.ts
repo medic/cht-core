@@ -8,7 +8,7 @@ export const routes: Routes = [
     path: 'ui-extensions/:id',
     component: UiExtensionsTabComponent,
     resolve: {
-      tab: (route: ActivatedRouteSnapshot) => `ui-extension-${route.params['id']}`,
+      tab: (route: ActivatedRouteSnapshot) => `ui-extension-${route.params.id}`,
     },
     canActivate: [UiExtensionsTabRouteGuardProvider],
   },

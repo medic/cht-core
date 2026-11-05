@@ -1,0 +1,8 @@
+<my-form>
+  <name>Sally</name>
+  <main_file type="file">main_upload.png</main_file>
+  <doc1 db-doc="true">
+    <type>thing_1</type>
+    <sub_file type="file"></sub_file>
+  </doc1>
+</my-form>

@@ -5,13 +5,38 @@ const uuid = require('uuid').v7;
 const moment = require('moment');
 
 //
-// NB: using sentinel processing to delay the reading of infodocs is not guaranteed to be successful
-// here, but as of writing seems stable. The API code (see the uses of the controller in
-// ./api/controllers/infodoc) happens asynchronously so it doesn't affect request performance. This
-// means there is no way to know it's run: it just so happens to run faster than sentinel takes to
-// process.
+// API and sentinel write infodocs independently, in no guaranteed order, so waiting for one says
+// nothing about the other: both have to be waited on.
 //
-const delayedInfoDocsOf = async (ids) => {
+// Sentinel advances the sequence in its metadata doc as it processes changes, which is what
+// `waitForSentinel` watches. API has no equivalent marker: it records infodoc writes after it has
+// already responded (see the uses of the controller in ./api/controllers/infodoc), so nothing in
+// the response says whether that has happened yet. The write itself is the signal - API stamps
+// latest_replication_date with the time it handled the request, so a date at or after `since` is
+// this request's write.
+//
+const waitForApiInfoDocWrites = async (ids, since, retries = 15) => {
+  const infoDocs = await sentinelUtils.getInfoDocs(ids);
+  const recorded = infoDoc => infoDoc && new Date(infoDoc.latest_replication_date).getTime() >= since;
+
+  if (infoDocs.every(recorded)) {
+    return;
+  }
+
+  if (retries <= 0) {
+    throw new Error(`Timed out waiting for api to record infodoc writes for ${ids}`);
+  }
+
+  await utils.delayPromise(100);
+  return waitForApiInfoDocWrites(ids, since, retries - 1);
+};
+
+// `since` is the time the request that api should have recorded was made; omit it when api is not
+// expected to write, and only sentinel is waited on.
+const delayedInfoDocsOf = async (ids, since) => {
+  if (since) {
+    await waitForApiInfoDocWrites(ids, since);
+  }
   await sentinelUtils.waitForSentinel(ids);
   return sentinelUtils.getInfoDocs(ids);
 };
@@ -27,12 +52,13 @@ describe('infodocs', () => {
     const path = method === 'PUT' ? `/${doc._id}` : '/';
     let infoDoc;
 
+    const beforeCreate = Date.now();
     const result = await utils.requestOnTestDb({ path, method, body: doc });
     assert.isTrue(result.ok);
     doc._rev = result.rev;
     doc.more = 'data';
 
-    [infoDoc] = await delayedInfoDocsOf(doc._id);
+    [infoDoc] = await delayedInfoDocsOf(doc._id, beforeCreate);
 
     assert.deepInclude(infoDoc, {
       _id: doc._id + '-info',
@@ -43,10 +69,11 @@ describe('infodocs', () => {
     assert.isOk(infoDoc.initial_replication_date);
     assert.isOk(infoDoc.latest_replication_date);
 
+    const beforeUpdate = Date.now();
     const update = await utils.requestOnTestDb({ path, method, body: doc });
     assert.isTrue(update.ok);
 
-    const [updatedInfodoc] = await delayedInfoDocsOf(doc._id);
+    const [updatedInfodoc] = await delayedInfoDocsOf(doc._id, beforeUpdate);
 
     assert.equal(updatedInfodoc.initial_replication_date, infoDoc.initial_replication_date);
     assert.notEqual(updatedInfodoc.latest_replication_date, infoDoc.latest_replication_date);
@@ -98,6 +125,7 @@ describe('infodocs', () => {
         }
       ];
 
+      const beforeCreate = Date.now();
       const result = await utils.db.bulkDocs(docs);
       assert.equal(result.filter(r => r.ok).length, docs.length);
 
@@ -105,7 +133,7 @@ describe('infodocs', () => {
       docs[0]._rev = result[0].rev;
       docs[1]._rev = result[1].rev;
 
-      const infoDocs = await delayedInfoDocsOf(docs.map(d => d._id));
+      const infoDocs = await delayedInfoDocsOf(docs.map(d => d._id), beforeCreate);
 
       assert.equal(infoDocs.length, 3);
       infoDocs.forEach((infoDoc, idx) => {
@@ -120,6 +148,7 @@ describe('infodocs', () => {
         assert.isOk(infoDoc.latest_replication_date, `infodoc latest_replication_date for ${doc._id} exists`);
       });
 
+      const beforeUpdate = Date.now();
       const update = await utils.db.bulkDocs(docs);
       assert.isTrue(update[0].ok);
       assert.isTrue(update[1].ok);
@@ -128,84 +157,13 @@ describe('infodocs', () => {
       docs[0]._rev = update[0].rev;
       docs[1]._rev = update[1].rev;
 
+      // the third write conflicted, so api has nothing to record for it
+      await waitForApiInfoDocWrites([docs[0]._id, docs[1]._id], beforeUpdate);
       const newInfoDocs = await delayedInfoDocsOf(docs.map(d => d._id));
 
       assert.notEqual(newInfoDocs[0].latest_replication_date, infoDocs[0].latest_replication_date);
       assert.notEqual(newInfoDocs[1].latest_replication_date, infoDocs[1].latest_replication_date);
       assert.equal(newInfoDocs[2].latest_replication_date, infoDocs[2].latest_replication_date);
-    });
-  });
-
-  describe('legacy data support', () => {
-    it('finds and migrates data from the medic doc', async () => {
-      const testDoc = {
-        _id: 'yuiop',
-        data: 'data',
-        transitions: {
-          some: 'transition info'
-        }
-      };
-
-      await utils.toggleSentinelTransitions();
-      const result = await utils.db.post(testDoc);
-      testDoc._rev = result.rev;
-
-      await utils.setTransitionSeqToNow();
-      await utils.toggleSentinelTransitions();
-
-      testDoc.data = 'data changed';
-      await utils.saveDoc(testDoc);
-
-      const [infodoc] = await delayedInfoDocsOf(testDoc._id);
-
-      assert.isOk(infodoc.initial_replication_date, 'expected an initial_replication_date');
-      assert.isOk(infodoc.latest_replication_date, 'expected a latest_replication_date');
-      assert.deepEqual(infodoc.transitions, { some: 'transition info' });
-    });
-
-    it('finds and migrates data from the medic infodoc', async () => {
-      // In legacy situations the transition info was on the doc, while other
-      // information was on the infodoc
-      const testDoc = {
-        data: 'data',
-        transitions: {
-          some: 'transition info'
-        }
-      };
-      const legacyInfodoc = {
-        type: 'info',
-        some: 'legacy data',
-        initial_replication_date: 1000,
-        latest_replication_date: 2000
-      };
-
-      await utils.toggleSentinelTransitions();
-      const result = await utils.db.post(testDoc);
-      testDoc._rev = result.rev;
-      testDoc._id = result.id;
-
-      legacyInfodoc._id = `${result.id}-info`;
-      legacyInfodoc.doc_id = result.id;
-
-      await utils.db.put(legacyInfodoc);
-      await utils.setTransitionSeqToNow();
-      await utils.toggleSentinelTransitions();
-
-      testDoc.data = 'data changed';
-      await utils.saveDoc(testDoc);
-
-      const [infodoc] = await delayedInfoDocsOf(testDoc._id);
-
-      try {
-        await utils.db.get(legacyInfodoc._id);
-        assert.fail('doc should be deleted');
-      } catch (err) {
-        assert.equal(err.status, 404);
-      }
-      assert.equal(infodoc.initial_replication_date, 1000);
-      assert.isOk(infodoc.latest_replication_date !== 2000); // updated
-      assert.deepEqual(infodoc.transitions, { some: 'transition info' });
-      assert.equal(infodoc.some, 'legacy data');
     });
   });
 

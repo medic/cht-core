@@ -40,7 +40,7 @@ describe('contacts report component', () => {
       save: sinon.stub(),
       render: sinon.stub().resolves(),
     };
-    xmlFormsService = { get: sinon.stub().resolves({ title: 'formTitle' }) };
+    xmlFormsService = { getFormConfig: sinon.stub().resolves({ doc: { title: 'formTitle' } }) };
     geoHandle = { cancel: sinon.stub() };
     geolocationService = { init: sinon.stub().returns(geoHandle) };
     stopPerformanceTrackStub = sinon.stub();
@@ -160,7 +160,7 @@ describe('contacts report component', () => {
       expect(formService.render.callCount).to.equal(1);
       expect(formService.render.args[0][0]).to.deep.include({
         selector: '#contact-report',
-        formDoc: { title: 'formTitle' },
+        formConfig: { doc: { title: 'formTitle' } },
         instanceData: {
           source: 'contact',
           contact: {
@@ -182,8 +182,8 @@ describe('contacts report component', () => {
       component.ngOnInit();
       flush();
 
-      expect(xmlFormsService.get.callCount).to.equal(1);
-      expect(xmlFormsService.get.args[0][0]).to.equal('pregnancy_danger_sign');
+      expect(xmlFormsService.getFormConfig.callCount).to.equal(1);
+      expect(xmlFormsService.getFormConfig.args[0]).to.deep.equal(['report', 'pregnancy_danger_sign']);
       expect(formService.render.callCount).to.equal(1);
 
       routeSnapshot = {
@@ -199,8 +199,8 @@ describe('contacts report component', () => {
       });
       flush();
       expect(formService.render.callCount).to.equal(2);
-      expect(xmlFormsService.get.callCount).to.equal(2);
-      expect(xmlFormsService.get.args[1][0]).to.equal('pregnancy_home_vist');
+      expect(xmlFormsService.getFormConfig.callCount).to.equal(2);
+      expect(xmlFormsService.getFormConfig.args[1]).to.deep.equal(['report', 'pregnancy_home_vist']);
     }));
   });
 

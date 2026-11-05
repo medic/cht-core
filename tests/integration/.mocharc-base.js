@@ -1,6 +1,6 @@
 require('../aliases');
-const chaiExclude = require('chai-exclude');
-const chaiAsPromised = require('chai-as-promised');
+const chaiExclude = require('chai-exclude').default;
+const chaiAsPromised = require('chai-as-promised').default;
 const chai = require('chai');
 const deepEqualInAnyOrder = require('deep-equal-in-any-order');
 

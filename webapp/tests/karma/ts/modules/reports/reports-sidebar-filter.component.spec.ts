@@ -19,6 +19,8 @@ import { SessionService } from '@mm-services/session.service';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
+import { LanguageService } from '@mm-services/language.service';
+import { FormatDateService } from '@mm-services/format-date.service';
 
 describe('Reports Sidebar Filter Component', () => {
   let component: ReportsSidebarFilterComponent;
@@ -32,7 +34,16 @@ describe('Reports Sidebar Filter Component', () => {
   beforeEach(waitForAsync(() => {
     telemetryService = { record: sinon.stub() };
     placeHierarchyService = { get: sinon.stub().resolves([]) };
-    sessionService = { isOnlineOnly: sinon.stub() };
+    sessionService = {
+      isOnlineOnly: sinon.stub(),
+      userCtx: sinon.stub().returns({ name: 'test' }),
+    };
+    const languageService = {
+      useDevanagariScript: sinon.stub().returns(false),
+    };
+    const formatDateService = {
+      dayMonth: sinon.stub().returns('Formatted Date'),
+    };
     datePipe = { transform: sinon.stub() };
     (<any>$.fn).daterangepicker = sinon.stub().returns({ on: sinon.stub() });
     globalActions = {
@@ -64,6 +75,8 @@ describe('Reports Sidebar Filter Component', () => {
           { provide: PlaceHierarchyService, useValue: placeHierarchyService },
           { provide: SessionService, useValue: sessionService },
           { provide: DatePipe, useValue: datePipe },
+          { provide: LanguageService, useValue: languageService },
+          { provide: FormatDateService, useValue: formatDateService },
         ]
       })
       .compileComponents()

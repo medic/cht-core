@@ -2,6 +2,11 @@
 
 @input-height: 45px;
 
+@keyframes geolocation-fill {
+  from { width: 25%; }
+  to { width: 100%; }
+}
+
 /**
  * Some of the widths set up in the enketo.css file assume the form is being
  * viewed full-screen.  These overrides are required when enketo is embedded in
@@ -278,6 +283,139 @@
     .android-app-launcher-actions {
       margin: 0;
       padding: 15px 20px;
+    }
+  }
+
+  .or-appearance-geolocation-capture {
+    .geolocation-permission-denied,
+    .geolocation-unavailable {
+      display: block;
+      margin: 8px 0;
+    }
+
+    .geolocation-context-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 8px 0;
+
+      .geolocation-context-option {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding-left: 0;
+        cursor: pointer;
+        font-weight: normal;
+      }
+    }
+
+    .geolocation-edit-choices {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 8px 0;
+
+      .geolocation-edit-option {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding-left: 0;
+        cursor: pointer;
+        font-weight: normal;
+
+        &:has(input:disabled) {
+          opacity: 0.4;
+          cursor: not-allowed;
+          pointer-events: none;
+        }
+      }
+    }
+
+    .geolocation-edit-badge {
+      margin: 8px 0;
+    }
+
+    .geolocation-status {
+      margin: 8px 0;
+
+      .geolocation-progress-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+
+        .geolocation-progress-label {
+          font-weight: bold;
+          white-space: nowrap;
+        }
+
+        .geolocation-progress-bar {
+          flex: 1;
+          max-width: 200px;
+          height: 12px;
+          background-color: @gray-light;
+          border-radius: 6px;
+          overflow: hidden;
+
+          &::after {
+            content: '';
+            display: block;
+            height: 100%;
+            width: 0;
+            background-color: @success-state-color;
+            border-radius: 6px;
+            animation: geolocation-fill 30s linear forwards;
+            transition: width 0.5s ease-out, background-color 0.3s ease;
+          }
+        }
+      }
+
+      .geolocation-result-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+
+        .alert-success {
+          color: @success-state-color;
+          padding: 0;
+          border: none;
+          background-color: transparent;
+        }
+
+        .alert-error {
+          color: @failed-state-color;
+          padding: 0;
+          border: none;
+          background-color: transparent;
+        }
+      }
+
+      .geolocation-retry-btn {
+        .fa {
+          padding-right: 10px;
+          padding-left: 10px;
+        }
+      }
+    }
+
+    .geolocation-save-without-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 12px 0 0 0;
+      padding: 8px 4px;
+      border-radius: @radius-size-small;
+      cursor: pointer;
+      font-weight: normal;
+
+      &[data-checked=true] {
+        background-color: @blue-highlight;
+      }
+    }
+
+    .geolocation-save-without-checkbox {
+      flex-shrink: 0;
     }
   }
 

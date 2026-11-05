@@ -4,9 +4,7 @@ const db = require('../../src/db');
 const transitions = require('../../src/transitions/index');
 const infodoc = require('@medic/infodoc');
 const chai = require('chai');
-const chaiExclude = require('chai-exclude');
 
-chai.use(chaiExclude);
 
 describe('processDocs', () => {
   beforeEach(() => {
@@ -99,8 +97,10 @@ describe('processDocs', () => {
     sinon.stub(infodoc, 'bulkGet').resolves(infoDocs);
     sinon.stub(infodoc, 'bulkUpdate').resolves();
     sinon.stub(transitions, 'applyTransition');
-    sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
+    sinon.stub(db.medic, 'put').resolves({ ok: true });
     sinon.stub(infodoc, 'saveTransitions').resolves();
+    sinon.stub(infodoc, 'markTransitionsStarted').resolves();
+    sinon.stub(infodoc, 'clearTransitionsStarted').resolves();
 
     // first doc is updated by at least one transition
     transitions.applyTransition
@@ -148,6 +148,8 @@ describe('processDocs', () => {
 
       chai.expect(infodoc.saveTransitions.callCount).to.equal(3);
       chai.expect(infodoc.saveTransitions.calledWithMatch({ id: '1' })).to.equal(true);
+      chai.expect(infodoc.markTransitionsStarted.callCount).to.equal(1);
+      chai.expect(infodoc.markTransitionsStarted.calledWith('1')).to.equal(true);
     });
   });
 
@@ -173,11 +175,13 @@ describe('processDocs', () => {
     sinon.stub(infodoc, 'bulkUpdate').resolves();
     sinon.stub(transitions, 'applyTransition');
     sinon.stub(db.medic, 'put')
-      .withArgs(sinon.match({ _id: '1' })).callsArgWith(1, null, { ok: true })
-      .withArgs(sinon.match({ _id: '2' })).callsArgWith(1, { error: 'error' })
-      .withArgs(sinon.match({ _id: '3' })).callsArgWith(1, null, { ok: true })
-      .withArgs(sinon.match({ _id: '4' })).callsArgWith(1, { error: 'error' });
+      .withArgs(sinon.match({ _id: '1' })).resolves({ ok: true })
+      .withArgs(sinon.match({ _id: '2' })).rejects({ error: 'error' })
+      .withArgs(sinon.match({ _id: '3' })).resolves({ ok: true })
+      .withArgs(sinon.match({ _id: '4' })).rejects({ error: 'error' });
     sinon.stub(infodoc, 'saveTransitions').resolves();
+    sinon.stub(infodoc, 'markTransitionsStarted').resolves();
+    sinon.stub(infodoc, 'clearTransitionsStarted').resolves();
 
     // first doc is updated by at least one transition
     transitions.applyTransition
@@ -231,6 +235,9 @@ describe('processDocs', () => {
 
       chai.expect(infodoc.saveTransitions.callCount).to.equal(3);
       chai.expect(infodoc.saveTransitions.calledWithMatch({ id: '1' })).to.equal(true);
+      chai.expect(infodoc.markTransitionsStarted.callCount).to.equal(2);
+      chai.expect(infodoc.clearTransitionsStarted.callCount).to.equal(1);
+      chai.expect(infodoc.clearTransitionsStarted.calledWith('2')).to.equal(true);
     });
   });
 });

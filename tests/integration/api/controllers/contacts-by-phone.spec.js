@@ -1,9 +1,7 @@
 const chai = require('chai');
 const utils = require('@utils');
 const _ = require('lodash');
-const chaiExclude = require('chai-exclude');
 const { CONTACT_TYPES } = require('@medic/constants');
-chai.use(chaiExclude);
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -342,7 +340,7 @@ describe('Contacts by phone API', () => {
       });
     });
 
-    it('should output correct responce with multiple matches', () => {
+    it('should output correct response with multiple matches', () => {
       onlineRequestOptions.body = { phone: '+40722777777' };
       return utils.request(onlineRequestOptions).then(result => {
         chai.expect(result).excludingEvery('_rev').to.deep.equal({

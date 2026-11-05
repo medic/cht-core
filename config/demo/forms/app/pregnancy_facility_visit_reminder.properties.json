@@ -1,8 +1,0 @@
-{
-    "icon": "icon-pregnancy",
-    "title": "Health facility ANC reminder",
-    "context": {
-        "person": false,
-        "place": false
-    }
-}

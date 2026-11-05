@@ -24,6 +24,23 @@ describe('UHCSettings service', () => {
     });
   });
 
+  describe('getUseBikramSambatMonths', () => {
+    it('should return false for invalid input', () => {
+      expect(service.getUseBikramSambatMonths(false)).to.equal(false);
+      expect(service.getUseBikramSambatMonths({})).to.equal(false);
+      expect(service.getUseBikramSambatMonths({ uhc: false })).to.equal(false);
+    });
+
+    it('should return correct useBikramSambatMonths', () => {
+      expect(service.getUseBikramSambatMonths({
+        uhc: { visit_count: { use_bikram_sambat_months: true } }
+      })).to.equal(true);
+      expect(service.getUseBikramSambatMonths({
+        uhc: { visit_count: { use_bikram_sambat_months: false } }
+      })).to.equal(false);
+    });
+  });
+
   describe('getVisitCountSettings', () => {
     it('should return empty object for invalid input', () => {
       expect(service.getVisitCountSettings(false)).to.deep.equal({});
@@ -40,31 +57,43 @@ describe('UHCSettings service', () => {
           }
         }
       };
-
-      expect(service.getVisitCountSettings(settings)).to.deep.equal({ monthStartDate: 10, visitCountGoal: 3 });
-
+ 
+      expect(service.getVisitCountSettings(settings)).to.deep.equal({
+        monthStartDate: 10,
+        visitCountGoal: 3
+      });
+ 
       settings = {
         uhc: {
           visit_count: {
             visit_count_goal: 3,
-            month_start_date: 10
+            month_start_date: 10,
+            use_bikram_sambat_months: true
           }
         }
       };
-
-      expect(service.getVisitCountSettings(settings)).to.deep.equal({ monthStartDate: 10, visitCountGoal: 3 });
-
+ 
+      expect(service.getVisitCountSettings(settings)).to.deep.equal({
+        monthStartDate: 10,
+        visitCountGoal: 3,
+        useBikramSambatMonths: true
+      });
+ 
       settings = {
         uhc: {
           month_start_date: 12,
           visit_count: {
             visit_count_goal: 3,
-            month_start_date: 10
+            month_start_date: 10,
+            use_bikram_sambat_months: false
           }
         }
       };
-
-      expect(service.getVisitCountSettings(settings)).to.deep.equal({ monthStartDate: 12, visitCountGoal: 3 });
+ 
+      expect(service.getVisitCountSettings(settings)).to.deep.equal({
+        monthStartDate: 12,
+        visitCountGoal: 3
+      });
     });
   });
 

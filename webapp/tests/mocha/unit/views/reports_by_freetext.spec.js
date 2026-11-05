@@ -177,4 +177,14 @@ describe('reports_by_freetext', () => {
       { key: ['name:बुद्ध élève'], value: doc.reported_date }
     ]);
   });
+  it('normalizes Devanagari numerals to Latin in emitted keys', () => {
+    const doc = createReport({ phone: '१२३४५' });
+    const emitted = mapFn(doc, true);
+    expect(emitted).to.deep.equal([
+      { key: ['test'], value: doc.reported_date },
+      { key: ['form:test'], value: doc.reported_date },
+      { key: ['12345'], value: doc.reported_date },
+      { key: ['phone:12345'], value: doc.reported_date }
+    ]);
+  });
 });

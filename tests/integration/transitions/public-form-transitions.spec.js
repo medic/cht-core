@@ -281,7 +281,7 @@ describe('Transitions public_form', () => {
   after(async () => await utils.revertDb([], true));
   afterEach(async () => await utils.revertDb(contacts.map(c => c._id), true));
 
-  it('when false, reports from unknwon sources should not be accepted', async () => {
+  it('when false, reports from unknown sources should not be accepted', async () => {
     Object.keys(formsConfig).forEach(form => formsConfig[form].public_form = false);
     const settings = Object.assign(
       {},
@@ -353,7 +353,7 @@ describe('Transitions public_form', () => {
     expect(patient1.muted).to.be.undefined;
   });
 
-  it('when true, reports from unknwon sources should be accepted', async () => {
+  it('when true, reports from unknown sources should be accepted', async () => {
     Object.keys(formsConfig).forEach(form => formsConfig[form].public_form = true);
     const settings = Object.assign(
       {},

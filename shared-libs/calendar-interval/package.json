@@ -6,6 +6,9 @@
   "scripts": {
     "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test"
   },
+  "dependencies": {
+    "bikram-sambat": "^1.8.1"
+  },
   "author": "",
   "license": "Apache-2.0"
 }

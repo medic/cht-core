@@ -13,11 +13,8 @@ const { roles } = require('@medic/user-management')(config, db, dataContext);
 const moment = require('moment');
 const { SENTINEL_METADATA } = require('@medic/constants');
 
-const TASK_EXPIRATION_PERIOD = 60; // days
-const TARGET_EXPIRATION_PERIOD = 6; // months
-
 const MAX_CONTACT_BATCH_SIZE = nouveau.BATCH_LIMIT;
-const MAX_BATCH_SIZE = 20 * 1000;
+const MAX_BATCH_SIZE = nouveau.RESULTS_LIMIT; // 20k
 const MIN_BATCH_SIZE = 5 * 1000;
 const MAX_BATCH_SIZE_REACHED = 'max_size_reached';
 
@@ -196,15 +193,6 @@ const assignContactToGroups = (row, groups, subjectIds) => {
   subjectIds.push(...group.subjectIds);
 };
 
-const isRelevantRecordEmission = (hit, subjectIds) => {
-  // reports with `needs_signoff` will emit for every contact from their submitter lineage,
-  // but we only want to process them once, either associated to their subject, or to their submitter
-  // when they have no subject or have an invalid subject.
-  // if the report has a subject, but it's not the same as the emission key, we hit the emit
-  // for the submitter or submitter lineage via the `needs_signoff` path. Skip.
-  return !(hit.fields.needs_signoff && !subjectIds.includes(hit.fields.subject));
-};
-
 const getRecordGroupInfo = (row, subjectIds) => {
   if (row.doc.form) {
     const subjectId = registrationUtils.getSubjectId(row.doc);
@@ -261,33 +249,19 @@ const getRecordsForContacts = async (groups, subjectIds) => {
 };
 
 const getRecordsForContactsBatch = async (subjectIds) => {
-  const results = [];
   if (!subjectIds.length) {
-    return results;
+    return [];
   }
 
-  let bookmark = '';
-  let requestNext;
+  const result = await request.post({
+    uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
+    body: {
+      q: `subject:(${subjectIds.map(nouveau.escapeKeys).join(' OR ')}) AND type:data_record`,
+      limit: MAX_BATCH_SIZE,
+    },
+  });
 
-  do {
-    const opts = {
-      q: `key:(${subjectIds.map(nouveau.escapeKeys).join(' OR ')}) AND type:data_record`,
-      limit: nouveau.RESULTS_LIMIT,
-    };
-    if (bookmark) {
-      opts.bookmark = bookmark;
-    }
-    const result = await request.post({
-      uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
-      body: opts
-    });
-
-    bookmark = result.bookmark;
-    results.push(...result.hits.filter(hit => isRelevantRecordEmission(hit, subjectIds)));
-    requestNext = bookmark && result.hits.length >= nouveau.RESULTS_LIMIT && results.length < MAX_BATCH_SIZE;
-  } while (requestNext);
-
-  return results;
+  return result.hits;
 };
 
 const getRecordsByKey = (rows, subjectIds) => {
@@ -506,69 +480,6 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
   } while (nextBatch);
 };
 
-const purgeTasks = async (roles) => {
-  const maximumEmissionEndDate = moment().subtract(TASK_EXPIRATION_PERIOD, 'days').format('YYYY-MM-DD');
-  let startKeyDocId = '';
-  let startKey = '';
-  let nextBatch;
-
-  // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
-  const getBatch = () => db.queryMedic('medic/tasks_in_terminal_state', {
-    limit: MAX_BATCH_SIZE,
-    end_key: JSON.stringify(maximumEmissionEndDate),
-    start_key: JSON.stringify(startKey),
-    startkey_docid: startKeyDocId,
-  });
-
-  const getIdsToPurge = (rolesHashes, rows) => {
-    const toPurge = {};
-    rows.forEach(row => {
-      rolesHashes.forEach(hash => {
-        toPurge[hash] = toPurge[hash] || {};
-        toPurge[hash][row.id] = row.id;
-      });
-    });
-    return toPurge;
-  };
-
-  do {
-    logger.info(`Purging: Starting "tasks" purge batch with id "${startKeyDocId}"`);
-    const result = await batchedPurge(getBatch, getIdsToPurge, roles, startKeyDocId, startKey);
-    ({ nextKey: startKey, nextKeyDocId: startKeyDocId, nextBatch } = result);
-  } while (nextBatch);
-};
-
-const purgeTargets = async (roles) => {
-  let startKeyDocId = 'target~';
-  let startKey = JSON.stringify(startKeyDocId);
-  let nextBatch;
-
-  const lastAllowedReportingIntervalTag = moment().subtract(TARGET_EXPIRATION_PERIOD, 'months').format('YYYY-MM');
-  // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
-  const getBatch = () => db.queryMedic('allDocs', {
-    limit: MAX_BATCH_SIZE,
-    start_key: JSON.stringify(startKeyDocId),
-    end_key: JSON.stringify(`target~${lastAllowedReportingIntervalTag}~`),
-  });
-
-  const getIdsToPurge = (rolesHashes, rows) => {
-    const toPurge = {};
-    rows.forEach(row => {
-      rolesHashes.forEach(hash => {
-        toPurge[hash] = toPurge[hash] || {};
-        toPurge[hash][row.id] = row.id;
-      });
-    });
-    return toPurge;
-  };
-
-  do {
-    logger.info(`Purging: Starting "targets" purge batch with id "${startKeyDocId}"`);
-    const result = await batchedPurge(getBatch, getIdsToPurge, roles, startKeyDocId, startKey);
-    ({ nextKey: startKey, nextKeyDocId: startKeyDocId, nextBatch } = result);
-  } while (nextBatch);
-};
-
 const batchedPurge = (getBatch, getIdsToPurge, roles, startKeyDocId) => {
   let nextKey = false;
   let nextKeyDocId = false;
@@ -643,8 +554,8 @@ const writePurgeLog = (roles, start, error) => {
 // - we intentionally skip purging "orphaned" docs (docs that emit in `docs_by_replication_key` but that are not
 // retrieved when systematically querying the view with all existent subjects), as these docs would not end up being
 // replicated
-// - we intentionally skip reports that `needs_signoff` when they are retrieved because of the `needs_signoff`
-// submitter lineage emit. As a consequence, orphaned reports with `needs_signoff` will not be purged
+// - we query by subject, so reports that `needs_signoff` are not retrieved through their submitter lineage emits.
+// As a consequence, orphaned reports with `needs_signoff` will not be purged
 
 const purge = () => {
   if (currentlyPurging) {
@@ -676,8 +587,6 @@ const purge = () => {
       return initPurgeDbs(roles)
         .then(() => purgeContacts(roles, purgeFn))
         .then(() => purgeUnallocatedRecords(roles, purgeFn))
-        .then(() => purgeTasks(roles))
-        .then(() => purgeTargets(roles))
         .then(() => writePurgeLog(roles, start));
     })
     .catch(err => {
