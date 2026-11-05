@@ -48,6 +48,7 @@ class PayloadTooLargeError extends Error {
   }
 }
 
+class ReplicationLimitError extends BadRequestError {}
 
 module.exports = {
   PublicError,
@@ -57,4 +58,5 @@ module.exports = {
   ContentTypeError,
   BadRequestError,
   PayloadTooLargeError,
+  ReplicationLimitError,
 };

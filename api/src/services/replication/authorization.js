@@ -34,6 +34,7 @@ const DEFAULT_DDOCS = [
  * @property {userCtx} userCtx
  * @property {Array} contactsByDepthKeys,
  * @property {string[]} subjectIds,
+ * @property {number} contactsCount,
  * @property {number} contactDepth.
  * @property {number} reportDepth.
  * @property {Object.<string, number>} subjectsDepth,
@@ -380,6 +381,7 @@ const getAuthorizationContext = async (userCtx) => {
     await addPrimaryContactsSubjects(authCtx, contactsSubjects);
   }
 
+  authCtx.contactsCount = Object.keys(contactsSubjects).length;
   authCtx.subjectIds = _.uniq(authCtx.subjectIds);
   if (hasAccessToUnassignedDocs(userCtx)) {
     authCtx.subjectIds.push(UNASSIGNED_KEY);

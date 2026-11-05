@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const controller = require('../../../src/controllers/replication');
 const replicationService = require('../../../src/services/replication/replication');
 const serverUtils = require('../../../src/server-utils');
+const { ReplicationLimitError } = require('../../../src/errors');
 
 let req;
 let res;
@@ -88,6 +89,21 @@ describe('Initial Replication controller', () => {
 
       expect(replicationService.getContext.callCount).to.equal(1);
       expect(serverUtils.serverError.args).to.deep.equal([[ { status: 500 }, req, res ]]);
+      expect(res.json.callCount).to.equal(0);
+    });
+
+    it('should respond with a client error when a replication limit is exceeded', async () => {
+      const error = new ReplicationLimitError('too many');
+      sinon.stub(replicationService, 'getContext').rejects(error);
+      sinon.stub(replicationService, 'getDocIdsRevPairs');
+      sinon.stub(serverUtils, 'error');
+      sinon.stub(serverUtils, 'serverError');
+
+      await controller.getDocIds(req, res);
+
+      expect(serverUtils.error.args).to.deep.equal([[ error, req, res ]]);
+      expect(serverUtils.serverError.callCount).to.equal(0);
+      expect(replicationService.getDocIdsRevPairs.callCount).to.equal(0);
       expect(res.json.callCount).to.equal(0);
     });
 
