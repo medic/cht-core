@@ -1,12 +1,23 @@
 const { CONTACT_TYPES } = require('@medic/constants');
 
 const HARDCODED_PERSON_TYPE = 'person';
-const HARDCODED_TYPES = [
-  CONTACT_TYPES.DISTRICT_HOSPITAL,
-  CONTACT_TYPES.HEALTH_CENTER,
-  CONTACT_TYPES.CLINIC,
-  'person'
-];
+const HARDCODED_TYPES_DICT = {
+  [CONTACT_TYPES.DISTRICT_HOSPITAL]: { id: CONTACT_TYPES.DISTRICT_HOSPITAL },
+  [CONTACT_TYPES.HEALTH_CENTER]: {
+    id: CONTACT_TYPES.HEALTH_CENTER,
+    parents: [ CONTACT_TYPES.DISTRICT_HOSPITAL ],
+  },
+  [CONTACT_TYPES.CLINIC]: {
+    id: CONTACT_TYPES.CLINIC,
+    parents: [ CONTACT_TYPES.HEALTH_CENTER ],
+  },
+  [HARDCODED_PERSON_TYPE]: {
+    id: HARDCODED_PERSON_TYPE,
+    person: true,
+    parents: [ CONTACT_TYPES.DISTRICT_HOSPITAL, CONTACT_TYPES.HEALTH_CENTER, CONTACT_TYPES.CLINIC ],
+  },
+};
+const HARDCODED_TYPES = Object.keys(HARDCODED_TYPES_DICT);
 
 const getContactTypes = config => {
   return config && Array.isArray(config.contact_types) && config.contact_types || [];
@@ -26,6 +37,9 @@ const getTypeId = (doc) => {
 
 const getTypeById = (config, typeId) => {
   const contactTypes = getContactTypes(config);
+  if (!contactTypes.length) {
+    return HARDCODED_TYPES_DICT[typeId];
+  }
   return contactTypes.find(type => type.id === typeId);
 };
 

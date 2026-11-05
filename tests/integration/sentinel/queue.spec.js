@@ -110,6 +110,7 @@ describe('Sentinel queue drain', () => {
 
   it('queue should work after restarting haproxy', async () => {
     await utils.stopHaproxy(); // this will also crash Sentinel and API
+    await utils.waitForApiCrash();
     await utils.startHaproxy();
     await utils.listenForApi();
 
