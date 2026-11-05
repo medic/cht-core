@@ -568,7 +568,35 @@ describe('Authorization service', () => {
         { keys: [['aaa', 0], ['aaa', 1], ['aaa', 2], ['bbb', 0], ['bbb', 1], ['bbb', 2]] }
       ]);
       db.medic.query.args[1].should.deep.equal(['medic/contacts_by_depth', { keys: [['contact2'], ['contact3']] }]);
-    }); 
+    });
+
+    it('should skip primary contacts that do not exist when using report depth', async () => {
+      db.medic.query.withArgs('medic/contacts_by_depth').onCall(0).resolves({
+        rows: [
+          { id: 'aaa', key: ['aaa', 0], value: { shortcode: 'aaa', primary_contact: 'contact1' } },
+          { id: '1', key: ['aaa', 1], value: { shortcode: 's1', primary_contact: 'deleted_contact' } },
+        ]
+      });
+      db.medic.query.withArgs('medic/contacts_by_depth').onCall(1).resolves({
+        rows: [
+          { id: 'contact1', key: ['contact1'], value: { shortcode: 'contact1_id' } },
+        ]
+      });
+      service.__get__('getDepth').returns({ contactDepth: 1, reportDepth: 1, replicatePrimaryContacts: true });
+      auth.hasAllPermissions.returns(true);
+
+      const result = await service.getAuthorizationContext({ facility_id: ['aaa'], name: 'peter' });
+
+      result.subjectIds.should.have.members([
+        '_all', PREFIXES.COUCH_USER + 'peter', 'aaa', '1', 's1', 'contact1', 'contact1_id',
+      ]);
+      result.subjectsDepth.should.deep.equal({
+        'aaa': 0, '1': 1, 's1': 1, 'contact1': 0, 'contact1_id': 0,
+      });
+      db.medic.query.args[1].should.deep.equal([
+        'medic/contacts_by_depth', { keys: [['deleted_contact'], ['contact1']] }
+      ]);
+    });
 
   });
 
