@@ -1,8 +1,10 @@
 const { DOC_IDS, PREFIXES } = require('@medic/constants');
 const utils = require('./utils');
+const formMedia = require('./form-media');
 const { setUiStatus, displayTooManyDocsWarning } = require('./ui-status');
 
 let docIdsRevs;
+let formIdsRevs;
 let remoteDocCount;
 
 const INITIAL_REPLICATION_LOG = '_local/initial-replication';
@@ -57,7 +59,9 @@ const getMissingDocIdsRevsPairs = async (localDb, remoteDocIdsRevs) => {
 const getDownloadList = async (localDb = true) => {
   const response = await utils.fetchJSON('/api/v1/replication/get-ids');
 
-  docIdsRevs = await getMissingDocIdsRevsPairs(localDb, response.doc_ids_revs);
+  const missing = await getMissingDocIdsRevsPairs(localDb, response.doc_ids_revs);
+  formIdsRevs = missing.filter(({ id }) => formMedia.isFormId(id));
+  docIdsRevs = missing.filter(({ id }) => !formMedia.isFormId(id));
   remoteDocCount = response.doc_ids_revs.length;
 
   if (response.warn) {
@@ -87,7 +91,23 @@ const getDocsBatch = async (remoteDb, localDb) => {
   await localDb.bulkDocs(docs, { new_edits: false });
 };
 
+const downloadForms = async (remoteDb, localDb) => {
+  for (const [index, formIdRev] of formIdsRevs.entries()) {
+    setUiStatus('FETCH_INFO', { count: index, total: remoteDocCount });
+    await formMedia.replicateFormDoc(remoteDb, localDb, formIdRev);
+  }
+};
+
+const downloadFormMedia = async (localDb) => {
+  try {
+    await formMedia.syncMedia(localDb, progress => setUiStatus('FETCH_FORMS', progress));
+  } catch (err) {
+    console.error('Error downloading form media - will retry during sync', err);
+  }
+};
+
 const downloadDocs = async (remoteDb, localDb) => {
+  await downloadForms(remoteDb, localDb);
   setUiStatus('FETCH_INFO', { count: remoteDocCount - docIdsRevs.length, total: remoteDocCount });
   do {
     await getDocsBatch(remoteDb, localDb);
@@ -111,6 +131,7 @@ const replicate = async (remoteDb, localDb) => {
   await getDownloadList(localDb);
   await downloadDocs(remoteDb, localDb);
   await writeCheckpointers(remoteDb, localDb);
+  await downloadFormMedia(localDb);
 
   await completeInitialReplication(localDb);
 };

@@ -21,6 +21,7 @@ import {
 } from '@mm-services/form/form-data';
 import { isHardcodedType } from '@medic/contact-types-utils';
 import { REPORT_ATTACHMENT_NAME } from '@mm-services/get-report-content.service';
+import * as formMedia from '../../js/bootstrapper/form-media';
 
 /**
  * Service for interacting with Enketo forms. This code is intended for displaying forms in the CHT as well as being
@@ -70,13 +71,15 @@ export class EnketoService {
     });
   }
 
+  private async getFormMediaBlob(formDoc, name) {
+    return await formMedia.getMedia(formDoc, name) || this.dbService.get().getAttachment(formDoc._id, name);
+  }
+
   private replaceMediaLoaders(formContainer, formDoc) {
     formContainer.find('[data-media-src]').each((idx, element) => {
       const elem = $(element);
       const src = elem.attr('data-media-src');
-      this.dbService
-        .get()
-        .getAttachment(formDoc._id, src)
+      this.getFormMediaBlob(formDoc, src)
         .then((blob) => {
           const objUrl = (window.URL || window.webkitURL).createObjectURL(blob);
           this.objUrls.push(objUrl);
