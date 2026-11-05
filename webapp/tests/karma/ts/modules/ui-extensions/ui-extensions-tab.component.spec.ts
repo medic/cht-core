@@ -15,6 +15,7 @@ import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { SessionService } from '@mm-services/session.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 describe('UiExtensionsTabComponent', () => {
   let fixture: ComponentFixture<UiExtensionsTabComponent>;
@@ -24,6 +25,7 @@ describe('UiExtensionsTabComponent', () => {
   let chtDatasourceService;
   let performanceService;
   let userContactSummaryService;
+  let userSettingsService;
   let trackStop;
   let routeParams$: BehaviorSubject<any>;
   let activatedRoute;
@@ -34,12 +36,14 @@ describe('UiExtensionsTabComponent', () => {
   const MOCK_USER_SUMMARY = { context: { userRole: 'chw' } };
   const MOCK_CONFIG = { key: 'value' };
   const MOCK_ELEMENT = class extends HTMLElement {};
+  const MOCK_USER_SETTINGS = { name: 'test-user', roles: ['chw'] };
 
   beforeEach(async () => {
     trackStop = sinon.stub().resolves();
     performanceService = { track: sinon.stub().returns({ stop: trackStop }) };
     chtDatasourceService = { get: sinon.stub().resolves(MOCK_CHT_API) };
     userContactSummaryService = { get: sinon.stub().resolves(MOCK_USER_SUMMARY) };
+    userSettingsService = { get: sinon.stub().resolves(MOCK_USER_SETTINGS) };
     uiExtensionsService = {
       getExtension: sinon.stub().resolves({
         properties: {
@@ -71,6 +75,7 @@ describe('UiExtensionsTabComponent', () => {
         { provide: CHTDatasourceService, useValue: chtDatasourceService },
         { provide: PerformanceService, useValue: performanceService },
         { provide: UserContactSummaryService, useValue: userContactSummaryService },
+        { provide: UserSettingsService, useValue: userSettingsService },
         { provide: NavigationService, useValue: {} },
         { provide: SessionService, useValue: { userCtx: sinon.stub().returns({ name: 'test-user' }) } },
       ]
@@ -95,6 +100,7 @@ describe('UiExtensionsTabComponent', () => {
     expect(element.inputs).to.deep.equal({
       config: MOCK_CONFIG,
       userContactSummary: MOCK_USER_SUMMARY.context,
+      user: MOCK_USER_SETTINGS,
     });
     expect(component.loading).to.be.false;
     expect(component.errorStack).to.be.undefined;
@@ -106,6 +112,7 @@ describe('UiExtensionsTabComponent', () => {
     expect(trackStop).to.have.been.calledOnceWithExactly({ name: `ui-extension:${EXTENSION_ID}:render` });
     expect(chtDatasourceService.get).to.have.been.calledOnceWithExactly();
     expect(userContactSummaryService.get).to.have.been.calledOnceWithExactly();
+    expect(userSettingsService.get).to.have.been.calledOnceWithExactly();
   }));
 
   it('applies accent_color to the toolbar when provided', fakeAsync(() => {
