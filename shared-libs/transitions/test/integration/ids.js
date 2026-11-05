@@ -3,7 +3,7 @@ const ids = require('../../src/lib/ids');
 const assert = require('chai').assert;
 
 describe('functional ids', () => {
-  it('should be suffiently random', () => {
+  it('should be sufficiently random', () => {
     const TOTAL = 1000;
     const MAX_RETRIES = 100;
 

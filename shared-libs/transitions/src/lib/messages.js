@@ -146,6 +146,7 @@ module.exports = {
   addError: function(doc, error, context) {
     if (_.isString(error)) {
       error = {
+        code: error,
         message: error,
       };
     } else if (_.isObject(error)) {

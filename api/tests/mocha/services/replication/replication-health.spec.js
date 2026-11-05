@@ -8,8 +8,9 @@ describe('Replication Health service', () => {
   let getDailyFailuresByUserSince;
 
   beforeEach(() => {
-    // Now: 2026-06-16. Default 30-day window → cutoff day 2026-05-17.
-    sinon.useFakeTimers(new Date('2026-06-16T12:00:00Z').valueOf());
+    // Now: 2026-06-16 (local time, so day boundaries match in any timezone).
+    // Default 30-day window → cutoff day 2026-05-17.
+    sinon.useFakeTimers(new Date(2026, 5, 16, 12).valueOf());
     getLogsForUsers = sinon.stub(replicationLimitLog, 'getLogsForUsers');
     getDailyFailuresByUserSince = sinon.stub(replicationFailureLog, 'getDailyFailuresByUserSince');
   });
@@ -47,8 +48,8 @@ describe('Replication Health service', () => {
     });
 
     it('should report in-window and since-last-replication counts for stale users', async () => {
-      const aliceDate = new Date('2026-03-10T00:00:00Z').valueOf();
-      const bobDate = new Date('2026-04-20T00:00:00Z').valueOf();
+      const aliceDate = new Date(2026, 2, 10).valueOf();
+      const bobDate = new Date(2026, 3, 20).valueOf();
 
       // First call: failures within the window (from cutoff day 2026-05-17).
       getDailyFailuresByUserSince.withArgs('2026-05-17').resolves({
@@ -114,7 +115,7 @@ describe('Replication Health service', () => {
       });
       // Limit log newer than the cutoff → replicated within the window → excluded.
       getLogsForUsers.resolves({
-        active: { user: 'active', date: new Date('2026-06-12T00:00:00Z').valueOf() },
+        active: { user: 'active', date: new Date(2026, 5, 12).valueOf() },
       });
 
       const result = await service.getFailed();
@@ -123,7 +124,7 @@ describe('Replication Health service', () => {
     });
 
     it('should apply minFailures to the in-window failure count', async () => {
-      const date = new Date('2026-03-10T00:00:00Z').valueOf();
+      const date = new Date(2026, 2, 10).valueOf();
       getDailyFailuresByUserSince.withArgs('2026-05-17').resolves({
         alice: { '2026-06-10': 2 }, // below threshold
         bob: { '2026-06-10': 5 }, // meets threshold

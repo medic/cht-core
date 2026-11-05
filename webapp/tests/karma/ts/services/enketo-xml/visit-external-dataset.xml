@@ -1,0 +1,11 @@
+<model>
+  <instance>
+    <data id="V" version="2015-06-05">
+      <patient_id tag="id"/>
+      <item_choice/>
+    </data>
+  </instance>
+  <instance id="items" src="jr://file/items.xml"/>
+  <instance id="remote-data" src="jr://file-csv/remote.csv"/>
+  <bind nodeset="/data/patient_id" type="string"/>
+</model>

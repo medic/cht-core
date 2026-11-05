@@ -15,6 +15,10 @@ let reminders;
 let clock;
 
 const oneDay = 24 * 60 * 60 * 1000;
+// Reminders are scheduled in the server's local time, so these are local wall-clock times (no offset):
+// expectations derived from them hold in any timezone, including half-hour offsets.
+const LOCAL_NOW = '2021-06-17 10:48:00';
+const LOCAL_WINDOW_START = '2021-06-16 10:00:00'; // start of the local hour, one day back
 
 describe('reminders', () => {
 
@@ -122,8 +126,11 @@ describe('reminders', () => {
     });
 
     it('should return date from next schedule for cron', () => {
-      clock.setSystemTime(moment('2021-06-17T10:48:54.000Z').valueOf());
-      assert.equal(getSchedule({ cron: '0 * * * *' }).next().toISOString(), '2021-06-17T11:00:00.000Z');
+      clock.setSystemTime(moment('2021-06-17 10:48:54').valueOf());
+      assert.equal(
+        getSchedule({ cron: '0 * * * *' }).next().toISOString(),
+        moment('2021-06-17 11:00:00').toISOString()
+      );
     });
 
     it('should return date from next schedule for text_expression', () => {
@@ -192,12 +199,12 @@ describe('reminders', () => {
       sinon.stub(db.sentinel, 'allDocs');
     });
     it('should return false if no schedule', () => {
-      const tick = oneDay;
+      const now = moment(LOCAL_NOW).valueOf();
       const schedule = { prev: sinon.stub()};
       const reminder = { text_expression: 'none', form: 'formA' };
       reminders.__set__('getSchedule', sinon.stub().returns(schedule));
       db.sentinel.allDocs.resolves({ rows: [] });
-      clock.tick(tick);
+      clock.setSystemTime(now);
 
       return matchReminder(reminder).then(result => {
         assert.equal(result, false);
@@ -207,8 +214,8 @@ describe('reminders', () => {
         assert.deepEqual(db.sentinel.allDocs.args[0], [{
           descending: true,
           limit: 1,
-          startkey: `reminderlog:formA:${tick}`,
-          endkey: `reminderlog:formA:0`
+          startkey: `reminderlog:formA:${now}`,
+          endkey: `reminderlog:formA:${moment(LOCAL_WINDOW_START).valueOf()}`
         }]);
       });
     });
@@ -218,8 +225,9 @@ describe('reminders', () => {
       const reminder = { text_expression: 'none', form: 'formB' };
       reminders.__set__('getSchedule', sinon.stub().returns(schedule));
       db.sentinel.allDocs.resolves({ rows: [] });
-      const now = oneDay;
-      clock.tick(now);
+      const now = moment(LOCAL_NOW).valueOf();
+      const windowStart = moment(LOCAL_WINDOW_START).valueOf();
+      clock.setSystemTime(now);
 
       return matchReminder(reminder).then(result => {
         assert.equal(result, false);
@@ -230,10 +238,10 @@ describe('reminders', () => {
           descending: true,
           limit: 1,
           startkey: `reminderlog:formB:${now}`,
-          endkey: `reminderlog:formB:${now - oneDay}`
+          endkey: `reminderlog:formB:${windowStart}`
         }]);
         assert.equal(schedule.prev.callCount, 1);
-        assert.deepEqual(schedule.prev.args[0], [1, moment(now).toDate(), moment(0).toDate()]);
+        assert.deepEqual(schedule.prev.args[0], [1, moment(now).toDate(), moment(windowStart).toDate()]);
       });
     });
 
@@ -273,22 +281,22 @@ describe('reminders', () => {
     });
 
     it('should return correct prev schedule when no results', () => {
-      const prevSchedule = new Date(4000);
+      const prevSchedule = moment('2021-06-17 10:30:00').toDate(); // within the window
       const schedule = { prev: sinon.stub().returns(prevSchedule) };
       const reminder = { text_expression: 'none', form: 'formB' };
       reminders.__set__('getSchedule', sinon.stub().returns(schedule));
-      const now = oneDay;
-      clock.tick(now);
+      const now = moment(LOCAL_NOW).valueOf();
+      clock.setSystemTime(now);
       db.sentinel.allDocs.resolves({ rows: [] });
 
       return matchReminder(reminder).then(result => {
         assert.deepEqual(result, moment(prevSchedule));
-        assert.deepEqual(schedule.prev.args[0], [1, moment(now).toDate(), moment(now-oneDay).toDate()]);
+        assert.deepEqual(schedule.prev.args[0], [1, moment(now).toDate(), moment(LOCAL_WINDOW_START).toDate()]);
       });
     });
 
     it('matches reminder with moment if in last hour', () => {
-      clock.tick(oneDay);
+      clock.setSystemTime(moment(LOCAL_NOW).valueOf());
       const ts = moment().startOf('hour');
       reminders.__set__('getReminderWindowStart', sinon.stub().resolves(moment().subtract(1, 'hour')));
 
@@ -301,7 +309,7 @@ describe('reminders', () => {
     });
 
     it('matches reminder with moment if in last hour', () => {
-      clock.tick(oneDay);
+      clock.setSystemTime(moment(LOCAL_NOW).valueOf());
       const ts = moment().subtract(30, 'minutes');
 
       reminders.__set__('getReminderWindowStart', sinon.stub().resolves(moment().subtract(1, 'hour')));

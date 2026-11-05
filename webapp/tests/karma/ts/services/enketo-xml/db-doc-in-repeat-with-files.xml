@@ -1,0 +1,15 @@
+<my-form>
+  <name>Sally</name>
+  <repeat_section>
+    <repeat_doc db-doc="true">
+      <type>repeater</type>
+      <repeat_file type="file">repeat_upload_1.png</repeat_file>
+    </repeat_doc>
+  </repeat_section>
+  <repeat_section>
+    <repeat_doc db-doc="true">
+      <type>repeater</type>
+      <repeat_file type="file">repeat_upload_2.png</repeat_file>
+    </repeat_doc>
+  </repeat_section>
+</my-form>

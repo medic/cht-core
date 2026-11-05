@@ -34,15 +34,15 @@ export class UiExtensionsTabComponent implements AfterViewInit, OnDestroy {
   ) {}
 
   ngAfterViewInit() {
-    let currentExtensionId = undefined;
+    let currentExtensionId;
     this.paramSubscription = this.route.params.subscribe(async (params) => {
-      if (currentExtensionId === params['id']) {
+      if (currentExtensionId === params.id) {
         return;
       }
-      currentExtensionId = params['id'];
+      currentExtensionId = params.id;
       this.unregisterErrorListener();
-      this.registerErrorListener(params['id']);
-      this.initializeExtension(params['id']);
+      this.registerErrorListener(params.id);
+      this.initializeExtension(params.id);
     });
   }
 

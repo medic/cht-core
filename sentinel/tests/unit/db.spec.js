@@ -1,5 +1,4 @@
 const sinon = require('sinon');
-const { expect } = require('chai');
 const rewire = require('rewire');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
@@ -156,6 +155,40 @@ describe('db', () => {
         .catch(err => {
           expect(err).to.deep.equal({ the: 'error' });
         });
+    });
+  });
+
+  describe('purge', () => {
+    it('posts a {id: [...leaf revs]} map to <db>/_purge', async () => {
+      const fakeDb = { name: 'http://admin:pass@localhost:5984/medic' };
+      sinon.stub(request, 'post').resolves({ purged: {} });
+
+      const docs = [
+        { _id: 'doc-a', _revs: ['1-a'] },
+        { _id: 'doc-b', _revs: ['2-b', '2-bb', '2-bbb'] },
+      ];
+      await db.purge(fakeDb, docs);
+
+      expect(request.post.callCount).to.equal(1);
+      expect(request.post.args[0]).to.deep.equal([{
+        url: 'http://admin:pass@localhost:5984/medic/_purge',
+        body: {
+          'doc-a': ['1-a'],
+          'doc-b': ['2-b', '2-bb', '2-bbb'],
+        },
+      }]);
+    });
+
+    it('handles an empty docs array', async () => {
+      sinon.stub(request, 'post').resolves();
+      await db.purge({ name: 'host/db' }, []);
+      expect(request.post.args[0][0].body).to.deep.equal({});
+    });
+
+    it('throws request.post errors', async () => {
+      sinon.stub(request, 'post').rejects(new Error('purge failed'));
+      await expect(db.purge({ name: 'host/db' }, [{ _id: 'x', _revs: ['1-x'] }]))
+        .to.be.rejectedWith('purge failed');
     });
   });
 });

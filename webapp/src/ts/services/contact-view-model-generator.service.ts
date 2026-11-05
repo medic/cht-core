@@ -19,7 +19,7 @@ import { Contact, Qualifier } from '@medic/cht-datasource';
  * {
  *   _id: <doc uuid>,
  *   doc: <doc>,
- *   type: <object of the configuration of this contant type>,
+ *   type: <object of the configuration of this contact type>,
  *   lineage: <array of contact's parents>,
  *   children: <array of contact's children>,
  *   reports: <array of reports about the contact>,

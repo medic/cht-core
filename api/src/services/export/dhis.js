@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const moment = require('moment');
+const CalendarInterval = require('@medic/calendar-interval');
 
 const db = require('../../db');
 const config = require('../../config');
@@ -35,7 +36,8 @@ module.exports = async (filters, options = {}) => {
     throw err(`dataSet "${dataSet}" has no dataElements`);
   }
 
-  const targetDocsInMonth = await fetch.targetDocsInMonth(from);
+  const useBikramSambatMonths = settings.uhc?.visit_count?.use_bikram_sambat_months;
+  const targetDocsInMonth = await fetch.targetDocsInMonth(from, useBikramSambatMonths);
   const contactsWithOrgUnits = await fetch.contactsWithOrgUnits(orgUnit);
   const targetOwnerIds = _.uniq(targetDocsInMonth.map(target => target.owner));
   const targetOwners = await fetch.docsWithId(targetOwnerIds);
@@ -44,8 +46,8 @@ module.exports = async (filters, options = {}) => {
 
   const result = {
     dataSet,
-    completeDate: moment().format('YYYY-MM-DD'),
-    period: moment(from).format('YYYYMM'),
+    completeDate: CalendarInterval.toLocalIsoDate(moment()),
+    period: moment(from).locale('en').format('YYYYMM'),
     dataValues: buildDataValues(dhisTargetDefinitions, targetDocsInHierarchy, mapContactIdToOrgUnit),
   };
 
@@ -77,8 +79,8 @@ const fetch = {
     return _.uniqBy(fetched.rows.map(row => row.doc), '_id');
   },
 
-  targetDocsInMonth: async timestamp => {
-    const interval = moment(timestamp).format('YYYY-MM');
+  targetDocsInMonth: async (timestamp, useBikramSambatMonths) => {
+    const interval = CalendarInterval.getIntervalTag(timestamp, useBikramSambatMonths);
     const result = await db.medic.allDocs({
       startkey: `target~${interval}~`,
       endkey: `target~${interval}~\ufff0`,

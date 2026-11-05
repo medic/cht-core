@@ -22,41 +22,54 @@ describe('finalize transition', () => {
     );
   });
 
-  it('save is called if transition results have changes', done => {
+  it('save is called if transition results have changes (API branch marks transitions started)', done => {
     const doc = { _rev: '1' };
-    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({ ok: true, rev: '2' });
+    const markTransitionsStarted = sinon.stub(infodoc, 'markTransitionsStarted').resolves();
+    const clearTransitionsStarted = sinon.stub(infodoc, 'clearTransitionsStarted').resolves();
     sinon.stub(infodoc, 'saveTransitions').resolves();
     transitions.finalize(
       {
-        change: { doc: doc },
+        change: { id: 'abc', doc: doc },
         results: [null, null, true],
+        markStarted: true,
       },
       (err, result) => {
         assert.equal(saveDoc.callCount, 1);
         assert(saveDoc.args[0][0]._rev);
         assert(!err);
-        assert.deepEqual(result, { ok: true });
+        assert.deepEqual(result, { ok: true, rev: '2' });
+        assert.equal(markTransitionsStarted.callCount, 1);
+        assert.deepEqual(markTransitionsStarted.args[0], ['abc']);
         assert.equal(infodoc.saveTransitions.callCount, 1);
+        assert.equal(infodoc.saveTransitions.args[0][0].id, 'abc');
+        assert.equal(clearTransitionsStarted.callCount, 0);
         done();
       }
     );
   });
 
-  it('should callback with save errors', done => {
+  it('should callback with save errors and clear the mid-write marker (API branch)', done => {
     const doc = { _rev: '1' };
-    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, { error: 'something' });
+    const saveDoc = sinon.stub(db.medic, 'put').rejects({ error: 'something' });
+    const markTransitionsStarted = sinon.stub(infodoc, 'markTransitionsStarted').resolves();
+    const clearTransitionsStarted = sinon.stub(infodoc, 'clearTransitionsStarted').resolves();
     sinon.stub(infodoc, 'saveTransitions').resolves();
     transitions.finalize(
       {
-        change: { doc: doc },
+        change: { id: 'abc', doc: doc },
         results: [null, null, true],
+        markStarted: true,
       },
       (err, result) => {
         assert.deepEqual(err, { error: 'something' });
         assert.equal(saveDoc.callCount, 1);
         assert(saveDoc.args[0][0]._rev);
         assert(!result);
+        assert.equal(markTransitionsStarted.callCount, 1);
         assert.equal(infodoc.saveTransitions.callCount, 0);
+        assert.equal(clearTransitionsStarted.callCount, 1);
+        assert.deepEqual(clearTransitionsStarted.args[0], ['abc']);
         done();
       }
     );

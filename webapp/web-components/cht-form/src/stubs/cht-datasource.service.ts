@@ -13,9 +13,7 @@ export class CHTDatasourceService {
     } };
   }
 
-  bind<R, F extends (arg?: unknown) => Promise<R>>(
-    _: (ctx: DataContext) => F
-  ): (...p: Parameters<F>) => ReturnType<F> {
+  bind<R, F extends (arg?: unknown) => Promise<R>>(_: (ctx: DataContext) => F): (...p: Parameters<F>) => ReturnType<F> {
     return (..._) => Promise.resolve() as ReturnType<F>;
   }
 

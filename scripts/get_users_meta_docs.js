@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const inquirer = require('inquirer');
+const inquirer = require('inquirer').default;
 const PouchDB = require('pouchdb-core');
 const fs = require('fs');
 const path = require('path');
@@ -67,7 +67,7 @@ const actionChoices = [
 ];
 
 const actionQuestions = [{
-  type: 'list',
+  type: 'select',
   name: 'action',
   message: 'Do you want to?',
   choices: actionChoices

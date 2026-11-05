@@ -4,6 +4,7 @@
     "types": ["node", "jquery"],
     "paths": {
       "@mm-actions/*": ["src/ts/actions/*"],
+      "@mm-directives/*": ["src/ts/directives/*"],
       "@mm-providers/*": ["src/ts/providers/*"],
       "@mm-reducers/*": ["src/ts/reducers/*"],
       "@mm-selectors/*": ["src/ts/selectors/*"],

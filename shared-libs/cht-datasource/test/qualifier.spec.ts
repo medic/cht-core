@@ -3,7 +3,9 @@ import {
   byContactType,
   byContactId,
   byContactIds,
+  byForms,
   byFreetext,
+  byPhones,
   byReportingPeriod,
   byUsername,
   byUuid,
@@ -11,8 +13,10 @@ import {
   isContactTypeQualifier,
   isContactIdQualifier,
   isContactIdsQualifier,
+  isFormsQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
+  isPhonesQualifier,
   isReportingPeriodQualifier,
   isUsernameQualifier,
   isUuidQualifier,
@@ -142,6 +146,76 @@ describe('qualifier', () => {
     });
   });
 
+  describe('byForms', () => {
+    it('builds a qualifier that identifies entities by their form codes', () => {
+      expect(byForms(['pregnancy', 'delivery'])).to.deep.equal({ forms: ['pregnancy', 'delivery'] });
+    });
+
+    it('accepts a single form code in an array', () => {
+      expect(byForms(['pregnancy'])).to.deep.equal({ forms: ['pregnancy'] });
+    });
+
+    it('removes duplicate form codes while keeping the order given', () => {
+      expect(byForms(['delivery', 'pregnancy', 'delivery'])).to.deep.equal({ forms: ['delivery', 'pregnancy'] });
+    });
+
+    it('does not trim the form codes it accepts', () => {
+      expect(byForms(['ANC_FollowUp'])).to.deep.equal({ forms: ['ANC_FollowUp'] });
+    });
+
+    ([
+      null,
+      undefined,
+      'pregnancy',
+      [],
+      [''],
+      ['   '],
+      ['\t\n'],
+      ['pregnancy', ''],
+      ['  ANC_FollowUp '],
+      [' pregnancy'],
+      ['pregnancy '],
+      [null],
+      [0],
+      { },
+      0,
+    ] as [string, ...string[]][]).forEach(forms => {
+      it(`throws an error for ${JSON.stringify(forms)}`, () => {
+        expect(() => byForms(forms)).to.throw(
+          `Invalid forms [${JSON.stringify(forms)}].`
+        );
+      });
+    });
+  });
+  describe('isFormsQualifier', () => {
+    [
+      [ null, false ],
+      [ 'pregnancy', false ],
+      [ { forms: { } }, false ],
+      // A bare string is the shape the singular API used to take, and it would otherwise pass as an
+      // iterable of single characters, so it is rejected explicitly.
+      [ { forms: 'pregnancy' }, false ],
+      [ { forms: [] }, false ],
+      [ { forms: [''] }, false ],
+      [ { forms: ['   '] }, false ],
+      [ { forms: ['pregnancy', ''] }, false ],
+      [ { forms: ['pregnancy', null] }, false ],
+      [ { form: 'pregnancy' }, false ],
+      // A padded code would otherwise pass validation but match nothing, since the value is compared
+      // verbatim rather than trimmed: reject it instead of returning a silent empty page.
+      [ { forms: ['  ANC_FollowUp '] }, false ],
+      [ { forms: [' pregnancy'] }, false ],
+      [ { forms: ['pregnancy '] }, false ],
+      [ { forms: ['pregnancy'] }, true ],
+      [ { forms: ['pregnancy', 'delivery'] }, true ],
+      [ { forms: ['pregnancy'], other: 'other' }, true ]
+    ].forEach(([ forms, expected ]) => {
+      it(`evaluates ${JSON.stringify(forms)}`, () => {
+        expect(isFormsQualifier(forms)).to.equal(expected);
+      });
+    });
+  });
+
   describe('isContactTypeQualifier', () => {
     [
       [ null, false ],
@@ -152,6 +226,74 @@ describe('qualifier', () => {
     ].forEach(([ contactType, expected ]) => {
       it(`evaluates ${JSON.stringify(contactType)}`, () => {
         expect(isContactTypeQualifier(contactType)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byPhones', () => {
+    it('builds a qualifier that identifies contacts by their phone numbers', () => {
+      expect(byPhones(['+1234', '+5678'])).to.deep.equal({ phones: ['+1234', '+5678'] });
+    });
+
+    it('accepts a single phone number in an array', () => {
+      expect(byPhones(['+1234'])).to.deep.equal({ phones: ['+1234'] });
+    });
+
+    it('removes duplicate phone numbers while keeping the order given', () => {
+      expect(byPhones(['+5678', '+1234', '+5678'])).to.deep.equal({ phones: ['+5678', '+1234'] });
+    });
+
+    it('keeps internal whitespace, which the view keys can contain', () => {
+      expect(byPhones(['+1 234 567'])).to.deep.equal({ phones: ['+1 234 567'] });
+    });
+
+    ([
+      null,
+      undefined,
+      '+1234',
+      [],
+      [''],
+      ['   '],
+      ['\t\n'],
+      ['+1234', ''],
+      ['  +1 234  '],
+      [' +1234'],
+      ['+1234 '],
+      [null],
+      [0],
+      { },
+      0,
+    ] as [string, ...string[]][]).forEach(phones => {
+      it(`throws an error for ${JSON.stringify(phones)}`, () => {
+        expect(() => byPhones(phones)).to.throw(
+          `Invalid phones [${JSON.stringify(phones)}].`
+        );
+      });
+    });
+  });
+
+  describe('isPhonesQualifier', () => {
+    [
+      [ null, false ],
+      [ '+1234', false ],
+      [ { phones: { } }, false ],
+      [ { phones: '+1234' }, false ],
+      [ { phones: [] }, false ],
+      [ { phones: [''] }, false ],
+      [ { phones: ['   '] }, false ],
+      [ { phones: ['+1234', ''] }, false ],
+      [ { phones: ['+1234', null] }, false ],
+      [ { phone: '+1234' }, false ],
+      [ { phones: ['  +1 234  '] }, false ],
+      [ { phones: [' +1234'] }, false ],
+      [ { phones: ['+1234 '] }, false ],
+      [ { phones: ['+1234'] }, true ],
+      [ { phones: ['+1 234 567'] }, true ],
+      [ { phones: ['+1234', '+5678'] }, true ],
+      [ { phones: ['+1234'], other: 'other' }, true ]
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isPhonesQualifier(qualifier)).to.equal(expected);
       });
     });
   });

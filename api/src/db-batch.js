@@ -50,7 +50,7 @@ const runBatch = (ddoc, view, viewParams, iteratee) => {
  * @param {String} viewName Name of the view, eg: "medic/contacts_by_phone".
  * @param {Object} viewParams Parameters to pass to the view query.
  *    `include_docs` defaults to `true` and cannot be overridden.
- *    `startkey` and `startkey_docid` cannot be overriden.
+ *    `startkey` and `startkey_docid` cannot be overridden.
  * @param {int} [viewParams.limit=100] the page size.
  * @param {Function} iteratee Called to process an array of docs then invoke the given callback.
  */

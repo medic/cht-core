@@ -4,7 +4,7 @@
  * Wireup a data provider to the rules-engine
  */
 
-const moment = require('moment');
+const CalendarInterval = require('@medic/calendar-interval');
 const registrationUtils = require('@medic/registration-utils');
 
 const TaskStates = require('./task-states');
@@ -282,8 +282,15 @@ const refreshRulesEmissionForContacts = (provider, calculationTimestamp, contact
   return refreshForKnownContacts(calculationTimestamp, rulesStateStore.getContactIds());
 };
 
+const getTargetDocTag = (filterInterval) => {
+  if (!filterInterval) {
+    return 'latest';
+  }
+  return CalendarInterval.getIntervalTag(filterInterval.end, rulesStateStore.getUseBikramSambatMonths());
+};
+
 const storeTargetsDoc = (provider, aggregate, updatedTargets) => {
-  const targetDocTag = aggregate.filterInterval ? moment(aggregate.filterInterval.end).format('YYYY-MM') : 'latest';
+  const targetDocTag = getTargetDocTag(aggregate.filterInterval);
   const minifyTarget = target => ({ id: target.id, value: target.value });
   const userContext = {
     userContactDoc: rulesStateStore.currentUserContact(),
@@ -297,4 +304,3 @@ const storeTargetsDoc = (provider, aggregate, updatedTargets) => {
     updatedTargets
   );
 };
-

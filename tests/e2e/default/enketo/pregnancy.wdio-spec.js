@@ -39,7 +39,6 @@ describe('Pregnancy registration', () => {
 
   afterEach(async () => {
     await utils.revertDb(DOCS_TO_KEEP, true);
-    await commonPage.sync({ reload: true });
   });
 
   it('should submit a new pregnancy, ' +

@@ -142,11 +142,11 @@ describe('Recipient Resolution Integration', () => {
     const [updated] = await utils.getDocs([report._id]);
     expect(updated.scheduled_tasks.length).to.equal(6);
     const [msg1, msg2, msg3, msg4, msg5, msg6] = updated.scheduled_tasks;
-    expect(msg1['messages'][0].to).to.equal(SENDER_PHONE);
-    expect(msg2['messages'][0].to).to.equal(SENDER_PHONE);
-    expect(msg3['messages'][0].to).to.equal(VALID_PHONE);
-    expect(msg4['messages'][0].to).to.equal(SENDER_PHONE);
-    expect(msg5['messages'][0].to).to.equal(HEALTHCENTER_PHONE);
-    expect(msg6['messages'][0].to).to.equal('field1');
+    expect(msg1.messages[0].to).to.equal(SENDER_PHONE);
+    expect(msg2.messages[0].to).to.equal(SENDER_PHONE);
+    expect(msg3.messages[0].to).to.equal(VALID_PHONE);
+    expect(msg4.messages[0].to).to.equal(SENDER_PHONE);
+    expect(msg5.messages[0].to).to.equal(HEALTHCENTER_PHONE);
+    expect(msg6.messages[0].to).to.equal('field1');
   });
 });

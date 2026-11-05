@@ -500,7 +500,7 @@ describe('transitions', () => {
         chai.expect(doc.contact._id).to.equal('chw1');
 
         chai.expect(messages.messages.length).to.equal(10);
-        // Extra task added to send message whne sys.facility_not_found error thrown
+        // Extra task added to send message when sys.facility_not_found error thrown
         chai.expect(docs.reduce((sum, doc) => sum + doc.tasks.length, 0)).to.equal(10);
         docs.forEach(doc => {
           doc.tasks.forEach(task => {

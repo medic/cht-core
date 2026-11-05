@@ -72,6 +72,11 @@ const animate = function(canvas, duration, onComplete) {
       return;
     }
 
+    if (!canvas.isConnected) {
+      running = false;
+      return;
+    }
+
     const offset = Date.now() - start;
     if (offset < lim * 2) {
       drawAnimation(ctx, circle, offset, lim);
@@ -90,13 +95,20 @@ const animate = function(canvas, duration, onComplete) {
   // set up initial state
   resetTimer();
 
-  canvas.addEventListener('click', () => {
+  const clickHandler = () => {
     if (running) {
       resetTimer();
       return;
     }
     startTimer();
-  });
+  };
+
+  canvas.addEventListener('click', clickHandler);
+
+  return () => {
+    running = false;
+    canvas.removeEventListener('click', clickHandler);
+  };
 };
 
 module.exports = { animate };

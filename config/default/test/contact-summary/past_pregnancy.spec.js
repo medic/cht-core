@@ -5,9 +5,9 @@ const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios, deliveryRep
 const harness = new TestRunner();
 
 describe('Tests for past pregnancy condition card', () => {
-  before(async () => { return await harness.start(); });
-  after(async () => { return await harness.stop(); });
-  beforeEach(async () => { return await harness.clear(); });
+  before(() => harness.start());
+  after(() => harness.stop());
+  beforeEach(() => harness.clear());
   afterEach(() => {
     expect(harness.consoleErrors).to.be.empty;
   });

@@ -2,7 +2,6 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const chai = require('chai');
 const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
-chai.use(require('chai-exclude'));
 
 const contacts = [
   {
@@ -1194,7 +1193,7 @@ describe('SMS workflows', () => {
       ]);
     });
 
-    it('should send to sender if recipent is empty and default_to_sender is set to false', async () => {
+    it('should send to sender if recipient is empty and default_to_sender is set to false', async () => {
       const settings = {
         sms: {
           default_to_sender: false

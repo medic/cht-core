@@ -5,7 +5,7 @@ module.exports = {
       [deathDate, 'health_facility', 'Died while sleeping.'],
       [],
     ],
-    undo:[
+    undo: [
       ['yes']
     ]
   },

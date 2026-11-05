@@ -192,6 +192,45 @@ describe('remote contact', () => {
           type: contactType,
         })).to.be.true;
       });
+
+      it('serializes the phones qualifier over the uuid endpoint', async () => {
+        const expectedResponse = { data: ['uuid-1'], cursor };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Contact.v1.getUuidsPage(remoteContext)(
+          { phones: ['+254712345678', '+254798765432'] }, cursor, limit
+        );
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact/uuid')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          cursor,
+          phone: '+254712345678,+254798765432',
+        })).to.be.true;
+      });
+
+      it('sends a single phone number without a trailing separator', async () => {
+        getResourcesInner.resolves({ data: [], cursor: null });
+
+        await Contact.v1.getUuidsPage(remoteContext)({ phones: ['+254712345678'] }, null, limit);
+
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          phone: '+254712345678',
+        })).to.be.true;
+      });
+
+      it('does not normalize the phone numbers', async () => {
+        getResourcesInner.resolves({ data: [], cursor: null });
+
+        await Contact.v1.getUuidsPage(remoteContext)({ phones: ['+1 234 567'] }, null, limit);
+
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          phone: '+1 234 567',
+        })).to.be.true;
+      });
     });
 
     describe('getPage', () => {
@@ -236,6 +275,23 @@ describe('remote contact', () => {
 
         expect(result).to.equal(expectedResponse);
         expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString(), type: 'person' })).to.be.true;
+      });
+
+      it('serializes the phones qualifier over the contact endpoint', async () => {
+        const expectedResponse = { data: [{ type: 'person' }], cursor };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Contact.v1.getPage(remoteContext)(
+          { phones: ['+254712345678', '+254798765432'] }, cursor, limit
+        );
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          cursor,
+          phone: '+254712345678,+254798765432',
+        })).to.be.true;
       });
     });
   });

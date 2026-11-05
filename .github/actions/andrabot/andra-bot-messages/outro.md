@@ -1,0 +1,1 @@
+While these checks fail, the PR carries the `{{failureLabel}}` label. The checks run again automatically whenever the PR is edited or updated, and the label is replaced with `{{successLabel}}` once everything above is addressed.

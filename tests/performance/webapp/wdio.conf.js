@@ -21,7 +21,7 @@ const prepData = async () => {
   console.log(result);
 };
 
-// spec order is relevent, due to initial task calculation
+// spec order is relevant, due to initial task calculation
 const specs = [
   `./specs/login.wdio-spec.js`,
   `./specs/tasks.wdio-spec.js`,

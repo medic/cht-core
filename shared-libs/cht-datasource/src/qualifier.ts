@@ -117,6 +117,45 @@ export const isContactTypeQualifier = (contactType: unknown): contactType is Con
 };
 
 /**
+ * A qualifier that identifies contacts by their phone numbers.
+ */
+export type PhonesQualifier = Readonly<{ phones: [string, ...string[]] }>;
+
+/**
+ * Builds a qualifier for finding contacts with any of the given phone numbers. Duplicates are removed.
+ * Results are grouped in the order of the given numbers, so page through them by passing the numbers in the
+ * same order with each cursor.
+ * @param phones the phone numbers of the contacts, each matched verbatim against the contact's `phone` field
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the phone numbers are not a non-empty array of non-blank strings with no
+ * leading or trailing whitespace
+ */
+export const byPhones = (phones: [string, ...string[]]): PhonesQualifier => {
+  const qualifier = { phones };
+  if (!isPhonesQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid phones [${JSON.stringify(phones)}].`);
+  }
+
+  // Deduping a non-empty array keeps it non-empty, which TS cannot infer on its own.
+  return { phones: [...new Set(phones)] as [string, ...string[]] };
+};
+
+/**
+ * Returns `true` if the given qualifier is a {@link PhonesQualifier} otherwise `false`. Phone numbers are
+ * matched verbatim, so an empty array of phone numbers is considered invalid, as is a number that is blank
+ * or padded with whitespace.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link PhonesQualifier}, otherwise `false`.
+ */
+export const isPhonesQualifier = (qualifier: unknown): qualifier is PhonesQualifier => {
+  return isRecord(qualifier)
+    && hasField(qualifier, { name: 'phones', type: 'object' })
+    && Array.isArray(qualifier.phones)
+    && qualifier.phones.length > 0
+    && qualifier.phones.every(phone => isString(phone) && phone.length > 0 && phone === phone.trim());
+};
+
+/**
  * A qualifier that identifies entities based on a freetext search string.
  */
 export type FreetextQualifier = Readonly<{ freetext: string }>;
@@ -174,6 +213,51 @@ export const isKeyedFreetextQualifier = (qualifier: FreetextQualifier): boolean 
   }
 
   return false;
+};
+
+/**
+ * A qualifier that identifies entities based on the codes of the forms used to record them.
+ */
+export type FormsQualifier = Readonly<{ forms: [string, ...string[]] }>;
+
+/**
+ * Builds a qualifier for finding entities recorded with any of the given forms.
+ * @param forms the form codes to search with (e.g. `['pregnancy']`). Each is matched verbatim against
+ * the document's `form` field: they are not normalized, so a code with leading or trailing whitespace
+ * is rejected rather than silently matching nothing. Duplicates are removed.
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the form codes are not a non-empty array of non-blank strings with no
+ * leading or trailing whitespace
+ */
+export const byForms = (forms: [string, ...string[]]): FormsQualifier => {
+  const qualifier = { forms };
+  if (!isFormsQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid forms [${JSON.stringify(forms)}].`);
+  }
+
+  // Deduping a non-empty array can only ever keep it non-empty, so the tuple shape survives the Set
+  // round-trip; TS just cannot see that on its own.
+  return { forms: [...new Set(forms)] as [string, ...string[]] };
+};
+
+/**
+ * Returns `true` if the given qualifier is a {@link FormsQualifier} otherwise `false`.
+ *
+ * The qualifier must have a `forms` key holding a non-empty array of strings, none of which is empty,
+ * blank, or padded with leading/trailing whitespace. Unlike {@link isIdsQualifier}, an empty array is
+ * rejected: it can only ever match nothing, which is never what the caller meant, and silently
+ * returning an empty page would hide the mistake. A padded code is rejected for the same reason: it
+ * would otherwise pass validation but match nothing, since the value is compared verbatim rather than
+ * trimmed.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link FormsQualifier}, otherwise `false`.
+ */
+export const isFormsQualifier = (qualifier: unknown): qualifier is FormsQualifier => {
+  return isRecord(qualifier)
+    && hasField(qualifier, { name: 'forms', type: 'object' })
+    && Array.isArray(qualifier.forms)
+    && qualifier.forms.length > 0
+    && qualifier.forms.every(form => isString(form) && form.length > 0 && form === form.trim());
 };
 
 /**

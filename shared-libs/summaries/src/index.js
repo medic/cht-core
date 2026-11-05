@@ -21,12 +21,14 @@ const isMissingSubjectError = (error) => {
     && error.fields.some(field => SUBJECT_FIELDS.has(field));
 };
 
+// `||`, not `??`: an empty `patient_id` (written by a form before the contact had a shortcode) must fall through
+// to `patient_uuid`.
 const getReference = (doc) => {
   return doc.patient_id
-    ?? doc.fields?.patient_id
-    ?? doc.fields?.patient_uuid
-    ?? doc.place_id
-    ?? doc.fields?.place_id;
+    || doc.fields?.patient_id
+    || doc.fields?.patient_uuid
+    || doc.place_id
+    || doc.fields?.place_id;
 };
 
 const getSubject = (doc) => {
@@ -67,7 +69,7 @@ const summariseReport = (doc) => {
   return {
     _id: doc._id,
     _rev: doc._rev,
-    from: doc.from ?? doc.sent_by,
+    from: doc.from || doc.sent_by,
     phone: doc.contact?.phone,
     form: doc.form,
     read: doc.read,
@@ -77,7 +79,7 @@ const summariseReport = (doc) => {
     contact: doc.contact?._id,
     lineage: getLineage(doc.contact?.parent),
     subject: getSubject(doc),
-    case_id: doc.case_id ?? doc.fields?.case_id,
+    case_id: doc.case_id || doc.fields?.case_id,
   };
 };
 
@@ -85,7 +87,7 @@ const summariseContact = (doc) => {
   return {
     _id: doc._id,
     _rev: doc._rev,
-    name: doc.name ?? doc.phone,
+    name: doc.name || doc.phone,
     phone: doc.phone,
     type: doc.type,
     contact_type: doc.contact_type,

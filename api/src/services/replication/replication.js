@@ -40,6 +40,11 @@ const getDocIdsRevPairs = async (docIds) => {
     .map(row => ({ id: row.id, rev: row.value.rev }));
 };
 
+const getArchivedDocs = async (docIds) => {
+  const result = await db.archive.allDocs({ keys: docIds });
+  return result.rows.filter(row => !row.error && !row.value?.deleted).map(row => row.id);
+};
+
 const getDocIdsToDelete = async (userCtx, docIds) => {
   if (!docIds.length) {
     return [];
@@ -50,10 +55,14 @@ const getDocIdsToDelete = async (userCtx, docIds) => {
     .filter(row => row.error === 'deleted' || row?.value?.deleted)
     .map(row => row.key);
 
-  const toPurge = await purgedDocs.getPurgedIds(userCtx, docIds, false);
-  toDelete.push(...toPurge);
+  const [toPurge, toArchive] = await Promise.all([
+    purgedDocs.getPurgedIds(userCtx, docIds, false),
+    getArchivedDocs(docIds),
+  ]);
+  toDelete.push(...toPurge, ...toArchive);
 
-  return toDelete;
+  // a doc can be flagged by more than one source (e.g. deleted after being purged or archived)
+  return [...new Set(toDelete)];
 };
 
 module.exports = {
