@@ -63,10 +63,25 @@ export class ReplicationService {
         { responseType: 'json' }
       );
       const localIdsToDelete = (await lastValueFrom(getDeleteListReq)).doc_ids;
+      if (!localIdsToDelete.length) {
+        continue;
+      }
+
+      // Purge stubs do not retain the subject information needed by the rules engine.
+      const localDocs = await this.dbService.get().allDocs({ keys: localIdsToDelete, include_docs: true });
       const deleteDocs = localIdsToDelete
         .map(id => ({ _id: id, _rev: localIdRevMap[id], _deleted: true, purged: true }));
-      await this.dbService.get().bulkDocs(deleteDocs);
-      nbrDeletes += deleteDocs.length;
+      const results = await this.dbService.get().bulkDocs(deleteDocs);
+      const deletedIds = new Set(results.filter(result => result.ok).map(result => result.id));
+      const purgedDocs = localDocs.rows
+        .map(row => row.doc)
+        .filter(doc => doc && deletedIds.has(doc._id));
+      await this.rulesEngineService.monitorPurgedDocs(purgedDocs);
+
+      if (deletedIds.size !== deleteDocs.length) {
+        throw new Error('Not all documents purged successfully');
+      }
+      nbrDeletes += deletedIds.size;
     }
     return nbrDeletes;
   }
