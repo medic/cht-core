@@ -12,6 +12,9 @@ const getHtml = async (policy, showBackButton, translations) => {
 };
 
 const getLocale = (req) => {
+  if (typeof req.query.lang === 'string' && req.query.lang) {
+    return req.query.lang;
+  }
   return cookie.get(req, 'locale'); // if cookie is not set, config.translate will pick the default
 };
 

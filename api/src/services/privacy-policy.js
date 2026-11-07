@@ -8,7 +8,8 @@ const { DOC_IDS } = require('@medic/constants');
 
 const getAttachmentName = (doc, locale) => {
   const policies = doc.privacy_policies;
-  return policies[locale] || policies.en || Object.values(policies)[0];
+  const policy = Object.hasOwn(policies, locale) && policies[locale];
+  return policy || policies.en || Object.values(policies)[0];
 };
 
 const getAttachment = (doc, locale) => {

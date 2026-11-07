@@ -79,6 +79,27 @@ describe('Privacy Policy service', () => {
       });
     });
 
+    ['constructor', '__proto__', 'toString'].forEach(locale => {
+      it(`defaults to English for inherited property ${locale}`, async () => {
+        sinon.stub(db.medic, 'get').resolves(doc);
+
+        const response = await service.get(locale);
+
+        chai.expect(response).to.equal('englishpp');
+      });
+
+      it(`defaults to the first policy for inherited property ${locale} without English`, async () => {
+        sinon.stub(db.medic, 'get').resolves({
+          ...doc,
+          privacy_policies: { fr: 'french.html' }
+        });
+
+        const response = await service.get(locale);
+
+        chai.expect(response).to.equal('frenchpp');
+      });
+    });
+
     it('sanitizes html fragment', () => {
       sinon.stub(db.medic, 'get').resolves(doc);
       return service.get('ne').then(response => {
