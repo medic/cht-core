@@ -36,7 +36,7 @@ const getQueryByFreetext = (qualifier: FreetextQualifier) => {
     return `exact_match:"${qualifier.freetext}"`;
   }
   // Fuzzy match
-  return `${escapeKeys(qualifier.freetext)}*`;
+  return `default:${escapeKeys(qualifier.freetext)}*`;
 };
 
 const getQueryByTypeFreetext = (qualifier: FreetextQualifier & Partial<ContactTypeQualifier>) => {
