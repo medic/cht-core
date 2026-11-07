@@ -1,10 +1,15 @@
-import { ContactTypeQualifier, FormsQualifier, FreetextQualifier } from '../../src/qualifier';
+import {
+  ContactTypeQualifier,
+  FormsQualifier,
+  FreetextQualifier,
+  VerificationQualifier
+} from '../../src/qualifier';
 import { expect } from 'chai';
 import {
   assertContactTypeFreetextPhonesQualifier,
   assertContactTypeIdsPhonesQualifier,
   assertCursor,
-  assertFreetextOrFormsQualifier,
+  assertFreetextOrFormsOrVerificationQualifier,
   assertFreetextQualifier,
   assertLimit,
   assertPersonInput,
@@ -116,15 +121,20 @@ describe('libs parameter-validators', () => {
     });
   });
 
-  describe('assertFreetextOrFormsQualifier', () => {
+  describe('assertFreetextOrFormsOrVerificationQualifier', () => {
     it('should not throw for a valid freetext qualifier', () => {
       const validQualifier: FreetextQualifier = { freetext: 'key:search text' };
-      expect(() => assertFreetextOrFormsQualifier(validQualifier)).to.not.throw();
+      expect(() => assertFreetextOrFormsOrVerificationQualifier(validQualifier)).to.not.throw();
     });
 
     it('should not throw for a valid forms qualifier', () => {
       const validQualifier: FormsQualifier = { forms: ['pregnancy'] };
-      expect(() => assertFreetextOrFormsQualifier(validQualifier)).to.not.throw();
+      expect(() => assertFreetextOrFormsOrVerificationQualifier(validQualifier)).to.not.throw();
+    });
+
+    it('should not throw for a valid verification qualifier', () => {
+      const validQualifier: VerificationQualifier = { verification: null };
+      expect(() => assertFreetextOrFormsOrVerificationQualifier(validQualifier)).to.not.throw();
     });
 
     [
@@ -136,7 +146,7 @@ describe('libs parameter-validators', () => {
       { wrongProp: 'value' }
     ].forEach((qualifier) => {
       it(`should throw the freetext message for non-form input: ${JSON.stringify(qualifier)}`, () => {
-        expect(() => assertFreetextOrFormsQualifier(qualifier))
+        expect(() => assertFreetextOrFormsOrVerificationQualifier(qualifier))
           .to.throw(InvalidArgumentError)
           .with.property('message')
           .that.includes('Invalid freetext');
@@ -150,10 +160,23 @@ describe('libs parameter-validators', () => {
       { forms: 'pregnancy' }
     ].forEach((qualifier) => {
       it(`should throw the forms message for form-shaped input: ${JSON.stringify(qualifier)}`, () => {
-        expect(() => assertFreetextOrFormsQualifier(qualifier))
+        expect(() => assertFreetextOrFormsOrVerificationQualifier(qualifier))
           .to.throw(InvalidArgumentError)
           .with.property('message')
           .that.includes('Invalid forms');
+      });
+    });
+
+    [
+      { verification: 'true' },
+      { verification: undefined },
+      { verification: 0 }
+    ].forEach((qualifier) => {
+      it(`should throw the verification message for invalid verification input: ${JSON.stringify(qualifier)}`, () => {
+        expect(() => assertFreetextOrFormsOrVerificationQualifier(qualifier))
+          .to.throw(InvalidArgumentError)
+          .with.property('message')
+          .that.includes('Invalid verification');
       });
     });
   });

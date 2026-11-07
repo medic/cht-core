@@ -261,6 +261,36 @@ export const isFormsQualifier = (qualifier: unknown): qualifier is FormsQualifie
 };
 
 /**
+ * A qualifier that identifies reports by their verification status. `null` matches reports that are unverified.
+ */
+export type VerificationQualifier = Readonly<{ verification: boolean | null }>;
+
+/**
+ * Returns `true` if the given qualifier is a {@link VerificationQualifier}, otherwise `false`.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link VerificationQualifier}, otherwise `false`.
+ */
+export const isVerificationQualifier = (qualifier: unknown): qualifier is VerificationQualifier => {
+  return isRecord(qualifier)
+    && 'verification' in qualifier
+    && (typeof qualifier.verification === 'boolean' || qualifier.verification === null);
+};
+
+/**
+ * Builds a qualifier for finding reports by their verification status.
+ * @param verification `true` for verified reports, `false` for refuted reports, or `null` for unverified reports
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the verification value is not a boolean or `null`
+ */
+export const byVerification = (verification: boolean | null): VerificationQualifier => {
+  const qualifier = { verification };
+  if (!isVerificationQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid verification value [${JSON.stringify(verification)}].`);
+  }
+  return qualifier;
+};
+
+/**
  * A qualifier that identifies entities based on a reporting period (e.g. a calendar month). The reporting period
  * should be represented with the format YYYY-MM (e.g. "2025-07").
  */

@@ -34,6 +34,22 @@ describe('freetext-query', () => {
     chai.expect(getUuidsByFreetext.calledWith('search_term')).to.equal(true);
   });
 
+  it('should query reports by verification and return a de-duplicated union', async () => {
+    const getUuidsByVerification = sinon.stub();
+    getUuidsByVerification.withArgs(true).returns(createAsyncGenerator(['id1', 'id2']));
+    getUuidsByVerification.withArgs(null).returns(createAsyncGenerator(['id2', 'id3']));
+    sinon.stub(chtDatasource, 'getDatasource').returns(
+      { v1: { report: { getUuidsByVerification } } }
+    );
+
+    const request = { verifications: [true, null] };
+    const result = await queryFreetext({}, request, 'reports');
+
+    chai.expect(result).to.deep.equal([{ id: 'id1' }, { id: 'id2' }, { id: 'id3' }]);
+    chai.expect(getUuidsByVerification.calledWith(true)).to.equal(true);
+    chai.expect(getUuidsByVerification.calledWith(null)).to.equal(true);
+  });
+
   it('should query contacts freetext without type', async () => {
     const getUuidsByFreetext = sinon.stub().returns(createAsyncGenerator(['c1', 'c2']));
     const getUuidsByTypeFreetext = sinon.stub();

@@ -31,6 +31,20 @@ const queryFreetext = async (dataContext, request, type) => {
 
 const getGeneratorByType = (datasource, request, type) => {
   if (type === 'reports') {
+    if (Array.isArray(request.verifications)) {
+      return (async function* () {
+        const seen = new Set();
+        for (const verification of request.verifications) {
+          const generator = datasource.v1.report.getUuidsByVerification(verification);
+          for await (const id of generator) {
+            if (!seen.has(id)) {
+              seen.add(id);
+              yield id;
+            }
+          }
+        }
+      })();
+    }
     return datasource.v1.report.getUuidsByFreetext(request.params.key);
   }
 
