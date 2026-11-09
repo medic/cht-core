@@ -93,7 +93,8 @@ const changeHandler = function() {
     // https://github.com/enketo/enketo-core/issues/910
     // Re-validate the current question now that we have loaded the doc data.
     // This will clear any constraint errors that were resolved by the doc data.
-    currentForm.validateContent($this.parent());
+    // validateInput does not flip pages, so loading a contact on another page does not move the user.
+    currentForm.validateInput($this.parent().find('input')[0]);
   }
 };
 
