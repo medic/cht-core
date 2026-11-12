@@ -12,6 +12,7 @@ import * as Qualifier from '../../src/qualifier';
 import { END_OF_ALPHABET_MARKER } from '../../src/libs/constants';
 import { InvalidArgumentError } from '../../src';
 
+import { CONTACT_TYPES } from '@medic/constants';
 describe('local contact', () => {
   let localContext: LocalDataContext.LocalDataContext;
   let settingsGetAll: SinonStub;
@@ -87,7 +88,7 @@ describe('local contact', () => {
       });
 
       it('returns a contact by UUID', async () => {
-        const doc = { type: 'person', _id: 'uuid', _rev: '1' };
+        const doc = { type: CONTACT_TYPES.PERSON, _id: 'uuid', _rev: '1' };
         getDocByIdInner.resolves(doc);
         isContact.returns(true);
 
@@ -163,7 +164,7 @@ describe('local contact', () => {
         const contactDoc = {
           _id: 'a',
           _rev: '1',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           name: 'james',
           phone: '+456',
           parent: { _id: 'f', parent: { _id: 'g' } },
@@ -180,7 +181,7 @@ describe('local contact', () => {
           _rev: '1',
           name: 'james',
           phone: '+456',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           contact_type: undefined,
           contact: undefined,
           lineage: ['f', 'g'],
@@ -201,7 +202,7 @@ describe('local contact', () => {
       });
 
       it('returns a contact with lineage for person type contact', async () => {
-        const contact = { type: 'person', _id: 'uuid', _rev: 'rev' };
+        const contact = { type: CONTACT_TYPES.PERSON, _id: 'uuid', _rev: 'rev' };
         const mockFunction = sinon.stub().resolves(contact);
         mockFetchHydratedDoc.returns(mockFunction);
         isContact.returns(true);
@@ -260,7 +261,6 @@ describe('local contact', () => {
 
     describe('getUuidsPage', () => {
       const limit = 3;
-      const contactType = 'person';
       const expectedResult = { cursor: 'bookmark', data: ['1', '2', '3'] };
       let queryViewByType: SinonStub;
       let queryDocsByPhones: SinonStub;
@@ -277,7 +277,7 @@ describe('local contact', () => {
       let getContactTypeIds: SinonStub;
 
       beforeEach(() => {
-        getContactTypeIds = sinon.stub(contactTypeUtils, 'getContactTypeIds').returns([contactType]);
+        getContactTypeIds = sinon.stub(contactTypeUtils, 'getContactTypeIds').returns([CONTACT_TYPES.PERSON]);
 
         queryViewByType = sinon.stub();
         queryDocsByPhones = sinon.stub();
@@ -338,7 +338,7 @@ describe('local contact', () => {
           ['1', 1]
         ] as [string | null, number][]).forEach(([cursor, skip]) => {
           it(`returns page of UUIDs for valid contact type with cursor [${cursor}]`, async () => {
-            const qualifier = Qualifier.byContactType(contactType);
+            const qualifier = Qualifier.byContactType(CONTACT_TYPES.PERSON);
 
             const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
 
@@ -357,16 +357,16 @@ describe('local contact', () => {
             const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
             pageFn(limit, skip);
 
-            expect(queryViewByType.calledWithExactly([contactType], limit, skip)).to.be.true;
+            expect(queryViewByType.calledWithExactly([CONTACT_TYPES.PERSON], limit, skip)).to.be.true;
           });
         });
 
         it('throws for invalid contact type', async () => {
           getContactTypeIds.returns(['not-person']);
-          const qualifier = Qualifier.byContactType(contactType);
+          const qualifier = Qualifier.byContactType(CONTACT_TYPES.PERSON);
 
           await expect(Contact.v1.getUuidsPage(localContext)(qualifier, null, limit))
-            .to.be.rejectedWith(InvalidArgumentError, `Invalid contact type [${contactType}].`);
+            .to.be.rejectedWith(InvalidArgumentError, `Invalid contact type [${CONTACT_TYPES.PERSON}].`);
 
           expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
           expect(queryNouveauFreetext.notCalled).to.be.true;
@@ -380,7 +380,7 @@ describe('local contact', () => {
         });
 
         it('throws for invalid cursor', async () => {
-          const qualifier = Qualifier.byContactType(contactType);
+          const qualifier = Qualifier.byContactType(CONTACT_TYPES.PERSON);
           const cursor = 'not a number';
 
           await expect(Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit))
@@ -443,7 +443,7 @@ describe('local contact', () => {
           const unconfigured = {
             _id: 'unconfigured', _rev: '1', type: 'contact', contact_type: 'not-in-settings'
           };
-          const contact = { _id: 'person', _rev: '1', type: 'person' };
+          const contact = { _id: 'person', _rev: '1', type: CONTACT_TYPES.PERSON };
           isContact.withArgs(settings, unconfigured).returns(false);
           isContact.withArgs(settings, contact).returns(true);
 
@@ -563,7 +563,7 @@ describe('local contact', () => {
           it('uses nouveau for combined freetext and contact type qualifier', async () => {
             const freetext = 'key:value';
             const qualifier = Qualifier.and(
-              Qualifier.byContactType(contactType),
+              Qualifier.byContactType(CONTACT_TYPES.PERSON),
               Qualifier.byFreetext(freetext)
             );
 
@@ -585,12 +585,12 @@ describe('local contact', () => {
           it('throws for invalid contact type in combined qualifier', async () => {
             getContactTypeIds.returns(['not-person']);
             const qualifier = Qualifier.and(
-              Qualifier.byContactType(contactType),
+              Qualifier.byContactType(CONTACT_TYPES.PERSON),
               Qualifier.byFreetext('key:value')
             );
 
             await expect(Contact.v1.getUuidsPage(localContext)(qualifier, null, limit))
-              .to.be.rejectedWith(InvalidArgumentError, `Invalid contact type [${contactType}].`);
+              .to.be.rejectedWith(InvalidArgumentError, `Invalid contact type [${CONTACT_TYPES.PERSON}].`);
 
             expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
             expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
@@ -671,7 +671,7 @@ describe('local contact', () => {
             it(`uses offline views for combined keyed freetext and contact type with cursor [${cursor}]`, async () => {
               const freetext = 'key:value';
               const qualifier = Qualifier.and(
-                Qualifier.byContactType(contactType),
+                Qualifier.byContactType(CONTACT_TYPES.PERSON),
                 Qualifier.byFreetext(freetext)
               );
 
@@ -693,14 +693,14 @@ describe('local contact', () => {
               pageFn(limit, skip);
 
               expect(queryViewTypeFreetextByKey.calledWithExactly(
-                [contactType, freetext], limit, skip
+                [CONTACT_TYPES.PERSON, freetext], limit, skip
               )).to.be.true;
             });
 
             it(`uses offline views for combined prefix freetext and contact type with cursor [${cursor}]`, async () => {
               const freetext = 'searchterm';
               const qualifier = Qualifier.and(
-                Qualifier.byContactType(contactType),
+                Qualifier.byContactType(CONTACT_TYPES.PERSON),
                 Qualifier.byFreetext(freetext)
               );
 
@@ -722,8 +722,8 @@ describe('local contact', () => {
               pageFn(limit, skip);
 
               expect(queryViewTypeFreetextByRange.calledWithExactly(
-                [contactType, freetext],
-                [contactType, freetext + END_OF_ALPHABET_MARKER],
+                [CONTACT_TYPES.PERSON, freetext],
+                [CONTACT_TYPES.PERSON, freetext + END_OF_ALPHABET_MARKER],
                 limit,
                 skip
               )).to.be.true;
@@ -783,8 +783,7 @@ describe('local contact', () => {
       const limit = 3;
       const cursor = null;
       const notNullCursor = '5';
-      const contactType = 'person';
-      const typeQualifier = { contactType } as const;
+      const typeQualifier = { contactType: CONTACT_TYPES.PERSON } as const;
       let getDocsByIdsInner: SinonStub;
       let getDocsByIdsOuter: SinonStub;
       let queryDocsByKeyInner: SinonStub;
@@ -804,11 +803,11 @@ describe('local contact', () => {
         queryDocsByKeysOuter = sinon.stub(LocalDoc, 'queryDocsByKeys').returns(queryDocsByKeysInner);
         fetchAndFilterInner = sinon.stub();
         fetchAndFilterOuter = sinon.stub(LocalDoc, 'fetchAndFilter').returns(fetchAndFilterInner);
-        getContactTypeIds = sinon.stub(contactTypeUtils, 'getContactTypeIds').returns([contactType]);
+        getContactTypeIds = sinon.stub(contactTypeUtils, 'getContactTypeIds').returns([CONTACT_TYPES.PERSON]);
       });
 
       it('returns a page of contacts for the given type', async () => {
-        const expectedResult = { cursor: '2', data: [{ type: 'person' }] };
+        const expectedResult = { cursor: '2', data: [{ type: CONTACT_TYPES.PERSON }] };
         fetchAndFilterInner.resolves(expectedResult);
 
         const res = await Contact.v1.getPage(localContext)(typeQualifier, cursor, limit);
@@ -827,14 +826,14 @@ describe('local contact', () => {
 
         // The page function queries the contacts_by_type view keyed by the contact type.
         await getPageFn(limit, 0);
-        expect(queryDocsByKeyInner.calledOnceWithExactly([contactType], limit, 0)).to.be.true;
+        expect(queryDocsByKeyInner.calledOnceWithExactly([CONTACT_TYPES.PERSON], limit, 0)).to.be.true;
         expect(getDocsByIdsInner.notCalled).to.be.true;
       });
 
       it('returns a page of contacts for the given phone numbers', async () => {
         const phones: [string, ...string[]] = ['+254712345678', '+254798765432'];
         const qualifier = Qualifier.byPhones(phones);
-        const expectedResult = { cursor: '2', data: [{ type: 'person' }] };
+        const expectedResult = { cursor: '2', data: [{ type: CONTACT_TYPES.PERSON }] };
         fetchAndFilterInner.resolves(expectedResult);
 
         const res = await Contact.v1.getPage(localContext)(qualifier, cursor, limit);
@@ -870,7 +869,7 @@ describe('local contact', () => {
         getContactTypeIds.returns(['not-person']);
 
         await expect(Contact.v1.getPage(localContext)(typeQualifier, cursor, limit))
-          .to.be.rejectedWith(`Invalid contact type [${contactType}].`);
+          .to.be.rejectedWith(`Invalid contact type [${CONTACT_TYPES.PERSON}].`);
 
         expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
         expect(fetchAndFilterOuter.notCalled).to.be.true;
@@ -880,7 +879,7 @@ describe('local contact', () => {
       it('returns a page of contacts for the given ids, hydrating the sliced page via getDocsByIds', async () => {
         const ids: [string, ...string[]] = ['c1', 'c2', 'c3', 'c4'];
         const qualifier = { ids };
-        const expectedResult = { cursor: '3', data: [{ type: 'person' }] };
+        const expectedResult = { cursor: '3', data: [{ type: CONTACT_TYPES.PERSON }] };
         fetchAndFilterInner.resolves(expectedResult);
 
         const res = await Contact.v1.getPage(localContext)(qualifier, notNullCursor, limit);

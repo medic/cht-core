@@ -319,7 +319,7 @@ describe('replication', () => {
         },
         {
           _id: 'depth_person',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: { _id: 'depth_clinic', parent: { _id: 'fixture:chwville' } },
         },
         {
@@ -329,7 +329,7 @@ describe('replication', () => {
         },
         {
           _id: 'depth_person_multi',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: { _id: 'depth_clinic_multi', parent: { _id: 'fixture:clareville' } },
         },
       ];
@@ -378,7 +378,7 @@ describe('replication', () => {
           {
             // depth = 2
             _id: 'chwville_patient',
-            type: 'person',
+            type: CONTACT_TYPES.PERSON,
             parent: { _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville' } },
             name: 'patient',
           }
@@ -455,7 +455,7 @@ describe('replication', () => {
           {
             // depth = 2
             _id: 'steveville_patient',
-            type: 'person',
+            type: CONTACT_TYPES.PERSON,
             parent: {
               _id: 'steveville_clinic', parent: { _id: 'fixture:steveville', parent: { _id: parentPlace._id } }
             },
@@ -532,7 +532,7 @@ describe('replication', () => {
           {
             // depth = 1
             _id: 'some_contact',
-            type: 'person',
+            type: CONTACT_TYPES.PERSON,
             parent: { _id: 'fixture:chwville' },
             name: 'other_contact'
           },
@@ -606,19 +606,19 @@ describe('replication', () => {
         },
         {
           _id: 'depth_person1',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: { _id: 'depth_clinic', parent: { _id: 'depth_hc', parent: { _id: 'PARENT_PLACE' } } },
           patient_id: 'dp1'
         },
         {
           _id: 'depth_person2',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: { _id: 'depth_clinic', parent: { _id: 'depth_hc', parent: { _id: 'PARENT_PLACE' } } },
           patient_id: 'dp2'
         },
         {
           _id: 'out_of_hierarchy',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           patient_id: 'dp_out',
           parent: { _id: 'other' },
         },
@@ -679,13 +679,13 @@ describe('replication', () => {
           },
           {
             _id: 'depth_person1',
-            type: 'person',
+            type: CONTACT_TYPES.PERSON,
             parent: { _id: 'depth_clinic', parent: { _id: 'depth_hc', parent: { _id: 'PARENT_PLACE' } } },
             patient_id: 'dp1'
           },
           {
             _id: 'depth_person2',
-            type: 'person',
+            type: CONTACT_TYPES.PERSON,
             parent: { _id: 'depth_clinic', parent: { _id: 'depth_hc', parent: { _id: 'PARENT_PLACE' } } },
             patient_id: 'dp2'
           },
@@ -767,13 +767,13 @@ describe('replication', () => {
       beforeEach(() => {
         const patient = {
           _id: 'clinic_patient',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           reported_date: 1,
           parent: { _id: 'fixture:chwville', parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}}
         };
         const healthCenterPatient = {
           _id: 'health_center_patient',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           reported_date: 1,
           parent: { _id: 'fixture:chw-bossville', parent: { _id: parentPlace._id }}
         };

@@ -529,7 +529,7 @@ describe('Contacts component', () => {
       contactListContains.returns(true);
       expect(changesService.subscribe.callCount).to.equal(1);
       const changesFilter = changesService.subscribe.args[0][0].filter;
-      expect(!!changesFilter({ doc: { type: 'person' } })).to.equal(true);
+      expect(!!changesFilter({ doc: { type: CONTACT_TYPES.PERSON } })).to.equal(true);
       expect(!!changesFilter({ doc: { type: CONTACT_TYPES.CLINIC } })).to.equal(true);
       expect(!!changesFilter({ doc: { type: 'health_center' } })).to.equal(true);
       expect(!!changesFilter({ doc: { type: CONTACT_TYPES.DISTRICT_HOSPITAL } })).to.equal(true);
@@ -897,7 +897,7 @@ describe('Contacts component', () => {
         fields: { visited_contact_uuid: 122 },
         _deleted: true,
       };
-      const someContact = { type: 'person', _id: 1 };
+      const someContact = { type: CONTACT_TYPES.PERSON, _id: 1 };
 
       describe('uhc visits enabled', () => {
         beforeEach(() => {

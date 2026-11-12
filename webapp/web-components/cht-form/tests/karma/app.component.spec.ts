@@ -10,6 +10,7 @@ import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-ext
 import { EnketoService } from '@mm-services/enketo.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
+import { CONTACT_TYPES } from '@medic/constants';
 describe('AppComponent', () => {
   const FORM_ID = 'cht-form-id';
   const FORM_HTML = '<div>my form</div>';
@@ -172,7 +173,7 @@ describe('AppComponent', () => {
     tick();
     component.contactSummary = contactSummary;
     tick();
-    component.contactType = 'person';
+    component.contactType = CONTACT_TYPES.PERSON;
     tick();
     component.content = content;
     tick();
@@ -406,7 +407,7 @@ describe('AppComponent', () => {
     fixture.detectChanges();
     component.user = user;
     component.contactSummary = contactSummary;
-    component.contactType = 'person';
+    component.contactType = CONTACT_TYPES.PERSON;
     component.content = content;
     component.externalInstances = externalInstances;
     // Set the form ID again
@@ -606,7 +607,7 @@ describe('AppComponent', () => {
     tick();
     component.contactSummary = contactSummary;
     tick();
-    component.contactType = 'person';
+    component.contactType = CONTACT_TYPES.PERSON;
     tick();
     component.content = content;
     tick();
@@ -632,7 +633,7 @@ describe('AppComponent', () => {
     expect(enketoService.saveContact.callCount).to.equal(1);
     expect(enketoService.saveContact.args[0]).to.deep.equal([
       enketoForm,
-      { type: 'person' }
+      { type: CONTACT_TYPES.PERSON }
     ]);
     expect(actualSubmittedDocs).to.deep.equal(expectedDocs);
   }));
@@ -749,7 +750,7 @@ describe('AppComponent', () => {
     tick();
     component.contactSummary = contactSummary;
     tick();
-    component.contactType = 'person';
+    component.contactType = CONTACT_TYPES.PERSON;
     tick();
     component.content = content;
     tick();

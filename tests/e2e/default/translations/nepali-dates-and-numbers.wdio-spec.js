@@ -15,6 +15,7 @@ const gatewayApiUtils = require('@utils/gateway-api');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
+const { CONTACT_TYPES } = require('@medic/constants');
 describe('Bikram Sambat date display', () => {
   const NEPALI_LOCALE_CODE = 'ne';
   const FORM_ID_BS = 'B';
@@ -179,7 +180,7 @@ describe('Bikram Sambat date display', () => {
     const contact = {
       _id: 'george_bush',
       name: 'George Bush',
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       reported_date: moment(date).valueOf(),
       parent: { _id: 'hospital' },
       phone: '+40755456456',

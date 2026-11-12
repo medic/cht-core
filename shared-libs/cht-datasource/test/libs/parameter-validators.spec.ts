@@ -23,7 +23,7 @@ import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
 describe('libs parameter-validators', () => {
   describe('assertTypeQualifier', () => {
     it('should not throw for valid contact type qualifier', () => {
-      const validQualifier: ContactTypeQualifier = { contactType: 'person' };
+      const validQualifier: ContactTypeQualifier = { contactType: CONTACT_TYPES.PERSON };
       expect(() => assertTypeQualifier(validQualifier)).to.not.throw();
     });
 
@@ -218,7 +218,7 @@ describe('libs parameter-validators', () => {
 
   describe('assertContactTypeIdsPhonesQualifier', () => {
     it('should pass when given a valid contact type qualifier', () => {
-      const validContactType = { contactType: 'person' };
+      const validContactType = { contactType: CONTACT_TYPES.PERSON };
 
       expect(() => assertContactTypeIdsPhonesQualifier(validContactType)).to.not.throw();
     });
@@ -261,7 +261,7 @@ describe('libs parameter-validators', () => {
 
   describe('isContactType', () => {
     it('should return true for a contact type qualifier', () => {
-      expect(isContactType({ contactType: 'person' })).to.be.true;
+      expect(isContactType({ contactType: CONTACT_TYPES.PERSON })).to.be.true;
     });
 
     it('should return false for a freetext-only qualifier', () => {
@@ -275,18 +275,19 @@ describe('libs parameter-validators', () => {
     });
 
     it('should return false for a contact type-only qualifier', () => {
-      expect(isFreetextType({ contactType: 'person' })).to.be.false;
+      expect(isFreetextType({ contactType: CONTACT_TYPES.PERSON })).to.be.false;
     });
   });
 
   describe('isContactTypeAndFreetextType', () => {
     it('should return true when qualifier has both contactType and freetext', () => {
-      const qualifier = { contactType: 'person', freetext: 'search' } as ContactTypeQualifier & FreetextQualifier;
+      const qualifier = { contactType: CONTACT_TYPES.PERSON, freetext: 'search' } as ContactTypeQualifier &
+        FreetextQualifier;
       expect(isContactTypeAndFreetextType(qualifier)).to.be.true;
     });
 
     it('should return false when qualifier has only contactType', () => {
-      expect(isContactTypeAndFreetextType({ contactType: 'person' })).to.be.false;
+      expect(isContactTypeAndFreetextType({ contactType: CONTACT_TYPES.PERSON })).to.be.false;
     });
 
     it('should return false when qualifier has only freetext', () => {
@@ -375,7 +376,7 @@ describe('libs parameter-validators', () => {
   describe('assertPersonInput', () => {
     const personInput = {
       name: 'apoorva',
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       parent: 'p1',
     } as const;
 

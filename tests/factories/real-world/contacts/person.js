@@ -4,6 +4,7 @@ const Faker = require('@faker-js/faker');
 const chpProfile = require('./chp-profile');
 const groupOtherWomanPregnancy = require('./group-other-woman-pregnancy');
 const moment = require('moment');
+const { CONTACT_TYPES } = require('@medic/constants');
 const approxDateOfBirthMethod = 'approx';
 const phoneNumberFormat = '+256414######';
 const memberEligibleWoman = 'member_eligible_woman';
@@ -41,7 +42,7 @@ const person = () => {
     .sequence('_id', uuid)
     .option('subtype', 'manager')
     .attr('parent', '')
-    .attr('type', 'person')
+    .attr('type', CONTACT_TYPES.PERSON)
     .attr('sex', ['subtype'], (subtype) => {
       if (subtype === memberEligibleWoman) {
         return 'female';

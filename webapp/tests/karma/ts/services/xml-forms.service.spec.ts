@@ -249,7 +249,7 @@ describe('XmlForms service', () => {
       UserContact.resolves();
       const service = getService();
       getContactType.resolves({ person: true });
-      return service.list({ doc: { type: 'person' } }).then(actual => {
+      return service.list({ doc: { type: CONTACT_TYPES.PERSON } }).then(actual => {
         expect(actual[0]).to.deep.equal(given[0].doc);
         assert.deepEqual(_.map(actual, 'internalId'), [
           'zero',
@@ -541,7 +541,7 @@ describe('XmlForms service', () => {
       UserContact.resolves();
       const service = getService();
       getContactType.resolves({ person: true });
-      return service.list({ doc: { sex: 'female', type: 'person' } }).then(actual => {
+      return service.list({ doc: { sex: 'female', type: CONTACT_TYPES.PERSON } }).then(actual => {
         expect(actual.length).to.equal(1);
         expect(actual[0]).to.deep.equal(given[0].doc);
       });
@@ -578,11 +578,11 @@ describe('XmlForms service', () => {
       const service = getService();
       getContactType.resolves({ person: true });
 
-      const result1 = await service.list({ doc: { sex: 'female', type: 'person' } });
+      const result1 = await service.list({ doc: { sex: 'female', type: CONTACT_TYPES.PERSON } });
       expect(result1).to.deep.equal([given[0].doc]);
 
       userContactSummary.resolves({ context: { isAlive: false } });
-      const result2 = await service.list({ doc: { sex: 'female', type: 'person' } });
+      const result2 = await service.list({ doc: { sex: 'female', type: CONTACT_TYPES.PERSON } });
       expect(result2).to.deep.equal([given[1].doc]);
     });
 

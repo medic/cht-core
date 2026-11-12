@@ -16,7 +16,7 @@ describe('generate_patient_id_on_people', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       reported_date: new Date().getTime()
     };
 
@@ -68,7 +68,7 @@ describe('generate_patient_id_on_people', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       patient_id: '1234',
       reported_date: new Date().getTime()
     };
@@ -94,7 +94,7 @@ describe('generate_patient_id_on_people', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       reported_date: new Date().getTime()
     };
 

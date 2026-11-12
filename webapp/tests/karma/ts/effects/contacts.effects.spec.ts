@@ -22,6 +22,7 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 
+import { CONTACT_TYPES } from '@medic/constants';
 describe('Contacts effects', () => {
   let effects: ContactsEffects;
   let actions$;
@@ -58,7 +59,7 @@ describe('Contacts effects', () => {
     contactSummaryService = { get: sinon.stub().resolves({ cards: [], fields: [] }) };
     targetAggregateService = { getTargetDocs: sinon.stub().resolves() };
     tasksForContactService = { get: sinon.stub().resolves([]) };
-    contactTypesService = { getTypeId: sinon.stub().returns('person') };
+    contactTypesService = { getTypeId: sinon.stub().returns(CONTACT_TYPES.PERSON) };
 
     TestBed.configureTestingModule({
       imports: [
@@ -220,7 +221,7 @@ describe('Contacts effects', () => {
       contactViewModelGeneratorService.getContact.resolves({
         _id: 'contactid',
         model: 'contact model',
-        doc: { _id: 'contactid', type: 'person' },
+        doc: { _id: 'contactid', type: CONTACT_TYPES.PERSON },
       });
       const settingSelected = sinon.stub(GlobalActions.prototype, 'settingSelected');
 
@@ -230,7 +231,7 @@ describe('Contacts effects', () => {
       expect(setSelected.args[0]).to.deep.equal([{
         _id: 'contactid',
         model: 'contact model',
-        doc: { _id: 'contactid', type: 'person' },
+        doc: { _id: 'contactid', type: CONTACT_TYPES.PERSON },
       }]);
       expect(setLoadingShowContent.callCount).to.equal(0);
       expect(setLoadingSelectedContact.callCount).to.equal(0);

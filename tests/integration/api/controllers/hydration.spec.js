@@ -59,7 +59,7 @@ const contacts = [
   },
   {
     _id: 'supervisor1',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     name: 'supervisor1',
     parent: { _id: 'hc1', parent: { _id: 'PARENT_PLACE' } },
   },
@@ -72,19 +72,19 @@ const contacts = [
   },
   {
     _id: 'chw1',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     name: 'chw1',
     parent: { _id: 'clinic1', parent: { _id: 'hc1', parent: { _id: 'PARENT_PLACE' } } },
   },
   {
     _id: 'patient1',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     name: 'patient1',
     parent: { _id: 'clinic1', parent: { _id: 'hc1', parent: { _id: 'PARENT_PLACE' } } },
   },
   {
     _id: 'patient2',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     name: 'patient2',
     parent: { _id: 'clinic1', parent: { _id: 'hc1', parent: { _id: 'PARENT_PLACE' } } },
   },
@@ -96,7 +96,7 @@ const contacts = [
   },
   {
     _id: 'supervisor2',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     name: 'supervisor2',
     parent: { _id: 'DISTRICT_2' },
   },
@@ -109,7 +109,7 @@ const contacts = [
   },
   {
     _id: 'chw2',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     name: 'chw2',
     parent: { _id: 'hc2', parent: { _id: 'DISTRICT_2' } },
   },
@@ -122,13 +122,13 @@ const contacts = [
   },
   {
     _id: 'patient3',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     name: 'patient3',
     parent: { _id: 'clinic2', parent: { _id: 'hc2', parent: { _id: 'DISTRICT_2' } } },
   },
   {
     _id: 'patient4',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     name: 'patient4',
     parent: { _id: 'clinic2', parent: { _id: 'hc2', parent: { _id: 'DISTRICT_2' } } },
   },
@@ -156,7 +156,7 @@ const contacts = [
   },
   {
     _id: 'chw_with_linked_docs',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     parent: {
       _id: 'clinic_with_linked_docs',
       parent: { _id: 'center_with_linked_docs', parent: { _id: 'PARENT_PLACE' } },
@@ -170,7 +170,7 @@ const contacts = [
   },
   {
     _id: 'patient_with_linked_docs',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     parent: {
       _id: 'clinic_with_linked_docs',
       parent: { _id: 'center_with_linked_docs', parent: { _id: 'PARENT_PLACE' } },
@@ -182,7 +182,7 @@ const contacts = [
   },
   {
     _id: 'patient_with_empty_linked_docs',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     parent: {
       _id: 'clinic_with_linked_docs',
       parent: { _id: 'center_with_linked_docs', parent: { _id: 'PARENT_PLACE' } },
