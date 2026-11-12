@@ -3,6 +3,7 @@ const rewire = require('rewire');
 const { expect } = require('chai');
 const { DOC_IDS, PREFIXES } = require('@medic/constants');
 const utils = require('../../../src/js/bootstrapper/utils');
+const formMediaLib = require('../../../src/js/bootstrapper/form-media');
 
 let initialReplication = rewire('../../../src/js/bootstrapper/initial-replication');
 let localDb;
@@ -168,6 +169,7 @@ describe('Initial replication', () => {
       };
       clock = sinon.useFakeTimers();
       initialReplication = rewire('../../../src/js/bootstrapper/initial-replication');
+      initialReplication.__set__('formMedia', { ...formMediaLib, syncMedia: sinon.stub().resolves() });
     });
 
     it('should download forms individually, separately from other docs, and then their media', async () => {

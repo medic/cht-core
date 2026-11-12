@@ -90,6 +90,11 @@ export class EnketoService {
         })
         .catch((err) => {
           console.error('Error fetching media file', formDoc._id, src, err);
+          if (formMedia.isFormMedia(formDoc, src)) {
+            const message = this.translateService.instant('error.503.description');
+            elem.closest('.loader').replaceWith($('<p class="form-media-unavailable"></p>').text(message));
+            return;
+          }
           elem.closest('.loader').hide();
         });
     });

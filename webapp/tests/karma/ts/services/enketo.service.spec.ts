@@ -206,6 +206,30 @@ describe('Enketo service', () => {
       expect(wrapper.find('img').first().attr('src')).to.equal('myobjurl');
     });
 
+    it('shows a message when form media is not on the device and cannot be downloaded', async () => {
+      sinon.stub(window.caches, 'open').resolves({ match: sinon.stub().resolves(undefined) } as any);
+      sinon.stub(window, 'fetch').resolves(new Response(null, { status: 503 }));
+      sinon.stub(console, 'error');
+      enketoInit.returns([]);
+      EnketoPrepopulationData.returns('<xml></xml>');
+      const wrapper = $('<div><div class="container"></div><form></form></div>');
+      const formConfig = buildFormConfig({
+        doc: {
+          ...mockEnketoDoc('myform'),
+          form_media: { myimg: { content_type: 'image/png', digest: 'md5-a', length: 5 } },
+        },
+        html: $('<div><img data-media-src="myimg"></div>'),
+        model: VISIT_MODEL,
+      });
+
+      await service.renderForm({ selector: wrapper, formConfig }, { language: 'en' });
+      await new Promise(resolve => setTimeout(resolve));
+
+      expect(dbGetAttachment.callCount).to.equal(0);
+      expect(wrapper.find('.loader').length).to.equal(0);
+      expect(wrapper.find('.form-media-unavailable').text()).to.equal('error.503.description');
+    });
+
     it('leaves img wrapped and hides loader if failed to load', fakeAsync(() => {
       const consoleErrorMock = sinon.stub(console, 'error');
       dbGetAttachment.rejects('not found');

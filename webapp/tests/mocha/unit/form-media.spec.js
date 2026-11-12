@@ -13,6 +13,8 @@ describe('form media', () => {
   let originalCaches;
   let originalFetch;
   let originalResponse;
+  let storage;
+  let localStorage;
 
   const key = digest => `https://cht.test/form-media/${encodeURIComponent(digest)}`;
   const stub = (length, digest = 'md5-a', content_type = 'video/mp4') => ({ content_type, digest, length, stub: true });
@@ -29,7 +31,14 @@ describe('form media', () => {
       delete: sinon.stub().resolves(true),
     };
     const cacheStorage = { open: sinon.stub().resolves(cache), delete: sinon.stub().resolves(true) };
-    global.window = { caches: cacheStorage, location: { origin: 'https://cht.test' } };
+    storage = { estimate: sinon.stub().resolves({ quota: 10000 * MB, usage: 100 * MB }) };
+    localStorage = { getItem: sinon.stub().returns(null), setItem: sinon.stub() };
+    global.window = {
+      caches: cacheStorage,
+      location: { origin: 'https://cht.test' },
+      navigator: { storage },
+      localStorage,
+    };
     global.caches = cacheStorage;
     global.fetch = sinon.stub();
     global.Response = sinon.stub().callsFake((body, init) => ({ body, init }));
@@ -102,17 +111,6 @@ describe('form media', () => {
       });
     });
 
-    it('should store large media in the local db when the cache api is not available', async () => {
-      delete global.window.caches;
-      remoteDb.get.resolves({ _id: 'form:a', _rev: '2-x', _attachments: { 'a.mp4': stub(20 * MB) } });
-      remoteDb.getAttachment.resolves('blob');
-
-      const doc = await formMedia.replicateFormDoc(remoteDb, localDb, { id: 'form:a', rev: '2-x' });
-
-      expect(doc.form_media).to.equal(undefined);
-      expect(doc._attachments['a.mp4'].data).to.equal('blob');
-    });
-
     it('should support forms without attachments', async () => {
       remoteDb.get.resolves({ _id: 'form:a', _rev: '2-x' });
       const doc = await formMedia.replicateFormDoc(remoteDb, localDb, { id: 'form:a', rev: '2-x' });
@@ -135,12 +133,6 @@ describe('form media', () => {
   describe('syncMedia', () => {
     const form = (id, rev, form_media) => ({ doc: { _id: id, _rev: rev, form_media } });
     const media = (digest, length = 5) => ({ content_type: 'video/mp4', digest, length });
-
-    it('should do nothing when the cache api is not available', async () => {
-      delete global.window.caches;
-      await formMedia.syncMedia(localDb);
-      expect(localDb.allDocs.callCount).to.equal(0);
-    });
 
     it('should download missing media, report progress and skip what is already stored', async () => {
       localDb.allDocs.resolves({ rows: [
@@ -229,6 +221,137 @@ describe('form media', () => {
       expect(cache.put.callCount).to.equal(1);
     });
 
+    describe('low storage', () => {
+      const DAY = 24 * 60 * 60 * 1000;
+      const MINUTE = 60 * 1000;
+
+      beforeEach(() => {
+        global.fetch.resolves({ ok: true, body: 'stream' });
+        cache.match.resolves({ blob: sinon.stub().resolves({ size: 100 * MB }) });
+      });
+
+      const expectLowStorage = async () => {
+        try {
+          await formMedia.syncMedia(localDb);
+          expect.fail('should have thrown');
+        } catch (err) {
+          expect(err.code).to.equal(formMedia.LOW_STORAGE);
+          return err;
+        }
+      };
+
+      it('should not download media that would leave less than 500MB free', async () => {
+        localDb.allDocs.resolves({ rows: [form('form:a', '1-a', { 'x.mp4': media('md5-a', 100 * MB) })] });
+        storage.estimate.resolves({ quota: 1000 * MB, usage: 401 * MB });
+
+        await expectLowStorage();
+
+        expect(global.fetch.callCount).to.equal(0);
+        expect(cache.put.callCount).to.equal(0);
+      });
+
+      it('should still download smaller media that fits', async () => {
+        localDb.allDocs.resolves({ rows: [
+          form('form:a', '1-a', { 'big.mp4': media('md5-a', 400 * MB) }),
+          form('form:b', '1-b', { 'small.mp4': media('md5-b', 100 * MB) }),
+        ] });
+        storage.estimate.resolves({ quota: 1000 * MB, usage: 300 * MB });
+
+        await expectLowStorage();
+
+        expect(global.fetch.callCount).to.equal(1);
+        expect(global.fetch.args[0][0]).to.include('small.mp4');
+      });
+
+      it('should use the free space reported by the android app when it is lower', async () => {
+        localDb.allDocs.resolves({ rows: [form('form:a', '1-a', { 'x.mp4': media('md5-a', 100 * MB) })] });
+        global.window.medicmobile_android = {
+          getDeviceInfo: sinon.stub().returns(JSON.stringify({ storage: { free: 550 * MB, total: 16000 * MB } })),
+        };
+
+        await expectLowStorage();
+
+        expect(global.fetch.callCount).to.equal(0);
+      });
+
+      it('should fall back to the browser estimate when the android app cannot report free space', async () => {
+        localDb.allDocs.resolves({ rows: [form('form:a', '1-a', { 'x.mp4': media('md5-a', 100 * MB) })] });
+        global.window.medicmobile_android = { getDeviceInfo: sinon.stub().returns('{"error":true}') };
+        sinon.stub(console, 'warn');
+
+        await formMedia.syncMedia(localDb);
+
+        expect(global.fetch.callCount).to.equal(1);
+        expect(console.warn.callCount).to.equal(1);
+      });
+
+      it('should stop downloading and record the time when storage runs out', async () => {
+        localDb.allDocs.resolves({ rows: [
+          form('form:a', '1-a', { 'x.mp4': media('md5-a', 100 * MB) }),
+          form('form:b', '1-b', { 'y.mp4': media('md5-b', 100 * MB) }),
+        ] });
+        cache.put.rejects(Object.assign(new Error('full'), { name: 'QuotaExceededError' }));
+
+        const err = await expectLowStorage();
+
+        expect(err.storageFull).to.equal(true);
+        expect(global.fetch.callCount).to.equal(1);
+        const [storageKey, failedAt] = localStorage.setItem.lastCall.args;
+        expect(storageKey).to.equal('cht-form-media-quota-failure');
+        expect(Date.now() - Number(failedAt)).to.be.within(0, MINUTE);
+      });
+
+      it('should not download for a day after storage ran out', async () => {
+        localDb.allDocs.resolves({ rows: [form('form:a', '1-a', { 'x.mp4': media('md5-a', 100 * MB) })] });
+        localStorage.getItem.returns(String(Date.now() - DAY + MINUTE));
+
+        await expectLowStorage();
+
+        expect(global.fetch.callCount).to.equal(0);
+      });
+
+      it('should try again a day after storage ran out', async () => {
+        localDb.allDocs.resolves({ rows: [form('form:a', '1-a', { 'x.mp4': media('md5-a', 100 * MB) })] });
+        localStorage.getItem.returns(String(Date.now() - DAY - MINUTE));
+
+        await formMedia.syncMedia(localDb);
+
+        expect(global.fetch.callCount).to.equal(1);
+        expect(localStorage.setItem.args).to.deep.equal([['cht-form-media-quota-failure', '0']]);
+      });
+
+      it('should still clean up unused media while storage is full', async () => {
+        localDb.allDocs.resolves({ rows: [form('form:a', '1-a', { 'x.mp4': media('md5-a', 100 * MB) })] });
+        cache.keys.resolves([{ url: key('md5-gone') }]);
+        localStorage.getItem.returns(String(Date.now()));
+
+        await expectLowStorage();
+
+        expect(cache.delete.args).to.deep.equal([[key('md5-gone')]]);
+      });
+
+      it('should not check storage when nothing needs downloading', async () => {
+        localDb.allDocs.resolves({ rows: [form('form:a', '1-a', { 'x.mp4': media('md5-a', 100 * MB) })] });
+        cache.keys.resolves([{ url: key('md5-a') }]);
+        localStorage.getItem.returns(String(Date.now()));
+
+        await formMedia.syncMedia(localDb);
+
+        expect(storage.estimate.callCount).to.equal(0);
+      });
+
+      it('should keep working when local storage is unavailable', async () => {
+        localDb.allDocs.resolves({ rows: [form('form:a', '1-a', { 'x.mp4': media('md5-a', 100 * MB) })] });
+        localStorage.getItem.throws(new Error('denied'));
+        localStorage.setItem.throws(new Error('denied'));
+        sinon.stub(console, 'warn');
+
+        await formMedia.syncMedia(localDb);
+
+        expect(global.fetch.callCount).to.equal(1);
+      });
+    });
+
     it('should not run concurrently and should allow a new run afterwards', async () => {
       localDb.allDocs.resolves({ rows: [] });
       await Promise.all([formMedia.syncMedia(localDb), formMedia.syncMedia(localDb)]);
@@ -282,10 +405,15 @@ describe('form media', () => {
       await formMedia.clear();
       expect(global.window.caches.delete.args).to.deep.equal([['cht-form-media']]);
     });
+  });
 
-    it('should do nothing when the cache api is not available', async () => {
-      delete global.window.caches;
-      expect(await formMedia.clear()).to.equal(false);
+  describe('isFormMedia', () => {
+    it('should only match media stored outside the local db', () => {
+      const formDoc = { form_media: { 'x.mp4': {} } };
+      expect(formMedia.isFormMedia(formDoc, 'x.mp4')).to.equal(true);
+      expect(formMedia.isFormMedia(formDoc, 'y.mp4')).to.equal(false);
+      expect(formMedia.isFormMedia({}, 'x.mp4')).to.equal(false);
+      expect(formMedia.isFormMedia(undefined, 'x.mp4')).to.equal(false);
     });
   });
 });

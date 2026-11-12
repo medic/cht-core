@@ -3,12 +3,14 @@ const { PREFIXES } = require('@medic/constants');
 const CACHE_NAME = 'cht-form-media';
 const DB_NAME = 'medic';
 const LARGE_FORM_MEDIA_BYTES = 10 * 1024 * 1024;
+const MIN_FREE_BYTES = 500 * 1024 * 1024;
+const QUOTA_RETRY_DELAY_MS = 24 * 60 * 60 * 1000;
+const QUOTA_FAILURE_KEY = 'cht-form-media-quota-failure';
+const LOW_STORAGE = 'FORM_MEDIA_LOW_STORAGE';
 
 let syncInProgress;
 
 const isFormId = id => id.startsWith(PREFIXES.FORM);
-
-const isCacheSupported = () => typeof window.caches !== 'undefined';
 
 const isFormDefinition = name => name === 'xml' || name === 'form.html' || name.endsWith('.xml');
 
@@ -29,10 +31,49 @@ const fetchAttachment = async (id, name, rev) => {
   return response;
 };
 
-const getCachedMediaNames = (attachments) => {
-  if (!isCacheSupported()) {
-    return [];
+const lowStorageError = (message, storageFull = false) => {
+  const error = new Error(message);
+  error.code = LOW_STORAGE;
+  error.storageFull = storageFull;
+  return error;
+};
+
+const getLastQuotaFailure = () => {
+  try {
+    return Number(window.localStorage.getItem(QUOTA_FAILURE_KEY)) || 0;
+  } catch (err) {
+    console.warn('Could not read form media quota failure', err);
+    return 0;
   }
+};
+
+const setLastQuotaFailure = (time) => {
+  try {
+    window.localStorage.setItem(QUOTA_FAILURE_KEY, String(time));
+  } catch (err) {
+    console.warn('Could not record form media quota failure', err);
+  }
+};
+
+const getDeviceFreeBytes = () => {
+  const android = window.medicmobile_android;
+  if (!android || typeof android.getDeviceInfo !== 'function') {
+    return;
+  }
+  try {
+    return JSON.parse(android.getDeviceInfo()).storage.free;
+  } catch (err) {
+    console.warn('Could not read device free space', err);
+  }
+};
+
+const getAvailableBytes = async () => {
+  const { quota, usage } = await window.navigator.storage.estimate();
+  const candidates = [quota - usage, getDeviceFreeBytes()].filter(Number.isFinite);
+  return candidates.length ? Math.min(...candidates) : 0;
+};
+
+const getCachedMediaNames = (attachments) => {
   const names = Object.keys(attachments).filter(name => !isFormDefinition(name));
   const size = names.reduce((total, name) => total + attachments[name].length, 0);
   return size > LARGE_FORM_MEDIA_BYTES ? names : [];
@@ -86,8 +127,21 @@ const getWantedMedia = async (localDb) => {
 };
 
 const downloadMedia = async (cache, key, { id, rev, name, content_type, length }) => {
+  const available = await getAvailableBytes();
+  if (available - length < MIN_FREE_BYTES) {
+    throw lowStorageError(`Not enough storage for [${name}] of form [${id}]: ${length} bytes, ${available} available`);
+  }
+
   const response = await fetchAttachment(id, name, rev);
-  await cache.put(key, new Response(response.body, { headers: { 'Content-Type': content_type } }));
+  try {
+    await cache.put(key, new Response(response.body, { headers: { 'Content-Type': content_type } }));
+  } catch (err) {
+    if (err.name === 'QuotaExceededError') {
+      setLastQuotaFailure(Date.now());
+      throw lowStorageError(`Storage full while saving [${name}] of form [${id}]`, true);
+    }
+    throw err;
+  }
 
   const stored = await cache.match(key);
   const { size } = await stored.blob();
@@ -97,14 +151,7 @@ const downloadMedia = async (cache, key, { id, rev, name, content_type, length }
   }
 };
 
-const syncAllMedia = async (localDb, onProgress = () => {}) => {
-  const wanted = await getWantedMedia(localDb);
-  const cache = await caches.open(CACHE_NAME);
-  const storedKeys = (await cache.keys()).map(({ url }) => url);
-
-  await Promise.all(storedKeys.filter(key => !wanted.has(key)).map(key => cache.delete(key)));
-
-  const missing = [...wanted].filter(([key]) => !storedKeys.includes(key));
+const downloadAll = async (cache, missing, onProgress) => {
   const errors = [];
   for (const [index, [key, media]] of missing.entries()) {
     onProgress({ count: index, total: missing.length });
@@ -112,43 +159,65 @@ const syncAllMedia = async (localDb, onProgress = () => {}) => {
       await downloadMedia(cache, key, media);
     } catch (error) {
       errors.push(error);
+      if (error.storageFull) {
+        break;
+      }
     }
   }
+  return errors;
+};
+
+const syncAllMedia = async (localDb, onProgress = () => {}) => {
+  const wanted = await getWantedMedia(localDb);
+  const cache = await window.caches.open(CACHE_NAME);
+  const storedKeys = (await cache.keys()).map(({ url }) => url);
+
+  await Promise.all(storedKeys.filter(key => !wanted.has(key)).map(key => cache.delete(key)));
+
+  const missing = [...wanted].filter(([key]) => !storedKeys.includes(key));
+  if (!missing.length) {
+    return;
+  }
+
+  if (Date.now() - getLastQuotaFailure() < QUOTA_RETRY_DELAY_MS) {
+    throw lowStorageError(`Skipping ${missing.length} form media downloads after recently running out of storage`);
+  }
+  setLastQuotaFailure(0);
+
+  const errors = await downloadAll(cache, missing, onProgress);
   if (errors.length) {
     throw errors[0];
   }
 };
 
 const syncMedia = (localDb, onProgress) => {
-  if (!isCacheSupported()) {
-    return Promise.resolve();
-  }
   if (!syncInProgress) {
     syncInProgress = syncAllMedia(localDb, onProgress).finally(() => syncInProgress = undefined);
   }
   return syncInProgress;
 };
 
+const isFormMedia = (formDoc, name) => !!(formDoc && formDoc.form_media && formDoc.form_media[name]);
+
 const getMedia = async (formDoc, name) => {
-  const media = formDoc && formDoc.form_media && formDoc.form_media[name];
-  if (!media) {
+  if (!isFormMedia(formDoc, name)) {
     return;
   }
-  if (isCacheSupported()) {
-    const cache = await caches.open(CACHE_NAME);
-    const stored = await cache.match(getCacheKey(media.digest));
-    if (stored) {
-      return stored.blob();
-    }
+  const cache = await window.caches.open(CACHE_NAME);
+  const stored = await cache.match(getCacheKey(formDoc.form_media[name].digest));
+  if (stored) {
+    return stored.blob();
   }
   const response = await fetchAttachment(formDoc._id, name, formDoc._rev);
   return response.blob();
 };
 
-const clear = () => isCacheSupported() ? caches.delete(CACHE_NAME) : Promise.resolve(false);
+const clear = () => window.caches.delete(CACHE_NAME);
 
 module.exports = {
+  LOW_STORAGE,
   isFormId,
+  isFormMedia,
   replicateFormDoc,
   syncMedia,
   getMedia,
