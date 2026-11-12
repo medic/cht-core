@@ -12,7 +12,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
-import { DOC_TYPES } from '@medic/constants';
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
 import { FormConfig } from '@mm-services/form/form-config';
 import {
   EnketoContactFormData,
@@ -515,7 +515,7 @@ export class EnketoService {
       return;
     }
     return {
-      type: 'person', // legacy support - form data should override this
+      type: CONTACT_TYPES.PERSON, // legacy support - form data should override this
       ...rawSibling,
       parent: rawSibling.parent === 'PARENT' ? rootContactDoc : rawSibling.parent
     };

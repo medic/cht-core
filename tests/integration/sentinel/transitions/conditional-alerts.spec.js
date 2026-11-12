@@ -32,7 +32,7 @@ const contacts = [
   {
     _id: 'person',
     name: 'Person',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '+444999',
     reported_date: new Date().getTime()

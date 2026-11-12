@@ -104,7 +104,7 @@ describe('Users API', () => {
       },
       {
         _id: newContactId,
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: {
           _id: newPlaceId,
         },
@@ -325,7 +325,7 @@ describe('Users API', () => {
           chai.expect(contact).to.deep.include({
             name: 'Philip',
             parent: { _id: place._id, parent: place.parent },
-            type: 'person',
+            type: CONTACT_TYPES.PERSON,
           });
 
           chai.expect(place.place_id).to.not.be.undefined;

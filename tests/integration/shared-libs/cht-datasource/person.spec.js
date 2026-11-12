@@ -58,10 +58,9 @@ describe('cht-datasource Person', () => {
   }));
   const allDocItems = [contact0, contact1, contact2, place0, place1, place2, patient];
   const dataContext = getRemoteDataContext({ getAll: () => ({}) }, utils.getOrigin());
-  const personType = 'person';
   const e2eTestUser = {
     '_id': 'e2e_contact_test_id',
-    'type': personType,
+    'type': CONTACT_TYPES.PERSON,
   };
   const onlineUserPlaceHierarchy = {
     parent: {
@@ -84,12 +83,12 @@ describe('cht-datasource Person', () => {
     patient,
     e2eTestUser,
     {
-      type: personType,
+      type: CONTACT_TYPES.PERSON,
       ...userNoPerms.contact,
       ...onlineUserPlaceHierarchy
     },
     {
-      type: personType,
+      type: CONTACT_TYPES.PERSON,
       ...offlineUser.contact,
       ...offlineUserPlaceHierarchy
     }
@@ -157,7 +156,7 @@ describe('cht-datasource Person', () => {
       const invalidCursor = 'invalidCursor';
 
       it('returns a page of people for no limit and cursor passed', async () => {
-        const responsePage = await getPage(Qualifier.byContactType(personType));
+        const responsePage = await getPage(Qualifier.byContactType(CONTACT_TYPES.PERSON));
         const responsePeople = responsePage.data;
         const responseCursor = responsePage.cursor;
 
@@ -166,7 +165,7 @@ describe('cht-datasource Person', () => {
       });
 
       it('returns a page of people for stringified limit and null cursor passed', async () => {
-        const responsePage = await getPage(Qualifier.byContactType(personType), null, stringifiedLimit);
+        const responsePage = await getPage(Qualifier.byContactType(CONTACT_TYPES.PERSON), null, stringifiedLimit);
         const responsePeople = responsePage.data;
         const responseCursor = responsePage.cursor;
 
@@ -175,8 +174,8 @@ describe('cht-datasource Person', () => {
       });
 
       it('returns a page of people when limit and cursor is passed and cursor can be reused', async () => {
-        const firstPage = await getPage(Qualifier.byContactType(personType), cursor, limit);
-        const secondPage = await getPage(Qualifier.byContactType(personType), firstPage.cursor, limit);
+        const firstPage = await getPage(Qualifier.byContactType(CONTACT_TYPES.PERSON), cursor, limit);
+        const secondPage = await getPage(Qualifier.byContactType(CONTACT_TYPES.PERSON), firstPage.cursor, limit);
 
         const allPeople = [ ...firstPage.data, ...secondPage.data ];
 
@@ -189,7 +188,7 @@ describe('cht-datasource Person', () => {
 
       it('throws error when limit is invalid', async () => {
         await expect(
-          getPage({ ...Qualifier.byContactType(personType) }, cursor, invalidLimit)
+          getPage({ ...Qualifier.byContactType(CONTACT_TYPES.PERSON) }, cursor, invalidLimit)
         ).to.be.rejectedWith(
           { code: 400, error: `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].` }
         );
@@ -198,7 +197,7 @@ describe('cht-datasource Person', () => {
       it('throws error when cursor is invalid', async () => {
         await expect(
           getPage({
-            ...Qualifier.byContactType(personType),
+            ...Qualifier.byContactType(CONTACT_TYPES.PERSON),
           }, invalidCursor, limit)
         ).to.be.rejectedWith({
           code: 400,
@@ -211,7 +210,7 @@ describe('cht-datasource Person', () => {
       it('fetches all data by iterating through generator', async () => {
         const docs = [];
 
-        const generator = Person.v1.getAll(dataContext)(Qualifier.byContactType(personType));
+        const generator = Person.v1.getAll(dataContext)(Qualifier.byContactType(CONTACT_TYPES.PERSON));
 
         for await (const doc of generator) {
           docs.push(doc);
@@ -227,7 +226,7 @@ describe('cht-datasource Person', () => {
       it(`creates a person`, async () => {
         const personInput = {
           name: 'apoorva',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: place0._id,
           date_of_birth: '1996-06-09',
           phone: '+1234567890',
@@ -242,7 +241,7 @@ describe('cht-datasource Person', () => {
         expect(person).excluding([ '_rev', '_id' ]).to.deep.equal({
           ...personInput,
           type: 'contact',
-          contact_type: 'person',
+          contact_type: CONTACT_TYPES.PERSON,
           parent: { _id: place0._id, parent: place0.parent }
         });
       });
@@ -250,7 +249,7 @@ describe('cht-datasource Person', () => {
       it(`creates a person with minimum data`, async () => {
         const personInput = {
           name: 'apoorva',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: place2._id
         };
 
@@ -259,7 +258,7 @@ describe('cht-datasource Person', () => {
         expect(person).excluding([ '_rev', 'reported_date', '_id' ]).to.deep.equal({
           ...personInput,
           type: 'contact',
-          contact_type: 'person',
+          contact_type: CONTACT_TYPES.PERSON,
           parent: { _id: place2._id }
         });
         expect(person.reported_date).to.be.a('number');
@@ -281,7 +280,7 @@ describe('cht-datasource Person', () => {
       it(`throws error for non-existent parent`, async () => {
         const personInput = {
           name: 'apoorva',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: 'invalid-id'
         };
 
@@ -294,7 +293,7 @@ describe('cht-datasource Person', () => {
       it(`throws error for parent type not among allowed parents in settings.contact_types`, async () => {
         const personInput = {
           name: 'apoorva',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: contact0._id
         };
 

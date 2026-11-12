@@ -36,7 +36,7 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
 import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { Contact, Qualifier, Report } from '@medic/cht-datasource';
-import { DOC_TYPES } from '@medic/constants';
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
 
 describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
@@ -1513,7 +1513,7 @@ describe('Form service', () => {
       const type = 'family';
       const preparedDocs = [
         { _id: 'main1', type },
-        { _id: 'sib1', type: 'person', name: 'Amina' },
+        { _id: 'sib1', type: CONTACT_TYPES.PERSON, name: 'Amina' },
       ];
       translateService.get.returnsArg(0);
       enketoService.saveContact.resolves(<any>{ docId: 'main1', preparedDocs });
@@ -1686,7 +1686,7 @@ describe('Form service', () => {
           docId: 'main1',
           preparedDocs: [
             { _id: 'main1', type: 'clinic', geo_capture: 'captured', contact: 'NEW' },
-            { _id: 'sis1', type: 'person', parent: 'PARENT' },
+            { _id: 'sis1', type: CONTACT_TYPES.PERSON, parent: 'PARENT' },
             { _id: 'kid1', type: 'child', parent: 'PARENT' },
           ]
         });

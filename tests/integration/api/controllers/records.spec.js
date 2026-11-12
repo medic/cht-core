@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const moment = require('moment');
 const utils = require('@utils');
-const { DOC_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 describe('Import Records', () => {
 
@@ -42,7 +42,7 @@ describe('Import Records', () => {
         name: 'Test contact',
         phone: '+447765902000',
         reported_date: 1557404580557,
-        type: 'person'
+        type: CONTACT_TYPES.PERSON
       })
         .then(() => utils.request({
           method: 'POST',
@@ -87,7 +87,7 @@ describe('Import Records', () => {
         name: 'Test contact',
         phone: '+447765902000',
         reported_date: 1557404580557,
-        type: 'person'
+        type: CONTACT_TYPES.PERSON
       })
         .then(() => utils.request({
           method: 'POST',
@@ -124,7 +124,7 @@ describe('Import Records', () => {
         name: 'Test contact',
         phone: '+447765902000',
         reported_date: 1557404580557,
-        type: 'person'
+        type: CONTACT_TYPES.PERSON
       })
         .then(() => utils.request({
           method: 'POST',

@@ -95,7 +95,7 @@ const patients = [
     _id: 'fixture:offline:patient',
     name: 'offline patient',
     patient_id: '123456',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
     reported_date: 1
   },
@@ -103,7 +103,7 @@ const patients = [
     _id: 'fixture:offline:clinic:patient',
     name: 'offline patient',
     patient_id: 'c123456',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     parent: { _id: 'fixture:offline:clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
     reported_date: 1
   },
@@ -111,7 +111,7 @@ const patients = [
     _id: 'fixture:online:patient',
     name: 'online patient',
     patient_id: '654321',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } },
     reported_date: 1
   },
@@ -119,7 +119,7 @@ const patients = [
     _id: 'fixture:online:clinic:patient',
     name: 'online patient',
     patient_id: 'c654321',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     parent: { _id: 'fixture:online:clinic', parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } } },
     reported_date: 1
   },
@@ -199,7 +199,7 @@ describe('db-doc handler', () => {
         chai.expect(result).to.deep.include({
           _id: 'fixture:user:offline',
           name: 'OfflineUser',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         });
       });
@@ -350,7 +350,7 @@ describe('db-doc handler', () => {
         chai.expect(results[0]).to.deep.include({
           _id: 'fixture:user:offline',
           name: 'OfflineUser',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         });
         chai.expect(results[1]).to.deep.include(clinics.find(clinic => clinic._id === 'fixture:offline:clinic'));
@@ -535,7 +535,7 @@ describe('db-doc handler', () => {
         },
         {
           _id: 'existing_person', // depth 2
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
           patient_id: 'existing_person_id'
         },
@@ -566,7 +566,7 @@ describe('db-doc handler', () => {
         },
         {
           _id: 'existing_person2', // out of hierarchy
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: { _id: 'other2', parent: { _id: 'other1' } },
           patient_id: 'existing_person_id2'
         },
@@ -640,7 +640,7 @@ describe('db-doc handler', () => {
           _id: 'temp:offline:clinic:patient_to_delete_with_shortcode',
           name: 'offline patient',
           patient_id: 'del123456',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: {
             _id: 'fixture:offline:clinic',
             parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } }
@@ -650,7 +650,7 @@ describe('db-doc handler', () => {
         {
           _id: 'temp:offline:clinic:patient_to_delete_no_shortcode',
           name: 'offline patient',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: {
             _id: 'fixture:offline:clinic',
             parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } }
@@ -661,7 +661,7 @@ describe('db-doc handler', () => {
           _id: 'temp:online:clinic:patient_to_delete_with_shortcode',
           name: 'offline patient',
           patient_id: 'del654321',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: {
             _id: 'fixture:online:clinic',
             parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } }
@@ -671,7 +671,7 @@ describe('db-doc handler', () => {
         {
           _id: 'temp:online:clinic:patient_to_delete_no_shortcode',
           name: 'online patient',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: {
             _id: 'fixture:online:clinic',
             parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } }
@@ -684,7 +684,7 @@ describe('db-doc handler', () => {
         {
           _id: 'temp:offline:clinic:contact',
           name: 'offline submitter',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: {
             _id: 'fixture:offline:clinic',
             parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } }
@@ -694,7 +694,7 @@ describe('db-doc handler', () => {
         {
           _id: 'temp:online:clinic:contact',
           name: 'online submitter',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: { _id: 'fixture:online:clinic', parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } } },
           reported_date: 1
         },
@@ -2301,7 +2301,7 @@ describe('db-doc handler', () => {
         chai.expect(results[0]).to.deep.include({
           _id: 'fixture:user:offline',
           name: 'OfflineUser',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         });
         chai.expect(results[1]).to.deep.nested.include({ status: 403, 'body.error': 'forbidden'});

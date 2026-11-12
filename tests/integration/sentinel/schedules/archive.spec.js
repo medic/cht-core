@@ -5,7 +5,7 @@ const moment = require('moment');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const constants = require('@constants');
-const { DOC_TYPES, DOC_IDS, PREFIXES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES, DOC_IDS, PREFIXES } = require('@medic/constants');
 
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 const archiveDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-archive`, { auth });
@@ -134,7 +134,7 @@ const waitForLogStatus = async (id, status) => {
 describe('sentinel processes archive jobs', () => {
   const fixtures = [
     { _id: 'archive-e2e-contact', type: 'contact', name: 'Archived contact' },
-    { _id: 'archive-e2e-person', type: 'person', name: 'Archived person' },
+    { _id: 'archive-e2e-person', type: CONTACT_TYPES.PERSON, name: 'Archived person' },
     { _id: 'archive-e2e-clinic', type: 'clinic', name: 'Archived clinic' },
     { _id: 'archive-e2e-report', type: DOC_TYPES.DATA_RECORD, form: 'visit', reported_date: 1 },
     { _id: 'archive-e2e-task', type: 'task', state: 'Completed' },

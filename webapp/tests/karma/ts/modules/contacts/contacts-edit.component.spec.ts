@@ -466,7 +466,7 @@ describe('ContactsEdit component', () => {
       });
 
       it('should fail when no form', async () => {
-        routeSnapshot.params = { type: 'person' };
+        routeSnapshot.params = { type: CONTACT_TYPES.PERSON };
         contactTypesService.getChildren.resolves([{ id: 'person' }]);
         contactTypesService.get.resolves({
           create_form: 'person_create_form_id',
@@ -478,7 +478,7 @@ describe('ContactsEdit component', () => {
         await fixture.whenStable();
 
         expect(contactTypesService.get.callCount).to.equal(1);
-        expect(contactTypesService.get.args[0]).to.deep.equal(['person']);
+        expect(contactTypesService.get.args[0]).to.deep.equal([CONTACT_TYPES.PERSON]);
         expect(getFormConfig.args).to.deep.equal([['contact', 'person_create_form_id']]);
         expect(formService.render.callCount).to.equal(0);
         expect(component.enketoContact).to.deep.equal(undefined);
@@ -811,7 +811,7 @@ describe('ContactsEdit component', () => {
 
     describe('for new contact', () => {
       it('does not load attachments when creating new contact', fakeAsync(async () => {
-        routeSnapshot.params = { type: 'person' };
+        routeSnapshot.params = { type: CONTACT_TYPES.PERSON };
         contactTypesService.getChildren.resolves([{ id: 'person' }]);
         contactTypesService.get.resolves({
           create_form: 'person_create_form',
@@ -832,7 +832,7 @@ describe('ContactsEdit component', () => {
         routeSnapshot.params = { id: 'the_person' };
         const doc = {
           _id: 'the_person',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           _attachments: {
             [`user-file-${imageAttachmentName}`]: { content_type: 'image/png' }
           }
@@ -874,7 +874,7 @@ describe('ContactsEdit component', () => {
         routeSnapshot.params = { id: 'the_person' };
         const doc = {
           _id: 'the_person',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           _attachments: {
             [`user-file-${imageAttachmentName}`]: { content_type: 'video/mp4' }
           }
@@ -907,7 +907,7 @@ describe('ContactsEdit component', () => {
         routeSnapshot.params = { id: 'the_person' };
         const doc = {
           _id: 'the_person',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           _attachments: {
             [`user-file-${imageAttachmentName}`]: { content_type: 'image/png' }
           }
@@ -1060,7 +1060,7 @@ describe('ContactsEdit component', () => {
       lineageModelGeneratorService.contact.resolves({
         doc: {
           _id: 'the_person',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
         }
       });
       contactTypesService.get.resolves({
@@ -1084,7 +1084,7 @@ describe('ContactsEdit component', () => {
       expect(setEnketoError.callCount).to.equal(1);
       expect(formService.saveContact.callCount).to.equal(1);
       expect(formService.saveContact.args[0]).to.deep.equal([
-        { docId: 'the_person', type: 'person' },
+        { docId: 'the_person', type: CONTACT_TYPES.PERSON },
         form,
         false,
         undefined,

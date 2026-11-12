@@ -2,6 +2,7 @@ const utils = require('@utils');
 const nouveau = require('@medic/nouveau');
 const { expect } = require('chai');
 
+const { CONTACT_TYPES } = require('@medic/constants');
 describe('contacts_by_freetext', () => {
   let ids;
 
@@ -21,14 +22,14 @@ describe('contacts_by_freetext', () => {
     {
       // Field value within the length limit is indexed for exact match.
       _id: 'fxt_contact_short_field',
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       name: 'fxtshortfield',
       phone: 'fxtphonenumber',
     },
     {
       // Field value over the length limit is skipped for exact match, but the contact is still indexed
       _id: 'fxt_contact_long_field',
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       name: 'fxtlongfield',
       note: longValue,
     },

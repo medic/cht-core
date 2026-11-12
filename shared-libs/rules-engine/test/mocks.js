@@ -9,7 +9,7 @@ const chtDocs = {
     _id: 'patient',
     name: 'cht_mock_contact',
     type: 'contact',
-    contact_type: 'person',
+    contact_type: CONTACT_TYPES.PERSON,
     patient_id: 'patient_id',
   },
 

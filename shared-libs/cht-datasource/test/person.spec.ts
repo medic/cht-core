@@ -11,6 +11,7 @@ import { DataContext } from '../src';
 import { fakeGenerator } from './utils';
 import { Page } from '../src';
 
+import { CONTACT_TYPES } from '@medic/constants';
 describe('person', () => {
   const dataContext = { bind: () => null } as DataContext;
   let dataContextBind: SinonStub;
@@ -138,7 +139,7 @@ describe('person', () => {
       const pageData = { data: people, cursor };
       const limit = 3;
       const stringifiedLimit = '3';
-      const personTypeQualifier = { contactType: 'person' } as const;
+      const personTypeQualifier = { contactType: CONTACT_TYPES.PERSON } as const;
       const invalidQualifier = { contactType: 'invalid' } as const;
       let getPage: SinonStub;
 
@@ -268,8 +269,7 @@ describe('person', () => {
     });
 
     describe('getAll', () => {
-      const personType = 'person';
-      const personTypeQualifier = { contactType: personType } as const;
+      const personTypeQualifier = { contactType: CONTACT_TYPES.PERSON } as const;
       const firstPerson = { _id: 'person1' } as Person.v1.Person;
       const secondPerson = { _id: 'person2' } as Person.v1.Person;
       const thirdPerson = { _id: 'person3' } as Person.v1.Person;
@@ -331,7 +331,7 @@ describe('person', () => {
       it('returns person doc for valid input', async () => {
         const input = {
           name: 'person-1',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: 'p1'
         };
         const doc = {
@@ -372,7 +372,7 @@ describe('person', () => {
       it('returns person doc for valid input', async () => {
         const input = {
           name: 'person-1',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: { _id: 'p1', name: 'hydrated parent doc' },
           _id: '123',
           _rev: '1-abc',
@@ -438,7 +438,7 @@ describe('person', () => {
       });
 
       it('create', async () => {
-        const personInput = { name: 'apoorva', type: 'person', parent: 'p1' };
+        const personInput = { name: 'apoorva', type: CONTACT_TYPES.PERSON, parent: 'p1' };
         const expectedPerson = {
           ...personInput,
           reported_date: 12312312
@@ -456,7 +456,7 @@ describe('person', () => {
       it('update', async () => {
         const personInput = {
           name: 'apoorva',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: { _id: 'p1' },
           _id: '123',
           _rev: '1-abc',
@@ -495,29 +495,27 @@ describe('person', () => {
         const expectedPeople: Page<Person.v1.Person> = { data: [], cursor: null };
         const personGetPage = sinon.stub().resolves(expectedPeople);
         dataContextBind.returns(personGetPage);
-        const personType = 'person';
         const limit = 2;
         const cursor = '1';
-        const personTypeQualifier = { contactType: personType };
+        const personTypeQualifier = { contactType: CONTACT_TYPES.PERSON };
         const byContactType = sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
 
-        const returnedPeople = await person.getPageByType(personType, cursor, limit);
+        const returnedPeople = await person.getPageByType(CONTACT_TYPES.PERSON, cursor, limit);
 
         expect(returnedPeople).to.equal(expectedPeople);
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
         expect(personGetPage.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
-        expect(byContactType.calledOnceWithExactly(personType)).to.be.true;
+        expect(byContactType.calledOnceWithExactly(CONTACT_TYPES.PERSON)).to.be.true;
       });
 
       it('getPageByType uses default cursor and limit', async () => {
         const expectedPeople: Page<Person.v1.Person> = {data: [], cursor: null};
         const personGetPage = sinon.stub().resolves(expectedPeople);
         dataContextBind.returns(personGetPage);
-        const personType = 'person';
-        const personTypeQualifier = { contactType: personType };
+        const personTypeQualifier = { contactType: CONTACT_TYPES.PERSON };
         sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
 
-        const returnedPeople = await person.getPageByType(personType);
+        const returnedPeople = await person.getPageByType(CONTACT_TYPES.PERSON);
 
         expect(returnedPeople).to.equal(expectedPeople);
         expect(personGetPage.calledOnceWithExactly(personTypeQualifier, null, 100)).to.be.true;
@@ -528,16 +526,15 @@ describe('person', () => {
 
         const personGetAll = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(personGetAll);
-        const personType = 'person';
-        const personTypeQualifier = { contactType: personType };
+        const personTypeQualifier = { contactType: CONTACT_TYPES.PERSON };
         const byContactType = sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
 
-        const res = person.getByType(personType);
+        const res = person.getByType(CONTACT_TYPES.PERSON);
 
         expect(res).to.deep.equal(mockAsyncGenerator);
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getAll)).to.be.true;
         expect(personGetAll.calledOnceWithExactly(personTypeQualifier)).to.be.true;
-        expect(byContactType.calledOnceWithExactly(personType)).to.be.true;
+        expect(byContactType.calledOnceWithExactly(CONTACT_TYPES.PERSON)).to.be.true;
       });
     });
   });

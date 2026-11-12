@@ -9,6 +9,7 @@ import { expect } from 'chai';
 import * as Core from '../src/libs/core';
 import { fakeGenerator } from './utils';
 
+import { CONTACT_TYPES } from '@medic/constants';
 describe('contact', () => {
   const dataContext = { bind: () => null } as DataContext;
   let dataContextBind: SinonStub;
@@ -883,13 +884,12 @@ describe('contact', () => {
         const contactGetIdsPage = sinon.stub().resolves(expectedContactIds);
         dataContextBind.returns(contactGetIdsPage);
         const freetext = 'abc';
-        const contactType = 'person';
-        const qualifier = { contactType, freetext };
+        const qualifier = { contactType: CONTACT_TYPES.PERSON, freetext };
         sinon.stub(Qualifier, 'and').returns(qualifier);
         sinon.stub(Qualifier, 'byFreetext').returns({ freetext });
-        sinon.stub(Qualifier, 'byContactType').returns({ contactType });
+        sinon.stub(Qualifier, 'byContactType').returns({ contactType: CONTACT_TYPES.PERSON });
 
-        const returnedContactIds = await contact.getUuidsPageByTypeFreetext(freetext, contactType);
+        const returnedContactIds = await contact.getUuidsPageByTypeFreetext(freetext, CONTACT_TYPES.PERSON);
 
         expect(returnedContactIds).to.equal(expectedContactIds);
         expect(contactGetIdsPage.calledOnceWithExactly(qualifier, null, 10000)).to.be.true;
@@ -900,17 +900,18 @@ describe('contact', () => {
         const contactGetIdsPage = sinon.stub().resolves(expectedContactIds);
         dataContextBind.returns(contactGetIdsPage);
         const freetext = 'abc';
-        const contactType = 'person';
         const limit = 2;
         const cursor = '1';
-        const contactTypeQualifier = { contactType };
+        const contactTypeQualifier = { contactType: CONTACT_TYPES.PERSON };
         const freetextQualifier = { freetext };
-        const qualifier = { contactType, freetext };
+        const qualifier = { contactType: CONTACT_TYPES.PERSON, freetext };
         const andQualifier = sinon.stub(Qualifier, 'and').returns(qualifier);
         const byFreetext = sinon.stub(Qualifier, 'byFreetext').returns(freetextQualifier);
         const byContactType = sinon.stub(Qualifier, 'byContactType').returns(contactTypeQualifier);
 
-        const returnedContactIds = await contact.getUuidsPageByTypeFreetext(freetext, contactType, cursor, limit);
+        const returnedContactIds = await contact.getUuidsPageByTypeFreetext(
+          freetext, CONTACT_TYPES.PERSON, cursor, limit
+        );
 
         expect(returnedContactIds).to.equal(expectedContactIds);
         expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuidsPage)).to.be.true;
@@ -918,7 +919,7 @@ describe('contact', () => {
           contactGetIdsPage.calledOnceWithExactly(qualifier, cursor, limit)
         ).to.be.true;
         expect(byFreetext.calledOnceWithExactly(freetext)).to.be.true;
-        expect(byContactType.calledOnceWithExactly(contactType)).to.be.true;
+        expect(byContactType.calledOnceWithExactly(CONTACT_TYPES.PERSON)).to.be.true;
         expect(andQualifier.calledOnceWithExactly(freetextQualifier, contactTypeQualifier)).to.be.true;
       });
 
@@ -926,21 +927,20 @@ describe('contact', () => {
         const expectedContactIds: Page<Contact.v1.Contact> = { data: [], cursor: null };
         const contactGetIdsPage = sinon.stub().resolves(expectedContactIds);
         dataContextBind.returns(contactGetIdsPage);
-        const contactType = 'person';
         const limit = 2;
         const cursor = '1';
-        const contactTypeQualifier = { contactType };
+        const contactTypeQualifier = { contactType: CONTACT_TYPES.PERSON };
         const byContactType = sinon.stub(Qualifier, 'byContactType').returns(contactTypeQualifier);
         const byFreetext = sinon.stub(Qualifier, 'byFreetext');
 
-        const returnedContactIds = await contact.getUuidsPageByType(contactType, cursor, limit);
+        const returnedContactIds = await contact.getUuidsPageByType(CONTACT_TYPES.PERSON, cursor, limit);
 
         expect(returnedContactIds).to.equal(expectedContactIds);
         expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuidsPage)).to.be.true;
         expect(
           contactGetIdsPage.calledOnceWithExactly(contactTypeQualifier, cursor, limit)
         ).to.be.true;
-        expect(byContactType.calledOnceWithExactly(contactType)).to.be.true;
+        expect(byContactType.calledOnceWithExactly(CONTACT_TYPES.PERSON)).to.be.true;
         expect(byFreetext.notCalled).to.be.true;
       });
 
@@ -948,11 +948,10 @@ describe('contact', () => {
         const expectedContactIds: Page<Contact.v1.Contact> = {data: [], cursor: null};
         const contactGetIdsPage = sinon.stub().resolves(expectedContactIds);
         dataContextBind.returns(contactGetIdsPage);
-        const contactType = 'person';
-        const contactTypeQualifier = { contactType };
+        const contactTypeQualifier = { contactType: CONTACT_TYPES.PERSON };
         sinon.stub(Qualifier, 'byContactType').returns(contactTypeQualifier);
 
-        const returnedContactIds = await contact.getUuidsPageByType(contactType);
+        const returnedContactIds = await contact.getUuidsPageByType(CONTACT_TYPES.PERSON);
 
         expect(returnedContactIds).to.equal(expectedContactIds);
         expect(contactGetIdsPage.calledOnceWithExactly(contactTypeQualifier, null, 10000)).to.be.true;
@@ -1000,22 +999,21 @@ describe('contact', () => {
         const contactGetIds = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(contactGetIds);
         const freetext = 'abc';
-        const contactType = 'person';
-        const contactTypeQualifier = { contactType };
+        const contactTypeQualifier = { contactType: CONTACT_TYPES.PERSON };
         const freetextQualifier = { freetext };
-        const qualifier = { contactType, freetext };
+        const qualifier = { contactType: CONTACT_TYPES.PERSON, freetext };
         const andQualifier = sinon.stub(Qualifier, 'and').returns(qualifier);
         const byFreetext = sinon.stub(Qualifier, 'byFreetext').returns(freetextQualifier);
         const byContactType = sinon.stub(Qualifier, 'byContactType').returns(contactTypeQualifier);
 
-        const res = contact.getUuidsByTypeFreetext(freetext, contactType);
+        const res = contact.getUuidsByTypeFreetext(freetext, CONTACT_TYPES.PERSON);
 
         expect(res).to.deep.equal(mockAsyncGenerator);
         expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
         expect(contactGetIds.calledOnceWithExactly(qualifier)).to.be.true;
         expect(andQualifier.calledOnceWithExactly(freetextQualifier, contactTypeQualifier)).to.be.true;
         expect(byFreetext.calledOnceWithExactly(freetext)).to.be.true;
-        expect(byContactType.calledOnceWithExactly(contactType)).to.be.true;
+        expect(byContactType.calledOnceWithExactly(CONTACT_TYPES.PERSON)).to.be.true;
       });
 
       it('getUuidsByType', () => {
@@ -1023,16 +1021,15 @@ describe('contact', () => {
 
         const contactGetIds = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(contactGetIds);
-        const contactType = 'person';
-        const contactTypeQualifier = { contactType };
+        const contactTypeQualifier = { contactType: CONTACT_TYPES.PERSON };
         const byContactType = sinon.stub(Qualifier, 'byContactType').returns(contactTypeQualifier);
 
-        const res = contact.getUuidsByType(contactType);
+        const res = contact.getUuidsByType(CONTACT_TYPES.PERSON);
 
         expect(res).to.deep.equal(mockAsyncGenerator);
         expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
         expect(contactGetIds.calledOnceWithExactly(contactTypeQualifier)).to.be.true;
-        expect(byContactType.calledOnceWithExactly(contactType)).to.be.true;
+        expect(byContactType.calledOnceWithExactly(CONTACT_TYPES.PERSON)).to.be.true;
       });
 
       it('getUuidsByFreetext', () => {

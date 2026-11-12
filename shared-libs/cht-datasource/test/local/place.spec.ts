@@ -352,7 +352,7 @@ describe('local place', () => {
       const contact = {
         ...minifiedContact,
         _rev: '1',
-        type: 'person'
+        type: CONTACT_TYPES.PERSON
       } as const;
       const placeDoc = { hello: 'world' };
       const reportedDate = new Date().getTime();
@@ -719,7 +719,7 @@ describe('local place', () => {
       const contact = {
         ...contactMinified,
         _rev: '1',
-        type: 'person'
+        type: CONTACT_TYPES.PERSON
       } as const;
       const newContactMinified = {
         _id: 'contact-2',
@@ -730,7 +730,7 @@ describe('local place', () => {
       const newContact = {
         ...newContactMinified,
         _rev: '1',
-        type: 'person'
+        type: CONTACT_TYPES.PERSON
       };
 
       const originalDoc = {

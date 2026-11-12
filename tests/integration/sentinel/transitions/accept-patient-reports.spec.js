@@ -35,7 +35,7 @@ const contacts = [
   {
     _id: 'person',
     name: 'Person',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     patient_id: 'patient',
     parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '+phone',
@@ -44,7 +44,7 @@ const contacts = [
   {
     _id: 'person2',
     name: 'Person',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     patient_id: 'patient2',
     parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '+phone2',

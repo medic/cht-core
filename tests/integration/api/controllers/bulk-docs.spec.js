@@ -123,7 +123,7 @@ describe('bulk-docs handler', () => {
       {
         _id: 'NEW_CONTACT',
         parent: { _id: 'NEW_PARENT_PLACE' },
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         name: 'New Contact',
         reported_date: 1,
       },
@@ -883,7 +883,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'existing_person',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
       },
       {
@@ -933,7 +933,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'denied_new_person',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'allowed_new_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
       },
       {
@@ -1031,7 +1031,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'existing_person',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
       },
       {
@@ -1081,7 +1081,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'denied_new_person',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'allowed_new_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
       },
       {
@@ -1178,7 +1178,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'existing_person',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
       },
       {
@@ -1228,7 +1228,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'new_person',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'new_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
       },
       {
@@ -1324,7 +1324,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'existing_person', // depth 2
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
         patient_id: 'existing_person_id'
       },
@@ -1355,7 +1355,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'existing_person2', // out of hierarchy
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'other2', parent: { _id: 'other1' } },
         patient_id: 'existing_person_id2'
       },
@@ -1389,7 +1389,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'new_person', // depth 2
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'new_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
         patient_id: 'new_person_id'
       },
@@ -1420,7 +1420,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'new_person2', // out of hierarchy
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'other2', parent: { _id: 'other1' } },
         patient_id: 'new_person_id2'
       },

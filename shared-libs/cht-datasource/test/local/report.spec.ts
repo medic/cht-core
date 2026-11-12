@@ -12,7 +12,7 @@ import * as Lineage from '../../src/local/libs/lineage';
 import * as LocalCore from '../../src/local/libs/core';
 import * as LocalContact from '../../src/local/contact';
 import { InvalidArgumentError, ResourceNotFoundError } from '../../src';
-import { DOC_TYPES } from '@medic/constants';
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
 
 describe('local report', () => {
   let localContext: LocalDataContext.LocalDataContext;
@@ -135,7 +135,7 @@ describe('local report', () => {
           reported_date: 100,
           fields: { patient_id: 'f', patient_name: 'jeff' },
         };
-        const contactDoc = { _id: 'b', _rev: '2', type: 'person', name: 'james' };
+        const contactDoc = { _id: 'b', _rev: '2', type: CONTACT_TYPES.PERSON, name: 'james' };
         getDocsByIdsInner.resolves([reportDoc, contactDoc, null]);
 
         const result = await Report.v1.getSummaries(localContext)({ ids: ['a', 'b', 'missing'] });
@@ -658,7 +658,7 @@ describe('local report', () => {
       const contact = {
         ...minifiedContact,
         _rev: '1',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
       } as const;
       const reportDoc = { _id: 'report-1', type: DOC_TYPES.DATA_RECORD, form: 'test-form' } as const;
       const supportedForms = ['test-form', 'other-form'];
@@ -827,7 +827,7 @@ describe('local report', () => {
         },
         fields: { hello: 'world' }
       } as const;
-      const contactDoc = { _id: 'contact-1', type: 'person' } as const;
+      const contactDoc = { _id: 'contact-1', type: CONTACT_TYPES.PERSON } as const;
       const newContactMinified = {
         _id: 'contact-2',
         parent: {
@@ -837,7 +837,7 @@ describe('local report', () => {
       const newContact = {
         ...newContactMinified,
         _rev: '1',
-        type: 'person'
+        type: CONTACT_TYPES.PERSON
       };
       const supportedForms = ['test-form', 'other-form', 'new-form'];
 
