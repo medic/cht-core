@@ -9,8 +9,10 @@ import {
   isFreetextQualifier,
   isIdsQualifier,
   isPhonesQualifier,
+  isSubjectsQualifier,
   isUuidQualifier,
   PhonesQualifier,
+  SubjectsQualifier,
   UuidQualifier,
 } from '../qualifier';
 import {
@@ -131,18 +133,20 @@ type ContactTypeFreetextPhonesQualifier = ContactTypeQualifier | FreetextQualifi
 type ContactTypeIdsPhonesQualifier = ContactTypeQualifier | IdsQualifier | PhonesQualifier;
 
 /** @internal */
-export const assertFreetextOrFormsQualifier: (
+export const assertFreetextFormsOrSubjectsQualifier: (
   qualifier: unknown
-) => asserts qualifier is FreetextQualifier | FormsQualifier = (
+) => asserts qualifier is FreetextQualifier | FormsQualifier | SubjectsQualifier = (
   qualifier: unknown
 ) => {
-  if (isFreetextQualifier(qualifier) || isFormsQualifier(qualifier)) {
+  if (isFreetextQualifier(qualifier) || isFormsQualifier(qualifier) || isSubjectsQualifier(qualifier)) {
     return;
   }
-  // Only form-shaped input gets the new message. Everything else keeps the original freetext error
-  // verbatim, so callers (and the 400 bodies the API surfaces from them) are unchanged.
+  // Report the error for the qualifier the input looks like; anything else gets the freetext error.
   if (isRecord(qualifier) && 'forms' in qualifier) {
     throw new InvalidArgumentError(`Invalid forms [${JSON.stringify(qualifier)}].`);
+  }
+  if (isRecord(qualifier) && 'subjects' in qualifier) {
+    throw new InvalidArgumentError(`Invalid subjects [${JSON.stringify(qualifier)}].`);
   }
   throw new InvalidArgumentError(`Invalid freetext [${JSON.stringify(qualifier)}].`);
 };
@@ -185,6 +189,20 @@ export const assertIdsQualifier: (
   if (!isIdsQualifier(qualifier)) {
     throw new InvalidArgumentError(`Invalid identifiers [${JSON.stringify(qualifier)}].`);
   }
+};
+
+/** @internal */
+export const assertIdsOrSubjectsQualifier: (
+  qualifier: unknown
+) => asserts qualifier is IdsQualifier | SubjectsQualifier = (qualifier: unknown) => {
+  if (isIdsQualifier(qualifier) || isSubjectsQualifier(qualifier)) {
+    return;
+  }
+  // Report the error for the qualifier the input looks like; anything else gets the identifiers error.
+  if (isRecord(qualifier) && 'subjects' in qualifier) {
+    throw new InvalidArgumentError(`Invalid subjects [${JSON.stringify(qualifier)}].`);
+  }
+  throw new InvalidArgumentError(`Invalid identifiers [${JSON.stringify(qualifier)}].`);
 };
 
 /** @ignore */

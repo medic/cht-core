@@ -517,6 +517,35 @@ describe('Report API', () => {
     });
   });
 
+  describe('GET /api/v1/report/uuid with subject param', () => {
+    const endpoint = '/api/v1/report/uuid';
+    const allReportIds = allReports.map(report => report._id);
+
+    it('returns a report matching both a comma-separated shortcode and UUID exactly once', async () => {
+      const opts = { path: endpoint, qs: { subject: `${patient.patient_id},${patient._id}` } };
+
+      const responsePage = await utils.request(opts);
+
+      expect(responsePage.data).to.deep.equalInAnyOrder(allReportIds);
+      expect(responsePage.data).to.have.lengthOf(allReportIds.length);
+    });
+
+    it('returns a page of report ids when the subject param is repeated', async () => {
+      const responsePage = await utils.request({
+        path: `${endpoint}?subject=no-such-subject&subject=${patient.patient_id}`
+      });
+
+      expect(responsePage.data).to.deep.equalInAnyOrder(allReportIds);
+    });
+
+    it('throws 400 error when subject is present but empty', async () => {
+      const opts = { path: endpoint, qs: { subject: '' } };
+
+      await expect(utils.request(opts))
+        .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid subjects [[]]."}`);
+    });
+  });
+
   describe('GET /api/v1/report', () => {
     const endpoint = '/api/v1/report';
     const allReportIds = allReports.map(report => report._id);
@@ -552,10 +581,10 @@ describe('Report API', () => {
       expect(responseIds).to.deep.equalInAnyOrder(allReportIds);
     });
 
-    it('throws 400 error when the ids param is not provided', async () => {
+    it('throws 400 error when neither ids nor subject is provided', async () => {
       const opts = { path: endpoint };
       await expect(utils.request(opts)).to.be.rejectedWith(
-        `400 - {"code":400,"error":"Query param ids is required"}`
+        `400 - {"code":400,"error":"Either query param ids or subject is required"}`
       );
     });
 
@@ -573,6 +602,42 @@ describe('Report API', () => {
       await expect(utils.request(opts)).to.be.rejectedWith(
         `400 - {"code":400,"error":"The limit must be a positive integer: [\\"-1\\"]."}`
       );
+    });
+
+    describe('with subject param', () => {
+      const responseIds = (page) => page.data.map(doc => doc._id);
+
+      it('returns a report matching both a comma-separated shortcode and UUID exactly once', async () => {
+        const responsePage = await utils.request({
+          path: endpoint, qs: { subject: `${patient.patient_id},${patient._id}` }
+        });
+
+        expect(responseIds(responsePage)).to.deep.equalInAnyOrder(allReportIds);
+        expect(responsePage.data).to.have.lengthOf(allReportIds.length);
+      });
+
+      it('returns a page of reports when the subject param is repeated', async () => {
+        const responsePage = await utils.request({
+          path: `${endpoint}?subject=no-such-subject&subject=${patient.patient_id}`
+        });
+
+        expect(responseIds(responsePage)).to.deep.equalInAnyOrder(allReportIds);
+      });
+
+      it('prefers ids over subject when both are given', async () => {
+        const responsePage = await utils.request({
+          path: endpoint, qs: { ids: report0._id, subject: patient.patient_id }
+        });
+
+        expect(responseIds(responsePage)).to.deep.equal([ report0._id ]);
+      });
+
+      it('throws 400 error when every entry in the subject list is empty', async () => {
+        const opts = { path: endpoint, qs: { subject: ',,' } };
+
+        await expect(utils.request(opts))
+          .to.be.rejectedWith(`400 - {"code":400,"error":"Invalid subjects [[]]."}`);
+      });
     });
   });
 

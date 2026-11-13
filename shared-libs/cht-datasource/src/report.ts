@@ -8,17 +8,20 @@ import {
   byForms,
   byFreetext,
   byIds,
+  bySubjects,
   byUuid,
   FormsQualifier,
   FreetextQualifier,
   IdsQualifier,
+  SubjectsQualifier,
   UuidQualifier
 } from './qualifier';
 import * as Remote from './remote';
 import { DEFAULT_DOCS_PAGE_LIMIT, DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
 import {
   assertCursor,
-  assertFreetextOrFormsQualifier,
+  assertFreetextFormsOrSubjectsQualifier,
+  assertIdsOrSubjectsQualifier,
   assertIdsQualifier,
   assertLimit,
   assertUuidQualifier
@@ -59,6 +62,25 @@ export namespace v1 {
     assertIdsQualifier(qualifier);
 
     return getPagedGenerator(fetchPage, qualifier);
+  };
+
+  // Some views emit a report more than once (e.g. once per subject field it sets), so paging can return the
+  // same report on more than one page. Pages only dedupe within themselves (a cursor cannot carry what was
+  // already seen), so the generator tracks every id it has yielded and skips repeats. This holds one id per
+  // distinct report for the life of the generator.
+  const getUniqueGenerator = async function* <T>(
+    generator: AsyncGenerator<T, null>,
+    getId: (entry: T) => string
+  ): AsyncGenerator<T, null> {
+    const seen = new Set<string>();
+    for await (const entry of generator) {
+      const id = getId(entry);
+      if (!seen.has(id)) {
+        seen.add(id);
+        yield entry;
+      }
+    }
+    return null;
   };
 
   /**
@@ -158,22 +180,24 @@ export namespace v1 {
     /**
      * Returns an array of report identifiers for the provided page specifications.
      * @param qualifier the limiter defining which identifiers to return. Either a {@link FreetextQualifier} for a
-     * freetext search, or a {@link FormsQualifier} to return the reports recorded with any of the given forms. If
-     * both are provided, the freetext search takes precedence.
+     * freetext search, a {@link FormsQualifier} to return the reports recorded with any of the given forms, or a
+     * {@link SubjectsQualifier} to return the reports about any of the given subjects. If more than one is
+     * provided, the freetext search takes precedence, then the forms.
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of identifiers to return. Default is 10000.
-     * @returns a page of report identifiers for the provided specification
+     * @returns a page of report identifiers for the provided specification. Each identifier appears at most once
+     * on a page, but may reappear on a later page.
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      * @throws InvalidArgumentError if the provided `limit` value is `<=0`
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
     const curriedFn = async (
-      qualifier: FreetextQualifier | FormsQualifier,
+      qualifier: FreetextQualifier | FormsQualifier | SubjectsQualifier,
       cursor: Nullable<string> = null,
       limit: number | `${number}` = DEFAULT_IDS_PAGE_LIMIT
     ): Promise<Page<string>> => {
-      assertFreetextOrFormsQualifier(qualifier);
+      assertFreetextFormsOrSubjectsQualifier(qualifier);
       assertCursor(cursor);
       assertLimit(limit);
 
@@ -195,17 +219,20 @@ export namespace v1 {
     /**
      * Returns a generator for fetching all report identifiers that match the given qualifier
      * @param qualifier the limiter defining which identifiers to return. Either a {@link FreetextQualifier} for a
-     * freetext search, or a {@link FormsQualifier} to return the reports recorded with any of the given forms. If
-     * both are provided, the freetext search takes precedence.
-     * @returns a generator for fetching all report identifiers that match the given qualifier
+     * freetext search, a {@link FormsQualifier} to return the reports recorded with any of the given forms, or a
+     * {@link SubjectsQualifier} to return the reports about any of the given subjects. If more than one is
+     * provided, the freetext search takes precedence, then the forms.
+     * @returns a generator for fetching all report identifiers that match the given qualifier. Each identifier is
+     * yielded at most once, even when the report matches more than one of the subjects given to a
+     * {@link SubjectsQualifier}; the generator holds every identifier it has yielded in memory to do this.
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      */
     const curriedGen = (
-      qualifier: FreetextQualifier | FormsQualifier
+      qualifier: FreetextQualifier | FormsQualifier | SubjectsQualifier
     ): AsyncGenerator<string, null> => {
-      assertFreetextOrFormsQualifier(qualifier);
+      assertFreetextFormsOrSubjectsQualifier(qualifier);
 
-      return getPagedGenerator(getPage, qualifier);
+      return getUniqueGenerator(getPagedGenerator(getPage, qualifier), id => id);
     };
     return curriedGen;
   };
@@ -223,21 +250,24 @@ export namespace v1 {
 
     /**
      * Returns an array of reports for the provided page specifications.
-     * @param qualifier the UUIDs of the reports to return
+     * @param qualifier the limiter defining which reports to return. Either an {@link IdsQualifier} holding the
+     * UUIDs of the reports, or a {@link SubjectsQualifier} to return the reports about any of the given subjects.
+     * If both are provided, the ids take precedence.
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of reports to return. Default is 100.
-     * @returns a page of reports for the provided specification
+     * @returns a page of reports for the provided specification. Each report appears at most once on a page, but
+     * may reappear on a later page.
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      * @throws InvalidArgumentError if the provided `limit` value is `<=0`
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
     const curriedFn = async (
-      qualifier: IdsQualifier,
+      qualifier: IdsQualifier | SubjectsQualifier,
       cursor: Nullable<string> = null,
       limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
     ): Promise<Page<Report>> => {
-      assertIdsQualifier(qualifier);
+      assertIdsOrSubjectsQualifier(qualifier);
       assertCursor(cursor);
       assertLimit(limit);
 
@@ -256,7 +286,21 @@ export namespace v1 {
     assertDataContext(context);
     const getPage = context.bind(v1.getPage);
 
-    const curriedGen = getIdsGenerator<Report>(getPage);
+    /**
+     * Returns a generator for fetching all reports that match the given qualifier
+     * @param qualifier the limiter defining which reports to return. Either an {@link IdsQualifier} holding the
+     * UUIDs of the reports, or a {@link SubjectsQualifier} to return the reports about any of the given subjects.
+     * If both are provided, the ids take precedence.
+     * @returns a generator for fetching all reports that match the given qualifier. Each report is yielded at most
+     * once, even when it matches more than one of the subjects given to a {@link SubjectsQualifier}; the generator
+     * holds the id of every report it has yielded in memory to do this.
+     * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
+     */
+    const curriedGen = (qualifier: IdsQualifier | SubjectsQualifier): AsyncGenerator<Report, null> => {
+      assertIdsOrSubjectsQualifier(qualifier);
+
+      return getUniqueGenerator(getPagedGenerator(getPage, qualifier), report => report._id);
+    };
     return curriedGen;
   };
 
@@ -448,6 +492,38 @@ export namespace v1 {
     getUuidsByForms: (forms: [string, ...string[]]) => AsyncGenerator<string, null>;
 
     /**
+     * Returns a paged array of identifiers for the reports about any of the given subjects.
+     * @param subjects the identifiers of the subjects the reports are about. A subject is identified either by a
+     * shortcode (`patient_id`, `place_id`, `case_id`) or by a UUID (`patient_uuid`, `place_uuid`), and both kinds
+     * can be mixed in one call. Each is matched verbatim. Pass a single-element array to search one subject.
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of identifiers to return. Default is 10000.
+     * @returns a page of report identifiers for the provided specification. Each identifier appears at most once on
+     * a page, but may reappear on a later page.
+     * @throws InvalidArgumentError if the subjects are not a non-empty array of non-blank strings with no
+     * leading or trailing whitespace
+     * @throws InvalidArgumentError if the provided `limit` value is `<=0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    getUuidsPageBySubjects: (
+      subjects: [string, ...string[]],
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<string>>;
+
+    /**
+     * Returns a generator for fetching all the identifiers of reports about any of the given subjects.
+     * @param subjects the identifiers of the subjects the reports are about, either shortcodes or UUIDs
+     * @returns a generator for fetching all matching report identifiers. Each identifier is yielded at most once,
+     * even when the report matches more than one of the given subjects; the generator holds every identifier it
+     * has yielded in memory to do this.
+     * @throws InvalidArgumentError if the subjects are not a non-empty array of non-blank strings with no
+     * leading or trailing whitespace
+     */
+    getUuidsBySubjects: (subjects: [string, ...string[]]) => AsyncGenerator<string, null>;
+
+    /**
      * Returns a page of reports for the given ids.
      * @param ids the ids of the reports to return
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
@@ -471,6 +547,38 @@ export namespace v1 {
      * @throws InvalidArgumentError if no ids are provided
      */
     getByIds: (ids: [string, ...string[]]) => AsyncGenerator<v1.Report, null>;
+
+    /**
+     * Returns a page of the reports about any of the given subjects.
+     * @param subjects the identifiers of the subjects the reports are about. A subject is identified either by a
+     * shortcode (`patient_id`, `place_id`, `case_id`) or by a UUID (`patient_uuid`, `place_uuid`), and both kinds
+     * can be mixed in one call. Each is matched verbatim. Pass a single-element array to search one subject.
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of reports to return. Default is 100.
+     * @returns a page of reports for the provided specification. Each report appears at most once on a page, but
+     * may reappear on a later page.
+     * @throws InvalidArgumentError if the subjects are not a non-empty array of non-blank strings with no
+     * leading or trailing whitespace
+     * @throws InvalidArgumentError if the provided `limit` value is `<=0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    getPageBySubjects: (
+      subjects: [string, ...string[]],
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<v1.Report>>;
+
+    /**
+     * Returns a generator for fetching all the reports about any of the given subjects.
+     * @param subjects the identifiers of the subjects the reports are about, either shortcodes or UUIDs
+     * @returns a generator for fetching all matching reports. Each report is yielded at most once, even when it
+     * matches more than one of the given subjects; the generator holds the id of every report it has yielded in
+     * memory to do this.
+     * @throws InvalidArgumentError if the subjects are not a non-empty array of non-blank strings with no
+     * leading or trailing whitespace
+     */
+    getBySubjects: (subjects: [string, ...string[]]) => AsyncGenerator<v1.Report, null>;
 
     /**
      * Creates a new report record.
@@ -524,12 +632,24 @@ export namespace v1 {
         limit = DEFAULT_IDS_PAGE_LIMIT
       ) => ctx.bind(v1.getUuidsPage)(byForms(forms), cursor, limit),
       getUuidsByForms: (forms) => ctx.bind(v1.getUuids)(byForms(forms)),
+      getUuidsPageBySubjects: (
+        subjects,
+        cursor = null,
+        limit = DEFAULT_IDS_PAGE_LIMIT
+      ) => ctx.bind(v1.getUuidsPage)(bySubjects(subjects), cursor, limit),
+      getUuidsBySubjects: (subjects) => ctx.bind(v1.getUuids)(bySubjects(subjects)),
       getPageByIds: (
         ids,
         cursor = null,
         limit = DEFAULT_DOCS_PAGE_LIMIT
       ) => ctx.bind(v1.getPage)(byIds(ids), cursor, limit),
       getByIds: (ids) => ctx.bind(v1.getAll)(byIds(ids)),
+      getPageBySubjects: (
+        subjects,
+        cursor = null,
+        limit = DEFAULT_DOCS_PAGE_LIMIT
+      ) => ctx.bind(v1.getPage)(bySubjects(subjects), cursor, limit),
+      getBySubjects: (subjects) => ctx.bind(v1.getAll)(bySubjects(subjects)),
       create: (input) => ctx.bind(v1.create)(input),
       update: (updated) => ctx.bind(v1.update)(updated),
     };
