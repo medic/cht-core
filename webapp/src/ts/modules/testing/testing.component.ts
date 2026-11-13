@@ -68,7 +68,7 @@ export class TestingComponent implements OnInit {
       .all([
         this.dbService.get({ remote: false }).destroy(),
         this.dbService.get({ remote: false, meta: true }).destroy(),
-        formMedia.clear(),
+        window.caches ? formMedia.clear() : Promise.resolve(),
       ])
       .catch(err => console.error('Error wiping databases', err));
   }

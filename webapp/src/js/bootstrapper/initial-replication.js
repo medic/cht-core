@@ -96,7 +96,11 @@ const downloadForms = async (remoteDb, localDb, index = 0) => {
     return;
   }
   setUiStatus('FETCH_INFO', { count: index, total: remoteDocCount });
-  await formMedia.replicateFormDoc(remoteDb, localDb, formIdsRevs[index]);
+  try {
+    await formMedia.replicateFormDoc(remoteDb, localDb, formIdsRevs[index]);
+  } catch (err) {
+    console.error(`Failed to download form [${formIdsRevs[index].id}]`, err);
+  }
   return downloadForms(remoteDb, localDb, index + 1);
 };
 

@@ -101,7 +101,7 @@ const replicateFormDoc = async (remoteDb, localDb, { id, rev }) => {
 const getWantedMedia = async (localDb) => {
   const { rows } = await localDb.allDocs({
     startkey: PREFIXES.FORM,
-    endkey: `${PREFIXES.FORM}￰`,
+    endkey: `${PREFIXES.FORM}\ufff0`,
     include_docs: true,
   });
   const wanted = new Map();
@@ -116,7 +116,8 @@ const getWantedMedia = async (localDb) => {
 const downloadMedia = async (cache, key, { id, rev, name, content_type, length }) => {
   const available = await getAvailableBytes();
   if (available - length < MIN_FREE_BYTES) {
-    throw lowStorageError(`Not enough storage for [${name}] of form [${id}]: ${length} bytes, ${available} available`);
+    setLastQuotaFailure(Date.now());
+    throw lowStorageError(`Not enough storage for [${name}] of form [${id}]: ${length} bytes, ${available} available`, true);
   }
 
   const response = await fetchAttachment(id, name, rev);
@@ -154,7 +155,11 @@ const downloadAll = (cache, missing, onProgress) => {
     onProgress({ count: index, total: missing.length });
     const [key, media] = missing[index];
     const error = await tryDownload(cache, key, media);
-    return downloadFrom(index + 1, error ? [...errors, error] : errors);
+    const result = await downloadFrom(index + 1, error ? [...errors, error] : errors);
+    if (index === missing.length - 1) {
+      onProgress({ count: missing.length, total: missing.length });
+    }
+    return result;
   };
   return downloadFrom(0, []);
 };
