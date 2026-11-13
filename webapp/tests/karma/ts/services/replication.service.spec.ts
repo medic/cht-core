@@ -86,17 +86,19 @@ describe('ContactTypes service', () => {
       expect(rulesEngineService.monitorExternalChanges.args[0][0].docs[0]._id).to.equal('form:a');
     });
 
-    it('should fail the round when a form doc cannot be downloaded', async () => {
+    it('should log forms that cannot be downloaded and continue with other docs', async () => {
       localDb.allDocs.resolves({ rows: [] });
-      http.get.returns(of({ doc_ids_revs: [{ id: 'form:a', rev: '2-b' }] }));
+      http.get.returns(of({ doc_ids_revs: [{ id: 'form:a', rev: '2-b' }, { id: 'one', rev: '1-a' }] }));
       remoteDb.get.rejects(new Error('form download failed'));
+      remoteDb.bulkGet.resolves({ results: [{ docs: [{ ok: { _id: 'one', _rev: '1-a' } }] }] });
+      localDb.bulkDocs.resolves([]);
+      const consoleError = sinon.stub(console, 'error');
 
-      try {
-        await service.replicateFrom();
-        expect.fail('Should have thrown');
-      } catch (err) {
-        expect(err.message).to.equal('form download failed');
-      }
+      expect(await service.replicateFrom()).to.deep.equal({ read_docs: 2 });
+
+      expect(remoteDb.bulkGet.callCount).to.equal(1);
+      expect(consoleError.args[0][0]).to.equal('Error downloading form [form:a]');
+      expect(consoleError.args[0][1].message).to.equal('form download failed');
     });
 
     it('should not wait for form media and should only log media failures', async () => {

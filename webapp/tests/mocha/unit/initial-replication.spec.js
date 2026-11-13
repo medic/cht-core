@@ -200,6 +200,36 @@ describe('Initial replication', () => {
       expect(formMedia.syncMedia.calledAfter(localDb.replicate.to)).to.equal(true);
     });
 
+    it('should log forms that cannot be downloaded and continue with other docs', async () => {
+      sinon.stub(utils, 'fetchJSON').resolves({
+        doc_ids_revs: [{ id: 'form:a', rev: '2-b' }, { id: 'form:b', rev: '1-c' }, { id: 'one', rev: '1-a' }],
+      });
+      sinon.stub(console, 'error');
+      localDb.allDocs.resolves({ rows: [] });
+      remoteDb.bulkGet.resolves({ results: [{ id: 'one', docs: [{ ok: { _id: 'one', _rev: '1-a' } }] }] });
+      localDb.bulkDocs.resolves();
+      localDb.get.onCall(0).rejects({ status: 404 }).resolves({ _id: FLAG_ID, start_time: 0 });
+      localDb.put.resolves();
+      localDb.replicate.to.resolves();
+      localDb.info.resolves({ update_seq: 1 });
+      const replicateFormDoc = sinon.stub();
+      replicateFormDoc.onCall(0).rejects(new Error('form download failed'));
+      replicateFormDoc.onCall(1).resolves();
+      const revert = initialReplication.__set__('formMedia', {
+        isFormId: id => id.startsWith('form:'),
+        replicateFormDoc,
+        syncMedia: sinon.stub().resolves(),
+      });
+
+      await initialReplication.replicate(remoteDb, localDb);
+      revert();
+
+      expect(replicateFormDoc.callCount).to.equal(2);
+      expect(remoteDb.bulkGet.callCount).to.equal(1);
+      expect(console.error.args[0][0]).to.equal('Failed to download form [form:a]');
+      expect(localDb.put.lastCall.args[0].complete).to.equal(true);
+    });
+
     it('should complete initial replication when form media fails to download', async () => {
       sinon.stub(utils, 'fetchJSON').resolves({ doc_ids_revs: [] });
       sinon.stub(console, 'error');

@@ -160,7 +160,7 @@ describe('form media', () => {
         body: 'stream',
         init: { headers: { 'Content-Type': 'video/mp4' } },
       });
-      expect(progress.args).to.deep.equal([[{ count: 0, total: 1 }]]);
+      expect(progress.args).to.deep.equal([[{ count: 0, total: 1 }], [{ count: 1, total: 1 }]]);
       expect(cache.delete.callCount).to.equal(0);
     });
 
@@ -250,17 +250,20 @@ describe('form media', () => {
         expect(cache.put.callCount).to.equal(0);
       });
 
-      it('should still download smaller media that fits', async () => {
+      it('should stop downloading and pause for a day when media would not fit', async () => {
         localDb.allDocs.resolves({ rows: [
           form('form:a', '1-a', { 'big.mp4': media('md5-a', 400 * MB) }),
           form('form:b', '1-b', { 'small.mp4': media('md5-b', 100 * MB) }),
         ] });
         storage.estimate.resolves({ quota: 1000 * MB, usage: 300 * MB });
 
-        await expectLowStorage();
+        const err = await expectLowStorage();
 
-        expect(global.fetch.callCount).to.equal(1);
-        expect(global.fetch.args[0][0]).to.include('small.mp4');
+        expect(err.storageFull).to.equal(true);
+        expect(global.fetch.callCount).to.equal(0);
+        const [storageKey, failedAt] = localStorage.setItem.lastCall.args;
+        expect(storageKey).to.equal('cht-form-media-quota-failure');
+        expect(Date.now() - Number(failedAt)).to.be.within(0, MINUTE);
       });
 
       it('should use the free space reported by the android app when it is lower', async () => {

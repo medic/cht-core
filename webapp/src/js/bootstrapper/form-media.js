@@ -117,7 +117,10 @@ const downloadMedia = async (cache, key, { id, rev, name, content_type, length }
   const available = await getAvailableBytes();
   if (available - length < MIN_FREE_BYTES) {
     setLastQuotaFailure(Date.now());
-    throw lowStorageError(`Not enough storage for [${name}] of form [${id}]: ${length} bytes, ${available} available`, true);
+    throw lowStorageError(
+      `Not enough storage for [${name}] of form [${id}]: ${length} bytes, ${available} available`,
+      true
+    );
   }
 
   const response = await fetchAttachment(id, name, rev);

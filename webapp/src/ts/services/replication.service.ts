@@ -46,13 +46,13 @@ export class ReplicationService {
     const nbrDocs = docIdRevsToDownload.length;
     const docsToBatch = docIdRevsToDownload.filter(({ id }) => !formMedia.isFormId(id));
 
-for (const formIdRev of docIdRevsToDownload.filter(({ id }) => formMedia.isFormId(id))) {
-  try {
-    await this.downloadForm(formIdRev);
-  } catch (err) {
-    console.error(`Error downloading form [${formIdRev.id}]`, err);
-  }
-}
+    for (const formIdRev of docIdRevsToDownload.filter(({ id }) => formMedia.isFormId(id))) {
+      try {
+        await this.downloadForm(formIdRev);
+      } catch (err) {
+        console.error(`Error downloading form [${formIdRev.id}]`, err);
+      }
+    }
 
     while (docsToBatch.length) {
       const batch = docsToBatch.splice(0, this.BATCH_SIZE);
