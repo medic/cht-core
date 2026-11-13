@@ -3,6 +3,7 @@ import { lastValueFrom } from 'rxjs';
 import { DbService } from './db.service';
 import { HttpClient } from '@angular/common/http';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
+import * as formMedia from '../../js/bootstrapper/form-media';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +27,7 @@ export class ReplicationService {
 
     const nbrDownloaded = await this.getMissingDocs(localIdRevMap, remoteDocIdsRevs);
     const nbrDeleted = await this.getDeletesAndPurges(localIdRevMap, remoteIdRevMap);
+    this.syncFormMedia();
     return { read_docs: nbrDeleted + nbrDownloaded };
   }
 
@@ -42,9 +44,18 @@ export class ReplicationService {
     const docIdRevsToDownload = remoteDocIdsRevs
       .filter(({ id, rev }) => !localIdRevMap[id] || localIdRevMap[id] !== rev);
     const nbrDocs = docIdRevsToDownload.length;
+    const docsToBatch = docIdRevsToDownload.filter(({ id }) => !formMedia.isFormId(id));
 
-    while (docIdRevsToDownload.length) {
-      const batch = docIdRevsToDownload.splice(0, this.BATCH_SIZE);
+    for (const formIdRev of docIdRevsToDownload.filter(({ id }) => formMedia.isFormId(id))) {
+      try {
+        await this.downloadForm(formIdRev);
+      } catch (err) {
+        console.error(`Error downloading form [${formIdRev.id}]`, err);
+      }
+    }
+
+    while (docsToBatch.length) {
+      const batch = docsToBatch.splice(0, this.BATCH_SIZE);
       await this.downloadDocsBatch(batch);
     }
 
@@ -69,6 +80,17 @@ export class ReplicationService {
       nbrDeletes += deleteDocs.length;
     }
     return nbrDeletes;
+  }
+
+  private async downloadForm(formIdRev):Promise<void> {
+    const doc = await formMedia.replicateFormDoc(this.dbService.get({ remote: true }), this.dbService.get(), formIdRev);
+    this.rulesEngineService.monitorExternalChanges({ docs: [doc] });
+  }
+
+  private syncFormMedia():void {
+    formMedia
+      .syncMedia(this.dbService.get())
+      .catch(err => console.error('Error replicating from remote server', err));
   }
 
   private async downloadDocsBatch(batch):Promise<void> {

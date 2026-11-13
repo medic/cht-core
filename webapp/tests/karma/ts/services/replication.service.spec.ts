@@ -7,6 +7,7 @@ import { ReplicationService } from '@mm-services/replication.service';
 import { DbService } from '@mm-services/db.service';
 import { of, throwError } from 'rxjs';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
+import * as formMedia from '../../../../src/js/bootstrapper/form-media';
 
 
 describe('ContactTypes service', () => {
@@ -16,8 +17,10 @@ describe('ContactTypes service', () => {
   let dbService;
   let http;
   let rulesEngineService;
+  let syncMedia;
 
   beforeEach(() => {
+    syncMedia = sinon.stub(formMedia, 'syncMedia').resolves();
     http = {
       get: sinon.stub(),
       post: sinon.stub(),
@@ -28,6 +31,8 @@ describe('ContactTypes service', () => {
     };
     remoteDb = {
       bulkGet: sinon.stub(),
+      get: sinon.stub(),
+      getAttachment: sinon.stub(),
     };
     rulesEngineService = { monitorExternalChanges: sinon.stub() };
 
@@ -51,6 +56,68 @@ describe('ContactTypes service', () => {
   });
 
   describe('replicate from', () => {
+    const FORM_STUB = { content_type: 'text/xml', digest: 'md5-x', length: 3, stub: true };
+
+    it('should download form docs individually and other docs in batches', async () => {
+      localDb.allDocs.resolves({ rows: [] });
+      http.get.returns(of({
+        doc_ids_revs: [
+          { id: 'one', rev: '1-a' },
+          { id: 'form:a', rev: '2-b' },
+        ]
+      }));
+      remoteDb.bulkGet.resolves({ results: [{ docs: [{ ok: { _id: 'one', _rev: '1-a' } }] }] });
+      remoteDb.get.resolves({ _id: 'form:a', _rev: '2-b', _attachments: { xml: FORM_STUB } });
+      remoteDb.getAttachment.resolves('blob');
+      localDb.bulkDocs.resolves([]);
+
+      const resp = await service.replicateFrom();
+
+      expect(resp).to.deep.equal({ read_docs: 2 });
+      expect(remoteDb.bulkGet.args).to.deep.equal([[
+        { docs: [{ id: 'one', rev: '1-a' }], attachments: true, revs: true }
+      ]]);
+      expect(remoteDb.get.args).to.deep.equal([['form:a', { rev: '2-b', revs: true }]]);
+      expect(localDb.bulkDocs.args[0]).to.deep.equal([
+        [{ _id: 'form:a', _rev: '2-b', _attachments: { xml: { content_type: 'text/xml', data: 'blob' } } }],
+        { new_edits: false },
+      ]);
+      expect(rulesEngineService.monitorExternalChanges.callCount).to.equal(2);
+      expect(rulesEngineService.monitorExternalChanges.args[0][0].docs[0]._id).to.equal('form:a');
+    });
+
+    it('should log forms that cannot be downloaded and continue with other docs', async () => {
+      localDb.allDocs.resolves({ rows: [] });
+      http.get.returns(of({ doc_ids_revs: [{ id: 'form:a', rev: '2-b' }, { id: 'one', rev: '1-a' }] }));
+      remoteDb.get.rejects(new Error('form download failed'));
+      remoteDb.bulkGet.resolves({ results: [{ docs: [{ ok: { _id: 'one', _rev: '1-a' } }] }] });
+      localDb.bulkDocs.resolves([]);
+      const consoleError = sinon.stub(console, 'error');
+
+      expect(await service.replicateFrom()).to.deep.equal({ read_docs: 2 });
+
+      expect(remoteDb.bulkGet.callCount).to.equal(1);
+      expect(consoleError.args[0][0]).to.equal('Error downloading form [form:a]');
+      expect(consoleError.args[0][1].message).to.equal('form download failed');
+    });
+
+    it('should not wait for form media and should only log media failures', async () => {
+      localDb.allDocs.resolves({ rows: [] });
+      http.get.returns(of({ doc_ids_revs: [] }));
+      const consoleError = sinon.stub(console, 'error');
+      let failMedia;
+      syncMedia.returns(new Promise((_, reject) => failMedia = reject));
+
+      expect(await service.replicateFrom()).to.deep.equal({ read_docs: 0 });
+      expect(syncMedia.args).to.deep.equal([[localDb]]);
+      expect(consoleError.callCount).to.equal(0);
+
+      failMedia(new Error('quota'));
+      await new Promise(resolve => setTimeout(resolve));
+
+      expect(consoleError.args[0][0]).to.equal('Error replicating from remote server');
+    });
+
     it('should do nothing when no updates are required', async () => {
       localDb.allDocs.resolves({
         rows: [
