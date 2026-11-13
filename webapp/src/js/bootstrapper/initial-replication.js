@@ -91,11 +91,13 @@ const getDocsBatch = async (remoteDb, localDb) => {
   await localDb.bulkDocs(docs, { new_edits: false });
 };
 
-const downloadForms = async (remoteDb, localDb) => {
-  for (const [index, formIdRev] of formIdsRevs.entries()) {
-    setUiStatus('FETCH_INFO', { count: index, total: remoteDocCount });
-    await formMedia.replicateFormDoc(remoteDb, localDb, formIdRev);
+const downloadForms = async (remoteDb, localDb, index = 0) => {
+  if (index >= formIdsRevs.length) {
+    return;
   }
+  setUiStatus('FETCH_INFO', { count: index, total: remoteDocCount });
+  await formMedia.replicateFormDoc(remoteDb, localDb, formIdsRevs[index]);
+  return downloadForms(remoteDb, localDb, index + 1);
 };
 
 const downloadFormMedia = async (localDb) => {
