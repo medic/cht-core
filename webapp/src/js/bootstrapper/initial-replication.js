@@ -102,9 +102,9 @@ const downloadForms = async (remoteDb, localDb, index = 0) => {
 
 const downloadFormMedia = async (localDb) => {
   try {
-    await formMedia.syncMedia(localDb, progress => setUiStatus('FETCH_FORMS', progress));
+    await formMedia.syncMedia(localDb, progress => setUiStatus('FETCH_INFO', progress));
   } catch (err) {
-    console.error('Error downloading form media - will retry during sync', err);
+    console.error(err);
   }
 };
 

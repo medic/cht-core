@@ -38,33 +38,17 @@ const lowStorageError = (message, storageFull = false) => {
   return error;
 };
 
-const getLastQuotaFailure = () => {
-  try {
-    return Number(window.localStorage.getItem(QUOTA_FAILURE_KEY)) || 0;
-  } catch (err) {
-    console.warn('Could not read form media quota failure', err);
-    return 0;
-  }
-};
+const getLastQuotaFailure = () => Number(window.localStorage.getItem(QUOTA_FAILURE_KEY)) || 0;
 
-const setLastQuotaFailure = (time) => {
-  try {
-    window.localStorage.setItem(QUOTA_FAILURE_KEY, String(time));
-  } catch (err) {
-    console.warn('Could not record form media quota failure', err);
-  }
-};
+const setLastQuotaFailure = (time) => window.localStorage.setItem(QUOTA_FAILURE_KEY, String(time));
 
 const getDeviceFreeBytes = () => {
   const android = window.medicmobile_android;
   if (!android || typeof android.getDeviceInfo !== 'function') {
     return;
   }
-  try {
-    return JSON.parse(android.getDeviceInfo()).storage.free;
-  } catch (err) {
-    console.warn('Could not read device free space', err);
-  }
+  const { storage = {} } = JSON.parse(android.getDeviceInfo());
+  return storage.free;
 };
 
 const getAvailableBytes = async () => {

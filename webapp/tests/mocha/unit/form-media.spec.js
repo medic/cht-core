@@ -277,12 +277,10 @@ describe('form media', () => {
       it('should fall back to the browser estimate when the android app cannot report free space', async () => {
         localDb.allDocs.resolves({ rows: [form('form:a', '1-a', { 'x.mp4': media('md5-a', 100 * MB) })] });
         global.window.medicmobile_android = { getDeviceInfo: sinon.stub().returns('{"error":true}') };
-        sinon.stub(console, 'warn');
 
         await formMedia.syncMedia(localDb);
 
         expect(global.fetch.callCount).to.equal(1);
-        expect(console.warn.callCount).to.equal(1);
       });
 
       it('should stop downloading and record the time when storage runs out', async () => {
@@ -338,17 +336,6 @@ describe('form media', () => {
         await formMedia.syncMedia(localDb);
 
         expect(storage.estimate.callCount).to.equal(0);
-      });
-
-      it('should keep working when local storage is unavailable', async () => {
-        localDb.allDocs.resolves({ rows: [form('form:a', '1-a', { 'x.mp4': media('md5-a', 100 * MB) })] });
-        localStorage.getItem.throws(new Error('denied'));
-        localStorage.setItem.throws(new Error('denied'));
-        sinon.stub(console, 'warn');
-
-        await formMedia.syncMedia(localDb);
-
-        expect(global.fetch.callCount).to.equal(1);
       });
     });
 

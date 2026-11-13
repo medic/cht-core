@@ -86,7 +86,7 @@ export class ReplicationService {
   private syncFormMedia():void {
     formMedia
       .syncMedia(this.dbService.get())
-      .catch(err => console.error('Error downloading form media', err));
+      .catch(err => console.error('Error replicating from remote server', err));
   }
 
   private async downloadDocsBatch(batch):Promise<void> {
