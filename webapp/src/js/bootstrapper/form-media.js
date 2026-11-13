@@ -162,14 +162,17 @@ const tryDownload = async (cache, key, media) => {
   }
 };
 
-const downloadAll = async (cache, missing, onProgress, index = 0, errors = []) => {
-  if (index >= missing.length || errors.some(error => error.storageFull)) {
-    return errors;
-  }
-  onProgress({ count: index, total: missing.length });
-  const [key, media] = missing[index];
-  const error = await tryDownload(cache, key, media);
-  return downloadAll(cache, missing, onProgress, index + 1, error ? [...errors, error] : errors);
+const downloadAll = (cache, missing, onProgress) => {
+  const downloadFrom = async (index, errors) => {
+    if (index >= missing.length || errors.some(error => error.storageFull)) {
+      return errors;
+    }
+    onProgress({ count: index, total: missing.length });
+    const [key, media] = missing[index];
+    const error = await tryDownload(cache, key, media);
+    return downloadFrom(index + 1, error ? [...errors, error] : errors);
+  };
+  return downloadFrom(0, []);
 };
 
 const syncAllMedia = async (localDb, onProgress = () => {}) => {
