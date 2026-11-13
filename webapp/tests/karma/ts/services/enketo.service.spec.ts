@@ -226,7 +226,7 @@ describe('Enketo service', () => {
       await new Promise(resolve => setTimeout(resolve));
 
       expect(dbGetAttachment.callCount).to.equal(0);
-      expect(wrapper.find('.loader').length).to.equal(0);
+      expect(wrapper.find('.loader')).to.have.lengthOf(0);
       expect(wrapper.find('.form-media-unavailable').text()).to.equal('error.503.description');
     });
 

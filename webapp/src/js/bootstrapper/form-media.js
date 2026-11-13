@@ -93,14 +93,17 @@ const replicateFormDoc = async (remoteDb, localDb, { id, rev }) => {
   const attachments = {};
   const formMedia = {};
 
-  for (const name of Object.keys(stubs)) {
-    const { content_type, digest, length } = stubs[name];
+  Object.entries(stubs).forEach(([name, { content_type, digest, length }]) => {
     if (cachedMediaNames.includes(name)) {
       formMedia[name] = { content_type, digest, length };
-    } else {
-      attachments[name] = { content_type, data: await remoteDb.getAttachment(id, name, { rev }) };
     }
-  }
+  });
+
+  const storedNames = Object.keys(stubs).filter(name => !cachedMediaNames.includes(name));
+  const data = await Promise.all(storedNames.map(name => remoteDb.getAttachment(id, name, { rev })));
+  storedNames.forEach((name, index) => {
+    attachments[name] = { content_type: stubs[name].content_type, data: data[index] };
+  });
 
   doc._attachments = attachments;
   if (cachedMediaNames.length) {
@@ -151,17 +154,24 @@ const downloadMedia = async (cache, key, { id, rev, name, content_type, length }
   }
 };
 
+const tryDownload = async (cache, key, media) => {
+  try {
+    await downloadMedia(cache, key, media);
+  } catch (error) {
+    return error;
+  }
+};
+
 const downloadAll = async (cache, missing, onProgress) => {
   const errors = [];
   for (const [index, [key, media]] of missing.entries()) {
+    if (errors.some(error => error.storageFull)) {
+      break;
+    }
     onProgress({ count: index, total: missing.length });
-    try {
-      await downloadMedia(cache, key, media);
-    } catch (error) {
+    const error = await tryDownload(cache, key, media);
+    if (error) {
       errors.push(error);
-      if (error.storageFull) {
-        break;
-      }
     }
   }
   return errors;
@@ -197,7 +207,10 @@ const syncMedia = (localDb, onProgress) => {
   return syncInProgress;
 };
 
-const isFormMedia = (formDoc, name) => !!(formDoc && formDoc.form_media && formDoc.form_media[name]);
+const isFormMedia = (formDoc, name) => {
+  const { form_media: formMedia = {} } = formDoc || {};
+  return Boolean(formMedia[name]);
+};
 
 const getMedia = async (formDoc, name) => {
   if (!isFormMedia(formDoc, name)) {
