@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { AuthService } from '@mm-services/auth.service';
 import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 import { SettingsService } from '@mm-services/settings.service';
+import { OfflineSyncService } from '@mm-services/offline-sync.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,8 @@ export class HeaderTabsService {
   constructor(
     private readonly authService: AuthService,
     private readonly settingsService: SettingsService,
-    private readonly uiExtensionsService: UiExtensionsService
+    private readonly uiExtensionsService: UiExtensionsService,
+    private readonly offlineSyncService: OfflineSyncService,
   ) { }
 
   private readonly MESSAGE_TAB = {
@@ -73,7 +75,17 @@ export class HeaderTabsService {
     { ...this.ANALYTICS_TAB, permissions: ['can_view_analytics', 'can_view_analytics_tab'] }
   ];
 
+  private readonly OFFLINE_SYNC_TAB_NAME = 'offline-sync';
+
   private readonly SIDEBAR_TABS: SidebarTab[] = [
+    {
+      // Shown by isAuthorized: it needs the android app as well as one of two permissions.
+      name: this.OFFLINE_SYNC_TAB_NAME,
+      route: 'offline-sync',
+      defaultIcon: 'fa-exchange',
+      translation: 'offline_sync.menu.title',
+      permissions: [],
+    },
     {
       name: 'trainings',
       route: 'trainings',
@@ -115,10 +127,15 @@ export class HeaderTabsService {
   private tabs?: HeaderTab[];
   private sidebarTabs?: SidebarTab[];
 
+  private isAuthorized({ name, permissions }: SidebarTab): boolean | Promise<boolean> {
+    if (name === this.OFFLINE_SYNC_TAB_NAME) {
+      return this.offlineSyncService.canTakePart();
+    }
+    return !permissions.length || this.authService.has(permissions);
+  }
+
   private async filterAuthorizedTabs<T extends SidebarTab>(tabs: T[]): Promise<T[]> {
-    const tabAuthorization = await Promise.all(
-      tabs.map(({ permissions }) => !permissions.length || this.authService.has(permissions))
-    );
+    const tabAuthorization = await Promise.all(tabs.map(tab => this.isAuthorized(tab)));
     return tabs.filter((tab, index) => tabAuthorization[index]);
   }
 

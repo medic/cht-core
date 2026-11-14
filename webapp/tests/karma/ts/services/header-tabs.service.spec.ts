@@ -6,23 +6,27 @@ import { HeaderTabsService } from '@mm-services/header-tabs.service';
 import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { UiExtensionsService } from '@mm-services/ui-extensions.service';
+import { OfflineSyncService } from '@mm-services/offline-sync.service';
 
 describe('HeaderTabs service', () => {
   let service: HeaderTabsService;
   let authService;
   let settingsService;
   let uiExtensionsService;
+  let offlineSyncService;
 
   beforeEach(() => {
     authService = { has: sinon.stub().returns(true) };
     settingsService = { get: sinon.stub().resolves({}) };
     uiExtensionsService = { getPropertiesByType: sinon.stub().resolves([]) };
+    offlineSyncService = { canTakePart: sinon.stub().resolves(false) };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: AuthService, useValue: authService },
         { provide: SettingsService, useValue: settingsService },
         { provide: UiExtensionsService, useValue: uiExtensionsService },
+        { provide: OfflineSyncService, useValue: offlineSyncService },
       ]
     });
 
@@ -645,6 +649,31 @@ describe('HeaderTabs service', () => {
       expect(authService.has).to.not.have.been.calledWith([]);
       // only the permission-less secondary tabs remain (no header tabs, no `user` tab)
       expect(tabs.map(t => t.name)).to.deep.equal(['trainings', 'about', 'privacy-policy', 'bug']);
+    });
+
+    it('should include the offline sync tab first among secondary tabs when the user can take part', async () => {
+      authService.has.returns(false);
+      offlineSyncService.canTakePart.resolves(true);
+
+      const tabs = await service.getSidebarTabs();
+
+      expect(tabs.map(t => t.name)).to.deep.equal(['offline-sync', 'trainings', 'about', 'privacy-policy', 'bug']);
+      expect(tabs[0]).to.deep.equal({
+        name: 'offline-sync',
+        route: 'offline-sync',
+        defaultIcon: 'fa-exchange',
+        translation: 'offline_sync.menu.title',
+        permissions: [],
+      });
+    });
+
+    it('should leave out the offline sync tab when the user cannot take part', async () => {
+      authService.has.returns(true);
+
+      const tabs = await service.getSidebarTabs();
+
+      expect(offlineSyncService.canTakePart).to.have.been.calledOnce;
+      expect(tabs.map(t => t.name)).to.not.include('offline-sync');
     });
 
     it('should cache sidebar tabs after first call', async () => {
