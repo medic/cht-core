@@ -39,6 +39,8 @@ const buildFormsQualifier = (form) => {
   return Qualifier.byForms(formsArray);
 };
 
+const buildFormsArray = (form) => buildFormsQualifier(form).forms;
+
 /**
  * @openapi
  * tags:
@@ -238,8 +240,8 @@ module.exports = {
      */
     getSamplesByForms: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
-      const qualifier = buildFormsQualifier(req.body?.forms);
-      const samples = await getReportSamplesByForms(qualifier);
+      const forms = buildFormsArray(req.body?.forms);
+      const samples = await getReportSamplesByForms(forms);
       return res.json(samples);
     }),
 

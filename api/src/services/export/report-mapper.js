@@ -84,7 +84,8 @@ module.exports = {
             ].concat(fieldColumns.map(c => objectPath.get(record.fields, c)))
           ];
         };
-        const samplesPromise = forms.length ? getReportSamplesByForms(forms) : Promise.resolve([]);
+        const validForms = forms.filter(form => typeof form === 'string' && form.length > 0 && form === form.trim());
+        const samplesPromise = validForms.length ? getReportSamplesByForms(validForms) : Promise.resolve([]);
         return samplesPromise
           .then(samples => {
             const fieldsByForm = new Map(samples.map(report => [report.form, report.fields]));

@@ -358,9 +358,7 @@ describe('Report Controller Tests', () => {
           req,
           { isOnline: true, hasAll: ['can_view_reports'] }
         )).to.be.true;
-        expect(reportSamplesByForms.calledOnceWithExactly(
-          Qualifier.byForms(['pregnancy', 'delivery'])
-        )).to.be.true;
+        expect(reportSamplesByForms.calledOnceWithExactly(['pregnancy', 'delivery'])).to.be.true;
         expect(res.json.calledOnceWithExactly(samples)).to.be.true;
       });
     });

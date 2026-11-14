@@ -61,4 +61,28 @@ describe('Report mapper', () => {
     result.header.should.include('nested.value');
   });
 
+  it('skips invalid form codes when discovering report columns', async () => {
+    const report = {
+      _id: 'report-id',
+      _rev: '1',
+      type: 'data_record',
+      form: 'pregnancy',
+      fields: { patient_name: 'Sam' }
+    };
+    const query = sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: report }] });
+
+    const result = await service.map(
+      { forms: { selected: [{ code: 'pregnancy ' }, { code: 'pregnancy' }] } },
+      { humanReadable: false }
+    );
+
+    query.calledOnceWithExactly('medic-client/reports_by_form', {
+      key: ['pregnancy'],
+      limit: 1,
+      include_docs: true,
+      reduce: false,
+    }).should.equal(true);
+    result.header.should.include('patient_name');
+  });
+
 });
