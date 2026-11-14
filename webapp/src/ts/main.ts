@@ -18,7 +18,7 @@ window.startupTimes.firstCodeExecution = performance.now();
 window.PouchDB = require('pouchdb-browser').default;
 window.$ = window.jQuery = require('jquery');
 
-import { enableProdMode, importProvidersFrom } from '@angular/core';
+import { enableProdMode, importProvidersFrom, inject, provideAppInitializer } from '@angular/core';
 import '@angular/compiler';
 import * as $ from 'jquery';
 
@@ -50,6 +50,7 @@ import { DbService } from '@mm-services/db.service';
 import { LanguageService } from '@mm-services/language.service';
 import { TranslationLoaderProvider } from '@mm-providers/translation-loader.provider';
 import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-messageformat-compiler.provider';
+import { loadExtensionLibs } from '@mm-providers/extension-libs.provider';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { FormsModule } from '@angular/forms';
@@ -123,6 +124,7 @@ bootstrapper(POUCHDB_OPTIONS)
           EffectsModule.forRoot([GlobalEffects, ReportsEffects, ContactsEffects])
         ),
         { provide: APP_BASE_HREF, useValue: '/' },
+        provideAppInitializer(() => loadExtensionLibs(inject(DbService))),
         AppRouteGuardProvider,
         TrainingCardDeactivationGuardProvider,
         AnalyticsRouteGuardProvider,

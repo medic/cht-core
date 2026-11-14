@@ -17,6 +17,7 @@ const config = require('../config');
 const environment = require('@medic/environment');
 const dataContext = require('./data-context');
 const deployInfo = require('./deploy-info');
+const extensionLibs = require('@medic/extension-libs');
 
 const MEDIC_DDOC_ID = '_design/medic';
 
@@ -76,6 +77,11 @@ const loadSettings = () => {
     .then(settings => config.set(settings));
 };
 
+const loadExtensionLibs = () => extensionLibs.load(db.medic).then(libs => {
+  config.setExtensionLibs(libs);
+  logger.info('Extension-libs loaded');
+});
+
 
 const handleDdocChange = () => {
   logger.info('Detected ddoc change - reloading');
@@ -110,6 +116,13 @@ const handleTranslationsChange = () => {
     .then(() => updateServiceWorker());
 };
 
+const handleExtensionLibsChange = () => {
+  logger.info('Detected extension-libs change - reloading');
+  return loadExtensionLibs().catch(err => {
+    logger.error('Error reloading extension libs - keeping the previous version: %o', err);
+  });
+};
+
 const handleFormChange = (change) => {
   logger.info('Detected form change for %s', change.id);
   if (change.deleted) {
@@ -142,6 +155,7 @@ const updateServiceWorker = () => {
 const load = () => {
   loadViewMaps();
   return loadTranslations()
+    .then(() => loadExtensionLibs())
     .then(() => loadSettings())
     .then(() => addUserRolesToDb())
     .then(() => initTransitionLib())
@@ -166,6 +180,10 @@ const listen = () => {
 
     if (change.id.startsWith(PREFIXES.TRANSLATIONS)) {
       return handleTranslationsChange();
+    }
+
+    if (change.id === DOC_IDS.EXTENSION_LIBS) {
+      return handleExtensionLibsChange();
     }
 
     if (change.id.startsWith('form:')) {

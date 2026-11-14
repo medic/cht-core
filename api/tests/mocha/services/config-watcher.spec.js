@@ -2,6 +2,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const fs = require('fs');
 const { DOC_IDS } = require('@medic/constants');
+const logger = require('@medic/logger');
 
 const viewMapUtils = require('@medic/view-map-utils');
 const db = require('../../../src/db');
@@ -15,6 +16,7 @@ const bootstrap = require('../../../src/services/config-watcher');
 const manifest = require('../../../src/services/manifest');
 const environment = require('@medic/environment');
 const deployInfo = require('../../../src/services/deploy-info');
+const extensionLibs = require('@medic/extension-libs');
 
 describe('Configuration', () => {
   beforeEach(() => {
@@ -29,10 +31,12 @@ describe('Configuration', () => {
     sinon.spy(config, 'set');
     sinon.spy(config, 'setTranslationCache');
     sinon.spy(config, 'setTransitionsLib');
+    sinon.spy(config, 'setExtensionLibs');
     sinon.stub(fs, 'watch');
     sinon.stub(translations, 'getTranslationDocs');
     sinon.stub(dbWatcher, 'listen');
     sinon.stub(deployInfo, 'store');
+    sinon.stub(extensionLibs, 'load').resolves({});
   });
 
   afterEach(() => {
@@ -58,6 +62,8 @@ describe('Configuration', () => {
             ['docs_by_replication_key'],
           ]);
         chai.expect(translations.getTranslationDocs.callCount).to.equal(1);
+        chai.expect(extensionLibs.load.calledOnceWithExactly(db.medic)).to.equal(true);
+        chai.expect(config.setExtensionLibs.calledOnceWithExactly({})).to.equal(true);
 
         chai.expect(settingsService.update.callCount).to.equal(1);
         chai.expect(settingsService.get.callCount).to.equal(1);
@@ -89,6 +95,20 @@ describe('Configuration', () => {
 
         chai.expect(config.setTranslationCache.callCount).to.equal(0);
       });
+    });
+
+    it('fails startup when extension libs cannot be loaded', async () => {
+      const error = new Error('extension libs unavailable');
+      db.medic.get.withArgs('_design/medic').resolves({ _id: '_design/medic' });
+      translations.getTranslationDocs.resolves([]);
+      extensionLibs.load.rejects(error);
+
+      try {
+        await bootstrap.load();
+        chai.expect.fail('startup should fail when extension libs cannot be loaded');
+      } catch (err) {
+        chai.expect(err).to.equal(error);
+      }
     });
 
     it('should crash if translations are malformed', () => {
@@ -186,6 +206,28 @@ describe('Configuration', () => {
 
         return dbWatcher.medic.args[0][0]({ id: 'messages-test' }).then(() => {
           chai.expect(process.exit.callCount).to.equal(1);
+        });
+      });
+    });
+
+    describe('extension-libs changes', () => {
+      it('reloads extension-libs', () => {
+        return dbWatcher.medic.args[0][0]({ id: DOC_IDS.EXTENSION_LIBS }).then(() => {
+          chai.expect(extensionLibs.load.calledOnceWithExactly(db.medic)).to.equal(true);
+          chai.expect(config.setExtensionLibs.calledOnceWithExactly({})).to.equal(true);
+        });
+      });
+
+      it('continues when extension-libs cannot be loaded', () => {
+        const error = new Error('failed to load');
+        sinon.stub(logger, 'error');
+        extensionLibs.load.rejects(error);
+
+        return dbWatcher.medic.args[0][0]({ id: DOC_IDS.EXTENSION_LIBS }).then(() => {
+          chai.expect(config.setExtensionLibs.notCalled).to.equal(true);
+          chai.expect(logger.error.calledOnce).to.equal(true);
+          chai.expect(logger.error.firstCall.args[0]).to.include('keeping the previous version');
+          chai.expect(logger.error.firstCall.args[1]).to.equal(error);
         });
       });
     });

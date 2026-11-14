@@ -2,6 +2,7 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { DOC_IDS } from '@medic/constants';
+import * as extensionLibs from '@medic/extension-libs';
 
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { SettingsService } from '@mm-services/settings.service';
@@ -10,6 +11,18 @@ import { SessionService } from '@mm-services/session.service';
 import { DbService } from '@mm-services/db.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { CustomResourceService } from '@mm-services/custom-resource.service';
+
+const loadExtensionLibs = (libs: Record<string, Function>) => extensionLibs.load({
+  get: () => Promise.resolve({
+    _attachments: Object.fromEntries(Object.entries(libs).map(([name, lib]) => [name, {
+      data: btoa(`module.exports = ${lib.toString()}`),
+    }]))
+  })
+} as any);
+const clearExtensionLibs = () => {
+  const error = Object.assign(new Error('not found'), { status: 404 });
+  return extensionLibs.load({ get: () => Promise.reject(error) } as any);
+};
 
 describe('CHTScriptApiService service', () => {
   let service: CHTDatasourceService;
@@ -21,7 +34,8 @@ describe('CHTScriptApiService service', () => {
   let translateService;
   let customResourceService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await clearExtensionLibs();
     sessionService = { userCtx: sinon.stub(), isOnlineOnly: sinon.stub() };
     settingsService = { get: sinon.stub() };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
@@ -44,7 +58,8 @@ describe('CHTScriptApiService service', () => {
     service = TestBed.inject(CHTDatasourceService);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await clearExtensionLibs();
     sinon.restore();
   });
 
@@ -59,13 +74,12 @@ describe('CHTScriptApiService service', () => {
       await service.isInitialized();
 
       expect(changesService.subscribe.callCount).to.equal(1);
-      expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
+      expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-config-changes');
       expect(changesService.subscribe.args[0][0].filter).to.be.a('function');
       expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
       expect(settingsService.get.callCount).to.equal(1);
       expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-      expect(dbService.get.callCount).to.equal(2);
-      expect(medicDb.get.calledOnceWithExactly(DOC_IDS.EXTENSION_LIBS, { attachments: true })).to.be.true;
+      expect(dbService.get.calledOnceWithExactly()).to.be.true;
       expect(customResourceService.init.calledOnceWithExactly()).to.be.true;
     });
 
@@ -78,13 +92,12 @@ describe('CHTScriptApiService service', () => {
       await service.isInitialized();
 
       expect(changesService.subscribe.callCount).to.equal(1);
-      expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
+      expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-config-changes');
       expect(changesService.subscribe.args[0][0].filter).to.be.a('function');
       expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
       expect(settingsService.get.callCount).to.equal(1);
       expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-      expect(dbService.get.calledOnceWithExactly()).to.be.true;
-      expect(medicDb.get.calledOnceWithExactly(DOC_IDS.EXTENSION_LIBS, { attachments: true })).to.be.true;
+      expect(dbService.get.notCalled).to.be.true;
       expect(customResourceService.init.calledOnceWithExactly()).to.be.true;
     });
 
@@ -113,17 +126,13 @@ describe('CHTScriptApiService service', () => {
       expect(result.v1.analytics).to.be.a('object');
     });
 
-    it('should initialize extension libs', async () => {
+    it('should expose eagerly loaded extension libs', async () => {
       settingsService.get.resolves();
-      medicDb.get.resolves({
-        _attachments: {
-          'bar.js': { data: btoa('module.exports = (a) => a + a') },
-          'foo.js': { data: btoa('module.exports = function() { return "foo"; }') },
-        }
+      await loadExtensionLibs({
+        'bar.js': (a) => a + a,
+        'foo.js': () => 'foo',
       });
       await service.isInitialized();
-
-      expect(medicDb.get.calledOnceWithExactly(DOC_IDS.EXTENSION_LIBS, { attachments: true })).to.be.true;
 
       const result = await service.get();
 
@@ -139,17 +148,6 @@ describe('CHTScriptApiService service', () => {
       expect(baz).to.be.undefined;
     });
 
-    it('should not fail when extension libs doc does not exist', async () => {
-      settingsService.get.resolves();
-      medicDb.get.rejects({ status: 404 });
-      await service.isInitialized();
-
-      expect(medicDb.get.calledOnceWithExactly(DOC_IDS.EXTENSION_LIBS, { attachments: true })).to.be.true;
-
-      const result = await service.get();
-
-      expect(result.v1.getExtensionLib('foo.js')).to.be.undefined;
-    });
   });
 
   describe('bind()', () => {
@@ -183,14 +181,13 @@ describe('CHTScriptApiService service', () => {
         expect(dataContext.bind).to.be.a('function');
         expect(innerFn.calledOnceWithExactly('hello', 'world')).to.be.true;
         expect(changesService.subscribe.calledOnce).to.be.true;
-        expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
+        expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-config-changes');
         expect(changesService.subscribe.args[0][0].filter).to.be.a('function');
         expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
         expect(sessionService.userCtx.calledOnceWithExactly()).to.be.true;
         expect(settingsService.get.calledOnceWithExactly()).to.be.true;
-        expect(medicDb.get.calledOnceWithExactly(DOC_IDS.EXTENSION_LIBS, { attachments: true })).to.be.true;
         expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-        expect(dbService.get.callCount).to.equal(isOnlineOnly ? 1 : 2);
+        expect(dbService.get.callCount).to.equal(isOnlineOnly ? 0 : 1);
       });
     });
 
@@ -215,14 +212,13 @@ describe('CHTScriptApiService service', () => {
       expect(dataContext.bind).to.be.a('function');
       expect(innerFn.calledOnceWithExactly()).to.be.true;
       expect(changesService.subscribe.calledOnce).to.be.true;
-      expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
+      expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-config-changes');
       expect(changesService.subscribe.args[0][0].filter).to.be.a('function');
       expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
       expect(sessionService.userCtx.calledOnceWithExactly()).to.be.true;
       expect(settingsService.get.calledOnceWithExactly()).to.be.true;
-      expect(medicDb.get.calledOnceWithExactly(DOC_IDS.EXTENSION_LIBS, { attachments: true })).to.be.true;
       expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-      expect(dbService.get.calledOnceWithExactly()).to.be.true;
+      expect(dbService.get.notCalled).to.be.true;
     });
   });
 
@@ -264,14 +260,13 @@ describe('CHTScriptApiService service', () => {
         expect(other).to.be.empty;
         expect(dataContext.bind).to.be.a('function');
         expect(changesService.subscribe.calledOnce).to.be.true;
-        expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
+        expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-config-changes');
         expect(changesService.subscribe.args[0][0].filter).to.be.a('function');
         expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
         expect(sessionService.userCtx.calledOnceWithExactly()).to.be.true;
         expect(settingsService.get.calledOnceWithExactly()).to.be.true;
-        expect(medicDb.get.calledOnceWithExactly(DOC_IDS.EXTENSION_LIBS, { attachments: true })).to.be.true;
         expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-        expect(dbService.get.callCount).to.equal(isOnlineOnly ? 1 : 2);
+        expect(dbService.get.callCount).to.equal(isOnlineOnly ? 0 : 1);
       });
     });
 
@@ -298,14 +293,13 @@ describe('CHTScriptApiService service', () => {
       expect(other).to.be.empty;
       expect(dataContext.bind).to.be.a('function');
       expect(changesService.subscribe.calledOnce).to.be.true;
-      expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
+      expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-config-changes');
       expect(changesService.subscribe.args[0][0].filter).to.be.a('function');
       expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
       expect(sessionService.userCtx.calledOnceWithExactly()).to.be.true;
       expect(settingsService.get.calledOnceWithExactly()).to.be.true;
-      expect(medicDb.get.calledOnceWithExactly(DOC_IDS.EXTENSION_LIBS, { attachments: true })).to.be.true;
       expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-      expect(dbService.get.calledOnceWithExactly()).to.be.true;
+      expect(dbService.get.notCalled).to.be.true;
     });
   });
 
@@ -441,7 +435,7 @@ describe('CHTScriptApiService service', () => {
         roles: { nurse: {} }
       });
       sinon.resetHistory();
-      changesCallback();
+      changesCallback({ id: DOC_IDS.SETTINGS });
       tick();
 
       const permissionFound = api.v1.hasPermissions('can_create_people');
@@ -451,6 +445,32 @@ describe('CHTScriptApiService service', () => {
       expect(sessionService.userCtx.callCount).to.equal(0);
       expect(settingsService.get.callCount).to.equal(1);
     }));
+
+    it('should reload extension libs when their document changes', async () => {
+      settingsService.get.resolves();
+      sessionService.isOnlineOnly.returns(true);
+      await loadExtensionLibs({
+        'uppercase.js': value => `old:${value}`,
+      });
+      await service.isInitialized();
+      const changesFeed = changesService.subscribe.args[0][0];
+      medicDb.get.resolves({
+        _attachments: {
+          'uppercase.js': { data: btoa('module.exports = value => value.toUpperCase()') },
+        }
+      });
+
+      expect(changesFeed.filter({ id: DOC_IDS.SETTINGS })).to.be.true;
+      expect(changesFeed.filter({ id: DOC_IDS.EXTENSION_LIBS })).to.be.true;
+      expect(changesFeed.filter({ id: 'other' })).to.be.false;
+      expect(extensionLibs.get('uppercase.js')('hello')).to.equal('old:hello');
+
+      await changesFeed.callback({ id: DOC_IDS.EXTENSION_LIBS });
+
+      expect(dbService.get.calledOnceWithExactly()).to.be.true;
+      expect(medicDb.get.calledOnceWithExactly(DOC_IDS.EXTENSION_LIBS, { attachments: true })).to.be.true;
+      expect(extensionLibs.get('uppercase.js')('hello')).to.equal('HELLO');
+    });
 
     it('should return true when user is admin', async () => {
       settingsService.get.resolves({
@@ -554,7 +574,7 @@ describe('CHTScriptApiService service', () => {
         roles: { nurse: {} }
       });
       sinon.resetHistory();
-      changesCallback();
+      changesCallback({ id: DOC_IDS.SETTINGS });
       tick();
 
       const permissionFound = api.v1.hasAnyPermission([[ 'can_create_people' ], [ '!can_edit' ]]);
