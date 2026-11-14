@@ -9,6 +9,7 @@ describe('remote report', () => {
   const sandbox = sinon.createSandbox();
   const postResourceOuter = sandbox.stub();
   const postSummaryResourceOuter = sandbox.stub();
+  const postSamplesResourceOuter = sandbox.stub();
   const putResourceOuter = sandbox.stub();
   let postResourceStub: SinonStub;
 
@@ -19,12 +20,14 @@ describe('remote report', () => {
   let getResourcesOuter: SinonStub;
   let postResourceInner: SinonStub;
   let postSummaryResourceInner: SinonStub;
+  let postSamplesResourceInner: SinonStub;
   let putResourceInner: SinonStub;
 
   before(() => {
     postResourceStub = sinon.stub(RemoteEnv, 'postResource');
     postResourceStub.withArgs('api/v1/report').returns(postResourceOuter);
     postResourceStub.withArgs('api/v1/report/summary').returns(postSummaryResourceOuter);
+    postResourceStub.withArgs('api/v1/report/samples-by-form').returns(postSamplesResourceOuter);
     sinon
       .stub(RemoteEnv, 'putResource')
       .withArgs('api/v1/report')
@@ -43,6 +46,8 @@ describe('remote report', () => {
     postResourceOuter.returns(postResourceInner);
     postSummaryResourceInner = sinon.stub();
     postSummaryResourceOuter.returns(postSummaryResourceInner);
+    postSamplesResourceInner = sinon.stub();
+    postSamplesResourceOuter.returns(postSamplesResourceInner);
     putResourceInner = sinon.stub();
     putResourceOuter.returns(putResourceInner);
   });
@@ -217,6 +222,33 @@ describe('remote report', () => {
             freetext,
           })).to.be.true;
         });
+      });
+    });
+
+    describe('countByForm', () => {
+      it('fetches report counts by form', async () => {
+        const counts = { pregnancy: 5 };
+        getResourcesInner.resolves(counts);
+
+        const result = await Report.v1.countByForm(remoteContext)();
+
+        expect(result).to.equal(counts);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/count-by-form')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly()).to.be.true;
+      });
+    });
+
+    describe('getSamplesByForms', () => {
+      it('posts the forms qualifier to the sample endpoint', async () => {
+        const samples = [{ form: 'pregnancy' }];
+        postSamplesResourceInner.resolves(samples);
+
+        const result = await Report.v1.getSamplesByForms(remoteContext)({ forms: ['pregnancy'] });
+
+        expect(result).to.equal(samples);
+        expect(postResourceStub.calledWithExactly('api/v1/report/samples-by-form')).to.be.true;
+        expect(postSamplesResourceOuter.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(postSamplesResourceInner.calledOnceWithExactly({ forms: ['pregnancy'] })).to.be.true;
       });
     });
 
