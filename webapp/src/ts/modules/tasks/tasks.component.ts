@@ -118,7 +118,7 @@ export class TasksComponent implements OnInit, AfterViewInit, OnDestroy {
       filter: change => !!change.doc && (
         this.contactTypesService.includes(change.doc) ||
         isReport(change.doc) ||
-        change.doc.type === 'task'
+        change.doc.type === DOC_TYPES.TASK
       ),
       callback: () => {
         this.debouncedReload.cancel();

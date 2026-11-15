@@ -8,6 +8,7 @@
 const moment = require('moment');
 const registrationUtils = require('@medic/registration-utils');
 const uniqBy = require('lodash/uniqBy');
+const { DOC_TYPES } = require('@medic/constants');
 
 const RULES_STATE_DOCID = '_local/rulesStateStore';
 const MAX_QUERY_KEYS = 500;
@@ -75,7 +76,7 @@ const medicPouchProvider = db => {
           if (err.status === 404) {
             return {
               _id,
-              type: 'target',
+              type: DOC_TYPES.TARGET,
               user: userSettingsId,
               owner: userContactId,
               reporting_period: docTag,
