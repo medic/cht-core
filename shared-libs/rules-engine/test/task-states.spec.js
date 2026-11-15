@@ -249,17 +249,40 @@ describe('task-states', () => {
     });
   });
 
-  it('formatString is comparable', () => {
-    const formatString = TaskStates.__get__('formatString');
-    expect(formatString).to.not.be.undefined;
-
+  it('uses comparable local ISO dates', () => {
+    const toLocalIsoDate = TaskStates.__get__('toLocalIsoDate');
     const larger = moment('20000101', 'YYYYMMDD');
     const smaller = larger.clone().subtract(1, 'day');
+
     for (let i = 0; i < 367; i++) {
-      expect(larger.format(formatString) > smaller.format(formatString)).to.be.true;
-      expect(smaller.format(formatString) < larger.format(formatString)).to.be.true;
+      expect(toLocalIsoDate(larger) > toLocalIsoDate(smaller)).to.be.true;
+      expect(toLocalIsoDate(smaller) < toLocalIsoDate(larger)).to.be.true;
       larger.add(1, 'day');
       smaller.add(1, 'day');
+    }
+  });
+
+  it('uses ASCII task dates when a locale postformats digits', () => {
+    const previousLocale = moment.locale();
+    moment.defineLocale('task-state-test', {
+      parentLocale: 'en',
+      postformat: value => value.replace(/\d/g, digit => 'ABCDEFGHIJ'[digit]),
+    });
+
+    try {
+      moment.locale('task-state-test');
+      const emission = { date: '2026-09-22', readyStart: 1, readyEnd: 2 };
+
+      expect(TaskStates.getDisplayWindow(emission)).to.deep.equal({
+        dueDate: '2026-09-22',
+        startDate: '2026-09-21',
+        endDate: '2026-09-24',
+      });
+      expect(TaskStates.calculateState(emission, moment('2026-09-22').valueOf())).to.equal(TaskStates.Ready);
+      expect(moment.locale()).to.equal('task-state-test');
+    } finally {
+      moment.locale(previousLocale);
+      moment.defineLocale('task-state-test', null);
     }
   });
 });

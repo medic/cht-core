@@ -1,11 +1,13 @@
 # base build
 FROM nginx:1.31.1-alpine AS base_nginx
-RUN apk add --update --no-cache \
+RUN apk add --update --upgrade --no-cache \
     curl \
     socat \
     sed \
     bash \
-    openssl
+    openssl \
+    ca-certificates \
+    ca-certificates-bundle
 
 COPY ssl-install.sh /docker-entrypoint.d
 RUN chmod 755 /docker-entrypoint.d/ssl-install.sh
