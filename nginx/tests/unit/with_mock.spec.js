@@ -1,5 +1,6 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
+const https = require('node:https');
 const { setTimeout: setTimeoutPromise } = require('node:timers/promises');
 
 // Create custom fetch wrapper with default options
@@ -105,6 +106,82 @@ describe('API Integration Tests', function () {
 
       expect(pathResponse.status).to.equal(200);
       expect(pathText).to.equal('Test');
+    });
+  });
+
+  describe('Request Body Size Limits', () => {
+    const MB = 1024 * 1024;
+    const DEFAULT_LIMIT = 32 * MB;
+    const body = (size) => Buffer.alloc(size, 'a');
+    const post = (path, contentType, data) => apiRequest(HTTPS_BASE_URL + path, {
+      method: 'POST',
+      headers: contentType ? { 'Content-Type': contentType } : {},
+      body: data,
+      signal: AbortSignal.timeout(15000),
+    });
+
+    // fetch can't send chunked bodies over HTTP/1.1 or a mismatched Content-Length
+    const rawPost = (headers, bytesToSend) => new Promise((resolve, reject) => {
+      const req = https.request(`${HTTPS_BASE_URL}/echo/doc`, { method: 'POST', headers, rejectUnauthorized: false });
+      req.on('response', res => {
+        res.resume();
+        req.destroy();
+        resolve(res.statusCode);
+      });
+      req.on('error', reject);
+      const chunk = body(MB);
+      for (let sent = 0; sent < bytesToSend; sent += chunk.length) {
+        req.write(chunk);
+      }
+    });
+
+    [
+      'application/json',
+      'application/json; charset=utf-8',
+      'text/plain',
+      'application/x-www-form-urlencoded',
+      'multipart/related; boundary=abc',
+      'application/octet-streamx',
+      undefined,
+    ].forEach(contentType => {
+      it(`should reject ${contentType || 'missing content type'} bodies over 32MB`, async () => {
+        const response = await post('/echo/doc', contentType, body(DEFAULT_LIMIT + 1));
+        expect(response.status).to.equal(413);
+      });
+    });
+
+    it('should reject chunked JSON bodies over 32MB', async () => {
+      const status = await rawPost({ 'Content-Type': 'application/json', 'Transfer-Encoding': 'chunked' }, DEFAULT_LIMIT + MB);
+      expect(status).to.equal(413);
+    });
+
+    it('should proxy non-media bodies within 32MB with the original URI', async () => {
+      const path = '/echo/medic/a%2Fb%20c?rev=1-abc&x=%2F';
+      const response = await post(path, 'application/json', body(DEFAULT_LIMIT - MB));
+      expect(response.status).to.equal(200);
+      expect(await response.text()).to.equal(path);
+    });
+
+    [
+      'image/jpeg',
+      'Image/PNG',
+      'video/mp4',
+      'audio/mpeg',
+      'application/octet-stream',
+      'application/octet-stream; charset=binary',
+      'application/pdf',
+    ].forEach(contentType => {
+      it(`should proxy ${contentType} bodies over 32MB`, async () => {
+        const path = '/echo/medic/doc/attachment?rev=1-abc';
+        const response = await post(path, contentType, body(DEFAULT_LIMIT + MB));
+        expect(response.status).to.equal(200);
+        expect(await response.text()).to.equal(path);
+      });
+    });
+
+    it('should reject media bodies over 1GB', async () => {
+      const status = await rawPost({ 'Content-Type': 'video/mp4', 'Content-Length': 1024 * MB + 1 }, MB);
+      expect(status).to.equal(413);
     });
   });
 
