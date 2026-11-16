@@ -97,6 +97,7 @@
     "@medic/translation-checker": "^1.1.0",
     "@octokit/core": "^7.0.8",
     "@octokit/plugin-paginate-graphql": "^6.0.0",
+    "@puppeteer/browsers": "2.13.2",
     "@secretlint/secretlint-rule-pattern": "^13.0.7",
     "@secretlint/secretlint-rule-preset-recommend": "^13.0.7",
     "@stoplight/spectral-core": "^1.24.0",
@@ -201,7 +202,6 @@
     "typescript": "5.8.3",
     "uglify-js": "^3.19.3",
     "util": "^0.12.5",
-    "wdio-chromedriver-service": "^8.1.1",
     "webpack-bundle-analyzer": "^5.4.0",
     "xhr-mock": "^2.5.1",
     "xml-js": "^1.6.11"

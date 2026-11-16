@@ -18,7 +18,8 @@ let testTile;
 const DEBUG = process.env.DEBUG;
 const DEFAULT_TIMEOUT = 2 * 60 * 1000;
 const DEBUG_TIMEOUT = 10 * 60 * 1000; //timeout in debug mode, allows more interaction with browser after test
-const CHROME_VERSION = process.env.CHROME_VERSION;
+const browsers = require('@utils/browsers');
+const browserCapabilities = browsers.capabilities();
 const CHROME_OPTIONS_ARGS_DEBUG = utils.isMinimumChromeVersion
   ? [
     'disable-gpu',
@@ -95,22 +96,18 @@ const baseConfig = {
   //
   capabilities: [{
     maxInstances: 1,
-    browserName: 'chrome',
-    browserVersion: utils.isMinimumChromeVersion ? CHROME_VERSION : undefined,
+    browserName: browserCapabilities.browserName,
+    browserVersion: browserCapabilities.browserVersion,
     acceptInsecureCerts: true,
     'wdio:enforceWebDriverClassic': utils.isMinimumChromeVersion,
     'goog:chromeOptions': {
       args: DEBUG ? CHROME_OPTIONS_ARGS_DEBUG : CHROME_OPTIONS_ARGS,
-      binary: utils.isMinimumChromeVersion ? '/usr/bin/google-chrome-stable' : undefined,
+      binary: browserCapabilities.binary,
       prefs: {
         'download.default_directory': DOWNLOAD_PATH
       }
     },
-    'wdio:chromedriverOptions': {
-      binary: utils.isMinimumChromeVersion
-        ? '/node_modules/chromedriver/bin/chromedriver'
-        : undefined
-    },
+    'wdio:chromedriverOptions': browserCapabilities.chromedriverOptions,
     webSocketUrl: !utils.isMinimumChromeVersion
     // If outputDir is provided WebdriverIO can capture driver session logs
     // it is possible to configure which logTypes to include/exclude.
@@ -164,7 +161,7 @@ const baseConfig = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  services: utils.isMinimumChromeVersion ? ['chromedriver'] : ['lighthouse'],
+  services: utils.isMinimumChromeVersion ? [] : ['lighthouse'],
   //
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
@@ -224,6 +221,9 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    */
   onPrepare: async function () {
+    if (utils.isMinimumChromeVersion) {
+      await browsers.installMinimumBrowser();
+    }
     // delete all previous test
     if (fs.existsSync(ALLURE_OUTPUT)) {
       const files = fs.readdirSync(ALLURE_OUTPUT) || [];
