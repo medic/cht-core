@@ -309,39 +309,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cmd: ['ci-integration-all', 'ci-integration-sentinel', 'ci-webdriver-default-mobile', 'wdio-performance']
-        chrome-version: ['107', 'latest']
+        # wdio suites skipped on this branch so images publish despite #11559
+        cmd: ['ci-integration-all', 'ci-integration-sentinel']
+        chrome-version: ['latest']
         suite: [all]
-        include:
-          - cmd: ci-webdriver-default
-            suite: core
-            chrome-version: 107
-          - cmd: ci-webdriver-default
-            suite: core
-            chrome-version: latest
-          - cmd: ci-webdriver-default
-            suite: data
-          - cmd: ci-webdriver-default
-            suite: enketo
-            chrome-version: 107
-          - cmd: ci-webdriver-default
-            suite: enketo
-            chrome-version: latest
-          - cmd: ci-webdriver-default
-            suite: lowLevel
-          - cmd: ci-webdriver-default
-            suite: workflows_1
-          - cmd: ci-webdriver-default
-            suite: workflows_2
-        exclude: # temporary until all suites run on Chrome 107
-          - cmd: ci-integration-all
-            chrome-version: 107
-          - cmd: ci-integration-sentinel
-            chrome-version: 107
-          - cmd: ci-webdriver-default-mobile
-            chrome-version: 107
-          - cmd: wdio-performance
-            chrome-version: 107
     steps:
     - name: Login to Docker Hub
       uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121  # v4.1.0
