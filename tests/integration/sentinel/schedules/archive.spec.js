@@ -276,6 +276,7 @@ describe('sentinel processes archive jobs', () => {
 
   it('exits at the duration deadline and resumes on the next run', async function () {
     this.timeout(180000);
+    await updateSettings({ duration: '20 milliseconds' });
 
     const COUNT = 2000;
     const bulkDocs = Array.from({ length: COUNT }, (_, i) => ({
@@ -291,8 +292,6 @@ describe('sentinel processes archive jobs', () => {
     const { jobs } = await postCsv(ids.join('\n'));
     expect(jobs).to.have.lengthOf(1);
     const jobId = jobs[0].id;
-
-    await updateSettings({ duration: '20 milliseconds' });
 
     const firstRunDone = await utils.waitForSentinelLogs(true, /Finished archiving/);
     await utils.runSentinelTasks();
