@@ -34,6 +34,18 @@ interface ServerKeys {
 }
 
 /**
+ * What a device needs to seal a bundle: who it is, what it signs with, and who it encrypts to.
+ *
+ * The signing key is a CryptoKey rather than bytes, because it is generated non-extractable: it
+ * can sign and there is nothing to hand out.
+ */
+export interface DeviceKeyMaterial {
+  deviceId: string;
+  signingPrivateKey: CryptoKey;
+  serverEncryptionPublicKey: string;
+}
+
+/**
  * Registers this device's offline data bundle signing key with the server, and stores the
  * server's encryption public key beside it, so a user that later goes offline can sign bundles
  * and encrypt them to the server.
@@ -76,6 +88,25 @@ export class DeviceKeyService {
   init() {
     this.dbSyncService.subscribe(status => this.syncStatusChanged(status));
     return this.registerIfPermitted();
+  }
+
+  /**
+   * The key material this device seals bundles with, or null when it has none.
+   *
+   * Null is the normal state for most of CHT: keys are only ever provisioned for an offline user
+   * holding `can_send_offline_data_bundle`, once the device has registered with the server.
+   */
+  async getKeyMaterial(): Promise<DeviceKeyMaterial | null> {
+    const keys = await this.read(this.recordKey);
+    if (!keys?.signing_private_key || !keys?.server_encryption_public_key) {
+      return null;
+    }
+
+    return {
+      deviceId: this.deviceId,
+      signingPrivateKey: keys.signing_private_key,
+      serverEncryptionPublicKey: keys.server_encryption_public_key,
+    };
   }
 
   private async syncStatusChanged({ to, from }: { to?: SyncStatus; from?: SyncStatus }) {

@@ -1,0 +1,234 @@
+import { TestBed } from '@angular/core/testing';
+import { expect } from 'chai';
+import sinon from 'sinon';
+
+import { DbService } from '@mm-services/db.service';
+import { OfflineSyncBundleStoreService } from '@mm-services/offline-sync-bundle-store.service';
+import { OfflineSyncService } from '@mm-services/offline-sync.service';
+
+describe('OfflineSyncBundleStore service', () => {
+  const CHUNK_BYTES = 3 * 128 * 1024;
+  const toBase64 = bytes => window.btoa(Array.from(bytes, byte => String.fromCodePoint(byte as number)).join(''));
+
+  let service: OfflineSyncBundleStoreService;
+  let dbService;
+  let offlineSyncService;
+  let bundlesDb;
+
+  const received = (id, bytes = 4) => ({
+    id,
+    envelope: `envelope-${id}`,
+    signature: `signature-${id}`,
+    bytes,
+  });
+
+  beforeEach(() => {
+    bundlesDb = {
+      put: sinon.stub().resolves(),
+      get: sinon.stub().resolves(),
+      remove: sinon.stub().resolves(),
+      allDocs: sinon.stub().resolves({ rows: [] }),
+      getAttachment: sinon.stub().resolves(),
+    };
+    dbService = { get: sinon.stub().returns(bundlesDb) };
+    offlineSyncService = {
+      receivedBundles: sinon.stub().returns([]),
+      readBundle: sinon.stub().returns('AAAA'),
+      deleteBundle: sinon.stub().returns(true),
+    };
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: DbService, useValue: dbService },
+        { provide: OfflineSyncService, useValue: offlineSyncService },
+      ]
+    });
+
+    service = TestBed.inject(OfflineSyncBundleStoreService);
+  });
+
+  afterEach(() => sinon.restore());
+
+  it('keeps bundles in a local database of their own', async () => {
+    offlineSyncService.receivedBundles.returns([received('bundle-1')]);
+
+    await service.collect();
+
+    expect(dbService.get.args[0]).to.deep.equal([{ remote: false, bundles: true }]);
+  });
+
+  it('stores a received bundle with the envelope it must be sent on with', async () => {
+    offlineSyncService.receivedBundles.returns([received('bundle-1')]);
+
+    await service.collect();
+    const [doc] = bundlesDb.put.args[0];
+    expect(doc._id).to.equal('bundle-1');
+    expect(doc.envelope).to.equal('envelope-bundle-1');
+    expect(doc.signature).to.equal('signature-bundle-1');
+    expect(doc._attachments.payload.content_type).to.equal('application/octet-stream');
+    expect(doc._attachments.payload.data).to.equal('AAAA');
+  });
+
+  it('pulls a large bundle back in pieces and joins them into the original bytes', async () => {
+    const payload = new Uint8Array(2 * CHUNK_BYTES + 5).map((unused, index) => index % 251);
+    offlineSyncService.receivedBundles.returns([received('bundle-1', payload.length)]);
+    offlineSyncService.readBundle.callsFake(
+      (unusedId, offset, length) => toBase64(payload.subarray(offset, offset + length))
+    );
+
+    await service.collect();
+
+    expect(offlineSyncService.readBundle.args.map(([, offset]) => offset))
+      .to.deep.equal([0, CHUNK_BYTES, 2 * CHUNK_BYTES]);
+    const stored = window.atob(bundlesDb.put.args[0][0]._attachments.payload.data);
+    expect(Array.from(stored, character => character.codePointAt(0))).to.deep.equal(Array.from(payload));
+  });
+
+  it('drops the native copy only after the bundle is stored', async () => {
+    offlineSyncService.receivedBundles.returns([received('bundle-1')]);
+
+    await service.collect();
+
+    expect(bundlesDb.put.calledBefore(offlineSyncService.deleteBundle)).to.be.true;
+    expect(offlineSyncService.deleteBundle.args).to.deep.equal([['bundle-1']]);
+  });
+
+  it('takes a bundle that is already stored without failing', async () => {
+    offlineSyncService.receivedBundles.returns([received('bundle-1'), received('bundle-2')]);
+    bundlesDb.put.onFirstCall().rejects({ status: 409 });
+
+    await service.collect();
+
+    expect(bundlesDb.put.callCount).to.equal(2);
+    expect(offlineSyncService.deleteBundle.args).to.deep.equal([['bundle-1'], ['bundle-2']]);
+  });
+
+  it('starts a collection only once the one before it has finished', async () => {
+    let finishFirstPut;
+    offlineSyncService.receivedBundles.returns([received('bundle-1')]);
+    bundlesDb.put.onFirstCall().returns(new Promise(resolve => finishFirstPut = resolve));
+
+    const first = service.collect();
+    const second = service.collect();
+    await new Promise(resolve => setTimeout(resolve));
+    expect(offlineSyncService.receivedBundles.callCount).to.equal(1);
+
+    finishFirstPut();
+    await Promise.all([first, second]);
+    expect(offlineSyncService.receivedBundles.callCount).to.equal(2);
+  });
+
+  it('still runs a collection after the one before it failed', async () => {
+    offlineSyncService.receivedBundles.returns([received('bundle-1')]);
+    bundlesDb.put.onFirstCall().rejects(new Error('unwritable'));
+
+    await expect(service.collect()).to.be.rejectedWith(Error, 'unwritable');
+    await service.collect();
+    expect(offlineSyncService.deleteBundle.args).to.deep.equal([['bundle-1']]);
+  });
+
+  it('leaves the native copy alone when storing fails', async () => {
+    offlineSyncService.receivedBundles.returns([received('bundle-1')]);
+    bundlesDb.put.rejects(new Error('no space'));
+
+    await expect(service.collect()).to.be.rejectedWith(Error, 'no space');
+    expect(offlineSyncService.deleteBundle.notCalled).to.be.true;
+  });
+
+  it('reports a partly readable bundle as a code rather than storing it', async () => {
+    offlineSyncService.receivedBundles.returns([received('bundle-1')]);
+    offlineSyncService.readBundle.returns('');
+
+    await expect(service.collect()).to.be.rejectedWith(Error, 'bundle_read_failed');
+    expect(bundlesDb.put.notCalled).to.be.true;
+  });
+
+  describe('delivering onward', () => {
+    it('lists what is waiting, oldest first', async () => {
+      bundlesDb.allDocs.resolves({ rows: [
+        { doc: { _id: 'newer', received_date: 200 } },
+        { doc: { _id: 'older', received_date: 100 } },
+      ] });
+
+      expect((await service.pending()).map(doc => doc._id)).to.deep.equal(['older', 'newer']);
+    });
+
+    it('hands over the sealed bytes as they arrived', async () => {
+      const payload = new Blob(['ciphertext']);
+      bundlesDb.getAttachment.resolves(payload);
+
+      expect(await service.getPayload('bundle-1')).to.equal(payload);
+      expect(bundlesDb.getAttachment.args).to.deep.equal([['bundle-1', 'payload']]);
+    });
+
+    it('removes a bundle that has been delivered', async () => {
+      const bundle: any = { _id: 'bundle-1', _rev: '1-a' };
+
+      await service.remove(bundle);
+
+      expect(bundlesDb.remove.args).to.deep.equal([[bundle]]);
+    });
+
+    it('counts what is still waiting and what the server would not take, in one read', async () => {
+      bundlesDb.allDocs.resolves({ rows: [
+        { doc: { _id: 'waiting', received_date: 100 } },
+        { doc: { _id: 'refused', received_date: 200, undeliverable: true } },
+      ] });
+
+      expect(await service.counts()).to.deep.equal({ waiting: 1, undeliverable: 1, forbidden: false });
+      expect(bundlesDb.allDocs.callCount).to.equal(1);
+    });
+
+    it('leaves out a bundle it has stopped offering', async () => {
+      bundlesDb.allDocs.resolves({ rows: [
+        { doc: { _id: 'good', received_date: 100 } },
+        { doc: { _id: 'refused', received_date: 200, undeliverable: true } },
+      ] });
+
+      expect((await service.pending()).map(doc => doc._id)).to.deep.equal(['good']);
+    });
+
+    it('records how often the server has refused a bundle', async () => {
+      const bundle: any = { _id: 'bundle-1', _rev: '1-a' };
+
+      await service.recordAttempt(bundle, 3);
+
+      expect(bundlesDb.put.args[0][0]).to.include({ _id: 'bundle-1', _rev: '1-a', attempts: 3 });
+      expect(bundlesDb.get.notCalled).to.be.true;
+    });
+
+    it('keeps a bundle it has stopped offering', async () => {
+      const bundle: any = { _id: 'bundle-1', _rev: '1-a' };
+
+      await service.markUndeliverable(bundle);
+
+      expect(bundlesDb.put.args[0][0]).to.include({ _id: 'bundle-1', _rev: '1-a', undeliverable: true });
+      expect(bundlesDb.remove.notCalled).to.be.true;
+    });
+
+    it('marks a bundle the server would not yet allow, once', async () => {
+      await service.markForbidden({ _id: 'bundle-1', _rev: '1-a' } as any);
+      await service.markForbidden({ _id: 'bundle-1', _rev: '2-a', forbidden: true } as any);
+
+      expect(bundlesDb.put.callCount).to.equal(1);
+      expect(bundlesDb.put.args[0][0]).to.include({ _id: 'bundle-1', _rev: '1-a', forbidden: true });
+    });
+
+    it('stops saying a bundle is not yet allowed once the server refuses it for another reason', async () => {
+      await service.recordAttempt({ _id: 'bundle-1', _rev: '2-a', forbidden: true } as any, 1);
+
+      expect(bundlesDb.put.args[0][0].forbidden).to.be.false;
+    });
+
+    it('says when a bundle still waiting is not yet allowed, but not one it has stopped offering', async () => {
+      bundlesDb.allDocs.resolves({ rows: [
+        { doc: { _id: 'waiting', received_date: 100 } },
+        { doc: { _id: 'refused', received_date: 200, undeliverable: true, forbidden: true } },
+      ] });
+      expect((await service.counts()).forbidden).to.be.false;
+
+      bundlesDb.allDocs.resolves({ rows: [{ doc: { _id: 'waiting', received_date: 100, forbidden: true } }] });
+      expect((await service.counts()).forbidden).to.be.true;
+    });
+  });
+});

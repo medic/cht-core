@@ -34,7 +34,9 @@ const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
 const BATCH_SIZE = 100;
 const MAX_SUCCESSIVE_SYNCS = 2;
 
-const readOnlyFilter = function(doc) {
+// Exported because it defines what does not travel up to the server, which an offline data bundle
+// needs just as much as replication does.
+export const readOnlyFilter = function(doc) {
   // Never replicate "purged" documents upwards
   const keys = Object.keys(doc);
   if (keys.length === 4 &&
@@ -190,7 +192,9 @@ export class DBSyncService {
     return this.dbService.get().info().then(info => info.update_seq);
   }
 
-  private getLastReplicatedSeq(): number {
+  // Public because it is also how far the server is known to have received this device's data,
+  // which is what an offline data bundle is packed against.
+  getLastReplicatedSeq(): number {
     return Number(window.localStorage.getItem(LAST_REPLICATED_SEQ_KEY)) || 0;
   }
 
