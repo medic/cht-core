@@ -111,6 +111,7 @@ describe('OfflineSync component', () => {
       expect(component.supported).to.be.false;
       expect(component.canHost).to.be.false;
       expect(component.canJoin).to.be.false;
+      expect(bundleStoreService.count.called).to.be.false;
     });
 
     it('offers only joining on a device that cannot host', async () => {

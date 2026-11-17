@@ -118,7 +118,9 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
 
     // Counted last, once the screen is usable and listening, so a slow or failing store neither
     // keeps the spinner up nor causes a result to be missed.
-    await this.countCarried();
+    if (this.supported) {
+      await this.countCarried();
+    }
   }
 
   /** A key store that cannot be read is treated as having no keys: the page still opens. */
