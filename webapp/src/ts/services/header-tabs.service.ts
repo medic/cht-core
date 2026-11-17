@@ -79,7 +79,7 @@ export class HeaderTabsService {
 
   private readonly SIDEBAR_TABS: SidebarTab[] = [
     {
-      // Shown by isAuthorized: it needs the android app as well as one of two permissions.
+      // Shown by isAuthorized.
       name: this.OFFLINE_SYNC_TAB_NAME,
       route: 'offline-sync',
       defaultIcon: 'fa-exchange',
@@ -129,7 +129,7 @@ export class HeaderTabsService {
 
   private isAuthorized({ name, permissions }: SidebarTab): boolean | Promise<boolean> {
     if (name === this.OFFLINE_SYNC_TAB_NAME) {
-      return this.offlineSyncService.canTakePart();
+      return this.offlineSyncService.isOfferedInMenu();
     }
     return !permissions.length || this.authService.has(permissions);
   }

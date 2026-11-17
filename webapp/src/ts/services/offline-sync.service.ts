@@ -112,8 +112,17 @@ export class OfflineSyncService {
     return this.hasPermission('can_send_offline_data_bundle');
   }
 
-  /** Whether this user and device can take part at all, as host or as peer. */
-  async canTakePart(): Promise<boolean> {
+  /**
+   * Whether the menu offers offline sync to this user.
+   * In a browser, an offline user holding either permission is shown the page, which says it needs the Android app.
+   */
+  async isOfferedInMenu(): Promise<boolean> {
+    if (!globalThis?.medicmobile_android) {
+      if (this.sessionService.isOnlineOnly()) {
+        return false;
+      }
+      return this.authService.any([[ 'can_relay_offline_data_bundle' ], [ 'can_send_offline_data_bundle' ]]);
+    }
     const [canHost, canJoin] = await Promise.all([this.canHost(), this.canJoin()]);
     return canHost || canJoin;
   }

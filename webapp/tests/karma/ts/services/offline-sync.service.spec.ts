@@ -29,7 +29,7 @@ describe('OfflineSync service', () => {
 
   beforeEach(() => {
     sessionEndHandler = undefined;
-    authService = { has: sinon.stub().resolves(true) };
+    authService = { has: sinon.stub().resolves(true), any: sinon.stub().resolves(true) };
     sessionService = {
       isOnlineOnly: sinon.stub().returns(false),
       onSessionEnd: sinon.stub().callsFake(handler => sessionEndHandler = handler),
@@ -120,15 +120,46 @@ describe('OfflineSync service', () => {
       expect(await service.canJoin()).to.be.false;
     });
 
-    it('lets a user take part as either host or peer', async () => {
+    it('offers the page in the app to a user who can host or join', async () => {
       withBridge(bridge());
       authService.has.withArgs('can_relay_offline_data_bundle').resolves(false);
 
-      expect(await service.canTakePart()).to.be.true;
+      expect(await service.isOfferedInMenu()).to.be.true;
 
+      authService.has.withArgs('can_relay_offline_data_bundle').resolves(true);
       authService.has.withArgs('can_send_offline_data_bundle').resolves(false);
 
-      expect(await service.canTakePart()).to.be.false;
+      expect(await service.isOfferedInMenu()).to.be.true;
+
+      authService.has.withArgs('can_relay_offline_data_bundle').resolves(false);
+
+      expect(await service.isOfferedInMenu()).to.be.false;
+    });
+
+    it('offers the page in a browser to an offline user holding either permission', async () => {
+      expect(await service.isOfferedInMenu()).to.be.true;
+      expect(authService.any.calledOnceWithExactly([
+        [ 'can_relay_offline_data_bundle' ],
+        [ 'can_send_offline_data_bundle' ],
+      ])).to.be.true;
+
+      authService.any.resolves(false);
+
+      expect(await service.isOfferedInMenu()).to.be.false;
+    });
+
+    it('does not offer the page in a browser to an online-only user, admins included', async () => {
+      sessionService.isOnlineOnly.returns(true);
+
+      expect(await service.isOfferedInMenu()).to.be.false;
+      expect(authService.any.called).to.be.false;
+    });
+
+    it('does not offer the page in an app too old for offline sync', async () => {
+      withBridge({ getAppVersion: sinon.stub() });
+
+      expect(await service.isOfferedInMenu()).to.be.false;
+      expect(authService.any.called).to.be.false;
     });
   });
 

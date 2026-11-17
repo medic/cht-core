@@ -19,7 +19,7 @@ describe('HeaderTabs service', () => {
     authService = { has: sinon.stub().returns(true) };
     settingsService = { get: sinon.stub().resolves({}) };
     uiExtensionsService = { getPropertiesByType: sinon.stub().resolves([]) };
-    offlineSyncService = { canTakePart: sinon.stub().resolves(false) };
+    offlineSyncService = { isOfferedInMenu: sinon.stub().resolves(false) };
 
     TestBed.configureTestingModule({
       providers: [
@@ -651,9 +651,9 @@ describe('HeaderTabs service', () => {
       expect(tabs.map(t => t.name)).to.deep.equal(['trainings', 'about', 'privacy-policy', 'bug']);
     });
 
-    it('should include the offline sync tab first among secondary tabs when the user can take part', async () => {
+    it('should include the offline sync tab first among secondary tabs when it is offered to the user', async () => {
       authService.has.returns(false);
-      offlineSyncService.canTakePart.resolves(true);
+      offlineSyncService.isOfferedInMenu.resolves(true);
 
       const tabs = await service.getSidebarTabs();
 
@@ -667,12 +667,12 @@ describe('HeaderTabs service', () => {
       });
     });
 
-    it('should leave out the offline sync tab when the user cannot take part', async () => {
+    it('should leave out the offline sync tab when it is not offered to the user', async () => {
       authService.has.returns(true);
 
       const tabs = await service.getSidebarTabs();
 
-      expect(offlineSyncService.canTakePart).to.have.been.calledOnce;
+      expect(offlineSyncService.isOfferedInMenu).to.have.been.calledOnce;
       expect(tabs.map(t => t.name)).to.not.include('offline-sync');
     });
 
