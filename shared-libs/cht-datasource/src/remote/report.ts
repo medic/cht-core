@@ -11,6 +11,13 @@ export namespace v1 {
 
   const getReportUuids = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/report/uuid');
 
+  const getReportCountsByForm = (remoteContext: RemoteDataContext) => getResources(
+    remoteContext,
+    'api/v1/report/count-by-form'
+  );
+
+  const postReportSamplesByForm = postResource('api/v1/report/samples-by-form');
+
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => (
     identifier: UuidQualifier
@@ -35,6 +42,18 @@ export namespace v1 {
       ...(cursor ? { cursor } : {}),
     };
     return getReportUuids(remoteContext)(queryParams);
+  };
+
+  /** @internal */
+  export const countByForm = (remoteContext: RemoteDataContext) => async (): Promise<Record<string, number>> => {
+    return getReportCountsByForm(remoteContext)<Record<string, number>>();
+  };
+
+  /** @internal */
+  export const getSamplesByForms = (remoteContext: RemoteDataContext) => async (
+    { forms }: FormsQualifier
+  ): Promise<Report.v1.Report[]> => {
+    return postReportSamplesByForm(remoteContext)<Report.v1.Report[]>({ forms });
   };
 
   const postReportSummary = postResource('api/v1/report/summary');

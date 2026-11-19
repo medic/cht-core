@@ -171,6 +171,46 @@ export namespace v1 {
   };
 
   /** @internal */
+  export const countByForm = ({ medicDb }: LocalDataContext) => async (): Promise<Record<string, number>> => {
+    const result = await medicDb.query('medic-client/reports_by_form', {
+      reduce: true,
+      group: true,
+    });
+
+    const counts: [string, number][] = [];
+    for (const row of result.rows) {
+      const form = Array.isArray(row.key) ? row.key[0] : row.key;
+      if (typeof form === 'string') {
+        counts.push([form, typeof row.value === 'number' ? row.value : 0]);
+      }
+    }
+    return Object.fromEntries(counts);
+  };
+
+  /** @internal */
+  export const getSamplesByForms = (
+    { medicDb }: LocalDataContext
+  ) => async (
+    { forms }: FormsQualifier
+  ): Promise<Report.v1.Report[]> => {
+    const samples = await Promise.all(
+      [...new Set(forms)].map(form => medicDb.query<Doc>(
+        'medic-client/reports_by_form',
+        {
+          key: [form],
+          limit: 1,
+          include_docs: true,
+          reduce: false,
+        }
+      ))
+    );
+
+    return samples.flatMap(({ rows }) => rows
+      .map(({ doc }) => doc)
+      .filter((doc): doc is Report.v1.Report => !!doc && isReport(doc)));
+  };
+
+  /** @internal */
   export const getPage = ({ medicDb }: LocalDataContext) => {
     const getMedicDocsByIds = getDocsByIds(medicDb);
 

@@ -183,6 +183,38 @@ export namespace v1 {
   };
 
   /**
+   * Returns a report count for each form in the database.
+   * @param context the current data context
+   * @returns a map from form code to report count
+   * @throws Error if a data context is not provided
+   */
+  export const countByForm = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Report.v1.countByForm, Remote.Report.v1.countByForm);
+
+    const curriedFn = async (): Promise<Record<string, number>> => fn();
+    return curriedFn;
+  };
+
+  /**
+   * Returns one report document for each form in the given qualifier, when a report exists for that form.
+   * @param context the current data context
+   * @returns one sample report per form, in the order of the requested forms
+   * @throws Error if a data context is not provided
+   * @throws InvalidArgumentError if the form codes are not a non-empty array of non-blank strings with no
+   * leading or trailing whitespace
+   */
+  export const getSamplesByForms = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Report.v1.getSamplesByForms, Remote.Report.v1.getSamplesByForms);
+
+    const curriedFn = async (forms: [string, ...string[]]): Promise<Report[]> => {
+      return fn(byForms(forms));
+    };
+    return curriedFn;
+  };
+
+  /**
    * Returns a function for getting a generator that fetches report identifiers from the given data context.
    * @param context the current data context
    * @returns a function for getting a generator that fetches report identifiers
@@ -352,6 +384,21 @@ export namespace v1 {
    */
   export interface Datasource {
     /**
+     * Returns the number of reports recorded for each form.
+     * @returns a map from form code to report count
+     */
+    countByForm: () => Promise<Record<string, number>>;
+
+    /**
+     * Returns one report document for each requested form that has at least one report.
+     * @param forms the codes of the forms to sample
+     * @returns one sample report per form, in the order of the requested forms
+     * @throws InvalidArgumentError if the form codes are not a non-empty array of non-blank strings with no
+     * leading or trailing whitespace
+     */
+    getSamplesByForms: (forms: [string, ...string[]]) => Promise<v1.Report[]>;
+
+    /**
      * Returns a generator for fetching summary records for the given report identifiers.
      * @param ids the identifiers of the reports to summarise
      * @returns a generator for fetching all the matching report summaries. Identifiers that do not identify an
@@ -504,6 +551,8 @@ export namespace v1 {
   /** @internal */
   export const getDatasource = (ctx: DataContext): Datasource => {
     return {
+      countByForm: () => ctx.bind(v1.countByForm)(),
+      getSamplesByForms: (forms) => ctx.bind(v1.getSamplesByForms)(forms),
       getSummaries: (ids) => ctx.bind(v1.getSummaries)(byIds(ids)),
       getSummariesPage: (
         ids,

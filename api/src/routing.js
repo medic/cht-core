@@ -743,6 +743,8 @@ app.get('/api/v1/contact/:uuid', contact.v1.get);
 
 app.get('/api/v1/report', report.v1.getAll);
 app.get('/api/v1/report/uuid', report.v1.getUuids);
+app.get('/api/v1/report/count-by-form', report.v1.countByForm);
+app.postJson('/api/v1/report/samples-by-form', report.v1.getSamplesByForms);
 app.postJson('/api/v1/report/summary', report.v1.getSummaries);
 app.get('/api/v1/report/:uuid', report.v1.get);
 app.postJson('/api/v1/report', report.v1.create);

@@ -597,6 +597,71 @@ describe('local report', () => {
 
     });
 
+    describe('countByForm', () => {
+      it('returns the grouped count for each form', async () => {
+        const query = sinon.stub().resolves({
+          rows: [
+            { key: ['pregnancy'], value: 5 },
+            { key: ['delivery'], value: 2 },
+            { key: ['__proto__'], value: 3 },
+          ],
+        });
+        const context = new LocalDataContext.LocalDataContext(
+          { query } as unknown as PouchDB.Database<Doc>,
+          localContext.settings
+        );
+
+        const result = await Report.v1.countByForm(context)();
+
+        expect(result).to.deep.equal(Object.fromEntries([
+          ['pregnancy', 5],
+          ['delivery', 2],
+          ['__proto__', 3],
+        ]));
+        expect(Object.prototype.hasOwnProperty.call(result, '__proto__')).to.be.true;
+        expect(query.calledOnceWithExactly('medic-client/reports_by_form', {
+          reduce: true,
+          group: true,
+        })).to.be.true;
+      });
+    });
+
+    describe('getSamplesByForms', () => {
+      it('returns one valid sample report for each form', async () => {
+        const pregnancyReport = {
+          _id: 'pregnancy-report',
+          _rev: '1',
+          type: DOC_TYPES.DATA_RECORD,
+          form: 'pregnancy',
+        };
+        const query = sinon.stub();
+        query.onFirstCall().resolves({ rows: [{ doc: pregnancyReport }] });
+        query.onSecondCall().resolves({ rows: [{ doc: { _id: 'not-a-report', _rev: '1', type: 'person' } }] });
+        const context = new LocalDataContext.LocalDataContext(
+          { query } as unknown as PouchDB.Database<Doc>,
+          localContext.settings
+        );
+
+        const result = await Report.v1.getSamplesByForms(context)({ forms: ['pregnancy', 'delivery'] });
+
+        expect(result).to.deep.equal([pregnancyReport]);
+        expect(query.args).to.deep.equal([
+          ['medic-client/reports_by_form', {
+            key: ['pregnancy'],
+            limit: 1,
+            include_docs: true,
+            reduce: false,
+          }],
+          ['medic-client/reports_by_form', {
+            key: ['delivery'],
+            limit: 1,
+            include_docs: true,
+            reduce: false,
+          }],
+        ]);
+      });
+    });
+
     describe('getPage', () => {
       const limit = 3;
       const notNullCursor = '5';
