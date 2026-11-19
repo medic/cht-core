@@ -5,6 +5,7 @@ const serverUtils = require('../../../src/server-utils');
 const { Contact, Qualifier } = require('@medic/cht-datasource');
 const {expect} = require('chai');
 
+const { CONTACT_TYPES } = require('@medic/constants');
 describe('Contact Controller', () => {
   const sandbox = sinon.createSandbox();
   const contactGet = sandbox.stub();
@@ -52,7 +53,7 @@ describe('Contact Controller', () => {
       });
 
       it('returns a contact', async () => {
-        const contact = { name: 'John Doe', type: 'person' };
+        const contact = { name: 'John Doe', type: CONTACT_TYPES.PERSON };
         contactGet.resolves(contact);
 
         await controller.v1.get(req, res);
@@ -68,7 +69,7 @@ describe('Contact Controller', () => {
       });
 
       it('returns a contact with lineage when the query parameter is set to "true"', async () => {
-        const contact = { name: 'John Doe', type: 'person' };
+        const contact = { name: 'John Doe', type: CONTACT_TYPES.PERSON };
         contactGetWithLineage.resolves(contact);
         req.query.with_lineage = 'true';
 
@@ -85,7 +86,7 @@ describe('Contact Controller', () => {
       });
 
       it('returns a contact without lineage when the query parameter is set something else', async () => {
-        const contact = { name: 'John Doe', type: 'person' };
+        const contact = { name: 'John Doe', type: CONTACT_TYPES.PERSON };
         contactGet.resolves(contact);
         req.query.with_lineage = '1';
 
@@ -124,12 +125,11 @@ describe('Contact Controller', () => {
     describe('getUuids', () => {
       let qualifierByContactType;
       let qualifierByFreetext;
-      const contactType = 'person';
       const freetext = 'John';
-      const contactTypeOnlyQualifier = { contactType };
+      const contactTypeOnlyQualifier = { contactType: CONTACT_TYPES.PERSON };
       const freetextOnlyQualifier = { freetext };
-      const bothQualifier = { contactType, freetext };
-      const contact = { name: 'John Doe', type: contactType };
+      const bothQualifier = { contactType: CONTACT_TYPES.PERSON, freetext };
+      const contact = { name: 'John Doe', type: CONTACT_TYPES.PERSON };
       const limit = 100;
       const cursor = null;
       const contacts = Array.from({ length: 3 }, () => ({ ...contact }));
@@ -144,7 +144,7 @@ describe('Contact Controller', () => {
       it('returns a page of contact ids with contact type param only', async () => {
         req = {
           query: {
-            type: contactType,
+            type: CONTACT_TYPES.PERSON,
             cursor,
             limit,
           }
@@ -190,7 +190,7 @@ describe('Contact Controller', () => {
       it('returns a page of contact ids with both contactType and freetext param', async () => {
         req = {
           query: {
-            type: contactType,
+            type: CONTACT_TYPES.PERSON,
             freetext,
             cursor,
             limit,
@@ -214,7 +214,7 @@ describe('Contact Controller', () => {
       it('returns a page of contact ids with both contactType and freetext param and undefined limit', async () => {
         req = {
           query: {
-            type: contactType,
+            type: CONTACT_TYPES.PERSON,
             freetext,
             cursor,
           }
@@ -346,7 +346,7 @@ describe('Contact Controller', () => {
       });
 
       it('uses the phone param on its own, ignoring type and freetext', async () => {
-        req = { query: { phone: '+254712345678', type: contactType, freetext, cursor, limit } };
+        req = { query: { phone: '+254712345678', type: CONTACT_TYPES.PERSON, freetext, cursor, limit } };
         contactGetUuidsPage.resolves(contacts);
 
         await controller.v1.getUuids(req, res);
@@ -362,7 +362,7 @@ describe('Contact Controller', () => {
     describe('getAll', () => {
       const limit = 100;
       const cursor = null;
-      const contacts = { data: [{ type: 'person' }], cursor: null };
+      const contacts = { data: [{ type: CONTACT_TYPES.PERSON }], cursor: null };
 
       it('returns a page of contacts for the given comma-separated ids', async () => {
         req = { query: { ids: 'a,b,c', cursor, limit } };
@@ -383,21 +383,21 @@ describe('Contact Controller', () => {
       });
 
       it('returns a page of contacts for the given type', async () => {
-        req = { query: { type: 'person', cursor, limit } };
-        const typeQualifier = { contactType: 'person' };
+        req = { query: { type: CONTACT_TYPES.PERSON, cursor, limit } };
+        const typeQualifier = { contactType: CONTACT_TYPES.PERSON };
         const qualifierByContactType = sinon.stub(Qualifier, 'byContactType').returns(typeQualifier);
         contactGetPage.resolves(contacts);
 
         await controller.v1.getAll(req, res);
 
-        expect(qualifierByContactType.calledOnceWithExactly('person')).to.be.true;
+        expect(qualifierByContactType.calledOnceWithExactly(CONTACT_TYPES.PERSON)).to.be.true;
         expect(contactGetPage.calledOnceWithExactly(typeQualifier, cursor, limit)).to.be.true;
         expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });
 
       it('prefers ids over type when both are provided', async () => {
-        req = { query: { ids: 'a,b', type: 'person', cursor, limit } };
+        req = { query: { ids: 'a,b', type: CONTACT_TYPES.PERSON, cursor, limit } };
         const idsQualifier = { ids: ['a', 'b'] };
         const qualifierByIds = sinon.stub(Qualifier, 'byIds').returns(idsQualifier);
         const qualifierByContactType = sinon.stub(Qualifier, 'byContactType');
@@ -425,7 +425,7 @@ describe('Contact Controller', () => {
 
       it('prefers phone over type when both are provided', async () => {
         const qualifierByContactType = sinon.stub(Qualifier, 'byContactType');
-        req = { query: { phone: '+254712345678', type: 'person', cursor, limit } };
+        req = { query: { phone: '+254712345678', type: CONTACT_TYPES.PERSON, cursor, limit } };
         contactGetPage.resolves(contacts);
 
         await controller.v1.getAll(req, res);

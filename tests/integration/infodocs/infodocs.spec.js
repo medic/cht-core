@@ -4,6 +4,7 @@ const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v7;
 const moment = require('moment');
 
+const { CONTACT_TYPES } = require('@medic/constants');
 //
 // API and sentinel write infodocs independently, in no guaranteed order, so waiting for one says
 // nothing about the other: both have to be waited on.
@@ -174,7 +175,7 @@ describe('infodocs', () => {
       };
       await utils.updateSettings(settings, { ignoreReload: 'sentinel' });
 
-      const doc = { _id: uuid(), type: 'person' };
+      const doc = { _id: uuid(), type: CONTACT_TYPES.PERSON };
       const { rev } = await utils.saveDoc(doc);
 
       const sentinelDate = await utils.getSentinelDate();

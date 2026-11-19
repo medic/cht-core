@@ -90,7 +90,7 @@ describe('local person', () => {
       });
 
       it('returns a person by UUID', async () => {
-        const doc = { type: 'person', _id: 'uuid', _rev: '1' };
+        const doc = { type: CONTACT_TYPES.PERSON, _id: 'uuid', _rev: '1' };
         getDocByIdInner.resolves(doc);
         settingsGetAll.returns(settings);
         isPerson.returns(true);
@@ -142,7 +142,7 @@ describe('local person', () => {
       });
 
       it('returns a person with lineage', async () => {
-        const personWithLineage = { type: 'person', _id: 'uuid', _rev: 'rev' };
+        const personWithLineage = { type: CONTACT_TYPES.PERSON, _id: 'uuid', _rev: 'rev' };
         const mockFunction = sinon.stub().resolves(personWithLineage);
         mockFetchHydratedDoc.returns(mockFunction);
         isPerson.returns(true);
@@ -214,7 +214,7 @@ describe('local person', () => {
       });
 
       it('returns a page of people', async () => {
-        const doc = { type: 'person' };
+        const doc = { type: CONTACT_TYPES.PERSON };
         const docs = [doc, doc, doc];
         const expectedResult = {
           cursor: '3',
@@ -240,7 +240,7 @@ describe('local person', () => {
       });
 
       it('returns a page of people when cursor is not null', async () => {
-        const doc = { type: 'person' };
+        const doc = { type: CONTACT_TYPES.PERSON };
         const docs = [doc, doc, doc];
         const expectedResult = {
           cursor: '8',
@@ -356,7 +356,7 @@ describe('local person', () => {
       it('throws error if input validation fails', async () => {
         const input = {
           name: 'user-1',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           _rev: '1-rev',
           parent: 'p1'
         };
@@ -405,7 +405,7 @@ describe('local person', () => {
       it('creates a person with default `person` type', async () => {
         const input = {
           name: 'user-1',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: parent._id,
         };
         getDocByIdInner.resolves(parent);
@@ -464,7 +464,7 @@ describe('local person', () => {
       it('throws error when parent doc is not found', async () => {
         const input = {
           name: 'user-1',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: parent._id,
         };
         getDocByIdInner.resolves(null);
@@ -485,10 +485,10 @@ describe('local person', () => {
       it('throws error when parent type is invalid', async () => {
         const input = {
           name: 'user-1',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: parent._id,
         };
-        getDocByIdInner.resolves({ ...parent, type: 'person' });
+        getDocByIdInner.resolves({ ...parent, type: CONTACT_TYPES.PERSON });
         const reportedDate = new Date().getTime();
         getReportedDateTimestamp.returns(reportedDate);
 
@@ -511,7 +511,7 @@ describe('local person', () => {
         _id: 'person-1',
         _rev: '1-rev',
         name: 'apoorva',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         reported_date: 12312312,
         parent: {
           _id: 'parent-1',

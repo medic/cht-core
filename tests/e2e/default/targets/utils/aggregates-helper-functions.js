@@ -180,7 +180,7 @@ const validateCardFields = async (values) => {
 };
 
 const getDocsByPlace = (contactDocs, placeId) => {
-  return contactDocs.filter(doc => doc.type === 'person' && doc.parent.parent._id === placeId);
+  return contactDocs.filter(doc => doc.type === CONTACT_TYPES.PERSON && doc.parent.parent._id === placeId);
 };
 
 module.exports = {

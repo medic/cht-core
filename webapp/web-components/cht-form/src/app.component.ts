@@ -26,8 +26,8 @@ export class AppComponent {
   private readonly HARDCODED_TYPES = [
     CONTACT_TYPES.DISTRICT_HOSPITAL,
     CONTACT_TYPES.HEALTH_CENTER,
-    'clinic',
-    'person'
+    CONTACT_TYPES.CLINIC,
+    CONTACT_TYPES.PERSON
   ];
 
   private readonly chtDataSourceService: CHTDatasourceServiceStub;

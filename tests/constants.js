@@ -1,3 +1,4 @@
+const { CONTACT_TYPES } = require('@medic/constants');
 const USERNAME = 'admin';
 const PASSWORD = 'pass';
 const API_HOST = `localhost${process.env.NGINX_HTTPS_PORT ? `:${process.env.NGINX_HTTPS_PORT}` : ''}`;
@@ -23,7 +24,7 @@ module.exports = {
 
   DEFAULT_USER_CONTACT_DOC: {
     _id: USER_CONTACT_ID,
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     reported_date: 1541679811408,
   },
   DEFAULT_USER_ADMIN_TRAINING_DOC: {

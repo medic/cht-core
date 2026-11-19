@@ -90,18 +90,18 @@ describe('ContactViewModelGenerator service', () => {
     lineageModelGenerator = { contact: sinon.stub() };
     const parentId = 'districtsdistrict';
     const contactId = 'mario';
-    childContactPerson = { _id: contactId, name: 'sandy', type: 'person', parent: { _id: parentId } };
+    childContactPerson = { _id: contactId, name: 'sandy', type: CONTACT_TYPES.PERSON, parent: { _id: parentId } };
     deceasedChildPerson = {
       _id: 'deceaseduuid',
       name: 'casper',
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       date_of_death: 123456789,
       parent: { _id: parentId }
     };
 
-    childPerson = { _id: 'peach', type: 'person', name: 'Peach', date_of_birth: '1986-01-01' };
+    childPerson = { _id: 'peach', type: CONTACT_TYPES.PERSON, name: 'Peach', date_of_birth: '1986-01-01' };
 
-    childPerson2 = { _id: 'zelda', type: 'person', name: 'Zelda', date_of_birth: '1985-01-01' };
+    childPerson2 = { _id: 'zelda', type: CONTACT_TYPES.PERSON, name: 'Zelda', date_of_birth: '1985-01-01' };
     childPlace = { _id: 'happyplace', type: 'mushroom', name: 'Happy Place', contact: { _id: contactId } };
     childPlace2 = { _id: 'happyplace2', type: 'mushroom', name: 'Happy Place 2' };
 
@@ -351,12 +351,16 @@ describe('ContactViewModelGenerator service', () => {
         doc.type = CONTACT_TYPES.CLINIC;
         getContact.withArgs(Qualifier.byUuid(childContactPerson._id)).resolves(childContactPerson);
 
-        const childPerson1 = { _id: 'childPerson1', type: 'person', name: 'person 1', date_of_birth: '2000-01-01' };
-        const childPerson2 = { _id: 'childPerson2', type: 'person', name: 'person 2', date_of_birth: '1999-01-01' };
+        const childPerson1 = { _id: 'childPerson1', type: CONTACT_TYPES.PERSON, name: 'person 1',
+          date_of_birth: '2000-01-01' };
+        const childPerson2 = { _id: 'childPerson2', type: CONTACT_TYPES.PERSON, name: 'person 2',
+          date_of_birth: '1999-01-01' };
         const mutedChildPerson1 =
-          { _id: 'mutedChildPerson1', type: 'person', name: 'muted 1', date_of_birth: '2000-01-01', muted: 123 };
+          { _id: 'mutedChildPerson1', type: CONTACT_TYPES.PERSON, name: 'muted 1', date_of_birth: '2000-01-01',
+            muted: 123 };
         const mutedChildPerson2 =
-          { _id: 'mutedChildPerson2', type: 'person', name: 'muted 2', date_of_birth: '1999-01-01', muted: 124 };
+          { _id: 'mutedChildPerson2', type: CONTACT_TYPES.PERSON, name: 'muted 2', date_of_birth: '1999-01-01',
+            muted: 124 };
 
         return runPlaceTest([childPerson1, mutedChildPerson2, mutedChildPerson1, childPerson2]).then(model => {
           assert.equal(model.children[0].contacts.length, 5);

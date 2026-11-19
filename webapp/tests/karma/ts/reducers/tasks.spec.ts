@@ -694,7 +694,7 @@ describe('Tasks reducer', () => {
 
   describe('setTaskGroupContact', () => {
     it('should work on empty state', () => {
-      const contact = { _id: 'contact', type: 'person' };
+      const contact = { _id: 'contact', type: CONTACT_TYPES.PERSON };
       state = tasksReducer(state, Actions.setTaskGroupContact(contact));
       expect(state).to.deep.equal({
         tasksList: [],

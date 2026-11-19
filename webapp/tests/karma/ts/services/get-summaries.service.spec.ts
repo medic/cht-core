@@ -5,6 +5,7 @@ import { expect } from 'chai';
 import { GetSummariesService } from '@mm-services/get-summaries.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
+import { CONTACT_TYPES } from '@medic/constants';
 describe('GetSummaries service', () => {
   let service: GetSummariesService;
   let getContactSummaries;
@@ -147,7 +148,7 @@ describe('GetSummaries service', () => {
       const docs = [{
         _id: 'a',
         _rev: '1',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         name: 'james',
         phone: '+456',
         contact: {
@@ -163,7 +164,7 @@ describe('GetSummaries service', () => {
         _rev: '1',
         name: 'james',
         phone: '+456',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         contact_type: undefined,
         contact: 'c',
         lineage: [],

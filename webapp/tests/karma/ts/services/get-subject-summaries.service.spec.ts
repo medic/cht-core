@@ -7,6 +7,7 @@ import { DbService } from '@mm-services/db.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { GetSummariesService } from '@mm-services/get-summaries.service';
 
+import { CONTACT_TYPES } from '@medic/constants';
 describe('GetSubjectSummaries service', () => {
   let service:GetSubjectSummariesService;
   let query;
@@ -51,7 +52,7 @@ describe('GetSubjectSummaries service', () => {
 
   it('does nothing when input has no `form` (not a report)', () => {
     const given = [
-      { id: 'a', type: 'person' }
+      { id: 'a', type: CONTACT_TYPES.PERSON }
     ];
 
     return service.get(given).then(actual => {

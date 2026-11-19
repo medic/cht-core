@@ -19,6 +19,7 @@ const CONTACT_TYPES = {
   HEALTH_CENTER: 'health_center',
   CLINIC: 'clinic',
   DISTRICT_HOSPITAL: 'district_hospital',
+  PERSON: 'person',
 };
 
 // Document Types

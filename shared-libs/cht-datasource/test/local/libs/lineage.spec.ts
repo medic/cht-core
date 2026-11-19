@@ -166,8 +166,8 @@ describe('local lineage lib', () => {
 
   describe('hydratePrimaryContact', () => {
     it('returns a place with its contact hydrated', () => {
-      const contact = { _id: 'contact-0', _rev: 'rev-0', type: 'person' };
-      const contacts = [{ _id: 'contact-1', _rev: 'rev-1', type: 'person' }, contact];
+      const contact = { _id: 'contact-0', _rev: 'rev-0', type: CONTACT_TYPES.PERSON };
+      const contacts = [{ _id: 'contact-1', _rev: 'rev-1', type: CONTACT_TYPES.PERSON }, contact];
       const place0 = { _id: 'place-0', _rev: 'rev-1', contact: { _id: 'contact-0' } };
 
       const result = Lineage.hydratePrimaryContact(contacts)(place0);
@@ -189,8 +189,8 @@ describe('local lineage lib', () => {
 
     it('returns a place unchanged if no matching contact could be found', () => {
       const contacts = [
-        { _id: 'contact-1', _rev: 'rev-1', type: 'person' },
-        { _id: 'contact-2', _rev: 'rev-0', type: 'person' }
+        { _id: 'contact-1', _rev: 'rev-1', type: CONTACT_TYPES.PERSON },
+        { _id: 'contact-2', _rev: 'rev-0', type: CONTACT_TYPES.PERSON }
       ];
       const place0 = { _id: 'place-0', _rev: 'rev-1', contact: { _id: 'contact-0' } };
 
@@ -204,8 +204,8 @@ describe('local lineage lib', () => {
 
     it('returns a place unchanged if its contact is not identifiable', () => {
       const contacts = [
-        { _id: 'contact-1', _rev: 'rev-1', type: 'person' },
-        { _id: 'contact-2', _rev: 'rev-0', type: 'person' }
+        { _id: 'contact-1', _rev: 'rev-1', type: CONTACT_TYPES.PERSON },
+        { _id: 'contact-2', _rev: 'rev-0', type: CONTACT_TYPES.PERSON }
       ];
       const place0 = { _id: 'place-0', _rev: 'rev-1', contact: { hello: 'contact-1' } };
 
@@ -217,8 +217,8 @@ describe('local lineage lib', () => {
 
     it('returns null if no place is provided', () => {
       const contacts = [
-        { _id: 'contact-1', _rev: 'rev-1', type: 'person' },
-        { _id: 'contact-2', _rev: 'rev-0', type: 'person' }
+        { _id: 'contact-1', _rev: 'rev-1', type: CONTACT_TYPES.PERSON },
+        { _id: 'contact-2', _rev: 'rev-0', type: CONTACT_TYPES.PERSON }
       ];
 
       const result = Lineage.hydratePrimaryContact(contacts)(null);
@@ -230,7 +230,7 @@ describe('local lineage lib', () => {
 
   describe('hydrateLineage', () => {
     it('returns a contact with its lineage populated', () => {
-      const contact = { _id: 'contact-0', _rev: 'rev-0', type: 'person' };
+      const contact = { _id: 'contact-0', _rev: 'rev-0', type: CONTACT_TYPES.PERSON };
       const place0 = { _id: 'place-0', _rev: 'rev-1' };
       const place1 = { _id: 'place-1', _rev: 'rev-2' };
       const place2 = { _id: 'place-2', _rev: 'rev-3' };
@@ -253,7 +253,7 @@ describe('local lineage lib', () => {
 
     it('fills in missing lineage gaps from contact\'s denormalized parent data', () => {
       const contact = {
-        _id: 'contact-0', _rev: 'rev-0', type: 'person', parent: {
+        _id: 'contact-0', _rev: 'rev-0', type: CONTACT_TYPES.PERSON, parent: {
           _id: 'place-0',
           parent: {
             _id: 'place-1',
@@ -397,7 +397,7 @@ describe('local lineage lib', () => {
     });
 
     it('returns a contact with lineage for a person', async () => {
-      const person = { type: 'person', _id: 'uuid', _rev: 'rev' };
+      const person = { type: CONTACT_TYPES.PERSON, _id: 'uuid', _rev: 'rev' };
       const place0 = { _id: 'place0', _rev: 'rev' };
       const place1 = { _id: 'place1', _rev: 'rev' };
       const place2 = { _id: 'place2', _rev: 'rev' };
@@ -677,7 +677,7 @@ describe('local lineage lib', () => {
         contact: { _id: 'contact-1', parent: { _id: 'parent-1', parent: { _id: 'wrong-grandparent' } } }
       };
       const contact = {
-        _id: 'contact-1', _rev: 'rev-1', type: 'person',
+        _id: 'contact-1', _rev: 'rev-1', type: CONTACT_TYPES.PERSON,
         parent: { _id: 'parent-1', parent: { _id: 'correct-grandparent' } }
       };
       isContact.returns(true);
@@ -701,7 +701,7 @@ describe('local lineage lib', () => {
       const contact = {
         _id: 'contact-1',
         _rev: 'rev-1',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'parent-1', name: 'Parent', parent: { _id: 'grandparent-1', name: 'Grandparent' } }
       };
       const minifiedContact = { _id: 'contact-1', parent: { _id: 'parent-1', parent: { _id: 'grandparent-1' } } };
@@ -725,7 +725,7 @@ describe('local lineage lib', () => {
       const contact = {
         _id: 'contact-1',
         _rev: 'rev-1',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'parent-1', name: 'Parent', parent: { _id: 'grandparent-1', name: 'Grandparent' } }
       };
       isContact.returns(true);

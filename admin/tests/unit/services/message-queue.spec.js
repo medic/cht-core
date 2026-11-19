@@ -4,6 +4,8 @@ describe('MessageQueue service', function() {
 
   'use strict';
 
+  const { CONTACT_TYPES } = require('@medic/constants');
+
   let service;
   let Settings;
   let Languages;
@@ -294,7 +296,7 @@ describe('MessageQueue service', function() {
 
       GetSummaries
         .withArgs(['contact1'])
-        .resolves([{ _id: 'contact1', type: 'person', name: 'James', phone: 'phone1' }]);
+        .resolves([{ _id: 'contact1', type: CONTACT_TYPES.PERSON, name: 'James', phone: 'phone1' }]);
 
       translate.instant.withArgs('task1').returns('task 1 translation');
 
@@ -414,8 +416,8 @@ describe('MessageQueue service', function() {
         .resolves({ rows: [ { value: 'contact1', key: 'phone1' }, { value: 'contact2', key: 'phone2' } ] });
 
       GetSummaries.resolves([
-        { _id: 'contact1', type: 'person', name: 'contact one', phone: 'phone1' },
-        { _id: 'contact2', type: 'person', name: 'contact two', phone: 'phone2' },
+        { _id: 'contact1', type: CONTACT_TYPES.PERSON, name: 'contact one', phone: 'phone1' },
+        { _id: 'contact2', type: CONTACT_TYPES.PERSON, name: 'contact two', phone: 'phone2' },
       ]);
 
       return service.query('due').then(result => {
@@ -587,7 +589,7 @@ describe('MessageQueue service', function() {
       query
         .withArgs('medic-client/contacts_by_phone')
         .resolves({ rows: [{ key: 'recipient_id', value: 'recipient' }]});
-      GetSummaries.resolves([{ _id: 'recipient_id', type: 'person', phone: 'recipient' }]);
+      GetSummaries.resolves([{ _id: 'recipient_id', type: CONTACT_TYPES.PERSON, phone: 'recipient' }]);
 
       return service.query('tab').then(result => {
         chai.expect(result.messages.length).to.equal(15);
@@ -757,9 +759,9 @@ describe('MessageQueue service', function() {
           { key: 'recipient3', id: 'recipient3_id' }
         ]});
       GetSummaries.resolves([
-        { _id: 'recipient1_id', type: 'person', phone: 'recipient1', name: 'recipient 1' },
-        { _id: 'recipient2_id', type: 'person', phone: 'recipient2', name: 'recipient 2' },
-        { _id: 'recipient3_id', type: 'person', phone: 'recipient3', name: 'recipient 3' },
+        { _id: 'recipient1_id', type: CONTACT_TYPES.PERSON, phone: 'recipient1', name: 'recipient 1' },
+        { _id: 'recipient2_id', type: CONTACT_TYPES.PERSON, phone: 'recipient2', name: 'recipient 2' },
+        { _id: 'recipient3_id', type: CONTACT_TYPES.PERSON, phone: 'recipient3', name: 'recipient 3' },
       ]);
 
       return service.query('tab').then((result) => {
@@ -1073,7 +1075,7 @@ describe('MessageQueue service', function() {
         .withArgs('medic-client/contacts_by_phone')
         .resolves({ rows: [{ key: 'recipient1', id: 'recipien_id' }]});
       GetSummaries.resolves([
-        { _id: 'recipien_id', type: 'person', phone: 'recipient1', name: 'recipient' },
+        { _id: 'recipien_id', type: CONTACT_TYPES.PERSON, phone: 'recipient1', name: 'recipient' },
       ]);
 
       return service.query('tab').then((result) => {

@@ -38,7 +38,7 @@ describe('Bulk Docs utils', () => {
       };
       const person = {
         _id: 'a',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         name: 'sally',
         parent: {
           _id: 'b'
@@ -65,7 +65,7 @@ describe('Bulk Docs utils', () => {
       };
       const person = {
         _id: 'a',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         name: 'sally',
         parent: {
           _id: 'b'
@@ -90,7 +90,7 @@ describe('Bulk Docs utils', () => {
       };
       const person = {
         _id: 'a',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         name: 'sally',
         parent: {
           _id: 'b'
@@ -107,7 +107,7 @@ describe('Bulk Docs utils', () => {
     it('resolves with no updates when doc has no parent', () => {
       const person = {
         _id: 'a',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         name: 'sally'
       };
       return utils.updateParentContacts([person]).then(updatedParents => {
@@ -124,7 +124,7 @@ describe('Bulk Docs utils', () => {
       };
       const person = {
         _id: 'a',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         name: 'sally',
         parent: {
           _id: 'b'

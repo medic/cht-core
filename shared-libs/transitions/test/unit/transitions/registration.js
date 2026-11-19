@@ -200,7 +200,7 @@ describe('registration', () => {
       saveDoc.args[0][0].name.should.equal(patientName);
       saveDoc.args[0][0].parent._id.should.equal(parentId);
       saveDoc.args[0][0].reported_date.should.equal(53);
-      saveDoc.args[0][0].type.should.equal('person');
+      saveDoc.args[0][0].type.should.equal(CONTACT_TYPES.PERSON);
       saveDoc.args[0][0].patient_id.should.equal(patientId);
       saveDoc.args[0][0].date_of_birth.should.equal(dob);
       saveDoc.args[0][0].source_id.should.equal(reportId);
@@ -280,7 +280,7 @@ describe('registration', () => {
       saveDoc.args[0][0].phone.should.equal(patientPhoneNumber);
       saveDoc.args[0][0].parent._id.should.equal(parentId);
       saveDoc.args[0][0].reported_date.should.equal(53);
-      saveDoc.args[0][0].type.should.equal('person');
+      saveDoc.args[0][0].type.should.equal(CONTACT_TYPES.PERSON);
       saveDoc.args[0][0].patient_id.should.equal(patientId);
       saveDoc.args[0][0].date_of_birth.should.equal(dob);
       saveDoc.args[0][0].source_id.should.equal(reportId);
@@ -423,7 +423,7 @@ describe('registration', () => {
       (typeof saveDoc.args[0][0].phone).should.be.equal('undefined');
       saveDoc.args[0][0].parent._id.should.equal(parentId);
       saveDoc.args[0][0].reported_date.should.equal(53);
-      saveDoc.args[0][0].type.should.equal('person');
+      saveDoc.args[0][0].type.should.equal(CONTACT_TYPES.PERSON);
       saveDoc.args[0][0].patient_id.should.equal(patientId);
       saveDoc.args[0][0].date_of_birth.should.equal(dob);
       saveDoc.args[0][0].source_id.should.equal(reportId);
@@ -2055,7 +2055,7 @@ describe('registration', () => {
           reported_date: 53,
           from: '+555123',
           fields: { patient_id: '05649' },
-          patient: { _id: 'patient', patient_id: '05649', type: 'person' }
+          patient: { _id: 'patient', patient_id: '05649', type: CONTACT_TYPES.PERSON }
         },
       };
       sinon.stub(db.medic, 'post').resolves();
@@ -2527,7 +2527,7 @@ describe('registration', () => {
         events: [{
           name: 'on_create',
           trigger: 'add_place',
-          params: { contact_type: 'person' }
+          params: { contact_type: CONTACT_TYPES.PERSON }
         }],
       }];
 
@@ -3111,7 +3111,7 @@ describe('registration', () => {
         place: {
           _id: 'person',
           patient_id: '56987',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
         }
       };
       sinon.stub(contactTypeUtils, 'isPlace').returns(false);
@@ -3124,7 +3124,7 @@ describe('registration', () => {
         transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
         contactTypeUtils.isPlace.callCount.should.equal(1);
         contactTypeUtils.isPlace.args[0].should.deep.equal(
-          [{}, { _id: 'person', patient_id: '56987', type: 'person' }]
+          [{}, { _id: 'person', patient_id: '56987', type: CONTACT_TYPES.PERSON }]
         );
       });
     });
@@ -3150,7 +3150,7 @@ describe('registration', () => {
         place: {
           _id: 'person',
           patient_id: '56987',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
         },
         patient: {
           _id: 'place',
@@ -3215,12 +3215,12 @@ describe('registration', () => {
         place: {
           _id: 'person',
           patient_id: '56987',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
         },
         patient: {
           _id: 'patient',
           patient_id: '69874',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
         },
       };
 
@@ -3236,12 +3236,12 @@ describe('registration', () => {
         contactTypeUtils.isPerson.callCount.should.equal(1);
         contactTypeUtils.isPerson.args[0].should.deep.equal([
           {},
-          { _id: 'patient', patient_id: '69874', type: 'person' }
+          { _id: 'patient', patient_id: '69874', type: CONTACT_TYPES.PERSON }
         ]);
         contactTypeUtils.isPlace.callCount.should.equal(1);
         contactTypeUtils.isPlace.args[0].should.deep.equal([
           {},
-          { _id: 'person', patient_id: '56987', type: 'person' }
+          { _id: 'person', patient_id: '56987', type: CONTACT_TYPES.PERSON }
         ]);
       });
     });
@@ -3251,7 +3251,7 @@ describe('registration', () => {
       doc = {
         form: 'R',
         fields: { patient_id: 'the_patient_id' },
-        patient: { patient_id: 'the_patient_id', type: 'person', _id: 'some uuid' }
+        patient: { patient_id: 'the_patient_id', type: CONTACT_TYPES.PERSON, _id: 'some uuid' }
       };
 
       sinon.stub(transitionUtils, 'addRegistrationNotFoundError');

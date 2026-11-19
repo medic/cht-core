@@ -711,7 +711,7 @@ describe('Reports effects', () => {
               external_id: '',
               notes: '',
               contact: {
-                type: 'person',
+                type: CONTACT_TYPES.PERSON,
                 name: 'contact',
                 short_name: '',
                 date_of_birth: '1990-02-01',
@@ -752,7 +752,7 @@ describe('Reports effects', () => {
               _id: 'parent',
               _rev: 4
             },
-            type: 'person',
+            type: CONTACT_TYPES.PERSON,
             name: 'contact',
             short_name: '',
             date_of_birth: '1990-02-01',

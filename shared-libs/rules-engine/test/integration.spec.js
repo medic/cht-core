@@ -1,7 +1,7 @@
 const chai = require('chai');
 const moment = require('moment');
 const { MS_IN_DAY, engineSettings, defaultConfigSettingsDoc } = require('./mocks');
-const { DOC_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const memdownMedic = require('@medic/memdown');
 const sinon = require('sinon');
@@ -29,7 +29,7 @@ const patientContact = {
   _id: 'patient',
   name: 'chw',
   type: 'contact',
-  contact_type: 'person',
+  contact_type: CONTACT_TYPES.PERSON,
   patient_id: 'patient_id',
 };
 

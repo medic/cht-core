@@ -285,7 +285,7 @@ describe('cht-datasource Place', () => {
 
       it(`throws error for non-place type`, async () => {
         const body = {
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           name: 'place-1',
         };
 

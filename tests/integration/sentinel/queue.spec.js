@@ -32,7 +32,7 @@ const contacts = [
   },
   {
     _id: 'chw',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     parent: { _id: 'clinic', 
       parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: 'phone1',
@@ -42,7 +42,7 @@ const contacts = [
   {
     _id: 'person',
     name: 'Person',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     patient_id: 'patient',
     parent: { _id: 'clinic', 
       parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },

@@ -84,7 +84,7 @@ describe('report', () => {
         _id: 'report',
         contact: {
           _id: 'contact_id',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: {
             _id: 'parent_id',
             type: CONTACT_TYPES.CLINIC

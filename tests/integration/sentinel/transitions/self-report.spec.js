@@ -2,19 +2,19 @@ const chai = require('chai');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v7;
-const { DOC_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
     _id: 'contact1',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     phone: '555 111 222',
     name: 'Contact 1',
     patient_id: '12345'
   },
   {
     _id: 'contact2',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     phone: '555 333 444',
     name: 'Contact 2',
   },

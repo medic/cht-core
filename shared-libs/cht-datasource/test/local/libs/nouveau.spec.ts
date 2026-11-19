@@ -5,6 +5,7 @@ import * as LocalDoc from '../../../src/local/libs/doc';
 import * as Qualifier from '../../../src/qualifier';
 import { queryByFreetext, useNouveauIndexes } from '../../../src/local/libs/nouveau';
 
+import { CONTACT_TYPES } from '@medic/constants';
 describe('nouveau', () => {
   let dbFetch: SinonStub;
   let db: PouchDB.Database<Doc>;
@@ -60,7 +61,7 @@ describe('nouveau', () => {
       it('should query with contact type and freetext qualifier', async () => {
         const qualifier = Qualifier.and(
           Qualifier.byFreetext(freetext),
-          Qualifier.byContactType('person')
+          Qualifier.byContactType(CONTACT_TYPES.PERSON)
         );
         dbFetch.resolves(mockResponse);
         const body = {

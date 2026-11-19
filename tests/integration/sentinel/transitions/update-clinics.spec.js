@@ -13,7 +13,7 @@ describe('update_clinics', () => {
 
     const contact = {
       _id: 'contact',
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       phone: '12345',
       reported_date: new Date().getTime(),
     };
@@ -45,7 +45,7 @@ describe('update_clinics', () => {
 
     const contact = {
       _id: 'contact',
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       phone: '12345',
       reported_date: new Date().getTime(),
     };
@@ -206,13 +206,13 @@ describe('update_clinics', () => {
     const contacts = [
       {
         _id: 'person',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         rc_code: 'sms_person',
         reported_date: new Date().getTime(),
       },
       {
         _id: 'person_with_contact_type',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         contact_type: 'some value', // check that `type` is prioritized
         rc_code: 'sms_person_ct',
         reported_date: new Date().getTime(),
@@ -226,7 +226,7 @@ describe('update_clinics', () => {
       },
       {
         _id: 'person2',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         phone: '21112222',
         reported_date: new Date().getTime(),
       }

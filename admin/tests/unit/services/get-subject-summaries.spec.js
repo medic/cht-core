@@ -2,6 +2,8 @@ describe('GetSubjectSummaries service', () => {
 
   'use strict';
 
+  const { CONTACT_TYPES } = require('@medic/constants');
+
   let service;
   let query;
   let GetSummaries;
@@ -44,7 +46,7 @@ describe('GetSubjectSummaries service', () => {
 
   it('does nothing when input has no `form` (not a report)', () => {
     const given = [
-      { id: 'a', type: 'person' }
+      { id: 'a', type: CONTACT_TYPES.PERSON }
     ];
 
     return service(given).then(actual => {

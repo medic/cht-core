@@ -67,7 +67,7 @@ describe('Lineage', function() {
     it('stops at the first link without an _id', function() {
       const contact = {
         _id: 'contact1',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'contact2', parent: { parent: { _id: 'contact4' } } },
       };
       const contact2 = { _id: 'contact2' };
@@ -82,7 +82,7 @@ describe('Lineage', function() {
 
     it('follows a deep parent chain', function() {
       const depth = 9;
-      const doc = { _id: 'person', type: 'person', parent: {} };
+      const doc = { _id: 'person', type: CONTACT_TYPES.PERSON, parent: {} };
       const parentIds = [];
       let currentParent = doc.parent;
       for (let i = 1; i <= depth; i++) {
@@ -146,7 +146,7 @@ describe('Lineage', function() {
   describe('fillContactsInDocs', function() {
     it('skips null docs in the array', function() {
       const docs = [null, { _id: 'doc1', contact: { _id: 'contact1' } }];
-      const contacts = [{ _id: 'contact1', type: 'person' }];
+      const contacts = [{ _id: 'contact1', type: CONTACT_TYPES.PERSON }];
 
       lineage.fillContactsInDocs(docs, contacts);
 
@@ -163,8 +163,8 @@ describe('Lineage', function() {
         { _id: 'doc4', contact: { _id: 'contactx' } }
       ];
       const contacts = [
-        { _id: 'contact1', type: 'person' },
-        { _id: 'contact2', type: 'person' }
+        { _id: 'contact1', type: CONTACT_TYPES.PERSON },
+        { _id: 'contact2', type: CONTACT_TYPES.PERSON }
       ];
 
       // when
@@ -196,7 +196,7 @@ describe('Lineage', function() {
       const fakeLineage = [
         { _id: 'b', type: CONTACT_TYPES.CLINIC },
         null,
-        { _id: 'd', type: 'person' },
+        { _id: 'd', type: CONTACT_TYPES.PERSON },
       ];
 
       // when
@@ -224,7 +224,8 @@ describe('Lineage', function() {
           }
         }
       };
-      const contactInLineage = { _id: 'contact', type: 'person', parent: { _id: 'b', parent: { _id: 'c' } } };
+      const contactInLineage = { _id: 'contact', type: CONTACT_TYPES.PERSON,
+        parent: { _id: 'b', parent: { _id: 'c' } } };
       const fakeLineage = [
         contactInLineage,
         null,
@@ -243,7 +244,7 @@ describe('Lineage', function() {
 
   describe('fetchHydratedDoc', function() {
     it('supports callback as second argument', function(done) {
-      get.resolves({ _id: 'a', type: 'person' });
+      get.resolves({ _id: 'a', type: CONTACT_TYPES.PERSON });
 
       lineage.fetchHydratedDoc('a', function(err, result) {
         chai.expect(err).to.be.null;

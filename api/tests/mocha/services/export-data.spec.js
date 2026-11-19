@@ -4,7 +4,7 @@ const db = require('../../../src/db');
 const logger = require('@medic/logger');
 const service = require('../../../src/services/export-data');
 const sinon = require('sinon');
-const { DOC_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 describe('Export Data Service', () => {
 
@@ -364,7 +364,7 @@ describe('Export Data Service', () => {
       const contact1 = {
         _id: '1',
         name: 'gdawg',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: contact2._id }
       };
 
@@ -379,7 +379,7 @@ describe('Export Data Service', () => {
         {
           _id: '1',
           name: 'gdawg',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: contact2
         },
         {
@@ -411,7 +411,7 @@ describe('Export Data Service', () => {
     });
 
     it('does not track exported ids when the mapper does not flag duplicates', () => {
-      const contact = { _id: '1', name: 'gdawg', type: 'person' };
+      const contact = { _id: '1', name: 'gdawg', type: CONTACT_TYPES.PERSON };
       const mapper = service._mapper('contacts');
       const getDocIds = sinon.stub(mapper, 'getDocIds');
       getDocIds.onCall(0).resolves([ contact._id ]);

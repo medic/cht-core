@@ -20,6 +20,7 @@ import {
 import { expect } from 'chai';
 import { Nullable } from '../../../src';
 
+import { CONTACT_TYPES } from '@medic/constants';
 describe('local doc lib', () => {
   let dbGet: SinonStub;
   let dbAllDocs: SinonStub;
@@ -310,7 +311,6 @@ describe('local doc lib', () => {
   describe('queryDocsByKey', () => {
     const limit = 100;
     const skip = 0;
-    const contactType = 'person';
 
     it('returns docs on the basis of given key in pages', async () => {
       const doc0 = { _id: 'doc0' };
@@ -326,12 +326,12 @@ describe('local doc lib', () => {
       });
       isDoc.returns(true);
 
-      const result = await queryDocsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
+      const result = await queryDocsByKey(db, 'medic-client/contacts_by_type')(CONTACT_TYPES.PERSON, limit, skip);
 
       expect(result).to.deep.equal([doc0, doc1, doc2]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
         include_docs: true,
-        key: contactType,
+        key: CONTACT_TYPES.PERSON,
         limit,
         skip,
         reduce: false
@@ -343,11 +343,11 @@ describe('local doc lib', () => {
       dbQuery.resolves({ rows: [] });
       isDoc.returns(true);
 
-      const result = await queryDocsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
+      const result = await queryDocsByKey(db, 'medic-client/contacts_by_type')(CONTACT_TYPES.PERSON, limit, skip);
 
       expect(result).to.deep.equal([]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
-        include_docs: true, key: contactType, limit, skip, reduce: false
+        include_docs: true, key: CONTACT_TYPES.PERSON, limit, skip, reduce: false
       })).to.be.true;
       expect(isDoc.args).to.deep.equal([]);
     });
@@ -362,12 +362,12 @@ describe('local doc lib', () => {
       });
       isDoc.returns(false);
 
-      const result = await queryDocsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
+      const result = await queryDocsByKey(db, 'medic-client/contacts_by_type')(CONTACT_TYPES.PERSON, limit, skip);
 
       expect(result).to.deep.equal([null]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
         include_docs: true,
-        key: contactType,
+        key: CONTACT_TYPES.PERSON,
         limit,
         skip,
         reduce: false
@@ -486,7 +486,6 @@ describe('local doc lib', () => {
   describe('queryDocIdsByKey', () => {
     const limit = 100;
     const skip = 0;
-    const contactType = 'person';
 
     it('returns doc ids based on key in pages', async () => {
       const doc0 = { id: 'doc0' };
@@ -501,12 +500,12 @@ describe('local doc lib', () => {
         ]
       });
 
-      const result = await queryDocIdsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
+      const result = await queryDocIdsByKey(db, 'medic-client/contacts_by_type')(CONTACT_TYPES.PERSON, limit, skip);
 
       expect(result).to.deep.equal([doc0.id, doc1.id, doc2.id]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
         include_docs: false,
-        key: contactType,
+        key: CONTACT_TYPES.PERSON,
         limit,
         skip,
         reduce: false
@@ -516,11 +515,11 @@ describe('local doc lib', () => {
     it('returns empty array if docs are not found', async () => {
       dbQuery.resolves({ rows: [] });
 
-      const result = await queryDocIdsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
+      const result = await queryDocIdsByKey(db, 'medic-client/contacts_by_type')(CONTACT_TYPES.PERSON, limit, skip);
 
       expect(result).to.deep.equal([]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
-        include_docs: false, key: contactType, limit, skip, reduce: false
+        include_docs: false, key: CONTACT_TYPES.PERSON, limit, skip, reduce: false
       })).to.be.true;
     });
   });
@@ -769,7 +768,7 @@ describe('local doc lib', () => {
   describe('createDoc', () => {
     const doc = {
       type: 'contact',
-      contact_type: 'person',
+      contact_type: CONTACT_TYPES.PERSON,
       name: 'Medic User',
       parent: {
         _id: '2-id'
@@ -802,7 +801,7 @@ describe('local doc lib', () => {
       _id: '1-id',
       _rev: '2-rev',
       name: 'apoorva',
-      type: 'person'
+      type: CONTACT_TYPES.PERSON
     };
     it('should update the doc and return the new rev', async () => {
       dbPut.resolves({ ok: true, rev: '3-rev' });

@@ -15,7 +15,7 @@ import { FormConfig } from '@mm-services/form/form-config';
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
 import { WebappEnketoFormContext } from '@mm-services/form.service';
 import { REPORT_ATTACHMENT_NAME } from '@mm-services/get-report-content.service';
-import { DOC_TYPES } from '@medic/constants';
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
 import events from 'enketo-core/src/js/event';
 import { Qualifier } from '@medic/cht-datasource';
 
@@ -1549,7 +1549,7 @@ describe('Enketo service', () => {
       });
       expect(chw).excluding(['reported_date', '_id']).to.deep.equal({
         name: 'New CHW',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         form_version: '1',
         parent: { _id: docId },
         contact: undefined,
@@ -1578,7 +1578,7 @@ describe('Enketo service', () => {
       expect(child._id).to.not.equal(clinic._id);
       expect(child).excluding(['reported_date', '_id']).to.deep.equal({
         name: 'Child One',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         form_version: '1',
         parent: { _id: clinic._id },
         contact: undefined,
@@ -1646,7 +1646,7 @@ describe('Enketo service', () => {
       });
       expect(contact).excluding(['reported_date', '_id']).to.deep.equal({
         name: 'New Contact',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         form_version: '1',
         parent: { _id: docId, parent: { _id: parent._id } },
         contact: undefined,
@@ -1654,7 +1654,7 @@ describe('Enketo service', () => {
       });
       expect(childA).excluding(['reported_date', '_id']).to.deep.equal({
         name: 'Child A',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         form_version: '1',
         parent: { _id: clinic._id, parent: { _id: parent._id } },
         contact: undefined,
@@ -1662,7 +1662,7 @@ describe('Enketo service', () => {
       });
       expect(childB).excluding(['reported_date', '_id']).to.deep.equal({
         name: 'Child B',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         form_version: '1',
         parent: { _id: clinic._id, parent: { _id: parent._id } },
         contact: undefined,
@@ -1682,7 +1682,8 @@ describe('Enketo service', () => {
         </data>`;
       form.getDataStr.returns(xml);
       getContact.onCall(0).resolves({ _id: 'parent-id', type: 'district_hospital', parent: { _id: 'grandparent-id' } });
-      getContact.onCall(1).resolves({ _id: 'contact-id', type: 'person', parent: { _id: 'grandparent-id' } });
+      getContact.onCall(1).resolves({ _id: 'contact-id', type: CONTACT_TYPES.PERSON,
+        parent: { _id: 'grandparent-id' } });
 
       const { docId, preparedDocs: [clinic, ...additional] } = await saveContact({ type: 'clinic' });
 

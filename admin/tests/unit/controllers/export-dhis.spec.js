@@ -1,4 +1,5 @@
 describe('dhis2 export controller', () => {
+  const { CONTACT_TYPES } = require('@medic/constants');
   const { expect } = chai;
 
   const dataSet = 'abc123';
@@ -101,7 +102,7 @@ describe('dhis2 export controller', () => {
     doc: Object.assign({
       _id: `contact-${name}`,
       type: 'contact',
-      contact_type: 'person',
+      contact_type: CONTACT_TYPES.PERSON,
       name,
       dhis: {
         dataSet,

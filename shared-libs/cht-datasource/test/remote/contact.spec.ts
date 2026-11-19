@@ -3,6 +3,7 @@ import { RemoteDataContext } from '../../src/remote/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
 import { expect } from 'chai';
 
+import { CONTACT_TYPES } from '@medic/constants';
 describe('remote contact', () => {
   const remoteContext = {} as RemoteDataContext;
   const sandbox = sinon.createSandbox();
@@ -44,7 +45,7 @@ describe('remote contact', () => {
 
     describe('get', () => {
       it('returns a contact by UUID', async () => {
-        const doc = { type: 'person' };
+        const doc = { type: CONTACT_TYPES.PERSON };
         getResourceInner.resolves(doc);
 
         const result = await Contact.v1.get(remoteContext)(identifier);
@@ -67,7 +68,7 @@ describe('remote contact', () => {
 
     describe('getWithLineage', () => {
       it('returns a contact with lineage by UUID', async () => {
-        const doc = { type: 'person' };
+        const doc = { type: CONTACT_TYPES.PERSON };
         getResourceInner.resolves(doc);
 
         const result = await Contact.v1.getWithLineage(remoteContext)(identifier);
@@ -114,21 +115,20 @@ describe('remote contact', () => {
     describe('getUuidsPage', () => {
       const limit = 3;
       const cursor = '1';
-      const contactType = 'person';
       const freetext = 'contact';
       const qualifier = {
-        contactType,
+        contactType: CONTACT_TYPES.PERSON,
         freetext
       };
       const queryParam = {
         limit: limit.toString(),
         freetext: freetext,
-        type: contactType,
+        type: CONTACT_TYPES.PERSON,
         cursor,
       };
 
       it('returns array of contact identifiers', async () => {
-        const doc = [{ type: 'person' }, { type: 'person' }];
+        const doc = [{ type: CONTACT_TYPES.PERSON }, { type: CONTACT_TYPES.PERSON }];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 
@@ -159,7 +159,7 @@ describe('remote contact', () => {
         expect(getResourcesInner.calledOnceWithExactly({
           limit: limit.toString(),
           freetext: freetext,
-          type: contactType,
+          type: CONTACT_TYPES.PERSON,
         })).to.be.true;
       });
 
@@ -179,7 +179,7 @@ describe('remote contact', () => {
       });
 
       it('omits freetext param when qualifier is contactType-only', async () => {
-        const typeOnly = { contactType };
+        const typeOnly = { contactType: CONTACT_TYPES.PERSON };
         const expectedResponse = { data: [], cursor: null };
         getResourcesInner.resolves(expectedResponse);
 
@@ -189,7 +189,7 @@ describe('remote contact', () => {
         expect(getResourcesInner.calledOnceWithExactly({
           limit: limit.toString(),
           cursor,
-          type: contactType,
+          type: CONTACT_TYPES.PERSON,
         })).to.be.true;
       });
 
@@ -238,7 +238,7 @@ describe('remote contact', () => {
       const cursor = '1';
 
       it('returns a page of contacts for the given ids', async () => {
-        const expectedResponse = { data: [{ type: 'person' }], cursor };
+        const expectedResponse = { data: [{ type: CONTACT_TYPES.PERSON }], cursor };
         getResourcesInner.resolves(expectedResponse);
 
         const result = await Contact.v1.getPage(remoteContext)({ ids: ['a', 'b'] }, cursor, limit);
@@ -253,17 +253,17 @@ describe('remote contact', () => {
       });
 
       it('returns a page of contacts for the given type', async () => {
-        const expectedResponse = { data: [{ type: 'person' }], cursor };
+        const expectedResponse = { data: [{ type: CONTACT_TYPES.PERSON }], cursor };
         getResourcesInner.resolves(expectedResponse);
 
-        const result = await Contact.v1.getPage(remoteContext)({ contactType: 'person' }, cursor, limit);
+        const result = await Contact.v1.getPage(remoteContext)({ contactType: CONTACT_TYPES.PERSON }, cursor, limit);
 
         expect(result).to.equal(expectedResponse);
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly({
           limit: limit.toString(),
           cursor,
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
         })).to.be.true;
       });
 
@@ -271,14 +271,15 @@ describe('remote contact', () => {
         const expectedResponse = { data: [], cursor: null };
         getResourcesInner.resolves(expectedResponse);
 
-        const result = await Contact.v1.getPage(remoteContext)({ contactType: 'person' }, null, limit);
+        const result = await Contact.v1.getPage(remoteContext)({ contactType: CONTACT_TYPES.PERSON }, null, limit);
 
         expect(result).to.equal(expectedResponse);
-        expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString(), type: 'person' })).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString(),
+          type: CONTACT_TYPES.PERSON })).to.be.true;
       });
 
       it('serializes the phones qualifier over the contact endpoint', async () => {
-        const expectedResponse = { data: [{ type: 'person' }], cursor };
+        const expectedResponse = { data: [{ type: CONTACT_TYPES.PERSON }], cursor };
         getResourcesInner.resolves(expectedResponse);
 
         const result = await Contact.v1.getPage(remoteContext)(

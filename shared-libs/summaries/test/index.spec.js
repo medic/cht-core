@@ -1,4 +1,5 @@
 const { expect } = require('chai');
+const { CONTACT_TYPES } = require('@medic/constants');
 const {
   summarise,
   summariseContact,
@@ -164,7 +165,7 @@ describe('summary lib', () => {
       const doc = {
         _id: 'person-1',
         _rev: '1-abc',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         name: 'james',
         phone: '+456',
         contact: { _id: 'c' },
@@ -177,7 +178,7 @@ describe('summary lib', () => {
         _rev: '1-abc',
         name: 'james',
         phone: '+456',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         contact_type: undefined,
         contact: 'c',
         lineage: ['f', 'g'],
@@ -212,23 +213,23 @@ describe('summary lib', () => {
     });
 
     it('uses phone as name when name is missing', () => {
-      const doc = { _id: 'c1', _rev: '1', type: 'person', phone: '0123456789' };
+      const doc = { _id: 'c1', _rev: '1', type: CONTACT_TYPES.PERSON, phone: '0123456789' };
       expect(summariseContact(doc).name).to.equal('0123456789');
     });
 
     it('uses phone as name when name is empty', () => {
-      const doc = { _id: 'c1', _rev: '1', type: 'person', name: '', phone: '0123456789' };
+      const doc = { _id: 'c1', _rev: '1', type: CONTACT_TYPES.PERSON, name: '', phone: '0123456789' };
       expect(summariseContact(doc).name).to.equal('0123456789');
     });
 
     describe('lineage', () => {
       it('is empty when the contact has no parent', () => {
-        const doc = { _id: 'c1', _rev: '1', type: 'person' };
+        const doc = { _id: 'c1', _rev: '1', type: CONTACT_TYPES.PERSON };
         expect(summariseContact(doc).lineage).to.deep.equal([]);
       });
 
       it('skips ancestors without an _id', () => {
-        const doc = { _id: 'c1', _rev: '1', type: 'person', parent: { parent: { _id: 'b' } } };
+        const doc = { _id: 'c1', _rev: '1', type: CONTACT_TYPES.PERSON, parent: { parent: { _id: 'b' } } };
         expect(summariseContact(doc).lineage).to.deep.equal(['b']);
       });
     });
@@ -259,9 +260,9 @@ describe('summary lib', () => {
     });
 
     it('dispatches to summariseContact for contact docs', () => {
-      const doc = { _id: 'c1', _rev: '1', type: 'person', name: 'jeff' };
+      const doc = { _id: 'c1', _rev: '1', type: CONTACT_TYPES.PERSON, name: 'jeff' };
       const summary = summarise(doc);
-      expect(summary).to.include({ _id: 'c1', type: 'person', name: 'jeff' });
+      expect(summary).to.include({ _id: 'c1', type: CONTACT_TYPES.PERSON, name: 'jeff' });
     });
 
     it('dispatches to summariseContact for configurable contact types', () => {
@@ -276,8 +277,8 @@ describe('summary lib', () => {
     });
 
     it('does not treat a non-data_record with a form as a report', () => {
-      const summary = summarise({ _id: 'c1', _rev: '1', type: 'person', form: 'pregnancy' });
-      expect(summary).to.include({ _id: 'c1', type: 'person' });
+      const summary = summarise({ _id: 'c1', _rev: '1', type: CONTACT_TYPES.PERSON, form: 'pregnancy' });
+      expect(summary).to.include({ _id: 'c1', type: CONTACT_TYPES.PERSON });
       expect(summary).to.not.have.property('subject');
     });
   });

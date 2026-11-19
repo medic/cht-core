@@ -45,7 +45,7 @@ describe('docs_by_replication_key', () => {
     {
       _id: 'testuser',
       reported_date: 1,
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       parent: { _id: 'testuserplace' },
     },
     {
@@ -186,7 +186,7 @@ describe('docs_by_replication_key', () => {
     {
       _id: 'not_the_testuser',
       reported_date: 1,
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
     },
     {
       _id: 'test_not_assigned_kujua_message',
@@ -219,7 +219,7 @@ describe('docs_by_replication_key', () => {
       tombstone: {
         _id: 'not_the_testuser_deleted',
         reported_date: 1,
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         _deleted: true,
       },
     },

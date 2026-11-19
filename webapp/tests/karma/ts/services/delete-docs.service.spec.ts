@@ -76,7 +76,7 @@ describe('DeleteDocs service', () => {
     };
     const person = {
       _id: 'a',
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       phone: '+555',
       name: 'sally',
       parent: {
@@ -118,7 +118,7 @@ describe('DeleteDocs service', () => {
     };
     const person = {
       _id: 'a',
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       name: 'sally',
       parent: {
         _id: 'b'
@@ -247,7 +247,7 @@ describe('DeleteDocs service', () => {
     };
     const person = {
       _id: 'a',
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       name: 'sally',
       parent: {
         _id: 'b'
@@ -275,7 +275,7 @@ describe('DeleteDocs service', () => {
     };
     const person = {
       _id: 'a',
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       name: 'sally',
       parent: clinic
     };

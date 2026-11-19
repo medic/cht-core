@@ -20,7 +20,7 @@ const NAME = 'registration';
 const PARENT_NOT_FOUND = 'parent_not_found';
 const PARENT_FIELD_NOT_PROVIDED = 'parent_field_not_provided';
 const PARENT_INVALID = 'parent_invalid';
-const { DOC_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const findFirstDefinedValue = (doc, fields) => {
   const definedField = fields.find(field => doc.fields[field] !== undefined && doc.fields[field] !== null);
@@ -489,7 +489,7 @@ const addPatient = (options) => {
     patient.type = 'contact';
     patient.contact_type = options.params.contact_type;
   } else {
-    patient.type = 'person';
+    patient.type = CONTACT_TYPES.PERSON;
   }
 
 
@@ -631,7 +631,7 @@ module.exports = {
                 `patient_id_field cannot be set to patient_id`
               );
             }
-            const typeId = params.contact_type || 'person';
+            const typeId = params.contact_type || CONTACT_TYPES.PERSON;
             const contactType = contactTypesUtils.getTypeById(config.getAll(), typeId);
             if (!contactType) {
               throw new Error(

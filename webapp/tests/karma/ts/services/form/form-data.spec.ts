@@ -9,6 +9,7 @@ import {
 } from '@mm-services/form/form-data';
 import * as FileManager from '../../../../../src/js/enketo/file-manager.js';
 
+import { CONTACT_TYPES } from '@medic/constants';
 const parseXml = (xml: string): XMLDocument => new DOMParser().parseFromString(xml, 'text/xml');
 
 const REPORTED_DATE = 1700000000000;
@@ -185,14 +186,14 @@ describe('form-data', () => {
         const result = formData.deserializeDoc(buildFormConfig(), REPORTED_DATE, {
           _id: 'original-id',
           _rev: '2-abc',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           name: 'Sal',
         });
 
         expect(result).to.deep.equal({
           _id: 'the-id',
           _rev: '2-abc',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           form_version: '1.0',
           reported_date: REPORTED_DATE,
           _attachments: undefined,
@@ -459,7 +460,7 @@ describe('form-data', () => {
     it('throws when the group named after the contact type is missing', () => {
       const doc = parseXml('<data><clinic><name>A Clinic</name></clinic></data>');
 
-      expect(() => new EnketoContactFormData(doc, 'the-id', 'person'))
+      expect(() => new EnketoContactFormData(doc, 'the-id', CONTACT_TYPES.PERSON))
         .to.throw('Failed to save contact form because the data for the contact is not contained in the person group.');
     });
 
@@ -472,7 +473,7 @@ describe('form-data', () => {
               <phone>+123456789</phone>
             </person>
           </data>`);
-        const contactData = new EnketoContactFormData(doc, 'the-id', 'person');
+        const contactData = new EnketoContactFormData(doc, 'the-id', CONTACT_TYPES.PERSON);
 
         const result = contactData
           .getContactData()
@@ -646,7 +647,7 @@ describe('form-data', () => {
               <child><name>Baby Bear</name></child>
             </repeat>
           </data>`);
-        const contactData = new EnketoContactFormData(doc, 'the-id', 'person');
+        const contactData = new EnketoContactFormData(doc, 'the-id', CONTACT_TYPES.PERSON);
 
         const [child1, child2, ...additional] = contactData.getChildData();
 
@@ -672,7 +673,7 @@ describe('form-data', () => {
 
       it('returns an empty array when there are no repeat > child elements', () => {
         const doc = parseXml('<data><person><name>Mum</name></person></data>');
-        const contactData = new EnketoContactFormData(doc, 'the-id', 'person');
+        const contactData = new EnketoContactFormData(doc, 'the-id', CONTACT_TYPES.PERSON);
 
         expect(contactData.getChildData()).to.deep.equal([]);
       });

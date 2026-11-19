@@ -26,7 +26,7 @@ describe('Minify', function() {
         type: CONTACT_TYPES.CLINIC,
         parent: {
           _id: 'def',
-          type: 'person'
+          type: CONTACT_TYPES.PERSON
         }
       };
       const minified = {
@@ -276,7 +276,7 @@ describe('Minify', function() {
       const linkedDocsAreAString = {
         _id: 'c',
         type: 'contact',
-        contact_type: 'person',
+        contact_type: CONTACT_TYPES.PERSON,
         contact: {
           _id: 'contact_id',
           name: 'contact',
@@ -291,7 +291,7 @@ describe('Minify', function() {
       chai.expect(linkedDocsAreAString).to.deep.equal({
         _id: 'c',
         type: 'contact',
-        contact_type: 'person',
+        contact_type: CONTACT_TYPES.PERSON,
         contact: {
           _id: 'contact_id',
           parent: {
@@ -304,7 +304,7 @@ describe('Minify', function() {
       const linkedDocsAreAnArray = {
         _id: 'c',
         type: 'contact',
-        contact_type: 'person',
+        contact_type: CONTACT_TYPES.PERSON,
         contact: {
           _id: 'contact_id',
           name: 'contact',
@@ -319,7 +319,7 @@ describe('Minify', function() {
       chai.expect(linkedDocsAreAnArray).to.deep.equal({
         _id: 'c',
         type: 'contact',
-        contact_type: 'person',
+        contact_type: CONTACT_TYPES.PERSON,
         contact: {
           _id: 'contact_id',
           parent: {

@@ -31,7 +31,7 @@ const contacts = [
   },
   {
     _id: 'chw1',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: 'phone1',
     name: 'chw1',
@@ -40,7 +40,7 @@ const contacts = [
   {
     _id: 'person1',
     name: 'Person',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     patient_id: 'patient1',
     parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     reported_date: new Date().getTime()
@@ -48,7 +48,7 @@ const contacts = [
   {
     _id: 'person2',
     name: 'Person',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     patient_id: 'patient2',
     parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     reported_date: new Date().getTime()
@@ -66,7 +66,7 @@ const contacts = [
   },
   {
     _id: 'chw2',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: 'phone2',
     name: 'chw2',
@@ -75,7 +75,7 @@ const contacts = [
   {
     _id: 'person3',
     name: 'Person',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     patient_id: 'patient3',
     parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     reported_date: new Date().getTime()
@@ -83,7 +83,7 @@ const contacts = [
   {
     _id: 'person4',
     name: 'Person',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     patient_id: 'patient4',
     parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     reported_date: new Date().getTime()
@@ -1039,7 +1039,7 @@ describe('transitions', () => {
     const person = {
       _id: 'my_favorite_person',
       name: 'My Favorite Person',
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       reported_date: new Date().getTime(),
       parent: { _id: 'my_favorite_place', parent: { _id: 'district_hospital' } },
     };
@@ -1089,7 +1089,7 @@ describe('transitions', () => {
     const person1 = {
       _id: 'a_person',
       name: 'My Favorite Person',
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       reported_date: new Date().getTime(),
       patient_id: 'a_person',
       parent: { _id: 'district_hospital' },
@@ -1098,7 +1098,7 @@ describe('transitions', () => {
     const person2 = {
       _id: 'another_person',
       name: 'My Favorite Person',
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       reported_date: new Date().getTime(),
       patient_id: 'another_person',
       parent: { _id: 'district_hospital' },

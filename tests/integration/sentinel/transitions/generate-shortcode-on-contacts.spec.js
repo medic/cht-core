@@ -15,7 +15,7 @@ describe('generate_shortcode_on_contacts', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       reported_date: new Date().getTime()
     };
 
@@ -105,7 +105,7 @@ describe('generate_shortcode_on_contacts', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       patient_id: '1234',
       reported_date: new Date().getTime()
     };
@@ -157,7 +157,7 @@ describe('generate_shortcode_on_contacts', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       reported_date: new Date().getTime()
     };
 
