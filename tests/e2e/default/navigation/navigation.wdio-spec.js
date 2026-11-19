@@ -16,22 +16,23 @@ describe('Navigation tests', () => {
 
     it('should open Messages tab', async () => {
       await commonPage.goToMessages();
-      expect(await commonPage.isMessagesListPresent());
+      await commonPage.waitForPageLoaded();
+      expect(await commonPage.isMessagesListPresent()).to.be.true;
     });
 
     it('should open tasks tab', async () => {
       await commonPage.goToTasks();
-      expect(await commonPage.isTasksListPresent());
+      expect(await commonPage.isTasksListPresent()).to.be.true;
     });
 
     it('should open Reports or History tab', async () => {
       await commonPage.goToReports();
-      expect(await commonPage.isReportsListPresent());
+      expect(await commonPage.isReportsListPresent()).to.be.true;
     });
 
     it('should open Contacts or Peoples tab', async () => {
       await commonPage.goToPeople();
-      expect(await commonPage.isPeopleListPresent());
+      expect(await commonPage.isPeopleListPresent()).to.be.true;
     });
 
     it('should open Analytics tab', async () => {
