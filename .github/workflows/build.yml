@@ -397,26 +397,11 @@ jobs:
       run:  npm install -g cht-conf
     - run: npm ci
 
-    - name: Cache Chrome 107 Installer
-      if: ${{ matrix.chrome-version == '107' }}
-      id: cache-chrome
+    - name: Cache test browsers
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
       with:
-        path: /tmp/chrome107
-        key: chrome107-${{ runner.os }}-107.0.5304.87
-        restore-keys: |
-          chrome107-${{ runner.os }}-
-          chrome107-
-    - name: Download Chrome 107
-      if: ${{ matrix.chrome-version == '107' && steps.cache-chrome.outputs.cache-hit != 'true' }}
-      run: |
-        mkdir -p /tmp/chrome107
-        wget -O "/tmp/chrome107/google-chrome-stable_current_amd64.deb" https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_107.0.5304.87-1_amd64.deb
-    - name: Install Chrome 107
-      if: ${{ matrix.chrome-version == '107' }}
-      run: |
-        sudo dpkg -i "/tmp/chrome107/google-chrome-stable_current_amd64.deb"
-        npm install chromedriver@^107.0.3
+        path: ~/.cache/cht-wdio-browsers
+        key: wdio-browsers-${{ runner.os }}-${{ matrix.chrome-version }}-${{ hashFiles('tests/utils/browsers.js') }}
     - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }} on Chrome ${{ matrix.chrome-version }}
       run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
 
