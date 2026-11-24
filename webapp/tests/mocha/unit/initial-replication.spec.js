@@ -230,6 +230,28 @@ describe('Initial replication', () => {
       expect(localDb.put.lastCall.args[0].complete).to.equal(true);
     });
 
+    it('should wait for form media before completing initial replication', async () => {
+      sinon.stub(utils, 'fetchJSON').resolves({ doc_ids_revs: [] });
+      localDb.allDocs.resolves({ rows: [] });
+      localDb.get.onCall(0).rejects({ status: 404 }).resolves({ _id: FLAG_ID, start_time: 0 });
+      localDb.put.resolves();
+      localDb.replicate.to.resolves();
+      localDb.info.resolves({ update_seq: 0 });
+      let finishMedia;
+      const syncMedia = sinon.stub().returns(new Promise(resolve => finishMedia = resolve));
+      initialReplication.__set__('formMedia', { ...formMediaLib, syncMedia });
+      const isComplete = () => localDb.put.args.some(([doc]) => doc.complete);
+
+      const replication = initialReplication.replicate(remoteDb, localDb);
+      await clock.tickAsync(1000);
+      expect(syncMedia.callCount).to.equal(1);
+      expect(isComplete()).to.equal(false);
+
+      finishMedia();
+      await replication;
+      expect(isComplete()).to.equal(true);
+    });
+
     it('should complete initial replication when form media fails to download', async () => {
       sinon.stub(utils, 'fetchJSON').resolves({ doc_ids_revs: [] });
       sinon.stub(console, 'error');

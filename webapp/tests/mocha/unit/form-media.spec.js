@@ -141,7 +141,9 @@ describe('form media', () => {
         form('form:c', '1-c'),
       ] });
       cache.keys.resolves([{ url: key('md5-old') }]);
-      global.fetch.resolves({ ok: true, body: 'stream' });
+      cache.keys.withArgs(key('md5-new')).resolves([]);
+      const response = { ok: true, body: 'stream' };
+      global.fetch.resolves(response);
       cache.match.resolves({ blob: sinon.stub().resolves({ size: 5 }) });
       const progress = sinon.stub();
 
@@ -156,10 +158,7 @@ describe('form media', () => {
       ]]);
       expect(cache.put.callCount).to.equal(1);
       expect(cache.put.args[0][0]).to.equal(key('md5-new'));
-      expect(cache.put.args[0][1]).to.deep.equal({
-        body: 'stream',
-        init: { headers: { 'Content-Type': 'video/mp4' } },
-      });
+      expect(cache.put.args[0][1]).to.equal(response);
       expect(progress.args).to.deep.equal([[{ count: 0, total: 1 }], [{ count: 1, total: 1 }]]);
       expect(cache.delete.callCount).to.equal(0);
     });
@@ -221,6 +220,109 @@ describe('form media', () => {
       expect(cache.put.callCount).to.equal(1);
     });
 
+    it('should not download media stored since the sync started', async () => {
+      localDb.allDocs.resolves({ rows: [form('form:a', '1-a', { 'x.mp4': media('md5-a') })] });
+      cache.keys.withArgs(key('md5-a')).resolves([{ url: key('md5-a') }]);
+
+      await formMedia.syncMedia(localDb);
+
+      expect(global.fetch.callCount).to.equal(0);
+    });
+
+    describe('repeated download failures', () => {
+      const DAY = 24 * 60 * 60 * 1000;
+      const MINUTE = 60 * 1000;
+      const FAILURES_KEY = 'cht-form-media-download-failures';
+      let failures;
+
+      beforeEach(() => {
+        failures = {};
+        localStorage.getItem.withArgs(FAILURES_KEY).callsFake(() => JSON.stringify(failures));
+        localStorage.setItem.withArgs(FAILURES_KEY).callsFake((storageKey, value) => failures = JSON.parse(value));
+        localDb.allDocs.resolves({ rows: [
+          form('form:a', '1-a', { 'x.mp4': media('md5-a') }),
+          form('form:b', '1-b', { 'y.mp4': media('md5-b') }),
+        ] });
+        global.fetch.resolves({ ok: true, body: 'stream' });
+        cache.match.resolves({ blob: sinon.stub().resolves({ size: 5 }) });
+      });
+
+      const expectFailure = async (message) => {
+        let error;
+        await formMedia.syncMedia(localDb).catch(err => error = err);
+        expect(error && error.message).to.equal(message);
+      };
+
+      const SKIPPED = 'Skipping download of [x.mp4] of form [form:a] after repeated failures';
+
+      it('should pause only the failing media after three failures', async () => {
+        cache.put.withArgs(key('md5-a')).rejects(Object.assign(new Error('blob limit'), { name: 'NetworkError' }));
+
+        await expectFailure('blob limit');
+        await expectFailure('blob limit');
+        await expectFailure('blob limit');
+        await expectFailure(SKIPPED);
+
+        expect(cache.put.withArgs(key('md5-a')).callCount).to.equal(3);
+        expect(cache.put.withArgs(key('md5-b')).callCount).to.equal(4);
+        expect(Object.keys(failures)).to.deep.equal([key('md5-a')]);
+        expect(failures[key('md5-a')].count).to.equal(3);
+      });
+
+      it('should count incomplete downloads', async () => {
+        cache.match.withArgs(key('md5-a')).resolves({ blob: sinon.stub().resolves({ size: 1 }) });
+
+        await expectFailure('Incomplete download of [x.mp4] of form [form:a]: 1 of 5 bytes');
+
+        expect(failures[key('md5-a')].count).to.equal(1);
+      });
+
+      it('should not count failures to reach the server or storage running out', async () => {
+        global.fetch.onCall(0).rejects(new Error('offline'));
+        global.fetch.onCall(1).resolves({ ok: false, status: 500 });
+        await expectFailure('offline');
+
+        cache.put.rejects(Object.assign(new Error('full'), { name: 'QuotaExceededError' }));
+        await expectFailure('Storage full while saving [x.mp4] of form [form:a]');
+
+        expect(failures).to.deep.equal({});
+      });
+
+      it('should try once more after a day and pause again when that fails', async () => {
+        failures = { [key('md5-a')]: { count: 3, time: Date.now() - DAY - MINUTE } };
+        cache.put.withArgs(key('md5-a')).rejects(new Error('blob limit'));
+
+        await expectFailure('blob limit');
+        await expectFailure(SKIPPED);
+
+        expect(cache.put.withArgs(key('md5-a')).callCount).to.equal(1);
+      });
+
+      it('should not pause when the failure time is in the future', async () => {
+        failures = { [key('md5-a')]: { count: 3, time: Date.now() + DAY } };
+
+        await formMedia.syncMedia(localDb);
+
+        expect(cache.put.withArgs(key('md5-a')).callCount).to.equal(1);
+      });
+
+      it('should forget failures after a successful download', async () => {
+        failures = { [key('md5-a')]: { count: 2, time: Date.now() } };
+
+        await formMedia.syncMedia(localDb);
+
+        expect(failures).to.deep.equal({});
+      });
+
+      it('should forget failures of media no form needs', async () => {
+        failures = { [key('md5-gone')]: { count: 3, time: Date.now() } };
+
+        await formMedia.syncMedia(localDb);
+
+        expect(failures).to.deep.equal({});
+      });
+    });
+
     describe('low storage', () => {
       const DAY = 24 * 60 * 60 * 1000;
       const MINUTE = 60 * 1000;
@@ -250,7 +352,7 @@ describe('form media', () => {
         expect(cache.put.callCount).to.equal(0);
       });
 
-      it('should stop downloading and pause for a day when media would not fit', async () => {
+      it('should skip only the media that would not fit and not pause downloads', async () => {
         localDb.allDocs.resolves({ rows: [
           form('form:a', '1-a', { 'big.mp4': media('md5-a', 400 * MB) }),
           form('form:b', '1-b', { 'small.mp4': media('md5-b', 100 * MB) }),
@@ -259,11 +361,9 @@ describe('form media', () => {
 
         const err = await expectLowStorage();
 
-        expect(err.storageFull).to.equal(true);
-        expect(global.fetch.callCount).to.equal(0);
-        const [storageKey, failedAt] = localStorage.setItem.lastCall.args;
-        expect(storageKey).to.equal('cht-form-media-quota-failure');
-        expect(Date.now() - Number(failedAt)).to.be.within(0, MINUTE);
+        expect(err.storageFull).to.equal(false);
+        expect(cache.put.args.map(([cacheKey]) => cacheKey)).to.deep.equal([key('md5-b')]);
+        expect(localStorage.setItem.args).to.deep.equal([['cht-form-media-quota-failure', '0']]);
       });
 
       it('should use the free space reported by the android app when it is lower', async () => {
@@ -321,6 +421,15 @@ describe('form media', () => {
         expect(localStorage.setItem.args).to.deep.equal([['cht-form-media-quota-failure', '0']]);
       });
 
+      it('should not pause when the time storage ran out is in the future', async () => {
+        localDb.allDocs.resolves({ rows: [form('form:a', '1-a', { 'x.mp4': media('md5-a', 100 * MB) })] });
+        localStorage.getItem.withArgs('cht-form-media-quota-failure').returns(String(Date.now() + 30 * DAY));
+
+        await formMedia.syncMedia(localDb);
+
+        expect(global.fetch.callCount).to.equal(1);
+      });
+
       it('should still clean up unused media while storage is full', async () => {
         localDb.allDocs.resolves({ rows: [form('form:a', '1-a', { 'x.mp4': media('md5-a', 100 * MB) })] });
         cache.keys.resolves([{ url: key('md5-gone') }]);
@@ -373,9 +482,73 @@ describe('form media', () => {
 
     it('should fall back to the server when the media is not cached', async () => {
       cache.match.resolves(undefined);
-      global.fetch.resolves({ ok: true, blob: sinon.stub().resolves('remote') });
-      expect(await formMedia.getMedia(formDoc, 'x.mp4')).to.equal('remote');
+      const blob = { size: 5 };
+      global.fetch.resolves({ ok: true, blob: sinon.stub().resolves(blob) });
+      expect(await formMedia.getMedia(formDoc, 'x.mp4')).to.equal(blob);
       expect(global.fetch.args[0][0]).to.equal('/medic/form%3Aa/x.mp4?rev=1-a');
+    });
+
+    describe('storing media fetched from the server', () => {
+      const blob = { size: 5 };
+      const flush = () => new Promise(resolve => setTimeout(resolve));
+
+      beforeEach(() => {
+        cache.match.resolves(undefined);
+        global.fetch.resolves({ ok: true, blob: sinon.stub().resolves(blob) });
+        sinon.stub(console, 'warn');
+      });
+
+      it('should store the media', async () => {
+        await formMedia.getMedia(formDoc, 'x.mp4');
+        await flush();
+
+        expect(cache.put.args).to.deep.equal([[
+          key('md5-a'),
+          { body: blob, init: { headers: { 'Content-Type': 'video/mp4' } } },
+        ]]);
+      });
+
+      it('should share one download between concurrent requests and forget it afterwards', async () => {
+        const blobs = await Promise.all([formMedia.getMedia(formDoc, 'x.mp4'), formMedia.getMedia(formDoc, 'x.mp4')]);
+        expect(blobs).to.deep.equal([blob, blob]);
+        expect(global.fetch.callCount).to.equal(1);
+
+        await flush();
+        await formMedia.getMedia(formDoc, 'x.mp4');
+        expect(global.fetch.callCount).to.equal(2);
+      });
+
+      it('should not share failed downloads with later requests', async () => {
+        global.fetch.onCall(0).rejects(new Error('offline'));
+        let error;
+        await formMedia.getMedia(formDoc, 'x.mp4').catch(err => error = err);
+        expect(error.message).to.equal('offline');
+
+        await flush();
+        expect(await formMedia.getMedia(formDoc, 'x.mp4')).to.equal(blob);
+      });
+
+      it('should not store media when there is not enough space', async () => {
+        storage.estimate.resolves({ quota: 500 * MB, usage: 0 });
+        expect(await formMedia.getMedia(formDoc, 'x.mp4')).to.equal(blob);
+        await flush();
+        expect(cache.put.callCount).to.equal(0);
+      });
+
+      it('should not store incomplete media', async () => {
+        global.fetch.resolves({ ok: true, blob: sinon.stub().resolves({ size: 1 }) });
+        await formMedia.getMedia(formDoc, 'x.mp4');
+        await flush();
+        expect(cache.put.callCount).to.equal(0);
+      });
+
+      it('should return the media without pausing downloads when it cannot be stored', async () => {
+        cache.put.rejects(Object.assign(new Error('full'), { name: 'QuotaExceededError' }));
+        expect(await formMedia.getMedia(formDoc, 'x.mp4')).to.equal(blob);
+        await flush();
+        expect(console.warn.callCount).to.equal(1);
+        expect(localStorage.setItem.callCount).to.equal(0);
+      });
     });
 
     it('should throw when the media is not cached and cannot be fetched', async () => {

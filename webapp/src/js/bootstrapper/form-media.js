@@ -4,11 +4,14 @@ const CACHE_NAME = 'cht-form-media';
 const DB_NAME = 'medic';
 const LARGE_FORM_MEDIA_BYTES = 10 * 1024 * 1024;
 const MIN_FREE_BYTES = 500 * 1024 * 1024;
-const QUOTA_RETRY_DELAY_MS = 24 * 60 * 60 * 1000;
+const RETRY_DELAY_MS = 24 * 60 * 60 * 1000;
 const QUOTA_FAILURE_KEY = 'cht-form-media-quota-failure';
+const MAX_DOWNLOAD_FAILURES = 3;
+const DOWNLOAD_FAILURES_KEY = 'cht-form-media-download-failures';
 const LOW_STORAGE = 'FORM_MEDIA_LOW_STORAGE';
 
 let syncInProgress;
+const mediaRequests = new Map();
 
 const isFormId = id => id.startsWith(PREFIXES.FORM);
 
@@ -38,9 +41,39 @@ const lowStorageError = (message, storageFull = false) => {
   return error;
 };
 
+const isWithinRetryDelay = (time) => {
+  const elapsed = Date.now() - time;
+  return elapsed >= 0 && elapsed < RETRY_DELAY_MS;
+};
+
 const getLastQuotaFailure = () => Number(window.localStorage.getItem(QUOTA_FAILURE_KEY)) || 0;
 
 const setLastQuotaFailure = (time) => window.localStorage.setItem(QUOTA_FAILURE_KEY, String(time));
+
+const getDownloadFailures = () => JSON.parse(window.localStorage.getItem(DOWNLOAD_FAILURES_KEY)) || {};
+
+const setDownloadFailures = (failures) => {
+  window.localStorage.setItem(DOWNLOAD_FAILURES_KEY, JSON.stringify(failures));
+};
+
+const recordDownloadFailure = (key) => {
+  const failures = getDownloadFailures();
+  const { count = 0 } = failures[key] || {};
+  setDownloadFailures({ ...failures, [key]: { count: count + 1, time: Date.now() } });
+};
+
+const keepDownloadFailures = (shouldKeep) => {
+  const entries = Object.entries(getDownloadFailures());
+  const kept = entries.filter(([key]) => shouldKeep(key));
+  if (kept.length < entries.length) {
+    setDownloadFailures(Object.fromEntries(kept));
+  }
+};
+
+const isDownloadPaused = (key) => {
+  const { count = 0, time = 0 } = getDownloadFailures()[key] || {};
+  return count >= MAX_DOWNLOAD_FAILURES && isWithinRetryDelay(time);
+};
 
 const getDeviceFreeBytes = () => {
   const android = window.medicmobile_android;
@@ -113,26 +146,8 @@ const getWantedMedia = async (localDb) => {
   return wanted;
 };
 
-const downloadMedia = async (cache, key, { id, rev, name, content_type, length }) => {
-  const available = await getAvailableBytes();
-  if (available - length < MIN_FREE_BYTES) {
-    setLastQuotaFailure(Date.now());
-    throw lowStorageError(
-      `Not enough storage for [${name}] of form [${id}]: ${length} bytes, ${available} available`,
-      true
-    );
-  }
-
-  const response = await fetchAttachment(id, name, rev);
-  try {
-    await cache.put(key, new Response(response.body, { headers: { 'Content-Type': content_type } }));
-  } catch (err) {
-    if (err.name === 'QuotaExceededError') {
-      setLastQuotaFailure(Date.now());
-      throw lowStorageError(`Storage full while saving [${name}] of form [${id}]`, true);
-    }
-    throw err;
-  }
+const saveMedia = async (cache, key, response, { id, name, length }) => {
+  await cache.put(key, response);
 
   const stored = await cache.match(key);
   const { size } = await stored.blob();
@@ -140,6 +155,40 @@ const downloadMedia = async (cache, key, { id, rev, name, content_type, length }
     await cache.delete(key);
     throw new Error(`Incomplete download of [${name}] of form [${id}]: ${size} of ${length} bytes`);
   }
+};
+
+const assertEnoughStorage = async ({ id, name, length }) => {
+  const available = await getAvailableBytes();
+  if (available - length < MIN_FREE_BYTES) {
+    throw lowStorageError(`Not enough storage for [${name}] of form [${id}]: ${length} bytes, ${available} available`);
+  }
+};
+
+const isCached = async (cache, key) => (await cache.keys(key)).length > 0;
+
+const downloadMedia = async (cache, key, media) => {
+  const { id, rev, name } = media;
+  if (await isCached(cache, key)) {
+    return;
+  }
+  if (isDownloadPaused(key)) {
+    throw new Error(`Skipping download of [${name}] of form [${id}] after repeated failures`);
+  }
+
+  await assertEnoughStorage(media);
+
+  const response = await fetchAttachment(id, name, rev);
+  try {
+    await saveMedia(cache, key, response, media);
+  } catch (err) {
+    if (err.name === 'QuotaExceededError') {
+      setLastQuotaFailure(Date.now());
+      throw lowStorageError(`Storage full while saving [${name}] of form [${id}]`, true);
+    }
+    recordDownloadFailure(key);
+    throw err;
+  }
+  keepDownloadFailures(failedKey => failedKey !== key);
 };
 
 const tryDownload = async (cache, key, media) => {
@@ -174,12 +223,14 @@ const syncAllMedia = async (localDb, onProgress = () => {}) => {
 
   await Promise.all(storedKeys.filter(key => !wanted.has(key)).map(key => cache.delete(key)));
 
+  keepDownloadFailures(key => wanted.has(key));
+
   const missing = [...wanted].filter(([key]) => !storedKeys.includes(key));
   if (!missing.length) {
     return;
   }
 
-  if (Date.now() - getLastQuotaFailure() < QUOTA_RETRY_DELAY_MS) {
+  if (isWithinRetryDelay(getLastQuotaFailure())) {
     throw lowStorageError(`Skipping ${missing.length} form media downloads after recently running out of storage`);
   }
   setLastQuotaFailure(0);
@@ -202,17 +253,46 @@ const isFormMedia = (formDoc, name) => {
   return Boolean(formMedia[name]);
 };
 
+const storeBlob = async (cache, key, blob, media) => {
+  try {
+    if (blob.size !== media.length) {
+      throw new Error(`Incomplete download: ${blob.size} of ${media.length} bytes`);
+    }
+    await assertEnoughStorage(media);
+    await cache.put(key, new Response(blob, { headers: { 'Content-Type': media.content_type } }));
+  } catch (err) {
+    console.warn(`Could not store [${media.name}] of form [${media.id}]`, err);
+  }
+};
+
+const fetchBlob = async ({ id, rev, name }) => {
+  const response = await fetchAttachment(id, name, rev);
+  return response.blob();
+};
+
+const requestMedia = (cache, key, media) => {
+  if (!mediaRequests.has(key)) {
+    const request = fetchBlob(media);
+    mediaRequests.set(key, request);
+    request
+      .then(blob => storeBlob(cache, key, blob, media))
+      .then(() => mediaRequests.delete(key), () => mediaRequests.delete(key));
+  }
+  return mediaRequests.get(key);
+};
+
 const getMedia = async (formDoc, name) => {
   if (!isFormMedia(formDoc, name)) {
     return;
   }
   const cache = await window.caches.open(CACHE_NAME);
-  const stored = await cache.match(getCacheKey(formDoc.form_media[name].digest));
+  const media = { ...formDoc.form_media[name], id: formDoc._id, rev: formDoc._rev, name };
+  const key = getCacheKey(media.digest);
+  const stored = await cache.match(key);
   if (stored) {
     return stored.blob();
   }
-  const response = await fetchAttachment(formDoc._id, name, formDoc._rev);
-  return response.blob();
+  return requestMedia(cache, key, media);
 };
 
 const clear = () => window.caches.delete(CACHE_NAME);

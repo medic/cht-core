@@ -115,7 +115,7 @@ describe('ContactTypes service', () => {
       failMedia(new Error('quota'));
       await new Promise(resolve => setTimeout(resolve));
 
-      expect(consoleError.args[0][0]).to.equal('Error replicating from remote server');
+      expect(consoleError.args[0][0]).to.equal('Error downloading form media');
     });
 
     it('should do nothing when no updates are required', async () => {
