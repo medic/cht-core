@@ -34,3 +34,54 @@ jobs:
       - name: Start EC2 and CHT
         if: ${{ env.INTERNAL_CONTRIBUTOR }}
         run: cd tests/scalability && ./start-ec2-cht.sh $BRANCH
+
+      - name: Confirm scalability results were published
+        timeout-minutes: 65
+        env:
+          GH_TOKEN: ${{ secrets.SCALABILITY_RESULTS_TOKEN }}
+          RESULTS_PATH: ${{ github.ref_name }}-${{ github.run_id }}
+        run: |
+          set -euo pipefail
+
+          response_file=$(mktemp)
+          trap 'rm -f "$response_file"' EXIT
+
+          repository_status=$(curl --silent --show-error --output "$response_file" --write-out '%{http_code}' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'Accept: application/vnd.github+json' \
+            https://api.github.com/repos/medic/scalability-results)
+          if [ "$repository_status" != 200 ]; then
+            echo "::error::Cannot access medic/scalability-results (GitHub API returned HTTP $repository_status)."
+            jq -r '.message // .' "$response_file"
+            exit 1
+          fi
+
+          encoded_results_path=$(jq -rn --arg path "$RESULTS_PATH" '$path | @uri')
+          results_url="https://api.github.com/repos/medic/scalability-results/contents/results/$encoded_results_path?ref=main"
+          deadline=$((SECONDS + 3600))
+
+          while (( SECONDS < deadline )); do
+            status=$(curl --silent --show-error --output "$response_file" --write-out '%{http_code}' \
+              --header "Authorization: Bearer $GH_TOKEN" \
+              --header 'Accept: application/vnd.github+json' \
+              "$results_url")
+
+            if [ "$status" = 200 ]; then
+              if jq -e 'type == "array" and length > 0' "$response_file" >/dev/null; then
+                echo "Scalability results published to results/$RESULTS_PATH."
+                exit 0
+              fi
+              echo "::error::The results path exists but contains no files."
+              exit 1
+            elif [ "$status" != 404 ]; then
+              echo "::error::Failed to verify scalability results (GitHub API returned HTTP $status)."
+              jq -r '.message // .' "$response_file"
+              exit 1
+            fi
+
+            echo "Waiting for results/$RESULTS_PATH to be published..."
+            sleep 60
+          done
+
+          echo "::error::Scalability results were not published within 60 minutes."
+          exit 1
