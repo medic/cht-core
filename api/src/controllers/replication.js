@@ -1,5 +1,6 @@
 const replication = require('../services/replication/replication');
 const serverUtils = require('../server-utils');
+const { ReplicationLimitError } = require('../errors');
 
 module.exports = {
   getDocIds: async (req, res) => {
@@ -14,6 +15,9 @@ module.exports = {
         limit: context.limit,
       });
     } catch (err) {
+      if (err instanceof ReplicationLimitError) {
+        return serverUtils.error(err, req, res);
+      }
       return serverUtils.serverError(err, req, res);
     }
   },

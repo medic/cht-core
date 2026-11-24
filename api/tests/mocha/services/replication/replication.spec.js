@@ -7,6 +7,8 @@ const authorization = require('../../../../src/services/replication/authorizatio
 const purgedDocs = require('../../../../src/services/replication/purged-docs');
 const replication = require('../../../../src/services/replication/replication');
 const replicationLimitLog = require('../../../../src/services/replication/replication-limit-log');
+const config = require('../../../../src/config');
+const { ReplicationLimitError } = require('../../../../src/errors');
 
 let userCtx;
 let authContext;
@@ -15,7 +17,7 @@ let docsByReplicationKey;
 describe('Initial Replication service', () => {
   beforeEach(() => {
     userCtx = { roles: ['one'], name: 'john' };
-    authContext = Object.freeze({ auth: 'context', subjectIds: ['_all', 's1', 's2'] });
+    authContext = Object.freeze({ auth: 'context', subjectIds: ['_all', 's1', 's2'], contactsCount: 1 });
     docsByReplicationKey = Object.freeze({ docs: 'by replication key' });
   });
 
@@ -205,6 +207,104 @@ describe('Initial Replication service', () => {
       expect(userCtx.docsCount).to.equal(3);
       // unpurgedDocsCount is only set after the purge step succeeds, so it should be absent.
       expect(userCtx).to.not.have.property('unpurgedDocsCount');
+    });
+  });
+
+  describe('getContext replication limits', () => {
+    const ids = (length) => Array.from({ length }).map((_, i) => i);
+
+    beforeEach(() => {
+      sinon.stub(db.medic, 'info').resolves({ update_seq: '123-aaa' });
+      sinon.stub(authorization, 'getAuthorizationContext').resolves(authContext);
+      sinon.stub(authorization, 'getDocsByReplicationKey').resolves(docsByReplicationKey);
+      sinon.stub(authorization, 'filterAllowedDocIds').returns([1, 2, 3]);
+      sinon.stub(purgedDocs, 'getUnPurgedIds').resolves([1, 2, 3]);
+      sinon.stub(replicationLimitLog, 'put');
+      sinon.stub(config, 'get').returns(undefined);
+    });
+
+    it('should use the default limits when none are configured', async () => {
+      authorization.getAuthorizationContext.resolves({ ...authContext, contactsCount: 50000 });
+      authorization.filterAllowedDocIds.returns(ids(500000));
+      purgedDocs.getUnPurgedIds.resolves(ids(100000));
+
+      const result = await replication.getContext(userCtx);
+
+      expect(result.docIds.length).to.equal(100000);
+      expect(replication.DEFAULT_LIMITS).to.deep.equal({ contacts: 50000, docs: 500000, unpurged_docs: 100000 });
+      expect(config.get.args).to.deep.equal([['replication_limits'], ['replication_limits'], ['replication_limits']]);
+    });
+
+    it('should not query docs by replication key when the contacts limit is exceeded', async () => {
+      config.get.withArgs('replication_limits').returns({ contacts: 1 });
+      authorization.getAuthorizationContext.resolves({ ...authContext, contactsCount: 2 });
+
+      await expect(replication.getContext(userCtx)).to.be.rejectedWith(
+        ReplicationLimitError,
+        'User "john" exceeds the replication contacts limit: 2 > 1'
+      );
+      expect(authorization.getDocsByReplicationKey.callCount).to.equal(0);
+      expect(purgedDocs.getUnPurgedIds.callCount).to.equal(0);
+      expect(replicationLimitLog.put.callCount).to.equal(0);
+      expect(userCtx.subjectsCount).to.equal(3);
+      expect(userCtx).to.not.have.property('docsCount');
+    });
+
+    it('should not check purged docs when the docs limit is exceeded', async () => {
+      config.get.withArgs('replication_limits').returns({ docs: 2 });
+
+      await expect(replication.getContext(userCtx)).to.be.rejectedWith(
+        ReplicationLimitError,
+        'User "john" exceeds the replication docs limit: 3 > 2'
+      );
+      expect(authorization.getDocsByReplicationKey.callCount).to.equal(1);
+      expect(purgedDocs.getUnPurgedIds.callCount).to.equal(0);
+      expect(replicationLimitLog.put.callCount).to.equal(0);
+      expect(userCtx.docsCount).to.equal(3);
+      expect(userCtx).to.not.have.property('unpurgedDocsCount');
+    });
+
+    it('should not return doc ids when the unpurged docs limit is exceeded', async () => {
+      config.get.withArgs('replication_limits').returns({ docs: 3, unpurged_docs: 2 });
+
+      await expect(replication.getContext(userCtx)).to.be.rejectedWith(
+        ReplicationLimitError,
+        'User "john" exceeds the replication unpurged_docs limit: 3 > 2'
+      );
+      expect(purgedDocs.getUnPurgedIds.callCount).to.equal(1);
+      expect(replicationLimitLog.put.callCount).to.equal(0);
+      expect(userCtx.unpurgedDocsCount).to.equal(3);
+    });
+
+    it('should respond with a 400 error code', async () => {
+      config.get.withArgs('replication_limits').returns({ docs: 0 });
+
+      const error = await replication.getContext(userCtx).catch(err => err);
+
+      expect(error.code).to.equal(400);
+    });
+
+    it('should disable a limit when it is configured as false', async () => {
+      config.get.withArgs('replication_limits').returns({ contacts: false, docs: false, unpurged_docs: false });
+      authorization.getAuthorizationContext.resolves({ ...authContext, contactsCount: 1000000 });
+      authorization.filterAllowedDocIds.returns(ids(1000000));
+      purgedDocs.getUnPurgedIds.resolves(ids(1000000));
+
+      const result = await replication.getContext(userCtx);
+
+      expect(result.docIds.length).to.equal(1000000);
+    });
+
+    [ '10', -1, 1.5, null, {} ].forEach(value => {
+      it(`should fall back to the default limit when configured with ${JSON.stringify(value)}`, async () => {
+        config.get.withArgs('replication_limits').returns({ docs: value });
+        authorization.filterAllowedDocIds.returns(ids(500001));
+
+        await expect(replication.getContext(userCtx)).to.be.rejectedWith(
+          ReplicationLimitError,
+          'exceeds the replication docs limit: 500001 > 500000'
+        );
+      });
     });
   });
 
