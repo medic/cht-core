@@ -55,6 +55,16 @@ describe('Reports Search', () => {
     latinReport,
   ];
 
+  const waitForReportCount = async (expectedCount) => {
+    await browser.waitUntil(
+      async () => (await reportsPage.leftPanelSelectors.allReports()).length === expectedCount,
+      {
+        timeout: 10000,
+        timeoutMsg: `Expected ${expectedCount} reports to be displayed.`,
+      }
+    );
+  };
+
   const offlineUser = userFactory.build({
     username: 'offline-search-user',
     place: sittuHospital._id,
@@ -86,17 +96,19 @@ describe('Reports Search', () => {
 
     it('should return results matching the search term and then return all data when clearing search', async () => {
       await commonPage.goToReports();
-      // Asserting first load reports
+      await waitForReportCount(allReports.length);
       expect((await reportsPage.reportsListDetails()).length).to.equal(allReports.length);
 
       await searchPage.performSearch('sittu');
       await commonPage.waitForLoaders();
+      await waitForReportCount(filteredReports.length);
       expect((await reportsPage.reportsListDetails()).length).to.equal(filteredReports.length);
       for (const report of filteredReports) {
         expect(await reportsPage.leftPanelSelectors.reportByUUID(report._id).isDisplayed()).to.be.true;
       }
 
       await searchPage.clearSearch();
+      await waitForReportCount(allReports.length);
       expect((await reportsPage.reportsListDetails()).length).to.equal(allReports.length);
       for (const report of allReports) {
         expect(await reportsPage.leftPanelSelectors.reportByUUID(report._id).isDisplayed()).to.be.true;
@@ -107,6 +119,7 @@ describe('Reports Search', () => {
       await commonPage.goToReports();
       await searchPage.performSearch('१२३४५');
       await commonPage.waitForLoaders();
+      await waitForReportCount(2);
       expect(await reportsPage.reportsListDetails()).to.have.lengthOf(2);
       expect(await reportsPage.leftPanelSelectors.reportByUUID(devanagariReport._id).isDisplayed()).to.be.true;
       expect(await reportsPage.leftPanelSelectors.reportByUUID(latinReport._id).isDisplayed()).to.be.true;
@@ -117,6 +130,7 @@ describe('Reports Search', () => {
       await commonPage.goToReports();
       await searchPage.performSearch('12345');
       await commonPage.waitForLoaders();
+      await waitForReportCount(2);
       expect(await reportsPage.reportsListDetails()).to.have.lengthOf(2);
       expect(await reportsPage.leftPanelSelectors.reportByUUID(devanagariReport._id).isDisplayed()).to.be.true;
       expect(await reportsPage.leftPanelSelectors.reportByUUID(latinReport._id).isDisplayed()).to.be.true;
@@ -127,15 +141,14 @@ describe('Reports Search', () => {
       const sittuPregnancy = reports[2];
       const potuPregnancy = reports[3];
       await commonPage.goToReports();
-      // Asserting first load reports
+      await waitForReportCount(allReports.length);
       expect((await reportsPage.reportsListDetails()).length).to.equal(allReports.length);
 
       await reportsPage.openReport(sittuPregnancy._id);
       await reportsPage.clickOnCaseId();
       await commonPage.waitForLoaders();
 
-      await browser.waitUntil(async () => (await reportsPage.reportsListDetails()).length > 0);
-
+      await waitForReportCount(2);
       expect((await reportsPage.reportsListDetails()).length).to.equal(2);
       expect(await reportsPage.leftPanelSelectors.reportByUUID(sittuPregnancy._id).isDisplayed()).to.be.true;
       expect(await reportsPage.leftPanelSelectors.reportByUUID(potuPregnancy._id).isDisplayed()).to.be.true;
@@ -144,18 +157,20 @@ describe('Reports Search', () => {
     it('should be able to do an exact match search by a field and then return all data when clearing search',
       async () => {
         await commonPage.goToReports();
-        // Asserting first load reports
+        await waitForReportCount(allReports.length);
         expect((await reportsPage.reportsListDetails()).length).to.equal(allReports.length);
 
         await searchPage.performSearch('note:sittu');
         await commonPage.waitForLoaders();
 
+        await waitForReportCount(filteredReports.length);
         expect((await reportsPage.reportsListDetails()).length).to.equal(filteredReports.length);
         for (const report of filteredReports) {
           expect(await reportsPage.leftPanelSelectors.reportByUUID(report._id).isDisplayed()).to.be.true;
         }
 
         await searchPage.clearSearch();
+        await waitForReportCount(allReports.length);
         expect((await reportsPage.reportsListDetails()).length).to.equal(allReports.length);
         for (const report of allReports) {
           expect(await reportsPage.leftPanelSelectors.reportByUUID(report._id).isDisplayed()).to.be.true;
@@ -166,14 +181,16 @@ describe('Reports Search', () => {
       const randomWord = 'lorem-ipsum';
       await commonPage.goToReports();
 
-      // Asserting first load reports
+      await waitForReportCount(allReports.length);
       expect((await reportsPage.reportsListDetails()).length).to.equal(allReports.length);
 
       await searchPage.performSearch(randomWord);
       await commonPage.waitForLoaders();
 
+      await waitForReportCount(0);
       expect((await reportsPage.reportsListDetails()).length).to.equal(0);
       await searchPage.clearSearch();
+      await waitForReportCount(allReports.length);
       expect((await reportsPage.reportsListDetails()).length).to.equal(allReports.length);
       for (const report of allReports) {
         expect(await reportsPage.leftPanelSelectors.reportByUUID(report._id).isDisplayed()).to.be.true;
@@ -183,17 +200,19 @@ describe('Reports Search', () => {
     it('should have unique results for when multiple fields match the same search text', async () => {
       await commonPage.goToReports();
 
-      // Asserting first load reports
+      await waitForReportCount(allReports.length);
       expect((await reportsPage.reportsListDetails()).length).to.equal(allReports.length);
 
       await searchPage.performSearch(searchWord);
       await commonPage.waitForLoaders();
+      await waitForReportCount(filteredReports.length);
       expect((await reportsPage.reportsListDetails()).length).to.equal(filteredReports.length);
       for (const report of filteredReports) {
         expect(await reportsPage.leftPanelSelectors.reportByUUID(report._id).isDisplayed()).to.be.true;
       }
 
       await searchPage.clearSearch();
+      await waitForReportCount(allReports.length);
       expect((await reportsPage.reportsListDetails()).length).to.equal(allReports.length);
       for (const report of allReports) {
         expect(await reportsPage.leftPanelSelectors.reportByUUID(report._id).isDisplayed()).to.be.true;
