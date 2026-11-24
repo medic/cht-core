@@ -333,6 +333,35 @@ describe('AppComponent', () => {
     expect(globalActions.setIsOnlineOnly.calledOnceWith(false)).to.equal(true);
   });
 
+  it('explains that denied persistent storage is expected and links to more information', async () => {
+    const originalStorageDescriptor = Object.getOwnPropertyDescriptor(navigator, 'storage');
+    const persist = sinon.stub().resolves(false);
+    Object.defineProperty(navigator, 'storage', {
+      configurable: true,
+      value: { persist }
+    });
+    const consoleInfoStub = sinon.stub(console, 'info');
+
+    try {
+      await getComponent();
+      await component.setupPromise;
+      await Promise.resolve();
+
+      expect(persist.calledOnce).to.be.true;
+      expect(consoleInfoStub.calledWithExactly(
+        'Persistent storage was not granted. The browser may clear local data when storage is low; ' +
+        'this is normal browser behavior and does not prevent the app from working. ' +
+        'Learn more: https://web.dev/articles/persistent-storage'
+      )).to.be.true;
+    } finally {
+      if (originalStorageDescriptor) {
+        Object.defineProperty(navigator, 'storage', originalStorageDescriptor);
+      } else {
+        Reflect.deleteProperty(navigator, 'storage');
+      }
+    }
+  });
+
   it('should init task notifications on android', async () => {
     window.medicmobile_android = { updateTaskNotificationStore: sinon.stub().returns(true) };
     await getComponent();
