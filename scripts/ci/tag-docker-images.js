@@ -13,7 +13,14 @@ const regctlCmd = (...params) => new Promise((resolve, reject) => {
   proc.stdout.on('data', log);
   proc.stderr.on('data', log);
 
-  proc.on('close', () => resolve());
+  proc.on('close', (code, signal) => {
+    if (code === 0) {
+      return resolve();
+    }
+
+    const status = signal ? `signal ${signal}` : `exit code ${code}`;
+    reject(new Error(`regctl ${params.join(' ')} failed with ${status}`));
+  });
 });
 
 (async () => {
@@ -23,4 +30,7 @@ const regctlCmd = (...params) => new Promise((resolve, reject) => {
     const releaseTag = buildVersions.getImageTag(service, true);
     await regctlCmd('image', 'copy', existentTag, releaseTag);
   }
-})();
+})().catch(error => {
+  console.error('Failed to tag Docker images', error);
+  process.exitCode = 1;
+});
