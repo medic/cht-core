@@ -7,7 +7,12 @@
   </button>
 
   <mat-menu #moreOptionsMenu="matMenu" xPosition="before" [dir]="direction">
-    <button mat-menu-item test-id="export-reports" *ngIf="displayExportOption()" (click)="exportReports.emit()" [disabled]="!reportsList?.length">
+    <button
+      mat-menu-item
+      test-id="export-reports"
+      *ngIf="displayExportOption()"
+      (click)="exportReports.emit()"
+      [disabled]="!reportsList?.length || isExporting">
       <mat-icon fontIcon="fa-arrow-down"></mat-icon>
       <span>{{ 'Export' | translate }}</span>
     </button>

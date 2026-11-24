@@ -1,4 +1,5 @@
-import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed, tick, waitForAsync } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { DatePipe } from '@angular/common';
@@ -36,6 +37,7 @@ import { FastActionButtonService } from '@mm-services/fast-action-button.service
 import { FeedbackService } from '@mm-services/feedback.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ReportsMoreMenuComponent } from '@mm-modules/reports/reports-more-menu.component';
+import { ExportService } from '@mm-services/export.service';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -179,6 +181,29 @@ describe('Reports Component', () => {
     expect(component).to.exist;
     expect(component.isSidebarFilterOpen).to.be.false;
   });
+
+  it('should debounce report exports and disable the action while exporting', fakeAsync(() => {
+    const exportStub = sinon.stub(TestBed.inject(ExportService), 'export');
+    const moreMenu = fixture.debugElement.query(By.directive(ReportsMoreMenuComponent)).componentInstance;
+
+    component.exportReports();
+    fixture.detectChanges();
+
+    expect(component.isExporting).to.be.true;
+    expect(moreMenu.isExporting).to.be.true;
+
+    component.exportReports();
+    expect(exportStub.callCount).to.equal(1);
+
+    tick(2000);
+    fixture.detectChanges();
+    expect(component.isExporting).to.be.false;
+    expect(moreMenu.isExporting).to.be.false;
+
+    component.exportReports();
+    expect(exportStub.callCount).to.equal(2);
+    flush();
+  }));
 
   it('should watch for changes, set selected reports, search and not default filters', async () => {
     changesService.subscribe.resetHistory();

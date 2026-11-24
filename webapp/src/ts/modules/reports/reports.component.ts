@@ -417,7 +417,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     // TODO: Improve debounce or make a way to determine when the export has finished.
     this.isExporting = true;
     this.ngZone.runOutsideAngular(() => {
-      setTimeout(() => this.isExporting = false, 2000);
+      setTimeout(() => this.ngZone.run(() => this.isExporting = false), 2000);
     });
 
     this.exportService.export('reports', exportFilters, { humanReadable: true });
