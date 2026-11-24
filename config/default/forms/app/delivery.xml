@@ -675,6 +675,7 @@
                 <sex/>
                 <date_of_birth/>
                 <date_of_death/>
+                <stillbirth/>
                 <parent>
                   <_id/>
                   <parent>
@@ -1180,6 +1181,7 @@
       <bind nodeset="/data/baby_death/baby_death_repeat/baby_death_profile/sex" type="string" calculate="&quot;undefined&quot;"/>
       <bind nodeset="/data/baby_death/baby_death_repeat/baby_death_profile/date_of_birth" type="string" calculate="../../../../delivery_outcome/delivery_date"/>
       <bind nodeset="/data/baby_death/baby_death_repeat/baby_death_profile/date_of_death" type="string" calculate="../../baby_death_date"/>
+      <bind nodeset="/data/baby_death/baby_death_repeat/baby_death_profile/stillbirth" type="string" calculate="../../stillbirth"/>
       <bind nodeset="/data/baby_death/baby_death_repeat/baby_death_profile/parent/_id" type="string" calculate=" /data/household_id "/>
       <bind nodeset="/data/baby_death/baby_death_repeat/baby_death_profile/parent/parent/_id" type="string" calculate=" /data/area_id "/>
       <bind nodeset="/data/baby_death/baby_death_repeat/baby_death_profile/parent/parent/parent/_id" type="string" calculate=" /data/facility_id "/>

@@ -20,7 +20,7 @@ module.exports = [
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: function (contact) {
-      return !isAlive(contact);
+      return !isAlive(contact) && contact?.contact?.stillbirth !== 'yes';
     },
     date: (contact) => contact.contact.date_of_death
   },

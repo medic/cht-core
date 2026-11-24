@@ -2,6 +2,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const TestRunner = require('cht-conf-test-harness');
 const { babyDeceasedAtAge1Day } = require('../contacts');
+const { deliveryReportScenarios } = require('../form-inputs');
 const harness = new TestRunner();
 
 describe('Death related targets tests', () => {
@@ -52,6 +53,29 @@ describe('Death related targets tests', () => {
         total: 0
       }
     }]);
+  });
+
+  it('does not count stillbirths as deaths', async () => {
+    await harness.setNow('2000-04-30');
+    const result = await harness.fillForm('delivery', ...deliveryReportScenarios.oneChildHealthyOneDeceasedOneStillbirth);
+    expect(result.errors).to.be.empty;
+
+    const deceasedBabies = result.additionalDocs.filter(doc => doc.type === 'person' && doc.stillbirth !== undefined);
+    expect(deceasedBabies.map(baby => baby.stillbirth)).to.deep.equal(['yes', 'no']);
+
+    const stillbornBaby = deceasedBabies.find(baby => baby.stillbirth === 'yes');
+    await harness.clear();
+    await harness.setNow('2000-04-30');
+    harness.subject = stillbornBaby;
+    const stillbirthTarget = await harness.getTargets({ type: 'deaths-this-month' });
+    expect(stillbirthTarget[0].value).to.deep.equal({ pass: 0, total: 0 });
+
+    const deceasedBaby = deceasedBabies.find(baby => baby.stillbirth === 'no');
+    await harness.clear();
+    await harness.setNow('2000-04-30');
+    harness.subject = deceasedBaby;
+    const deathTarget = await harness.getTargets({ type: 'deaths-this-month' });
+    expect(deathTarget[0].value).to.deep.equal({ pass: 1, total: 1 });
   });
 
 });
