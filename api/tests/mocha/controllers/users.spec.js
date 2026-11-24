@@ -272,7 +272,7 @@ describe('Users Controller', () => {
 
         await controller.v2.list(req, res);
         chai.expect(users.getList.firstCall.args[0])
-          .to.deep.equal({ facilityId: 'chw-facility', contactId: undefined });
+          .to.deep.equal({ facilityId: 'chw-facility', contactId: undefined, oidcUsername: undefined });
         const result = res.json.args[0][0];
         chai.expect(result.length).to.equal(1);
         chai.expect(result[0].id).to.equal(PREFIXES.COUCH_USER + 'chw');
@@ -291,6 +291,7 @@ describe('Users Controller', () => {
         chai.expect(users.getList.firstCall.args[0]).to.deep.equal({
           contactId: 'chw-contact',
           facilityId: 'chw-facility',
+          oidcUsername: undefined,
         });
         const result = res.json.args[0][0];
         chai.expect(result.length).to.equal(1);
@@ -306,12 +307,25 @@ describe('Users Controller', () => {
         req.query = { roles: ['chw'], name: 'admin' };
 
         await controller.v2.list(req, res);
-        chai.expect(users.getList.firstCall.args[0]).to.deep.equal({ facilityId: undefined, contactId: undefined });
+        chai.expect(users.getList.firstCall.args[0]).to.deep.equal({ facilityId: undefined, contactId: undefined, 
+          oidcUsername: undefined});
         const result = res.json.args[0][0];
         chai.expect(result.length).to.equal(3);
         chai.expect(result[0].id).to.equal(PREFIXES.COUCH_USER + 'admin');
         chai.expect(result[1].id).to.equal(PREFIXES.COUCH_USER + 'chw');
         chai.expect(result[2].id).to.equal(PREFIXES.COUCH_USER + 'unknown');
+      });
+      it('gets the list of users with oidc_username filter', async () => {
+        sinon.stub(auth, 'check').resolves();
+        users.getList.resolves([userList[1]]);
+        req.query = { oidc_username: 'cha@registry.com' };
+
+        await controller.v2.list(req, res);
+        chai.expect(users.getList.firstCall.args[0]).to.deep.equal({
+          facilityId: undefined,
+          contactId: undefined,
+          oidcUsername: 'cha@registry.com',
+        });
       });
     });
 
