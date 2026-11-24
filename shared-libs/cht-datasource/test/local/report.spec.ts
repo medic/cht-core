@@ -602,8 +602,9 @@ describe('local report', () => {
         const query = sinon.stub().resolves({
           rows: [
             { key: ['pregnancy'], value: 5 },
-            { key: ['delivery'], value: 2 },
+            { key: 'delivery', value: 'invalid' },
             { key: ['__proto__'], value: 3 },
+            { key: 123, value: 1 },
           ],
         });
         const context = new LocalDataContext.LocalDataContext(
@@ -615,7 +616,7 @@ describe('local report', () => {
 
         expect(result).to.deep.equal(Object.fromEntries([
           ['pregnancy', 5],
-          ['delivery', 2],
+          ['delivery', 0],
           ['__proto__', 3],
         ]));
         expect(Object.prototype.hasOwnProperty.call(result, '__proto__')).to.be.true;

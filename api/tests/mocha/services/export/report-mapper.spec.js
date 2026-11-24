@@ -1,5 +1,6 @@
 const sinon = require('sinon');
 const db = require('../../../../src/db');
+const logger = require('@medic/logger');
 require('chai').should();
 
 const service = require('../../../../src/services/export/report-mapper');
@@ -70,6 +71,7 @@ describe('Report mapper', () => {
       fields: { patient_name: 'Sam' }
     };
     const query = sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: report }] });
+    const warn = sinon.stub(logger, 'warn');
 
     const result = await service.map(
       { forms: { selected: [{ code: 'pregnancy ' }, { code: 'pregnancy' }] } },
@@ -83,6 +85,9 @@ describe('Report mapper', () => {
       reduce: false,
     }).should.equal(true);
     result.header.should.include('patient_name');
+    warn.calledOnceWithExactly(
+      'Skipping invalid form codes when discovering export columns: ["pregnancy "]'
+    ).should.equal(true);
   });
 
 });

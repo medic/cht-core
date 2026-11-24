@@ -40,6 +40,15 @@ import { summariseReport } from '@medic/summaries';
 
 const FORM_DOC_ID_PREFIX = 'form:';
 
+const getFormCountEntry = (key: unknown, value: unknown): [string, number] | null => {
+  const form = Array.isArray(key) ? key[0] : key;
+  if (typeof form !== 'string') {
+    return null;
+  }
+
+  return [form, typeof value === 'number' ? value : 0];
+};
+
 const getOfflineFreetextQueryFn = (medicDb: PouchDB.Database<Doc>) => {
   const queryViewFreetextByKey = queryDocIdsByKey(medicDb, 'medic-offline-freetext/reports_by_freetext');
   const queryViewFreetextByRange = queryDocIdsByRange(medicDb, 'medic-offline-freetext/reports_by_freetext');
@@ -177,13 +186,9 @@ export namespace v1 {
       group: true,
     });
 
-    const counts: [string, number][] = [];
-    for (const row of result.rows) {
-      const form = Array.isArray(row.key) ? row.key[0] : row.key;
-      if (typeof form === 'string') {
-        counts.push([form, typeof row.value === 'number' ? row.value : 0]);
-      }
-    }
+    const counts = result.rows
+      .map(({ key, value }) => getFormCountEntry(key, value))
+      .filter((entry): entry is [string, number] => entry !== null);
     return Object.fromEntries(counts);
   };
 

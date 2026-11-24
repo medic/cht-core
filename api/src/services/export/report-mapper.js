@@ -3,6 +3,7 @@ const objectPath = require('object-path');
 const db = require('../../db');
 const dateFormat = require('./date-format');
 const dataContext = require('../data-context');
+const logger = require('@medic/logger');
 const { Report } = require('@medic/cht-datasource');
 const search = require('@medic/search')(db.medic, dataContext);
 const lineage = require('@medic/lineage')(Promise, db.medic);
@@ -84,7 +85,12 @@ module.exports = {
             ].concat(fieldColumns.map(c => objectPath.get(record.fields, c)))
           ];
         };
-        const validForms = forms.filter(form => typeof form === 'string' && form.length > 0 && form === form.trim());
+        const isValidForm = form => typeof form === 'string' && form.length > 0 && form === form.trim();
+        const validForms = forms.filter(isValidForm);
+        const invalidForms = forms.filter(form => !isValidForm(form));
+        if (invalidForms.length) {
+          logger.warn(`Skipping invalid form codes when discovering export columns: ${JSON.stringify(invalidForms)}`);
+        }
         const samplesPromise = validForms.length ? getReportSamplesByForms(validForms) : Promise.resolve([]);
         return samplesPromise
           .then(samples => {
