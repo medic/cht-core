@@ -7,6 +7,7 @@ import {
   byFreetext,
   byPhones,
   byReportingPeriod,
+  byVerification,
   byUsername,
   byUuid,
   byIds, FreetextQualifier,
@@ -18,6 +19,7 @@ import {
   isKeyedFreetextQualifier,
   isPhonesQualifier,
   isReportingPeriodQualifier,
+  isVerificationQualifier,
   isUsernameQualifier,
   isUuidQualifier,
   isIdsQualifier,
@@ -212,6 +214,38 @@ describe('qualifier', () => {
     ].forEach(([ forms, expected ]) => {
       it(`evaluates ${JSON.stringify(forms)}`, () => {
         expect(isFormsQualifier(forms)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byVerification', () => {
+    [true, false, null].forEach(verification => {
+      it(`builds a qualifier for verification value ${verification}`, () => {
+        expect(byVerification(verification)).to.deep.equal({ verification });
+      });
+    });
+
+    [undefined, 'true', 0].forEach(verification => {
+      it(`throws for invalid verification value ${JSON.stringify(verification)}`, () => {
+        expect(() => Reflect.apply(byVerification, null, [verification])).to.throw(
+          `Invalid verification value [${JSON.stringify(verification)}].`
+        );
+      });
+    });
+  });
+
+  describe('isVerificationQualifier', () => {
+    [
+      [null, false],
+      [{ verification: true }, true],
+      [{ verification: false }, true],
+      [{ verification: null }, true],
+      [{ verification: 'true' }, false],
+      [{ verification: undefined }, false],
+      [{ verified: true }, false]
+    ].forEach(([qualifier, expected]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isVerificationQualifier(qualifier)).to.equal(expected);
       });
     });
   });

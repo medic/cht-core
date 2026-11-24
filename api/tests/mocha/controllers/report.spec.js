@@ -254,7 +254,7 @@ describe('Report Controller Tests', () => {
       });
 
       it('uses freetext and ignores form when both are given', async () => {
-        req = { query: { freetext: 'report', form: 'pregnancy', cursor, limit } };
+        req = { query: { freetext: 'report', form: 'pregnancy', verification: 'false', cursor, limit } };
         reportGetIdsPage.resolves(uuids);
 
         await controller.v1.getUuids(req, res);
@@ -274,6 +274,55 @@ describe('Report Controller Tests', () => {
         expect(serverUtilsError.calledOnce).to.be.true;
         expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
         expect(serverUtilsError.args[0][0].message).to.equal('Invalid freetext [undefined].');
+      });
+    });
+
+    describe('getUuids by verification', () => {
+      const cursor = null;
+      const limit = 100;
+      const uuids = { data: ['uuid1', 'uuid2'], cursor: null };
+
+      [
+        ['true', true],
+        ['false', false],
+        ['null', null]
+      ].forEach(([queryValue, verification]) => {
+        it(`builds a verification qualifier for ${queryValue}`, async () => {
+          req = { query: { verification: queryValue, cursor, limit } };
+          reportGetIdsPage.resolves(uuids);
+
+          await controller.v1.getUuids(req, res);
+
+          expect(reportGetIdsPage.calledOnceWithExactly(
+            Qualifier.byVerification(verification), cursor, limit
+          )).to.be.true;
+          expect(res.json.calledOnceWithExactly(uuids)).to.be.true;
+          expect(serverUtilsError.notCalled).to.be.true;
+        });
+      });
+
+      it('rejects values outside the strict true, false, and null strings', async () => {
+        req = { query: { verification: 'TRUE', cursor, limit } };
+
+        await controller.v1.getUuids(req, res);
+
+        expect(reportGetIdsPage.notCalled).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnce).to.be.true;
+        expect(serverUtilsError.args[0][0].name).to.equal('InvalidArgumentError');
+        expect(serverUtilsError.args[0][0].message).to.equal('Invalid verification ["TRUE"].');
+      });
+
+      it('keeps form precedence over verification', async () => {
+        req = { query: { form: 'pregnancy', verification: 'false', cursor, limit } };
+        reportGetIdsPage.resolves(uuids);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(reportGetIdsPage.calledOnceWithExactly(
+          Qualifier.byForms(['pregnancy']), cursor, limit
+        )).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
       });
     });
 

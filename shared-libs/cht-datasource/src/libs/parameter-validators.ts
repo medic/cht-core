@@ -10,8 +10,10 @@ import {
   isIdsQualifier,
   isPhonesQualifier,
   isUuidQualifier,
+  isVerificationQualifier,
   PhonesQualifier,
   UuidQualifier,
+  VerificationQualifier,
 } from '../qualifier';
 import {
   assertDataObject,
@@ -131,18 +133,19 @@ type ContactTypeFreetextPhonesQualifier = ContactTypeQualifier | FreetextQualifi
 type ContactTypeIdsPhonesQualifier = ContactTypeQualifier | IdsQualifier | PhonesQualifier;
 
 /** @internal */
-export const assertFreetextOrFormsQualifier: (
+export const assertFreetextOrFormsOrVerificationQualifier: (
   qualifier: unknown
-) => asserts qualifier is FreetextQualifier | FormsQualifier = (
+) => asserts qualifier is FreetextQualifier | FormsQualifier | VerificationQualifier = (
   qualifier: unknown
 ) => {
-  if (isFreetextQualifier(qualifier) || isFormsQualifier(qualifier)) {
+  if (isFreetextQualifier(qualifier) || isFormsQualifier(qualifier) || isVerificationQualifier(qualifier)) {
     return;
   }
-  // Only form-shaped input gets the new message. Everything else keeps the original freetext error
-  // verbatim, so callers (and the 400 bodies the API surfaces from them) are unchanged.
   if (isRecord(qualifier) && 'forms' in qualifier) {
     throw new InvalidArgumentError(`Invalid forms [${JSON.stringify(qualifier)}].`);
+  }
+  if (isRecord(qualifier) && 'verification' in qualifier) {
+    throw new InvalidArgumentError(`Invalid verification [${JSON.stringify(qualifier)}].`);
   }
   throw new InvalidArgumentError(`Invalid freetext [${JSON.stringify(qualifier)}].`);
 };

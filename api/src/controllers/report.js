@@ -31,6 +31,19 @@ const buildFormsQualifier = (form) => {
   return Qualifier.byForms(formsArray);
 };
 
+const buildVerificationQualifier = (verification) => {
+  if (verification === 'true') {
+    return Qualifier.byVerification(true);
+  }
+  if (verification === 'false') {
+    return Qualifier.byVerification(false);
+  }
+  if (verification === 'null') {
+    return Qualifier.byVerification(null);
+  }
+  throw new InvalidArgumentError(`Invalid verification [${JSON.stringify(verification)}].`);
+};
+
 /**
  * @openapi
  * tags:
@@ -94,9 +107,9 @@ module.exports = {
      *     summary: Get report UUIDs
      *     operationId: v1ReportUuidGet
      *     description: >
-     *       Returns a paginated array of report identifiers matching either the given freetext search term or the
-     *       given form codes. Exactly one of `freetext` and `form` is required; if both are given, `freetext` is
-     *       used and `form` is ignored.
+     *       Returns a paginated array of report identifiers matching the given freetext search term, form codes, or
+     *       verification status. Exactly one of `freetext`, `form`, and `verification` is required. If multiple are
+     *       given, `freetext` takes precedence over `form`, which takes precedence over `verification`.
      *     tags: [Report]
      *     x-since: 4.18.0
      *     x-permissions:
@@ -110,7 +123,7 @@ module.exports = {
      *           minLength: 3
      *         description: >
      *           A search term for filtering reports. Must be at least 3 characters and not contain whitespace.
-     *           Required unless `form` is given.
+     *           Required unless `form` or `verification` is given.
      *       - in: query
      *         name: form
      *         required: false
@@ -120,7 +133,17 @@ module.exports = {
      *         description: >
      *           A comma-separated list of form codes (e.g. `pregnancy,delivery`), or the parameter repeated once
      *           per code. Each is matched verbatim against the report's `form` field. Required unless `freetext`
-     *           is given.
+     *           or `verification` is given.
+     *       - in: query
+     *         name: verification
+     *         required: false
+     *         x-since: 5.3.0
+     *         schema:
+     *           type: string
+     *           enum: ['true', 'false', 'null']
+     *         description: >
+     *           The verification status to match: `true` for verified reports, `false` for refuted reports, or `null`
+     *           for reports that have not been verified. Required unless `freetext` or `form` is given.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitId'
      *     responses:
@@ -148,11 +171,17 @@ module.exports = {
      */
     getUuids: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
-      // Freetext wins when both are given, so a caller that already sends `freetext` keeps its
-      // existing behavior no matter what else is on the query string.
-      const qualifier = req.query.freetext === undefined && req.query.form !== undefined
-        ? buildFormsQualifier(req.query.form)
-        : Qualifier.byFreetext(req.query.freetext);
+      // Preserve the established precedence for existing callers, then fall back to the new qualifier.
+      let qualifier;
+      if (req.query.freetext !== undefined) {
+        qualifier = Qualifier.byFreetext(req.query.freetext);
+      } else if (req.query.form !== undefined) {
+        qualifier = buildFormsQualifier(req.query.form);
+      } else if (req.query.verification !== undefined) {
+        qualifier = buildVerificationQualifier(req.query.verification);
+      } else {
+        qualifier = Qualifier.byFreetext(req.query.freetext);
+      }
       const docs = await getReportIds(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
     }),

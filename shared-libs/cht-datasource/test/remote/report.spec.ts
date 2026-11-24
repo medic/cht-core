@@ -209,12 +209,38 @@ describe('remote report', () => {
         it('prefers freetext when a qualifier satisfies both', async () => {
           getResourcesInner.resolves({ data: [], cursor: null });
 
-          await Report.v1.getUuidsPage(remoteContext)({ freetext, forms: ['pregnancy'] }, null, limit);
+          await Report.v1.getUuidsPage(remoteContext)(
+            { freetext, forms: ['pregnancy'], verification: true }, null, limit
+          );
 
           expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/uuid')).to.be.true;
           expect(getResourcesInner.calledOnceWithExactly({
             limit: limit.toString(),
             freetext,
+          })).to.be.true;
+        });
+      });
+    });
+
+    describe('getUuidsPage with a verification qualifier', () => {
+      [
+        [true, 'true'],
+        [false, 'false'],
+        [null, 'null']
+      ].forEach(([verification, queryValue]) => {
+        it(`sends ${queryValue} as the verification query parameter`, async () => {
+          const expectedResponse = { data: ['uuid1'], cursor: null };
+          getResourcesInner.resolves(expectedResponse);
+
+          const result = await Report.v1.getUuidsPage(remoteContext)(
+            { verification: verification as boolean | null }, null, 2
+          );
+
+          expect(result).to.equal(expectedResponse);
+          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/uuid')).to.be.true;
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: '2',
+            verification: queryValue,
           })).to.be.true;
         });
       });

@@ -720,6 +720,8 @@ describe('report', () => {
           'getUuidsPageByFreetext',
           'getUuidsByForms',
           'getUuidsPageByForms',
+          'getUuidsByVerification',
+          'getUuidsPageByVerification',
           'getByUuid',
           'create',
           'update',
@@ -907,6 +909,52 @@ describe('report', () => {
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuids)).to.be.true;
         expect(reportGetIds.calledOnceWithExactly(qualifier)).to.be.true;
         expect(byForms.calledOnceWithExactly(forms)).to.be.true;
+      });
+
+      it('getUuidsPageByVerification', async () => {
+        const expectedReportIds: Page<string> = { data: [], cursor: null };
+        const reportGetIdsPage = sinon.stub().resolves(expectedReportIds);
+        dataContextBind.returns(reportGetIdsPage);
+        const verification = null;
+        const qualifier = { verification };
+        const byVerification = sinon.stub(Qualifier, 'byVerification').returns(qualifier);
+
+        const returnedReportIds = await report.getUuidsPageByVerification(verification, '1', 2);
+
+        expect(returnedReportIds).to.equal(expectedReportIds);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
+        expect(reportGetIdsPage.calledOnceWithExactly(qualifier, '1', 2)).to.be.true;
+        expect(byVerification.calledOnceWithExactly(verification)).to.be.true;
+      });
+
+      it('getUuidsPageByVerification uses default cursor and limit', async () => {
+        const expectedReportIds: Page<string> = { data: [], cursor: null };
+        const reportGetIdsPage = sinon.stub().resolves(expectedReportIds);
+        dataContextBind.returns(reportGetIdsPage);
+        const verification = true;
+        const qualifier = { verification };
+        sinon.stub(Qualifier, 'byVerification').returns(qualifier);
+
+        const returnedReportIds = await report.getUuidsPageByVerification(verification);
+
+        expect(returnedReportIds).to.equal(expectedReportIds);
+        expect(reportGetIdsPage.calledOnceWithExactly(qualifier, null, 10000)).to.be.true;
+      });
+
+      it('getUuidsByVerification', () => {
+        const mockAsyncGenerator = fakeGenerator();
+        const reportGetIds = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(reportGetIds);
+        const verification = false;
+        const qualifier = { verification };
+        const byVerification = sinon.stub(Qualifier, 'byVerification').returns(qualifier);
+
+        const result = report.getUuidsByVerification(verification);
+
+        expect(result).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuids)).to.be.true;
+        expect(reportGetIds.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byVerification.calledOnceWithExactly(verification)).to.be.true;
       });
 
       it('getPageByIds', async () => {
