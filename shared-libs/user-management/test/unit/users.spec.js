@@ -54,6 +54,7 @@ describe('Users service', () => {
       medicLogs: { get: sinon.stub(), put: sinon.stub(), },
       users: { query: sinon.stub(), get: sinon.stub(), put: sinon.stub() },
     });
+    db.users.query.resolves({ rows: [] });
     getPerson = sinon.stub();
     getPlace = sinon.stub();
     getContact = sinon.stub();
@@ -1319,6 +1320,36 @@ describe('Users service', () => {
     });
   });
 
+  describe('validateContactIsAvailable', () => {
+    it('rejects a contact that belongs to another user', async () => {
+      const getUsersStub = sinon.stub().resolves([{ name: 'existing-user' }]);
+      service.__set__('getUsers', getUsersStub);
+
+      let error;
+      try {
+        await service.__get__('validateContactIsAvailable')('contact-id', 'new-user');
+      } catch (err) {
+        error = err;
+      }
+
+      chai.expect(getUsersStub).to.have.been.calledOnceWithExactly(undefined, 'contact-id');
+      chai.expect(error.code).to.equal(400);
+      chai.expect(error.message).to.deep.equal({
+        message: 'This contact is already associated with user "existing-user".',
+        translationKey: 'configuration.user.contact.already_associated',
+        translationParams: { username: 'existing-user' }
+      });
+    });
+
+    it('allows a contact already associated with the same user', async () => {
+      const getUsersStub = sinon.stub().resolves([{ name: 'existing-user' }]);
+      service.__set__('getUsers', getUsersStub);
+
+      await service.__get__('validateContactIsAvailable')('contact-id', 'existing-user');
+      chai.expect(getUsersStub).to.have.been.calledOnceWithExactly(undefined, 'contact-id');
+    });
+  });
+
   describe('createUser', () => {
 
     it('returns error from db insert', () => {
@@ -1347,6 +1378,29 @@ describe('Users service', () => {
   });
 
   describe('createUser', () => {
+
+    it('rejects a contact already assigned to another user', async () => {
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      const getUsersStub = sinon.stub().resolves([{ name: 'existing-user' }]);
+      service.__set__('getUsers', getUsersStub);
+
+      let error;
+      try {
+        await service.createUser({
+          username: 'new-user',
+          password: COMPLEX_PASSWORD,
+          place: 'facility-id',
+          contact: 'contact-id',
+          type: 'national-manager'
+        });
+      } catch (err) {
+        error = err;
+      }
+
+      chai.expect(error.code).to.equal(400);
+      chai.expect(error.message.translationKey).to.equal('configuration.user.contact.already_associated');
+      chai.expect(error.message.translationParams).to.deep.equal({ username: 'existing-user' });
+    });
 
     it('should set password_change_required to true for new user creation', () => {
       const data = {
@@ -4807,4 +4861,3 @@ describe('Users service', () => {
     });
   });
 });
-

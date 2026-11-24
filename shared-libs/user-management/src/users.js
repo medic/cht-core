@@ -142,6 +142,22 @@ const getUsers = async (facilityId, contactId) => {
   return usersForContactId.filter(user => forceArray(user.facility_id).includes(facilityId));
 };
 
+const validateContactIsAvailable = async (contactId, username) => {
+  if (!contactId) {
+    return;
+  }
+
+  const users = await getUsers(undefined, contactId);
+  const existingUser = users.find(user => user.name !== username);
+  if (existingUser) {
+    throw error400(
+      `This contact is already associated with user "${existingUser.name}".`,
+      'configuration.user.contact.already_associated',
+      { username: existingUser.name }
+    );
+  }
+};
+
 const getUsersAndSettings = async ({ facilityId, contactId } = {}) => {
   if (!facilityId && !contactId) {
     return Promise.all([getAllUsers(), getAllUserSettings()]);
@@ -688,7 +704,8 @@ const validateContactForRoles = (data, user) => {
 
 const validateUserContact = (data, user) => {
   if (data.contact) {
-    return validateNewContact(data, user);
+    return validateNewContact(data, user)
+      .then(() => validateContactIsAvailable(getContactId(data), user?.name || data.username));
   }
 
   if (_.isNull(data.contact)) {
@@ -723,6 +740,7 @@ const createUserEntities = async (data) => {
 
   const response = {};
   await validateNewUsername(data.username);
+  await validateContactIsAvailable(getContactId(data), data.username);
   await createPlace(data);
   await setContactParent(data);
   await createContact(data, response);
