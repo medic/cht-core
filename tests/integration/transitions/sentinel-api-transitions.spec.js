@@ -508,6 +508,7 @@ describe('transitions', () => {
               chai.expect(messages.messages.find(m => m.id === message.uuid)).to.be.ok;
             });
           });
+
         });
       })
       .then(() => Promise.all([
@@ -1127,5 +1128,59 @@ describe('transitions', () => {
       .then(([infodoc]) => {
         expectTransitions(infodoc, 'death_reporting', 'update_clinics');
       });
+  });
+
+  it('should accept case reports linked to a registration', async () => {
+    const caseId = 'case-report-patient';
+    const settings = {
+      transitions: { accept_case_reports: true },
+      registrations: [{ form: 'REG' }],
+      accept_case_reports: [{
+        form: 'CASE',
+        messages: [{
+          event_type: 'report_accepted',
+          message: [{
+            locale: 'en',
+            content: 'Case report accepted'
+          }]
+        }]
+      }]
+    };
+    const registration = {
+      _id: 'case-report-registration',
+      type: 'data_record',
+      form: 'REG',
+      content_type: 'xml',
+      reported_date: Date.now(),
+      patient_id: caseId,
+      fields: { patient_id: caseId, place_uuid: 'clinic1' }
+    };
+    const report = {
+      _id: 'case-report',
+      type: 'data_record',
+      form: 'CASE',
+      content_type: 'xml',
+      reported_date: Date.now(),
+      case_id: caseId,
+      contact: { _id: 'chw1', phone: 'phone1' },
+      fields: {}
+    };
+
+    await utils.updateSettings(settings, { ignoreReload: true });
+    await utils.saveDocs([registration]);
+    await utils.saveDocs([report]);
+    await sentinelUtils.waitForSentinel(report._id);
+
+    const [ updatedReport, info ] = await Promise.all([
+      utils.getDoc(report._id),
+      sentinelUtils.getInfoDoc(report._id)
+    ]);
+
+    expectTransitions(info, 'accept_case_reports');
+    chai.expect(updatedReport.errors || []).to.have.lengthOf(0);
+    chai.expect(updatedReport.fields.place_uuid).to.equal('clinic1');
+    chai.expect(updatedReport.tasks).to.have.lengthOf(1);
+    chai.expect(updatedReport.tasks[0].messages[0].message).to.equal('Case report accepted');
+    chai.expect(updatedReport.tasks[0].messages[0].to).to.equal('phone1');
   });
 });
