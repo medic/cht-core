@@ -95,6 +95,18 @@ describe('sender directive', function() {
     expect(getElement('div .position .lineage li:nth-child(3)').innerText).to.equal('Metropolis');
   });
 
+  it('should render sender when contact is a hydrated name', async () => {
+    fixture.componentInstance.message = {
+      contact: 'Clark',
+      from: '+123',
+    };
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(getElement('div span.name').innerText).to.equal('Clark');
+  });
+
   it('should render sender as a link when message has a contact with id', async () => {
     fixture.componentInstance.message = {
       sent_by: '+789',
