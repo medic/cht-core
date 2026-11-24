@@ -9,6 +9,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.service';
+import { OfflineSyncService } from '@mm-services/offline-sync.service';
 
 describe('AndroidApi service', () => {
 
@@ -19,6 +20,7 @@ describe('AndroidApi service', () => {
   let consoleErrorMock;
   let navigationService;
   let androidAppLauncherService;
+  let offlineSyncService;
 
   beforeEach(() => {
     sessionService = {
@@ -41,6 +43,12 @@ describe('AndroidApi service', () => {
       goToPrimaryTab: sinon.stub(),
     };
 
+    offlineSyncService = {
+      hostingResolved: sinon.stub(),
+      pairingResolved: sinon.stub(),
+      permissionsResolvedBy: sinon.stub(),
+    };
+
     androidAppLauncherService = {
       resolveAndroidAppResponse: sinon.stub()
     };
@@ -54,6 +62,7 @@ describe('AndroidApi service', () => {
         { provide: MRDTService, useValue: mrdtService },
         { provide: NavigationService, useValue: navigationService },
         { provide: AndroidAppLauncherService, useValue: androidAppLauncherService },
+        { provide: OfflineSyncService, useValue: offlineSyncService },
       ],
     });
 
@@ -152,6 +161,47 @@ describe('AndroidApi service', () => {
     it('should call geolocation permissionRequestResolved', () => {
       service.locationPermissionRequestResolve();
       expect(geolocationService.permissionRequestResolved.callCount).to.equal(1);
+    });
+  });
+
+  describe('offline sync callbacks', () => {
+    it('should pass a hosting result on to the offline sync service', () => {
+      service.resolveOfflineSyncHostingResult(true, 'data:image/png;base64,abc');
+
+      expect(offlineSyncService.hostingResolved.args)
+        .to.deep.equal([[ true, 'data:image/png;base64,abc', undefined ]]);
+    });
+
+    it('should pass a hosting failure code on unchanged', () => {
+      service.resolveOfflineSyncHostingResult(false, 'hotspot_unsupported');
+
+      expect(offlineSyncService.hostingResolved.args)
+        .to.deep.equal([[ false, 'hotspot_unsupported', undefined ]]);
+    });
+
+    it('should carry the diagnostic native sends with a failure', () => {
+      service.resolveOfflineSyncHostingResult(false, 'certificate_failed', 'KeyStoreException: NONE');
+
+      expect(offlineSyncService.hostingResolved.args)
+        .to.deep.equal([[ false, 'certificate_failed', 'KeyStoreException: NONE' ]]);
+    });
+
+    it('should pass a pairing result on to the offline sync service', () => {
+      service.resolveOfflineSyncPairing(true, 'Supervisor phone');
+
+      expect(offlineSyncService.pairingResolved.args).to.deep.equal([[ true, 'Supervisor phone' ]]);
+    });
+
+    it('should pass the permission answer on to the offline sync service', () => {
+      service.offlineSyncPermissionsResolved(false);
+
+      expect(offlineSyncService.permissionsResolvedBy.args).to.deep.equal([[ false ]]);
+    });
+
+    it('should expose the offline sync callbacks on v1, since that is what android calls', () => {
+      expect(service.v1.resolveOfflineSyncHostingResult).to.be.a('function');
+      expect(service.v1.resolveOfflineSyncPairing).to.be.a('function');
+      expect(service.v1.offlineSyncPermissionsResolved).to.be.a('function');
     });
   });
 
