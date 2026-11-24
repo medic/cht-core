@@ -59,8 +59,13 @@ describe('contacts_by_freetext', () => {
 
   before(async () => {
     await utils.saveDocs(documentsToReturn);
-    ids = await queryFreetext('fxt*');
+    ids = await queryFreetext('default:fxt*');
   }, 5 * 60 * 1000);
+
+  it('should not match a field name when searching contact values', async () => {
+    const result = await queryFreetext('default:nam*');
+    expect(result).to.not.include('fxt_contact_short_field');
+  });
 
   it('should index a short custom contact_type', async () => {
     const result = await queryFreetext('contact_type:"hh"');
@@ -71,7 +76,7 @@ describe('contacts_by_freetext', () => {
     const exact = await queryFreetext('exact_match:"phone:fxtphonenumber"');
     expect(exact).to.include('fxt_contact_short_field');
 
-    const fuzzy = await queryFreetext('fxtphonenumber*');
+    const fuzzy = await queryFreetext('default:fxtphonenumber*');
     expect(fuzzy).to.include('fxt_contact_short_field');
   });
 
@@ -82,24 +87,24 @@ describe('contacts_by_freetext', () => {
 
   it('should still index a contact that has an over-length field', async () => {
     expect(ids).to.include('fxt_contact_long_field');
-    const byName = await queryFreetext('fxtlongfield*');
+    const byName = await queryFreetext('default:fxtlongfield*');
     expect(byName).to.include('fxt_contact_long_field');
   });
 
   it('should not break the tokenized default index with an over-length field', async () => {
-    const result = await queryFreetext(`${longMarker}*`);
+    const result = await queryFreetext(`default:${longMarker}*`);
     expect(result).to.include('fxt_contact_long_field');
   });
 
   it('should still index a type=contact doc whose contact_type is null', async () => {
     expect(ids).to.include('fxt_contact_null_type');
-    const byName = await queryFreetext('fxtnulltype*');
+    const byName = await queryFreetext('default:fxtnulltype*');
     expect(byName).to.include('fxt_contact_null_type');
   });
 
   it('should still index a type=contact doc that has no contact_type property', async () => {
     expect(ids).to.include('fxt_contact_no_type');
-    const byName = await queryFreetext('fxtnotype*');
+    const byName = await queryFreetext('default:fxtnotype*');
     expect(byName).to.include('fxt_contact_no_type');
   });
 });

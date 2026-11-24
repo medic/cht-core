@@ -31,7 +31,7 @@ describe('nouveau', () => {
 
     ([
       ['key:value', 'exact_match:"key:value"'],
-      ['searchterm', 'searchterm*']
+      ['searchterm', 'default:searchterm*']
     ] as [string, string][]).forEach(([freetext, q]) => {
       it('should query for freetext qualifier', async () => {
         const qualifier = Qualifier.byFreetext(freetext);
@@ -55,7 +55,7 @@ describe('nouveau', () => {
 
     ([
       ['key:value', 'contact_type:"person" AND exact_match:"key:value"'],
-      ['searchterm', 'contact_type:"person" AND searchterm*']
+      ['searchterm', 'contact_type:"person" AND default:searchterm*']
     ] as [string, string][]).forEach(([freetext, q]) => {
       it('should query with contact type and freetext qualifier', async () => {
         const qualifier = Qualifier.and(
@@ -94,7 +94,7 @@ describe('nouveau', () => {
       const body = {
         bookmark: null,
         limit: 3,
-        q: 'searchterm*',
+        q: 'default:searchterm*',
         sort: 'sort_order'
       };
 
@@ -113,7 +113,7 @@ describe('nouveau', () => {
       const body = {
         bookmark: 'bookmark1',
         limit: 3,
-        q: 'searchterm*',
+        q: 'default:searchterm*',
         sort: 'sort_order'
       };
 
@@ -136,7 +136,7 @@ describe('nouveau', () => {
       const body = {
         bookmark: null,
         limit: 10,
-        q: 'searchterm*',
+        q: 'default:searchterm*',
         sort: 'sort_order'
       };
 
@@ -166,7 +166,7 @@ describe('nouveau', () => {
         const body = {
           bookmark: null,
           limit: 10,
-          q: 'searchterm*',
+          q: 'default:searchterm*',
           sort: 'sort_order'
         };
 
