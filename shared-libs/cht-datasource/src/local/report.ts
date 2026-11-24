@@ -40,6 +40,15 @@ import { summariseReport } from '@medic/summaries';
 
 const FORM_DOC_ID_PREFIX = 'form:';
 
+const getFormCountEntry = (key: unknown, value: unknown): [string, number] | null => {
+  const form = Array.isArray(key) ? key[0] : key;
+  if (typeof form !== 'string') {
+    return null;
+  }
+
+  return [form, typeof value === 'number' ? value : 0];
+};
+
 const getOfflineFreetextQueryFn = (medicDb: PouchDB.Database<Doc>) => {
   const queryViewFreetextByKey = queryDocIdsByKey(medicDb, 'medic-offline-freetext/reports_by_freetext');
   const queryViewFreetextByRange = queryDocIdsByRange(medicDb, 'medic-offline-freetext/reports_by_freetext');
@@ -168,6 +177,42 @@ export namespace v1 {
       const getPageFn = (limit: number, skip: number) => queryViewByForms(keys, limit, skip);
       return fetchAndFilterIds(getPageFn, limit)(limit, skip);
     };
+  };
+
+  /** @internal */
+  export const countByForm = ({ medicDb }: LocalDataContext) => async (): Promise<Record<string, number>> => {
+    const result = await medicDb.query('medic-client/reports_by_form', {
+      reduce: true,
+      group: true,
+    });
+
+    const counts = result.rows
+      .map(({ key, value }) => getFormCountEntry(key, value))
+      .filter((entry): entry is [string, number] => entry !== null);
+    return Object.fromEntries(counts);
+  };
+
+  /** @internal */
+  export const getSamplesByForms = (
+    { medicDb }: LocalDataContext
+  ) => async (
+    { forms }: FormsQualifier
+  ): Promise<Report.v1.Report[]> => {
+    const samples = await Promise.all(
+      [...new Set(forms)].map(form => medicDb.query<Doc>(
+        'medic-client/reports_by_form',
+        {
+          key: [form],
+          limit: 1,
+          include_docs: true,
+          reduce: false,
+        }
+      ))
+    );
+
+    return samples.flatMap(({ rows }) => rows
+      .map(({ doc }) => doc)
+      .filter((doc): doc is Report.v1.Report => !!doc && isReport(doc)));
   };
 
   /** @internal */
