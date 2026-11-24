@@ -3,6 +3,7 @@ import { Observable, Subject } from 'rxjs';
 
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
+import { SettingsService } from '@mm-services/settings.service';
 
 
 /** What the native side reports once a hosting session is up. */
@@ -67,6 +68,7 @@ export class OfflineSyncService {
   constructor(
     private readonly authService: AuthService,
     private readonly sessionService: SessionService,
+    private readonly settingsService: SettingsService,
   ) {
     // Signing out ends whatever session this device is hosting or has joined.
     // Inside the promise, so a bridge call that throws is a rejection the session service catches.
@@ -129,6 +131,12 @@ export class OfflineSyncService {
       return false;
     }
     return this.hasPermission('can_send_offline_data_bundle');
+  }
+
+  /** Whether the program sends everything the server has not received yet, without offering a choice. */
+  async alwaysSendsUnsyncedData(): Promise<boolean> {
+    const settings = await this.settingsService.get();
+    return !!settings?.offline_sync?.always_send_unsynced_data;
   }
 
   /**

@@ -86,6 +86,7 @@ describe('OfflineSync component', () => {
       deviceDescription: sinon.stub().returns('Pixel 7, Android 14 (API 34)'),
       canHost: sinon.stub().resolves(true),
       canJoin: sinon.stub().resolves(true),
+      alwaysSendsUnsyncedData: sinon.stub().resolves(false),
       hostingSession: sinon.stub().returns(null),
       hostingResult: () => hostingResult.asObservable(),
       pairingResult: () => pairingResult.asObservable(),
@@ -287,6 +288,26 @@ describe('OfflineSync component', () => {
       await component.send();
 
       expect(transferService.handOver.args).to.deep.equal([['export']]);
+    });
+
+    it('offers the choice of sync period by default', async () => {
+      await create();
+      await pair();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.offline-sync-scope')).to.not.be.null;
+    });
+
+    it('sends all unsynced data without a choice when the program asks for that', async () => {
+      await create({ alwaysSendsUnsyncedData: sinon.stub().resolves(true) });
+      await pair();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.offline-sync-scope')).to.be.null;
+
+      await component.send();
+
+      expect(transferService.handOver.args).to.deep.equal([['sync']]);
     });
 
     it('turns a transfer failure into a translation key', async () => {

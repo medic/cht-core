@@ -69,6 +69,7 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
   supported = false;
   canHost = false;
   canJoin = false;
+  alwaysSendUnsyncedData = false;
   /**
    * Whether this phone can actually seal anything yet.
    *
@@ -89,13 +90,15 @@ export class OfflineSyncComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.supported = this.offlineSyncService.isSupported();
-    const [canHost, canJoin, keys] = await Promise.all([
+    const [canHost, canJoin, alwaysSendUnsyncedData, keys] = await Promise.all([
       this.offlineSyncService.canHost(),
       this.offlineSyncService.canJoin(),
+      this.offlineSyncService.alwaysSendsUnsyncedData(),
       this.readKeyMaterial(),
     ]);
     this.canHost = canHost;
     this.canJoin = canJoin;
+    this.alwaysSendUnsyncedData = alwaysSendUnsyncedData;
     this.ready = !!keys;
     this.loading = false;
 

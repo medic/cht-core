@@ -5,11 +5,13 @@ import sinon from 'sinon';
 import { AuthService } from '@mm-services/auth.service';
 import { OfflineSyncService } from '@mm-services/offline-sync.service';
 import { SessionService } from '@mm-services/session.service';
+import { SettingsService } from '@mm-services/settings.service';
 
 describe('OfflineSync service', () => {
   let service: OfflineSyncService;
   let authService;
   let sessionService;
+  let settingsService;
   let sessionEndHandler;
 
   const bridge = (overrides:any = {}) => ({
@@ -35,10 +37,12 @@ describe('OfflineSync service', () => {
       isOnlineOnly: sinon.stub().returns(false),
       onSessionEnd: sinon.stub().callsFake(handler => sessionEndHandler = handler),
     };
+    settingsService = { get: sinon.stub().resolves({}) };
     TestBed.configureTestingModule({
       providers: [
         { provide: AuthService, useValue: authService },
         { provide: SessionService, useValue: sessionService },
+        { provide: SettingsService, useValue: settingsService },
       ],
     });
     service = TestBed.inject(OfflineSyncService);
@@ -167,6 +171,30 @@ describe('OfflineSync service', () => {
 
       expect(await service.isOfferedInMenu()).to.be.false;
       expect(authService.any.called).to.be.false;
+    });
+  });
+
+  describe('always sending unsynced data', () => {
+    it('offers the choice when the setting is not set', async () => {
+      expect(await service.alwaysSendsUnsyncedData()).to.be.false;
+    });
+
+    it('offers the choice when the setting is false', async () => {
+      settingsService.get.resolves({ offline_sync: { always_send_unsynced_data: false } });
+
+      expect(await service.alwaysSendsUnsyncedData()).to.be.false;
+    });
+
+    it('sends all unsynced data when the setting is true', async () => {
+      settingsService.get.resolves({ offline_sync: { always_send_unsynced_data: true } });
+
+      expect(await service.alwaysSendsUnsyncedData()).to.be.true;
+    });
+
+    it('sends all unsynced data when the setting is any other truthy value', async () => {
+      settingsService.get.resolves({ offline_sync: { always_send_unsynced_data: 'true' } });
+
+      expect(await service.alwaysSendsUnsyncedData()).to.be.true;
     });
   });
 
