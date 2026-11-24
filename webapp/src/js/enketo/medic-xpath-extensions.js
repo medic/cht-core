@@ -130,7 +130,9 @@ const convertToBikramSambat = (value) => {
     return { t: 'str', v: '' };
   }
 
-  const convertedDate = toBikramSambat(vMoment);
+  // bikram-sambat `Date.parse`s its input, so a full timestamp changes day at 12:30 UTC, not local midnight.
+  // The 'en' locale keeps the digits ASCII when the Nepali locale is active. Same fix as #11241.
+  const convertedDate = toBikramSambat(vMoment.clone().locale('en').format('YYYY-MM-DD'));
 
   return { t: 'str', v: convertedDate };
 };
