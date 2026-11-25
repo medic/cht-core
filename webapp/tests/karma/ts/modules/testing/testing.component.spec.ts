@@ -123,6 +123,7 @@ describe('Testing Component', () => {
     const getRegistrationsStub = sinon
       .stub(window.navigator.serviceWorker, 'getRegistrations')
       .resolves([registration]);
+    const deleteCacheStub = sinon.stub(window.caches, 'delete').resolves(true);
 
     component.wipe();
 
@@ -135,6 +136,7 @@ describe('Testing Component', () => {
     expect(dbService.get.getCall(0).args[0]).to.deep.equal({ remote: false });
     expect(dbService.get.getCall(1).args[0]).to.deep.equal({ remote: false, meta: true });
     expect(database.destroy.callCount).to.equal(2);
+    expect(deleteCacheStub.args).to.deep.equal([['cht-form-media']]);
     expect(cookieService.deleteAll.callCount).to.equal(1);
     expect(cookieService.deleteAll.args[0][0]).to.equal('/');
     tick();

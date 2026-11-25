@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa">
+  <h:head>
+    <h:title>Large form media</h:title>
+    <model>
+      <itext>
+        <translation lang="en">
+          <text id="/data/picture:label">
+            <value>Large picture</value>
+            <value form="image">jr://images/large.png</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <data id="large-form-media" version="1">
+          <picture/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind nodeset="/data/picture" type="string"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/data/picture">
+      <label ref="jr:itext('/data/picture:label')"/>
+    </input>
+  </h:body>
+</h:html>
