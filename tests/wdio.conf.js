@@ -271,12 +271,13 @@ const baseConfig = {
    */
   before: async function () {
     globalThis.expect = chai.expect;
+
+    const throttleNetwork = (originalFn, params) => networkUtils.throttleNetwork(params);
+    browser.overwriteCommand('throttleNetwork', throttleNetwork);
+    browser.overwriteCommand('throttle', throttleNetwork);
+
     if (!utils.isMinimumChromeVersion) {
       await browserLogsUtils.saveBrowserLogs(logLevels, browserLogPath);
-
-      const throttleNetwork = (originalFn, params) => networkUtils.throttleNetwork(params);
-      browser.overwriteCommand('throttleNetwork', throttleNetwork);
-      browser.overwriteCommand('throttle', throttleNetwork);
     }
   },
   /**
