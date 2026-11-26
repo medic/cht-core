@@ -149,6 +149,97 @@ describe('dhis export service', () => {
     });
   });
  
+  it('queries the target docs of the reporting interval when month_start_date is not 1', async () => {
+    const chu1 = mockContact('chu1');
+    const chw = mockContact('chw', { dhis: undefined, parent: { _id: chu1._id } });
+
+    const customSettings = JSON.parse(JSON.stringify(defaultSettings));
+    customSettings.month_start_date = 15;
+    sinon.stub(config, 'get').returns(customSettings);
+
+    // 2000-02-21 falls in the reporting interval 2000-02-15 to 2000-03-14. Target docs are tagged
+    // with the month the interval ends in, so the docs written for that interval are tagged 2000-03.
+    await medic.bulkDocs([
+      chu1,
+      chw,
+      mockTargetDoc('chw', '2000-03'),
+      mockTargetDoc('chu1', '2000-03'),
+      // the calendar month of the selected date rather than the interval it belongs to
+      mockTargetDoc('chu1', '2000-02', { targets: [{ id: 'births-this-month', value: { pass: 0, total: 99 } }] }),
+    ]);
+
+    const actual = await service({
+      date: {
+        from: moment(NOW).valueOf(),
+      },
+      dataSet,
+    });
+
+    expect(actual.period).to.equal('200002');
+    expect(actual.dataValues).to.deep.eq([
+      {
+        dataElement: 'kB0ZBFisE0e',
+        orgUnit: 'ou-chu1',
+        value: 24,
+      },
+      {
+        dataElement: 'e22tIwy1nKR',
+        attributeOptionCombo: 'HllvX50cXC0',
+        categoryOptionCombo: 'HllvX50cXC0',
+        orgUnit: 'ou-chu1',
+        value: 8,
+      },
+    ]);
+  });
+
+  it('queries the reporting interval target docs in Bikram Sambat mode', async () => {
+    const chu1 = mockContact('chu1');
+    const chw = mockContact('chw', { dhis: undefined, parent: { _id: chu1._id } });
+
+    const customSettings = JSON.parse(JSON.stringify(defaultSettings));
+    customSettings.month_start_date = 15;
+    customSettings.uhc = {
+      visit_count: {
+        use_bikram_sambat_months: true,
+      }
+    };
+    sinon.stub(config, 'get').returns(customSettings);
+
+    // 2000-03-05 is BS 2056-11-22. With month_start_date 15 the reporting interval runs from BS
+    // 2056-11-15 to 2056-12-14, so the docs written for it are tagged 2056-12.
+    await medic.bulkDocs([
+      chu1,
+      chw,
+      mockTargetDoc('chw', '2056-12'),
+      mockTargetDoc('chu1', '2056-12'),
+      // the Bikram Sambat month of the selected date rather than the interval it belongs to
+      mockTargetDoc('chu1', '2056-11', { targets: [{ id: 'births-this-month', value: { pass: 0, total: 99 } }] }),
+    ]);
+
+    const actual = await service({
+      date: {
+        from: moment('2000-03-05').valueOf(),
+      },
+      dataSet,
+    });
+
+    expect(actual.period).to.equal('200003');
+    expect(actual.dataValues).to.deep.eq([
+      {
+        dataElement: 'kB0ZBFisE0e',
+        orgUnit: 'ou-chu1',
+        value: 24,
+      },
+      {
+        dataElement: 'e22tIwy1nKR',
+        attributeOptionCombo: 'HllvX50cXC0',
+        categoryOptionCombo: 'HllvX50cXC0',
+        orgUnit: 'ou-chu1',
+        value: 8,
+      },
+    ]);
+  });
+
   it('yields 0s for an orgunit without any target docs', async () => {
     const chu = mockContact('chu');
     sinon.stub(config, 'get').returns(defaultSettings);
