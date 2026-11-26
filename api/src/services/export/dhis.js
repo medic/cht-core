@@ -37,7 +37,10 @@ module.exports = async (filters, options = {}) => {
   }
 
   const useBikramSambatMonths = settings.uhc?.visit_count?.use_bikram_sambat_months;
-  const targetDocsInMonth = await fetch.targetDocsInMonth(from, useBikramSambatMonths);
+  // Target docs are tagged with the month the reporting interval ends in, so the export has to look
+  // up that same interval rather than the calendar month of the selected date.
+  const reportingInterval = CalendarInterval.getCurrent(settings.month_start_date, moment(from), useBikramSambatMonths);
+  const targetDocsInMonth = await fetch.targetDocsInMonth(reportingInterval.end, useBikramSambatMonths);
   const contactsWithOrgUnits = await fetch.contactsWithOrgUnits(orgUnit);
   const targetOwnerIds = _.uniq(targetDocsInMonth.map(target => target.owner));
   const targetOwners = await fetch.docsWithId(targetOwnerIds);
@@ -79,8 +82,8 @@ const fetch = {
     return _.uniqBy(fetched.rows.map(row => row.doc), '_id');
   },
 
-  targetDocsInMonth: async (timestamp, useBikramSambatMonths) => {
-    const interval = CalendarInterval.getIntervalTag(timestamp, useBikramSambatMonths);
+  targetDocsInMonth: async (intervalEnd, useBikramSambatMonths) => {
+    const interval = CalendarInterval.getIntervalTag(intervalEnd, useBikramSambatMonths);
     const result = await db.medic.allDocs({
       startkey: `target~${interval}~`,
       endkey: `target~${interval}~\ufff0`,
