@@ -31,7 +31,7 @@
       </dl>
     </div>
     <pre><code>{{errorStack}}</code></pre>
-    <button type="button" class="btn btn-link error-details-copy" (click)="copyDetails()">
+    <button *ngIf="canCopy" type="button" class="btn btn-link error-details-copy" (click)="copyDetails()">
       {{(copied ? 'error.log.details.copied' : 'error.log.details.copy') | translate}}
     </button>
   </ng-container>

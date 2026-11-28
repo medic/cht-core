@@ -135,16 +135,25 @@ describe('Error log component', () => {
       expect(component.copied).to.equal(true);
     });
 
-    it('should fall back to a hidden textarea when the clipboard API fails', async () => {
+    it('should not show "Copied" when copying fails', async () => {
       sinon.stub(navigator.clipboard, 'writeText').rejects(new Error('not allowed'));
-      const execCommand = sinon.stub(document, 'execCommand').returns(true);
       component.errorStack = 'TypeError: boom';
 
       await component.copyDetails();
 
-      expect(execCommand.calledOnceWith('copy')).to.equal(true);
-      expect(component.copied).to.equal(true);
-      expect(document.querySelector('textarea[readonly]')).to.be.null;
+      expect(component.copied).to.equal(false);
+    });
+
+    it('should hide the copy button when the clipboard API is not available', () => {
+      component.showDetails = true;
+      component.canCopy = true;
+      fixture.detectChanges();
+      expect(query('.error-details-copy')).to.exist;
+
+      component.canCopy = false;
+      fixture.detectChanges();
+
+      expect(query('.error-details-copy')).to.be.null;
     });
   });
 

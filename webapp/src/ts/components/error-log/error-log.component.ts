@@ -25,6 +25,9 @@ export class ErrorLogComponent implements AfterViewInit, OnDestroy {
   // Offline users (e.g. CHWs) see a plain message first, with the technical details behind "Show details".
   // Online users and admins see the details straight away.
   showDetails = false;
+  // The Clipboard API isn't available in every Android WebView. Without it the button is hidden
+  // and support can still ask for a screenshot of the details.
+  canCopy = !!navigator.clipboard?.writeText;
   copied = false;
   subscription = new Subscription();
 
@@ -73,31 +76,13 @@ export class ErrorLogComponent implements AfterViewInit, OnDestroy {
   }
 
   async copyDetails() {
-    this.copied = await this.writeToClipboard(this.getDetailsText());
-    this.changeDetectorRef.detectChanges();
-  }
-
-  private async writeToClipboard(text: string): Promise<boolean> {
     try {
-      await navigator.clipboard.writeText(text);
-      return true;
+      await navigator.clipboard.writeText(this.getDetailsText());
+      this.copied = true;
     } catch {
-      // The Clipboard API isn't available in every Android WebView, so fall back to a hidden textarea
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      textarea.setAttribute('readonly', '');
-      textarea.style.position = 'fixed';
-      textarea.style.opacity = '0';
-      document.body.appendChild(textarea);
-      textarea.select();
-      try {
-        return document.execCommand('copy');
-      } catch {
-        return false;
-      } finally {
-        document.body.removeChild(textarea);
-      }
+      this.copied = false;
     }
+    this.changeDetectorRef.detectChanges();
   }
 
   ngOnDestroy(){
