@@ -1,21 +1,38 @@
 <div class="alert alert-danger" role="alert">
-  <div class="error-details">
-    <span>{{'Error fetching ' + errorFor | translate}}</span>
-    <a *ngIf="!!reload" (click)="reload()">{{'Reload' | translate}}</a>
-    <dl>
-      <dt>{{'User Name' | translate}}</dt>
-      <dd>{{userName}}</dd>
-      <dt>{{'url' | translate}}</dt>
-      <dd>{{url}}</dd>
-      <dt>{{'date.time.title' | translate}}</dt>
-      <dd>{{currentDate | simpleDateTime}}</dd>
-      <dt *ngIf="!replicationStatus?.disabled && replicationStatus?.lastSuccessTo">
-        {{'sync.last_success' | translate}}
-      </dt>
-      <dd *ngIf="!replicationStatus?.disabled && replicationStatus?.lastSuccessTo">
-        {{replicationStatus?.lastSuccessTo | simpleDateTime}}
-      </dd>
-    </dl>
+  <div class="error-summary">
+    <p class="error-message">{{'error.log.message' | translate}}</p>
+    <button *ngIf="!!reload" type="button" class="btn btn-primary error-reload" (click)="reload()">
+      {{'Reload' | translate}}
+    </button>
+    <button
+      type="button"
+      class="btn btn-link error-details-toggle"
+      [attr.aria-expanded]="showDetails"
+      (click)="toggleDetails()">
+      {{(showDetails ? 'error.log.details.hide' : 'error.log.details.show') | translate}}
+    </button>
   </div>
-  <pre><code>{{errorStack}}</code></pre>
+  <ng-container *ngIf="showDetails">
+    <div class="error-details">
+      <span>{{'Error fetching ' + errorFor | translate}}</span>
+      <dl>
+        <dt>{{'User Name' | translate}}</dt>
+        <dd>{{userName}}</dd>
+        <dt>{{'url' | translate}}</dt>
+        <dd>{{url}}</dd>
+        <dt>{{'date.time.title' | translate}}</dt>
+        <dd>{{currentDate | simpleDateTime}}</dd>
+        <dt *ngIf="!replicationStatus?.disabled && replicationStatus?.lastSuccessTo">
+          {{'sync.last_success' | translate}}
+        </dt>
+        <dd *ngIf="!replicationStatus?.disabled && replicationStatus?.lastSuccessTo">
+          {{replicationStatus?.lastSuccessTo | simpleDateTime}}
+        </dd>
+      </dl>
+    </div>
+    <pre><code>{{errorStack}}</code></pre>
+    <button *ngIf="canCopy" type="button" class="btn btn-link error-details-copy" (click)="copyDetails()">
+      {{(copied ? 'error.log.details.copied' : 'error.log.details.copy') | translate}}
+    </button>
+  </ng-container>
 </div>
